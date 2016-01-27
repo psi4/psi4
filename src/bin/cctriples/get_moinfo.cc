@@ -53,7 +53,6 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn, Options &options)
 {
     int i, h, errcod, nactive, nirreps;
     std::string junk;
-//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.labels = wfn->molecule()->irrep_labels();

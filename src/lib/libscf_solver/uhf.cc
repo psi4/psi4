@@ -29,7 +29,6 @@
 
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
@@ -49,11 +48,6 @@ using namespace psi;
 using namespace boost;
 
 namespace psi { namespace scf {
-
-UHF::UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) : HF(options, psio, chkpt)
-{
-    common_init();
-}
 
 UHF::UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
@@ -91,6 +85,8 @@ void UHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
 
+    same_a_b_dens_ = false;
+    same_a_b_orbs_ = false;
 }
 
 void UHF::finalize()

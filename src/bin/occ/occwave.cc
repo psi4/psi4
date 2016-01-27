@@ -36,7 +36,7 @@ namespace psi { namespace occwave{
 OCCWave::OCCWave(SharedWavefunction ref_wfn, Options &options)
     : Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
     common_init();
 }//
@@ -560,7 +560,6 @@ outfile->Printf("\n");
 
 void OCCWave::mem_release()
 {
-    chkpt_.reset();
     delete ints;
     delete [] pitzer2symblk;
     delete [] pitzer2symirrep;

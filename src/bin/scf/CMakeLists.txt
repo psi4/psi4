@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list main.cc scf_dummy.cc )
+list(APPEND sources_list main.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

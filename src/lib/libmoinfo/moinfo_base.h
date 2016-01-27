@@ -72,7 +72,6 @@ public:
   double**    get_scf_mos()                      const {return(scf);}
   double**    get_scf_mos(int i)                 const {return(scf_irrep[i]);}
   double      get_scf_mos(int i,int j)           const {if((i<nmo)&&(j<nso)) return(scf[i][j]); else return(0.0);}
-  void        write_chkpt_mos();
 protected:
   void        read_data();
   void        compute_number_of_electrons();

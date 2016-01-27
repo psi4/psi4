@@ -52,7 +52,7 @@ namespace scfgrad {
 SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     Wavefunction(options)
 {
-    copy(ref_wfn);
+    shallow_copy(ref_wfn);
     common_init();
 }
 SCFGrad::~SCFGrad()

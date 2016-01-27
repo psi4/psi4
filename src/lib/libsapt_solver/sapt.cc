@@ -26,10 +26,10 @@ namespace psi { namespace sapt {
 
 SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
            SharedWavefunction MonomerB, Options& options,
-           boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
+           boost::shared_ptr<PSIO> psio)
             : Wavefunction(options)
 {
-  copy(Dimer);
+  shallow_copy(Dimer);
 
   if ((Dimer->nirrep() != 1) || (MonomerA->nirrep() != 1) || (MonomerA->nirrep() != 1)){
     throw PSIEXCEPTION("SAPT must be run in C1 symmetry. Period.");
@@ -42,7 +42,6 @@ SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 
 
   psio_ = psio;
-  chkpt_ = chkpt;
 
 #ifdef HAVE_MKL
   mkl_set_dynamic(1);

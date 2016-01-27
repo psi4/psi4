@@ -252,7 +252,7 @@ protected:
 
     /// Fractional occupation UHF/UKS
     void frac();
-    /// Renormalize orbitals to 1.0 before saving to chkpt
+    /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
 
     /// Check the stability of the wavefunction, and correct (if requested)
@@ -382,11 +382,7 @@ protected:
     /** Load orbitals from previous computation, projecting if needed **/
     virtual void load_orbitals();
 
-    /** Saves all wavefunction information to the checkpoint file*/
-    void dump_to_checkpoint();
-
 public:
-    HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
 
     virtual ~HF();

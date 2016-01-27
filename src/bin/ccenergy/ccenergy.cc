@@ -78,7 +78,7 @@ CCEnergyWavefunction::~CCEnergyWavefunction()
 
 void CCEnergyWavefunction::init()
 {
-    copy(reference_wavefunction_);
+    shallow_copy(reference_wavefunction_);
 }
 
 double CCEnergyWavefunction::compute_energy()

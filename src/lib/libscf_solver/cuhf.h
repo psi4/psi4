@@ -101,13 +101,8 @@ protected:
     virtual void finalize();
 
 public:
-    CUHF(Options& options, boost::shared_ptr<PSIO> psio,
-        boost::shared_ptr<Chkpt> chkpt);
     CUHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~CUHF();
-
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
 };
 
 }}

@@ -751,8 +751,6 @@ void CoupledPair::finalize(){
   free(I1p);
   free(diisvec);
 
-  // there is something weird with chkpt_ ... reset it
-  chkpt_.reset();
 }
 
 

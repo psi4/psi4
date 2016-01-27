@@ -30,7 +30,6 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
@@ -48,12 +47,6 @@ using namespace psi;
 using namespace boost;
 
 namespace psi { namespace scf {
-
-ROHF::ROHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : HF(options, psio, chkpt)
-{
-    common_init();
-}
 
 ROHF::ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
@@ -87,7 +80,8 @@ void ROHF::common_init()
 
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
-    restricted_ = true;
+    same_a_b_dens_ = false;
+    same_a_b_orbs_ = true;
 }
 
 void ROHF::semicanonicalize()
@@ -110,7 +104,7 @@ void ROHF::semicanonicalize()
     Cb_->set_name("Beta semicanonical orbitals");
     epsilon_a_->set_name("Alpha semicanonical orbital energies");
     epsilon_b_->set_name("Beta semicanonical orbital energies");
-    restricted_ = false;
+    same_a_b_orbs_ = false;
 
     SharedMatrix Crohf(Ca_->clone());
     SharedMatrix evecs;

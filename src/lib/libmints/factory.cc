@@ -56,27 +56,6 @@ MatrixFactory::MatrixFactory(const MatrixFactory& copy)
 
 MatrixFactory::~MatrixFactory()
 {
-    if (rowspi_)
-        Chkpt::free(rowspi_);
-    if (colspi_)
-        Chkpt::free(colspi_);
-}
-
-bool MatrixFactory::init_with_chkpt(boost::shared_ptr<PSIO> psio)
-{
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
-    bool result = init_with_chkpt(chkpt);
-    return result;
-}
-
-bool MatrixFactory::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
-{
-    nirrep_ = chkpt->rd_nirreps();
-    rowspi_  = chkpt->rd_sopi();
-    colspi_  = chkpt->rd_sopi();
-    nso_     = chkpt->rd_nso();
-
-    return true;
 }
 
 bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
