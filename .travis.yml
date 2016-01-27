@@ -240,5 +240,6 @@ before_script:
 - ${BOOSTBUILD}
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} ${BOOSTSTR} --max-am-eri=4 --chemps2=off objdir
 - cd objdir
-script:
 - ../.scripts/travis_build.sh
+script:
+- ../.scripts/travis_run.sh
