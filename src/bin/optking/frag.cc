@@ -731,7 +731,7 @@ void FRAG::fix_bend_axes(void) {
   BEND * a_bend;
   for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == bend_type) {
-      a_bend = dynamic_cast <BEND*>(coords.simples[i]);
+      a_bend = static_cast<BEND*>(coords.simples[i]);
       a_bend->compute_axes(geom);
       a_bend->fix_axes();
     }
@@ -741,7 +741,7 @@ void FRAG::unfix_bend_axes(void) {
   BEND * a_bend;
   for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == bend_type) {
-      a_bend = dynamic_cast <BEND*>(coords.simples[i]);
+      a_bend = static_cast<BEND*>(coords.simples[i]);
       a_bend->unfix_axes();
     }
 }
