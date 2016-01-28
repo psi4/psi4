@@ -154,6 +154,7 @@ double BEND::value(GeomType geom) const {
     if (!v3d_angle(x, origin, v, tval))
       throw(INTCO_EXCEPT("BEND::value: could not compute linear bend",true));
     phi += tval;
+    free_array(origin);
  // }
   return phi;
 }
