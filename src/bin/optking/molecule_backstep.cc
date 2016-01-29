@@ -111,7 +111,7 @@ void MOLECULE::backstep(void) {
   double dq_grad = p_Opt_data->g_dq_gradient(Nsteps-1);
   double dq_hess = p_Opt_data->g_dq_hessian(Nsteps-1);
 
-  double DE_projected;
+  double DE_projected = 0.0;
   if (Opt_params.step_type == OPT_PARAMS::NR)
     DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
   else if (Opt_params.step_type == OPT_PARAMS::RFO)

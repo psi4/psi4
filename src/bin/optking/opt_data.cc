@@ -584,7 +584,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   Nintco = Nintco_in;
   Ncart = Ncart_in;
   H = init_matrix(Nintco, Nintco);
-  rfo_eigenvector = init_array(Nintco+1);
+  rfo_eigenvector = init_array(Nintco);
 
   bool data_file_present = opt_io_is_present(); // determine if old data file is present
 
@@ -616,7 +616,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
       opt_io_read_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
       for (int i=0; i<iteration; ++i) {
         STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
@@ -644,7 +644,7 @@ void OPT_DATA::write(void) {
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
   opt_io_write_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
   opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
 
   for (int i=0; i<steps.size(); ++i)
     steps[i]->write(i+1, Nintco, Ncart);

@@ -113,7 +113,7 @@ bool opt_symm_matrix_eig(double **A, int dim, double *evals) {
   char cv = 'V';  // compute evals and evects
 //  char cl = 'L';  // lower triangle (upper in C) is necessary
   char cl = 'U';  // upper triangle (lower triangle in C) is necessary
-  int rval, i, j;
+  int rval;
 
 // Call to discover optimal memory
   double *work = opt_init_array(1);
@@ -215,7 +215,7 @@ namespace opt {
   triangle (in C) of matrix.
 */
 double ** symm_matrix_inv(double **A, int dim, bool redundant) {
-  int i, j;
+  int i;
   double det = 1.0;
   double * evals = init_array(dim);
   double ** A_evects = matrix_return_copy(A, dim, dim);
