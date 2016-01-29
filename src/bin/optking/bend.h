@@ -68,13 +68,13 @@ class BEND : public SIMPLE_COORDINATE {
     void make_lb_complement(void) { _bend_type = 2; }
 
     bool is_linear_bend(void) const { return ((_bend_type == 1) || (_bend_type == 2)); }
-    bool is_lb_normal(void) const     { (_bend_type == 1) ? true : false; }
-    bool is_lb_complement(void) const { (_bend_type == 2) ? true : false; }
+    bool is_lb_normal(void) const     { return (_bend_type == 1); }
+    bool is_lb_complement(void) const { return (_bend_type == 2); }
 
     int  g_bend_type(void) const { return _bend_type; }
     void compute_axes(GeomType geom) const;
     void fix_axes(void)   { axes_fixed = true; }
-    bool unfix_axes(void) { axes_fixed = false; }
+    void unfix_axes(void) { axes_fixed = false; }
 
 };
 

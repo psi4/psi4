@@ -55,7 +55,6 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 void MOLECULE::rfo_step(void) {
   int i, j;
   int dim = Ncoord();
-  int natom = g_natom();
   double tval, tval2;
   double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
@@ -85,7 +84,6 @@ void MOLECULE::rfo_step(void) {
   }
 
   int rfo_root, f;     // root to follow
-  double rfo_eval;
   double rfo_g;         // gradient in step direction
   double rfo_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation

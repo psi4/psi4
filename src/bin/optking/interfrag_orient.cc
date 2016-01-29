@@ -63,9 +63,8 @@ void rotate_vecs(double *w, double phi, double **v, int num_v);
 bool INTERFRAG::orient_fragment(double *dq, double *fq) {
 
   int pts, i, xyz;
-  double tval, norm, B_angle, R_B1B2, R_B2B3, e12[3], e12b[3], e12c[3], e12d[3], erot[3];
+  double tval, norm, B_angle, R_B1B2, R_B2B3, e12[3], e12b[3], erot[3];
   double **ref_A, **ref_B, **ref_B_final;
-  double sign, cross1[3], cross2[3], cross3[3], phi2, phi3;
 
   // fill-in unused values with defaults to make code below work
   double R_AB, theta_A, theta_B, tau, phi_A, phi_B;
