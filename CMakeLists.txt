@@ -222,7 +222,6 @@ include_directories(
     ${PROJECT_BINARY_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
 
 
 ###set(headers_list "")
@@ -295,7 +294,8 @@ string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 configure_file(include/psi4-config.in include/psi4-config.tmp)
-###install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/)
+install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/psi4/)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include/psi4 FILES_MATCHING PATTERN "*.h")
 
 # Make known that the setup command given and the corresponding CMake
 # line are available in the file setup_command in the build directory
@@ -313,7 +313,7 @@ INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4-config DESTINATION ${CMAKE
 # Install samples directory
 INSTALL(
   DIRECTORY "samples"
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi4
   USE_SOURCE_PERMISSIONS
   PATTERN "example_psi4rc_file" EXCLUDE
 )

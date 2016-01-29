@@ -1,0 +1,52 @@
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem,
+#! both for a native 6D and native 5D basis.
+
+# from Q-Chem (new libefp Q-Chem, not Q-Chem home-brewed EFP)
+
+
+molecule qmefp {
+# QM fragment
+0 1
+O    0         0.0   0.118720
+H   -0.753299, 0.0, -0.474880
+H    0.753299, 0.0, -0.474880
+# EFP as EFP fragments
+--
+efp water
+    -2.13972    1.28964   -0.96418
+    -2.66865    0.51034   -1.14473
+    -1.33300    0.93113   -0.58956
+--
+efp ammonia
+     0.98792    1.87681    2.85174
+     1.68798    1.18856    3.09517
+     1.45873    2.55904    2.27226
+--
+efp ammonia
+    -4.12794   -0.92466   -1.28394
+    -4.69278   -1.09557   -2.10539
+    -3.59191   -1.76923   -1.13470
+}
+
+set basis 6-31g*
+set e_convergence 12
+set d_convergence 12
+set scf_type pk
+energy('scf')
+print_variables()
+
+print('      basis 6-31G*')
+
+clean()
+
+set basis cc-pvdz
+set e_convergence 10
+set d_convergence 7
+set guess sad
+set scf_type pk
+energy('scf')
+print_variables()
+
+print('      basis cc-pVDZ')
+
