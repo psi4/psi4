@@ -359,6 +359,8 @@ protected:
     double cumulant_threshold_;
     /// The convergence criterion for the scf iterations
     double orbitals_threshold_;
+    /// The convergence criterion for energy
+    double energy_threshold_;
     /// The convergence that must be achieved before DIIS extrapolation starts
     double diis_start_thresh_;
     /// The SCF component of the energy

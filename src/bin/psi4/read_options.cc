@@ -993,6 +993,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
+      /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+      Convergence <table:conv_corl>` for default convergence criteria for
+      different calculation types. -*/
+      options.add_double("E_CONVERGENCE", 1e-10);
       /*- Convergence criterion for the density cumulant and orbital guess for the
       variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
       options.add_double("GUESS_R_CONVERGENCE", 1e-3);
