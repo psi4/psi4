@@ -149,9 +149,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PCM", false);
   /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
   options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-  /*- The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files,
-      while CONVENTIONAL results in no approximations being made. -*/
-  options.add_str("CC_TYPE", "CONVENTIONAL", "CONVENTIONAL DF");
   /*- The density fitting basis to use in coupled cluster computations. -*/
   options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
@@ -160,6 +157,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   molecule, options, percent blocks, etc. Access through ``cfour {...}``
   block. -*/
   options.add_str_i("LITERAL_CFOUR", "");
+  /*- When several modules can compute the same methods and the default
+  routing is not suitable, this targets a module. ``CCENERGY`` covers
+  CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
+  options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
+  /*- Algorithm to use for MP2 computation.
+  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  options.add_str("MP2_TYPE", "DF", "DF CONV CD");
+  /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
+  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  options.add_str("MP_TYPE", "CONV", "DF CONV CD");
+  /*- Algorithm to use for CEPA computation (e.g., CEPA(3) or ACPF or OCEPA(0)).
+  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  options.add_str("CEPA_TYPE", "CONV", "DF CONV CD");
+  // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files, while CONV results in no approximations being made.
+  /*- Algorithm to use for CC computation (e.g., CCD, CCSD, CCSD(T)).
+  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  options.add_str("CC_TYPE", "CONV", "DF CONV CD");
+  /*- Algorithm to use for CI computation (e.g., CID or CISD).
+  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  options.add_str("CI_TYPE", "CONV", "CONV");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -2158,8 +2175,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- A helpful option, used only in debugging the MADNESS version !expert-*/
     options.add_int("MADMP2_SLEEP", 0);
-    /*- Algorithm to use for the MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
     /*- Auxiliary basis set for MP2 density fitting computations.
@@ -2490,8 +2505,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "OCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
 
-    /*- Algorithm to use for non-OO MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
