@@ -1835,12 +1835,12 @@ def scf_helper(name, **kwargs):
     # Second-order SCF requires non-symmetrix density matrix support
     if (
         psi4.get_option('SCF', 'SOSCF') and
-        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
+        (psi4.get_option('SCF', 'SCF_TYPE') == 'PK')
         ):
-        raise ValidationError("Second-order SCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
-
-
+        molecule = psi4.get_active_molecule()
+        if (molecule.schoenflies_symbol() != 'c1'):
+            raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
+        
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
     if psi4.has_option_changed('SCF', 'BASIS_GUESS'):
@@ -3829,8 +3829,9 @@ def run_detcas(name, **kwargs):
 
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
+            molecule = psi4.get_active_molecule()
+            if (molecule.schoenflies_symbol() != 'c1'):
+                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
@@ -3845,8 +3846,9 @@ def run_detcas(name, **kwargs):
     
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
+            molecule = psi4.get_active_molecule()
+            if (molecule.schoenflies_symbol() != 'c1'):
+                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
         # Bypass routine scf if user did something special to get it to converge
         if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):

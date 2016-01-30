@@ -521,8 +521,8 @@ result is the triples correction as computed in the truncated NO basis;
 the effect of the truncated virtual space. The ``Est.Disp22(T)``
 value is used in the SAPT energy and dispersion component (see [Hohenstein:2010:104107]_ 
 for details). As indicated at the top of the result section, all results
-are presented without exchange scaling. If the scaling factor :math:`p_{EX}` is 
-significantly different from 1.0, results with exchange scaling are printed: ::
+are presented without exchange scaling. Results with scaling are reported in the
+following section: ::
 
     SAPT Results ==> ALL S2 TERMS SCALED <== 
 
@@ -572,6 +572,6 @@ significantly different from 1.0, results with exchange scaling are printed: ::
 
 Here, all previous results are repeated with all relevant exchange terms scaled. 
 The scaling factor is reported at the top (here ``1.0072``) and all terms that
-are scaled are indicated by the ``scal.`` keyword. Note that the sSAPT0 energy is 
-reported here if the scaling factor is significantly different from 1.0, otherwise
-it is reported in the unscaled results.
+are scaled are indicated by the ``scal.`` keyword. The sSAPT0 energy is also reported
+here. If the scaling factor is 1.0, scaled results are still reported to facilitate
+automatic processing of the output file.
