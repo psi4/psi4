@@ -234,9 +234,7 @@ void SAPT2p3::print_results()
   // Now we compute everything once without scaling, and then with scaling.
   std::vector<double> Xscal;
   Xscal.push_back(1.0);
-  if (sapt_Xscal != 1.0) {
-      Xscal.push_back(sapt_Xscal);
-  }
+  Xscal.push_back(sapt_Xscal);
 
   // Grab the supermolecular MP2 correlation energy if it is here
   double e_MP2 = Process::environment.globals["SA MP2 CORRELATION ENERGY"];
@@ -372,13 +370,13 @@ void SAPT2p3::print_results()
   
     }
   
-    if(*scal_it == 1.0) {
+    if(scal_it == Xscal.begin()) {
         outfile->Printf("\n    SAPT Results ==> NO EXCHANGE SCALING APPLIED <==  \n");
     } else {
-        outfile->Printf("\n    SAPT Results ==> ALL S2 TERMS SCALED <== \n");
+        outfile->Printf("\n    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== \n");
         outfile->Printf("\n    Scaling factor: %12.6f  \n", *scal_it);
     }
-    std::string scaled = (*scal_it != 1.0 ? "scal." : "     ");
+    std::string scaled = (scal_it != Xscal.begin() ? "scal." : "     ");
     outfile->Printf("  --------------------------------------------------------------------------\n");
     outfile->Printf("    Electrostatics          %16.8lf mH %16.8lf kcal mol^-1\n",
       tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
@@ -469,7 +467,7 @@ void SAPT2p3::print_results()
       eHF_*1000.0,eHF_*pc_hartree2kcalmol);
     outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
       scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-    if(*scal_it == sapt_Xscal) {
+    if(*scal_it == sapt_Xscal && (scal_it != Xscal.begin()) ) {
           outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n",
           e_sSAPT0*1000.0,e_sSAPT0*pc_hartree2kcalmol);
     }
@@ -514,7 +512,7 @@ void SAPT2p3::print_results()
     outfile->Printf("  --------------------------------------------------------------------------\n");
 
     // Only export if not scaled.
-    if(*scal_it == 1.0) {
+    if(scal_it == Xscal.begin()) {
 
         Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
         Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
