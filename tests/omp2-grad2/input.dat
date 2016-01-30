@@ -19,8 +19,9 @@ set {
   basis cc-pvdz
   reference uhf
   guess gwh
+  mp2_type conv
 }
-gradient('conv-omp2')
+gradient('omp2')
 
 grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST

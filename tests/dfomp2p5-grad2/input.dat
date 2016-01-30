@@ -25,10 +25,11 @@ set {
   guess gwh
   freeze_core true
   reference uhf
+  mp_type df
 }
-gradient('df-omp2.5')
 
-grad = psi4.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+grad = gradient('omp2.5')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
 
