@@ -26,7 +26,7 @@ grad_freqs.set(0, 5, 3406.952) #TEST
 grad_freqs.set(0, 6, 3497.387) #TEST
 
 
-frequencies('ocepa',dertype=0)
+frequencies('ocepa(0)', dertype=0)
 fd_freqs = psi4.wavefunction().frequencies()                                           #TEST
 compare_vectors(grad_freqs, fd_freqs, 0,                                                 #TEST
  "Frequencies by gradient points vs. Frequencies by energy points to 1 cm^-1 ")           #TEST
