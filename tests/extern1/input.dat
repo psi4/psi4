@@ -1,4 +1,4 @@
-#! 
+#! scf with a TIPeP water as the eternal potential
 memory 500 mb
 
 molecule {
