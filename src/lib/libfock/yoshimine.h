@@ -27,6 +27,8 @@
 #ifndef _psi3_bin_transqt_yoshimine_h_
 #define _psi3_bin_transqt_yoshimine_h_
 
+#include <libmints/typedefs.h>
+
 namespace psi { 
 
 /*
@@ -39,6 +41,14 @@ namespace psi {
 */
 
 /* need to include iwl.h before including this file */
+
+struct IWLLight {
+    int p_;
+    int q_;
+    int r_;
+    int s_;
+    double val_;
+};
 
 class BaseBucket {
   private:
@@ -57,10 +67,14 @@ class BaseBucket {
   // Accessor functions to data
     long int& in_bucket()       { return in_bucket_; }
     IWL* iwlbuf()               { return IWLBuf_; }
-    void set_iwlbuf(IWL* input) { IWLBuf_ = input; }
     int& hi()                   { return hi_; }
     int& lo()                   { return lo_; }
 
+    // Setting up files
+    virtual void set_file(IWL* input) { IWLBuf_ = input; }
+    virtual void set_file(std::string fileID) {}
+    // Operation to close files
+    virtual void close_file(int keep);
     // Allocating bucket-owned storage
     virtual void alloc(unsigned long int size) {};
     // Deleting all bucket-owned storage
@@ -69,6 +83,11 @@ class BaseBucket {
     virtual void fill(int pin, int qin, int rin, int sin, double valin) {};
     // Flushing the bucket to disk.
     virtual void flush(const int lastbuf) {};
+
+    // Opening bucket for read
+    virtual FILE* open_bucket(unsigned long int &nints) {}
+    // Closing bucket after read
+    virtual void close_bucket(FILE* handle, int erase) {}
 };
 
 // Usual structure of a bucket, containing integrals and labels
@@ -97,26 +116,43 @@ class Bucket : public BaseBucket {
     virtual void dealloc();
     // Filling the bucket with integrals and labels
     virtual void fill(int pin, int qin, int rin, int sin, double valin);
-    // Flushing the buc
+    // Flushing the bucket
     virtual void flush(const int lastbuf);
 };
 
-// A bucket containing only one array with
-// the addresses of integrals and labels it needs,
-// stored in an external array.
-class SmallBucket : public BaseBucket {
-  private:
-    unsigned long int* adr_;
-  public:
-  // Constructor and destructor
-  SmallBucket() : adr_(NULL) {}
-  virtual ~SmallBucket() {}
-  // Accessor function to data
-  unsigned long int* adr()  { return adr_; }
-  unsigned long int operator[] (const size_t idx) {
-    return adr_[idx];
-  }
-  virtual void flush(const int lastbuf);
+// Light Bucket that avoids IWL buffers.
+class BucketLight : public BaseBucket {
+private:
+    IWLLight* ints_;
+    unsigned long int nints_;
+    std::string filename_;
+    FILE* fh_;
+public:
+    BucketLight();
+    virtual ~BucketLight();
+
+    // Accessor functions to data
+    IWLLight* ints()                  {return ints_; }
+    unsigned long int& nints()        {return nints_; }
+    std::string& filename()           {return filename_; }
+    FILE* file_pointer()              {return fh_; }
+
+    // Set up the files
+    virtual void set_file(std::string fileID);
+    // Close the file
+    virtual void close_file(int keep);
+    // Allocating bucket-owned storage
+    virtual void alloc(unsigned long int size);
+    // Deleting all bucket-owned storage
+    virtual void dealloc();
+    // Filling the bucket with integrals and labels
+    virtual void fill(int pin, int qin, int rin, int sin, double valin);
+    // Flushing the bucket
+    virtual void flush(const int lastbuf);
+    // Opening bucket for read
+    virtual FILE* open_bucket(unsigned long &nints);
+    // Closing bucket after read
+    virtual void close_bucket(FILE* handle, int erase);
 };
 
 // Base class for a Yoshimine object, handling
@@ -164,11 +200,11 @@ class YoshBase {
 
     void init(long maxcord, unsigned int bra_idx);
     void print();
-    void init_buckets();
+    virtual void init_buckets();
     void close_buckets(int erase);
     static void rdtwo_pk(YoshBase* YBuffJ, YoshBase* YBuffK, int itapERI,
          int del_tei_file, int nirreps, int* so2rel, int* so2sym, int* pksymoff, int printflag);
-    void sort_pk(int is_exch, int out_tape, int keep_bins,
+    virtual void sort_pk(int is_exch, int out_tape, int keep_bins,
          int* so2ind, int* so2sym, int* pksymoff, int print_lvl);
     void done();
     void flush();
@@ -188,6 +224,25 @@ public:
     Yosh(unsigned int bra_idx, long maxcor, long maxcord, const int max_buckets,
          unsigned int first_tmp_file, double cutoff, PSIO *psio);
     virtual ~Yosh() {}
+};
+
+// New Yoshimine class without IWL
+class YoshLight : public YoshBase {
+public:
+    // Constructor and destructor
+    YoshLight(unsigned int bra_idx, long maxcor, long maxcord, const int max_buckets,
+         unsigned int first_tmp_file, double cutoff, PSIO *psio);
+    virtual ~YoshLight() {}
+
+    // Bucket initialization needs specialization
+    virtual void init_buckets();
+    // Bucket sorting needs specialization...
+    virtual void sort_pk(int is_exch, int out_tape, int keep_bins,
+         int* so2ind, int* so2sym, int* pksymoff, int print_lvl);
+    void sort_buffer_pk_light(BaseBucket *bucket, int out_tape, int is_exch,
+                              double* ints, unsigned int fpq, unsigned int lpq,
+                              int *so2ind, int *so2sym, int *pksymoff, int printflg,
+                              std::string out);
 };
 
 class Yoshopt : public YoshBase {
