@@ -129,7 +129,7 @@ void FRAG::update_connectivity_by_bonds(void) {
     for (int j=0; j<natom; ++j)
       connectivity[i][j] = false;
 
-  for (int i=0; i<coords.simples.size(); ++i) {
+  for (std::size_t i=0; i<coords.simples.size(); ++i) {
     if (coords.simples.at(i)->g_type() == stre_type) {
       int a = coords.simples.at(i)->g_atom(0);
       int b = coords.simples.at(i)->g_atom(1);
@@ -355,7 +355,9 @@ int FRAG::add_tors_by_connectivity(void) {
   int nadded = 0;
   int i,j,k,l;
   double phi;
-  double const phi_lim = Opt_params.linear_bend_threshold;
+  //double const phi_lim = Opt_params.linear_bend_threshold;
+  // logic changed to use existence of linear bends to determine linearity
+  // in this function.
 
   // bonding i-j-k-l but i-j-k && j-k-l are not collinear
   // use presence of linear bend coordinate to judge collinearity
@@ -820,7 +822,7 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
 
   std::vector<int> lin_angle;
 
-  for (int s=0; s<coords.simples.size(); ++s)
+  for (std::size_t s=0; s<coords.simples.size(); ++s)
     if (coords.simples[s]->g_type() == bend_type) {
 
       int A = coords.simples[s]->g_atom(0)+atom_offset;
@@ -841,7 +843,7 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
         BEND *one_bend = new BEND(A, B, C);
         one_bend->make_lb_normal();
         int loc = find(one_bend);
-        if (loc != coords.simples.size()) // linear bend is already there.  No problem.
+        if (((std::size_t) loc) != coords.simples.size()) // linear bend is already there.  No problem.
           continue;
         else {
           lin_angle.push_back(A); lin_angle.push_back(B); lin_angle.push_back(C);
@@ -881,7 +883,7 @@ double * FRAG::com(GeomType in_geom) {
 
 // compute intertia tensor
 double ** FRAG::inertia_tensor (GeomType in_geom) {
-  int atom, xyz, xyz2;
+  int xyz, xyz2;
   double tval;
   double *center = com(in_geom);
   double **I = init_matrix(3,3);

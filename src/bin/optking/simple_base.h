@@ -75,10 +75,10 @@ class SIMPLE_COORDINATE {
     void unfreeze(void)  { s_frozen = false; }
 
     // do-nothing function overridden only by torsion class
-    virtual void fix_tors_near_180(GeomType geom) { return; }
+    virtual void fix_tors_near_180(GeomType) { return; }
 
     // do-nothing function overridden only by oofp class
-    virtual void fix_oofp_near_180(GeomType geom) { return; }
+    virtual void fix_oofp_near_180(GeomType) { return; }
 
     // do-nothing function overridden by stretch class 
     virtual bool is_hbond(void) const { return false; }

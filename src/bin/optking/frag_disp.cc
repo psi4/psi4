@@ -175,7 +175,6 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   for (int i=0; i<Nints; ++i)
     dq[i] = q_final[i] - q_orig[i]; // calculate dq from _target_
 
-  const double check_range = 0.5; // distance from pi in radians
   for (int i=0; i<Nints; ++i) {
     // passed through pi, but don't think this code is necessary; given the way values are computed
     if (coords.simples[i]->g_type() == tors_type ||
@@ -206,7 +205,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
 }
 
 bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
-  int i,j;
+  int i;
   int Ncarts = 3 * natom;
   int Nints = Ncoord();
   double **G_inv, *new_q, dx_max, dx_rms, dq_rms, first_dq_rms;
@@ -249,10 +248,6 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
   double **B = init_matrix(Nints, Ncarts);
   double **G = init_matrix(Nints, Nints);
 
-  double **Gx = init_matrix(Ncarts, Ncarts);
-  double **Gx_inv;
-  double * tmp_v_Ncarts = init_array(Ncarts);
-
   bool bt_iter_done = false;
   bool bt_converged = true;
   int bmat_iter_cnt = 0;
@@ -267,6 +262,9 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     // Tried in 2014.  Will it give different results than the code below if there are redundancies?
     // In this form, G is cart x cart, instead of int by int.
     // Disadvantage is that G has always rotation and translations in it (i.e., 0 evals when diagonalized).
+    double * tmp_v_Ncarts = init_array(Ncarts);
+    double **Gx_inv;
+    double **Gx = init_matrix(Ncarts, Ncarts);
     compute_B(B);
     opt_matrix_mult(B, 1, B, 0, Gx, 0, Ncarts, Nints, Ncarts, 0);
     Gx_inv = symm_matrix_inv(Gx, Ncarts, true);
