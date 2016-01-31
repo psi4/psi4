@@ -354,44 +354,42 @@ int HF::soscf_update()
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
     // => Rotate orbitals <= //
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
     Dimension tsize = x->colspi() + x->rowspi();
-    if (tsize != nmopi_){
-        throw PSIEXCEPTION("HF::rotate_orbitals: x dimension do not match nmo_ dimension.");
+    if ((reference != "ROHF") && (tsize != nmopi_)){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
+    }
+    tsize = x->colspi() + x->rowspi() - soccpi_;
+    if ((reference == "ROHF") && (tsize != nmopi_)){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
 
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
+        // Whatever the dimension are, we set top right/bot left
         size_t doccpih = (size_t)x->rowspi()[h];
-        if (!doccpih || !x->colspi()[h]) continue;
+        size_t virpih = (size_t)x->colspi()[h];
+        if (!doccpih || !virpih) continue;
         double** tp = tmp->pointer(h);
         double*  xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpih; i++){
-            for (size_t a=doccpih; a < nmopi_[h]; a++){
+            for (size_t a=(nmopi_[h] - virpih); a < nmopi_[h]; a++){
                 tp[a][i] = xp[target];
                 tp[i][a] = -1.0 * xp[target++];
             }
         }
+
     }
 
-    // Build exp(U) = 1 + U + 0.5 U U
     SharedMatrix U = tmp->clone();
-    for (size_t h=0; h<nirrep_; h++){
-        double** Up = U->pointer(h);
-        for (size_t i=0; i<U->rowspi()[h]; i++){
-            Up[i][i] += 1.0;
-        }
-    }
-    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+    U->expm(4);
 
-    // We did not fully exponentiate the matrix, need to orthogonalize
-    // We need QR here, shmidt isnt cutting it
-    U->schmidt();
     tmp->gemm(false, false, 1.0, C, U, 0.0);
     C->copy(tmp);
 
@@ -1843,7 +1841,7 @@ void HF::iterations()
 
         // We either do SOSCF or everything else
         double ediff = fabs(E_ - Eold_);
-        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 1)){
+        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 3)){
             compute_orbital_gradient(false);
             if (!test_convergency()){
                 int nmicro = soscf_update();

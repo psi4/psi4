@@ -912,7 +912,10 @@ void export_mints()
 
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
 
-    class_<scf::ROHF, boost::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init);
+    class_<scf::ROHF, boost::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init).
+            def("moFeff", &scf::ROHF::moFeff, "docstring").
+            def("moFa", &scf::ROHF::moFa, "docstring").
+            def("moFb", &scf::ROHF::moFb, "docstring");
 
     class_<scf::CUHF, boost::shared_ptr<scf::CUHF>, bases<scf::HF, Wavefunction> >("CUHF", "docstring", no_init);
 
