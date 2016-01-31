@@ -1243,6 +1243,21 @@ double Matrix::rms()
 
     return sqrt(sum/terms);
 }
+double Matrix::absmax()
+{
+    double max = (double)0.0;
+    for (int h=0; h<nirrep_; ++h) {
+        #pragma omp parallel for
+        for (int i=0; i<rowspi_[h]; ++i) {
+            for (int j=0; j<colspi_[h^symmetry_]; ++j) {
+                double absval = std::abs(matrix_[h][i][j]);
+                if (absval > max) max = absval;
+            }
+        }
+    }
+
+    return max;
+}
 
 void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {

@@ -690,6 +690,8 @@ public:
     double sum_of_squares();
     /// Returns the rms of this
     double rms();
+    /// Returns the absoluate maximum balue
+    double absmax();
     /// Add val to an element of this
     void add(int h, int m, int n, double val) {
         #ifdef PSIDEBUG

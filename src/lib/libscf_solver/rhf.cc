@@ -344,17 +344,6 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
 
 int RHF::soscf_update()
 {
-    if (soscf_print_){
-        outfile->Printf("\n");
-        outfile->Printf("    ==> SORHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
-    }
-
     time_t start, stop;
     start = time(NULL);
 
@@ -384,6 +373,25 @@ int RHF::soscf_update()
                 denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
             }
         }
+    }
+
+    // Make sure the MO gradient is reasonably small
+    if (Gradient->absmax() > 0.3){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
+
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SORHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
     }
 
     // => Initial CG guess <= //
@@ -425,6 +433,7 @@ int RHF::soscf_update()
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
         if (std::isnan(alpha)){
+            outfile->Printf("RHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
             alpha = 0.0;
         }
 

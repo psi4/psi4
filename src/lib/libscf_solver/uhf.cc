@@ -369,17 +369,6 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 }
 int UHF::soscf_update(void)
 {
-    if (soscf_print_){
-        outfile->Printf("\n");
-        outfile->Printf("    ==> SOUHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
-    }
-
     time_t start, stop;
     start = time(NULL);
 
@@ -435,6 +424,25 @@ int UHF::soscf_update(void)
         }
     }
 
+    // Make sure the MO gradient is reasonably small
+    if ((Gradient_a->absmax() > 0.3) || (Gradient_b->absmax() > 0.3)){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
+
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SOUHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
+    }
+
     // => Initial CG guess <= //
     SharedMatrix x_a = Gradient_a->clone();
     x_a->apply_denominator(Precon_a);
@@ -486,6 +494,7 @@ int UHF::soscf_update(void)
         double rzpre = r_a->vector_dot(z_a) + r_b->vector_dot(z_b);
         double alpha = rzpre / (p_a->vector_dot(Ap_a) + p_b->vector_dot(Ap_b));
         if (std::isnan(alpha)){
+            outfile->Printf("UHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
             alpha = 0.0;
         }
 

@@ -172,8 +172,6 @@ protected:
 
     /// Are we doing second-order convergence acceleration?
     bool soscf_enabled_;
-    /// What is the energy diff that we should start?
-    double soscf_e_start_;
     /// What is the gradient threshold that we should start?
     double soscf_r_start_;
     /// Maximum number of iterations

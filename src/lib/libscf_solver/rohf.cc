@@ -793,17 +793,6 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
 int ROHF::soscf_update()
 {
-    if (soscf_print_){
-        outfile->Printf("\n");
-        outfile->Printf("    ==> SOROHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
-    }
-
     time_t start, stop;
     start = time(NULL);
 
@@ -852,6 +841,25 @@ int ROHF::soscf_update()
         }
     }
 
+    // Make sure the MO gradient is reasonably small
+    if (Gradient->absmax() > 0.3){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
+
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SOROHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
+    }
+
     // => Initial CG guess <= //
     SharedMatrix x = Gradient->clone();
     x->set_name("Current ROHF CG Guess");
@@ -862,10 +870,6 @@ int ROHF::soscf_update()
     SharedMatrix Ap = SharedMatrix(new Matrix("Ap", nirrep_, occpi, virpi));
     Hx(x, Ap);
     r->subtract(Ap);
-
-    // Cb_ = Gradient->clone();
-    // gradient_ = x->clone();
-    // hessian_ = Ap->clone();
 
     // Print iteration 0 timings and rms
     double rconv = r->vector_dot(r);
@@ -883,8 +887,6 @@ int ROHF::soscf_update()
     SharedMatrix z = r->clone();
     z->apply_denominator(Precon);
     SharedMatrix p = z->clone();
-
-    // return 5;
 
     // => CG iterations <= //
     int fock_builds = 1;

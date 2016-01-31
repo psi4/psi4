@@ -314,7 +314,6 @@ void HF::common_init()
 
     // Second-order convergence acceleration
     soscf_enabled_ = options_.get_bool("SOSCF");
-    soscf_e_start_ = options_.get_double("SOSCF_E_START");
     soscf_r_start_ = options_.get_double("SOSCF_R_START");
     soscf_min_iter_ = options_.get_int("SOSCF_MIN_ITER");
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
@@ -1839,15 +1838,22 @@ void HF::iterations()
 #endif
         std::string status = "";
 
-        // We either do SOSCF or everything else
+        // We either do SOSCF or DIIS
         double ediff = fabs(E_ - Eold_);
-        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 3)){
+        bool did_soscf = false;
+        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)){
             compute_orbital_gradient(false);
+
             if (!test_convergency()){
                 int nmicro = soscf_update();
-                find_occupation();
-                status += "SOSCF, nmicro = ";
-                status += psi::to_string(nmicro);
+                diis_performed_ = false;
+                if (nmicro > 0){ // If zero the soscf call bounced for some reason
+                    did_soscf = true;
+                    find_occupation();
+                    status += "SOSCF, nmicro = ";
+                    status += psi::to_string(nmicro);
+                }
+
             }
             else{
                 // We need to ensure orthogonal orbitals and set epsilon
@@ -1855,9 +1861,11 @@ void HF::iterations()
                 timer_on("HF: Form C");
                 form_C();
                 timer_off("HF: Form C");
+                did_soscf = true; // Just to stop DIIS
             }
-        }
-        else{ // Normal convergence procedures if we do not do SOSCF
+        } // End SOSCF block
+
+        if (!did_soscf){ // Normal convergence procedures if we do not do SOSCF
 
             timer_on("HF: DIIS");
             bool add_to_diis_subspace = false;
@@ -1879,30 +1887,30 @@ void HF::iterations()
                 Fb_->print("outfile");
             }
 
-            // If we're too well converged, or damping wasn't enabled, do DIIS
-            damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
-
-            if(diis_performed_){
-                if(status != "") status += "/";
-                status += "DIIS";
-            }
-            if(MOM_performed_){
-                if(status != "") status += "/";
-                status += "MOM";
-            }
-            if(damping_performed_){
-                if(status != "") status += "/";
-                status += "DAMP";
-            }
-            if(frac_performed_){
-                if(status != "") status += "/";
-                status += "FRAC";
-            }
-
             timer_on("HF: Form C");
             form_C();
             timer_off("HF: Form C");
-        } // End SOSCF else
+        }
+
+        // If we're too well converged, or damping wasn't enabled, do DIIS
+        damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
+
+        if(diis_performed_){
+            if(status != "") status += "/";
+            status += "DIIS";
+        }
+        if(MOM_performed_){
+            if(status != "") status += "/";
+            status += "MOM";
+        }
+        if(damping_performed_){
+            if(status != "") status += "/";
+            status += "DAMP";
+        }
+        if(frac_performed_){
+            if(status != "") status += "/";
+            status += "FRAC";
+        }
 
         timer_on("HF: Form D");
         form_D();
@@ -1925,9 +1933,8 @@ void HF::iterations()
         df = (options_.get_str("SCF_TYPE") == "DF");
 
 
-            outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
-                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-
+        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
+                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
 
 
         // If a an excited MOM is requested but not started, don't stop yet
