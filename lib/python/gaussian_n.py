@@ -47,6 +47,7 @@ def run_gaussian_2(name, **kwargs):
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
+        ['MP2_TYPE'],
         ['SCF','SCF_TYPE'])
 
     # override default scf_type
@@ -78,7 +79,8 @@ def run_gaussian_2(name, **kwargs):
     # optimize geometry at mp2 (no frozen core) level
     # note: freeze_core isn't an option in MP2
     psi4.set_global_option('FREEZE_CORE',"FALSE")
-    optimize('conv-mp2')
+    psi4.set_global_option('MP2_TYPE', 'CONV')
+    optimize('mp2')
     psi4.clean()
 
     # qcisd(t)
@@ -123,7 +125,7 @@ def run_gaussian_2(name, **kwargs):
     # big basis mp2
     psi4.set_global_option('BASIS',"6-311+G(3DF_2P)")
     #run_fnocc('_mp2',**kwargs)
-    energy('conv-mp2')
+    energy('mp2')
     emp2_big = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
 
