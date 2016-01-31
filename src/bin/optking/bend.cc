@@ -172,7 +172,6 @@ inline int delta(const int i, const int j) {
 
 double ** BEND::DqDx(GeomType geom) const {
   double u[3], v[3];
-  double tvect[3];
   double **dqdx = init_matrix(3,3);
 
   if (!axes_fixed)
@@ -204,7 +203,6 @@ double ** BEND::DqDx(GeomType geom) const {
 
 double ** BEND::Dq2Dx2(GeomType geom) const {
   double u[3], v[3];
-  double tvect[3]; 
   double **dq2dx2 = init_matrix(9,9);
 
   if (!axes_fixed)

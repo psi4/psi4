@@ -110,7 +110,7 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
 
 bool MOLECULE::read_coords(std::ifstream & fintco) {
   stringstream error;
-  int a, b, natom, line_num=0;
+  int line_num=0;
   bool D_on[6];     // interfragment coordinates active
   bool D_frozen[6]; // interfragment coordinates frozen
   FRAG * frag1;
@@ -125,8 +125,6 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
 
   // read in line and tokenize
   line_present = myline(fintco, vline, line_num);
-
-  int cnt =0;
 
   while (line_present) {
 
@@ -167,7 +165,7 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
         return true;
     }
     else if ((vline[0] == "C") || (vline[0] == "C*")) { // Combination coordinate
-      bool frozen = has_asterisk(vline[0]); // implement later ?
+      //bool frozen = has_asterisk(vline[0]); // implement later ?
       int combo_length = 0;
 
       if (vline.size() != 2) {
@@ -209,10 +207,10 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
       }
       // Normalize
       double tval = 0.0;
-      for (int j=0; j<cc_coeff.size(); ++j)
+      for (std::size_t j=0; j<cc_coeff.size(); ++j)
         tval += cc_coeff[j] * cc_coeff[j];
       tval = 1.0/sqrt(tval);
-      for (int j=0; j<cc_coeff.size(); ++j)
+      for (std::size_t j=0; j<cc_coeff.size(); ++j)
         cc_coeff[j] *= tval;
       
       fragments.back()->add_combination_coord(cc_index, cc_coeff);
@@ -234,7 +232,7 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
       }
       --first_frag;
       --second_frag;
-      if ( first_frag >= fragments.size() || second_frag >= fragments.size()) {
+      if ( first_frag >= (int) fragments.size() || second_frag >= (int) fragments.size()) {
         error << "Fragments can only be referenced if already defined, error in line " << line_num << ".\n";
         throw(INTCO_EXCEPT(error.str().c_str()));
       }
@@ -276,7 +274,7 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
           throw(INTCO_EXCEPT(error.str().c_str()));
           }
 
-          for (int i=1; i<vline.size(); ++i) {
+          for (std::size_t i=1; i<vline.size(); ++i) {
             int a;
             if (!stoi(vline[i], &a)) {
               error << "Could not read atom list, error in line" << line_num << ".\n";
@@ -359,27 +357,27 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
       double **weightB = init_matrix(ndB, fragments[second_frag]->g_natom());
 
       if (ndA > 0) {
-        for (int i=0; i<A1.size(); ++i)
+        for (std::size_t i=0; i<A1.size(); ++i)
           weightA[0][A1[i]] = 1.0;
       }
       if (ndA > 1) {
-        for (int i=0; i<A2.size(); ++i) 
+        for (std::size_t i=0; i<A2.size(); ++i) 
           weightA[1][A2[i]] = 1.0;
       }
       if (ndA > 2) {
-        for (int i=0; i<A3.size(); ++i) 
+        for (std::size_t i=0; i<A3.size(); ++i) 
           weightA[2][A3[i]] = 1.0;
       }
       if (ndB > 0) {
-        for (int i=0; i<B1.size(); ++i) 
+        for (std::size_t i=0; i<B1.size(); ++i) 
           weightB[0][B1[i]] = 1.0;
       }
       if (ndB > 1) {
-        for (int i=0; i<B2.size(); ++i) 
+        for (std::size_t i=0; i<B2.size(); ++i) 
           weightB[1][B2[i]] = 1.0;
       }
       if (ndB > 2) {
-        for (int i=0; i<B3.size(); ++i) 
+        for (std::size_t i=0; i<B3.size(); ++i) 
           weightB[2][B3[i]] = 1.0;
       }
 

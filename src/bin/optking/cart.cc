@@ -53,14 +53,14 @@ double CART::value(GeomType geom) const {
 // atom_i  cartesian
 // 0       x y z
 // 1       x y z ..
-double ** CART::DqDx(GeomType geom) const {
+double ** CART::DqDx(GeomType ) const {
   double **dqdx = init_matrix(1,3);
   dqdx[0][xyz] = 1.0;
   return dqdx;
 }
 
 // compute and return array of second derivative (B' matrix elements)
-double ** CART::Dq2Dx2(GeomType geom) const {
+double ** CART::Dq2Dx2(GeomType ) const {
   double **dq2dx2 = init_matrix(3,3);
   return dq2dx2;
 }

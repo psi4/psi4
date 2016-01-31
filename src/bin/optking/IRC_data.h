@@ -187,7 +187,8 @@ class IRC_DATA {
 //    void summary(void) const;
 
     void add_irc_point(int coord_in, double *q_p_in, double *x_p_in, double *q_in, double *x_in, double *f_q_in,
-                       double *f_x_in, double E_in, double step, double arc, double line)
+                       double *f_x_in, double E_in)
+                       //double *f_x_in, double E_in, double step, double arc, double line)
     {
       step_dist = coord_in * step_length;
       arc_dist += arc_length;

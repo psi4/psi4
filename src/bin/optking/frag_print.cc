@@ -114,7 +114,7 @@ void FRAG::print_geom_irc(std::string psi_fp, FILE *qc_fp) {
 
 void FRAG::print_simples(std::string psi_fp, FILE *qc_fp, int atom_offset) const {
   oprintf(psi_fp, qc_fp, "\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (std::size_t i=0; i<coords.simples.size(); ++i)
     coords.simples.at(i)->print(psi_fp,qc_fp,geom,atom_offset);
   oprintf(psi_fp, qc_fp,  "\n");
 }
@@ -132,7 +132,7 @@ void FRAG::print_combinations(std::string psi_fp, FILE *qc_fp) const {
   for (int cc=0; cc<Ncoord(); ++cc) {
     oprintf(psi_fp, qc_fp, " Coord %d:\n", cc+1);
     int cnt = 0;
-    for (int s=0; s<coords.index[cc].size(); ++s) {
+    for (std::size_t s=0; s<coords.index[cc].size(); ++s) {
       oprintf(psi_fp, qc_fp, "%5d:%12.6f", coords.index[cc][s]+1, coords.coeff[cc][s]);
       ++cnt;
       if (cnt == 4) {
@@ -148,7 +148,7 @@ void FRAG::print_combinations(std::string psi_fp, FILE *qc_fp) const {
 std::string FRAG::get_coord_definition(int coord_index, int atom_offset) {
   //oprintf_out("\tCoordinate index %d; Atom offset %d\n", coord_index, atom_offset);
   //oprintf_out("\t%15s%15s\n", "Coordinate", "Coefficient");
-  //for (int s=0; s<coords.index[coord_index].size(); ++s)
+  //for (std::size_t s=0; s<coords.index[coord_index].size(); ++s)
     //oprintf_out("\t%15d%15.5lf", coords.index[coord_index][s]+1, coords.coeff[coord_index][s]);
   return coords.get_coord_definition(coord_index, atom_offset);
 }
@@ -160,11 +160,11 @@ std::string FRAG::get_simple_definition(int simple_index, int atom_offset) {
 }
 
 void FRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset) const {
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (std::size_t i=0; i<coords.simples.size(); ++i)
     coords.simples.at(i)->print_intco_dat(psi_fp,qc_fp,atom_offset);
-  for (int cc=0; cc<coords.index.size(); ++cc) {
+  for (std::size_t cc=0; cc<coords.index.size(); ++cc) {
     oprintf(psi_fp, qc_fp, "C %6d\n", coords.index[cc].size());
-    for (int s=0; s<coords.index[cc].size(); ++s)
+    for (std::size_t s=0; s<coords.index[cc].size(); ++s)
       oprintf(psi_fp, qc_fp, "  %6d%12.6f\n", coords.index[cc].at(s)+1, coords.coeff[cc].at(s));
   }
 }

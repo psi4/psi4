@@ -124,7 +124,7 @@ void MOLECULE::backstep(void) {
   double *fq = p_Opt_data->g_forces_pointer();
 
   // do displacements for each fragment separately
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -133,7 +133,7 @@ void MOLECULE::backstep(void) {
   }
 
   // do displacements for interfragment coordinates
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
@@ -144,7 +144,7 @@ void MOLECULE::backstep(void) {
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 #endif
 

@@ -19,7 +19,7 @@ Geometry Optimization
 optking.  The optking program takes as input nuclear gradients and,
 optionally, nuclear second derivatives |w---w| both in Cartesian coordinates.
 The default minimization algorithm employs an empirical model Hessian,
-redundant internal coordinates, a RFO step, and the BFGS Hessian update.
+redundant internal coordinates, an RFO step, and the BFGS Hessian update.
 
 The principal literature references include the introduction of redundant
 internal coordinates by Peng et al. [Peng:1996:49]_.
@@ -35,14 +35,15 @@ connectivity.  The connectivity is determined by testing if the interatomic
 distance is less than the sum of atomic radii times the value of
 |optking__covalent_connect|. If the user finds that some
 connectivity is lacking by default, then this value may be increased.
-Otherwise, the internal coordinate definitions may be modified.  If one
+Otherwise, the internal coordinate definitions may be modified directly.  If one
 desires to see or modify the internal coordinates being used, then one can set
 |optking__intcos_generate_exit| to true.  The internal coordinate
 definitions are provided in the file with extension ".intco".  See the :ref:`sec:optkingExamples`
 section for more detail.
 
-.. warning:: Optimizations where the molecule is specified in Z-matrix format 
-   with dummy atoms will result in the molecule being converted to a Cartesian representation.
+.. warning:: The selection of a Z-matrix input, and in particular the inclusion
+   of dummy atoms, has no effect on the behavior of the optimizer, which begins
+   from a Cartesian representation of the system.
 
 The ongoing development of optking is providing for unique treatment of
 coordinates which connect distinct molecular fragments.  Thus, several keywords
@@ -179,6 +180,117 @@ Transition States, Reaction Paths, and Constrained Optimizations
    frequencies('scf')
    optimize('scf')
 
+* Optimize a geometry (HOOH) at a frozen dihedral angle of 90 degrees.::
+  molecule {
+    H
+    O 1 0.90
+    O 2 1.40 1 100.0
+    H 3 0.90 2 100.0 1 90.0
+  }
+
+  set optking {
+    frozen_dihedral = ("
+      1 2 3 4
+    ")
+  }
+  optimize('scf')
+
+* To instead freeze the two O-H bond distances ::
+
+  set optking {
+    frozen_distance = ("
+      1  2
+      3  4
+    ")
+  }
+
+For bends, the corresponding keyword is "frozen_bend".
+
+* To freeze the cartesian coordinates of atom 2 ::
+
+  freeze_list = """
+    2 xyz
+  """
+  set optking frozen_cartesian $freeze_list
+
+* To freeze only the y coordinates of atoms 2 and 3 ::
+
+  freeze_list = """
+    2 y
+    3 y
+  """
+  set optking frozen_cartesian $freeze_list
+
+* To optimize toward a value of 0.95 Angstroms for the distance between 
+  atoms 1 and 3, as well as that between 2 and 4 ::
+
+  set optking {
+    fixed_distance = ("
+      1  3 0.95
+      2  4 0.95
+    ")
+  }
+
+Note that the effect of the frozen and fixed keywords is independent of
+how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
+
+* To scan the potential energy surface by optimizing at several fixed values
+of the dihedral angle of HOOH.::
+
+  molecule hooh {
+   0 1
+   H  0.850718   0.772960    0.563468
+   O  0.120432   0.684669   -0.035503
+   O -0.120432  -0.684669   -0.035503
+   H -0.850718  -0.772960    0.563468
+  }
+  
+  set {
+    basis cc-pvdz
+    intrafrag_step_limit 0.1
+  }
+  
+  dihedrals = [100,110,120,130,140,150]
+  PES = []
+  
+  for phi in dihedrals:
+    my_string = "1 2 3 4 " + str(phi)
+    set optking fixed_dihedral = $my_string
+    E = optimize('scf')
+    PES.append((phi, E))
+  
+  print "\n\tcc-pVDZ SCF energy as a function of phi\n"
+  for point in PES:
+    print "\t%5.1f%20.10f" % (point[0], point[1])
+
+
+Dealing with problematic optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Although optking is continuously improved with robustness in mind, some
+attempted optimizations will inevitably fail to converge to the desired minima.
+For difficult cases, the following suggestions are made.
+
+* As for any optimizer, computing the Hessian and limiting the step size will
+successfully converge a higher percentage of cases.  The default settings have
+been chosen because they perform efficiently for common, representative test sets.
+More restrictive, cautious steps are sometimes necessary.
+
+* |optking__dynamic_level| allows optking to change the method of optimization
+toward algorithms that, while often less efficient, may help to converge difficult
+cases.  If this is initially set to 1, then optking, as poor steps are detected,
+will increase the level through several forms of more robust and cautious algorithms.
+The changes will reduce the trust radius, allow backward steps (partial line
+searching), add cartesian coordinates, switch to cartesian coordinates, and take
+steepest-descent steps.
+
+* The developers have found the |optking__opt_coordinates| set to "BOTH" which
+includes both the redundant internal coordinate set, as well as cartesian coordinates,
+works well for systems with long 'arms' or floppy portions of a molecule poorly
+described by local internals.
+
+Direct manipulation of the optmization coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Generate the internal coordinates and then stop::
 
    set intcos_generate_exit true
@@ -190,21 +302,43 @@ Transition States, Reaction Paths, and Constrained Optimizations
      R      1     2
      R      1     3
      B      2     1     3
-  
+     C      1
+            1    1.000000
+     C      1
+            2    1.000000
+     C      1
+            3    1.000000
+
   The first line indicates a fragment containing atoms 1-3.  The following lines define
   two distance coordinates (bonds) and one bend coordinate.  This file can be modified, and if present,
-  is used in subsequent optimizations.  Since the multiple-fragment coordinates are still under
+  is used in subsequent optimizations.  The lines below the simple internal coordinates
+  specify linear combinations of coordinates.  In the simplest default case, the lines
+  above simply define combination coordinates which are identical to the simple internals.
+  If |optking__opt_coordinates| specifies delocalized coordinates, then the combinations
+  will be more complex.
+ 
+  Since the multiple-fragment coordinates are still under
   development, they are not documented here.  However, if desired, one can change the value
   of |optking__frag_mode|, generate the internal coordinates, and see how multiple
   fragment systems are defined.
   
-  Coordinates may be frozen or fixed by adding an asterisk after the letter of the coordinate.
-  To optimize with the bond lengths fixed at their initial values, it is currently necessary to
-  generate and then modify the internal coordinate definitions as follows::
+  Coordinates may be frozen by adding an asterisk after the letter of the coordinate.  The
+  asterisk results in that internal coordinate being frozen at its initial value.  The
+  "intco" file below for water specifies an optimization with both O-H bonds frozen.::
   
      F 1 3
      R*     1     2
      R*     1     3
+     B      2     1     3
+
+  If one instead wishes to optimize toward ("fix") a value that is not satisfied by the
+  initial structure, then the value is added to the end of the line.  The following
+  corresponds to an optimization that will add additional forces to move the O-H bonds
+  to 1.70 au. ::
+
+     F 1 3
+     R      1     2     1.70
+     R      1     3     1.70
      B      2     1     3
 
 .. index:: geometry optimization; convergence criteria

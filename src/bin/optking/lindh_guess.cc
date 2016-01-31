@@ -281,7 +281,7 @@ in this set of internals. */
 
   print_simples(psi_outfile, qc_outfile, 0);
 
-  for (ULI i=0; i<coords.simples.size(); ++i) {  // loop over coords.simples
+  for (std::size_t i=0; i<coords.simples.size(); ++i) {  // loop over coords.simples
     SIMPLE_COORDINATE * q = coords.simples.at(i);
 
     double **Bintco = q->DqDx(geom); // dq_i / da_xyz

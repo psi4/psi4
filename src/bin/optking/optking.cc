@@ -205,7 +205,7 @@ OptReturnType optking(void) {
       mol1->add_cartesians(); // also adds trivial combos
 
     // print out internal coordinates for future steps
-    FILE *qc_intco;
+    FILE *qc_intco = NULL;
     std::string psi_intco = FILENAME_INTCO_DAT;
 #if defined(OPTKING_PACKAGE_QCHEM)
     qc_intco = fopen(FILENAME_INTCO_DAT, "w");
