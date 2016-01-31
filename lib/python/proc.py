@@ -1827,10 +1827,11 @@ def run_ccenergy(name, **kwargs):
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
-    
+
+    # TDC: ccsd in this list?
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
-            ((lowername in ['ccsd(t)', 'ccsd(at)', 'a-ccsd(t)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or 
+            ((lowername in ['ccsd(t)', 'ccsd(at)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
               psi4.get_option('CCTRANSORT', 'SEMICANONICAL')):
         ref_wfn.semicanonicalize()
 
