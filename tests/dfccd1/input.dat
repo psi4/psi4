@@ -20,8 +20,9 @@ set {
   scf_type df
   guess gwh
   freeze_core true
+  cc_type df
 }
-energy('df-ccd')
+energy('ccd')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST

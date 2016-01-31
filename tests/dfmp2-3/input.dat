@@ -36,9 +36,9 @@ set {
     scf_type      df
     basis         cc-pvdz
     freeze_core   true
+    mp2_type      df
 }
 
-gradient("df-mp2")
+grad = gradient("mp2")
 
-grad = psi4.wavefunction().gradient()                                            #TEST
 compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST

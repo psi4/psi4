@@ -22,7 +22,7 @@ set {
 Earray = [
   'SCF',
   'MP2',
-  'DF-MP2',
+#  'DF-MP2',
   'MCSCF',
 #  'DFCC',  # method not available
 #  'MP2C',  # The sum of real- and ghost-atom subsets is greater than the number of subsets
@@ -45,6 +45,8 @@ for method in Earray:
    water.update_geometry()
 
    print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   if method == 'CISD':  # fnocc finds insufficent room for excitation
+        psi4.set_global_option('QC_MODULE', 'DETCI')
    ans = energy(method)
    print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
 
