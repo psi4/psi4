@@ -47,55 +47,28 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
-            'df-mp2'        : run_dfmp2,
-            'ri-mp2'        : run_dfomp,
-            'conv-mp2'      : run_mp2,
-            'mp3'           : run_omp,
-            'mp2.5'         : run_omp,
-            'mp2'           : run_mp2_select,
-            'omp2'          : run_omp,
-            'conv-omp2'     : run_omp,
-            'scs-omp2'      : run_omp,
-            'scs(n)-omp2'   : run_omp,
-            'scs-omp2-vdw'  : run_omp,
-            'sos-omp2'      : run_omp,
-            'sos-pi-omp2'   : run_omp,
-            'omp3'          : run_omp,
-            'scs-omp3'      : run_omp,
-            'scs(n)-omp3'   : run_omp,
-            'scs-omp3-vdw'  : run_omp,
-            'sos-omp3'      : run_omp,
-            'sos-pi-omp3'   : run_omp,
-            'ocepa'         : run_omp,
-            'cepa0'         : run_omp,
-            'omp2.5'        : run_omp,
-            'df-omp2'       : run_dfomp,
+            'mp3'           : select_mp3,
+            'mp2.5'         : select_mp2p5,
+            'mp2'           : select_mp2,
+            'omp2'          : select_omp2,
+            'scs-omp2'      : run_occ,
+            'scs(n)-omp2'   : run_occ,
+            'scs-omp2-vdw'  : run_occ,
+            'sos-omp2'      : run_occ,
+            'sos-pi-omp2'   : run_occ,
+            'omp3'          : select_omp3,
+            'scs-omp3'      : run_occ,
+            'scs(n)-omp3'   : run_occ,
+            'scs-omp3-vdw'  : run_occ,
+            'sos-omp3'      : run_occ,
+            'sos-pi-omp3'   : run_occ,
+            'ocepa(0)'      : select_ocepa_0_,
+            'omp2.5'        : select_omp2p5,
             'dfocc'         : run_dfomp,
-            'df-omp3'       : run_dfomp,
-            'df-omp2.5'     : run_dfomp,
-            'df-olccd'      : run_dfomp,
             'qchf'          : run_qchf,
-            'df-ccsd2'      : run_dfomp,
-            'ri-ccsd(t)'    : run_dfomp,
-            'df-ccsd(at)'   : run_dfomp,
-            'df-ccd'        : run_dfomp,
-            'df-ccsdl'      : run_dfomp,
-            'df-ccdl'       : run_dfomp,
-            'df-mp3'        : run_dfomp,
-            'df-mp2.5'      : run_dfomp,
-            'df-lccd'       : run_dfomp,
-            'cd-ccsd'       : run_cdomp,
-            'cd-ccsd(t)'    : run_cdomp,
-            'cd-ccsd(at)'   : run_cdomp,
-            'cd-ccd'        : run_cdomp,
-            'cd-omp3'       : run_cdomp,
-            'cd-omp2.5'     : run_cdomp,
-            'cd-mp3'        : run_cdomp,
-            'cd-mp2.5'      : run_cdomp,
-            'cd-omp2'       : run_cdomp,
-            'cd-mp2'        : run_cdomp,
-            'cd-olccd'      : run_cdomp,
-            'cd-lccd'       : run_cdomp,
+            'ccd'           : run_dfocc,
+            'ccsdl'         : run_dfocc,
+            'ccdl'          : run_dfocc,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -120,10 +93,9 @@ procedures = {
             'sapt2+3(ccd)-ct'    : run_sapt_ct,
             'fisapt0'       : run_fisapt,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
-            'ccsd'          : run_ccenergy,
-            'ccsd(t)'       : run_ccenergy,
-            'ccsd(at)'      : run_ccenergy,
-            'a-ccsd(t)'     : run_ccenergy,
+            'ccsd'          : select_ccsd,
+            'ccsd(t)'       : select_ccsd_t_,
+            'ccsd(at)'      : select_ccsd_at_,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
@@ -134,9 +106,8 @@ procedures = {
             'eom-cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
-            'detci-mp'      : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
-            'cisd'          : run_detci,
+            'cisd'          : select_cisd,
             'cisdt'         : run_detci,
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
@@ -155,33 +126,28 @@ procedures = {
             'hf'            : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
+            'mp4'           : select_mp4,
             'mp4(sdq)'      : run_fnocc,
-            'fno-ccsd'      : run_fnocc,
-            'fno-ccsd(t)'   : run_fnocc,
+            'fno-ccsd'      : select_fnoccsd,
+            'fno-ccsd(t)'   : select_fnoccsd_t_,
             'fno-qcisd'     : run_fnocc,
             'fno-qcisd(t)'  : run_fnocc,
             'fno-mp3'       : run_fnocc,
             'fno-mp4(sdq)'  : run_fnocc,
             'fno-mp4'       : run_fnocc,
-            'fnocc-mp'      : run_fnocc,
-            'df-ccsd'       : run_fnodfcc,
-            'df-ccsd(t)'    : run_fnodfcc,
-            'fno-df-ccsd'   : run_fnodfcc,
-            'fno-df-ccsd(t)': run_fnodfcc,
             'fno-cepa(0)'   : run_cepa,
             'fno-cepa(1)'   : run_cepa,
             'fno-cepa(3)'   : run_cepa,
             'fno-acpf'      : run_cepa,
             'fno-aqcc'      : run_cepa,
-            'fno-sdci'      : run_cepa,
-            'fno-dci'       : run_cepa,
-            'cepa(0)'       : run_cepa,
+            'fno-cisd'      : run_cepa,
+            #'fno-cid'       : run_cepa,  # not functioning
+            #'cid'           : run_cepa,  # not functioning
+            'cepa(0)'       : select_cepa_0_,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
             'acpf'          : run_cepa,
             'aqcc'          : run_cepa,
-            'sdci'          : run_cepa,
-            'dci'           : run_cepa,
             'efp'           : run_efp,
             'dmrgscf'       : run_dmrgscf,
             'dmrgci'        : run_dmrgci,
@@ -192,32 +158,20 @@ procedures = {
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
-            'ccsd'          : run_cc_gradient,
-            'ccsd(t)'       : run_cc_gradient,
-            'mp2'           : run_mp2_select_gradient,
-            'conv-mp2'      : run_mp2_gradient,
-            'df-mp2'        : run_dfmp2_select_gradient,
-            'ri-mp2'        : run_dfomp_gradient,
+            'ccsd'          : select_ccsd_gradient,
+            'ccsd(t)'       : select_ccsd_t__gradient,
+            'mp2'           : select_mp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
-            'omp2'          : run_omp_gradient,
-            'conv-omp2'     : run_omp_gradient,
-            'df-omp2'       : run_dfomp_gradient,
-            'omp3'          : run_omp_gradient,
-            'mp3'           : run_omp_gradient,
-            'mp2.5'         : run_omp_gradient,
-            'omp2.5'        : run_omp_gradient,
-            'cepa0'         : run_omp_gradient,
-            'ocepa'         : run_omp_gradient,
-            'df-ccsd2'      : run_dfomp_gradient,
-            'df-ccd'        : run_dfomp_gradient,
-            'df-omp3'       : run_dfomp_gradient,
-            'df-mp3'        : run_dfomp_gradient,
-            'df-omp2.5'     : run_dfomp_gradient,
-            'df-mp2.5'      : run_dfomp_gradient,
-	        'df-olccd'      : run_dfomp_gradient,
-	        'df-lccd'       : run_dfomp_gradient,
-#            'efp'           : run_efp_gradient,
+            'omp2'          : select_omp2_gradient,
+            'omp3'          : select_omp3_gradient,
+            'mp3'           : select_mp3_gradient,
+            'mp2.5'         : select_mp2p5_gradient,
+            'omp2.5'        : select_omp2p5_gradient,
+            'cepa(0)'       : select_cepa_0__gradient,
+            'ocepa(0)'      : select_ocepa_0__gradient,
+            'ccd'           : run_dfocc_gradient,
+            #'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
@@ -230,8 +184,8 @@ procedures = {
             'ccsd'     : run_cc_property,
             'df-mp2'   : run_dfmp2_property,
             'dfmp2'    : run_dfmp2_property,
-            'ri-mp2'   : run_dfomp_property,
-            'df-omp2'  : run_dfomp_property,
+            'ri-mp2'   : run_dfocc_property,
+            'df-omp2'  : run_dfocc_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
@@ -1377,22 +1331,10 @@ def parse_arbitrary_order(name):
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
 
-        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
-            # Let 'mp2' pass through to occ module
-            if (namestump == 'mp') and (namelevel == 2):
+        if namestump in ['mp', 'zapt', 'ci']:
+            # Let mp2, mp3, mp4 pass through to select functions
+            if namestump == 'mp' and namelevel in [2, 3, 4]:
                 return namelower, None
-            # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
-            elif (namestump == 'mp') and (namelevel == 3):
-                if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
-                    return 'detci-mp', 3
-                else:
-                    return namelower, None
-            # Let 'mp4' be redirected to fnocc module if rhf
-            elif (namestump == 'mp') and (namelevel == 4):
-                if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
-                    return 'fnocc-mp', 4
-                else:
-                    return 'detci-mp', 4
             # Otherwise return method and order
             else:
                 return namestump, namelevel

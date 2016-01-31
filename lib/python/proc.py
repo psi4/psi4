@@ -45,6 +45,978 @@ from roa import *
 # consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
 
+def select_mp2(name, **kwargs):
+    """Function selecting the algorithm for a MP2 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/dfmp2/detci/fnocc
+
+    # MP2_TYPE exists largely for py-side reasoning, so must manage it
+    #   here rather than passing to c-side unprepared for validation
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module == 'FNOCC':
+                func = run_fnocc
+            elif module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'DFMP2']:
+                func = run_dfmp2
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'DFMP2']:
+                func = run_dfmp2
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'DFMP2']:
+                func = run_dfmp2
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference in ['RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'DFMP2']:
+                func = run_dfmp2
+
+    if func is None:
+        raise ManagedMethodError(['select_mp2', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_mp2_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP2 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/dfmp2
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc_gradient
+            elif module in ['', 'DFMP2']:
+                func = run_dfmp2_gradient
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+            #elif module in ['', 'DFMP2']:
+            #    func = run_dfmp2_gradient  # missing though advertised
+    #elif reference == 'ROHF':
+    #    if mtd_type == 'CONV':
+    #        if module in ['', 'OCC']:
+    #            func = run_occ_gradient  # missing though advertised
+    #    if mtd_type == 'DF':
+    #        if module in ['', 'OCC']:
+    #            func = run_dfocc_gradient  # missing though advertised
+
+    if func is None:
+        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp2(name, **kwargs):
+    """Function selecting the algorithm for an OMP2 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp2_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OMP2 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_mp3(name, **kwargs):
+    """Function selecting the algorithm for a MP3 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/fnocc/detci
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module == 'FNOCC':
+                func = run_fnocc
+            elif module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'DETCI']:
+                func = run_detci
+
+    if func is None:
+        raise ManagedMethodError(['select_mp3', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_mp3_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP3 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_mp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp3(name, **kwargs):
+    """Function selecting the algorithm for an OMP3 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_omp3', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp3_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OMP3 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_omp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+
+def select_mp2p5(name, **kwargs):
+    """Function selecting the algorithm for a MP2.5 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_mp2p5', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_mp2p5_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP2.5 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_mp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp2p5(name, **kwargs):
+    """Function selecting the algorithm for an OMP2.5 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2p5', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_omp2p5_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OMP2.5 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_cepa_0_(name, **kwargs):
+    """Function selecting the algorithm for a CEPA(0) energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'OCC':
+                func = run_occ
+            elif module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_cepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_cepa_0__gradient(name, **kwargs):
+    """Function selecting the algorithm for a CEPA(0) gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_cepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ocepa_0_(name, **kwargs):
+    """Function selecting the algorithm for an OCEPA(0) energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_ocepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ocepa_0__gradient(name, **kwargs):
+    """Function selecting the algorithm for an OCEPA(0) gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_ocepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_fnoccsd(name, **kwargs):
+    """Function selecting the algorithm for a FNO-CCSD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'DF':
+            if module in ['', 'FNOCC']:
+                func = run_fnodfcc
+        elif mtd_type == 'CD':
+            if module in ['', 'FNOCC']:
+                func = run_fnodfcc
+
+    if func is None:
+        raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ccsd(name, **kwargs):
+    """Function selecting the algorithm for a CCSD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/ccenergy/detci/fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module == 'FNOCC':
+                func = run_fnocc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
+        elif mtd_type == 'CD':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+
+    if func is None:
+        raise ManagedMethodError(['select_ccsd', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ccsd_gradient(name, **kwargs):
+    """Function selecting the algorithm for a CCSD gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/ccenergy
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_ccsd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_fnoccsd_t_(name, **kwargs):
+    """Function selecting the algorithm for a FNO-CCSD(T) energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'DF':
+            if module in ['', 'FNOCC']:
+                func = run_fnodfcc
+        elif mtd_type == 'CD':
+            if module in ['', 'FNOCC']:
+                func = run_fnodfcc
+
+    if func is None:
+        raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ccsd_t_(name, **kwargs):
+    """Function selecting the algorithm for a CCSD(T) energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/ccenergy/fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'FNOCC':
+                func = run_fnocc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
+        elif mtd_type == 'CD':
+            if module == 'OCC':
+                func = run_dfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy
+
+    if func is None:
+        raise ManagedMethodError(['select_ccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ccsd_t__gradient(name, **kwargs):
+    """Function selecting the algorithm for a CCSD(T) gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only ccenergy
+
+    func = None
+    if reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_ccsd_t__gradient', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_ccsd_at_(name, **kwargs):
+    """Function selecting the algorithm for a CCSD(AT) energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/ccenergy
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError(['select_ccsd_at_', name, 'CC_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_cisd(name, **kwargs):
+    """Function selecting the algorithm for a CISD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('CI_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only detci/fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module in ['', 'FNOCC']:
+                func = run_cepa
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'DETCI']:
+                func = run_detci
+
+    if func is None:
+        raise ManagedMethodError(['select_cisd', name, 'CI_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def select_mp4(name, **kwargs):
+    """Function selecting the algorithm for a MP4 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only detci/fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'DETCI':
+                func = run_detci
+            elif module in ['', 'FNOCC']:
+                func = run_fnocc
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'DETCI']:
+                func = run_detci
+
+    if func is None:
+        raise ManagedMethodError(['select_mp4', name, 'MP_TYPE', mtd_type, reference, module])
+
+    return func(name, **kwargs)
+
+
+def scf_helper(name, **kwargs):
+    """Function serving as helper to SCF, choosing whether to cast
+    up or just run SCF with a standard guess. This preserves
+    previous SCF options set by other procedures (e.g., SAPT
+    output file types for SCF).
+
+    """
+    ### DGAS: Lori, we need to support passing of ref_wfn here
+
+    optstash = p4util.OptionsState(
+        ['PUREAM'],
+        ['BASIS'],
+        ['QMEFP'],
+        ['DF_BASIS_SCF'],
+        #['SCF', 'SCF_TYPE'],
+        ['SCF', 'GUESS'],
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'SCF_TYPE']  # Hack: scope gets changed internally with the Andy trick
+    )
+
+    optstash2 = p4util.OptionsState(
+        ['BASIS'],
+        ['DF_BASIS_SCF'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DF_INTS_IO'])
+
+    # Second-order SCF requires non-symmetrix density matrix support
+    if (
+        psi4.get_option('SCF', 'SOSCF') and
+        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
+        ):
+        raise ValidationError("Second-order SCF: Requires a JK algorithm that supports non-symmetric"\
+                                  " density matrices.")
+
+
+    # sort out cast_up settings. no need to stash these since only read, never reset
+    cast = False
+    if psi4.has_option_changed('SCF', 'BASIS_GUESS'):
+        cast = psi4.get_option('SCF', 'BASIS_GUESS')
+        if yes.match(str(cast)):
+            cast = True
+        elif no.match(str(cast)):
+            cast = False
+
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
+            castdf = True
+        else:
+            castdf = False
+
+        if psi4.has_option_changed('SCF', 'DF_BASIS_GUESS'):
+            castdf = psi4.get_option('SCF', 'DF_BASIS_GUESS')
+            if yes.match(str(castdf)):
+                castdf = True
+            elif no.match(str(castdf)):
+                castdf = False
+
+    # sort out broken_symmetry settings.
+    if 'brokensymmetry' in kwargs:
+        molecule = psi4.get_active_molecule()
+        multp = molecule.multiplicity()
+        if multp != 1:
+            raise ValidationError('Broken symmetry is only for singlets.')
+        if psi4.get_option('SCF', 'REFERENCE') != 'UHF' and psi4.get_option('SCF', 'REFERENCE') != 'UKS':
+            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
+        do_broken = True
+    else:
+        do_broken = False
+
+    precallback = None
+    if 'precallback' in kwargs:
+        precallback = kwargs.pop('precallback')
+
+    postcallback = None
+    if 'postcallback' in kwargs:
+        postcallback = kwargs.pop('postcallback')
+
+    # Hack to ensure cartesian or pure are used throughout
+    # Note that can't query PUREAM option directly, as it only
+    #   reflects user changes to value, so load basis and
+    #   read effective PUREAM setting off of it
+    #psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+    #psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
+
+    # broken set-up
+    if do_broken:
+        molecule.set_multiplicity(3)
+        psi4.print_out('\n')
+        p4util.banner('  Computing high-spin triplet guess  ')
+        psi4.print_out('\n')
+
+    # cast set-up
+    if (cast):
+
+        if yes.match(str(cast)):
+            guessbasis = '3-21G'
+        else:
+            guessbasis = cast
+
+        #if (castdf):
+        #    if yes.match(str(castdf)):
+        #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
+        #    else:
+        #        guessbasisdf = castdf
+
+        # Switch to the guess namespace
+        namespace = psi4.IO.get_default_namespace()
+        guesspace = namespace + '.guess'
+        if namespace == '':
+            guesspace = 'guess'
+        psi4.IO.set_default_namespace(guesspace)
+
+        # Setup initial SCF
+        psi4.set_global_option('BASIS', guessbasis)
+        if (castdf):
+            psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            psi4.set_local_option('SCF', 'DF_INTS_IO', 'none')
+            #psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            if not yes.match(str(castdf)):
+                psi4.set_global_option('DF_BASIS_SCF', castdf)
+
+        # Print some info about the guess
+        psi4.print_out('\n')
+        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
+        psi4.print_out('\n')
+
+    # the FIRST scf call
+    if cast or do_broken:
+        # Perform the guess scf
+        new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+                                        psi4.get_global_option('BASIS'))
+        psi4.scf(new_wfn, precallback, postcallback)
+
+    # broken clean-up
+    if do_broken:
+        molecule.set_multiplicity(1)
+        psi4.set_local_option('SCF', 'GUESS', 'READ')
+        psi4.print_out('\n')
+        p4util.banner('  Computing broken symmetry solution from high-spin triplet guess  ')
+        psi4.print_out('\n')
+
+    # cast clean-up
+    if (cast):
+
+        # Move files to proper namespace
+        psi4.IO.change_file_namespace(180, guesspace, namespace)
+        psi4.IO.set_default_namespace(namespace)
+
+        # Set to read and project, and reset bases to final ones
+        optstash2.restore()
+        psi4.set_local_option('SCF', 'GUESS', 'READ')
+
+        # Print the banner for the standard operation
+        psi4.print_out('\n')
+        p4util.banner(name.upper())
+        psi4.print_out('\n')
+
+    # EFP preparation
+    efp = psi4.get_active_efp()
+    if efp.nfragments() > 0:
+        psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
+        psi4.efp_set_options()
+        efp.set_qm_atoms()
+        efp.print_out()
+
+    # the SECOND scf call
+    new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
+                                    psi4.get_global_option('BASIS'))
+    scf_wfn = psi4.scf(new_wfn, precallback, postcallback)
+    e_scf = psi4.get_variable('CURRENT ENERGY')
+
+    optstash.restore()
+    return scf_wfn
+
+
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
