@@ -7,14 +7,13 @@ H 1 1.00 2 103.1
 }
 
 set {
-    scf_type        out_of_core
+    mcscf_type      df
     basis           6-31G**
     reference       rhf
-    frozen_docc     [1, 0, 0, 0]
+    restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
-    mcscf_type      conv
 }
 
+
 casscf_energy = energy('casscf')
-
-
+ref_casscf_energy = -76.073828605037164
