@@ -129,7 +129,7 @@ Earray = [
   'ACPF',
   'AQCC',
   'CISD',
-  'FNO-DF-CCSD(T)',
+  'FNO-CCSD(T)',
 ]
 random.shuffle(Earray)
 
