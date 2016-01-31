@@ -42,6 +42,7 @@
 #include <cmath>
 #include <cstring>
 #include <libciomr/libciomr.h>
+#include "libparallel/ParallelPrinter.h"
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <libpsio/psio.hpp>
@@ -112,6 +113,10 @@ void BaseBucket::dealloc()
     IWLBuf_ = NULL;
 }
 
+void BaseBucket::close_file(int keep) {
+    iwlbuf()->set_keep_flag(keep);
+}
+
 void Bucket::fill(int pin, int qin, int rin, int sin, double valin)
 {
     p_[in_bucket()] = pin;
@@ -137,7 +142,79 @@ void Bucket::flush(const int lastbuf)
     in_bucket() = 0;
 }
 
+BucketLight::BucketLight() {
+    nints_ = 0;
+    ints_ = NULL;
+}
 
+BucketLight::~BucketLight() {
+    if(ints_) delete ints_;
+}
+
+void BucketLight::set_file(std::string name) {
+    std::stringstream ss;
+    ss <<  PSIOManager::shared_object()->get_default_path();
+    ss <<  "/";
+    ss << psi_file_prefix;
+    ss << ".";
+    ss << getpid();
+    ss << ".";
+    ss << PSIO::get_default_namespace();
+    ss << ".";
+    ss << "yosh.";
+    ss << name;
+    ss << ".dat";
+    filename_ = ss.str();
+    fh_ = fopen(filename_.c_str(),"wb");
+    fseek(fh_,0,SEEK_SET);
+}
+
+void BucketLight::close_file(int keep) {
+    fclose(fh_);
+}
+
+FILE* BucketLight::open_bucket(unsigned long &nints) {
+    FILE* tmp = fopen(filename_.c_str(), "rb");
+    fseek(tmp,0,SEEK_SET);
+    nints = nints_;
+    return tmp;
+}
+
+void BucketLight::close_bucket(FILE* handle, int erase) {
+    fclose(handle);
+    if(erase) {
+        remove(filename_.c_str());
+    }
+}
+
+void BucketLight::alloc(unsigned long size)
+{
+    ints_ = new IWLLight[size];
+}
+
+void BucketLight::dealloc()
+{
+    delete [] ints_;
+    ints_ = NULL;
+}
+
+void BucketLight::fill(int pin, int qin, int rin, int sin, double valin)
+{
+    ints_[in_bucket()].p_ = pin;
+    ints_[in_bucket()].q_ = qin;
+    ints_[in_bucket()].r_ = rin;
+    ints_[in_bucket()].s_ = sin;
+    ints_[in_bucket()].val_ = valin;
+
+    ++in_bucket();
+    ++nints_;
+}
+
+void BucketLight::flush(const int lastbuf)
+{
+    fwrite(ints_,sizeof(IWLLight),in_bucket(),fh_);
+    in_bucket() = 0;
+}
 
 /*
 ** YOSH_INIT_PK(): This function initializes a Yoshimine sort object for
@@ -189,6 +266,51 @@ YoshBase::YoshBase(unsigned bra_indices, long maxcor, long maxcord,
    psio_ = psio;
 }
 
+
+YoshLight::YoshLight(unsigned int bra_idx, long maxcor, long maxcord,
+           const int max_buckets, unsigned int first_tmp_file,
+           double cutoff, PSIO *psio)
+    : YoshBase(bra_idx, maxcor, maxcord, max_buckets, first_tmp_file, cutoff, psio)
+{
+
+   unsigned long long int twoel_array_size;              /*--- Although on 32-bit systems one can only allocate 2GB arrays
+                                                           in 1 process space, one can store much bigger integrals files on disk ---*/
+   int i;
+   unsigned long int bytes_per_bucket, free_bytes_per_bucket, bytes_per_iwl;
+
+   twoel_array_size = bra_idx * (bra_idx + 1) / 2;
+
+
+   if (nbuckets() == 1) {
+      bytes_per_bucket = ((unsigned long int) (sizeof(IWLLight)) *
+       ((unsigned long int) twoel_array_size)) + (unsigned long int) (sizeof(IWL));
+    if (bytes_per_bucket > (unsigned long int) (maxcor/nbuckets()))
+      bytes_per_bucket = (unsigned long int) (maxcor / nbuckets());
+   }
+   else
+      bytes_per_bucket = (unsigned long int) (maxcor / nbuckets());
+//   outfile->Printf("There are %lu bytes per buckets\n", bytes_per_bucket);
+
+   free_bytes_per_bucket = 0;
+   bytes_per_iwl = (unsigned long int) (sizeof(IWLLight));
+   if(bytes_per_iwl < bytes_per_bucket) {
+       free_bytes_per_bucket = bytes_per_bucket - bytes_per_iwl;
+   } else {
+       free_bytes_per_bucket = 0;
+   }
+   if(free_bytes_per_bucket < (unsigned long int) (sizeof(IWLLight)) * 10L ){
+       outfile->Printf("Not enough memory to store at least 10 integrals per bucket\n ");
+       tstop();
+       exit(PSI_RETURN_FAILURE);
+   }
+   bucketsize() = free_bytes_per_bucket / (sizeof(IWLLight));
+   for (i = 0; i < nbuckets(); ++i) {
+       buckets().push_back(new BucketLight);
+   }
+
+   init(maxcord, bra_idx);
+
+}
 
 Yosh::Yosh(unsigned int bra_idx, long maxcor, long maxcord,
            const int max_buckets, unsigned int first_tmp_file,
@@ -280,13 +402,16 @@ void YoshBase::init_buckets()
 {
 
    for (int i=0; i<(nbuckets_); i++) {
-//      YBuff->buckets[i].p = init_int_array(YBuff->bucketsize);
-//      YBuff->buckets[i].q = init_int_array(YBuff->bucketsize);
-//      YBuff->buckets[i].r = init_int_array(YBuff->bucketsize);
-//      YBuff->buckets[i].s = init_int_array(YBuff->bucketsize);
-//      YBuff->buckets[i].val = init_array(YBuff->bucketsize);
        buckets_[i]->alloc(bucketsize_);
-       buckets_[i]->set_iwlbuf(new IWL(psio_, first_tmp_file_ + i, cutoff_, 0, 0));
+       buckets_[i]->set_file(new IWL(psio_, first_tmp_file_ + i, cutoff_, 0, 0));
+      }
+}
+
+void YoshLight::init_buckets()
+{
+   for (int i=0; i<(nbuckets()); i++) {
+       buckets()[i]->alloc(bucketsize());
+       buckets()[i]->set_file(std::to_string(first_tmp_file() + i));
       }
 }
 
@@ -544,7 +669,7 @@ void YoshBase::close_buckets(int erase)
    timJG tclose;
    tclose.start();
    for (int i=0; i<nbuckets(); i++) { /* close but keep */
-      buckets()[i]->iwlbuf()->set_keep_flag(!erase);
+      buckets()[i]->close_file(!erase);
       buckets()[i]->dealloc();
       }
    tclose.stop("Time to close IWL buckets");
@@ -626,7 +751,7 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
       }
       twrite.start();
       psio_->write_entry(out_tape, label, (char*)twoel_ints, nintegrals * sizeof(double));
-      twrite.stop("Writing one PK batch");
+      twrite.cumulate();
 //
 //      // Here we do some really stupid verifications.
 //      int filenum =  out_tape;
@@ -659,6 +784,7 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
       delete inbuf;
       tread.cumulate();
    }
+   twrite.stop("Writing all PK batches for one file");
    tread.print("Opening/closing IWL buckets");
 
 
@@ -666,6 +792,233 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
 
    free(twoel_ints);
    delete [] label;
+}
+
+void YoshLight::sort_pk(int is_exch, int out_tape, int keep_bins,
+                       int *so2ind, int *so2sym, int *pksymoff,
+                       int print_lvl)
+{
+   size_t batch_size = 0;
+   size_t hipq, lopq, nintegrals;
+   double *twoel_ints;
+   int i;
+   char* label = new char[100];
+
+   timJG twrite;
+   // We compute the maximum batch size
+   for(int i = 0; i < nbuckets(); ++i) {
+       lopq = buckets()[i]->lo();
+       hipq = buckets()[i]->hi() + 1;
+       nintegrals = (hipq * (hipq + 1) / 2) - (lopq * (lopq + 1) / 2);
+       if (nintegrals > batch_size) batch_size = nintegrals;
+   }
+//   outfile->Printf("max batch size is %lu\n", batch_size);
+
+   twoel_ints = init_array(batch_size);
+
+   for (i = 0; i < core_loads(); i++) {
+      if (print_lvl > 1) outfile->Printf( "Sorting bin %d\n", i+1);
+      lopq = buckets()[i]->lo();
+      hipq = buckets()[i]->hi();
+      sort_buffer_pk_light(buckets()[i], out_tape, is_exch, twoel_ints, lopq,
+                          hipq, so2ind, so2sym, pksymoff, (print_lvl > 4), "outfile");
+      // Since everything is in triangle form, we can totally get the size
+      ++hipq;
+      nintegrals = (hipq * (hipq + 1) / 2) - (lopq * (lopq + 1) / 2);
+   //   outfile->Printf("There are %lu integrals in this batch\n", nintegrals);
+//DEBUG      outfile->Printf("Batch number %i, nintegrals is %i\n", i, nintegrals);
+      if (is_exch) {
+        sprintf(label,"K Block (Batch %d)", i);
+      } else {
+        sprintf(label,"J Block (Batch %d)", i);
+      }
+      twrite.start();
+      get_psio()->write_entry(out_tape, label, (char*)twoel_ints, nintegrals * sizeof(double));
+      twrite.cumulate();
+//
+//      // Here we do some really stupid verifications.
+//      int filenum =  out_tape;
+//      outfile->Printf("Reading %lu integrals from batch %d\n", nintegrals, i);
+//      double* thisisdumb = new double[nintegrals];
+//
+//      char* testlabel  =new char[100];
+//      if (is_exch) {
+//        sprintf(testlabel,"K Block (Batch %d)", i);
+//      } else {
+//        sprintf(testlabel,"J Block (Batch %d)", i);
+//      }
+//      psio->read_entry(filenum, testlabel, (char*) thisisdumb, nintegrals * sizeof(double));
+//      for(size_t h = 0; h < nintegrals; ++h) {
+//          if(twoel_ints[h] != thisisdumb[h]) {
+//              outfile->Printf("Difference in the PK file!\n");
+//              outfile->Printf("Batch number %d, integral number %lu is %16.8f instead of %16.8f\n", i, h, twoel_ints[h], thisisdumb[h]);
+//              outfile->Printf("For file %s \n", is_exch ? "K" : "J");
+//          }
+//      }
+//      delete [] thisisdumb;
+//      delete [] testlabel;
+//      // End of the really stupid verifications
+//
+      if(i < core_loads() - 1) {
+        zero_arr(twoel_ints, batch_size);
+      }
+   }
+   twrite.stop("Writing all batch for one file");
+
+
+   if (print_lvl > 1) outfile->Printf( "Done sorting.\n");
+
+   free(twoel_ints);
+   delete [] label;
+}
+
+void YoshLight::sort_buffer_pk_light(BaseBucket* bucket, int out_tape, int is_exch,
+                              double* ints, unsigned int fpq, unsigned int lpq,
+                              int *so2ind, int *so2sym, int *pksymoff, int printflg,
+                              std::string out) {
+    IWLLight* ints_buf;            // Array of integral values and labels.
+    unsigned long int ints_per_buf = 2980; // Integrals per buf for now
+   int idx;                    /* index for curr integral (0..ints_per_buf) */
+   int pabs, qabs, rabs, sabs;
+   int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+   unsigned long int pq, rs, pqrs, offset, maxind;
+   unsigned long int int_left = 0;
+   unsigned long int nread;
+   double value;
+   FILE* fh;
+   timJG tread;
+
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   if (printflg) {
+     printer->Printf( "\nsortbuf_pk for pq=%d to %d\n", fpq, lpq);
+   }
+
+   // Compute the index of the lowest pq for offset
+
+   offset = (size_t)fpq * (fpq + 1L) / 2L;
+
+   maxind = INDEX2(lpq, lpq);
+   ints_buf = new IWLLight[ints_per_buf];
+
+//   outfile->Printf("Offset is %lu and maxind is %lu.\n", offset, maxind);
+//
+
+   /* Read all integrals from a bucket file,
+    * one buffer at a time until we're done
+      We sort them upon reading in the twoel array */
+
+   tread.start();
+   fh = bucket->open_bucket(int_left);
+   tread.cumulate();
+
+   do {
+       nread = ((int_left < ints_per_buf) ? int_left : ints_per_buf);
+       tread.start();
+       fread(ints_buf,sizeof(IWLLight),nread,fh);
+      tread.cumulate();
+       int_left -= nread;
+      for (idx = 0; idx < nread; ++idx) {
+          pabs = ints_buf[idx].p_;
+          qabs = ints_buf[idx].q_;
+          rabs = ints_buf[idx].r_;
+          sabs = ints_buf[idx].s_;
+
+          value = ints_buf[idx].val_;
+
+          // Get indices within symmetry
+
+          prel = so2ind[pabs];
+          qrel = so2ind[qabs];
+          rrel = so2ind[rabs];
+          srel = so2ind[sabs];
+
+          psym = so2sym[pabs];
+          qsym = so2sym[qabs];
+          rsym = so2sym[rabs];
+          ssym = so2sym[sabs];
+
+//DEBUG          outfile->Printf("INT <%d %d|%d %d>\n", pabs, qabs, rabs, sabs);
+
+          if (!is_exch) {
+
+              // We only stored integrals of the relevant symmetry
+              pq = INDEX2(prel, qrel);
+              pq += pksymoff[psym];
+              rs = INDEX2(rrel, srel);
+              rs += pksymoff[rsym];
+              pqrs = INDEX2(pq, rs);
+//DEBUG         if (pqrs > maxind || (pqrs < offset)) {
+//DEBUG             outfile->Printf("pqrs is out of bounds for J\n");
+//DEBUG         }
+              ints[pqrs - offset] += value;
+
+          } else {
+              // K (2nd sort, ILJK)
+              if ((psym == qsym) && (rsym == ssym)) {
+                  if ( (prel != qrel) && (rrel != srel)) {
+                      if((psym == ssym) && (qsym == rsym)) {
+                          pq = INDEX2(prel, srel);
+                          pq += pksymoff[psym];
+                          rs = INDEX2(qrel, rrel);
+                          rs += pksymoff[qsym];
+                          pqrs = INDEX2(pq, rs);
+                          if ((pqrs <= maxind) && (pqrs >= offset)) {
+//                              if(rs > pq) {
+//                                outfile->Printf("rs > pq 2nd sort!!\n");
+//                              }
+                              if(prel == srel || qrel == rrel) {
+                                  ints[pqrs - offset] += value;
+                              } else {
+                                  ints[pqrs - offset] += 0.5 * value;
+                              }
+                          }
+                      }
+                  }
+              }
+              // K (1st sort, IKJL)
+              if ((psym == rsym) && (qsym == ssym)) {
+                  pq = INDEX2(prel, rrel);
+                  pq += pksymoff[psym];
+                  rs = INDEX2(qrel, srel);
+                  rs += pksymoff[qsym];
+                  pqrs = INDEX2(pq, rs);
+                  if ((pqrs <= maxind) && (pqrs >= offset) ) {
+//                      if(rs > pq) {
+//                        outfile->Printf("rs > pq 1st sort!!\n");
+//                      }
+                      if((prel == rrel) || (qrel == srel)) {
+                          ints[pqrs - offset] += value;
+                      } else {
+                          ints[pqrs - offset] += 0.5 * value;
+                      }
+                  }
+              }
+
+          }
+
+
+          if (printflg)
+            printer->Printf( "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                pabs, qabs, rabs, sabs, pq, rs, pqrs, ints_buf[pqrs-offset]) ;
+      }
+   } while (int_left > 0);
+   tread.start();
+   bucket->close_bucket(fh,1);
+   tread.cumulate();
+
+   tread.print("Read one IWL bucket");
+
+   for(pq = fpq; pq <= lpq; ++pq) {
+       pqrs = INDEX2(pq, pq);
+       ints[pqrs - offset] *= 0.5;
+   }
+
+//DEBUG   outfile->Printf("Final pqrs value %i\n", pqrs);
+   /* That's all we do here. The integral array is now ready
+    * to be written in the appropriate file. */
+
 }
 
 /* YOSH_DONE(): Free allocated memory and reset all options for a

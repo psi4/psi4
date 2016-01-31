@@ -194,12 +194,19 @@ void PKJK::preiterations()
 
 //DEBUG    outfile->Printf("The pk_sort_mem is %li doubles, there are %i max_buckets\n", pk_sort_mem, max_buckets);
 //DEBUG    outfile->Printf("The first tmp file is %i and the integral tolerance %f\n", first_tmp_file_J, tolerance);
+
     Yosh YBuffJ(pk_pairs_, pk_presort_mem, pk_sort_mem,
                 max_buckets, first_tmp_file_J, tolerance, psio_.get());
+ //Oldstyle   YoshLight YBuffJ(pk_pairs_, pk_presort_mem, pk_sort_mem,
+ //Oldstyle               max_buckets, first_tmp_file_J, tolerance, psio_.get());
+
     int first_tmp_file_K = first_tmp_file_J + YBuffJ.nbuckets();
 //DEBUG    outfile->Printf("The first tmp K file is %i \n", first_tmp_file_K);
+
     Yosh YBuffK(pk_pairs_, pk_presort_mem, pk_sort_mem,
                 max_buckets, first_tmp_file_K, tolerance, psio_.get());
+ //Oldstyle   YoshLight YBuffK(pk_pairs_, pk_presort_mem, pk_sort_mem,
+ //Oldstyle               max_buckets, first_tmp_file_K, tolerance, psio_.get());
 
 //DEBUG    transqt::yosh_print(&YBuffJ, "outfile");
 //DEBUG    transqt::yosh_print(&YBuffK, "outfile");
@@ -275,17 +282,17 @@ void PKJK::preiterations()
     YBuffK.sort_pk(1, pk_file_, 0, so2index_, so2symblk_, pk_symoffset, (debug_ > 5));
 
     tbench.stop("Creating PK file");
-    tbench.start();
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
-    bool last_buffer;
-    do{
-        last_buffer = iwl->last_buffer();
-        if (!last_buffer) {
-            iwl->fetch();
-        }
-    } while (!last_buffer);
-    delete iwl;
-    tbench.stop("Dummy Read original IWL file");
+ //   tbench.start();
+ //   IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+ //   bool last_buffer;
+ //   do{
+ //       last_buffer = iwl->last_buffer();
+ //       if (!last_buffer) {
+ //           iwl->fetch();
+ //       }
+ //   } while (!last_buffer);
+ //   delete iwl;
+ //   tbench.stop("Dummy Read original IWL file");
     psio_->close(pk_file_, 1);
 
     YBuffJ.done();
@@ -412,29 +419,31 @@ void PKJK::preiterations()
         twriteJ.start();
         sprintf(label, "J Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
-        twriteJ.stop("Write J batch");
+        twriteJ.cumulate();
         twriteK.start();
         sprintf(label, "K Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
-        twriteK.stop("WriteK batch");
+        twriteK.cumulate();
         delete [] label;
 
         delete [] j_block;
         delete [] k_block;
     } // End of loop over batches
+    twriteJ.print("Write J batch");
+    twriteK.print("Write K batch");
     tbench.stop("PK file creation");
 
-    tread.start();
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
-    bool last_buffer;
-    do{
-        last_buffer = iwl->last_buffer();
-        if (!last_buffer) {
-            iwl->fetch();
-        }
-    } while (!last_buffer);
-    delete iwl;
-    tread.stop("Dummy Read original IWL file");
+  //  tread.start();
+  //  IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+  //  bool last_buffer;
+  //  do{
+  //      last_buffer = iwl->last_buffer();
+  //      if (!last_buffer) {
+  //          iwl->fetch();
+  //      }
+  //  } while (!last_buffer);
+  //  delete iwl;
+  //  tread.stop("Dummy Read original IWL file");
     psio_->close(pk_file_, 1);
 
     } // End of algo conditional.
