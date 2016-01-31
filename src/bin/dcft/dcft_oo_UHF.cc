@@ -137,7 +137,7 @@ DCFTSolver::run_simult_dcft_oo()
         orbitals_convergence_ = compute_orbital_residual();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
+        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
         // Compute the orbital rotation step using Jacobi method
         compute_orbital_rotation_jacobi();
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){

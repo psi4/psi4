@@ -1,5 +1,5 @@
-#! scf with a TIPeP water as the eternal potential
-memory 500 mb
+#! External potential calculation involving a TIP3P water and a QM water.
+#! Finite different test of the gradient is performed to validate forces.
 
 molecule {
   0 1

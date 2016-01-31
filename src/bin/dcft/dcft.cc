@@ -60,6 +60,11 @@ DCFTSolver::DCFTSolver(SharedWavefunction ref_wfn, Options &options):
     int_tolerance_      = options.get_double("INTS_TOLERANCE");
     energy_level_shift_ = options.get_double("ENERGY_LEVEL_SHIFT");
 
+    if (!options_["E_CONVERGENCE"].has_changed())
+        energy_threshold_ = options.get_double("R_CONVERGENCE");
+    else
+        energy_threshold_ = options.get_double("E_CONVERGENCE");
+
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
 
     exact_tau_ = false;
