@@ -797,10 +797,11 @@ def scf_helper(name, **kwargs):
     # Second-order SCF requires non-symmetrix density matrix support
     if (
         psi4.get_option('SCF', 'SOSCF') and
-        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE', 'DIRECT'])
+        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
         ):
         raise ValidationError("Second-order SCF: Requires a JK algorithm that supports non-symmetric"\
                                   " density matrices.")
+
 
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
