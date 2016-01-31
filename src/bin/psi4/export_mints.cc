@@ -234,6 +234,11 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
+// Just a little patch until we can figure out options python-side.
+boost::shared_ptr<JK> py_build_JK(boost::shared_ptr<BasisSet> basis){
+    return JK::build_JK(basis, Process::environment.options);
+}
+
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
 
@@ -946,11 +951,11 @@ void export_mints()
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
-
     // LIBFOCK wrappers
     class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
 //            .def(init<boost::shared_ptr<BasisSet> >())
-            .def("build_JK", &JK::build_JK, "docstring")
+            // .def("build_JK", &JK::build_JK, "docstring")
+            .def("build_JK", py_build_JK, "docstring")
             .staticmethod("build_JK")
             .def("initialize", &JK::initialize)
             .def("compute", &JK::compute)
@@ -996,6 +1001,8 @@ void export_mints()
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
         .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
         .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
+        .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
+        .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")

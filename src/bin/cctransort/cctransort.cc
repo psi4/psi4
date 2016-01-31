@@ -345,7 +345,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
   else if(options.get_str("REFERENCE") == "ROHF") {
     if(semicanonical)
-      ints = new IntegralTransform(ref, transspaces, IntegralTransform::SemiCanonical, IntegralTransform::DPDOnly);
+      // Importantly the transform is handled python-side so we technically have unrestricted orbitals at this point
+      ints = new IntegralTransform(ref, transspaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly);
     else
       ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
   }
