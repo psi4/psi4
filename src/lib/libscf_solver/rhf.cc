@@ -299,13 +299,13 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
 
         // ret_ia = F_ij X_ja
         C_DGEMM('N','N',doccpi_[h],virpi[h],doccpi_[h],1.0,
-                IFp[0],nsopi_[h],
+                IFp[0],nmopi_[h],
                 xp[0],virpi[h],0.0,retp[0],virpi[h]);
 
         // ret_ia -= X_ib F_ba
         C_DGEMM('N','N',doccpi_[h],virpi[h],virpi[h],-1.0,
                 xp[0],virpi[h],
-                (IFp[doccpi_[h]]+doccpi_[h]),nsopi_[h],1.0,retp[0],virpi[h]);
+                (IFp[doccpi_[h]]+doccpi_[h]),nmopi_[h],1.0,retp[0],virpi[h]);
     }
 
     // => Two electron part <= //

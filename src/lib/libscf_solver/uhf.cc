@@ -291,13 +291,13 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 
             // ret_ia = F_ij X_ja
             C_DGEMM('N','N',nalphapi_[h],virpi_a[h],nalphapi_[h],1.0,
-                    IFp[0],nsopi_[h],
+                    IFp[0],nmopi_[h],
                     xp[0],virpi_a[h],0.0,retp[0],virpi_a[h]);
 
             // ret_ia -= X_ib F_ba
             C_DGEMM('N','N',nalphapi_[h],virpi_a[h],virpi_a[h],-1.0,
                     xp[0],virpi_a[h],
-                    (IFp[nalphapi_[h]]+nalphapi_[h]),nsopi_[h],1.0,retp[0],virpi_a[h]);
+                    (IFp[nalphapi_[h]]+nalphapi_[h]),nmopi_[h],1.0,retp[0],virpi_a[h]);
 
         }
         // Beta
@@ -308,13 +308,13 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 
             // ret_ia = F_ij X_ja
             C_DGEMM('N','N',nbetapi_[h],virpi_b[h],nbetapi_[h],1.0,
-                    IFp[0],nsopi_[h],
+                    IFp[0],nmopi_[h],
                     xp[0],virpi_b[h],0.0,retp[0],virpi_b[h]);
 
             // ret_ia -= X_ib F_ba
             C_DGEMM('N','N',nbetapi_[h],virpi_b[h],virpi_b[h],-1.0,
                     xp[0],virpi_b[h],
-                    (IFp[nbetapi_[h]]+nbetapi_[h]),nsopi_[h],1.0,retp[0],virpi_b[h]);
+                    (IFp[nbetapi_[h]]+nbetapi_[h]),nmopi_[h],1.0,retp[0],virpi_b[h]);
 
         }
     }

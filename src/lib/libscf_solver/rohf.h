@@ -70,10 +70,18 @@ protected:
 
     void save_density_and_energy();
 
+    // Second-order convergence code
+    void Hx(SharedMatrix x, SharedMatrix ret);
+    virtual int soscf_update(void);
+
     void common_init();
 public:
     ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~ROHF();
+
+    SharedMatrix moFeff() const {return Feff_; }
+    SharedMatrix moFa() const {return moFa_; }
+    SharedMatrix moFb() const {return moFb_; }
 
 };
 
