@@ -61,3 +61,15 @@ class CSXError(PsiException):
         PsiException.__init__(self, msg)
         self.msg = msg
         psi4.print_out('\nCSXException: %s\n\n' % (msg))
+
+
+class ManagedMethodError(PsiException):
+    def __init__(self, circs):
+        if circs[5] == '':
+            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not available{5}""".format(*circs)
+        else:
+            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not directable to QC_MODULE '{5}'""".format(*circs)
+        PsiException.__init__(self, msg)
+        self.msg = msg
+        psi4.print_out('\nPsiException: %s\n\n' % (msg))
+

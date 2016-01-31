@@ -20,8 +20,8 @@ set {
   reference rohf
   guess gwh
 }
-gradient('ocepa')
 
-grad = psi4.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+grad = gradient('ocepa(0)')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 

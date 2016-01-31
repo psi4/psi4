@@ -47,55 +47,28 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
-            'df-mp2'        : run_dfmp2,
-            'ri-mp2'        : run_dfomp,
-            'conv-mp2'      : run_mp2,
-            'mp3'           : run_omp,
-            'mp2.5'         : run_omp,
-            'mp2'           : run_mp2_select,
-            'omp2'          : run_omp,
-            'conv-omp2'     : run_omp,
-            'scs-omp2'      : run_omp,
-            'scs(n)-omp2'   : run_omp,
-            'scs-omp2-vdw'  : run_omp,
-            'sos-omp2'      : run_omp,
-            'sos-pi-omp2'   : run_omp,
-            'omp3'          : run_omp,
-            'scs-omp3'      : run_omp,
-            'scs(n)-omp3'   : run_omp,
-            'scs-omp3-vdw'  : run_omp,
-            'sos-omp3'      : run_omp,
-            'sos-pi-omp3'   : run_omp,
-            'ocepa'         : run_omp,
-            'cepa0'         : run_omp,
-            'omp2.5'        : run_omp,
-            'df-omp2'       : run_dfomp,
-            'dfocc'         : run_dfomp,
-            'df-omp3'       : run_dfomp,
-            'df-omp2.5'     : run_dfomp,
-            'df-olccd'      : run_dfomp,
+            'mp3'           : select_mp3,
+            'mp2.5'         : select_mp2p5,
+            'mp2'           : select_mp2,
+            'omp2'          : select_omp2,
+            'scs-omp2'      : run_occ,
+            'scs(n)-omp2'   : run_occ,
+            'scs-omp2-vdw'  : run_occ,
+            'sos-omp2'      : run_occ,
+            'sos-pi-omp2'   : run_occ,
+            'omp3'          : select_omp3,
+            'scs-omp3'      : run_occ,
+            'scs(n)-omp3'   : run_occ,
+            'scs-omp3-vdw'  : run_occ,
+            'sos-omp3'      : run_occ,
+            'sos-pi-omp3'   : run_occ,
+            'ocepa(0)'      : select_ocepa_0_,
+            'omp2.5'        : select_omp2p5,
+            'dfocc'         : run_dfocc,
             'qchf'          : run_qchf,
-            'df-ccsd2'      : run_dfomp,
-            'ri-ccsd(t)'    : run_dfomp,
-            'df-ccsd(at)'   : run_dfomp,
-            'df-ccd'        : run_dfomp,
-            'df-ccsdl'      : run_dfomp,
-            'df-ccdl'       : run_dfomp,
-            'df-mp3'        : run_dfomp,
-            'df-mp2.5'      : run_dfomp,
-            'df-lccd'       : run_dfomp,
-            'cd-ccsd'       : run_cdomp,
-            'cd-ccsd(t)'    : run_cdomp,
-            'cd-ccsd(at)'   : run_cdomp,
-            'cd-ccd'        : run_cdomp,
-            'cd-omp3'       : run_cdomp,
-            'cd-omp2.5'     : run_cdomp,
-            'cd-mp3'        : run_cdomp,
-            'cd-mp2.5'      : run_cdomp,
-            'cd-omp2'       : run_cdomp,
-            'cd-mp2'        : run_cdomp,
-            'cd-olccd'      : run_cdomp,
-            'cd-lccd'       : run_cdomp,
+            'ccd'           : run_dfocc,
+            'ccsdl'         : run_dfocc,
+            'ccdl'          : run_dfocc,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -120,10 +93,9 @@ procedures = {
             'sapt2+3(ccd)-ct'    : run_sapt_ct,
             'fisapt0'       : run_fisapt,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
-            'ccsd'          : run_ccenergy,
-            'ccsd(t)'       : run_ccenergy,
-            'ccsd(at)'      : run_ccenergy,
-            'a-ccsd(t)'     : run_ccenergy,
+            'ccsd'          : select_ccsd,
+            'ccsd(t)'       : select_ccsd_t_,
+            'ccsd(at)'      : select_ccsd_at_,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
@@ -134,9 +106,8 @@ procedures = {
             'eom-cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
-            'detci-mp'      : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
-            'cisd'          : run_detci,
+            'cisd'          : select_cisd,
             'cisdt'         : run_detci,
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
@@ -155,33 +126,28 @@ procedures = {
             'hf'            : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
+            'mp4'           : select_mp4,
             'mp4(sdq)'      : run_fnocc,
-            'fno-ccsd'      : run_fnocc,
-            'fno-ccsd(t)'   : run_fnocc,
+            'fno-ccsd'      : select_fnoccsd,
+            'fno-ccsd(t)'   : select_fnoccsd_t_,
             'fno-qcisd'     : run_fnocc,
             'fno-qcisd(t)'  : run_fnocc,
             'fno-mp3'       : run_fnocc,
             'fno-mp4(sdq)'  : run_fnocc,
             'fno-mp4'       : run_fnocc,
-            'fnocc-mp'      : run_fnocc,
-            'df-ccsd'       : run_fnodfcc,
-            'df-ccsd(t)'    : run_fnodfcc,
-            'fno-df-ccsd'   : run_fnodfcc,
-            'fno-df-ccsd(t)': run_fnodfcc,
             'fno-cepa(0)'   : run_cepa,
             'fno-cepa(1)'   : run_cepa,
             'fno-cepa(3)'   : run_cepa,
             'fno-acpf'      : run_cepa,
             'fno-aqcc'      : run_cepa,
-            'fno-sdci'      : run_cepa,
-            'fno-dci'       : run_cepa,
-            'cepa(0)'       : run_cepa,
+            'fno-cisd'      : run_cepa,
+            #'fno-cid'       : run_cepa,  # not functioning
+            #'cid'           : run_cepa,  # not functioning
+            'cepa(0)'       : select_cepa_0_,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
             'acpf'          : run_cepa,
             'aqcc'          : run_cepa,
-            'sdci'          : run_cepa,
-            'dci'           : run_cepa,
             'efp'           : run_efp,
             'dmrgscf'       : run_dmrgscf,
             'dmrgci'        : run_dmrgci,
@@ -192,32 +158,20 @@ procedures = {
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
-            'ccsd'          : run_cc_gradient,
-            'ccsd(t)'       : run_cc_gradient,
-            'mp2'           : run_mp2_select_gradient,
-            'conv-mp2'      : run_mp2_gradient,
-            'df-mp2'        : run_dfmp2_select_gradient,
-            'ri-mp2'        : run_dfomp_gradient,
+            'ccsd'          : select_ccsd_gradient,
+            'ccsd(t)'       : select_ccsd_t__gradient,
+            'mp2'           : select_mp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
-            'omp2'          : run_omp_gradient,
-            'conv-omp2'     : run_omp_gradient,
-            'df-omp2'       : run_dfomp_gradient,
-            'omp3'          : run_omp_gradient,
-            'mp3'           : run_omp_gradient,
-            'mp2.5'         : run_omp_gradient,
-            'omp2.5'        : run_omp_gradient,
-            'cepa0'         : run_omp_gradient,
-            'ocepa'         : run_omp_gradient,
-            'df-ccsd2'      : run_dfomp_gradient,
-            'df-ccd'        : run_dfomp_gradient,
-            'df-omp3'       : run_dfomp_gradient,
-            'df-mp3'        : run_dfomp_gradient,
-            'df-omp2.5'     : run_dfomp_gradient,
-            'df-mp2.5'      : run_dfomp_gradient,
-	        'df-olccd'      : run_dfomp_gradient,
-	        'df-lccd'       : run_dfomp_gradient,
-#            'efp'           : run_efp_gradient,
+            'omp2'          : select_omp2_gradient,
+            'omp3'          : select_omp3_gradient,
+            'mp3'           : select_mp3_gradient,
+            'mp2.5'         : select_mp2p5_gradient,
+            'omp2.5'        : select_omp2p5_gradient,
+            'cepa(0)'       : select_cepa_0__gradient,
+            'ocepa(0)'      : select_ocepa_0__gradient,
+            'ccd'           : run_dfocc_gradient,
+            #'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
@@ -230,8 +184,8 @@ procedures = {
             'ccsd'     : run_cc_property,
             'df-mp2'   : run_dfmp2_property,
             'dfmp2'    : run_dfmp2_property,
-            'ri-mp2'   : run_dfomp_property,
-            'df-omp2'  : run_dfomp_property,
+            'ri-mp2'   : run_dfocc_property,
+            'df-omp2'  : run_dfocc_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
@@ -590,19 +544,20 @@ def energy(name, **kwargs):
     try:
         # Set method-dependent scf convergence criteria
         if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] not in [run_scf, run_dft]:
+            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
 
 # Before invoking the procedure, we rename any file that should be read.
@@ -611,17 +566,17 @@ def energy(name, **kwargs):
 # Restartfile is always converted to a single-element list if
 # it contains a single string
         if 'restart_file' in kwargs:
-            restartfile = kwargs['restart_file'] # Option still available for procedure-specific action
+            restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
             if restartfile != list(restartfile):
                 restartfile = [restartfile]
             # Rename the files to be read to be consistent with psi4's file system
             for item in restartfile:
-                name_split=re.split(r'\.',item)
-                filenum=name_split[len(name_split)-1]
+                name_split = re.split(r'\.', item)
+                filenum = name_split[len(name_split) - 1]
                 try:
-                    filenum=int(filenum)
+                    filenum = int(filenum)
                 except ValueError:
-                    filenum=32  # Default file number is the checkpoint one
+                    filenum = 32  # Default file number is the checkpoint one
                 psioh = psi4.IOManager.shared_object()
                 psio = psi4.IO.shared_object()
                 filepath = psioh.get_file_path(filenum)
@@ -693,7 +648,7 @@ def gradient(name, **kwargs):
         elif der1st.match(str(opt_dertype)):
             dertype = 1
         else:
-            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
+            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function optimize.""" % (opt_dertype))
 
     # 3. if the user provides a custom function THAT takes precendence
     if ('opt_func' in kwargs) or ('func' in kwargs):
@@ -715,7 +670,7 @@ def gradient(name, **kwargs):
         alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
             % (lowername, dertype, alternatives))
 
     # no analytic derivatives for scf_type cd
@@ -736,11 +691,9 @@ def gradient(name, **kwargs):
     if ('mode' in kwargs) and (dertype == 0):
         opt_mode = kwargs['mode']
 
-    if (opt_mode.lower() == 'continuous'):
+    if opt_mode.lower() in ['continuous', 'sow']:
         pass
-    elif (opt_mode.lower() == 'sow'):
-        pass
-    elif (opt_mode.lower() == 'reap'):
+    elif opt_mode.lower() == 'reap':
         if('linkage' in kwargs):
             opt_linkage = kwargs['linkage']
         else:
@@ -750,19 +703,20 @@ def gradient(name, **kwargs):
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] in [run_scf, run_dft]:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] in [run_scf, run_dft]:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] not in [run_scf, run_dft]:
+        #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
@@ -773,7 +727,7 @@ def gradient(name, **kwargs):
         wfn = procedures['gradient'][lowername](lowername, **kwargs)
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
-            raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
+            raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
         #RAK for EFP psi4.wavefunction().energy()
         # TODO: add EFP contributions to the gradient
 
@@ -913,7 +867,7 @@ def gradient(name, **kwargs):
         # The last item in the list is the reference energy, return it
         optstash.restore()
 #        return energies[-1]
-#        psi4.set_wavefunction(wfn)
+        psi4.set_wavefunction(wfn)
 
         if return_wfn:
             return (wfn.gradient(), wfn)
@@ -1006,29 +960,30 @@ def property(name, **kwargs):
         #   SCF properties have been set as 6/5 so as to match those
         #       run normally through OEProp so subject to change
         if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] not in [run_scf, run_dft]:
+            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 8)
 
         wfn = procedures['property'][lowername](lowername, **kwargs)
 
     except KeyError:
-        alternatives = ""
+        alternatives = ''
         alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['property'].keys(), 2)
         if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Property method %s not available.%s' % (lowername, alternatives))
+            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
+        raise ValidationError("""Property method %s not available.%s""" % (lowername, alternatives))
 
     optstash.restore()
     if return_wfn:
@@ -1178,9 +1133,7 @@ def optimize(name, **kwargs):
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    hessian_with_method = name
-    if ('hessian_with' in kwargs):
-        hessian_with_method = kwargs['hessian_with']
+    hessian_with_method = kwargs.get('hessian_with', name)
 
     # are we in sow/reap mode?
     isSowReap = False
@@ -1377,22 +1330,10 @@ def parse_arbitrary_order(name):
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
 
-        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
-            # Let 'mp2' pass through to occ module
-            if (namestump == 'mp') and (namelevel == 2):
+        if namestump in ['mp', 'zapt', 'ci']:
+            # Let mp2, mp3, mp4 pass through to select functions
+            if namestump == 'mp' and namelevel in [2, 3, 4]:
                 return namelower, None
-            # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
-            elif (namestump == 'mp') and (namelevel == 3):
-                if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
-                    return 'detci-mp', 3
-                else:
-                    return namelower, None
-            # Let 'mp4' be redirected to fnocc module if rhf
-            elif (namestump == 'mp') and (namelevel == 4):
-                if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
-                    return 'fnocc-mp', 4
-                else:
-                    return 'detci-mp', 4
             # Otherwise return method and order
             else:
                 return namestump, namelevel
@@ -1452,11 +1393,11 @@ def hessian(name, **kwargs):
         elif der2nd.match(str(freq_dertype)):
             dertype = 2
         else:
-            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
+            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function frequency.""" % (freq_dertype))
 
     # 3. if the user provides a custom function THAT takes precedence
     if ('freq_func' in kwargs) or ('func' in kwargs):
-        if ('func' in kwargs):
+        if 'func' in kwargs:
             kwargs['freq_func'] = kwargs['func']
             del kwargs['func']
         dertype = 0
@@ -1474,16 +1415,16 @@ def hessian(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        alternatives = ""
+        alternatives = ''
         alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
         if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
 
-        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
             % (lowername, dertype, alternatives))
 
     # Make sure the molecule the user provided is the active one
-    if ('molecule' in kwargs):
+    if 'molecule' in kwargs:
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = psi4.get_active_molecule()
@@ -1492,51 +1433,53 @@ def hessian(name, **kwargs):
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     freq_mode = 'continuous'
-    if ('mode' in kwargs) and ((dertype == 0) or (dertype == 1)):
+    if 'mode' in kwargs and dertype in [0, 1]:
         freq_mode = kwargs['mode']
 
-    if (freq_mode.lower() == 'continuous'):
+    if freq_mode.lower() == 'continuous':
         pass
-    elif (freq_mode.lower() == 'sow'):
+    elif freq_mode.lower() == 'sow':
         pass
-    elif (freq_mode.lower() == 'reap'):
+    elif freq_mode.lower() == 'reap':
         if('linkage' in kwargs):
             freq_linkage = kwargs['linkage']
         else:
-            raise ValidationError('Frequency execution mode \'reap\' requires a linkage option.')
+            raise ValidationError("""Frequency execution mode 'reap' requires a linkage option.""")
     else:
-        raise ValidationError('Frequency execution mode \'%s\' not valid.' % (freq_mode))
+        raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] in [run_scf, run_dft]:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] in [run_scf, run_dft]:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+#        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+        if procedures['energy'][lowername] not in [run_scf, run_dft]:
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Select certain irreps
     if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
+        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # A1 irrep is externally 1, internally 0
     else:
-        irrep = -1  # -1 implies do all irreps
+        irrep = -1  # do all irreps
 
     # Does an analytic procedure exist for the requested method?
-    if (dertype == 2):
+    if dertype == 2:
         # We have the desired method. Do it.
         wfn = procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
 
-        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+        if kwargs.get('mode') == 'sow':
+        #if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
@@ -1544,14 +1487,15 @@ def hessian(name, **kwargs):
 
         # TODO: return hessian matrix
 
-    elif (dertype == 1):
+    elif dertype == 1:
         # Ok, we're doing frequencies by gradients
         print('Performing finite difference by gradient calculations')
 
         func = procedures['gradient'][lowername]
 
-        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
-            raise ValidationError('Frequency execution mode \'sow\' not yet implemented for finite difference of analytic gradient calculation.')
+        if kwargs.get('mode') == 'sow':
+        #if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError("""Frequency execution mode 'sow' not yet implemented for finite difference of analytic gradient calculation.""")
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_1(molecule, irrep)
@@ -1571,9 +1515,10 @@ def hessian(name, **kwargs):
             p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print(' %d' % (n + 1), end="")
+            print(' %d' % (n + 1), end='')
             if (n + 1) == ndisp:
-                print('\n', end="")
+                #print('\n', end='')
+                print('')
             sys.stdout.flush()
 
             # Load in displacement into the active molecule (xyz coordinates only)
@@ -1594,6 +1539,9 @@ def hessian(name, **kwargs):
         psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
         H = psi4.fd_freq_1(molecule, gradients, irrep)
         wfn.set_hessian(H)
+        #freqs = wfn.frequencies()
+        #freqs.print_out()
+        #psi4.set_wavefunction(wfn)  #TODO try without
 
         print(' Computation complete.')
 
@@ -1620,19 +1568,20 @@ def hessian(name, **kwargs):
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
         if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 11)
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] in [run_scf, run_dft]:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 11)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+            if procedures['energy'][lowername] not in [run_scf, run_dft]:
+            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 10)
 
         # Obtain list of displacements
@@ -1649,7 +1598,7 @@ def hessian(name, **kwargs):
         energies = []
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
-        if (freq_mode.lower() == 'sow'):
+        if freq_mode.lower() == 'sow':
             instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
             instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
             instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
@@ -1692,13 +1641,13 @@ def hessian(name, **kwargs):
             banners += """p4util.banner(' Hessian Computation: Energy Displacement %d ')\n""" % (n + 1)
             banners += """psi4.print_out('\\n')\n\n"""
 
-            if (freq_mode.lower() == 'continuous'):
+            if freq_mode.lower() == 'continuous':
                 # Print information to output.dat
                 psi4.print_out('\n')
                 p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
                 # Print information to the screen
-                print(' %d' % (n + 1), end="")
+                print(' %d' % (n + 1), end='')
                 if (n + 1) == ndisp:
                     print('\n', end='')
                 sys.stdout.flush()
@@ -1733,13 +1682,13 @@ def hessian(name, **kwargs):
                 freagent.close()
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
-            elif (freq_mode.lower() == 'reap'):
+            elif freq_mode.lower() == 'reap':
                 exec(banners)
                 psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
                 energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
 
         # S/R: Quit sow after writing files
-        if (freq_mode.lower() == 'sow'):
+        if freq_mode.lower() == 'sow':
             optstash.restore()
             return None
 
@@ -1753,7 +1702,7 @@ def hessian(name, **kwargs):
         print(' Computation complete.')
 
         # Clear the "parent" symmetry now
-        psi4.set_parent_symmetry("")
+        psi4.set_parent_symmetry('')
 
         # TODO: These need to be restored to the user specified setting
         psi4.get_active_molecule().fix_orientation(False)
@@ -1839,13 +1788,13 @@ def frequency(name, **kwargs):
 
     # Compute the hessian
     H, wfn = hessian(name, return_wfn=True, **kwargs)
-    
+
     if not (kwargs.get('mode') == 'sow'):
     #if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
         # call thermo module
-#        raise Exception('Thermo will fail because we are not yet passing it a wavefunction') 
+#        raise Exception('Thermo will fail because we are not yet passing it a wavefunction')
 #        psi4.thermo(wfn.get_frequencies())
-        psi4.set_wavefunction(wfn)
+        psi4.set_wavefunction(wfn)  # TODO try without
 
         psi4.thermo(wfn, wfn.frequencies())
 

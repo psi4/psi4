@@ -16,7 +16,7 @@ set {
   reference rhf
 }
 
-energy('a-ccsd(t)')
+energy('ccsd(at)')
 
 escf =     -75.930810791060466 #TEST
 eccsd =    -76.164158766102886 #TEST
