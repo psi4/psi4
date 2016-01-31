@@ -64,7 +64,7 @@ procedures = {
             'sos-pi-omp3'   : run_occ,
             'ocepa(0)'      : select_ocepa_0_,
             'omp2.5'        : select_omp2p5,
-            'dfocc'         : run_dfomp,
+            'dfocc'         : run_dfocc,
             'qchf'          : run_qchf,
             'ccd'           : run_dfocc,
             'ccsdl'         : run_dfocc,
@@ -867,7 +867,7 @@ def gradient(name, **kwargs):
         # The last item in the list is the reference energy, return it
         optstash.restore()
 #        return energies[-1]
-#        psi4.set_wavefunction(wfn)
+        psi4.set_wavefunction(wfn)
 
         if return_wfn:
             return (wfn.gradient(), wfn)
@@ -1468,9 +1468,9 @@ def hessian(name, **kwargs):
 
     # Select certain irreps
     if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
+        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # A1 irrep is externally 1, internally 0
     else:
-        irrep = -1  # -1 implies do all irreps
+        irrep = -1  # do all irreps
 
     # Does an analytic procedure exist for the requested method?
     if (dertype == 2):
@@ -1787,7 +1787,7 @@ def frequency(name, **kwargs):
         # call thermo module
 #        raise Exception('Thermo will fail because we are not yet passing it a wavefunction') 
 #        psi4.thermo(wfn.get_frequencies())
-        psi4.set_wavefunction(wfn)
+        psi4.set_wavefunction(wfn)  #TODO try without
 
         psi4.thermo(wfn, wfn.frequencies())
 
