@@ -678,8 +678,8 @@ void set_params(void)
   Opt_params.fix_tors_near_pi = _pi / 2;
 
 // torsional angles will not be computed if the contained bond angles are within
-// this many radians of zero or 180. (< ~10 and > ~170 degrees)
-  Opt_params.tors_angle_lim = 0.17;
+// this many radians of zero or 180. (< ~1 and > ~179 degrees)
+  Opt_params.tors_angle_lim = 0.017;
 
 // only used for determining which atoms in a fragment are acceptable for use
 // as reference atoms.  We avoid collinear sets.

@@ -55,7 +55,6 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 void MOLECULE::rfo_step(void) {
   int i, j;
   int dim = Ncoord();
-  int natom = g_natom();
   double tval, tval2;
   double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
@@ -84,8 +83,7 @@ void MOLECULE::rfo_step(void) {
     oprint_matrix_out(RFO, dim+1, dim+1);
   }
 
-  int rfo_root, f;     // root to follow
-  double rfo_eval;
+  int rfo_root;     // root to follow
   double rfo_g;         // gradient in step direction
   double rfo_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
@@ -239,7 +237,7 @@ void MOLECULE::rfo_step(void) {
     project_dq(dq);
 
     // Zero steps for frozen fragment.  If user has specified.
-    for (f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
         for (i=0; i<fragments[f]->Ncoord(); ++i)
@@ -349,7 +347,7 @@ void MOLECULE::rfo_step(void) {
   oprintf_out("Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
 
-  for (f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -358,7 +356,7 @@ void MOLECULE::rfo_step(void) {
   }
 
   // do displacements for interfragment coordinates
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
@@ -368,7 +366,7 @@ void MOLECULE::rfo_step(void) {
   }
 
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step

@@ -80,7 +80,7 @@ void STEP_DATA::save_step_info(double DE_predicted_in, double *unit_step_in, dou
 OPT_DATA::~OPT_DATA() {
   free_matrix(H);
   free_array(rfo_eigenvector);
-  for (int i=0; i<steps.size(); ++i)
+  for (std::size_t i=0; i<steps.size(); ++i)
     delete steps[i];
   steps.clear();
 }
@@ -341,7 +341,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   // Make list of old geometries to update with.  Check each one to see if it is too close for stability.
   std::vector<int> use_steps;
 
-  for (int i_step=steps.size()-2; i_step>=check_start; --i_step) {
+  for (int i_step= ((int) steps.size()) - 2; i_step>=check_start; --i_step) {
 
     // Read/compute old internals and forces
     f_old = g_forces_pointer(i_step);
@@ -377,19 +377,19 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       continue;
     }
     use_steps.push_back(i_step);
-    if (use_steps.size() == Opt_params.H_update_use_last)
+    if ((int) use_steps.size() == Opt_params.H_update_use_last)
       break;
   }
 
   oprintf_out("\tSteps to be used in Hessian update:");
-  for (int i=0; i<use_steps.size(); ++i)
+  for (std::size_t i=0; i<use_steps.size(); ++i)
     oprintf_out(" %d", use_steps[i]+1);
   oprintf_out("\n");
 
   double **H = g_H_pointer();
   double **H_new = init_matrix(Nintco, Nintco);
 
-  for (int s=0; s<use_steps.size(); ++s) {
+  for (std::size_t s=0; s<use_steps.size(); ++s) {
 
     int i_step = use_steps[s];
 
@@ -584,7 +584,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   Nintco = Nintco_in;
   Ncart = Ncart_in;
   H = init_matrix(Nintco, Nintco);
-  rfo_eigenvector = init_array(Nintco+1);
+  rfo_eigenvector = init_array(Nintco);
 
   bool data_file_present = opt_io_is_present(); // determine if old data file is present
 
@@ -616,7 +616,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
       opt_io_read_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
       for (int i=0; i<iteration; ++i) {
         STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
@@ -644,9 +644,9 @@ void OPT_DATA::write(void) {
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
   opt_io_write_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
   opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
+  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
 
-  for (int i=0; i<steps.size(); ++i)
+  for (std::size_t i=0; i<steps.size(); ++i)
     steps[i]->write(i+1, Nintco, Ncart);
   opt_io_close(1);
 

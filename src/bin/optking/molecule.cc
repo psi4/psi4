@@ -121,7 +121,7 @@ void MOLECULE::forces(void) {
 
   // append exernally determined fb forces
   double * fb_force;
-  for (int f=0; f<fb_fragments.size(); ++f) {
+  for (std::size_t f=0; f<fb_fragments.size(); ++f) {
     fb_force = fb_fragments[f]->get_forces_pointer();
     for (int i=0; i<fb_fragments[f]->Ncoord(); ++i)
       f_q[ g_fb_fragment_coord_offset(f) + i ] =  fb_force[i] ;
@@ -150,7 +150,7 @@ void MOLECULE::forces(void) {
 
 // Tell whether there are any fixed equilibrium values
 bool MOLECULE::has_fixed_eq_vals(void) {
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     for (int i=0; i<fragments[f]->Ncoord(); ++i)
       if (fragments[f]->coord_has_fixed_eq_val(i))
         return true;
@@ -163,7 +163,7 @@ bool MOLECULE::is_noncart_present(void) const {
 
   if (interfragments.size()) return true;
 
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     if (fragments[f]->is_noncart_present())
       return true;
 
@@ -180,7 +180,7 @@ void MOLECULE::apply_constraint_forces(void) {
   double k;
 
   int cnt = -1;
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     for (int i=0; i<fragments[f]->Ncoord(); ++i) {
       ++cnt;
       if (fragments[f]->coord_has_fixed_eq_val(i)) {
@@ -222,13 +222,12 @@ void MOLECULE::apply_constraint_forces(void) {
 // add constraints here later
 void MOLECULE::project_f_and_H(void) {
   int Nintco = Ncoord();
-  int Ncart = 3*g_natom();
 
   // compute G = B B^t
   double **G = compute_G(false);
 
   // Put 1's on diagonal for FB coordinates
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     for (int i=0; i<fb_fragments[i]->Ncoord(); ++i)
       G[g_fb_fragment_coord_offset(I) + i][g_fb_fragment_coord_offset(I) + i] = 1.0;
 
@@ -338,7 +337,7 @@ void MOLECULE::project_dq(double *dq) {
 /*  will need fixed if this function ever helps
 #if defined (OPTKING_PACKAGE_QCHEM)
   // Put 1's on diagonal for FB coordinates
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     for (int i=0; i<fb_fragments[i]->Ncoord(); ++i)
       G[g_fb_fragment_coord_offset(I) + i][g_fb_fragment_coord_offset(I) + i] = 1.0;
 #endif
@@ -375,13 +374,12 @@ void MOLECULE::project_dq(double *dq) {
 }
 
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
-  int i, f;
   int dim = Ncoord();
   double scale = 1.0;
   double limit = Opt_params.intrafragment_step_limit;
 
-  for (f=0; f<fragments.size(); ++f)
-    for (i=0; i<fragments[f]->Ncoord(); ++i)
+  for (std::size_t f=0; f<fragments.size(); ++f)
+    for (int i=0; i<fragments[f]->Ncoord(); ++i)
       if ((scale * sqrt(array_dot(dq,dq,dim)))> limit)
         scale = limit / sqrt(array_dot(dq,dq,dim));
 
@@ -389,8 +387,8 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
     oprintf_out("\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
     oprintf_out("\tScaling displacements by %10.5lf\n", scale);
 
-    for (f=0; f<fragments.size(); ++f)
-      for (i=0; i<fragments[f]->Ncoord(); ++i)
+    for (std::size_t f=0; f<fragments.size(); ++f)
+      for (int i=0; i<fragments[f]->Ncoord(); ++i)
         dq[g_coord_offset(f)+i] *= scale;
   }
   
@@ -402,10 +400,10 @@ std::vector<int> MOLECULE::validate_angles(double const * const dq) {
   std::vector<int> lin_angle;
   std::vector<int> frag_angle;
 
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     frag_angle = fragments[f]->validate_angles(&(dq[g_coord_offset(f)]), g_atom_offset(f));
 
-    for (int i=0; i<frag_angle.size(); ++i)
+    for (std::size_t i=0; i<frag_angle.size(); ++i)
       lin_angle.push_back( frag_angle[i] );
 
     frag_angle.clear();
@@ -413,7 +411,7 @@ std::vector<int> MOLECULE::validate_angles(double const * const dq) {
 
   if (!lin_angle.empty()) { 
     oprintf_out("\tNewly linear bends that need to be incoporated into the internal coordinates:\n");
-    for (int i=0; i<lin_angle.size(); i+=3)
+    for (std::size_t i=0; i<lin_angle.size(); i+=3)
       oprintf_out("\t%5d%5d%5d\n", lin_angle[i]+1, lin_angle[i+1]+1, lin_angle[i+2]+1);
   }
   return lin_angle;
@@ -437,7 +435,7 @@ void MOLECULE::H_guess(void) const {
       Opt_params.intrafragment_H == OPT_PARAMS::FISCHER  ||
       Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE  ||
       Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
-    for (int f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       double **H_frag = fragments[f]->H_guess();
   
       for (int i=0; i<fragments[f]->Ncoord(); ++i)
@@ -447,7 +445,7 @@ void MOLECULE::H_guess(void) const {
       free_matrix(H_frag);
     }
   
-    for (int I=0; I<interfragments.size(); ++I) {
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
       double **H_interfrag = interfragments[I]->H_guess();
   
       for (int i=0; i<interfragments[I]->Ncoord(); ++i)
@@ -458,7 +456,7 @@ void MOLECULE::H_guess(void) const {
       free_matrix(H_interfrag);
     }
   
-    for (int I=0; I<fb_fragments.size(); ++I) {
+    for (std::size_t I=0; I<fb_fragments.size(); ++I) {
       double **H_fb_frag = fb_fragments[I]->H_guess();
   
       for (int i=0; i<fb_fragments[I]->Ncoord(); ++i)
@@ -470,7 +468,8 @@ void MOLECULE::H_guess(void) const {
   }
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
     double **H_xyz = Lindh_guess();      // generate Lindh cartesian Hessian
-    bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
+    //bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
+    cartesian_H_to_internals(H_xyz); // transform to internals
     // if fails, then what?  Fix later. TODO
     free_matrix(H_xyz);
   }
@@ -576,7 +575,7 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
 double *MOLECULE::g_masses(void) const {
   double *u = init_array(g_natom());
   int cnt = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     for (int i=0; i<fragments[f]->g_natom(); ++i)
       u[cnt++] = fragments[f]->g_mass(i);
   return u;
@@ -585,7 +584,7 @@ double *MOLECULE::g_masses(void) const {
 double *MOLECULE::g_Z(void) const {
   double *Zs = init_array(g_natom());
   int cnt = 0;
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     double *frag_Z = fragments[f]->g_Z_pointer();
     for (int i=0; i<fragments[f]->g_natom(); ++i)
       Zs[cnt++] = frag_Z[i];
@@ -597,10 +596,10 @@ double *MOLECULE::g_Z(void) const {
 double ** MOLECULE::compute_B(void) const {
   double **B = init_matrix(Ncoord(), 3*g_natom());
 
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     fragments[f]->compute_B(B, g_coord_offset(f), g_atom_offset(f));
 
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     int iA = interfragments[I]->g_A_index();
     int iB = interfragments[I]->g_B_index();
 
@@ -614,9 +613,8 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
   int fragment_index = -1;
   int coordinate_index = 0;
   bool is_interfragment = true;
-  int f;
 
-  for (f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     for (int i=0; i<fragments[f]->Ncoord(); ++i) {
       if (cnt_intcos++ == intco_index) {
         fragment_index = f;
@@ -628,7 +626,7 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
   }
 
   if (is_interfragment) {  // intco_index not yet found
-    for (f=0; f<interfragments.size(); ++f) {
+    for (std::size_t f=0; f<interfragments.size(); ++f) {
       for (int i=0; i<interfragments[f]->Ncoord(); ++i) {
         if (cnt_intcos++ == intco_index) {
           fragment_index = f;
@@ -769,7 +767,7 @@ bool MOLECULE::apply_input_constraints(void) {
 // Add cartesian coordinates
 int MOLECULE::add_cartesians(void) {
   int nadded = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->add_cartesians();
   return nadded;
 }
@@ -777,9 +775,9 @@ int MOLECULE::add_cartesians(void) {
 // Determine trivial coordinate combinations, i.e., don't combine..
 int MOLECULE::form_trivial_coord_combinations(void) {
   int nadded = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_trivial_coord_combinations();
-  for (int I=0; I<interfragments.size(); ++I)
+  for (std::size_t I=0; I<interfragments.size(); ++I)
     nadded += interfragments[I]->form_trivial_coord_combinations();
   return nadded;
 }
@@ -787,7 +785,7 @@ int MOLECULE::form_trivial_coord_combinations(void) {
 // Determine initial delocalized coordinate coefficients.
 int MOLECULE::form_delocalized_coord_combinations(void) {
   int nadded = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_delocalized_coord_combinations();
 
   // We can throw out coordinates which are asymmetric wrt to the ENTIRE system. 
@@ -825,13 +823,13 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
     nadded -= asymm_coord.size();
     if (asymm_coord.size()) 
       oprintf_out("\tRemoving the following coordinates because they break molecular point group:\n\t");
-    for (int i=0; i<asymm_coord.size(); ++i)
+    for (std::size_t i=0; i<asymm_coord.size(); ++i)
       oprintf_out(" %d", asymm_coord[i]+1);
     oprintf_out("\n");
 
-    for (int i=0; i<asymm_coord.size(); ++i) {
+    for (std::size_t i=0; i<asymm_coord.size(); ++i) {
       fragments[0]->erase_combo_coord(asymm_coord[i]);
-      for (int j=i; j<asymm_coord.size(); ++j)
+      for (std::size_t j=i; j<asymm_coord.size(); ++j)
         asymm_coord[j] -= 1;
     }
     free_matrix(Bs);
@@ -846,7 +844,7 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
 // Determine Pulay natural coordinate combinations.
 int MOLECULE::form_natural_coord_combinations(void) {
   int nadded = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->form_natural_coord_combinations();
   return nadded;
 }
@@ -861,7 +859,7 @@ double ** MOLECULE::compute_constraints(void) {
 
   C = init_matrix(Ncoord(), Ncoord());
 
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     C_frag = fragments[f]->compute_constraints();
 
     for (i=0; i<fragments[f]->Ncoord(); ++i)
@@ -871,7 +869,7 @@ double ** MOLECULE::compute_constraints(void) {
     free_matrix(C_frag);
   }
 
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     C_inter = interfragments[I]->compute_constraints(); // Ncoord() X Ncoord
 
     for (i=0; i<interfragments[I]->Ncoord(); ++i)
@@ -926,7 +924,7 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
 
 bool MOLECULE::is_coord_fixed(int coord_index) {
   int cnt = 0;
-  for (int f=0; f<fragments.size(); ++f)
+  for (std::size_t f=0; f<fragments.size(); ++f)
     for  (int i=0; i<fragments[f]->Ncoord(); ++i) {
       if (cnt == coord_index)
         return fragments[f]->coord_has_fixed_eq_val(i);
@@ -976,7 +974,7 @@ void MOLECULE::add_fb_fragments(void) {
 // from the data in opt_data after that data is read.
 void MOLECULE::update_fb_values(void) {
 
-  for (int i=0; i<fb_fragments.size(); ++i) {
+  for (std::size_t i=0; i<fb_fragments.size(); ++i) {
     double *vals = init_array(6);
 
     double *dq;
