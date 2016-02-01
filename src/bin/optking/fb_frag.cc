@@ -80,9 +80,9 @@ double **FB_FRAG::H_guess(void) {
 }
 
   // Tell QChem to update rotation matrix and com for FB fragment
-void FB_FRAG::displace (int fb_frag_index, double *dq) {
+void FB_FRAG::displace (int qc_fb_frag_index, double *qc_dq) {
 #if defined (OPTKING_PACKAGE_QCHEM)
-  ::EFP::GetInstance()->displace(fb_frag_index, dq);
+  ::EFP::GetInstance()->displace(qc_fb_frag_index, qc_dq);
 #endif
 }
 

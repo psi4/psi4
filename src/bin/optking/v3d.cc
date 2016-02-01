@@ -74,6 +74,7 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   double & tau) {
   double tval, phi_123, phi_234;
   double eAB[3], eBC[3], eCD[3], tmp[3], tmp2[3];
+  double phi_lim = Opt_params.tors_angle_lim;
 
   tau = 0.0;
 
@@ -87,7 +88,11 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
 
   // compute bond angles
   if ( !v3d_angle(A, B, C, phi_123) || !v3d_angle(B, C, D, phi_234) )
-    throw(INTCO_EXCEPT("v3d_tors: distances are not reasonably normalized for angles.",true));
+    throw(INTCO_EXCEPT("v3d_tors: cannot compute angles in torsion.",true));
+
+  if ( phi_123 < phi_lim || phi_123 > (_pi - phi_lim) ||
+       phi_234 < phi_lim || phi_234 > (_pi - phi_lim))
+    return false;
 
   //oprintf_out("v3d_tors : phi123 = %15.10lf\n", phi_123);
   //oprintf_out("v3d_tors : phi234 = %15.10lf\n", phi_234);

@@ -88,17 +88,17 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
   if (R_atoms.size()) {
     oprintf_out("\tFrozen distance atom list: \n");
-    for (int i=0; i<R_atoms.size(); i+=2)
+    for (std::size_t i=0; i<R_atoms.size(); i+=2)
       oprintf_out("\t %5d %5d\n", R_atoms[i]+1, R_atoms[i+1]+1);
   }
   if (B_atoms.size()) {
     oprintf_out("\tFrozen bend atom list: \n");
-    for (int i=0; i<B_atoms.size(); i+=3)
+    for (std::size_t i=0; i<B_atoms.size(); i+=3)
       oprintf_out("\t %5d %5d %5d\n", B_atoms[i]+1, B_atoms[i+1]+1, B_atoms[i+2]+1);
   }
   if (D_atoms.size()) {
     oprintf_out("\tFrozen dihedral atom list: \n");
-    for (int i=0; i<D_atoms.size(); i+=4)
+    for (std::size_t i=0; i<D_atoms.size(); i+=4)
       oprintf_out("\t %5d %5d %5d %5d\n", D_atoms[i]+1, D_atoms[i+1]+1,
         D_atoms[i+2]+1, D_atoms[i+3]+1);
   }
@@ -107,7 +107,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     return false;
 
   // do frozen distances
-  for (int i=0; i<R_atoms.size(); i+=2) {
+  for (std::size_t i=0; i<R_atoms.size(); i+=2) {
     int a = R_atoms[i];
     int b = R_atoms[i+1];
 
@@ -119,7 +119,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == coords.simples.size())
+    if (((std::size_t) index) == coords.simples.size())
       coords.simples.push_back(one_stre);// add it
     else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
@@ -127,7 +127,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     }
   }
   // do frozen bends
-  for (int i=0; i<B_atoms.size(); i+=3) {
+  for (std::size_t i=0; i<B_atoms.size(); i+=3) {
     int a = B_atoms[i];
     int b = B_atoms[i+1];
     int c = B_atoms[i+2];
@@ -140,7 +140,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
 
-    if (index == coords.simples.size())
+    if (((std::size_t) index) == coords.simples.size())
       coords.simples.push_back(one_bend);// add it
     else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
@@ -148,7 +148,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     }
   }
   // do dihedral angles
-  for (int i=0; i<D_atoms.size(); i+=4) {
+  for (std::size_t i=0; i<D_atoms.size(); i+=4) {
     int a = D_atoms[i];
     int b = D_atoms[i+1];
     int c = D_atoms[i+2];
@@ -162,7 +162,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == coords.simples.size())
+    if ((std::size_t) index == coords.simples.size())
       coords.simples.push_back(one_tors);// add it
     else {
       coords.simples[index]->freeze();   // it's there already; make sure it's frozen
@@ -172,7 +172,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
   // Do cartesian coordinates .
   if (Carts.size()) {
     if (Opt_params.print_lvl > 1) {
-      for (int i=0; i<Carts.size(); ++i) {
+      for (std::size_t i=0; i<Carts.size(); ++i) {
         oprintf_out("\n\tFreeze for atom %d (starting at 1): ", Carts[i].atom+1);
         if (Carts[i].freeze_x) oprintf_out("X");
         if (Carts[i].freeze_y) oprintf_out("Y");
@@ -181,7 +181,7 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
       oprintf_out("\n\n");
     }
   }
-  for (int i=0; i<Carts.size(); ++i) {
+  for (std::size_t i=0; i<Carts.size(); ++i) {
     int atom = Carts[i].atom;
     vector<int> xyz_list;
     if (Carts[i].freeze_x) xyz_list.push_back(0);
@@ -191,11 +191,11 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     if (atom >= natom)
       throw(INTCO_EXCEPT("Impossibly large index for atom in frozen cartesian string."));
 
-    for (int x=0; x<xyz_list.size(); ++x) {
+    for (std::size_t x=0; x<xyz_list.size(); ++x) {
       CART *one_cart = new CART(atom, xyz_list[x], true); // create frozen coordinate: x=0, y=1, z=2
 
       int index = find(one_cart);
-      if (index == coords.simples.size())
+      if ((std::size_t) index == coords.simples.size())
         coords.simples.push_back(one_cart);// add it
       else {
         coords.simples[index]->freeze();   // it's there already; make sure it's frozen
@@ -217,25 +217,25 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 
   if (R.size()) {
     oprintf_out("\tFixed distance atom list: \n");
-    for (int i=0; i<R.size(); ++i)
+    for (std::size_t i=0; i<R.size(); ++i)
       oprintf_out("\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
   }
 
   if (B.size()) {
     oprintf_out("\tFixed bend atom list: \n");
-    for (int i=0; i<B.size(); ++i)
+    for (std::size_t i=0; i<B.size(); ++i)
       oprintf_out("\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
   }
 
   if (D.size()) {
     oprintf_out("\tFixed dihedral atom list: \n");
-    for (int i=0; i<D.size(); ++i)
+    for (std::size_t i=0; i<D.size(); ++i)
       oprintf_out("\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
   }
 
 
   // do fixed distances
-  for (int i=0; i<R.size(); ++i) {
+  for (std::size_t i=0; i<R.size(); ++i) {
     int a = R[i].atoms[0];
     int b = R[i].atoms[1];
 
@@ -249,7 +249,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == coords.simples.size())
+    if ((std::size_t) index == coords.simples.size())
       coords.simples.push_back(one_stre);// add it
     else {
       coords.simples[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
@@ -257,7 +257,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     }
   }
   // do fixed bends
-  for (int i=0; i<B.size(); ++i) {
+  for (std::size_t i=0; i<B.size(); ++i) {
     int a = B[i].atoms[0];
     int b = B[i].atoms[1];
     int c = B[i].atoms[2];
@@ -272,7 +272,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
 
-    if (index == coords.simples.size())
+    if ((std::size_t) index == coords.simples.size())
       coords.simples.push_back(one_bend);// add it
     else {
       coords.simples[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
@@ -280,7 +280,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     }
   }
   // do fixed dihedrals
-  for (int i=0; i<D.size(); ++i) {
+  for (std::size_t i=0; i<D.size(); ++i) {
     int a = D[i].atoms[0];
     int b = D[i].atoms[1];
     int c = D[i].atoms[2];
@@ -296,7 +296,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == coords.simples.size())
+    if ((std::size_t) index == coords.simples.size())
       coords.simples.push_back(one_tors);// add it
     else {
       coords.simples[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
@@ -317,7 +317,7 @@ T StringToNumber ( const string & Text ) {
 std::vector<int> split_to_ints(string &str) {
 
   // Replace commas and ( and ) with spaces so that commas don't break it
-  for (int i=0; i<str.size(); ++i) {
+  for (std::size_t i=0; i<str.size(); ++i) {
     if ( str[i] == ',' || str[i] == '(' || str[i] == ')' )
       str[i] = ' ';
   }
@@ -342,7 +342,7 @@ std::vector<int> split_to_ints(string &str) {
 std::vector<fixed_coord> split_to_fixed_coord(string &str, int N) {
 
   // Replace commas and ( and ) with spaces so that commas don't break it
-  for (int i=0; i<str.size(); ++i)
+  for (std::size_t i=0; i<str.size(); ++i)
     if ( str[i] == ',' || str[i] == '(' || str[i] == ')' )
       str[i] = ' ';
 
@@ -383,7 +383,7 @@ std::vector<fixed_coord> split_to_fixed_coord(string &str, int N) {
 std::vector<frozen_cart> split_to_frozen_cart(string &str) {
 
   // Replace commas and ( and ) with spaces so that commas don't break it
-  for (int i=0; i<str.size(); ++i)
+  for (std::size_t i=0; i<str.size(); ++i)
     if ( str[i] == ',' || str[i] == '(' || str[i] == ')' || str[i] == '"' || str[i] == '\n' )
       str[i] = ' ';
 
