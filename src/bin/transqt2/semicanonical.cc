@@ -112,6 +112,7 @@ void semicanonical_fock(void)
 
 void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
 {
+  throw PSIEXCEPTION("UHF Fock build is deprecated");
   int i, j, ij;
   int nso=0;
   int ntri=0;

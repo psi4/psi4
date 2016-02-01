@@ -83,6 +83,7 @@ int CCEnergyWavefunction::converged(double ediff)
   }
   else if(params_.ref == 1) { /** ROHF **/
 
+//    outfile->Printf("I am a ROHF Wavefunction\n");
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
     global_dpd_->file2_mat_init(&T1);
     global_dpd_->file2_mat_rd(&T1);

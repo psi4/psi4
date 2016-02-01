@@ -187,6 +187,7 @@ double CCEnergyWavefunction::compute_energy()
     /* Compute the MP2 energy while we're here */
     if(params_.ref == 0 || params_.ref == 2) {
         moinfo_.emp2 = mp2_energy();
+        outfile->Printf("MP2 correlaction energy %4.16f\n", moinfo_.emp2);
         psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *) &(moinfo_.emp2),sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
@@ -436,7 +437,7 @@ double CCEnergyWavefunction::compute_energy()
         outfile->Printf( "\n\tOpposite-spin CCSD correlation energy = %20.15f\n", moinfo_.ecc_os);
         outfile->Printf( "\tSame-spin CCSD correlation energy     = %20.15f\n", moinfo_.ecc_ss);
         outfile->Printf( "\tCCSD correlation energy               = %20.15f\n", moinfo_.ecc);
-        outfile->Printf( "      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
+        outfile->Printf( "      * CCSD total energy                 = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.ecc_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;

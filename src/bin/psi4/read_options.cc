@@ -1568,8 +1568,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DELETE_TEI", true);
     /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL", 2);
-    /*- Convert ROHF MOs to semicanonical MOs -*/
-    options.add_bool("SEMICANONICAL", true);
+    /*- Force conversion of ROHF MOs to semicanonical MOs to run UHF-based energies -*/
+    options.add_bool("SEMICANONICAL", false);
   }
   if(name == "CCSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Sorts integrals for efficiency. Called before (non density-fitted) MP2 and

@@ -647,10 +647,10 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   if(reference == 2) denom_uhf();
   else denom_rhf(openpi);
 
-  outfile->Printf("\tNuclear Rep. energy    =  %20.14f\n", enuc);
-  outfile->Printf("\tSCF energy             =  %20.14f\n", escf);
+  outfile->Printf("\tNuclear Rep. energy          =  %20.14f\n", enuc);
+  outfile->Printf("\tSCF energy                   =  %20.14f\n", escf);
   double eref = scf_check(reference, openpi) + enuc + efzc;
-  outfile->Printf("\tReference energy       =  %20.14f\n", eref);
+  outfile->Printf("\tReference energy             =  %20.14f\n", eref);
   psio->write_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(eref), sizeof(double));
 
   SharedMatrix Ca_vir, Cb_vir, Ca_occ;

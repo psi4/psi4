@@ -1821,6 +1821,8 @@ def run_ccenergy(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
+    ref_wfn.Ca().print_out()
+    ref_wfn.Cb().print_out()
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -1828,11 +1830,15 @@ def run_ccenergy(name, **kwargs):
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
 
+    print(lowername)
+    print(psi4.get_option('CCTRANSORT', 'SEMICANONICAL'))
     # TDC: ccsd in this list?
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
             ((lowername in ['ccsd(t)', 'ccsd(at)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
               psi4.get_option('CCTRANSORT', 'SEMICANONICAL')):
+        print('About to semicanonicalize')
+        #psi4.set_global_option('REFERENCE', 'UHF')
         ref_wfn.semicanonicalize()
 
     if psi4.get_global_option('RUN_CCTRANSORT'):
@@ -2348,6 +2354,7 @@ def run_eom_cc_gradient(name, **kwargs):
     psi4.set_local_option('CCDENSITY', 'XI', 'FALSE')
     psi4.cclambda(ref_wfn)
     psi4.ccdensity(ref_wfn)
+    print('I am here')
     grad = psi4.deriv(ref_wfn)
     ref_wfn.set_gradient(grad)
     psi4.set_wavefunction(ref_wfn)
