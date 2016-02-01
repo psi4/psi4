@@ -23,18 +23,13 @@
 /*!
    \file frag_natural.cc
    \ingroup optking
-   \brief function in frag class to generate natural combinations.
+   \brief function in frag class to generate natural combinations.  Not yet complete.
 */
 
 #include "frag.h"
 
 //#include "mem.h"
 #include "v3d.h"
-//#include "atom_data.h"
-//#include "cov_radii.h"
-//#include "opt_data.h"
-//#include "physconst.h"
-//#include "linear_algebra.h"
 #include "psi4-dec.h"
 #include "print.h"
 #define EXTERN
@@ -80,7 +75,7 @@ int FRAG::form_natural_coord_combinations(void) {
   // Make list of coordination numbers.
   int *CN = init_int_array(natom);
   for (int i=0; i<natom; ++i)
-    CN[i] = bond[i].size();
+    CN[i] = (int) bond[i].size();
 
   if (Opt_params.print_lvl > 1) {
     oprintf_out("  -Atom-  -Coord. number-\n");
@@ -103,13 +98,13 @@ int FRAG::form_natural_coord_combinations(void) {
 
   // Identify rings. TODO: Fix for arbitrary ring sizes
   vector< vector<int> > rings_full;
-  int length;
-  for (int i=0; i<skeleton.size(); ++i) {
+  //int length;
+  for (std::size_t i=0; i<skeleton.size(); ++i) {
 
-    for (int j=0; j<skeleton[i].size(); ++j) {
+    for (std::size_t j=0; j<skeleton[i].size(); ++j) {
       if (j == i) continue;
 
-      for (int k=0; k<skeleton[j].size(); ++k) {
+      for (std::size_t k=0; k<skeleton[j].size(); ++k) {
         if (k == j) continue;
         if (k == i ) {
           vector<int> one;
@@ -118,7 +113,7 @@ int FRAG::form_natural_coord_combinations(void) {
           one.push_back(k);
           rings_full.push_back(one);
         }
-        for (int l=0; l<skeleton[k].size(); ++l) {
+        for (std::size_t l=0; l<skeleton[k].size(); ++l) {
           if (l == k || l == j) continue;
           if (l == i ) {
             vector<int> one;
@@ -128,7 +123,7 @@ int FRAG::form_natural_coord_combinations(void) {
             one.push_back(l);
             rings_full.push_back(one);
           }
-          for (int m=0; m<skeleton[l].size(); ++m) {
+          for (std::size_t m=0; m<skeleton[l].size(); ++m) {
             if (m == l || m == k || m == j) continue;
             if (m == i ) {
               vector<int> one;
@@ -139,7 +134,7 @@ int FRAG::form_natural_coord_combinations(void) {
               one.push_back(m);
               rings_full.push_back(one);
             }
-            for (int n=0; n<skeleton[m].size(); ++n) {
+            for (std::size_t n=0; n<skeleton[m].size(); ++n) {
               if (n == m || n == l || n == k || n == j) continue;
               if (n == i ) {
                 vector<int> one;
@@ -159,7 +154,7 @@ int FRAG::form_natural_coord_combinations(void) {
   }
 
   // Put rings in a canonical order; minimize first atom, then second
-  for (int i=0; i<rings_full.size(); ++i) {
+  for (std::size_t i=0; i<rings_full.size(); ++i) {
     // Find iterator to atom value in ring.
     std::vector<int>::iterator it;
     it = std::min_element(rings_full[i].begin(), rings_full[i].end(), int_compare);
@@ -175,9 +170,9 @@ int FRAG::form_natural_coord_combinations(void) {
 
   // Remove redundant rings.  Make a copy. Check for duplication
   vector< vector<int> > rings;
-  for (int i=0; i<rings.size(); ++i) {
+  for (std::size_t i=0; i<rings.size(); ++i) {
     bool match = false;
-    for (int j=0; j<i; ++j) {
+    for (std::size_t j=0; j<i; ++j) {
       if (rings_full[i] == rings[j]) { // does this correctly check vector contents?
         match = true;
         break;
@@ -188,9 +183,9 @@ int FRAG::form_natural_coord_combinations(void) {
   }
 
   oprintf_out(" %d rings were detected\n", rings.size());
-  for (int i=0; i<rings.size(); ++i) {
+  for (std::size_t i=0; i<rings.size(); ++i) {
     oprintf_out(" Ring %d : \n", i+1);
-    for (int j=0; j<rings.size(); ++j)
+    for (std::size_t j=0; j<rings.size(); ++j)
       oprintf_out(" %d ", rings[i][j]);
   }
 
@@ -199,8 +194,8 @@ int FRAG::form_natural_coord_combinations(void) {
   for (int i=0; i<natom; ++i)
     inR[i] = false;
 
-  for (int i=0; i<rings.size(); ++i)
-    for (int j=0; j<rings[i].size(); ++j)
+  for (std::size_t i=0; i<rings.size(); ++i)
+    for (std::size_t j=0; j<rings[i].size(); ++j)
       inR[ rings[i][j]] = true;
 
   // Make list of all atoms and the terminal atoms to which they are bonded
@@ -238,7 +233,7 @@ int FRAG::form_natural_coord_combinations(void) {
   inR       all             is atom in ring?
 */
   oprintf_out(" %d simple stretches retained.\n");
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (std::size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == stre_type)
       add_trivial_coord_combination(i);
 
@@ -254,7 +249,7 @@ int FRAG::form_natural_coord_combinations(void) {
     if (CN[i] == 1) continue; // terminal atom
 
     // Number of terminal and non-terminal atoms
-    int num_T = bond_to_T[i].size();
+    std::size_t num_T = bond_to_T[i].size();
     int num_nonT = CN[i] - num_T;
     oprintf_out("Atom %d has %d non-terminal and %d terminal connections\n", i+1, num_T, num_nonT);
 
@@ -267,22 +262,24 @@ int FRAG::form_natural_coord_combinations(void) {
 
     // (2, 0) like H2O or CO2; Also (1, 1) like -O-H; Also (0, 2) like C-O-C
     if ( CN[i] == 2 ) {
-      // add regular bend
-      BEND *pA = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]);
-      int A = find(pA);
-      cc_index.push_back(A); cc_coeff.push_back(1.0);
-      coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
-      cc_index.clear(); cc_coeff.clear();
-
       // This code mimics FRAG::add_bend_by_connectivity to check for need for linear bend complement
-      ok = v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], val);
-      if (ok && val > Opt_params.linear_bend_threshold) { // ~175 degrees
-        BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
-        pB->make_linear_bend();
-        A = find(pB);
+      if (v3d_angle(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], val)) { // computable
+        BEND *pA = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]);
+        if (val > Opt_params.linear_bend_threshold) // ~175 degrees
+          pA->make_lb_normal();
+        int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
         coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
         cc_index.clear(); cc_coeff.clear();
+  
+        if (val > Opt_params.linear_bend_threshold) { // ~175 degrees
+          BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
+          pB->make_lb_complement();
+          A = find(pB);
+          cc_index.push_back(A); cc_coeff.push_back(1.0);
+          coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
+          cc_index.clear(); cc_coeff.clear();
+        }
       }
     }
     // *** Coordination == 3 cases ***
@@ -415,6 +412,9 @@ int FRAG::form_natural_coord_combinations(void) {
       int I2 = find(pI2);
       BEND *pI3 = new BEND( bond_to_T[i][1], i, bond_to_T[i][2]);
       int I3 = find(pI3);
+
+      // stupid line to stop compiler warnings until this code is done.
+      if (I1 == I2 && I2 == I3) return 0;
 
       // if planar, add oofp angle
       ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_to_T[i][2]], val);
