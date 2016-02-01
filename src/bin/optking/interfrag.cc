@@ -42,7 +42,7 @@ using namespace std;
 
 // constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-    double **weightA_in, double **weightB_in, int ndA_in, int ndB_in, bool principal_axes) {
+    double **weightA_in, double **weightB_in, int ndA_in, int ndB_in, bool use_principal_axes) {
 
   A = A_in;
   B = B_in;
@@ -52,6 +52,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   weightB = weightB_in;
   ndA = ndA_in;
   ndB = ndB_in;
+  principal_axes = use_principal_axes;
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
@@ -105,9 +106,9 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
   }
   else if (ndA == 3 && ndB == 1) {
     D_on[2] = D_on[3] = D_on[5] = false; // no theta_B, tau, phi_B
-    STRE *one_stre  = new STRE(2, 3);    // RAB
-    BEND *one_bend  = new BEND(1, 2, 3); // theta_A
-    TORS *one_tors2 = new TORS(0, 1, 2, 3); // phi_A
+    one_stre  = new STRE(2, 3);    // RAB
+    one_bend  = new BEND(1, 2, 3); // theta_A
+    one_tors2 = new TORS(0, 1, 2, 3); // phi_A
   }
   else if (ndA == 1 && ndB == 3) {
     D_on[1] = D_on[3] = D_on[4] = false; // no theta_A, tau, phi_A
@@ -339,7 +340,7 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
   int natomA = A->natom;
   int natomB = B->natom;
 
-  double **B = init_matrix(Ncoord(), 3*(natomA+natomB));
+  //double **B = init_matrix(Ncoord(), 3*(natomA+natomB));
 
   if (!principal_axes) {
 
@@ -720,6 +721,8 @@ void INTERFRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off_A, int 
 // TODO - fix this up later
 std::string INTERFRAG::get_coord_definition(int coord_index, int off_A, int off_B) const {
   ostringstream iss;
+  iss << "Coordinate " << coord_index + 1;
+  iss << "\n";
   for (int i=0; i<ndA; ++i) {
     iss << "A" << i+1;
     for (int j=0; j<A->g_natom(); ++j)
@@ -803,7 +806,7 @@ double ** INTERFRAG::compute_constraints(void) const {
 
 int INTERFRAG::form_trivial_coord_combinations(void) {
   inter_frag->coords.clear_combos();
-  for (int s=0; s<inter_frag->coords.simples.size(); ++s) {
+  for (std::size_t s=0; s<inter_frag->coords.simples.size(); ++s) {
     std::vector<int> i1;
     i1.push_back(s);
     inter_frag->coords.index.push_back(i1);

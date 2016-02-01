@@ -651,11 +651,11 @@ explicitly indicated here.
 
   |cphf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
 
-  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default: 3
+  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default within this context: 3
 
-  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. Default: 4
+  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. 
 
-  |cphf__solver_max_subspace|: Maximum size of the subspace. Default: 18
+  |cphf__solver_max_subspace|: Maximum size of the subspace. Default within this context: 12
    
 
 In case convergence problems are encountered during the Davidson procedure,

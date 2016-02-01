@@ -836,15 +836,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do natural orbitals to speed up evaluation of the triples
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_T3",false);
+    options.add_bool("NAT_ORBS_T3",true);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_T2",false);
+    options.add_bool("NAT_ORBS_T2",true);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of CCD T2 amplitudes?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_V4",false);
+    options.add_bool("NAT_ORBS_V4",true);
 
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for in each of the above three truncations
