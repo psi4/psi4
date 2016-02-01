@@ -39,8 +39,7 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::run_simult_dcft_oo_RHF()
 {
-    if (options_.get_bool("ODC_GUESS"))
-        throw FeatureNotImplemented("RHF-reference DCFT", "ODC_GUESS=TRUE", __FILE__, __LINE__); // By default, ODC_GUESS = FALSE
+    if (options_.get_bool("ODC_GUESS")) run_simult_dc_guess();
 
     // This is the simultaneous orbital/lambda update algorithm for the orbital-optimized methods
     int cycle = 0;

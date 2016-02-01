@@ -216,14 +216,12 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
   double cosu3 = cos_u*cos_u*cos_u;
   double cosv3 = cos_v*cos_v*cos_v;
 
-  double tval, tval1, tval1b, tval2, tval2b, tval3, tval3b, tval4, tval4b;
-
   int k; // cartesian ; not i or j
   for (int a=0; a<4; ++a) {
     for (int b=0; b<=a; ++b) {
       for (int i=0; i<3; ++i) { //i = a_xyz
         for (int j=0; j<3; ++j) { //j=b_xyz
-          tval = 0;
+          double tval = 0;
 
           if ((a==0 && b==0) || (a==1 && b==0) || (a==1 && b ==1))
             tval +=  zeta(a,0,1)*zeta(b,0,1)*(uXw[i]*(w[j]*cos_u-u[j]) + uXw[j]*(w[i]*cos_u-u[i])) / (Lu*Lu*sinu4);

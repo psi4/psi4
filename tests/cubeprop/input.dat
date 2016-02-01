@@ -8,6 +8,8 @@ H 1 1.0 2 104.5
 }
 
 set basis cc-pvqz
+set df_scf_guess  false
+set scf_type pk
 set cubeprop_tasks ['orbitals','density']
 set cubeprop_orbitals [1,2,3,4,5]
 set cubic_grid_overage [1.0,1.0,1.0]

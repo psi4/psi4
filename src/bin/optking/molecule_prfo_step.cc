@@ -53,7 +53,7 @@ void MOLECULE::prfo_step(void) {
   double *dq = p_Opt_data->g_dq_pointer();
   int Nintco = Ncoord();
   int rfo_root; // ultimately, should be array of roots to maximize
-  int cnt_i, cnt_j;
+  int cnt_i;
 
   oprintf_out("\tTaking PRFO optimization step.\n");
 
@@ -114,6 +114,12 @@ void MOLECULE::prfo_step(void) {
   // transform gradient
   double *f_q_Hevect_basis = init_array(Nintco);
   opt_matrix_mult(H_evects, 0, &fq, 1, &f_q_Hevect_basis, 1, Nintco, Nintco, 1, 0);
+  if (Opt_params.print_lvl >= 2) {
+    oprintf_out("\tInternal forces in au,\n");
+    oprint_array_out(fq, Nintco);
+    oprintf_out("\tInternal forces in au, in Hevect basis.\n");
+    oprint_array_out(f_q_Hevect_basis, Nintco);
+  }
 
   // Build RFO-max.
   double **rfo_max = init_matrix(mu+1, mu+1);
@@ -178,8 +184,9 @@ void MOLECULE::prfo_step(void) {
 
   //Normalize all eigenvectors.
   for (int i=0; i<mu+1; ++i) {
-    double tval = rfo_max[i][mu];
-    if (fabs(tval) > Opt_params.rfo_normalization_max) {
+    // how big is dividing going to make it?
+    double tval = abs( array_abs_max(rfo_max[i], mu) / rfo_max[i][mu] );
+    if (fabs(tval) < Opt_params.rfo_normalization_max) {
       for (int j=0; j<mu+1; ++j)
         rfo_max[i][j] /= rfo_max[i][mu];
     }
@@ -191,8 +198,8 @@ void MOLECULE::prfo_step(void) {
 
   //rfo_min contains normalized eigenvectors as rows
   for (int i=0; i<Nintco-mu+1; ++i) {
-    double tval = rfo_min[i][Nintco-mu];
-    if (fabs(tval) > Opt_params.rfo_normalization_max) {
+    double tval = abs( array_abs_max(rfo_min[i], Nintco-mu) / rfo_min[i][Nintco-mu] );
+    if (fabs(tval) < Opt_params.rfo_normalization_max) {
       for (int j=0;j<Nintco-mu+1;++j)
         rfo_min[i][j] /= rfo_min[i][Nintco-mu];
     }
@@ -206,7 +213,7 @@ void MOLECULE::prfo_step(void) {
 
   // extract step with highest eigenvalue?
   rfo_step_Hevect_basis[rfo_root] = rfo_max[mu][0]; // drop last (2nd) entry
-  
+
   // extract step with lowest eigenvalue
   cnt_i = 0;
   for (int i=0; i<Nintco; ++i) {
@@ -280,7 +287,7 @@ double rfo_dqnorm_min;
 
 
   // do displacements for each fragment separately
- for (int f=0; f<fragments.size(); ++f) {
+ for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -288,7 +295,7 @@ double rfo_dqnorm_min;
     fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
@@ -298,7 +305,7 @@ double rfo_dqnorm_min;
   }
 
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step

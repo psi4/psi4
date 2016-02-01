@@ -157,83 +157,124 @@ void SAPT0::print_header()
 
 void SAPT0::print_results()
 {
-  e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
+  // The tolerance to scale exchange energies, i.e. if E_exch10 is
+  // less than the scaling tolerance, we do not scale.
+  double scaling_tol = 1.0e-5;
 
-  double tot_elst = e_elst10_;
-  double tot_exch = e_exch10_;
-  double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
-  double tot_disp = e_disp20_ + e_exch_disp20_;
+  // The power applied to the scaling factor for sSAPT0
+  double alpha = 3.0;
 
-  outfile->Printf("\n    SAPT Results  \n");
-  outfile->Printf("  -----------------------------------------------------------------------\n");
-  outfile->Printf("    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
-  outfile->Printf("      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_elst10_*1000.0,e_elst10_*pc_hartree2kcalmol);
-  outfile->Printf("    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_exch*1000.0,tot_exch*pc_hartree2kcalmol);
-  outfile->Printf("      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_*1000.0,e_exch10_*pc_hartree2kcalmol);
-  outfile->Printf("      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch10_s2_*1000.0,e_exch10_s2_*pc_hartree2kcalmol);
-  outfile->Printf("    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_ind*1000.0,tot_ind*pc_hartree2kcalmol);
-  if (no_response_) {
-    outfile->Printf("      Ind20            %16.8lf mH %16.8lf kcal mol^-1\n",
+  double sapt_Xscal = ( e_exch10_ < scaling_tol ? 1.0 : e_exch10_ / e_exch10_s2_ );
+  double sSAPT_Xscal = pow(sapt_Xscal,alpha);
+
+  // Now we compute everything once without scaling, and then with scaling.
+  std::vector<double> Xscal;
+  Xscal.push_back(1.0);
+  Xscal.push_back(sapt_Xscal);
+
+  // The main loop, computes everything with all scaling factors in
+  // the Xscal vector. Only exports variables once, for the scaling factor
+  // of 1.0.
+  std::vector<double>::iterator scal_it;
+  for(scal_it = Xscal.begin(); scal_it != Xscal.end(); ++scal_it) {
+
+    double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_);
+
+    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
+               *scal_it * (e_exch_ind20_ + e_exch_disp20_);
+    double e_sSAPT0 = 0.0;
+    if( *scal_it == sapt_Xscal) {
+      e_sSAPT0 = e_elst10_ + e_exch10_ + e_ind20_ + dHF2 + sapt_Xscal * e_exch_ind20_ +
+                 e_disp20_ + sSAPT_Xscal * e_exch_disp20_ + (sSAPT_Xscal - 1.0) * e_exch_ind20_;
+    }
+
+    double tot_elst = e_elst10_;
+    double tot_exch = e_exch10_; 
+    double tot_ind = e_ind20_ + dHF2 + *scal_it * e_exch_ind20_;
+    double tot_disp = e_disp20_ + *scal_it * e_exch_disp20_;
+  
+    if(scal_it == Xscal.begin()) {
+        outfile->Printf("\n    SAPT Results ==> NO EXCHANGE SCALING APPLIED <==  \n");
+    } else {
+        outfile->Printf("\n    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== \n");
+        outfile->Printf("\n    Scaling factor: %12.6f  \n", *scal_it);
+    }
+    std::string scaled = (scal_it != Xscal.begin() ? "scal." : "     ");
+    outfile->Printf("  --------------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics          %16.8lf mH %16.8lf kcal mol^-1\n",
+      tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
+    outfile->Printf("      Elst10,r              %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_elst10_*1000.0,e_elst10_*pc_hartree2kcalmol);
+    outfile->Printf("\n    Exchange %5s          %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), tot_exch*1000.0,tot_exch*pc_hartree2kcalmol);
+    outfile->Printf("      Exch10                %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch10_*1000.0,e_exch10_*pc_hartree2kcalmol);
+    outfile->Printf("      Exch10(S^2)           %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch10_s2_*1000.0,e_exch10_s2_*pc_hartree2kcalmol);
+    outfile->Printf("\n    Induction %5s         %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), tot_ind*1000.0,tot_ind*pc_hartree2kcalmol);
+    outfile->Printf("      Ind20,r               %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind20_*1000.0,e_ind20_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Ind20       %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind20_*1000.0,e_exch_ind20_*pc_hartree2kcalmol);
-    outfile->Printf("      delta HF (2)     %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      dHF*1000.0,dHF*pc_hartree2kcalmol);
-  } else {
-    outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind20_*1000.0,e_ind20_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind20_*1000.0,e_exch_ind20_*pc_hartree2kcalmol);
-    outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      dHF*1000.0,dHF*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Ind20,r %5s    %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), *scal_it * e_exch_ind20_*1000.0,*scal_it * e_exch_ind20_*pc_hartree2kcalmol);
+    outfile->Printf("      delta HF,r (2) %5s  %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), dHF2*1000.0,dHF2*pc_hartree2kcalmol);
+    outfile->Printf("\n    Dispersion %5s        %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), tot_disp*1000.0,tot_disp*pc_hartree2kcalmol);
+    outfile->Printf("      Disp20                %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Disp20 %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), *scal_it * e_exch_disp20_*1000.0,*scal_it * e_exch_disp20_*pc_hartree2kcalmol);
+    outfile->Printf("      Disp20 (SS)           %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp20_ss_*1000.0,e_disp20_ss_*pc_hartree2kcalmol);
+    outfile->Printf("      Disp20 (OS)           %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp20_os_*1000.0,e_disp20_os_*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Disp20 (SS) %5s%16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), *scal_it * e_exch_disp20_ss_*1000.0,*scal_it * e_exch_disp20_ss_*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Disp20 (OS) %5s%16.8lf mH %16.8lf kcal mol^-1\n\n",
+      scaled.c_str(), *scal_it * e_exch_disp20_os_*1000.0,*scal_it * e_exch_disp20_os_*pc_hartree2kcalmol);
+  
+    outfile->Printf("\n  Total HF                      %16.8lf mH %16.8lf kcal mol^-1\n",
+      eHF_*1000.0,eHF_*pc_hartree2kcalmol);
+    outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
+      scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
+    if(*scal_it == sapt_Xscal && (scal_it != Xscal.begin()) ) {
+          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n",
+          e_sSAPT0*1000.0,e_sSAPT0*pc_hartree2kcalmol);
+    }
+    outfile->Printf("  --------------------------------------------------------------------------\n");
+
+    // Only export if not scaled.
+    if(scal_it == Xscal.begin()) {
+
+        Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
+        Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
+
+        Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
+        Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
+        Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
+
+        Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+        Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
+        Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
+        Process::environment.globals["SAPT HF TOTAL ENERGY"] = eHF_;
+        Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
+
+        Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
+        Process::environment.globals["SAPT DISP20 ENERGY"] = e_disp20_;
+        Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = e_exch_disp20_;
+        Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
+        Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
+        Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
+        Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
+
+        Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
+        Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
+        Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+
+    }
   }
-  outfile->Printf("    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_disp*1000.0,tot_disp*pc_hartree2kcalmol);
-  outfile->Printf("      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
-  outfile->Printf("      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch_disp20_*1000.0,e_exch_disp20_*pc_hartree2kcalmol);
-  outfile->Printf("      Disp20 (SS)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_ss_*1000.0,e_disp20_ss_*pc_hartree2kcalmol);
-  outfile->Printf("      Disp20 (OS)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_os_*1000.0,e_disp20_os_*pc_hartree2kcalmol);
-  outfile->Printf("      Exch-Disp20 (SS) %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_disp20_ss_*1000.0,e_exch_disp20_ss_*pc_hartree2kcalmol);
-  outfile->Printf("      Exch-Disp20 (OS) %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch_disp20_os_*1000.0,e_exch_disp20_os_*pc_hartree2kcalmol);
 
-  outfile->Printf("    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
-    eHF_*1000.0,eHF_*pc_hartree2kcalmol);
-  outfile->Printf("    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-
-  Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
-  Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
-  Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
-  Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
-  Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
-  Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
-  Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
-  Process::environment.globals["SAPT HF TOTAL ENERGY"] = eHF_;
-  Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
-  Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
-  Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
-  Process::environment.globals["SAPT DISP20 ENERGY"] = e_disp20_;
-  Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = e_exch_disp20_;
-  Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
-  Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
-  Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
-  Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
-  Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
-  Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
-  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 void SAPT0::check_memory()

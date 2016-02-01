@@ -38,7 +38,7 @@ namespace opt {
 double COMBO_COORDINATES::value(GeomType geom, int lookup) const {
   double tval = 0.0;
 
-  for (int s=0; s<index.at(lookup).size(); ++s)
+  for (std::size_t s=0; s<index.at(lookup).size(); ++s)
     tval += coeff.at(lookup).at(s) * simples.at(index[lookup][s])->value(geom);
 
   return tval;
@@ -48,7 +48,7 @@ double COMBO_COORDINATES::value(GeomType geom, int lookup) const {
 double * COMBO_COORDINATES::values(GeomType geom) const {
   double *q = init_array(index.size());
 
-  for (int cc=0; cc<index.size(); ++cc)
+  for (std::size_t cc=0; cc<index.size(); ++cc)
     q[cc] = value(geom, cc);
 
   return q;
@@ -58,7 +58,7 @@ double * COMBO_COORDINATES::values(GeomType geom) const {
 // offset specifies first atom in this fragment; allows direct use by molecule with additional atoms
 // Calling routine must 0 memory.
 bool COMBO_COORDINATES::DqDx(GeomType geom, int lookup, double *dqdx, int atom_offset) const {
-  for (int s=0; s<index.at(lookup).size(); ++s) {          // loop over simples in combo
+  for (std::size_t s=0; s<index.at(lookup).size(); ++s) {          // loop over simples in combo
     //oprintf_out("simple %d, \n", index[lookup][s]);
     double **dqdx_simple = simples.at(index[lookup][s])->DqDx(geom);
 
@@ -85,7 +85,7 @@ bool COMBO_COORDINATES::DqDx(GeomType geom, int lookup, double *dqdx, int atom_o
 // Memory is provided by calling function.  Must be zero'ed beforehand.
 bool COMBO_COORDINATES::Dq2Dx2(GeomType geom, int lookup, double **dq2dx2, int atom_offset) const {
 
-  for (int s=0; s<index.at(lookup).size(); ++s) {  // loop over simples
+  for (std::size_t s=0; s<index.at(lookup).size(); ++s) {  // loop over simples
     // Dimension of dq2dx2_simple is 6x6, 9x9, or 12x12
     double **dq2dx2_simple = simples[ index[lookup].at(s) ]->Dq2Dx2(geom);
 
@@ -110,9 +110,9 @@ bool COMBO_COORDINATES::Dq2Dx2(GeomType geom, int lookup, double **dq2dx2, int a
 
 // Clear current combinations.  Leaves simples in place
 void COMBO_COORDINATES::clear_combos(void) {
-  for (int i=0; i<index.size(); ++i)
+  for (std::size_t i=0; i<index.size(); ++i)
     index[i].clear();
-  for (int i=0; i<coeff.size(); ++i)
+  for (std::size_t i=0; i<coeff.size(); ++i)
     coeff[i].clear();
   index.clear();
   coeff.clear();
@@ -129,9 +129,9 @@ void COMBO_COORDINATES::erase_combo(int cc) {
 // Print out all s vectors
 void COMBO_COORDINATES::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   oprintf(psi_fp, qc_fp, "\t---S vectors for internals---\n");
-  for(int cc=0; cc<index.size(); ++cc) {
+  for(std::size_t cc=0; cc<index.size(); ++cc) {
     oprintf_out("Coordinate %d\n", cc+1);
-    for(int s=0; s<index[cc].size(); ++s) {
+    for(std::size_t s=0; s<index[cc].size(); ++s) {
       oprintf_out("\tCoeff %15.10lf\n", coeff.at(cc).at(s));
       simples[ index[cc][s] ]->print_s(psi_fp, qc_fp, geom);
     }
@@ -143,7 +143,7 @@ void COMBO_COORDINATES::print(std::string psi_fp, FILE *qc_fp, int cc, GeomType 
   if (index[cc].size() == 1)
     simples[ index[cc][0] ]->print(psi_fp, qc_fp, geom, off);
   else {
-    for(int s=0; s<index[cc].size(); ++s) {
+    for(std::size_t s=0; s<index[cc].size(); ++s) {
       //oprintf_out(" %d (%10.5f)", index[cc][s]+1, coeff.at(cc).at(s));
       oprintf_out("\t(%10.5f)\n", coeff.at(cc).at(s));
       simples[ index[cc][s] ]->print(psi_fp, qc_fp, geom, off);
@@ -174,7 +174,7 @@ string COMBO_COORDINATES::get_coord_definition(int lookup, int atom_offset) cons
   if (index.at(lookup).size() == 1) // keep it short if possible
     iss << simples.at(index[lookup][0])->get_definition_string(atom_offset);
   else {
-    for (int s=0; s<index.at(lookup).size(); ++s) {
+    for (std::size_t s=0; s<index.at(lookup).size(); ++s) {
       iss << index[lookup][s] + 1 << ":" << coeff.at(lookup).at(s) << ":";
       iss << simples.at(index[lookup][s])->get_definition_string(atom_offset);
     }
@@ -186,8 +186,8 @@ string COMBO_COORDINATES::get_coord_definition(int lookup, int atom_offset) cons
 double * COMBO_COORDINATES::transform_simples_to_combo(double *arr_simples) const {
   double *arr_combos = init_array(index.size());
 
-  for(int cc=0; cc<index.size(); ++cc)
-    for(int s=0; s<index[cc].size(); ++s)
+  for(std::size_t cc=0; cc<index.size(); ++cc)
+    for(std::size_t s=0; s<index[cc].size(); ++s)
       arr_combos[cc] += coeff.at(cc).at(s) * arr_simples[ index[cc][s] ];
   return arr_combos;
 }
@@ -195,21 +195,21 @@ double * COMBO_COORDINATES::transform_simples_to_combo(double *arr_simples) cons
 // Transform a matrix from simples by simples to combinations by combinations
 double ** COMBO_COORDINATES::transform_simples_to_combo(double **mat_simples) const {
 
-  int Ns = simples.size(); // num simples
-  int Nc = index.size();   // num combos
+  std::size_t Ns = simples.size(); // num simples
+  std::size_t Nc = index.size();   // num combos
 
   double **Y = init_matrix(Ns, Nc);
 
-  for (int s1=0; s1<Ns; ++s1)
-    for(int cc=0; cc<Nc; ++cc)
-      for(int s2=0; s2<index[cc].size(); ++s2)
+  for (std::size_t s1=0; s1<Ns; ++s1)
+    for(std::size_t cc=0; cc<Nc; ++cc)
+      for(std::size_t s2=0; s2<index[cc].size(); ++s2)
         Y[s1][cc] += mat_simples[s1][ index[cc][s2] ] *  coeff[cc][s2];
 
   double **mat_combo = init_matrix(Nc, Nc);
 
-  for (int c1=0; c1<Nc; ++c1)
-    for (int c2=0; c2<Nc; ++c2)
-      for(int s1=0; s1<index[c1].size(); ++s1) // on s1 in c1 contributes
+  for (std::size_t c1=0; c1<Nc; ++c1)
+    for (std::size_t c2=0; c2<Nc; ++c2)
+      for(std::size_t s1=0; s1<index[c1].size(); ++s1) // on s1 in c1 contributes
         mat_combo[c1][c2] += Y[ index[c1][s1] ][ c2 ] *  coeff[c1][s1];
 
   free_matrix(Y);

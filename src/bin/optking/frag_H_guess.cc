@@ -124,7 +124,7 @@ double ** FRAG::H_guess(void) {
 
   // Form diagonal Hessian in simple internals
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL) {
-    for (int i=0; i<coords.simples.size(); ++i) {
+    for (std::size_t i=0; i<coords.simples.size(); ++i) {
       SIMPLE_COORDINATE *q = coords.simples.at(i);
 
       int a,b,c;
@@ -187,7 +187,7 @@ double ** FRAG::H_guess(void) {
     } // loop over coords.simples
   } // end Schlegel
   else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER) {
-    for (int i=0; i<coords.simples.size(); ++i) {
+    for (std::size_t i=0; i<coords.simples.size(); ++i) {
       SIMPLE_COORDINATE *q = coords.simples.at(i);
 
       int a,b,c,d,L;
@@ -271,7 +271,7 @@ double ** FRAG::H_guess(void) {
     } // end loop simples
   } // end Fischer
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
-    for (int i=0; i<coords.simples.size(); ++i) {
+    for (std::size_t i=0; i<coords.simples.size(); ++i) {
       SIMPLE_COORDINATE *q = coords.simples.at(i);
       switch (q->g_type()) {
         case (stre_type) :
@@ -306,7 +306,7 @@ double ** FRAG::H_guess(void) {
     const double k_phi = 0.15;
     const double k_tau = 0.005;
 
-    for (int i=0; i<coords.simples.size(); ++i) {
+    for (std::size_t i=0; i<coords.simples.size(); ++i) {
       SIMPLE_COORDINATE * q = coords.simples.at(i);
 
       int a,b,c,d;
@@ -361,7 +361,7 @@ double ** FRAG::H_guess(void) {
 
   // all off-diagonal entries are zero, so this seem silly
   double **H_simple = init_matrix(coords.simples.size(), coords.simples.size());
-  for (int i=0; i<coords.simples.size(); ++i)
+  for (std::size_t i=0; i<coords.simples.size(); ++i)
     H_simple[i][i] = f[i];
   free_array(f);
 

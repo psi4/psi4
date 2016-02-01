@@ -131,7 +131,7 @@ class OPT_DATA {
     int Ncoord(void) const { return Nintco; }
 
     void set_rfo_eigenvector(double *evect_in) {
-      for (int i=0; i<Nintco+1; ++i)
+      for (int i=0; i<Nintco; ++i)
         rfo_eigenvector[i] = evect_in[i];
     }
 
