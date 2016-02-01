@@ -2,6 +2,9 @@
 
 memory 250 mb
 
+nucenergy   =  12.0367196636183458 # TEST
+polenergy   =  -0.0060921680888660 # TEST
+totalenergy = -56.5572469753401847 # TEST
 
 molecule NH3 {
 symmetry c1
@@ -37,7 +40,15 @@ pcm = {
    }
 }
 
+print('RKS-PCM B3LYP, total algorithm')
 energy_scf1 = energy('b3lyp')
 
 set pcm_scf_type separate
+print('RKS-PCM B3LYP, separate algorithm')
 energy_scf2 = energy('b3lyp')
+
+# Now force use of UKS on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uks
+print('UKS-PCM B3LYP, total algorithm')
+energy_scf3 = energy('b3lyp')

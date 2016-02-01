@@ -366,16 +366,10 @@ void DCFTSolver::transform_b()
 {
     dcft_timer_on("DCFTSolver::Transform B(Q,mn) -> B(Q,pq)");
 
-    transform_b_ao2so();
-    transform_b_ao2so_scf();
-
     formb_oo();
-    formb_oo_scf();
-
     formb_ov();
     formb_vv();
     formb_pq();
-    formb_pq_scf();
 
     dcft_timer_off("DCFTSolver::Transform B(Q,mn) -> B(Q,pq)");
 }
@@ -431,6 +425,8 @@ void DCFTSolver::transform_b_ao2so()
         offset[h] += nsopi_[hm] * nsopi_[hn];
         }
     }
+
+    bQmn_ao_.reset();
 
     dcft_timer_off("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 }
@@ -1658,6 +1654,8 @@ void DCFTSolver::build_gbarKappa_RHF()
 {
     dcft_timer_on("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
 
+    formb_pq_scf();
+
     int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
@@ -1747,6 +1745,7 @@ void DCFTSolver::build_gbarKappa_RHF()
         }
     }
 
+    bQpqA_mo_scf_.reset();
 
     dcft_timer_off("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
 
@@ -2330,6 +2329,8 @@ void DCFTSolver::build_gbarKappa_UHF()
 {
     dcft_timer_on("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
 
+    formb_pq_scf();
+
     int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
@@ -2473,6 +2474,9 @@ void DCFTSolver::build_gbarKappa_UHF()
             }
         }
     }
+
+    bQpqA_mo_scf_.reset();
+    bQpqB_mo_scf_.reset();
 
     dcft_timer_off("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
 
@@ -2715,6 +2719,8 @@ void DCFTSolver::transform_b_ao2so_scf()
         offset[h] += nsopi_[hm] * nsopi_[hn];
         }
     }
+
+    bQmn_ao_scf_.reset();
 
     dcft_timer_off("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 }

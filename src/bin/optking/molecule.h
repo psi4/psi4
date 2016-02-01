@@ -38,8 +38,6 @@
 
 namespace opt {
 
-typedef unsigned long int ULI;
-
 class MOLECULE {
 
   vector<FRAG *> fragments;           // fragments with intrafragment coordinates
@@ -53,13 +51,13 @@ class MOLECULE {
   MOLECULE(int num_atoms); // allocate molecule with one fragment of this size
 
   ~MOLECULE() {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       delete fragments[i];
     fragments.clear();
-    for (ULI i=0; i<interfragments.size(); ++i)
+    for (std::size_t i=0; i<interfragments.size(); ++i)
       delete interfragments[i];
     interfragments.clear();
-    for (ULI i=0; i<fb_fragments.size(); ++i)
+    for (std::size_t i=0; i<fb_fragments.size(); ++i)
       delete fb_fragments[i];
     fb_fragments.clear();
   }
@@ -87,39 +85,39 @@ class MOLECULE {
 
   int g_natom(void) const { // excludes atoms in fb fragments
     int n = 0;
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
     return n;
   }
 
   int Ncoord(void) const {
     int n=0;
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->Ncoord();
-    for (ULI i=0; i<interfragments.size(); ++i)
+    for (std::size_t i=0; i<interfragments.size(); ++i)
       n += interfragments[i]->Ncoord();
-    for (ULI e=0; e<fb_fragments.size(); ++e)
+    for (std::size_t e=0; e<fb_fragments.size(); ++e)
       n += fb_fragments[e]->Ncoord();
     return n;
   }
 
   int Ncoord_intrafragment(void) const {
     int n=0;
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->Ncoord();
     return n;
   }
 
   int Ncoord_interfragment(void) const {
     int n=0;
-    for (ULI f=0; f<interfragments.size(); ++f)
+    for (std::size_t f=0; f<interfragments.size(); ++f)
       n += interfragments[f]->Ncoord();
     return n;
   }
 
   int Ncoord_fb_fragment(void) const {
     int n=0;
-    for (ULI f=0; f<fb_fragments.size(); ++f)
+    for (std::size_t f=0; f<fb_fragments.size(); ++f)
       n += fb_fragments[f]->Ncoord();
     return n;
   }
@@ -162,22 +160,22 @@ class MOLECULE {
   double g_energy(void) const { return energy; }
 
   void update_connectivity_by_distances(void) {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_distances();
   }
 
   void update_connectivity_by_bonds(void) {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_bonds();
   }
 
   void print_connectivity(std::string psi_fp, FILE *qc_fp) const {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->print_connectivity(psi_fp, qc_fp, i, g_atom_offset(i));
   }                        
 
   void print_geom(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->print_geom(psi_fp, qc_fp, i, print_mass);
   }
 
@@ -185,7 +183,7 @@ class MOLECULE {
   void print_xyz_irc(int point, bool direction);
 
   void print_geom_grad(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->print_geom_grad(psi_fp, qc_fp, i, print_mass);
   }
 
@@ -201,21 +199,21 @@ class MOLECULE {
 
   int add_intrafragment_simples_by_connectivity(void) {
     int n=0;
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_simples_by_connectivity();
     return n;
   }
 
   int add_intrafragment_hbonds(void) {
     int n=0;
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_hbonds();
     return n;
   }
 
   int add_intrafragment_auxiliary_bonds(void) {
     int n=0;
-    for (ULI i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_auxiliary_bonds();
     return n;
   }
@@ -232,7 +230,7 @@ class MOLECULE {
     double *q, *q_frag, *q_IF;
     q = init_array(Ncoord());
 
-    for (ULI f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       q_frag = fragments[f]->coord_values( &(new_geom[g_atom_offset(f)]) );
 
       for (int i=0; i<fragments[f]->Ncoord(); ++i)
@@ -241,7 +239,7 @@ class MOLECULE {
       free_array(q_frag);
     }
 
-    for (ULI I=0; I<interfragments.size(); ++I) {
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
       int A_index = interfragments[I]->g_A_index();
       int B_index = interfragments[I]->g_B_index();
       
@@ -268,13 +266,12 @@ class MOLECULE {
   double ** compute_G(bool use_masses=false) const;
 
   double * g_grad_array(void) const {
-    int f, i;
     double *g, *g_frag;
 
     g = init_array(3*g_natom());
-    for (f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_grad_array();
-      for (i=0; i<3*fragments[f]->g_natom(); ++i)
+      for (int i=0; i<3*fragments[f]->g_natom(); ++i)
         g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
@@ -289,7 +286,7 @@ class MOLECULE {
     double *g, *g_frag;
 
     g = init_array(3*g_natom());
-    for (ULI f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_geom_array();
       for (int i=0; i<3*fragments[f]->g_natom(); ++i)
         g[3*g_atom_offset(f)+i] = g_frag[i];
@@ -302,7 +299,7 @@ class MOLECULE {
     double **g_frag;
     double **g = init_matrix(g_natom(),3);
 
-    for (ULI f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_geom();
       for (int i=0; i<fragments[f]->g_natom(); ++i)
         for (int xyz=0; xyz<3; ++xyz)
@@ -316,7 +313,7 @@ class MOLECULE {
     double **g, *g_frag;
 
     g = init_matrix(g_natom(),3);
-    for (ULI f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_grad_array();
       int cnt=0;
       for (int i=0; i<fragments[f]->g_natom(); ++i)
@@ -348,29 +345,42 @@ class MOLECULE {
   std::vector<int> validate_angles(double const * const dq);
 
   void set_geom_array(double * array_in) {
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
   }
 
   void fix_tors_near_180(void) {
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->fix_tors_near_180();
-    for (ULI I=0; I<interfragments.size(); ++I)
+    for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->fix_tors_near_180();
   }
 
+  void fix_bend_axes(void) {
+    for (std::size_t f=0; f<fragments.size(); ++f)
+      fragments[f]->fix_bend_axes();
+    for (std::size_t I=0; I<interfragments.size(); ++I)
+      interfragments[I]->fix_bend_axes();
+  }
+  void unfix_bend_axes(void) {
+    for (std::size_t f=0; f<fragments.size(); ++f)
+      fragments[f]->unfix_bend_axes();
+    for (std::size_t I=0; I<interfragments.size(); ++I)
+      interfragments[I]->unfix_bend_axes();
+  }
+
   void fix_oofp_near_180(void) {
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->fix_oofp_near_180();
-    for (ULI I=0; I<interfragments.size(); ++I)
+    for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->fix_oofp_near_180();
   }
 
 /*
   void check_tors_for_bad_angles(void) {
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->check_tors_for_bad_angles();
-    for (ULI I=0; I<interfragments.size(); ++I)
+    for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->check_tors_for_bad_angles();
   }
 */
@@ -381,7 +391,7 @@ class MOLECULE {
   bool cartesian_H_to_internals(double **H_cart) const;
 
   void set_masses(void) {
-    for (ULI f=0; f<fragments.size(); ++f)
+    for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->set_masses();
   }
 

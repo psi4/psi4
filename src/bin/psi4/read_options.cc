@@ -853,15 +853,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do natural orbitals to speed up evaluation of the triples
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_T3",false);
+    options.add_bool("NAT_ORBS_T3",true);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_T2",false);
+    options.add_bool("NAT_ORBS_T2",true);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of CCD T2 amplitudes?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_V4",false);
+    options.add_bool("NAT_ORBS_V4",true);
 
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for in each of the above three truncations
@@ -1010,6 +1010,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
+      /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+      Convergence <table:conv_corl>` for default convergence criteria for
+      different calculation types. -*/
+      options.add_double("E_CONVERGENCE", 1e-10);
       /*- Convergence criterion for the density cumulant and orbital guess for the
       variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
       options.add_double("GUESS_R_CONVERGENCE", 1e-3);

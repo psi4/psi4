@@ -3529,8 +3529,9 @@ def run_detcas(name, **kwargs):
 
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
+            molecule = psi4.get_active_molecule()
+            if (molecule.schoenflies_symbol() != 'c1'):
+                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
     # The non-DF case
     else:
@@ -3541,8 +3542,9 @@ def run_detcas(name, **kwargs):
 
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            raise ValidationError("Second-order MCSCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
+            molecule = psi4.get_active_molecule()
+            if (molecule.schoenflies_symbol() != 'c1'):
+                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:

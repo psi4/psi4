@@ -651,11 +651,11 @@ explicitly indicated here.
 
   |cphf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
 
-  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default: 3
+  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default within this context: 3
 
-  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. Default: 4
+  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. 
 
-  |cphf__solver_max_subspace|: Maximum size of the subspace. Default: 18
+  |cphf__solver_max_subspace|: Maximum size of the subspace. Default within this context: 12
    
 
 In case convergence problems are encountered during the Davidson procedure,
@@ -668,7 +668,29 @@ This may happen in minimal basis sets, especially with symmetry, but the code au
 If the solver seems to converge on the wrong eigenvalue, try increasing |cphf__solver_n_guess|.
 Otherwise, if the solver is almost converged but reaches the maximum number of iterations, try increasing
 |cphf__solver_maxiter|.
-   
+
+
+External potentials and QM/MM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the implementation of :ref:`EFP <sec:libefp>` for accurate QM/MM
+computations, |PSIfour| can perform more rudimentary QM/MM procedures via the
+|scf__extern| keyword.  The following snippet, extracted from the 
+:srcsample:`extern1` test case, demonstrates its use for a TIP3P external potential::
+
+    Chrgfield = QMMM()
+    Chrgfield.extern.addCharge(-0.834, 1.649232019048, 0.0, -2.356023604706)
+    Chrgfield.extern.addCharge( 0.417, 0.544757019107, 0.0, -3.799961446760)
+    Chrgfield.extern.addCharge( 0.417, 0.544757019107, 0.0, -0.912085762652)
+    psi4.set_global_option_python('EXTERN',Chrgfield.extern)
+
+First a QMMM object is created, then three separate particles are added to this
+object before the SCF code is told about its existence on the last line.  The
+calls to ``addCharge`` take the atomic charge, x coordinate, y coordinate, and
+z coordinate in that order.  The atomic charge is specified in atomic units,
+and the coordinates always use the same units as the geometry specification in
+the regular QM region.  Additional MM molecules may be specified by adding
+extra calls to ``addCharge`` to describe the full MM region.
 
 
 Convergence and Algorithm Defaults

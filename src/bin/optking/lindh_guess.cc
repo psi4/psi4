@@ -218,10 +218,10 @@ in this set of internals. */
             if (v3d_angle(geom[i], geom[j], geom[k], val)) {
               BEND *one_bend = new BEND(i, j, k);
               coords.simples.push_back(one_bend);
-
-              if (val > Opt_params.linear_bend_threshold) { // ~175 degrees
+              if (val > Opt_params.linear_bend_threshold) {
+                one_bend->make_lb_normal();
                 one_bend = new BEND(i,j,k);
-                one_bend->make_linear_bend();
+                one_bend->make_lb_complement();
                 coords.simples.push_back(one_bend);
               }
             }
@@ -281,7 +281,7 @@ in this set of internals. */
 
   print_simples(psi_outfile, qc_outfile, 0);
 
-  for (ULI i=0; i<coords.simples.size(); ++i) {  // loop over coords.simples
+  for (std::size_t i=0; i<coords.simples.size(); ++i) {  // loop over coords.simples
     SIMPLE_COORDINATE * q = coords.simples.at(i);
 
     double **Bintco = q->DqDx(geom); // dq_i / da_xyz

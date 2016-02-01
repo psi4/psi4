@@ -482,6 +482,8 @@ void PKJK::compute_JK()
                 }
             }
         }
+        J_[N]->zero();
+        if(K_.size()) K_[N]->zero();
     }
 
     if(J_.size() || (K_.size() && asym)) {
@@ -500,7 +502,6 @@ void PKJK::compute_JK()
             int nvectors = J_.size();
             for(int N = 0; N < nvectors; ++N){
                 if (C_left_[N] != C_right_[N]) {
-                    J_[N]->zero();
                     double **J_vector = J_[N]->pointer();
                     double *D_vec = D_vectors[N];
                     double *j_ptr = j_block;
@@ -519,10 +520,6 @@ void PKJK::compute_JK()
                         }
                     }
                     if(K_.size()) {
-                        for(int idx = 0; idx < nsopi_[0]; ++idx) {
-                            D_vec[idx * nsopi_[0] + idx] = D_vec[idx * nsopi_[0] + idx] * 2.0;
-                        }
-                        K_[N]->zero();
                         double **K_vector = K_[N]->pointer();
                         j_ptr = j_block;
                         double fac;

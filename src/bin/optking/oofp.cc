@@ -296,7 +296,7 @@ double ** OOFP::DqDx(GeomType geom) const {
 // (0,1,2,3) -> (3,2,1,0) and checking terms against finite differences.  Also, the last terms
 // with sin^2 in the denominator are incorrectly given as only sin^1 in the paper.
 // -RAK 2010
-double ** OOFP::Dq2Dx2(GeomType geom) const {
+double ** OOFP::Dq2Dx2(GeomType ) const {
   double **dq2dx2 = init_matrix(12,12);
 /* not yet implemented
   double u[3], v[3], w[3];

@@ -97,7 +97,7 @@ void MOLECULE::sd_step(void) {
     dq[i] = fq[i] / sd_h;
 
   // Zero steps for frozen fragment
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->Ncoord(); ++i)
@@ -128,7 +128,7 @@ void MOLECULE::sd_step(void) {
     throw(INTCO_EXCEPT("New linear angles", lin_angles));
 
   // do displacements for each fragment separately
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -137,7 +137,7 @@ void MOLECULE::sd_step(void) {
   }
 
   // do displacements for interfragment coordinates
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
@@ -147,7 +147,7 @@ void MOLECULE::sd_step(void) {
   }
 
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<fb_fragments.size(); ++I)
+  for (std::size_t I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
