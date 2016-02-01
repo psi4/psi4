@@ -790,6 +790,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
+    /* For SAPT0 only, compute only first-order electrostatics and exchange.
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E10",false);
+    /* For SAPT0 only, compute only second-order induction
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E20IND",false);
+    /* For SAPT0 only, compute only second-order induction
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E20DISP",false);
+
+
     /*- Convergence criterion for energy (change) in the SAPT
     $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
 
