@@ -211,11 +211,14 @@ PsiReturnType thermo(Options &options) {
   WarnLowImag = 0; //Reset to false before checking low frequencies
   for(int i=0; i < nvib_freqs; i++) {
     double rT = vib_temp[i] / T; // reduced T
-    if ((vib_temp[i] < 900) and (!WarnLowImag))
-    {
+    if ((vib_temp[i] < 900) and (!WarnLowImag)) {
       outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.\n");
       WarnLowImag = 1; //Do not print a second message
     }
+    if (vib_temp[i] < 0) {
+      outfile->Printf("    Warning: vibration with imaginary frequency neglected in vibrational contributions.\n");
+      continue;
+    } 
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);
