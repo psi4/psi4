@@ -198,6 +198,10 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
+# Will only allow energy to be run for the following methods
+energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
+energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis'] 
+
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])
 
@@ -615,6 +619,10 @@ def gradient(name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 1
+
+    # Prevent methods that do not have associated energies 
+    if lowername in energy_only_methods:
+	raise ValidationError("gradient('%s') does not have an associated gradient" % name
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -1354,6 +1362,10 @@ def hessian(name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 2
+
+    # Prevent methods that do not have associated energies 
+    if lowername in energy_only_methods:
+	raise ValidationError("gradient('%s') does not have an associated gradient" % name
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],

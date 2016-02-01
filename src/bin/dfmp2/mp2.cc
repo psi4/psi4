@@ -159,8 +159,8 @@ void DFMP2::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-        throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+    //if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
+    //    throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
         //reference_wavefunction_->semicanonicalize();
 
     //copy(reference_wavefunction_);
