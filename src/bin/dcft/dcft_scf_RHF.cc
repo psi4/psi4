@@ -526,5 +526,37 @@ DCFTSolver::compute_scf_energy_RHF()
     dcft_timer_off("DCFTSolver::compute_scf_energy");
 }
 
+double
+DCFTSolver::compute_scf_error_vector_RHF()
+{
+    dcft_timer_on("DCFTSolver::compute_scf_error_vector");
+
+    size_t nElements = 0;
+    double sumOfSquares = 0.0;
+    SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
+    // form FDS
+    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
+    // form SDF
+    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    scf_error_a_->subtract(tmp2);
+    // Orthogonalize
+    scf_error_a_->transform(s_half_inv_);
+    scf_error_b_->copy(scf_error_a_);
+
+    for(int h = 0; h < nirrep_; ++h){
+        for(int p = 0; p < nsopi_[h]; ++p){
+            for(int q = 0; q < nsopi_[h]; ++q){
+                nElements += 2;
+                sumOfSquares += pow(scf_error_a_->get(h, p, q), 2.0);
+                sumOfSquares += pow(scf_error_b_->get(h, p, q), 2.0);
+            }
+        }
+    }
+    dcft_timer_off("DCFTSolver::compute_scf_error_vector");
+    return sqrt(sumOfSquares / nElements);
+}
 
 }} // Namespace
