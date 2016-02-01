@@ -272,8 +272,6 @@ void DCFTSolver::run_simult_dcft_RHF()
             outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
-        // Write orbitals to the checkpoint file
-        write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals_RHF();
         // Update SCF density (Kappa) and check its RMS

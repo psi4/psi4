@@ -180,7 +180,7 @@ void CCEnergyWavefunction::get_params(Options &options)
     outfile->Printf( "\tReference wfn   =     ROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-    outfile->Printf( "\tReference wfn   =   %5s\n",
+    outfile->Printf( "\tReference wfn   =     %s\n",
         (params_.ref == 0) ? "RHF" : ((params_.ref == 1) ? "ROHF" : "UHF"));
   }
   outfile->Printf("\tBrueckner       =     %s\n", params_.brueckner ? "Yes" : "No");

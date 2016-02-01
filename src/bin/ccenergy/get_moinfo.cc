@@ -61,6 +61,7 @@ void CCEnergyWavefunction::get_moinfo(void)
     moinfo_.nao = basisset_->nao();
     moinfo_.labels = molecule_->irrep_labels();
     moinfo_.enuc = molecule_->nuclear_repulsion_energy();
+    moinfo_.conv = 0.0;
     if(reference_wavefunction_)
         moinfo_.escf = reference_wavefunction_->reference_energy();
     else
