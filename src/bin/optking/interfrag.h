@@ -146,6 +146,15 @@ class INTERFRAG {
     inter_frag->fix_oofp_near_180();
   }
 
+  void fix_bend_axes(void) {
+    update_reference_points();
+    inter_frag->fix_bend_axes();
+  }
+  void unfix_bend_axes(void) {
+    update_reference_points();
+    inter_frag->unfix_bend_axes();
+  }
+
   // Fills in B matrix rows. Provide geometries.
   void compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, int A_off, int B_off);
 
