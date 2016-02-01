@@ -65,7 +65,7 @@ void MOLECULE::linesearch_step(void) {
     dq[i] = fq[i];
 
   // Zero steps for frozen fragment
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->Ncoord(); ++i)
@@ -104,7 +104,7 @@ void MOLECULE::linesearch_step(void) {
     set_geom_array(geom_array_orig);
 
     // do displacements for each fragment separately
-    for (int f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
@@ -113,7 +113,7 @@ void MOLECULE::linesearch_step(void) {
     }
 
     // do displacements for interfragment coordinates
-    for (int I=0; I<interfragments.size(); ++I) {
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
         oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
@@ -123,7 +123,7 @@ void MOLECULE::linesearch_step(void) {
     }
 
     // fix rotation matrix for rotations in QCHEM EFP code
-    for (int I=0; I<fb_fragments.size(); ++I)
+    for (std::size_t I=0; I<fb_fragments.size(); ++I)
       fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
     symmetrize_geom(); // now symmetrize the geometry for next step
@@ -137,7 +137,7 @@ void MOLECULE::linesearch_step(void) {
 
     double *coord = g_geom_array();
 
-    FILE *qc_fout;
+    FILE *qc_fout = NULL;
     std::string psi_fout = "linesearch_geoms.py";
 #if defined(OPTKING_PACKAGE_QCHEM)
     FILE *qc_fout = fopen("linesearch_geoms.py", "w");

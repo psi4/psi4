@@ -39,8 +39,7 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::run_simult_dcft_oo_RHF()
 {
-    if (options_.get_bool("ODC_GUESS"))
-        throw FeatureNotImplemented("RHF-reference DCFT", "ODC_GUESS=TRUE", __FILE__, __LINE__); // By default, ODC_GUESS = FALSE
+    if (options_.get_bool("ODC_GUESS")) run_simult_dc_guess();
 
     // This is the simultaneous orbital/lambda update algorithm for the orbital-optimized methods
     int cycle = 0;
@@ -140,7 +139,7 @@ DCFTSolver::run_simult_dcft_oo_RHF()
         orbitals_convergence_ = compute_orbital_residual_RHF();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
+        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
         // Compute the orbital rotation step using Jacobi method
         compute_orbital_rotation_jacobi_RHF();
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){

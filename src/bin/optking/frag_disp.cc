@@ -127,7 +127,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
         array_copy(g, orig_geom, 3*g_natom());
         free_array(g);
 
+        fix_bend_axes();
         conv = displace_util(dq, false);
+        unfix_bend_axes();
         if (!conv) {
           oprintf_out("\tCouldn't converge this mini-step, so quitting with previous geometry.\n");
           set_geom_array(orig_geom);
@@ -138,7 +140,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
     free_array(orig_geom);
   }
   else { // try to back-transform, but continue either way
+    fix_bend_axes();
     displace_util(dq, false);
+    unfix_bend_axes();
   }
 
   /* Algorithms that compute DQ, and the backtransformation above may
@@ -158,7 +162,9 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
         dq_adjust_frozen[i] = q_orig[i] - q_before_adjustment[i];
 
     oprintf_out("\n\tBack-transformation to cartesian coordinates to adjust frozen coordinates...\n");
+    fix_bend_axes();
     displace_util(dq_adjust_frozen, true);
+    unfix_bend_axes();
 
     free_array(q_before_adjustment);
     free_array(dq_adjust_frozen);
@@ -169,7 +175,6 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   for (int i=0; i<Nints; ++i)
     dq[i] = q_final[i] - q_orig[i]; // calculate dq from _target_
 
-  const double check_range = 0.5; // distance from pi in radians
   for (int i=0; i<Nints; ++i) {
     // passed through pi, but don't think this code is necessary; given the way values are computed
     if (coords.simples[i]->g_type() == tors_type ||
@@ -200,7 +205,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
 }
 
 bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
-  int i,j;
+  int i;
   int Ncarts = 3 * natom;
   int Nints = Ncoord();
   double **G_inv, *new_q, dx_max, dx_rms, dq_rms, first_dq_rms;
@@ -243,10 +248,6 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
   double **B = init_matrix(Nints, Ncarts);
   double **G = init_matrix(Nints, Nints);
 
-  double **Gx = init_matrix(Ncarts, Ncarts);
-  double **Gx_inv;
-  double * tmp_v_Ncarts = init_array(Ncarts);
-
   bool bt_iter_done = false;
   bool bt_converged = true;
   int bmat_iter_cnt = 0;
@@ -261,6 +262,9 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     // Tried in 2014.  Will it give different results than the code below if there are redundancies?
     // In this form, G is cart x cart, instead of int by int.
     // Disadvantage is that G has always rotation and translations in it (i.e., 0 evals when diagonalized).
+    double * tmp_v_Ncarts = init_array(Ncarts);
+    double **Gx_inv;
+    double **Gx = init_matrix(Ncarts, Ncarts);
     compute_B(B);
     opt_matrix_mult(B, 1, B, 0, Gx, 0, Ncarts, Nints, Ncarts, 0);
     Gx_inv = symm_matrix_inv(Gx, Ncarts, true);

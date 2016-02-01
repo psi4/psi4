@@ -1,5 +1,5 @@
-# Test of SFX2C-1e on Water uncontracted cc-pVDZ
-# The reference numbers are from Lan Cheng's implementation in Cfour
+#! Test of SFX2C-1e on Water uncontracted cc-pVDZ
+#! The reference numbers are from Lan Cheng's implementation in Cfour
 
 
 molecule h2o {
