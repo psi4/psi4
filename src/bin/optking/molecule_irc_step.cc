@@ -52,8 +52,10 @@ double step_N_factor(double **G, double *g, int Nintco);
 // return the lowest eigenvector of the matrix (here, the Hessian)
 double *lowest_evector(double **H, int Nintco);
 
-void GS_interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim);
-void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim);
+//void GS_interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim);
+void GS_interpolation(double *p, double *p_0, double *g, double *g_0, int dim);
+//void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim);
+void interpolation(double *p, double *p_0, double *g, double *g_0, int dim);
 
 double lag_function(double l, double *f, double *h, double *p, double *g, int dim, double s);
 // compute change in energy according to quadratic approximation
@@ -65,9 +67,9 @@ inline double DE_nr_energy(double step, double grad, double hess)
 void IRC_DATA::point_converged(opt::MOLECULE &mol)
 {
 
-  if(steps.size() > 1) {
-    double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.Ncoord());
-  }
+  // Why do the dot below?
+  //if(steps.size() > 1)
+    //double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.Ncoord());
 
   sphere_step = 0;
 
@@ -91,7 +93,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   oprintf_out("@IRC ----------------------------------------------\n");
   oprintf_out("@IRC  Step    Energy              Change in Energy \n");
   oprintf_out("@IRC ----------------------------------------------\n");
-  for (int i=0; i<steps.size(); ++i)
+  for (std::size_t i=0; i<steps.size(); ++i)
   {
     if (i == 0) DE = g_step(i).g_energy();
     else DE = g_step(i).g_energy() - g_step(i-1).g_energy();
@@ -129,7 +131,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
       oprintf_out("-------------");
     }
     oprintf_out("\n");
-    for (int i=0; i<steps.size(); ++i)
+    for (std::size_t i=0; i<steps.size(); ++i)
     {
       oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (j*blocks); k < ((j+1)*blocks); k++)
@@ -157,7 +159,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
       oprintf_out("-------------");
     }
     oprintf_out("\n");
-    for (int i=0; i<steps.size(); ++i)
+    for (std::size_t i=0; i<steps.size(); ++i)
     {
       oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (dim - (dim % blocks)); k < dim; k++)
@@ -332,14 +334,14 @@ void MOLECULE::irc_step(void)
     array_copy(f_q, f_q_copy, Nintco);
 
     // RAK 11-14 Try to calculate xyz coordinates of the pivot point
-    for (int f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
-    for (int I=0; I<interfragments.size(); ++I) {
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
         oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
         continue;
@@ -356,9 +358,10 @@ void MOLECULE::irc_step(void)
     double *q_pivot = coord_values();
 
     // q_pivot, q, x,f_q, f_x should NOT be freed; pointers are assigned in IRC_data
-    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, x_pivot, q, x, f_q_copy, f_x, g_energy(),
-                              p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
-
+    //p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, x_pivot, q, x, f_q_copy, f_x, g_energy(),
+    //                          p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
+    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, x_pivot, q, x, f_q_copy, f_x, g_energy());
+                            
     /* START PRINT CONVERGED POINT INFO */
     int point_number = Opt_params.IRC_direction == OPT_PARAMS::FORWARD ? p_irc_data->size() - 1 : - (p_irc_data->size() - 1);
     set_geom_array(x);
@@ -382,7 +385,7 @@ void MOLECULE::irc_step(void)
     /* END PRINT CONVERGED POINT INFO */
 
     // Take step of dq_pivot length again since dq is 2*dq_pivot
-    for (int f=0; f<fragments.size(); ++f) {
+    for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
         continue;
@@ -390,7 +393,7 @@ void MOLECULE::irc_step(void)
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     // Do displacements for interfragment coordinates.
-    for (int I=0; I<interfragments.size(); ++I) {
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
         oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
         continue;
@@ -502,9 +505,11 @@ void MOLECULE::irc_step(void)
 
   if(0 && p_irc_data->sphere_step > 1) {
     if(0)
-      GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+      //GS_interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+      GS_interpolation(p_m, p_m0, g_m, g_m0, Nintco);
     else
-      interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+      //interpolation(p_m, p_m0, g_m, g_m0, s, Nintco);
+      interpolation(p_m, p_m0, g_m, g_m0, Nintco);
   }
 
   double *p_h = init_array(Nintco);//in the basis of H_m
@@ -654,7 +659,7 @@ void MOLECULE::irc_step(void)
 
 
   // Do displacements for each fragment separately.
-  for (int f=0; f<fragments.size(); ++f) {
+  for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("  Displacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -662,7 +667,7 @@ void MOLECULE::irc_step(void)
     fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
   }
   // Do displacements for interfragment coordinates.
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
       oprintf_out("  Displacements for frozen interfragment %d skipped.\n", I+1);
       continue;
@@ -885,7 +890,8 @@ double lag_function(double l, double *f, double *h, double *p, double *g, int di
   return f[0];
 }
 
-void GS_interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim)
+//void GS_interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim)
+void GS_interpolation(double *p, double *p_0, double *g, double *g_0, int dim)
 {
   double p_p = array_dot(p, p, dim);
   double p0_p0 = array_dot(p_0, p_0, dim);
@@ -922,7 +928,8 @@ void GS_interpolation(double *p, double *p_0, double *g, double *g_0, double s, 
   }
 }
 
-void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim)
+//void interpolation(double *p, double *p_0, double *g, double *g_0, double s, int dim)
+void interpolation(double *p, double *p_0, double *g, double *g_0, int dim)
 {
   double p_p = array_dot(p, p, dim);
   double p0_p0 = array_dot(p_0, p_0, dim);

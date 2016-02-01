@@ -129,7 +129,7 @@ void FRAG::update_connectivity_by_bonds(void) {
     for (int j=0; j<natom; ++j)
       connectivity[i][j] = false;
 
-  for (int i=0; i<coords.simples.size(); ++i) {
+  for (std::size_t i=0; i<coords.simples.size(); ++i) {
     if (coords.simples.at(i)->g_type() == stre_type) {
       int a = coords.simples.at(i)->g_atom(0);
       int b = coords.simples.at(i)->g_atom(1);
@@ -280,19 +280,28 @@ int FRAG::add_bend_by_connectivity(void) {
       if (connectivity[i][j])
         for (int k=i+1; k<natom; ++k)
           if (connectivity[j][k]) {
-            BEND *one_bend = new BEND(i,j,k);
-            if (!present(one_bend)) {
-              coords.simples.push_back(one_bend);
-              ++nadded;
-            }
-            else
-              delete one_bend;
-
-            // add linear bend complement if necessary
             if (v3d_angle(geom[i], geom[j], geom[k], phi)) { // can be computed
-              if (phi > Opt_params.linear_bend_threshold) { // ~175 degrees
+
+              BEND *one_bend = new BEND(i,j,k);
+              if (phi < Opt_params.linear_bend_threshold) { // < ~175 degrees
+                if (!present(one_bend)) {
+                  coords.simples.push_back(one_bend);
+                  ++nadded;
+                }
+                else
+                  delete one_bend;
+              }
+              else { // linear angle
+                one_bend->make_lb_normal();
+                if (!present(one_bend)) {
+                  coords.simples.push_back(one_bend);
+                  ++nadded;
+                }
+                else
+                  delete one_bend;
+
                 one_bend = new BEND(i,j,k);
-                one_bend->make_linear_bend();
+                one_bend->make_lb_complement();
                 if (!present(one_bend)) {
                   coords.simples.push_back(one_bend);
                   ++nadded;
@@ -308,9 +317,18 @@ int FRAG::add_bend_by_connectivity(void) {
     int B = opt::INTCO_EXCEPT::linear_angles[i+1];
     int C = opt::INTCO_EXCEPT::linear_angles[i+2];
 
+    // Erase regular bend; add 2 linear bends
+    BEND *old_bend = new BEND(A,B,C);
+    if (present(old_bend)) {
+      int i = find(old_bend);
+      delete coords.simples[i];
+      coords.simples.erase(coords.simples.begin() + i);
+    }
+
     BEND *one_bend = new BEND(A,B,C);
+    one_bend->make_lb_normal();
     if (!present(one_bend)) {
-      oprintf_out("\tException forcing addition of linear bend (%d,%d,%d)\n", A, B, C);
+      oprintf_out("\tException forcing addition of linear bend (%d,%d,%d)\n", A+1, B+1, C+1);
       coords.simples.push_back(one_bend);
       ++nadded;
     }
@@ -318,7 +336,7 @@ int FRAG::add_bend_by_connectivity(void) {
       delete one_bend;
 
     one_bend = new BEND(A,B,C);
-    one_bend->make_linear_bend();
+    one_bend->make_lb_complement();
     if (!present(one_bend)) {
       oprintf_out("\tException forcing addition of linear bend complement (%d,%d,%d)\n", A+1, B+1, C+1);
       coords.simples.push_back(one_bend);
@@ -337,22 +355,43 @@ int FRAG::add_tors_by_connectivity(void) {
   int nadded = 0;
   int i,j,k,l;
   double phi;
-  double const phi_lim = Opt_params.linear_bend_threshold;
+  //double const phi_lim = Opt_params.linear_bend_threshold;
+  // logic changed to use existence of linear bends to determine linearity
+  // in this function.
 
   // bonding i-j-k-l but i-j-k && j-k-l are not collinear
+  // use presence of linear bend coordinate to judge collinearity
   for (i=0; i<natom; ++i)
     for (j=0; j<natom; ++j)
       if (connectivity[i][j])
         for (k=0; k<natom; ++k)
           if ( connectivity[k][j] && k!=i ) {
+
             // ensure i-j-k is not collinear
-            if (!v3d_angle(geom[i], geom[j], geom[k], phi)) continue;
-            if (phi > phi_lim) continue;
+            BEND *one_bend = new BEND(i,j,k);
+            one_bend->make_lb_normal();
+            if (present(one_bend)) {
+              delete one_bend;
+              continue;
+            }
+            delete one_bend;
+            //if (!v3d_angle(geom[i], geom[j], geom[k], phi)) continue;
+            //if (phi > phi_lim) continue;
+
             for (l=i+1; l<natom; ++l) {
               if (connectivity[l][k] && l!=j) {
+
                 // ensure j-k-l is not collinear
-                if (!v3d_angle(geom[j], geom[k], geom[l], phi)) continue; // can't compute
-                if (phi > phi_lim) continue;
+                BEND *one_bend = new BEND(j,k,l);
+                one_bend->make_lb_normal();
+                if (present(one_bend)) {
+                  delete one_bend;
+                  continue;
+                }
+                delete one_bend;
+                //if (!v3d_angle(geom[j], geom[k], geom[l], phi)) continue; // can't compute
+                //if (phi > phi_lim) continue;
+
                 TORS *one_tors = new TORS(i,j,k,l);
                 if (!present(one_tors)) {
                   coords.simples.push_back(one_tors);
@@ -374,53 +413,71 @@ int FRAG::add_tors_by_connectivity(void) {
       if (connectivity[j][m])       // j!=m
         for (k=j+1; k<natom; ++k)   // k!=j
           if (connectivity[k][m]) { // m!=k
-            if ( !v3d_angle(geom[j], geom[m], geom[k], phi) ) continue;
-            if (phi > phi_lim) { // found j-m-k collinear, j-m-k unique
 
-              nbonds = 0; // count atoms bonded to m
-              for (int n=0; n<natom; ++n)
-                if (connectivity[n][m]) ++nbonds;
-              if (nbonds == 2) { // nothing else is bonded to m
-
-                // look for an 'I' for I-J-[m]-k-L such that I-J-K is not collinear
-                J = j;
-                for (i=0; i<natom; ++i) {
-                  if (connectivity[i][J] && i!=m) { // i!=J i!=m
-                    if ( !v3d_angle(geom[i], geom[J], geom[k], phi) ) continue;
-                    if (phi > phi_lim) {
-                      J = i;
-                      i = 0;
-                      continue;
-                    }
-                    else { // have I-J-K. Look for L
-                      I = i;
-                      K = k;
-                      for (l=0; l<natom; ++l) {
-                        if (connectivity[l][K] && l!=m && l!=j && l!=i) { // l!=K l!=m
-                          if ( !v3d_angle(geom[l], geom[K], geom[J], phi) ) continue;
-                          if (phi > phi_lim) {
-                            K = l;
-                            continue;
-                          }
-                          else { // have IJKL
-                            L = l;
-
-                            TORS *one_tors = new TORS(I,J,K,L);
-                            if ( !v3d_tors(geom[I], geom[J], geom[K], geom[L], phi) ) continue;
-                            if (!present(one_tors)) {
-                              coords.simples.push_back(one_tors);
-                              ++nadded;
-                            }
-                            else
-                              delete one_tors;
-                          } // end have IJKL
-                        } // end l atom found
-                      } // loop over l
-                    } // end have IJK
-                  }
-                }
-              }
+            BEND *one_bend = new BEND(j,m,k);
+            one_bend->make_lb_normal();
+            if (!present(one_bend)) {  // j-m-k are not collinear
+              delete one_bend;
+              continue;
             }
+            delete one_bend;
+            // Found unique, collinear j-m-k
+
+            nbonds = 0; // count atoms bonded to m
+            for (int n=0; n<natom; ++n)
+              if (connectivity[n][m]) ++nbonds;
+
+            if (nbonds == 2) { // nothing else is bonded to m
+
+              // look for an 'I' for I-J-[m]-k-L such that I-J-K is not collinear
+              J = j;
+              for (i=0; i<natom; ++i) {
+                if (connectivity[i][J] && i!=m) { // i!=J i!=m
+                  BEND *one_bend = new BEND(i,j,k);
+                  one_bend->make_lb_normal();
+                  if (present(one_bend)) { // i,J,k is collinear
+                    delete one_bend;
+                    J = i;
+                    i = 0;
+                    continue;
+                  }
+                  else { // have I-J-[m]-k. Look for L
+                    delete one_bend;
+                    I = i;
+                    K = k;
+                    for (l=0; l<natom; ++l) {
+                      if (connectivity[l][K] && l!=m && l!=j && l!=i) { // l!=K l!=m
+                        BEND *one_bend = new BEND(l,K,J);
+                        one_bend->make_lb_normal();
+                        if (present(one_bend)) { // J-k-l is collinear
+                          delete one_bend;
+                          K = l;
+                          continue;
+                        }
+                        else { // have found I-J-K-L
+                          delete one_bend;
+                          L = l;
+
+oprintf_out("trying %d %d %d %d\n", I+1, J+1, K+1, L+1);
+                          // ensure torsion is defined, i.e., angles not linear
+                          if (!v3d_tors(geom[I], geom[J], geom[K], geom[L], phi))
+                            continue;
+oprintf_out("passed phi is %10.5lf\n", phi);
+
+                          TORS *one_tors = new TORS(I,J,K,L);
+                          if (!present(one_tors)) {
+                            coords.simples.push_back(one_tors);
+                            ++nadded;
+                          }
+                          else
+                            delete one_tors;
+                        } // end have IJKL
+                      } // end l atom found
+                    } // loop over l
+                  } // end have IJK
+                }
+              } // look for i
+            } // nbonds = 2 on central atom
           }
   return nadded;
 }
@@ -671,6 +728,26 @@ void FRAG::fix_tors_near_180(void) {
       coords.simples[i]->fix_tors_near_180(geom);
 }
 
+// Compute axes for bends, then mark as fixed.
+void FRAG::fix_bend_axes(void) {
+  BEND * a_bend;
+  for (ULI i=0; i<coords.simples.size(); ++i)
+    if (coords.simples[i]->g_type() == bend_type) {
+      a_bend = static_cast<BEND*>(coords.simples[i]);
+      a_bend->compute_axes(geom);
+      a_bend->fix_axes();
+    }
+}
+
+void FRAG::unfix_bend_axes(void) {
+  BEND * a_bend;
+  for (ULI i=0; i<coords.simples.size(); ++i)
+    if (coords.simples[i]->g_type() == bend_type) {
+      a_bend = static_cast<BEND*>(coords.simples[i]);
+      a_bend->unfix_axes();
+    }
+}
+
 void FRAG::fix_oofp_near_180(void) {
   for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == oofp_type)
@@ -745,7 +822,7 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
 
   std::vector<int> lin_angle;
 
-  for (int s=0; s<coords.simples.size(); ++s)
+  for (std::size_t s=0; s<coords.simples.size(); ++s)
     if (coords.simples[s]->g_type() == bend_type) {
 
       int A = coords.simples[s]->g_atom(0)+atom_offset;
@@ -764,9 +841,9 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
       // angle is passing through 180.0.  // < ABC~pi. Add A-B-C linear bends.
       if (new_bend_val > Opt_params.linear_bend_threshold) {
         BEND *one_bend = new BEND(A, B, C);
-        one_bend->make_linear_bend();
+        one_bend->make_lb_normal();
         int loc = find(one_bend);
-        if (loc != coords.simples.size()) // linear bend is already there.  No problem.
+        if (((std::size_t) loc) != coords.simples.size()) // linear bend is already there.  No problem.
           continue;
         else {
           lin_angle.push_back(A); lin_angle.push_back(B); lin_angle.push_back(C);
@@ -806,7 +883,7 @@ double * FRAG::com(GeomType in_geom) {
 
 // compute intertia tensor
 double ** FRAG::inertia_tensor (GeomType in_geom) {
-  int atom, xyz, xyz2;
+  int xyz, xyz2;
   double tval;
   double *center = com(in_geom);
   double **I = init_matrix(3,3);

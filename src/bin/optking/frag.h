@@ -152,6 +152,10 @@ class FRAG {
   // check nearness to 180 and save value
   void fix_oofp_near_180(void);
 
+  // Fix bend axes for consistency during displacments
+  void fix_bend_axes(void);
+  void unfix_bend_axes(void);
+
   // check if interior angles of torsion are near 0 or linear
   //bool check_tors_for_bad_angles(void) const;
 

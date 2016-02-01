@@ -57,7 +57,7 @@ void MOLECULE::print_geom_out(void) {
   oprintf_out("\tCartesian Geometry (in Angstrom)\n");
 #endif
   
-  for (int i=0; i<fragments.size(); ++i)
+  for (std::size_t i=0; i<fragments.size(); ++i)
     fragments[i]->print_geom(psi_outfile, qc_outfile);
 }
 
@@ -68,21 +68,21 @@ void MOLECULE::print_geom_out_irc(void) {
   oprintf_out("@IRC    Cartesian Geometry (in Angstrom)\n");
 #endif
   
-  for (int i=0; i<fragments.size(); ++i)
+  for (std::size_t i=0; i<fragments.size(); ++i)
     fragments[i]->print_geom_irc(psi_outfile, qc_outfile);
 }
 
 // This function is only used for an optional trajectory file.
 // The awkward itershift is to decrement in the initial geometry to "iteration 0"
 void MOLECULE::print_xyz(int iter_shift) {
-  FILE *qc_fp;
+  FILE *qc_fp = NULL;
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   qc_fp = fopen("geoms.xyz", "a");
 #endif
   oprintf("geoms.xyz", qc_fp, "%d\n", g_natom());
   oprintf("geoms.xyz", qc_fp, "Geometry for iteration %d\n", p_Opt_data->g_iteration()+iter_shift);
-  for (int i=0; i<fragments.size(); ++i)
+  for (std::size_t i=0; i<fragments.size(); ++i)
     fragments[i]->print_geom("geoms.xyz", qc_fp);
 #if defined(OPTKING_PACKAGE_QCHEM)
   fclose(qc_fp);
@@ -91,7 +91,7 @@ void MOLECULE::print_xyz(int iter_shift) {
 }
 
 void MOLECULE::print_xyz_irc(int point, bool forward) {
-  FILE *qc_fp;
+  FILE *qc_fp = NULL;
 
   if(forward) {
 #if defined(OPTKING_PACKAGE_QCHEM)
@@ -99,7 +99,7 @@ void MOLECULE::print_xyz_irc(int point, bool forward) {
 #endif
     oprintf("irc_forward.xyz", qc_fp, "%d\n", g_natom());
     oprintf("irc_forward.xyz", qc_fp, "IRC point %d\n", point);
-    for (int i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->print_geom("irc_forward.xyz", qc_fp);
 #if defined(OPTKING_PACKAGE_QCHEM)
     fclose(qc_fp);
@@ -111,7 +111,7 @@ void MOLECULE::print_xyz_irc(int point, bool forward) {
 #endif
     oprintf("irc_backward.xyz", qc_fp, "%d\n", g_natom());
     oprintf("irc_backward.xyz", qc_fp, "IRC point %d\n", point);
-    for (int i=0; i<fragments.size(); ++i)
+    for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->print_geom("irc_backward.xyz", qc_fp);
 #if defined(OPTKING_PACKAGE_QCHEM)
     fclose(qc_fp);
@@ -122,13 +122,13 @@ void MOLECULE::print_xyz_irc(int point, bool forward) {
 
 // print internal coordinates to text file
 void MOLECULE::print_intco_dat(std::string psi_fp, FILE *qc_fp) {
-   for (int i=0; i<fragments.size(); ++i) {
+   for (std::size_t i=0; i<fragments.size(); ++i) {
     int first = g_atom_offset(i);
     oprintf(psi_fp, qc_fp, "F %d %d\n", first+1, first + fragments[i]->g_natom());
     fragments[i]->print_intco_dat(psi_fp, qc_fp, g_atom_offset(i));
   }
 
-  for (int I=0; I<interfragments.size(); ++I) {
+  for (std::size_t I=0; I<interfragments.size(); ++I) {
     int frag_a = interfragments[I]->g_A_index();
     int frag_b = interfragments[I]->g_B_index();
     oprintf(psi_fp, qc_fp, "I %d %d\n", frag_a+1, frag_b+1);
@@ -145,7 +145,7 @@ void MOLECULE::print_intco_dat(std::string psi_fp, FILE *qc_fp) {
 std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
   int Nintra = Ncoord_intrafragment();
   int Ninter = Ncoord_interfragment();
-  int Nfb = 0, f;
+  int Nfb = 0;
 #if defined (OPTKING_PACKAGE_QCHEM)
   Nfb = Ncoord_fb_fragment();
 #endif
@@ -157,6 +157,7 @@ std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
 
   // coordinate is an intrafragment coordinate
   if (index < Nintra) {
+    std::size_t f;
 
     // go to last fragment or first that isn't past the desired index
     for (f=0; f<fragments.size(); ++f)
@@ -169,6 +170,7 @@ std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
 
   // coordinate is an interfragment coordinate
   if (index < Nintra + Ninter) {
+    std::size_t f;
 
     for (f=0; f<interfragments.size(); ++f)
       if (index < g_interfragment_coord_offset(f))
@@ -180,7 +182,7 @@ std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
 
 #if defined (OPTKING_PACKAGE_QCHEM)
   if (index < Nintra + Ninter + Nfb) {
-    for (f=0; f<fb_fragments.size(); ++f)
+    for (std::size_t f=0; f<fb_fragments.size(); ++f)
       if (index < g_fb_fragment_coord_offset(f))
         break;
     --f;
@@ -193,7 +195,7 @@ std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
 }
 
 void MOLECULE::print_coords(std::string psi_fp, FILE *qc_fp) const {
-  for (int i=0; i<fragments.size(); ++i) {
+  for (std::size_t i=0; i<fragments.size(); ++i) {
     oprintf(psi_fp, qc_fp, "\t---Fragment %d Intrafragment Coordinates---\n", i+1);
     offlush_out();
     fragments[i]->print_simples(psi_fp, qc_fp, g_atom_offset(i));
@@ -208,23 +210,23 @@ void MOLECULE::print_coords(std::string psi_fp, FILE *qc_fp) const {
       oprintf_out("\tThere are %d natural coordinates formed from these simples.\n");
     }
   }
-  for (int i=0; i<interfragments.size(); ++i) {
+  for (std::size_t i=0; i<interfragments.size(); ++i) {
     int a = interfragments[i]->g_A_index();
     int b = interfragments[i]->g_B_index();
     interfragments[i]->print_coords(psi_fp, qc_fp, g_atom_offset(a), g_atom_offset(b));
   }
-  for (int i=0; i<fb_fragments.size(); ++i) {
+  for (std::size_t i=0; i<fb_fragments.size(); ++i) {
     oprintf(psi_fp, qc_fp,"\t---Fragment %d FB fragment Coordinates---\n", i+1);
     fb_fragments[i]->print_coords(psi_fp, qc_fp);
   }
 }
 
 void MOLECULE::print_simples(std::string psi_fp, FILE *qc_fp) const {
-  for (int i=0; i<fragments.size(); ++i) {
+  for (std::size_t i=0; i<fragments.size(); ++i) {
     oprintf(psi_fp, qc_fp, "\t---Fragment %d Intrafragment Coordinates---\n", i+1);
     fragments[i]->print_simples(psi_fp, qc_fp, g_atom_offset(i));
   }
-  for (int i=0; i<interfragments.size(); ++i) {
+  for (std::size_t i=0; i<interfragments.size(); ++i) {
     int a = interfragments[i]->g_A_index();
     int b = interfragments[i]->g_B_index();
     interfragments[i]->print_coords(psi_fp, qc_fp, g_atom_offset(a), g_atom_offset(b));
@@ -232,7 +234,7 @@ void MOLECULE::print_simples(std::string psi_fp, FILE *qc_fp) const {
     // interfragments[i]->inter_frag->print_simples(psi_fp, qc_fp, g_atom_offset(a), g_atom_offset(b));
   }
 
-  for (int i=0; i<fb_fragments.size(); ++i) {
+  for (std::size_t i=0; i<fb_fragments.size(); ++i) {
     oprintf(psi_fp, qc_fp,"\t---Fragment %d FB fragment Coordinates---\n", i+1);
     fb_fragments[i]->print_simples(psi_fp, qc_fp);
   }
