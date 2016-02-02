@@ -42,7 +42,7 @@ from roa import *
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
-# consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
+# consult http://psicode.org/psi4manual/master/proc_py.html
 
 
 def run_lmp2(name, **kwargs):
