@@ -1,5 +1,5 @@
 #These tests aren't set-up the same way as the others
-set(TestsNotSetUpRight cfour optking testgrendel)
+set(TestsNotSetUpRight cfour optking)
 
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".
