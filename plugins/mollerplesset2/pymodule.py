@@ -23,7 +23,7 @@ def run_plugin_mp2(name, **kwargs):
 
     # Your plugin's psi4 run sequence goes here
     psi4.set_local_option('MOLLERPLESSET2', 'PRINT', 1)
-    psi4.scf()
+    scf_wfn = scf_helper(lowername)
     returnvalue = psi4.plugin('mollerplesset2.so')
 
     return returnvalue
