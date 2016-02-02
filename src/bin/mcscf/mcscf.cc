@@ -70,6 +70,8 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
   using namespace psi;
   boost::shared_ptr<PSIO> psio(new PSIO);
 
+  tstart();
+
   memory_manager = new MemoryManager(Process::environment.get_memory());
 
   psio->open(PSIF_MCSCF, PSIO_OPEN_NEW);
@@ -105,6 +107,9 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
 
   close_psi(options);
   psio->close(PSIF_MCSCF, 1);
+  
+  tstop();
+
   return wfn;
 }
 
@@ -127,8 +132,6 @@ void init_psi(Options& options_)
 void close_psi(Options& options_)
 {
   outfile->Printf("\n\n  MCSCF Execution Completed.\n\n");
-  
-  tstop();
 }
 
 }} /* End Namespaces */
