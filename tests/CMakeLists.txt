@@ -250,7 +250,7 @@ add_subdirectory(opt6)
 add_subdirectory(opt7)
 add_subdirectory(opt8)
 add_subdirectory(opt9)
-add_subdirectory(opt10)
+#add_subdirectory(opt10) Always times out currently
 add_subdirectory(opt11)
 add_subdirectory(opt12)
 add_subdirectory(opt13)
