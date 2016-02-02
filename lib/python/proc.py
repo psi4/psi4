@@ -849,7 +849,6 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
-    ### DGAS: Lori, we need to support passing of ref_wfn here
 
     optstash = p4util.OptionsState(
         ['PUREAM'],
@@ -867,6 +866,12 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'])
+
+    # Grab a few kwargs
+    use_c1 = kwargs.get('use_c1', False)
+    scf_molecule = kwargs.get('molecule', psi4.get_active_molecule())
+    if 'ref_wfn' in kwargs:
+        raise ValidationError("It is not possible to pass scf_helper a reference wavefunction")
 
     # Second-order SCF requires non-symmetrix density matrix support
     if (
@@ -966,11 +971,23 @@ def scf_helper(name, **kwargs):
         p4util.banner('Guess SCF, %s Basis' % (guessbasis))
         psi4.print_out('\n')
 
+
+    # If we force c1 copy the active molecule
+    if use_c1:
+        scf_molecule.update_geometry()
+        if scf_molecule.schoenflies_symbol() != 'c1':
+            psi4.print_out("""  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n""")
+            scf_molecule = scf_molecule.clone()
+            scf_molecule.reset_point_group('c1')
+            scf_molecule.fix_orientation(True)
+            scf_molecule.fix_com(True)
+            scf_molecule.update_geometry()
+
     # the FIRST scf call
     if cast or do_broken:
-        # Perform the guess scf
-        new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                        psi4.get_global_option('BASIS'))
+        # Cast or broken are special cases
+        new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
         psi4.scf(new_wfn, precallback, postcallback)
 
     # broken clean-up
@@ -1006,9 +1023,8 @@ def scf_helper(name, **kwargs):
         efp.print_out()
 
     # the SECOND scf call
-    new_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                    psi4.get_global_option('BASIS'))
-    scf_wfn = psi4.scf(new_wfn, precallback, postcallback)
+    ref_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
+    scf_wfn = psi4.scf(ref_wfn, precallback, postcallback)
     e_scf = psi4.get_variable('CURRENT ENERGY')
 
     optstash.restore()
@@ -1056,7 +1072,7 @@ def run_dcft_gradient(name, **kwargs):
 
 def run_dfocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a density-fitted or Cholesky-decomposed 
+    a density-fitted or Cholesky-decomposed
     (non-)orbital-optimized MPN or CC computation.
 
     """
@@ -1135,19 +1151,8 @@ def run_dfocc(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        # override symmetry
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            psi4.print_out("""  DFOCC does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1= True, **kwargs)
     else:
-        user_pg = None
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
@@ -1155,10 +1160,6 @@ def run_dfocc(name, **kwargs):
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
-
-    if user_pg:
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     optstash.restore()
     return dfocc_wfn
@@ -1209,19 +1210,8 @@ def run_dfocc_gradient(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        # override symmetry
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            psi4.print_out("""  DFOCC does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
     else:
-        user_pg = None
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
@@ -1229,10 +1219,6 @@ def run_dfocc_gradient(name, **kwargs):
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
-
-    if user_pg:
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     optstash.restore()
     return dfocc_wfn
@@ -1268,19 +1254,8 @@ def run_dfocc_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        # override symmetry
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            psi4.print_out("""  DFOCC does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
     else:
-        user_pg = None
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
@@ -1288,10 +1263,6 @@ def run_dfocc_property(name, **kwargs):
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
-
-    if user_pg:
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     optstash.restore()
     return dfocc_wfn
@@ -1317,30 +1288,22 @@ def run_qchf(name, **kwargs):
     psi4.set_local_option('DFOCC', 'QCHF', 'TRUE')
     psi4.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
 
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  QCHF does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    #psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
     psi4.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
     psi4.set_local_option('SCF', 'MAXITER', 1)
-    # Bypass routine scf if user did something special to get it to converge
+
+    # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+    else:
+        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+            raise ValidationError("""  QCHF does not make use of molecular symmetry: """
+                                  """reference wavefunction must be C1.\n""")
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = psi4.dfocc(ref_wfn)
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
 
     return dfocc_wfn
 
@@ -1463,10 +1426,11 @@ def run_occ(name, **kwargs):
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        psi4.MintsHelper().integrals()
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
+
     occ_wfn = psi4.occ(ref_wfn)
 
     optstash.restore()
@@ -1532,10 +1496,11 @@ def run_occ_gradient(name, **kwargs):
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        psi4.MintsHelper().integrals()
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
+
     occ_wfn = psi4.occ(ref_wfn)
     grad = psi4.deriv(occ_wfn)
     occ_wfn.set_gradient(grad)
@@ -1654,14 +1619,18 @@ def run_scf_gradient(name, **kwargs):
             else:
                 psi4.set_local_option('SCF','REFERENCE','UHF')
 
-    scf_wfn = run_scf(name, **kwargs)
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
     if psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
-        scf_wfn.semicanonicalize()
-    grad = psi4.scfgrad(scf_wfn)
-    scf_wfn.set_gradient(grad)
+        ref_wfn.semicanonicalize()
+    grad = psi4.scfgrad(ref_wfn)
+    ref_wfn.set_gradient(grad)
 
     optstash.restore()
-    return scf_wfn
+    return ref_wfn
 
 
 def run_libfock(name, **kwargs):
@@ -1722,26 +1691,13 @@ def run_dfmp2_gradient(name, **kwargs):
         psi4.set_global_option('SCF_TYPE', 'DF')
 
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
-        # DGAS: I dont understand why this is?
-        # Probably 3-index integrals?
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        # override symmetry
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            psi4.print_out("""  DFMP2 does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
     else:
-        user_pg = None
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFMP2 does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
@@ -1755,10 +1711,6 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn.set_gradient(grad)
     e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
-
-    if user_pg:
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     optstash.restore()
     return dfmp2_wfn
@@ -1821,8 +1773,6 @@ def run_ccenergy(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
-    ref_wfn.Ca().print_out()
-    ref_wfn.Cb().print_out()
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -1830,7 +1780,6 @@ def run_ccenergy(name, **kwargs):
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
 
-    # TDC: ccsd in this list?
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
             ((lowername in ['ccsd(t)', 'ccsd(at)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
@@ -2493,7 +2442,7 @@ def run_detci(name, **kwargs):
         ['DETCI', 'EX_LEVEL'])
 
     if psi4.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
-        raise ValidationError('Reference %s for DETCI is not available.' % 
+        raise ValidationError('Reference %s for DETCI is not available.' %
             psi4.get_option('DETCI', 'REFERENCE'))
 
     if name == 'zapt':
@@ -2576,19 +2525,8 @@ def run_dfmp2(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        # override symmetry
-        molecule = psi4.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            psi4.print_out("""  DFMP2 does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
     else:
-        user_pg = None
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFMP2 does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
@@ -2597,15 +2535,11 @@ def run_dfmp2(name, **kwargs):
     p4util.banner('DFMP2')
     psi4.print_out('\n')
 
-    if psi4.get_global_option('REFERENCE')  == "ROHF":
-	ref_wfn.semicanonicalize()	
+    if psi4.get_global_option('REFERENCE') == "ROHF":
+        ref_wfn.semicanonicalize()
 
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     dfmp2_wfn.compute_energy()
-
-    if user_pg:
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     optstash.restore()
     return dfmp2_wfn
@@ -2699,25 +2633,31 @@ def run_sapt(name, **kwargs):
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
-    if 'ref_wfn' in kwargs:
-        psi4.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(True)
-    molecule.fix_com(True)  # This should always have been set, very dangerous bug here
-    molecule.update_geometry()
-    if user_pg != 'c1':
+    # Get the molecule of interest
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        sapt_dimer = psi4.get_active_molecule()
+    else:
+        psi4.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        sapt_dimer = ref_wfn.molecule()
+
+    # Shifting to C1 so we need to copy the active molecule
+    if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        sapt_dimer.reset_point_group('c1')
+        sapt_dimer.fix_orientation(True)
+        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.update_geometry()
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
-    nfrag = molecule.nfragments()
+    nfrag = sapt_dimer.nfragments()
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
@@ -2729,14 +2669,14 @@ def run_sapt(name, **kwargs):
     sapt_basis = sapt_basis.lower()
 
     if sapt_basis == 'dimer':
-        monomerA = molecule.extract_subsets(1, 2)
+        monomerA = sapt_dimer.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
-        monomerB = molecule.extract_subsets(2, 1)
+        monomerB = sapt_dimer.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
     elif sapt_basis == 'monomer':
-        monomerA = molecule.extract_subsets(1)
+        monomerA = sapt_dimer.extract_subsets(1)
         monomerA.set_name('monomerA')
-        monomerB = molecule.extract_subsets(2)
+        monomerB = sapt_dimer.extract_subsets(2)
         monomerB.set_name('monomerB')
 
     ri = psi4.get_option('SCF', 'SCF_TYPE')
@@ -2747,35 +2687,34 @@ def run_sapt(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
+
     if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    dimer_wfn = scf_helper('RHF', **kwargs)
+    dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = psi4.get_variable('MP2 CORRELATION ENERGY')
     if sapt_basis == 'dimer':
         psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
-    activate(monomerA)
     if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF')
     psi4.print_out('\n')
-    monomerA_wfn = scf_helper('RHF', **kwargs)
+    monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
 
-    activate(monomerB)
     if sapt_basis == 'dimer':
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF')
     psi4.print_out('\n')
-    monomerB_wfn = scf_helper('RHF', **kwargs)
+    monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
         mp2_corl_interaction_e -= psi4.get_variable('MP2 CORRELATION ENERGY')
@@ -2785,7 +2724,6 @@ def run_sapt(name, **kwargs):
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
     psi4.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
-    activate(molecule)
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
     psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
@@ -2821,9 +2759,6 @@ def run_sapt(name, **kwargs):
     psi4.print_out('\n')
     e_sapt = psi4.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
 
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
@@ -2846,29 +2781,38 @@ def run_sapt_ct(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(True)
-    molecule.update_geometry()
-    if user_pg != 'c1':
+    # Get the molecule of interest
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        sapt_dimer = psi4.get_active_molecule()
+    else:
+        psi4.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        sapt_dimer = ref_wfn.molecule()
+
+    # Shifting to C1 so we need to copy the active molecule
+    if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        sapt_dimer.reset_point_group('c1')
+        sapt_dimer.fix_orientation(True)
+        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.update_geometry()
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
-    nfrag = molecule.nfragments()
+    nfrag = sapt_dimer.nfragments()
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
-    monomerA = molecule.extract_subsets(1, 2)
+    monomerA = sapt_dimer.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
-    monomerB = molecule.extract_subsets(2, 1)
+    monomerB = sapt_dimer.extract_subsets(2, 1)
     monomerB.set_name('monomerB')
-    molecule.update_geometry()
-    monomerAm = molecule.extract_subsets(1)
+    sapt_dimer.update_geometry()
+    monomerAm = sapt_dimer.extract_subsets(1)
     monomerAm.set_name('monomerAm')
-    monomerBm = molecule.extract_subsets(2)
+    monomerBm = sapt_dimer.extract_subsets(2)
     monomerBm.set_name('monomerBm')
 
     ri = psi4.get_option('SCF', 'SCF_TYPE')
@@ -2880,43 +2824,38 @@ def run_sapt_ct(name, **kwargs):
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
     psi4.set_global_option('DF_INTS_IO', 'SAVE')
-    dimer_wfn = scf_helper('RHF', **kwargs)
+    dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
-    activate(monomerA)
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF (Dimer Basis)')
     psi4.print_out('\n')
-    monomerA_wfn = scf_helper('RHF', **kwargs)
+    monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
 
-    activate(monomerB)
     if (ri == 'DF'):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF (Dimer Basis)')
     psi4.print_out('\n')
-    monomerB_wfn = scf_helper('RHF', **kwargs)
+    monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
 
-    activate(monomerAm)
     psi4.IO.set_default_namespace('monomerAm')
     psi4.print_out('\n')
     p4util.banner('Monomer A HF (Monomer Basis)')
     psi4.print_out('\n')
-    monomerAm_wfn = scf_helper('RHF', **kwargs)
+    monomerAm_wfn = scf_helper('RHF', molecule=monomerAm, **kwargs)
 
-    activate(monomerBm)
     psi4.IO.set_default_namespace('monomerBm')
     psi4.print_out('\n')
     p4util.banner('Monomer B HF (Monomer Basis)')
     psi4.print_out('\n')
-    monomerBm_wfn = scf_helper('RHF', **kwargs)
+    monomerBm_wfn = scf_helper('RHF', molecule=monomerBm, **kwargs)
 
-    activate(molecule)
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
     psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
@@ -2975,9 +2914,6 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out(line3)
     psi4.set_variable('SAPT CT ENERGY', CT)
 
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
     optstash.restore()
     print('SAPT does not have a wavefunction /lib/python/proc.py:2208')  # TODO
     return e_sapt
@@ -2995,28 +2931,32 @@ def run_fisapt(name, **kwargs):
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(True)
-    molecule.fix_com(True)
-    molecule.update_geometry()
-    if user_pg != 'c1':
+    # Get the molecule of interest
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        sapt_dimer = psi4.get_active_molecule()
+    else:
+        psi4.print_out('Warning! FISAPT argument "ref_wfn" is only able to use molecule information.')
+        sapt_dimer = ref_wfn.molecule()
+
+    # Shifting to C1 so we need to copy the active molecule
+    if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        sapt_dimer.reset_point_group('c1')
+        sapt_dimer.fix_orientation(True)
+        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.update_geometry()
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
 
-    activate(molecule)
     if ref_wfn is None:
-        ref_wfn = scf_helper('RHF', **kwargs)
+        ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     fisapt_wfn = psi4.fisapt(ref_wfn)
 
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
-
     optstash.restore()
-    print('DMRG does not have a wavefunction /lib/python/proc.py:2245')  # TODO
+    print('FISAPT does not have a wavefunction /lib/python/proc.py:2245')  # TODO
     return fisapt_wfn
 
 
@@ -3025,7 +2965,8 @@ def run_mrcc(name, **kwargs):
     for a calculation calling Kallay's MRCC code.
 
     """
-    # TODO: Check to see if we really need to run the SCF code.
+
+    # Check to see if we really need to run the SCF code.
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
@@ -3223,18 +3164,6 @@ def run_fnodfcc(name, **kwargs):
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
-    # override symmetry:
-    molecule = psi4.get_active_molecule()
-    user_pg = molecule.schoenflies_symbol()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
-    if user_pg != 'c1':
-        psi4.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    # hack to ensure puream (or not) throughout
-    #psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
-
     def set_cholesky_from(mtd_type):
         type_val = psi4.get_global_option(mtd_type)
         if type_val == 'CD':
@@ -3244,7 +3173,7 @@ def run_fnodfcc(name, **kwargs):
                 psi4.set_local_option('FNOCC', 'DF_BASIS_CC', '')
         else:
             raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
-                
+
     # triples?
     if lowername == 'ccsd':
         psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
@@ -3274,13 +3203,15 @@ def run_fnodfcc(name, **kwargs):
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+    else:
+        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+            raise ValidationError("""  FNOCC does not make use of molecular symmetry: """
+                                  """reference wavefunction must be C1.\n""")
+
 
     fnocc_wfn = psi4.fnocc(ref_wfn)
     # TODO this needs C1?
-
-    molecule.reset_point_group(user_pg)
-    molecule.update_geometry()
 
     # restore options
     optstash.restore()
@@ -3467,7 +3398,7 @@ def run_cepa(name, **kwargs):
 
     psi4.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
 
-    if lowername in ['fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)', 
+    if lowername in ['fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
                      'fno-acpf', 'fno-aqcc', 'fno-cisd']:  # 'fno-cid'
         psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
 
@@ -3525,6 +3456,8 @@ def run_detcas(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    molecule = ref_wfn.molecule()
+
     # The DF case
     if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
 
@@ -3534,7 +3467,6 @@ def run_detcas(name, **kwargs):
 
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            molecule = psi4.get_active_molecule()
             if (molecule.schoenflies_symbol() != 'c1'):
                 raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
@@ -3547,7 +3479,6 @@ def run_detcas(name, **kwargs):
 
         # Make sure a valid JK algorithm is selected
         if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            molecule = psi4.get_active_molecule()
             if (molecule.schoenflies_symbol() != 'c1'):
                 raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 

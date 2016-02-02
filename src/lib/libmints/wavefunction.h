@@ -236,14 +236,23 @@ public:
     /**
     * Copy the contents of another Wavefunction into this one.
     * Useful at the beginning of correlated wavefunction computations.
-    * -Does not set options or callbacks
-    * -reference_wavefunction_ is set to other
+    * -Does not set options, callbacks, or reference_wavefunction_
     * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are copied by reference,
     *  so if you change these, you must reallocate to avoid compromising the
     *  reference wavefunction's data.
     **/
     void shallow_copy(SharedWavefunction other);
     void shallow_copy(const Wavefunction* other);
+
+    /**
+    * Copy the contents of another Wavefunction into this one.
+    * Useful at the beginning of correlated wavefunction computations.
+    * -Does not set options or callbacks
+    * -reference_wavefunction_ is set to other
+    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
+    **/
+    void deep_copy(SharedWavefunction other);
+    void deep_copy(const Wavefunction* other);
 
     /// Returns a shallow copy of this wrapped into a SharedWavefunction
     SharedWavefunction make_ghost_wavefunction();

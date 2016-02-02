@@ -622,7 +622,7 @@ def gradient(name, **kwargs):
 
     # Prevent methods that do not have associated energies 
     if lowername in energy_only_methods:
-	raise ValidationError("gradient('%s') does not have an associated gradient" % name
+	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -1365,7 +1365,7 @@ def hessian(name, **kwargs):
 
     # Prevent methods that do not have associated energies 
     if lowername in energy_only_methods:
-	raise ValidationError("gradient('%s') does not have an associated gradient" % name
+	raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
