@@ -25,3 +25,5 @@ energy('@plugin@')
 
 @plugin@.exampleFN()
 
+# An unfortunate consequence of plugin linking, should always be present
+psi4.set_wavefunction(None)
