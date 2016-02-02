@@ -2097,6 +2097,7 @@ def complete_basis_set(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -2637,7 +2638,14 @@ def complete_basis_set(name, **kwargs):
     psi4.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
     psi4.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
     psi4.set_variable('CURRENT ENERGY', finalenergy)
-    return finalenergy
+
+    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    wfn = psi4.new_wavefunction(molecule, BSTR[-1])
+
+    if return_wfn:
+        return (finalenergy, wfn)
+    else:
+        return finalenergy
 
 
 # Transform and validate basis sets from 'cc-pV[Q5]Z' into [cc-pVQZ, cc-pV5Z] and [4, 5]
