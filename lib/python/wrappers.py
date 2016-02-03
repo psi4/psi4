@@ -2505,6 +2505,8 @@ def complete_basis_set(name, **kwargs):
 
     psioh = psi4.IOManager.shared_object()
     psioh.set_specific_retention(p4const.PSIF_SCF_MOS, True)
+    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+    psi4.set_local_option('SCF', 'GUESS_PERSIST', True)
 
     # Run necessary computations
     for mc in JOBS:

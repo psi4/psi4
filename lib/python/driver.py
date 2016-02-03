@@ -1161,7 +1161,6 @@ def optimize(name, **kwargs):
     mol = psi4.get_active_molecule()
     mol.update_geometry()
     initial_sym = mol.schoenflies_symbol()
-    guessPersist = psi4.get_global_option('GUESS_PERSIST')
     while n <= psi4.get_global_option('GEOM_MAXITER'):
         mol = psi4.get_active_molecule()
         mol.update_geometry()
@@ -1174,7 +1173,8 @@ def optimize(name, **kwargs):
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
-        if (n > 1) and (not isSowReap) and (not guessPersist):
+        #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
+        if (n > 1) and (not isSowReap) and (not psi4.get_option('SCF', 'GUESS_PERSIST')):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
@@ -1240,7 +1240,10 @@ def optimize(name, **kwargs):
                 fmaster.close()
 
             optstash.restore()
-            return thisenergy
+            if return_wfn:
+                return (thisenergy, wfn)
+            else:
+                return thisenergy
 
         elif optking_rval == psi4.PsiReturnType.Failure:  # new 10-14 RAK
             print('Optimizer: Optimization failed!')
@@ -1267,10 +1270,6 @@ def optimize(name, **kwargs):
 
     optstash.restore()
     #return 0.0
-    if return_wfn:
-        return (psi4.get_variable('CURRENT ENERGY'), wfn)
-    else:
-        return psi4.get_variable('CURRENT ENERGY')
 
 # Aliases
 opt = optimize
