@@ -9,6 +9,6 @@ plugin_load("./mointegrals.so")
 set basis cc-pvdz
 set mointegrals print 1
 
-scf()
+energy('SCF')
 
 plugin("mointegrals.so")
