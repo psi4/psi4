@@ -24,6 +24,11 @@ def run_plugin_mp2(name, **kwargs):
     # Your plugin's psi4 run sequence goes here
     psi4.set_local_option('MOLLERPLESSET2', 'PRINT', 1)
     scf_wfn = scf_helper(lowername)
+
+    # Need to semicanonicalize the ROHF orbitals
+    if psi4.get_global_option('REFERENCE') == 'ROHF':
+        scf_wfn.semicanonicalize()
+
     returnvalue = psi4.plugin('mollerplesset2.so')
 
     return returnvalue

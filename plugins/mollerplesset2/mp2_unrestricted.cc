@@ -21,8 +21,7 @@ double plugin_mp2_unrestricted(Options &options)
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    IntegralTransform ints(wfn, spaces,
-                                ROHF ? IntegralTransform::SemiCanonical : IntegralTransform::Unrestricted);
+    IntegralTransform ints(wfn, spaces, IntegralTransform::Unrestricted);
     ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
     dpdbuf4 K;
