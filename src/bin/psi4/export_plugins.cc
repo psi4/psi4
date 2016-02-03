@@ -90,7 +90,7 @@ int py_psi_plugin(std::string fullpathname)
     }
     plugin_info& tmpinfo = plugins[uc];
 //    Process::environment.options.set_current_module(name);
-    outfile->Printf("Reading options from the %s block\n", tmpinfo.name.c_str());
+    outfile->Printf("\nReading options from the %s block\n", tmpinfo.name.c_str());
     py_psi_prepare_options_for_module(tmpinfo.name);
 
     tmpinfo.read_options(tmpinfo.name, Process::environment.options);
@@ -99,7 +99,7 @@ int py_psi_plugin(std::string fullpathname)
 
     // Call the plugin
     // Should be wrapped in a try/catch block.
-    outfile->Printf("Calling plugin %s.\n", fullpathname.c_str());
+    outfile->Printf("Calling plugin %s.\n\n\n", fullpathname.c_str());
 
     // Call the plugin
     int ret = info.plugin(Process::environment.options);

@@ -23,7 +23,6 @@
  */
 
 #include "stability.h"
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>

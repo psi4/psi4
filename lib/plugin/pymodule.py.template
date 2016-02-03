@@ -47,10 +47,20 @@ def run_@plugin@(name, **kwargs):
 
     # Your plugin's psi4 run sequence goes here
     #psi4.set_global_option('BASIS', 'sto-3g')
-    psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
-    scf_helper(name, **kwargs)
-    returnvalue = psi4.plugin('@plugin@.so')
-    psi4.set_variable('CURRENT ENERGY', returnvalue)
+    psi4.set_local_option('MYPLUGIN', 'PRINT', 1)
+
+    # Compute a SCF reference, a wavefunction is return which holds the molecule used, orbitals
+    # Fock matrices, and more
+    print('Attention! This SCF is density-fitted.')
+    ref_wfn = scf_helper(name, **kwargs)
+
+    # Call the Psi4 plugin
+    # Please note that setting the reference wavefunction in this way is ONLY for plugins
+    psi4.set_wavefunction(ref_wfn)
+    passed = psi4.plugin('@plugin@.so')
+    @plugin@_wfn = psi4.wavefunction()
+
+    return @plugin@_wfn
 
 
 # Integration with driver routines
