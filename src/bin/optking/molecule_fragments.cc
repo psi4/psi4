@@ -512,8 +512,8 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 
 
 #if defined(OPTKING_PACKAGE_PSI)
-      psi::Process::environment.molecule()->set_geometry(coord);
-      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
+      psi::Process::environment.legacy_molecule()->set_geometry(coord);
+      symmetric_intco = psi::Process::environment.legacy_molecule()->valid_atom_map(Opt_params.symm_tol);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // not implemented yet
 #endif
@@ -530,7 +530,7 @@ void MOLECULE::freeze_interfragment_asymm(void) {
   }
 
 #if defined(OPTKING_PACKAGE_PSI)
-      psi::Process::environment.molecule()->set_geometry(coord_orig);
+      psi::Process::environment.legacy_molecule()->set_geometry(coord_orig);
 #endif
 
   return;

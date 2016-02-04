@@ -82,7 +82,8 @@ def run_roa(name, **kwargs):
             psi4.print_out('\n\n----------------------------------------------------------------------\n')
             psi4.print_out('\t%%%%%%%%%% {} %%%%%%%%%%\n'.format(gauge_list[g_idx]))
             psi4.print_out('----------------------------------------------------------------------\n\n')
-            psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
+            print('roa.py:85 I am not being passed a molecule, grabbing from global :(')
+            psi4.scatter(psi4.get_active_molecule(), step, dip_polar_list, gauge, dip_quad_polar_list)
 
     db.close()
 

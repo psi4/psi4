@@ -45,7 +45,7 @@ const char* getIntcoFileName()
       getPrefix(pref);
       strintco = std::string(pref) + "intco.dat";
 #elif defined(OPTKING_PACKAGE_PSI)
-      strintco = psi::get_writer_file_prefix(psi::Process::environment.molecule()->name()) + ".intco";
+      strintco = psi::get_writer_file_prefix(psi::Process::environment.legacy_molecule()->name()) + ".intco";
 #endif
    }
    return strintco.c_str();

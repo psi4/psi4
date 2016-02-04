@@ -67,7 +67,7 @@ int read_natoms(void) {
   int natom=0;
 
 #if defined(OPTKING_PACKAGE_PSI)
-  natom = psi::Process::environment.molecule()->natom();
+  natom = psi::Process::environment.legacy_molecule()->natom();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -106,7 +106,7 @@ void MOLECULE::read_geom_grad(void) {
 
   Matrix& gradient = *pgradient.get();
 
-  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+  boost::shared_ptr<Molecule> mol = psi::Process::environment.legacy_molecule();
   Matrix geometry = mol->geometry();
 
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
@@ -297,12 +297,12 @@ void MOLECULE::symmetrize_geom(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
 
-  // put matrix into environment molecule and it will symmetrize it
+  // put matrix into environment.legacy_molecule and it will symmetrize it
   double **geom_2D = g_geom_2D();
-  psi::Process::environment.molecule()->set_geometry(geom_2D);
+  psi::Process::environment.legacy_molecule()->set_geometry(geom_2D);
 
   try {
-    psi::Process::environment.molecule()->symmetrize(Opt_params.symm_tol);
+    psi::Process::environment.legacy_molecule()->symmetrize(Opt_params.symm_tol);
   }
   catch (psi::PsiException exc) {
     free_matrix(geom_2D);
@@ -311,7 +311,7 @@ void MOLECULE::symmetrize_geom(void) {
   }
   free_matrix(geom_2D);
 
-  psi::Matrix geom = psi::Process::environment.molecule()->geometry();
+  psi::Matrix geom = psi::Process::environment.legacy_molecule()->geometry();
   geom_2D = geom.pointer(); // don't free; it's shared
   set_geom_array(geom_2D[0]);
 
@@ -327,8 +327,8 @@ void MOLECULE::write_geom(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   double **geom_2D = g_geom_2D();
-  psi::Process::environment.molecule()->set_geometry(geom_2D);
-  psi::Process::environment.molecule()->update_geometry();
+  psi::Process::environment.legacy_molecule()->set_geometry(geom_2D);
+  psi::Process::environment.legacy_molecule()->update_geometry();
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -354,7 +354,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   // Need to enable exceptions in ifstream.
   if_Hcart.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
-    std::string hess_fname = psi::get_writer_file_prefix(psi::Process::environment.molecule()->name()) + ".hess";
+    std::string hess_fname = psi::get_writer_file_prefix(psi::Process::environment.legacy_molecule()->name()) + ".hess";
     if_Hcart.open(hess_fname.c_str(), ios_base::in);
     int n;
     if_Hcart >> n; // read natom
