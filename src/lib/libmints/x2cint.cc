@@ -425,16 +425,6 @@ void X2CInt::write_integrals_to_disk()
 
 void X2CInt::project()
 {
-    // Read the molecule information
-    // DGAS Warning! P::e.molecule is deprecated
-    //boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-
-    // Construct a new basis set that uses X2C_BASIS.
-//    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "REL_BASIS",x2c_basis_);
-
-    // Construct a new basis set that uses BASIS.
-//    boost::shared_ptr<BasisSet> aoBasis_contracted = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_); //pv
-
     // Integral factory for the BASIS/X2C_BASIS mixed basis
     boost::shared_ptr<IntegralFactory> integral_contracted(new IntegralFactory(aoBasis_contracted_, aoBasis_, aoBasis_, aoBasis_));
 

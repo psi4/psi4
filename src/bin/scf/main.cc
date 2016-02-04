@@ -106,7 +106,7 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
     // Print a molden file
     if ( options.get_bool("MOLDEN_WRITE") ) {
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
-       std::string filename = get_writer_file_prefix() + ".molden";
+       std::string filename = get_writer_file_prefix(scf->molecule()->name()) + ".molden";
        HF* hf = (HF*)scf.get();
        SharedVector occA = hf->occupation_a();
        SharedVector occB = hf->occupation_b();

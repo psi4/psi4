@@ -41,7 +41,6 @@ SharedMatrix fd_1_0(boost::shared_ptr<Molecule> mol, Options &options, const boo
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
 
-//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
 
@@ -138,7 +137,7 @@ SharedMatrix fd_1_0(boost::shared_ptr<Molecule> mol, Options &options, const boo
   // Print a gradient file
   if ( options.get_bool("GRADIENT_WRITE") ) {
     GradientWriter grad(mol, gradient_matrix);
-    std::string gradfile = get_writer_file_prefix() + ".grad";
+    std::string gradfile = get_writer_file_prefix(mol->name()) + ".grad";
     grad.write(gradfile);
     outfile->Printf("\tGradient written.\n");
   }

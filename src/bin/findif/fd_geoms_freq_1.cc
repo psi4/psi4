@@ -48,8 +48,6 @@ std::vector< SharedMatrix > fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, Opt
   double disp_size = options.get_double("DISP_SIZE");
   outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
-//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
-
   // Get SALCS from libmints: all modes with rotations and translations projected out
   boost::shared_ptr<MatrixFactory> fact;
   boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();

@@ -100,7 +100,7 @@ void dipole(boost::shared_ptr<Wavefunction> wfn)
 
     if(params.write_nos) {
       MoldenWriter nowriter(wfn);
-      std::string mol_name = Process::environment.molecule()->name();
+      std::string mol_name = wfn->molecule()->name();
 
       if(wfn->same_a_b_dens()) {
         SharedMatrix Na(new Matrix("Alpha Natural Orbitals", Pa->colspi(), Pa->colspi()));

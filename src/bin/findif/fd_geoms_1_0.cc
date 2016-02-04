@@ -46,9 +46,6 @@ std::vector< SharedMatrix > fd_geoms_1_0(boost::shared_ptr<Molecule> mol, Option
   double disp_size = options.get_double("DISP_SIZE");
   outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
-  // read in molecular data: Natom, reference geometry, and SALC coordinates
-  //const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
-
   int Natom = mol->natom();
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);
 

@@ -2156,7 +2156,7 @@ DCFTSolver::write_molden_file() {
     // Write to MOLDEN file
     boost::shared_ptr<Wavefunction> dcft_ = make_ghost_wavefunction();
     boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dcft_));
-    std::string filename = get_writer_file_prefix() + ".molden";
+    std::string filename = get_writer_file_prefix(molecule_->name()) + ".molden";
 
     // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
     SharedVector dummy_a(new Vector("Dummy Vector Alpha", nirrep_, nmopi_));

@@ -126,9 +126,10 @@ void CIWavefunction::transform_ci_integrals()
 void CIWavefunction::setup_dfmcscf_ints(){
 
   outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
+
   /// Grab and build basis sets
   boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
-    Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
+    molecule_, "BASIS", options_.get_str("BASIS"));
   boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
       "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"), "JKFIT",
       options_.get_str("BASIS"), primary->has_puream());

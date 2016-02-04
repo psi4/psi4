@@ -46,7 +46,6 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
   double disp_size = options.get_double("DISP_SIZE");
   int print_lvl = options.get_int("PRINT");
 
-//  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
   boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
@@ -421,7 +420,7 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
 
   // Print a hessian file
   if ( options.get_bool("HESSIAN_WRITE") ) {
-    std::string hess_fname = get_writer_file_prefix() + ".hess";
+    std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
     boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,TRUNCATE));
     //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
     printer->Printf("%5d", Natom);

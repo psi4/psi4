@@ -138,14 +138,8 @@ MintsHelper::~MintsHelper()
 
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
-    if (wavefunction) {
-        psio_ = wavefunction->psio();
-        molecule_ = wavefunction->molecule();
-    }
-    else {
-        psio_ = _default_psio_lib_;
-        molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
-    }
+    psio_ = wavefunction->psio();
+    molecule_ = wavefunction->molecule();
 
     if (molecule_.get() == 0) {
         outfile->Printf( "  Active molecule not set!");

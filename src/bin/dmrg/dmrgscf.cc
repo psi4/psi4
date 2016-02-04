@@ -13,7 +13,7 @@
 #include <liboptions/liboptions.h>
 #include <libfock/jk.h>
 #include <libmints/writer_file_prefix.h>
-//Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix()
+//Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix(std::string name)
 
 #include <stdlib.h>
 #include <iostream>
@@ -405,8 +405,8 @@ PsiReturnType dmrg(SharedWavefunction wfn, Options &options)
     const string dmrgscf_active_space = options.get_str("DMRG_ACTIVE_SPACE");
     const bool dmrgscf_loc_random     = options.get_bool("DMRG_LOC_RANDOM");
     const int dmrgscf_num_vec_diis    = CheMPS2::DMRGSCF_numDIISvecs;
-    const std::string unitaryname     = psi::get_writer_file_prefix() + ".unitary.h5";
-    const std::string diisname        = psi::get_writer_file_prefix() + ".DIIS.h5";
+    const std::string unitaryname     = psi::get_writer_file_prefix(wfn->molecule()->name()) + ".unitary.h5";
+    const std::string diisname        = psi::get_writer_file_prefix(wfn->molecule()->name()) + ".DIIS.h5";
 
     /****************************************
      *   Check if the input is consistent   *

@@ -1506,7 +1506,6 @@ BOOST_PYTHON_MODULE (psi4)
         py_psi_get_array_variable,
         "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
-//    def("print_array_variables", py_psi_print_array_variable_map, "Prints all PSI variables that have been set internally.");
     def("get_array_variables",
         py_psi_return_array_variable_map,
         "Returns dictionary of the PSI variables set internally by the modules or python driver.");
@@ -1536,8 +1535,6 @@ BOOST_PYTHON_MODULE (psi4)
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
-    // def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
-//    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
@@ -1569,7 +1566,6 @@ BOOST_PYTHON_MODULE (psi4)
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
-// DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");

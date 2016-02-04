@@ -204,7 +204,6 @@ boost::python::list make_vector_array_interfaces(SharedVector vec){
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
-    //SharedMolecule mol = Process::environment.molecule();
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
