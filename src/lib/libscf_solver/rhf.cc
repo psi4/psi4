@@ -498,7 +498,7 @@ bool RHF::stability_analysis()
         std::vector<boost::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
-        IntegralTransform ints(make_ghost_wavefunction(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
