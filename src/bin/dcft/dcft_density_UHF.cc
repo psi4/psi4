@@ -2076,7 +2076,7 @@ DCFTSolver::compute_oe_properties() {
 
     // Compute one-electron properties
 
-    boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
+    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_title(options_.get_str("DCFT_FUNCTIONAL").c_str());
 
     oe->set_Da_mo(a_opdm);
@@ -2154,8 +2154,7 @@ DCFTSolver::write_molden_file() {
     bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
 
     // Write to MOLDEN file
-    boost::shared_ptr<Wavefunction> dcft_ = make_ghost_wavefunction();
-    boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dcft_));
+    boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
     std::string filename = get_writer_file_prefix() + ".molden";
 
     // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers

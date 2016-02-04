@@ -31,11 +31,11 @@ using namespace std;
 
 
 namespace psi{ namespace dfoccwave{
-  
+
 void DFOCC::back_trans()
-{ 
-    outfile->Printf("\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");  
-    
+{
+    outfile->Printf("\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");
+
 
     SharedTensor2d Gmo, Gao, Gao2, G, Gref, Gsep, Gcorr, cQso2;
     timer_on("back_trans");
@@ -411,7 +411,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("back_trans");
-    //outfile->Printf("\tBacktransformation is done.\n");  
+    //outfile->Printf("\tBacktransformation is done.\n");
     //
 } // end back_trans
 
@@ -419,8 +419,8 @@ else if (reference_ == "UNRESTRICTED") {
 // OEPROP
 //=========================
 void DFOCC::oeprop()
-{ 
-    outfile->Printf("\tComputing one-electron properties...\n");  
+{
+    outfile->Printf("\tComputing one-electron properties...\n");
 
     timer_on("oeprop");
     SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
@@ -437,7 +437,7 @@ void DFOCC::oeprop()
     }
 
     // Compute oeprop
-    boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
+    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
@@ -456,9 +456,9 @@ void DFOCC::oeprop()
 //    CCSD: Back Trans
 //======================================================================
 void DFOCC::back_trans_cc()
-{ 
-    outfile->Printf("\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");  
-    
+{
+    outfile->Printf("\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");
+
 
     SharedTensor2d Gmo, Gao, Gao2, G, Gref, Gsep, Gcorr, cQso2;
     timer_on("back_trans");
@@ -544,7 +544,7 @@ if (reference_ == "RESTRICTED") {
     //=========================
     // Correlation TPDM
     //=========================
-    // OO Block 
+    // OO Block
     Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
     Gmo->read(psio_, PSIF_DFOCC_DENS);
     G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
@@ -721,7 +721,7 @@ else if (reference_ == "UNRESTRICTED") {
     //=========================
     // Correlation TPDM
     //=========================
-    // OO Block 
+    // OO Block
     Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
     Gmo->read(psio_, PSIF_DFOCC_DENS);
     G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
@@ -731,7 +731,7 @@ else if (reference_ == "UNRESTRICTED") {
     Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
     G.reset();
 
-    // oo Block 
+    // oo Block
     Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB));
     Gmo->read(psio_, PSIF_DFOCC_DENS);
     G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_));
@@ -810,7 +810,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("back_trans");
-    //outfile->Printf("\tBacktransformation is done.\n");  
+    //outfile->Printf("\tBacktransformation is done.\n");
     //
 } // end back_trans_cc
 

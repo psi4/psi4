@@ -30,6 +30,8 @@
 #include "exception.h"
 #include <libparallel/parallel.h>
 
+#include <boost/enable_shared_from_this.hpp>
+
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
 
@@ -77,7 +79,7 @@ class OrbitalSpace;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction
+class Wavefunction : public boost::enable_shared_from_this<Wavefunction>
 {
 protected:
     /// Name of the wavefunction
@@ -253,9 +255,6 @@ public:
     **/
     void deep_copy(SharedWavefunction other);
     void deep_copy(const Wavefunction* other);
-
-    /// Returns a shallow copy of this wrapped into a SharedWavefunction
-    SharedWavefunction make_ghost_wavefunction();
 
     virtual ~Wavefunction();
 
