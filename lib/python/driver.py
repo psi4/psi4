@@ -1219,6 +1219,7 @@ def optimize(name, **kwargs):
 
         # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
         # Take step
+        psi4.set_legacy_molecule(mol)
         optking_rval = psi4.optking()
         if optking_rval == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')

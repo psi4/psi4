@@ -55,8 +55,6 @@
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
-//#include "../../lib/libbabel/LibBabel.h"
-//#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
 #include <libqt/qt.h>
@@ -168,8 +166,8 @@ namespace cclambda { PsiReturnType cclambda(SharedWavefunction, Options&); }
 namespace ccdensity { PsiReturnType ccdensity(SharedWavefunction, Options&); }
 namespace ccresponse {
 PsiReturnType ccresponse(SharedWavefunction, Options&);
-void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot,
-             std::vector<SharedMatrix> quad);
+void scatter(boost::shared_ptr<Molecule> molecule, Options&, double step, std::vector<SharedMatrix> dip,
+             std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
 }
 namespace cceom { PsiReturnType cceom(SharedWavefunction, Options&); }
 
@@ -550,7 +548,7 @@ void py_psi_print_list(python::list py_list)
     return;
 }
 
-void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list,
+void py_psi_scatter(boost::shared_ptr<Molecule> molecule, double step, python::list dip_polar_list, python::list opt_rot_list,
                     python::list dip_quad_polar_list)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
@@ -591,7 +589,8 @@ void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_r
 //    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
 //        (*i)->print(stdout);
 
-    ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
+    ccresponse::scatter(molecule, Process::environment.options, step, dip_polar_tensors,
+                        opt_rot_tensors, dip_quad_polar_tensors);
 }
 
 double py_psi_cceom(SharedWavefunction ref_wfn)
@@ -983,6 +982,10 @@ void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
 {
     Process::environment.set_molecule(molecule);
 }
+void py_psi_set_legacy_molecule(boost::shared_ptr<Molecule> legacy_molecule)
+{
+    Process::environment.set_legacy_molecule(legacy_molecule);
+}
 
 void py_psi_set_parent_symmetry(std::string pg)
 {
@@ -997,6 +1000,10 @@ void py_psi_set_parent_symmetry(std::string pg)
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
+}
+boost::shared_ptr<Molecule> py_psi_get_legacy_molecule()
+{
+    return Process::environment.legacy_molecule();
 }
 
 boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
@@ -1155,6 +1162,14 @@ boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 void py_psi_set_wavefunction(SharedWavefunction wfn)
 {
     Process::environment.set_wavefunction(wfn);
+}
+boost::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
+{
+    return Process::environment.legacy_wavefunction();
+}
+void py_psi_set_legacy_wavefunction(SharedWavefunction wfn)
+{
+    Process::environment.set_legacy_wavefunction(wfn);
 }
 SharedWavefunction py_psi_new_wavefunction(boost::shared_ptr<Molecule> molecule,
                                            const std::string& basis)
@@ -1377,12 +1392,22 @@ BOOST_PYTHON_MODULE (psi4)
         py_psi_set_active_molecule,
         "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
+    def("set_legacy_molecule",
+        py_psi_set_legacy_molecule,
+        "Activates a previously defined (in the input) molecule, by name.");
+    def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
     def("wavefunction",
         py_psi_wavefunction,
         "Returns the current wavefunction object from the most recent computation.");
     def("set_wavefunction",
         py_psi_set_wavefunction,
         "Returns the current wavefunction object from the most recent computation.");
+    def("legacy_wavefunction",
+        py_psi_legacy_wavefunction,
+        "Returns the current legacy_wavefunction object from the most recent computation.");
+    def("set_legacy_wavefunction",
+        py_psi_set_legacy_wavefunction,
+        "Returns the current legacy_wavefunction object from the most recent computation.");
     def("new_wavefunction",
         py_psi_new_wavefunction,
         "Builds a new wavefunction from scratch.");

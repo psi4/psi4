@@ -3515,6 +3515,7 @@ def run_efp(name, **kwargs):
     psi4.efp_set_options()
 
     efp.print_out()
+    psi4.set_legacy_molecule(psi4.get_active_molecule())
     returnvalue = efp.compute()
     print('EFP does not have a wavefunction /lib/python/proc.py:2806')  # TODO
     return returnvalue

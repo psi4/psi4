@@ -210,6 +210,7 @@ boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
+    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n"); 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
         outfile->Printf( "  Active molecule not set!");
