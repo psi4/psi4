@@ -52,8 +52,6 @@
 #define YEXTERN
 #include "yoshimine.h"
 
-#include <JGtimer.h>
-
 #include <boost/shared_ptr.hpp>
 
 namespace psi {
@@ -468,10 +466,6 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
 //DEBUG      num_int_K[h] = 0;
 //DEBUG  }
 
-  timJG tread;
-  timJG twriteJ;
-  timJG twriteK;
-
   if (printflag) {
     outfile->Printf( "Yoshimine rdtwo routine entered\n");
     outfile->Printf( "Two-electron integrals from file%d:\n",itapERI);
@@ -480,9 +474,9 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
   firstfile_J = YBuffJ->first_tmp_file();
   firstfile_K = YBuffK->first_tmp_file();
 
-  tread.start();
+  timer_on("Reading IWL file");
   IWL* ERIIN = new IWL(YBuffJ->get_psio(), itapERI, 0.0, 1, 1);
-  tread.cumulate();
+  timer_off("Reading IWL file");
 
   long unsigned int nbuffers = 1;
 
@@ -577,9 +571,9 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
 //DEBUG                      num_int_K[whichbucket_K2]++;
 
                       if ((tmpi_K2 + 1) == YBuffK->bucketsize()) { /* need to flush bucket to disk */
-                          twriteK.start();
+                          timer_on("Writing K bucket");
                           bptr_K2->flush(0);
-                          twriteK.cumulate();
+                          timer_off("Writing K bucket");
 //                          outfile->Printf("Flushing a K2 bucket after reading %lu buffers.\n", nbuffers);
                       }
                   }
@@ -588,22 +582,22 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
           }
       }
       if ((tmpi_K1 + 1) == YBuffK->bucketsize()) { /* need to flush bucket to disk */
-          twriteK.start();
+          timer_on("Writing K bucket");
           bptr_K1->flush(0);
-          twriteK.cumulate();
+          timer_off("Writing K bucket");
 //          outfile->Printf("Flushing a K1 bucket after reading %lu buffers.\n", nbuffers);
       }
       if ((tmpi_J + 1) == YBuffJ->bucketsize()) { /* need to flush bucket to disk */
-          twriteJ.start();
+          timer_on("Writing J bucket");
           bptr_J->flush(0);
-        twriteJ.cumulate();
+          timer_off("Writing J bucket");
 //          outfile->Printf("Flushing a J bucket after reading %lu buffers.\n", nbuffers);
       }
     }
     if (!ilsti) {
-        tread.start();
+        timer_on("Reading IWL file");
         ERIIN->fetch();
-      tread.cumulate();
+        timer_off("Reading IWL file");
       ++nbuffers;
     }
   } while(!ilsti);
@@ -620,15 +614,15 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
    * currently work.  Make sure to be careful if rewriting iwl routines!
    */
   for (i=0; i<YBuffJ->nbuckets(); i++) {
-      twriteJ.start();
+      timer_on("Writing J bucket");
       (YBuffJ->buckets())[i]->flush(1);
-    twriteJ.cumulate();
+      timer_off("Writing J bucket");
   }
 
   for (i=0; i<YBuffK->nbuckets(); i++) {
-      twriteK.start();
+      timer_on("Writing K bucket");
       (YBuffK->buckets())[i]->flush(1);
-    twriteK.cumulate();
+      timer_off("Writing K bucket");
   }
 
 //DEBUG  for (int h = 0; h < YBuffJ->nbuckets; ++h) {
@@ -641,14 +635,11 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
 //DEBUG  free(num_int_J);
 //DEBUG  free(num_int_K);
 
-  tread.start();
+  timer_on("Reading IWL file");
   ERIIN->set_keep_flag(!del_tei_file);
   delete ERIIN;
-  tread.cumulate();
-  tread.print("Read original IWL file");
+  timer_off("Reading IWL file");
 
-  twriteJ.print("J IWL bucket write");
-  twriteK.print("K IWL bucket write");
 }
 
 /*
@@ -666,13 +657,12 @@ void YoshBase::rdtwo_pk(YoshBase *YBuffJ, YoshBase *YBuffK, int itapERI,
 void YoshBase::close_buckets(int erase)
 {
 
-   timJG tclose;
-   tclose.start();
+   timer_on("Closing IWL buckets");
    for (int i=0; i<nbuckets(); i++) { /* close but keep */
       buckets()[i]->close_file(!erase);
       buckets()[i]->dealloc();
       }
-   tclose.stop("Time to close IWL buckets");
+   timer_off("Closing IWL buckets");
 }
 
 /*
@@ -717,8 +707,6 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
    int i;
    char* label = new char[100];
 
-   timJG twrite;
-   timJG tread;
    // We compute the maximum batch size
    for(int i = 0; i < nbuckets(); ++i) {
        lopq = buckets()[i]->lo();
@@ -734,9 +722,9 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
       if (print_lvl > 1) outfile->Printf( "Sorting bin %d\n", i+1);
       lopq = buckets()[i]->lo();
       hipq = buckets()[i]->hi();
-      tread.start();
+      timer_on("Reading the buckets");
       IWL* inbuf = new IWL(psio_, first_tmp_file_ + i, cutoff_, 1, 0);
-      tread.cumulate();
+      timer_off("Reading the buckets");
       IWL::sort_buffer_pk(inbuf, out_tape, is_exch, twoel_ints, lopq,
                           hipq, so2ind, so2sym, pksymoff, (print_lvl > 4), "outfile");
       // Since everything is in triangle form, we can totally get the size
@@ -744,14 +732,19 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
       nintegrals = (hipq * (hipq + 1) / 2) - (lopq * (lopq + 1) / 2);
    //   outfile->Printf("There are %lu integrals in this batch\n", nintegrals);
 //DEBUG      outfile->Printf("Batch number %i, nintegrals is %i\n", i, nintegrals);
+      std::stringstream writetag;
+      writetag << "Writing ";
       if (is_exch) {
+        writetag << "K ";
         sprintf(label,"K Block (Batch %d)", i);
       } else {
+        writetag << "J ";
         sprintf(label,"J Block (Batch %d)", i);
       }
-      twrite.start();
+      writetag << "to PK file";
+      timer_on(writetag.str().c_str());
       psio_->write_entry(out_tape, label, (char*)twoel_ints, nintegrals * sizeof(double));
-      twrite.cumulate();
+      timer_off(writetag.str().c_str());
 //
 //      // Here we do some really stupid verifications.
 //      int filenum =  out_tape;
@@ -779,13 +772,11 @@ void YoshBase::sort_pk(int is_exch, int out_tape, int keep_bins,
       if(i < core_loads_ - 1) {
         zero_arr(twoel_ints, batch_size);
       }
-      tread.start();
+      timer_on("Reading the buckets");
       inbuf->set_keep_flag(keep_bins);
       delete inbuf;
-      tread.cumulate();
+      timer_off("Reading the buckets");
    }
-   twrite.stop("Writing all PK batches for one file");
-   tread.print("Opening/closing IWL buckets");
 
 
    if (print_lvl > 1) outfile->Printf( "Done sorting.\n");
@@ -804,7 +795,6 @@ void YoshLight::sort_pk(int is_exch, int out_tape, int keep_bins,
    int i;
    char* label = new char[100];
 
-   timJG twrite;
    // We compute the maximum batch size
    for(int i = 0; i < nbuckets(); ++i) {
        lopq = buckets()[i]->lo();
@@ -827,14 +817,19 @@ void YoshLight::sort_pk(int is_exch, int out_tape, int keep_bins,
       nintegrals = (hipq * (hipq + 1) / 2) - (lopq * (lopq + 1) / 2);
    //   outfile->Printf("There are %lu integrals in this batch\n", nintegrals);
 //DEBUG      outfile->Printf("Batch number %i, nintegrals is %i\n", i, nintegrals);
+      std::stringstream writetag;
+      writetag << "Writing ";
       if (is_exch) {
+        writetag << "K ";
         sprintf(label,"K Block (Batch %d)", i);
       } else {
+        writetag << "J ";
         sprintf(label,"J Block (Batch %d)", i);
       }
-      twrite.start();
+      writetag << "to PK file";
+      timer_on(writetag.str().c_str());
       get_psio()->write_entry(out_tape, label, (char*)twoel_ints, nintegrals * sizeof(double));
-      twrite.cumulate();
+      timer_off(writetag.str().c_str());
 //
 //      // Here we do some really stupid verifications.
 //      int filenum =  out_tape;
@@ -863,7 +858,6 @@ void YoshLight::sort_pk(int is_exch, int out_tape, int keep_bins,
         zero_arr(twoel_ints, batch_size);
       }
    }
-   twrite.stop("Writing all batch for one file");
 
 
    if (print_lvl > 1) outfile->Printf( "Done sorting.\n");
@@ -886,7 +880,6 @@ void YoshLight::sort_buffer_pk_light(BaseBucket* bucket, int out_tape, int is_ex
    unsigned long int nread;
    double value;
    FILE* fh;
-   timJG tread;
 
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             boost::shared_ptr<OutFile>(new OutFile(out)));
@@ -909,15 +902,15 @@ void YoshLight::sort_buffer_pk_light(BaseBucket* bucket, int out_tape, int is_ex
     * one buffer at a time until we're done
       We sort them upon reading in the twoel array */
 
-   tread.start();
+   timer_on("Reading the buckets");
    fh = bucket->open_bucket(int_left);
-   tread.cumulate();
+   timer_off("Reading the buckets");
 
    do {
        nread = ((int_left < ints_per_buf) ? int_left : ints_per_buf);
-       tread.start();
+       timer_on("Reading the buckets");
        fread(ints_buf,sizeof(IWLLight),nread,fh);
-      tread.cumulate();
+       timer_off("Reading the buckets");
        int_left -= nread;
       for (idx = 0; idx < nread; ++idx) {
           pabs = ints_buf[idx].p_;
@@ -1004,11 +997,10 @@ void YoshLight::sort_buffer_pk_light(BaseBucket* bucket, int out_tape, int is_ex
                 pabs, qabs, rabs, sabs, pq, rs, pqrs, ints_buf[pqrs-offset]) ;
       }
    } while (int_left > 0);
-   tread.start();
+   timer_on("Reading the buckets");
    bucket->close_bucket(fh,1);
-   tread.cumulate();
+   timer_off("Reading the buckets");
 
-   tread.print("Read one IWL bucket");
 
    for(pq = fpq; pq <= lpq; ++pq) {
        pqrs = INDEX2(pq, pq);
@@ -1348,8 +1340,7 @@ void yosh_close_buckets(struct yoshimine *YBuff, int erase)
 {
    int i;
 
-   timJG tclose;
-   tclose.start();
+   timer_on("Time to close IWL buckets");
    for (i=0; i<YBuff->nbuckets; i++) { /* close but keep */
       iwl_buf_close(&(YBuff->buckets[i].IWLBuf), !erase);
       free(YBuff->buckets[i].p);
@@ -1358,7 +1349,7 @@ void yosh_close_buckets(struct yoshimine *YBuff, int erase)
       free(YBuff->buckets[i].s);
       free(YBuff->buckets[i].val);
       }
-   tclose.stop("Time to close IWL buckets");
+   timer_off("Time to close IWL buckets");
 }
 
 
@@ -1699,10 +1690,6 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
 //DEBUG      num_int_K[h] = 0;
 //DEBUG  }
 
-  timJG tread;
-  timJG twriteJ;
-  timJG twriteK;
-
   if (printflag) {
     outfile->Printf( "Yoshimine rdtwo routine entered\n");
     outfile->Printf( "Two-electron integrals from file%d:\n",itapERI);
@@ -1711,9 +1698,9 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
   firstfile_J = YBuffJ->first_tmp_file;
   firstfile_K = YBuffK->first_tmp_file;
 
-  tread.start();
+  timer_on("Reading IWL file");
   iwl_buf_init(&ERIIN,itapERI,0.0,1,1);
-  tread.cumulate();
+  timer_off("Reading IWL file");
 
   long unsigned int nbuffers = 1;
 
@@ -1822,9 +1809,9 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
 //DEBUG                      num_int_K[whichbucket_K2]++;
 
                       if ((tmpi_K2 + 1) == YBuffK->bucketsize) { /* need to flush bucket to disk */
-                          twriteK.start();
+                          timer_on("Writing K bucket");
                           flush_bucket(bptr_K2, 0);
-                          twriteK.cumulate();
+                          timer_off("Writing K bucket");
                           bptr_K2->in_bucket = 0;
 //                          outfile->Printf("Flushing a K2 bucket after reading %lu buffers.\n", nbuffers);
                       }
@@ -1834,24 +1821,24 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
           }
       }
       if ((tmpi_K1 + 1) == YBuffK->bucketsize) { /* need to flush bucket to disk */
-          twriteK.start();
+          timer_on("Writing K bucket");
           flush_bucket(bptr_K1, 0);
-          twriteK.cumulate();
+          timer_off("Writing K bucket");
           bptr_K1->in_bucket = 0;
 //          outfile->Printf("Flushing a K1 bucket after reading %lu buffers.\n", nbuffers);
       }
       if ((tmpi_J + 1) == YBuffJ->bucketsize) { /* need to flush bucket to disk */
-          twriteJ.start();
+        timer_on("Writing J bucket");
         flush_bucket(bptr_J, 0);
-        twriteJ.cumulate();
+        timer_off("Writing J bucket");
         bptr_J->in_bucket = 0;
 //          outfile->Printf("Flushing a J bucket after reading %lu buffers.\n", nbuffers);
       }
     }
     if (!ilsti) {
-        tread.start();
+      timer_on("Reading IWL file");
       iwl_buf_fetch(&ERIIN);
-      tread.cumulate();
+      timer_off("Reading IWL file");
       ++nbuffers;
     }
   } while(!ilsti);
@@ -1868,15 +1855,15 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
    * currently work.  Make sure to be careful if rewriting iwl routines!
    */
   for (i=0; i<YBuffJ->nbuckets; i++) {
-      twriteJ.start();
+    timer_on("Writing J bucket"); 
     flush_bucket((YBuffJ->buckets)+i, 1);
-    twriteJ.cumulate();
+    timer_off("Writing J bucket");
   }
 
   for (i=0; i<YBuffK->nbuckets; i++) {
-      twriteK.start();
+    timer_on("Writing K bucket");
     flush_bucket((YBuffK->buckets)+i, 1);
-    twriteK.cumulate();
+    timer_off("Writing K bucket");
   }
 
 //DEBUG  for (int h = 0; h < YBuffJ->nbuckets; ++h) {
@@ -1889,13 +1876,10 @@ void yosh_rdtwo_pk(struct yoshimine *YBuffJ, struct yoshimine *YBuffK, int itapE
 //DEBUG  free(num_int_J);
 //DEBUG  free(num_int_K);
 
-  tread.start();
+  timer_on("Reading IWL file");
   iwl_buf_close(&ERIIN, !del_tei_file);
-  tread.cumulate();
-  tread.print("Read original IWL file");
+  timer_off("Reading IWL file");
 
-  twriteJ.print("J IWL bucket write");
-  twriteK.print("K IWL bucket write");
 }
 
 /*
@@ -2374,8 +2358,6 @@ void yosh_sort_pk(struct yoshimine *YBuff, int is_exch, int out_tape, int keep_b
    char* label = new char[100];
    struct iwlbuf inbuf;
 
-   timJG twrite;
-   timJG tread;
    // We compute the maximum batch size
    for(int i = 0; i < YBuff->nbuckets; ++i) {
        lopq = YBuff->buckets[i].lo;
@@ -2391,9 +2373,9 @@ void yosh_sort_pk(struct yoshimine *YBuff, int is_exch, int out_tape, int keep_b
       if (print_lvl > 1) outfile->Printf( "Sorting bin %d\n", i+1);
       lopq = YBuff->buckets[i].lo;
       hipq = YBuff->buckets[i].hi;
-      tread.start();
+      timer_on("Reading the buckets");
       iwl_buf_init(&inbuf, YBuff->first_tmp_file+i, YBuff->cutoff, 1, 0);
-      tread.cumulate();
+      timer_off("Reading the buckets");
       sortbuf_pk(&inbuf, out_tape, is_exch, twoel_ints, lopq,
               hipq, so2ind, so2sym, pksymoff, (print_lvl > 4), "outfile");
       // Since everything is in triangle form, we can totally get the size
@@ -2401,14 +2383,19 @@ void yosh_sort_pk(struct yoshimine *YBuff, int is_exch, int out_tape, int keep_b
       nintegrals = (hipq * (hipq + 1) / 2) - (lopq * (lopq + 1) / 2);
    //   outfile->Printf("There are %lu integrals in this batch\n", nintegrals);
 //DEBUG      outfile->Printf("Batch number %i, nintegrals is %i\n", i, nintegrals);
+      std::stringstream writetag;
+      writetag << "Writing ";
       if (is_exch) {
+        writetag << "K ";
         sprintf(label,"K Block (Batch %d)", i);
       } else {
+        writetag << "J ";
         sprintf(label,"J Block (Batch %d)", i);
       }
-      twrite.start();
+      writetag << "to PK file";
+      timer_on(writetag.str().c_str());
       psio->write_entry(out_tape, label, (char*)twoel_ints, nintegrals * sizeof(double));
-      twrite.stop("Writing one PK batch");
+      timer_off(writetag.str().c_str());
 //
 //      // Here we do some really stupid verifications.
 //      int filenum =  out_tape;
@@ -2436,12 +2423,10 @@ void yosh_sort_pk(struct yoshimine *YBuff, int is_exch, int out_tape, int keep_b
       if(i < YBuff->core_loads - 1) {
         zero_arr(twoel_ints, batch_size);
       }
-      tread.start();
+      timer_on("Reading the buckets");
       iwl_buf_close(&inbuf, keep_bins);
-      tread.cumulate();
+      timer_off("Reading the buckets");
    }
-   tread.print("Opening/closing IWL buckets");
-
 
    if (print_lvl > 1) outfile->Printf( "Done sorting.\n");
 
