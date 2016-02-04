@@ -132,7 +132,7 @@ void OCCWave::common_init()
         }
         tol_grad = pow(10.0, -temp);
     outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-    
+
 
     }
 
@@ -148,7 +148,7 @@ void OCCWave::common_init()
         }
         mograd_max = pow(10.0, -temp2);
     outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-    
+
     }
 
         // Figure out REF
@@ -196,7 +196,7 @@ if (reference_ == "RESTRICTED") {
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
-        outfile->Printf("\tMO spaces per irreps... \n\n"); 
+        outfile->Printf("\tMO spaces per irreps... \n\n");
         outfile->Printf( "\tIRREP   FC    OCC   VIR  FV \n");
         outfile->Printf( "\t==============================\n");
         for(int h = 0; h < nirrep_; ++h){
@@ -204,7 +204,7 @@ if (reference_ == "RESTRICTED") {
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], avirtpiA[h], frzvpi_[h]);
         }
         outfile->Printf(     "\t==============================\n");
-        
+
 
         // Compute costs
         //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
@@ -228,28 +228,28 @@ if (reference_ == "RESTRICTED") {
         outfile->Printf("\n\tMemory is %6lu MB \n", memory_mb_);
         outfile->Printf("\tCost of iabc is %6lu MB \n", cost_iabc_);
         outfile->Printf("\tCost of abcd is %6lu MB \n", cost_abcd_);
-        
+
         if (cost_iabc_ < memory_mb_) {
             incore_iabc_ = 1;
             outfile->Printf(     "\tSwitching to the incore algoritm for iabc..\n");
-            
+
         }
         else {
             incore_iabc_ = 0;
             outfile->Printf(     "\tSwitching to the out of core algoritm for iabc..\n");
-            
+
         }
 
         //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
         if (cost_abcd_ < memory_mb_) {
             incore_abcd_ = 1;
             outfile->Printf(     "\tSwitching to the incore algoritm for abcd..\n");
-            
+
         }
         else {
             incore_abcd_ = 0;
             outfile->Printf(     "\tSwitching to the out of core algoritm for abcd..\n");
-            
+
         }
     }// end if (wfn_type_ == "OMP2")
 
@@ -260,7 +260,7 @@ if (reference_ == "RESTRICTED") {
     spaces.push_back(MOSpace::vir);
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
-    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
+    ints = new IntegralTransform(shared_from_this(), spaces,
                            IntegralTransform::Restricted,
                            IntegralTransform::IWLAndDPD,
                            IntegralTransform::QTOrder,
@@ -269,7 +269,7 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
 }
 
 else {
-    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
+    ints = new IntegralTransform(shared_from_this(), spaces,
                            IntegralTransform::Restricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
@@ -328,7 +328,7 @@ else if (reference_ == "UNRESTRICTED") {
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
-        outfile->Printf("\tMO spaces per irreps... \n\n"); 
+        outfile->Printf("\tMO spaces per irreps... \n\n");
         outfile->Printf( "\tIRREP   FC   AOCC  BOCC  AVIR    BVIR  FV \n");
         outfile->Printf( "\t==========================================\n");
         for(int h = 0; h < nirrep_; ++h){
@@ -336,14 +336,14 @@ else if (reference_ == "UNRESTRICTED") {
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi_[h]);
         }
         outfile->Printf(     "\t==========================================\n");
-        
+
 
     // Alloc ints
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
 
-    ints = new IntegralTransform(make_ghost_wavefunction(), spaces,
+    ints = new IntegralTransform(shared_from_this(), spaces,
                            IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
@@ -425,7 +425,7 @@ double OCCWave::compute_energy()
     // Write MO coefficients to Cmo.psi
     if (write_mo_coeff == "TRUE"){
       outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");
-      
+
       double **C_pitzerA = block_matrix(nso_,nmo_);
       memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
 
@@ -441,7 +441,7 @@ double OCCWave::compute_energy()
 
           if (reference_ == "UNRESTRICTED" ) {
           outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");
-          
+
           double **C_pitzerB = block_matrix(nso_,nmo_);
           memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
 
@@ -506,7 +506,7 @@ outfile->Printf("\n");
     }
 
       outfile->Printf( "\n Trace of one-particle density matrix: %20.14f \n\n",  sum);
-      
+
  }// end rhf
 
  else if (reference_ == "UNRESTRICTED") {
@@ -522,7 +522,7 @@ outfile->Printf("\n");
     }
 
       outfile->Printf( "\n Trace of alpha one-particle density matrix: %20.14f \n\n",  sum);
-      
+
 
       //print
       diag->print();
@@ -550,7 +550,7 @@ outfile->Printf("\n");
 
       outfile->Printf( "\n Trace of beta one-particle density matrix: %20.14f \n",  sum);
       outfile->Printf("\n");
-      
+
 
  }// end uhf
 
@@ -644,7 +644,7 @@ void OCCWave::mem_release()
     GvvA.reset();
     GvvB.reset();
        }
-//outfile->Printf("\n mem_release done. \n"); 
+//outfile->Printf("\n mem_release done. \n");
 }//
 
 } }
