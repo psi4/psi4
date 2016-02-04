@@ -44,12 +44,11 @@ namespace psi { namespace ccdensity {
 
 #define _au2cgs 471.44353920
 
-void transdip(void);
-void transp(double sign);
-void transL(double sign);
+void transdip(MintsHelper &mints);
+void transp(MintsHelper &mints, double sign);
+void transL(MintsHelper &mints, double sign);
 
-//void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U)
-void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
+void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
 {
   int i, j, k;
   int no, nv, nt;
@@ -63,7 +62,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   double delta_ee;
   int nmo = moinfo.nmo;
 
-  transdip();
+  transdip(mints);
 
   outfile->Printf("\n\tLength-Gauge Rotational Strength for %d%3s to %d%3s Transition\n",S->root+1,
           moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
@@ -82,7 +81,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
       lt_z += moinfo.ltd[i][j] * moinfo.dip[2][i][j];
     }
 
-  transL(+1.0);
+  transL(mints, +1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {
@@ -110,7 +109,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
       for(k=0; k < nmo; k++)
         moinfo.L[i][j][k] = 0.0;
 
-  transL(-1.0);
+  transL(mints, -1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {
@@ -160,7 +159,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   rs_rx = rs_ry = rs_rz = 0.0;
   rs_x = rs_y = rs_z = 0.0;
 
-  transp(+1.0);
+  transp(mints, +1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {
@@ -169,7 +168,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
       lt_z += moinfo.ltd[i][j] * moinfo.nabla[2][i][j];
     }
 
-  transL(+1.0);
+  transL(mints, +1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {
@@ -199,7 +198,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
         moinfo.L[i][j][k] = 0.0;
       }
 
-  transL(-1.0);
+  transL(mints, -1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {
@@ -208,7 +207,7 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
       lt_z += moinfo.ltd[i][j] * moinfo.L[2][i][j];
     }
 
-  transp(-1.0);
+  transp(mints, -1.0);
 
   for(i=0; i < nmo; i++)
     for(j=0; j < nmo; j++) {

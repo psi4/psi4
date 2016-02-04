@@ -108,7 +108,7 @@ void td_setup(struct TD_Params S);
 void tdensity(struct TD_Params S);
 void td_print(void);
 void oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
-void rotational_strength(struct TD_Params *S);
+void rotational_strength(MintsHelper &mints, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
 void cleanup(void);
 void td_cleanup(void);
@@ -121,7 +121,7 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
 void ex_oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data);
-void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
 
 PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& options)
@@ -362,20 +362,27 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
   if ( params.ael && (params.nstates > 1) )
     ael(rho_params);
 */
+  outfile->Printf("I am here\n");
 
   if(params.transition) {
 
+    MintsHelper mints(ref_wfn->basisset(), options, 0); 
     get_td_params(options);
     for(i=0; i < params.nstates; i++) {
       td_setup(td_params[i]);
       tdensity(td_params[i]);
+      outfile->Printf("Doing transition\n");
       oscillator_strength(ref_wfn, &(td_params[i]));
+      outfile->Printf("Doing transition\n");
       if(params.ref == 0) {
-        rotational_strength(&(td_params[i]));
+        rotational_strength(mints, &(td_params[i]));
       }
+      outfile->Printf("Doing transition\n");
       td_cleanup();
     }
+    outfile->Printf("Doing transition\n");
     td_print();
+    outfile->Printf("Doing transition\n");
 
     /* Excited State Transition Data */
        //  The convention is that the transition is one of absorption.
@@ -449,7 +456,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
           ex_oscillator_strength(ref_wfn, &(td_params[state1]),&(td_params[state2]), &xtd_data);
           if(params.ref == 0) {
             //ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-            ex_rotational_strength(&(td_params[state1]),&(td_params[state2]), &xtd_data);
+            ex_rotational_strength(mints, &(td_params[state1]),&(td_params[state2]), &xtd_data);
           }
 
           xtd_params.push_back(xtd_data);
@@ -463,6 +470,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 
   }  // End params.transition IF loop
 
+  outfile->Printf("I am here\n");
   dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);

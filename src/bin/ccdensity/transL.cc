@@ -42,7 +42,7 @@ using namespace std;
 
 namespace psi { namespace ccdensity {
 
-void transL(double sign)
+void transL(MintsHelper &mints, double sign)
 {
   int nmo, nso;
   double **scf_qt, **X;
@@ -54,7 +54,6 @@ void transL(double sign)
   scf_qt = moinfo.scf_qt;
 
   /*** Transform the SO nabla integrals to the MO basis ***/
-  MintsHelper mints(Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_angular_momentum();
   for(int i=0; i < 3; i++) dipole[i]->scale(-0.5 * sign);
   LX_SO = dipole[0]->to_block_matrix();

@@ -50,7 +50,7 @@ void sort_pert(const char *pert, double **pertints, int irrep);
 ** -TDC, 6/11
 */
 
-void preppert()
+void preppert(boost::shared_ptr<BasisSet> primary)
 {
   int i, j, ij;
 
@@ -60,7 +60,7 @@ void preppert()
   cartcomp[2] = strdup("Z");
   char lbl[32];
  
-  MintsHelper mints(Process::environment.options, 0);
+  MintsHelper mints(primary, Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_dipole();
   vector<SharedMatrix> nabla = mints.so_nabla();
   vector<SharedMatrix> angmom = mints.so_angular_momentum();
