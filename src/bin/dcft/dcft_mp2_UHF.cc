@@ -50,7 +50,7 @@ DCFTSolver::mp2_guess()
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    _ints = new IntegralTransform(make_ghost_wavefunction(), spaces, IntegralTransform::Unrestricted);
+    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
@@ -61,7 +61,7 @@ DCFTSolver::mp2_guess()
     std::string guess = options_.get_str("DCFT_GUESS");
 
     if (guess == "MP2") {
-        outfile->Printf( "\tComputing MP2 amplitude guess...\n\n"); 
+        outfile->Printf( "\tComputing MP2 amplitude guess...\n\n");
 
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 

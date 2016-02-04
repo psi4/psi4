@@ -1003,7 +1003,7 @@ bool ROHF::stability_analysis()
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(make_ghost_wavefunction(), spaces, IntegralTransform::Restricted,
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted,
                                IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);

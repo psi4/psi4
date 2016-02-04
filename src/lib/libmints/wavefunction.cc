@@ -132,66 +132,6 @@ void Wavefunction::shallow_copy(const Wavefunction* other)
     same_a_b_orbs_ = other->same_a_b_orbs_;
 }
 
-SharedWavefunction Wavefunction::make_ghost_wavefunction()
-{
-    // Because we are terrible at C++
-    SharedWavefunction ghost(new Wavefunction(options_));
-
-    ghost->name_ = name_;
-    ghost->basisset_ = basisset_;
-    ghost->sobasisset_ = sobasisset_;
-    ghost->AO2SO_ = AO2SO_;
-    ghost->S_ = S_;
-    ghost->H_ = H_;
-    ghost->molecule_ = molecule_;
-
-    ghost->psio_ = psio_;
-    ghost->integral_ = integral_;
-    ghost->factory_ = factory_;
-    ghost->memory_ = memory_;
-    ghost->nalpha_ = nalpha_;
-    ghost->nbeta_ = nbeta_;
-    ghost->nfrzc_ = nfrzc_;
-
-    ghost->print_ = print_;
-    ghost->debug_ = debug_;
-    ghost->density_fitted_ = density_fitted_;
-
-    ghost->energy_ = energy_;
-    ghost->efzc_ = efzc_;
-
-    ghost->doccpi_ = doccpi_;
-    ghost->soccpi_ = soccpi_;
-    ghost->frzcpi_ = frzcpi_;
-    ghost->frzvpi_ = frzvpi_;
-    ghost->nalphapi_ = nalphapi_;
-    ghost->nbetapi_ = nbetapi_;
-    ghost->nsopi_ = nsopi_;
-    ghost->nmopi_ = nmopi_;
-
-    ghost->nso_ = nso_;
-    ghost->nmo_ = nmo_;
-    ghost->nirrep_ = nirrep_;
-
-    ghost->Ca_ = Ca_;
-    ghost->Cb_ = Cb_;
-    ghost->Da_ = Da_;
-    ghost->Db_ = Db_;
-    ghost->Fa_ = Fa_;
-    ghost->Fb_ = Fb_;
-    ghost->epsilon_a_ = epsilon_a_;
-    ghost->epsilon_b_ = epsilon_b_;
-
-    ghost->gradient_ = gradient_;
-    ghost->hessian_ = hessian_;
-
-    ghost->tpdm_gradient_contribution_ = tpdm_gradient_contribution_;
-    ghost->same_a_b_dens_ = same_a_b_dens_;
-    ghost->same_a_b_orbs_ = same_a_b_orbs_;
-
-    return ghost;
-}
-
 void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
@@ -429,7 +369,7 @@ void Wavefunction::add_postiteration_callback(PyObject *pyobject)
 void Wavefunction::call_preiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
-    SharedWavefunction this_wfn = make_ghost_wavefunction();
+    SharedWavefunction this_wfn = shared_from_this();
     for (iter = precallbacks_.begin(); iter != precallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
             boost::python::call<void>((PyObject*)*iter, this_wfn);
@@ -438,7 +378,7 @@ void Wavefunction::call_preiteration_callbacks()
 void Wavefunction::call_postiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
-    SharedWavefunction this_wfn = make_ghost_wavefunction();
+    SharedWavefunction this_wfn = shared_from_this();
     for (iter = postcallbacks_.begin(); iter != postcallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
             boost::python::call<void>((PyObject*)*iter, this_wfn);

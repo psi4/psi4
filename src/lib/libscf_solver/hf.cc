@@ -551,7 +551,7 @@ double HF::finalize_E()
 
         // Properties
         if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
+            boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
             oe->set_title("SCF");
             oe->add("DIPOLE");
 

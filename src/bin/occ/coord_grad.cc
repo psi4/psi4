@@ -30,33 +30,33 @@ using namespace psi;
 using namespace std;
 
 namespace psi{ namespace occwave{
-  
+
 void OCCWave::coord_grad()
 {
       if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
           outfile->Printf("\tComputing G_abcd...\n");
-          
+
           omp3_tpdm_vvvv();
       }
-      else if (wfn_type_ == "OCEPA") { 
+      else if (wfn_type_ == "OCEPA") {
           outfile->Printf("\tComputing G_abcd...\n");
-          
+
           ocepa_tpdm_vvvv();
       }
       outfile->Printf("\tComputing diagonal blocks of GFM...\n");
-      
+
       gfock_diag();
-     
-      // For Standard methods  
+
+      // For Standard methods
       if (orb_opt_ == "FALSE" && relaxed_ == "TRUE") {
           outfile->Printf("\tSolving orbital Z-vector equations...\n");
-          
+
           z_vector();
           outfile->Printf("\tForming relaxed response density matrices...\n");
-          
+
           effective_pdms();
           outfile->Printf("\tForming relaxed GFM...\n");
-          
+
           effective_gfock();
       }
 
@@ -65,16 +65,16 @@ void OCCWave::coord_grad()
 
       dump_ints();
       outfile->Printf("\tWriting particle density matrices and GFM to disk...\n");
-      
+
       dump_pdms();
-}// 
+}//
 
 //========================================================================
 //         Dump Molecular Integrals
-//========================================================================         
+//========================================================================
 void OCCWave::dump_ints()
 {
-    //outfile->Printf("\n dump_ints is starting... \n"); 
+    //outfile->Printf("\n dump_ints is starting... \n");
     dpdfile2 H;
     dpdbuf4 K;
 
@@ -156,16 +156,16 @@ void OCCWave::dump_ints()
  }// end uhf
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
-    //outfile->Printf("\n dump_ints done. \n"); 
+    //outfile->Printf("\n dump_ints done. \n");
 
 }// end of dump_ints
 
 //========================================================================
 //         Dump PDMs
-//========================================================================         
+//========================================================================
 void OCCWave::dump_pdms()
 {
-    //outfile->Printf("\n dump_pdms is starting... \n"); 
+    //outfile->Printf("\n dump_pdms is starting... \n");
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -185,7 +185,7 @@ if (reference_ == "RESTRICTED") {
     }
 
 
-    // Reorder the one-particle density matrix to the QT order 
+    // Reorder the one-particle density matrix to the QT order
     double **a_qt = block_matrix(nmo_, nmo_);
 
     int offset = 0;
@@ -277,8 +277,8 @@ if (reference_ == "RESTRICTED") {
                 int JL = index2(J,L);
                 if (I >= K && J >= L && IK >= JL) {
                    double value = 2.0 * G.matrix[h][ij][kl];
-                   if (I > K) value *= 2.0;                
-                   if (J > L) value *= 2.0;                
+                   if (I > K) value *= 2.0;
+                   if (J > L) value *= 2.0;
                    iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, "NULL", 0);
                 }
             }
@@ -287,7 +287,7 @@ if (reference_ == "RESTRICTED") {
     }
     global_dpd_->buf4_close(&G);
 
-if (wfn_type_ != "OMP2") { 
+if (wfn_type_ != "OMP2") {
     // VVVV block
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
@@ -308,8 +308,8 @@ if (wfn_type_ != "OMP2") {
                 int BD = index2(B,D);
                 if (A >= C && B >= D && AC >= BD) {
                    double value = 2.0 * G.matrix[h][ab][cd];
-                   if (A > C) value *= 2.0;                
-                   if (B > D) value *= 2.0;                
+                   if (A > C) value *= 2.0;
+                   if (B > D) value *= 2.0;
                    iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, "NULL", 0);
                 }
             }
@@ -317,7 +317,7 @@ if (wfn_type_ != "OMP2") {
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
-}// end if (wfn_type_ != "OMP2") { 
+}// end if (wfn_type_ != "OMP2") {
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
@@ -356,13 +356,13 @@ if (wfn_type_ != "OMP2") {
     global_dpd_->buf4_close(&G);
 
    // For the standard methods I need the following contribution
-   if (orb_opt_ == "FALSE") { 
+   if (orb_opt_ == "FALSE") {
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
-   }// if (orb_opt_ == "FALSE")  
+   }// if (orb_opt_ == "FALSE")
 
     delete [] aocc_qt;
     delete [] avir_qt;
@@ -372,7 +372,7 @@ if (wfn_type_ != "OMP2") {
     iwl_buf_flush(&AA, 1);
     iwl_buf_close(&AA, 1);
 
-}// end if (reference_ == "RESTRICTED") 
+}// end if (reference_ == "RESTRICTED")
 
 
 
@@ -404,7 +404,7 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
 
-    // Reorder the one-particle density matrix to the QT order 
+    // Reorder the one-particle density matrix to the QT order
     double **a_qt = block_matrix(nmo_, nmo_);
     double **b_qt = block_matrix(nmo_, nmo_);
 
@@ -548,15 +548,15 @@ else if (reference_ == "UNRESTRICTED") {
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
- 
-//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
-if (wfn_type_ != "OMP2") { 
+
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
+if (wfn_type_ != "OMP2") {
     // VVVV: Alpha-Alpha spin-case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
     global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
-    
+
     // VVVV: Beta-Beta spin-case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
               ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
@@ -573,7 +573,7 @@ if (wfn_type_ != "OMP2") {
     global_dpd_->buf4_scm(&G, 4.0);
     global_dpd_->buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
     global_dpd_->buf4_close(&G);
-}// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+}// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 
     // OOVV: Alpha-Alpha spin-case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
@@ -737,8 +737,8 @@ if (wfn_type_ != "OMP2") {
     }
     global_dpd_->buf4_close(&G);
 
-//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
-if (wfn_type_ != "OMP2") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
+if (wfn_type_ != "OMP2") {
     // OVVO: Alpha-Beta spin-case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
               ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
@@ -762,12 +762,12 @@ if (wfn_type_ != "OMP2") {
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
-}// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+}// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 
 
     // VOVO: Alpha-Beta spin-case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
-                  ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>"); 
+                  ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
@@ -790,7 +790,7 @@ if (wfn_type_ != "OMP2") {
     global_dpd_->buf4_close(&G);
 
    // For the standard methods I need the following contribution
-   if (orb_opt_ == "FALSE") { 
+   if (orb_opt_ == "FALSE") {
     // VOOO: Alpha-Alpha Spin-Case
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
@@ -854,7 +854,7 @@ if (wfn_type_ != "OMP2") {
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
-   }// if (orb_opt_ == "FALSE")  
+   }// if (orb_opt_ == "FALSE")
 
     delete [] aocc_qt;
     delete [] bocc_qt;
@@ -870,13 +870,13 @@ if (wfn_type_ != "OMP2") {
     iwl_buf_close(&AB, 1);
     iwl_buf_close(&BB, 1);
 
-}// end if (reference_ == "UNRESTRICTED") 
- //outfile->Printf("\n dump_pdms done. \n"); 
+}// end if (reference_ == "UNRESTRICTED")
+ //outfile->Printf("\n dump_pdms done. \n");
 }// end of dump_pdms
 
 //========================================================================
 //         Form Effective PDMs
-//========================================================================         
+//========================================================================
 void OCCWave::effective_pdms()
 {
  if (reference_ == "RESTRICTED") {
@@ -915,7 +915,7 @@ void OCCWave::effective_pdms()
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
-   
+
     // G_amni += -4 z_ai delta_mn
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
@@ -941,7 +941,7 @@ void OCCWave::effective_pdms()
     }
     global_dpd_->buf4_close(&G);
     psio_->close(PSIF_OCC_DENSITY, 1);
- 
+
  }// if (reference_ == "RESTRICTED") {
 
  else if (reference_ == "UNRESTRICTED") {
@@ -990,7 +990,7 @@ void OCCWave::effective_pdms()
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
-   
+
     // G_AMNI += -2*Z_AI delta_MN
     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
@@ -1114,17 +1114,17 @@ void OCCWave::effective_pdms()
     global_dpd_->buf4_close(&G);
     psio_->close(PSIF_OCC_DENSITY, 1);
 
- }// else if (reference_ == "UNRESTRICTED") 
- 
-}// end of effective_pdms 
+ }// else if (reference_ == "UNRESTRICTED")
+
+}// end of effective_pdms
 
 //========================================================================
 //         Form Effective Generalized-Fock Matrix
-//========================================================================         
+//========================================================================
 void OCCWave::effective_gfock()
 {
  if (reference_ == "RESTRICTED") {
-        // F_ia += 2 f_ii * z_ai	
+        // F_ia += 2 f_ii * z_ai
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
           for(int i = 0 ; i < occpiA[h]; ++i){
@@ -1135,7 +1135,7 @@ void OCCWave::effective_gfock()
 	  }
 	}
 
-        // F_ai += 2 f_aa * z_ai	
+        // F_ai += 2 f_aa * z_ai
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -1150,7 +1150,7 @@ void OCCWave::effective_gfock()
     dpdbuf4 G, K;
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // F_ai += 8 \sum_{e,m} Z_em <mi|ea> 	
+    // F_ai += 8 \sum_{e,m} Z_em <mi|ea>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1180,7 +1180,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ai += -2 \sum_{e,m} Z_em <im|ea> 	
+    // F_ai += -2 \sum_{e,m} Z_em <im|ea>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1210,7 +1210,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ai += -2 \sum_{e,m} Z_em <ie|ma> 	
+    // F_ai += -2 \sum_{e,m} Z_em <ie|ma>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1240,7 +1240,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += 8 \sum_{e,m} Z_em <jm|ie> 	
+    // F_ij += 8 \sum_{e,m} Z_em <jm|ie>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1270,7 +1270,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += -2 \sum_{e,m} Z_em <mj|ie> 	
+    // F_ij += -2 \sum_{e,m} Z_em <mj|ie>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1300,7 +1300,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += -2 \sum_{e,m} Z_em <mi|je> 	
+    // F_ij += -2 \sum_{e,m} Z_em <mi|je>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1330,7 +1330,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // close 
+    // close
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
     // clean up
@@ -1338,11 +1338,11 @@ void OCCWave::effective_gfock()
     delete [] idpcolA;
     delete [] idpirrA;
     delete zvectorA;
- }// if (reference_ == "RESTRICTED") 
+ }// if (reference_ == "RESTRICTED")
 
 
  else if (reference_ == "UNRESTRICTED") {
-        // F_IA += f_II * z_AI	
+        // F_IA += f_II * z_AI
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
           for(int i = 0 ; i < occpiA[h]; ++i){
@@ -1353,7 +1353,7 @@ void OCCWave::effective_gfock()
 	  }
 	}
 
-        // F_ia += f_ii * z_ai	
+        // F_ia += f_ii * z_ai
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
           for(int i = 0 ; i < occpiB[h]; ++i){
@@ -1364,7 +1364,7 @@ void OCCWave::effective_gfock()
 	  }
 	}
 
-        // F_AI += f_AA * z_AI	
+        // F_AI += f_AA * z_AI
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -1375,7 +1375,7 @@ void OCCWave::effective_gfock()
 	  }
 	}
 
-        // F_ai += f_aa * z_ai	
+        // F_ai += f_aa * z_ai
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiB[h]; ++a){
@@ -1390,7 +1390,7 @@ void OCCWave::effective_gfock()
     dpdbuf4 G, K;
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // F_AI += 2 \sum_{E,M} Z_EM <MI|EA> 	
+    // F_AI += 2 \sum_{E,M} Z_EM <MI|EA>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1420,7 +1420,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_AI += -\sum_{E,M} Z_EM <IM|EA> 	
+    // F_AI += -\sum_{E,M} Z_EM <IM|EA>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1450,7 +1450,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_AI += -\sum_{E,M} Z_EM <IE|MA> 	
+    // F_AI += -\sum_{E,M} Z_EM <IE|MA>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1480,8 +1480,8 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_AI += 2 \sum_{e,m} Z_em <Im|Ae> 	
-    //outfile->Printf( "\tI am here\n"); 
+    // F_AI += 2 \sum_{e,m} Z_em <Im|Ae>
+    //outfile->Printf( "\tI am here\n");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1512,7 +1512,7 @@ void OCCWave::effective_gfock()
     global_dpd_->buf4_close(&K);
 
     // Beta
-    // F_ai += 2 \sum_{e,m} Z_em <mi|ea> 	
+    // F_ai += 2 \sum_{e,m} Z_em <mi|ea>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1542,7 +1542,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ai += -\sum_{e,m} Z_em <im|ea> 	
+    // F_ai += -\sum_{e,m} Z_em <im|ea>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1572,7 +1572,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ai += -\sum_{e,m} Z_em <ie|ma> 	
+    // F_ai += -\sum_{e,m} Z_em <ie|ma>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1602,7 +1602,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ai += 2 \sum_{E,M} Z_EM <Mi|Ea> 	
+    // F_ai += 2 \sum_{E,M} Z_EM <Mi|Ea>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1632,7 +1632,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_IJ += 2 \sum_{E,M} Z_EM <JM|IE> 	
+    // F_IJ += 2 \sum_{E,M} Z_EM <JM|IE>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1662,7 +1662,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_IJ += -\sum_{EM} Z_EM <MJ|IE> 	
+    // F_IJ += -\sum_{EM} Z_EM <MJ|IE>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1692,7 +1692,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_IJ += -\sum_{EM} Z_EM <MI|JE> 	
+    // F_IJ += -\sum_{EM} Z_EM <MI|JE>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1722,7 +1722,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_IJ += 2 \sum_{em} Z_em <Jm|Ie> 	
+    // F_IJ += 2 \sum_{em} Z_em <Jm|Ie>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "MO Ints <Oo|Ov>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1753,7 +1753,7 @@ void OCCWave::effective_gfock()
     global_dpd_->buf4_close(&K);
 
     // Beta
-    // F_ij += 2 \sum_{em} Z_em <jm|ie> 	
+    // F_ij += 2 \sum_{em} Z_em <jm|ie>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1783,7 +1783,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += -\sum_{em} Z_em <mj|ie> 	
+    // F_ij += -\sum_{em} Z_em <mj|ie>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1813,7 +1813,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += -\sum_{em} Z_em <mi|je> 	
+    // F_ij += -\sum_{em} Z_em <mi|je>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1843,7 +1843,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // F_ij += 2 \sum_{EM} Z_EM <Mj|Ei> 	
+    // F_ij += 2 \sum_{EM} Z_EM <Mj|Ei>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "MO Ints <Oo|Vo>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1873,7 +1873,7 @@ void OCCWave::effective_gfock()
     }
     global_dpd_->buf4_close(&K);
 
-    // close 
+    // close
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
     // clean up
@@ -1885,17 +1885,17 @@ void OCCWave::effective_gfock()
     delete [] idpirrB;
     delete zvectorA;
     delete zvectorB;
- }// else if (reference_ == "UNRESTRICTED") 
+ }// else if (reference_ == "UNRESTRICTED")
 
-}// end of effective_gfock 
+}// end of effective_gfock
 
 //=========================
 // OEPROP
 //=========================
 void OCCWave::oeprop()
-{ 
-    outfile->Printf("\tComputing one-electron properties...\n");  
-    
+{
+    outfile->Printf("\tComputing one-electron properties...\n");
+
 
     //SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
     //SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
@@ -1913,7 +1913,7 @@ void OCCWave::oeprop()
     }
 
     // Compute oeprop
-    boost::shared_ptr<OEProp> oe(new OEProp(make_ghost_wavefunction()));
+    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");

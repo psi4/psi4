@@ -32,20 +32,20 @@ using namespace std;
 
 
 namespace psi{ namespace dfoccwave{
-  
+
 void DFOCC::occ_iterations()
 {
-   
+
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
-if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OMP3" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP3 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OMP2.5" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");  
-else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");  
-else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP3 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OMP2.5" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");  
+if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2 iterations... ============================ \n");
+else if (wfn_type_ == "DF-OMP3" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP3 iterations... ============================ \n");
+else if (wfn_type_ == "DF-OMP2.5" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");
+else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE") outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");
+else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");
+else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP3 iterations... ============================ \n");
+else if (wfn_type_ == "DF-OMP2.5" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");
+else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE") outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");
 outfile->Printf(" ============================================================================== \n");
 if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE") outfile->Printf( "\t            Minimizing DF-MP2-L Functional \n");
 else if (wfn_type_ == "DF-OMP3" && do_cd == "FALSE") outfile->Printf( "\t            Minimizing DF-MP3-L Functional \n");
@@ -60,14 +60,14 @@ outfile->Printf( " Iter       E_total           DE           RMS MO Grad      MA
 outfile->Printf( " ----    ---------------    ----------     -----------      -----------     ---------- \n");
 
 
-  
+
 //==========================================================================================
 //========================= NR iterations ==================================================
 //==========================================================================================
       itr_occ = 0;
       mu_ls = 0;
       conver = 1; // Assuming that the MOs will be optimized.
-      mo_optimized = 0; 
+      mo_optimized = 0;
       itr_diis = 0;
 
       // If diis?
@@ -83,19 +83,19 @@ outfile->Printf( " ----    ---------------    ----------     -----------      --
               }
           }
       //}
-      
+
 //==========================================================================================
 //========================= Head of the Loop ===============================================
 //==========================================================================================
 do
 {
        itr_occ++;
-	
+
 //==========================================================================================
 //========================= New orbital step ===============================================
 //==========================================================================================
         timer_on("kappa orb rot");
-        if (hess_type == "HF") { 
+        if (hess_type == "HF") {
            if (orb_resp_solver_ == "LINEQ") kappa_orb_resp();
            else if (orb_resp_solver_ == "PCG") kappa_orb_resp_pcg();
         }
@@ -113,7 +113,7 @@ do
 //========================= Trans TEI ======================================================
 //==========================================================================================
     // DF
-    if (do_cd == "FALSE") { 
+    if (do_cd == "FALSE") {
         timer_on("DF CC Integrals");
         trans_corr();
         timer_off("DF CC Integrals");
@@ -121,14 +121,14 @@ do
         timer_on("DF REF Integrals");
         trans_ref();
         timer_off("DF REF Integrals");
-    }// end if (do_cd == "FALSE")  
+    }// end if (do_cd == "FALSE")
 
     // CD
-    else if (do_cd == "TRUE") { 
+    else if (do_cd == "TRUE") {
         timer_on("CD Trans");
         trans_cd();
         timer_off("CD Trans");
-    }// end if (do_cd == "TRUE")  
+    }// end if (do_cd == "TRUE")
 
         // Fock
         fock();
@@ -144,7 +144,7 @@ do
      else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
 	mp3_t2_1st_gen();
         timer_on("T2(2)");
-	t2_2nd_gen();  
+	t2_2nd_gen();
         timer_off("T2(2)");
      }
 
@@ -177,7 +177,7 @@ do
 	    olccd_tpdm();
 	    sep_tpdm_cc();
         }
-        
+
 //==========================================================================================
 //========================= GFM ============================================================
 //==========================================================================================
@@ -195,7 +195,7 @@ do
 	    gfock_cc_oo();
 	    gfock_cc_vv();
         }
-	
+
 //==========================================================================================
 //========================= CCL ============================================================
 //==========================================================================================
@@ -210,7 +210,7 @@ do
         timer_on("MO Grad");
 	mograd();
         timer_off("MO Grad");
-      
+
 //==========================================================================================
 //========================= Print ==========================================================
 //==========================================================================================
@@ -231,7 +231,7 @@ do
 	rms_t2=MAX0(rms_t2AA,rms_t2BB);
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
-	
+
 if(wfn_type_ == "DF-OMP2") {
 	outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
 }
@@ -246,7 +246,7 @@ else if(wfn_type_ == "DF-OLCCD") outfile->Printf(" %3d     %12.10f  %12.2e   %12
 //==========================================================================================
     if (itr_occ >= mo_maxiter) {
       conver = 0; // means MOs are NOT optimized
-      break;  
+      break;
     }
 
     if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
@@ -257,10 +257,10 @@ else if(wfn_type_ == "DF-OLCCD") outfile->Printf(" %3d     %12.10f  %12.2e   %12
     }
 
 }
-while(rms_wog >= tol_grad || biggest_mograd >= mograd_max); 
+while(rms_wog >= tol_grad || biggest_mograd >= mograd_max);
 
 if (conver == 1) {
-mo_optimized = 1; 
+mo_optimized = 1;
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
 if (wfn_type_ == "DF-OMP2") outfile->Printf(" ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== \n");
@@ -276,7 +276,7 @@ else if (conver == 0) {
   else if (wfn_type_ == "DF-OMP3") outfile->Printf("\n ======================== DF-OMP3 IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
   else if (wfn_type_ == "DF-OMP2.5") outfile->Printf("\n ======================== DF-OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS ======== \n", mo_maxiter);
   else if (wfn_type_ == "DF-OLCCD") outfile->Printf("\n ======================== DF-OLCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n", mo_maxiter);
-  
+
   throw PSIEXCEPTION("DF-OCC iterations did not converge");
 }
 
@@ -287,9 +287,9 @@ else if (conver == 0) {
 // SAVE MOs to wfn
 //=========================
 void DFOCC::save_mo_to_wfn()
-{ 
+{
     // make sure we have semicanonic MOs
-    if (orbs_already_sc == 0) semi_canonic(); 
+    if (orbs_already_sc == 0) semi_canonic();
 
     // Save mos to wfn
     if (reference_ == "RESTRICTED") {
@@ -314,13 +314,13 @@ void DFOCC::save_mo_to_wfn()
 	aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
 	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
 	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
         for(int i = 0; i < naoccA; ++i) eps_orbA->set(i+nfrzc, eigooA->get(i));
-        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a)); 
+        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a));
 	eps_orbA->to_shared_vector(dummy_a);
 
 	// write
@@ -365,16 +365,16 @@ void DFOCC::save_mo_to_wfn()
 	bAONO->gemm(false, false, 1.0, Cb, bevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
+	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
 	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
 	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
 	SharedVector dummy_b(new Vector("Dummy Vector Beta", nmo_));
         for(int i = 0; i < naoccA; ++i) eps_orbA->set(i+nfrzc, eigooA->get(i));
-        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a)); 
+        for(int a = 0; a < navirA; ++a) eps_orbA->set(a+noccA, eigvvA->get(a));
         for(int i = 0; i < naoccB; ++i) eps_orbB->set(i+nfrzc, eigooB->get(i));
-        for(int a = 0; a < navirB; ++a) eps_orbB->set(a+noccB, eigvvB->get(a)); 
+        for(int a = 0; a < navirB; ++a) eps_orbB->set(a+noccB, eigvvB->get(a));
 	eps_orbA->to_shared_vector(dummy_a);
 	eps_orbB->to_shared_vector(dummy_b);
 
