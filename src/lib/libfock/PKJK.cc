@@ -42,8 +42,6 @@
 #include "points.h"
 #include "yoshimine.h"
 
-#include <JGtimer.h>
-
 #include<lib3index/cholesky.h>
 
 #include <sstream>
@@ -253,8 +251,7 @@ void PKJK::preiterations()
 
     // Initiate buckets: allocate array memory and open temporary files.
 
-    timJG tbench;
-    tbench.start();
+    timer_on("Total PK formation time");
     YBuffJ.init_buckets();
     YBuffK.init_buckets();
 
@@ -281,7 +278,7 @@ void PKJK::preiterations()
 //    throw PSIEXCEPTION("Integral counting");
     YBuffK.sort_pk(1, pk_file_, 0, so2index_, so2symblk_, pk_symoffset, (debug_ > 5));
 
-    tbench.stop("Creating PK file");
+    timer_off("Total PK formation time");
  //   tbench.start();
  //   IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
  //   bool last_buffer;
@@ -310,14 +307,7 @@ void PKJK::preiterations()
     // We might want to only build p in future...
     bool build_k = true;
 
-    // Set up some timers
-    timJG tread;
-    timJG twriteJ;
-    timJG twriteK;
-    timJG tbench;
-
-
-    tbench.start();
+    timer_on("Total PK formation time");
     psio_->open(pk_file_, PSIO_OPEN_NEW);
     for(int batch = 0; batch < nbatches; ++batch){
         size_t min_index   = batch_index_min_[batch];
@@ -328,9 +318,13 @@ void PKJK::preiterations()
         ::memset(j_block, '\0', batch_size * sizeof(double));
         ::memset(k_block, '\0', batch_size * sizeof(double));
 
-        tread.start();
+        std::stringstream readtag;
+        readtag << "Read num. ";
+        readtag << batch;
+        readtag << " of IWL file.";
+        timer_on(readtag.str().c_str());
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
-        tread.cumulate();
+        timer_off(readtag.str().c_str());
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
         int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
@@ -398,15 +392,14 @@ void PKJK::preiterations()
                 }
             }
             if (!last_buffer) {
-                tread.start();
+                timer_on(readtag.str().c_str());
                 iwl->fetch();
-                tread.cumulate();
+                timer_off(readtag.str().c_str());
             }
         } while (!last_buffer);
-        tread.start();
+        timer_on(readtag.str().c_str());
         delete iwl;
-        tread.cumulate();
-        tread.print("Read original IWL file");
+        timer_off(readtag.str().c_str());
 
         // Halve the diagonal elements held in core
         for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
@@ -416,22 +409,20 @@ void PKJK::preiterations()
         }
 
         char *label = new char[100];
-        twriteJ.start();
+        timer_on("Write J batches");
         sprintf(label, "J Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
-        twriteJ.cumulate();
-        twriteK.start();
+        timer_off("Write J batches");
+        timer_on("Write K batches");
         sprintf(label, "K Block (Batch %d)", batch);
         psio_->write_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
-        twriteK.cumulate();
+        timer_off("Write K batches");
         delete [] label;
 
         delete [] j_block;
         delete [] k_block;
     } // End of loop over batches
-    twriteJ.print("Write J batch");
-    twriteK.print("Write K batch");
-    tbench.stop("PK file creation");
+    timer_off("Total PK formation time");
 
   //  tread.start();
   //  IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);

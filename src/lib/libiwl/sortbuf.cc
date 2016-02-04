@@ -31,11 +31,12 @@
 */
 #include <cstdio>
 #include <cmath>
+#include <string>
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
 #include "libparallel/ParallelPrinter.h"
-#include <JGtimer.h>
+#include <libqt/qt.h>
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
@@ -288,7 +289,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 */
 void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
                          unsigned int fpq, unsigned int lpq, int *so2ind, int *so2sym,
-                         int *pksymoff, int printflg, string out)
+                         int *pksymoff, int printflg, std::string out)
 {
    Value *valptr;              /* array of integral values */
    Label *lblptr;              /* array of integral labels */
@@ -297,7 +298,6 @@ void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
    int pabs, qabs, rabs, sabs;
    int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
    unsigned long int pq, rs, pqrs, offset, maxind;
-   timJG tread;
 
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             boost::shared_ptr<OutFile>(new OutFile(out)));
@@ -322,9 +322,9 @@ void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
       We sort them upon reading in the twoel array */
 
    do {
-       tread.start();
+       timer_on("Reading the buckets");
        Inbuf->fetch();
-      tread.cumulate();
+       timer_off("Reading the buckets");
       lastbuf = Inbuf->last_buffer();
       for (idx=4*Inbuf->index(); Inbuf->index()<Inbuf->buffer_count(); Inbuf->index()++) {
           pabs = (int) lblptr[idx++];
@@ -409,7 +409,6 @@ void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
                 pabs, qabs, rabs, sabs, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
-   tread.print("Read one IWL bucket");
 
    for(pq = fpq; pq <= lpq; ++pq) {
        pqrs = INDEX2(pq, pq);
@@ -720,7 +719,6 @@ void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
    int pabs, qabs, rabs, sabs;
    int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
    unsigned long int pq, rs, pqrs, offset, maxind;
-   timJG tread;
 
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             boost::shared_ptr<OutFile>(new OutFile(out)));
@@ -745,9 +743,9 @@ void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
       We sort them upon reading in the twoel array */
 
    do {
-       tread.start();
+      timer_on("Reading the buckets");
       iwl_buf_fetch(Inbuf);
-      tread.cumulate();
+      timer_off("Reading the buckets");
       lastbuf = Inbuf->lastbuf;
       for (idx=4*Inbuf->idx; Inbuf->idx<Inbuf->inbuf; Inbuf->idx++) {
           pabs = (int) lblptr[idx++];
@@ -832,7 +830,6 @@ void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
                 pabs, qabs, rabs, sabs, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
-   tread.print("Read one IWL bucket");
 
    for(pq = fpq; pq <= lpq; ++pq) {
        pqrs = INDEX2(pq, pq);
