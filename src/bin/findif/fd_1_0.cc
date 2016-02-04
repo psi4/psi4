@@ -143,13 +143,6 @@ SharedMatrix fd_1_0(boost::shared_ptr<Molecule> mol, Options &options, const boo
   }
 
   SharedMatrix sgradient(gradient_matrix.clone());
-  //if (Process::environment.wavefunction()) {
-  //  Process::environment.wavefunction()->set_gradient(sgradient);
-  //  outfile->Printf("\tGradient saved to wavefunction.\n");
-  //} else {
-  //  Process::environment.set_gradient(sgradient);
-  //  outfile->Printf("\tGradient saved to environment.\n");
-  //}
   outfile->Printf("\n-------------------------------------------------------------\n");
 
   return sgradient;

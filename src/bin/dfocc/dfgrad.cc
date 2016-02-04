@@ -127,10 +127,7 @@ void DFOCC::dfgrad()
         gradients["Total"]->print_atom_vector();
     }
 
-//    Process::environment.set_gradient(total);
-//    Process::environment.wavefunction()->set_gradient(total);
     gradient_ = total;
-
 
 //outfile->Printf("\tdfgrad is done. \n"); 
 }// end dfgrad 

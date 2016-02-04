@@ -451,13 +451,6 @@ SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
             Process::environment.options)
     );
 
-    std::string name = Process::environment.wavefunction()->name();
-    std::string wfn_name = Process::environment.options.get_str("WFN");
-    if (wfn_name != name) {
-        ccwave->set_name(wfn_name);
-        Process::environment.set_wavefunction(ccwave);
-    }
-
     double energy = ccwave->compute_energy();
     return ccwave;
 
