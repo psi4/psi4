@@ -38,7 +38,6 @@ OCCWave::OCCWave(SharedWavefunction ref_wfn, Options &options)
 {
     shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
-    common_init();
 }//
 
 OCCWave::~OCCWave()
@@ -394,6 +393,7 @@ void OCCWave::title()
 
 double OCCWave::compute_energy()
 {
+    common_init();
 
     // Warnings
     if (nfrzc != 0 && orb_opt_ == "TRUE") {
