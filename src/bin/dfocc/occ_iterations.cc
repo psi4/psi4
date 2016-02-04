@@ -315,7 +315,7 @@ void DFOCC::save_mo_to_wfn()
 
 	// Write to MOLDEN file
 	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
-	std::string filename = get_writer_file_prefix() + "_dfocc.molden";
+	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
 	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
@@ -366,7 +366,7 @@ void DFOCC::save_mo_to_wfn()
 
 	// Write to MOLDEN file
 	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(make_ghost_wavefunction()));
-	std::string filename = get_writer_file_prefix() + "_dfocc.molden";
+	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
 	SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));

@@ -354,7 +354,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   // Need to enable exceptions in ifstream.
   if_Hcart.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
-    std::string hess_fname = psi::get_writer_file_prefix() + ".hess";
+    std::string hess_fname = psi::get_writer_file_prefix(psi::Process::environment.molecule()->name()) + ".hess";
     if_Hcart.open(hess_fname.c_str(), ios_base::in);
     int n;
     if_Hcart >> n; // read natom

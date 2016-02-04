@@ -133,7 +133,6 @@ void PseudoTrial::print_header()
 
 void PseudoTrial::form_molecule()
 {
-//    molecule_ = Process::environment.molecule(); 
     outfile->Printf(" => Molecule <= \n\n");
     molecule_->print();
 }

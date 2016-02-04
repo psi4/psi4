@@ -48,7 +48,7 @@ void cleanup(void);
 void exit_io(void);
 void diag(void);
 void get_params(Options &);
-void get_eom_params(Options &);
+void get_eom_params(boost::shared_ptr<Wavefunction>, Options &);
 void form_dpd_dp(void);
 int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -74,7 +74,7 @@ PsiReturnType cceom(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
   get_moinfo(ref_wfn);
   
   get_params(options);
-  get_eom_params(options);
+  get_eom_params(ref_wfn, options);
 #ifdef TIME_CCEOM
   timer_on("CCEOM");
 #endif
