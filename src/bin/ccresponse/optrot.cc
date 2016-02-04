@@ -84,7 +84,7 @@ void linresp(double *tensor, double A, double B,
              const char *pert_x, int x_irrep, double omega_x,
              const char *pert_y, int y_irrep, double omega_y);
 
-void optrot(void)
+void optrot(boost::shared_ptr<Molecule> molecule)
 {
   double ***tensor_rl, ***tensor_pl, ***tensor_rp, **tensor0;
   double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
@@ -410,7 +410,7 @@ void optrot(void)
       }
 
     /* compute the specific rotation */
-    for(j=0,M=0.0; j < moinfo.natom ;j++) M += Process::environment.molecule()->mass(j);  /* amu */
+    for(j=0,M=0.0; j < moinfo.natom ;j++) M += molecule->mass(j);  /* amu */
     nu = params.omega[i]; /* hartree */
     bohr2a4 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
     m2a = pc_bohr2angstroms * 1.0e-10;

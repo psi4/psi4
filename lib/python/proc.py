@@ -1870,6 +1870,7 @@ def run_bccd(name, **kwargs):
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
+    bcc_iter_cnt = 0
     while True:
         if (psi4.get_global_option("RUN_CCTRANSORT")):
             psi4.cctransort(ref_wfn)
@@ -1880,6 +1881,12 @@ def run_bccd(name, **kwargs):
         psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):
             break
+
+        # This is quite arbitrary, blame DGAS
+        if bcc_iter_cnt > 10:
+            raise ValidationError("Stopped at 50th BCCSD iteration, something is going wrong!")
+            break
+        bcc_iter_cnt += 1
 
     optstash.restore()
     return ref_wfn

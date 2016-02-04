@@ -79,7 +79,7 @@ void densgrid_RHF(boost::shared_ptr<Wavefunction> wfn, Options& options)
   delta = block_matrix(nmo, nmo); // Dirac delta function 
 
   // Set up AO->SO transformation matrix (u)
-  MintsHelper helper(options, 0);
+  MintsHelper helper(wfn->basisset(), options, 0);
   SharedMatrix aotoso = helper.petite_list(true)->aotoso();
   int *col_offset = new int[wfn->nirrep()];
   col_offset[0] = 0;

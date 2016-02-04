@@ -108,24 +108,6 @@ MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis, Options& options, in
     init_helper(basis);
 }
 
-MintsHelper::MintsHelper(Options & options, int print)
-    : options_(options), print_(print)
-{
-    init_helper();
-}
-//
-//MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-//    : options_(Process::environment.options), print_(0)
-//{
-//    init_helper(basis);
-//}
-//
-//MintsHelper::MintsHelper()
-//    : options_(Process::environment.options), print_(0)
-//{
-//    init_helper();
-//}
-
 MintsHelper::MintsHelper(boost::shared_ptr<Wavefunction> wavefunction)
     : options_(wavefunction->options())
 {
@@ -138,23 +120,18 @@ MintsHelper::~MintsHelper()
 
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
-    psio_ = wavefunction->psio();
-    molecule_ = wavefunction->molecule();
 
-    if (molecule_.get() == 0) {
-        outfile->Printf( "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
+    if (wavefunction->basisset().get() == 0) {
+        outfile->Printf( "  Wavefunction does not have a basisset!");
+        throw PSIEXCEPTION("Wavefunction does not have a basisset, what did you do?!");
     }
+
+    psio_ = wavefunction->psio();
+    basisset_ = wavefunction->basisset();
+    molecule_ = basisset_->molecule();
 
     // Make sure molecule is valid.
     molecule_->update_geometry();
-    //
-    // Read in the basis set
-    if (wavefunction && !basisset_)
-        basisset_ = wavefunction->basisset();
-    else if (!basisset_){
-        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS")));
-    }
 
     common_init();
 }

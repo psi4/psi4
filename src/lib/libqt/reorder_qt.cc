@@ -198,12 +198,9 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
   Dimension nbetapi(nirreps, "Number of beta electrons per irrep");
   for (int h=0; h < nirreps; h++){
-    nalphapi[h] = frozen_docc[h] + docc[h] + socc[h];
-    nbetapi[h] = frozen_docc[h] + docc[h];
+    nalphapi[h] = docc[h] + socc[h];
+    nbetapi[h] = docc[h];
   }
-
-  //Dimension nalphapi = Process::environment.wavefunction()->nalphapi();
-  //Dimension nbetapi = Process::environment.wavefunction()->nbetapi();
 
   offset = init_int_array(nirreps);
 

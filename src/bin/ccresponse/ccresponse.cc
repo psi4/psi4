@@ -69,10 +69,10 @@ void local_init(void);
 void local_done(void);
 
 void polar(void);
-void optrot(void);
+void optrot(boost::shared_ptr<Molecule> molecule);
 void roa(void);
 
-void preppert(void);
+void preppert(boost::shared_ptr<BasisSet> primary);
 
 int ccresponse(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
@@ -120,15 +120,15 @@ int ccresponse(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
   }
   else {
     hbar_extra();
-  }
+ }
 
   sort_lamps(); /* should be removed sometime - provided by cclambda */
   if(params.wfn != "CC2") lambda_residuals(); /* don't do this for CC2 */
 
-  preppert();
+  preppert(ref_wfn->basisset());
 
   if(params.prop == "POLARIZABILITY") polar();
-  if(params.prop == "ROTATION") optrot();
+  if(params.prop == "ROTATION") optrot(ref_wfn->molecule());
   if(params.prop == "ROA_TENSOR") roa();
 
   if(params.local) local_done();

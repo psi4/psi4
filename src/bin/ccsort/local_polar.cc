@@ -73,7 +73,8 @@ void local_polar(const char *cart, int **domain, int *domain_len,
   boolean = init_int_array(natom);
   rank = (int *) malloc(natom * sizeof(int *));
 
-  MintsHelper mints(Process::environment.options, 0);
+  MintsHelper mints(Process::environment.wavefunction()->basisset(),
+                    Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_dipole();
 
   if (!strcmp(cart,"X")) {

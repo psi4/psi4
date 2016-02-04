@@ -56,7 +56,7 @@ overlap matrix:
 
 import numpy as np
 ...
-mints = MintsHelper()
+mints = MintsHelper(wfn.basisset())
 overlap = mints.ao_overlap()
 np.sum(wavefunction().Ca())
 
