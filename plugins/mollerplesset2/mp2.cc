@@ -39,7 +39,7 @@ mollerplesset2(Options &options)
     nirreps             = Process::environment.wavefunction()->nirrep();
     SharedVector aEvals = Process::environment.wavefunction()->epsilon_a();
     SharedVector bEvals = Process::environment.wavefunction()->epsilon_b();
-    char **labels       = Process::environment.molecule()->irrep_labels();
+    char **labels       = Process::environment.wavefunction()->molecule()->irrep_labels();
     aOccOrbsPI          = new int[nirreps];
     bOccOrbsPI          = new int[nirreps];
     aVirOrbsPI          = new int[nirreps];

@@ -172,7 +172,25 @@ boost::shared_ptr<Wavefunction> Process::Environment::wavefunction() const
 {
     return wavefunction_;
 }
+void Process::Environment::set_legacy_molecule(const boost::shared_ptr<Molecule>& legacy_molecule)
+{
+    legacy_molecule_ = legacy_molecule;
+}
 
+boost::shared_ptr<Molecule> Process::Environment::legacy_molecule() const
+{
+    return legacy_molecule_;
+}
+
+void Process::Environment::set_legacy_wavefunction(const boost::shared_ptr<Wavefunction>& legacy_wavefunction)
+{
+    legacy_wavefunction_ = legacy_wavefunction;
+}
+
+boost::shared_ptr<Wavefunction> Process::Environment::legacy_wavefunction() const
+{
+    return legacy_wavefunction_;
+}
 
 Process::Environment Process::get_environment()
 {
