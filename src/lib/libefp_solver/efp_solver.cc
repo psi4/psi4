@@ -324,7 +324,7 @@ void EFP::set_options()
 {
     enum efp_result res;
 
-    molecule_ = Process::environment.legacy_molecule();
+    molecule_ = Process::environment.molecule();
 
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
@@ -709,7 +709,7 @@ void EFP::print_efp_geometry()
 {
     if ( nfrag_ == 0 ) return;
 
-    Molecule::GeometryUnits units = Process::environment.legacy_molecule()->units();
+    Molecule::GeometryUnits units = Process::environment.molecule()->units();
     bool is_angstrom = ( units == Molecule::Angstrom ) ;
 
     outfile->Printf("\n");
@@ -919,7 +919,7 @@ void EFP::print_out() {
 //double EFP::EFP_QM_nuclear_repulsion_energy()
 //{
 //    double nu = 0.0;
-//    boost::shared_ptr<Molecule> mol = Process::environment.legacy_molecule();
+//    boost::shared_ptr<Molecule> mol = Process::environment.molecule();
 //
 //    for (int frag=0; frag<nfrag_; frag++) {
 //        size_t natom = 0;

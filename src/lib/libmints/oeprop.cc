@@ -2006,7 +2006,7 @@ void OEProp::compute_no_occupations()
 //{
 //    common_init();
 //}
-//GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.wavefunction())
+//GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.legacy_wavefunction())
 //{
 //    common_init();
 //}

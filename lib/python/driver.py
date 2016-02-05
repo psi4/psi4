@@ -1179,6 +1179,7 @@ def optimize(name, **kwargs):
 
         # Compute the gradient
         G, wfn = gradient(name, return_wfn=True, **kwargs)
+        psi4.set_gradient(G)
         thisenergy = psi4.get_variable('CURRENT ENERGY')
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
@@ -1551,9 +1552,7 @@ def hessian(name, **kwargs):
         psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
         H = psi4.fd_freq_1(molecule, gradients, irrep)
         wfn.set_hessian(H)
-        #freqs = wfn.frequencies()
-        #freqs.print_out()
-        #psi4.set_wavefunction(wfn)  #TODO try without
+        wfn.set_frequencies(psi4.get_frequencies())
 
         print(' Computation complete.')
 
@@ -1710,6 +1709,7 @@ def hessian(name, **kwargs):
         psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
         H = psi4.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
+        wfn.set_frequencies(psi4.get_frequencies())
 
         print(' Computation complete.')
 
@@ -1802,12 +1802,8 @@ def frequency(name, **kwargs):
     H, wfn = hessian(name, return_wfn=True, **kwargs)
 
     if not (kwargs.get('mode') == 'sow'):
-    #if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
-        # call thermo module
-#        raise Exception('Thermo will fail because we are not yet passing it a wavefunction')
-#        psi4.thermo(wfn.get_frequencies())
-        psi4.set_wavefunction(wfn)  # TODO try without
 
+        wfn.frequencies().print_out()
         psi4.thermo(wfn, wfn.frequencies())
 
     for postcallback in hooks['frequency']['post']:

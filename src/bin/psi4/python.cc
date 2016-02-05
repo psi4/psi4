@@ -1013,21 +1013,12 @@ boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
 
 void py_psi_set_gradient(SharedMatrix grad)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_gradient(grad);
-    } else {
-        Process::environment.set_gradient(grad);
-    }
+    Process::environment.set_gradient(grad);
 }
 
 SharedMatrix py_psi_get_gradient()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->gradient();
-    } else {
-        return Process::environment.gradient();
-    }
+    return Process::environment.gradient();
 }
 
 void py_psi_set_efp_torque(SharedMatrix torq)
@@ -1051,11 +1042,7 @@ SharedMatrix py_psi_get_efp_torque()
 
 void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_frequencies(freq);
-    } else {
-        Process::environment.set_frequencies(freq);
-    }
+    Process::environment.set_frequencies(freq);
 }
 
 void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
@@ -1069,24 +1056,13 @@ void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
 
 boost::shared_ptr<Vector> py_psi_get_frequencies()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->frequencies();
-    } else {
-        return Process::environment.frequencies();
-    }
+    return Process::environment.frequencies();
 }
 
 boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->get_atomic_point_charges();
-    }
-    else {
-        boost::shared_ptr<psi::Vector> empty(new psi::Vector());
-        return empty; // charges not added to process.h for environment - yet(?)
-    }
+    boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+    return empty; // charges not added to process.h for environment - yet(?)
 }
 
 boost::shared_ptr<Vector> py_psi_get_normalmodes()

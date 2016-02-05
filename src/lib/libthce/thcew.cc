@@ -65,7 +65,7 @@ void THCEW::common_init()
     debug_ = options_.get_int("DEBUG");
 
     
-    //reference_wavefunction_ = Process::environment.wavefunction();
+    //reference_wavefunction_ = Process::environment.legacy_wavefunction();
     throw PSIEXCEPTION("Rob: I broke your code. Check your email.");
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("THCEW: Run SCF first");
