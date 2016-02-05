@@ -57,7 +57,6 @@ SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options & options)
     } else {
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");
     }
-    Process::environment.set_wavefunction(dfmp2);
 
     tstop();
 

@@ -93,8 +93,8 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
         basisset->print_detail();
     }
 
-    // Set this early because the callback mechanism uses it.
-    Process::environment.set_wavefunction(scf);
+    // Set this early because the efp mechanism uses it.
+    Process::environment.set_legacy_wavefunction(scf);
 
     if (pre)
         scf->add_preiteration_callback(pre);

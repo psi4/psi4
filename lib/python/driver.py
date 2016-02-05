@@ -736,7 +736,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
-        #RAK for EFP psi4.wavefunction().energy()
+        #RAK for EFP psi4.legacy_wavefunction().energy()
         # TODO: add EFP contributions to the gradient
 
         optstash.restore()
@@ -874,8 +874,6 @@ def gradient(name, **kwargs):
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
-#        return energies[-1]
-        psi4.set_wavefunction(wfn)
 
         if return_wfn:
             return (wfn.gradient(), wfn)
@@ -1496,7 +1494,7 @@ def hessian(name, **kwargs):
             raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
-        psi4.set_variable('CURRENT ENERGY', psi4.wavefunction().energy())
+        psi4.set_variable('CURRENT ENERGY', wfn.energy())
 
         # TODO: return hessian matrix
 
@@ -1821,13 +1819,13 @@ frequencies = frequency
 freq = frequency
 
 
-def molden(filename):
+def molden(filename, wfn):
     """Function to write wavefunction information in molden
     format to *filename*
 
     """
     #TODO
-    m = psi4.MoldenWriter(psi4.wavefunction())
+    m = psi4.MoldenWriter(wfn)
     m.write(filename)
 
 
