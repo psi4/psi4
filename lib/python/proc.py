@@ -1017,6 +1017,7 @@ def scf_helper(name, **kwargs):
     # EFP preparation
     efp = psi4.get_active_efp()
     if efp.nfragments() > 0:
+        psi4.set_legacy_molecule(psi4.get_active_molecule())
         psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
         psi4.efp_set_options()
         efp.set_qm_atoms()
@@ -3505,6 +3506,7 @@ def run_efp(name, **kwargs):
 
     """
     # initialize library
+    psi4.set_legacy_molecule(psi4.get_active_molecule())
     efp = psi4.get_active_efp()
 
     if efp.nfragments() == 0:
@@ -3515,7 +3517,6 @@ def run_efp(name, **kwargs):
     psi4.efp_set_options()
 
     efp.print_out()
-    psi4.set_legacy_molecule(psi4.get_active_molecule())
     returnvalue = efp.compute()
     print('EFP does not have a wavefunction /lib/python/proc.py:2806')  # TODO
     return returnvalue
