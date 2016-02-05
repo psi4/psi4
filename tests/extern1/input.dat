@@ -25,9 +25,7 @@ set {
     basis 6-31G*
 }
 
-gradient('scf', dertype=0)
-fd_grad = psi4.wavefunction().gradient()
-gradient('scf')
-an_grad = psi4.wavefunction().gradient()
+fd_grad = gradient('scf', dertype=0)
+an_grad = gradient('scf')
 
 compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gradient to 10^-5") #TEST

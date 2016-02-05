@@ -33,9 +33,9 @@ anal_freqs.set(0, 2, 4391.065) #TEST
 set globals { points 3 }
 set findif {print 3}
 
-frequencies('scf',dertype=0)
+scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 
-fd_freqs = psi4.wavefunction().frequencies()                                           #TEST
+fd_freqs = scf_wfn.frequencies()                                                         #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ")  #TEST
 

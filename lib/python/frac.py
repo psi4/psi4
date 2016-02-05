@@ -148,18 +148,16 @@ def frac_traverse(mol, **kwargs):
         psi4.set_global_option("FRAC_OCC", [LUMO])
         psi4.set_global_option("FRAC_VAL", [occ])
 
-        E = energy('scf')
+        E, ref = energy('scf', return_wfn=True)
         C = 1
         if (E == 0.0):
             E = psi4.get_variable('SCF ITERATION ENERGY')
             C = 0
 
         if (LUMO > 0):
-            ref = psi4.wavefunction()
             eps = ref.epsilon_a()
             potentials.append(eps[int(LUMO)-1])
         else:
-            ref = psi4.wavefunction()
             eps = ref.epsilon_b()
             potentials.append(eps[-int(LUMO)-1])
 
@@ -199,18 +197,16 @@ def frac_traverse(mol, **kwargs):
         psi4.set_global_option("FRAC_OCC", [HOMO])
         psi4.set_global_option("FRAC_VAL", [occ])
 
-        E = energy('scf')
+        E, ref = energy('scf', return_wfn=True)
         C = 1
         if (E == 0.0):
             E = psi4.get_variable('SCF ITERATION ENERGY')
             C = 0
 
         if (LUMO > 0):
-            ref = psi4.wavefunction()
             eps = ref.epsilon_a()
             potentials.append(eps[int(HOMO)-1])
         else:
-            ref = psi4.wavefunction()
             eps = ref.epsilon_b()
             potentials.append(eps[-int(HOMO)-1])
 
@@ -307,10 +303,9 @@ def frac_nuke(mol, **kwargs):
     stats = []
 
     # Run one SCF to burn things in
-    energy('scf')
+    E, ref = energy('scf', return_wfn=True)
 
     # Determine HOMO
-    ref = psi4.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     if (Na == Nb):
@@ -347,18 +342,16 @@ def frac_nuke(mol, **kwargs):
             psi4.set_global_option("FRAC_OCC", [HOMO])
             psi4.set_global_option("FRAC_VAL", [occ])
 
-            E = energy('scf')
+            E, ref = energy('scf', return_wfn=True)
             C = 1
             if (E == 0.0):
                 E = psi4.get_variable('SCF ITERATION ENERGY')
                 C = 0
 
             if (HOMO > 0):
-                ref = psi4.wavefunction()
                 eps = ref.epsilon_a()
                 potentials.append(eps[HOMO-1])
             else:
-                ref = psi4.wavefunction()
                 eps = ref.epsilon_b()
                 potentials.append(eps[-HOMO-1])
 
@@ -376,7 +369,8 @@ def frac_nuke(mol, **kwargs):
         mol.set_multiplicity(mult)
 
         # Determine HOMO
-        ref = psi4.wavefunction()
+        print('DGAS: What ref should this point to?')
+        #ref = psi4.legacy_wavefunction()
         eps_a = ref.epsilon_a()
         eps_b = ref.epsilon_b()
         if (Na == Nb):
@@ -478,11 +472,10 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     old_guess = psi4.get_global_option("GUESS")
     psi4.set_global_option("DF_INTS_IO", "SAVE")
     psi4.print_out('\n\t==> IP Fitting SCF: Burn-in <==\n')
-    energy('scf')
+    E, ref = energy('scf', return_wfn=True)
     psi4.set_global_option("DF_INTS_IO", "LOAD")
 
     # Determine HOMO, to determine mult1
-    ref = psi4.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     if (Na == Nb):
@@ -525,8 +518,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     mol.set_molecular_charge(charge0)
     mol.set_multiplicity(mult0)
     psi4.print_out('\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n')
-    E0r = energy('scf')
-    ref = psi4.wavefunction()
+    E0r, ref = energy('scf', return_wfn=True)
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     E_HOMO = 0.0;
@@ -579,8 +571,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     mol.set_molecular_charge(charge0)
     mol.set_multiplicity(mult0)
     psi4.print_out('\n\t==> IP Fitting SCF: Neutral, Left Endpoint <==\n')
-    E0l = energy('scf')
-    ref = psi4.wavefunction()
+    E0l, ref = energy('scf', return_wfn=True)
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     E_HOMO = 0.0;
@@ -640,8 +631,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
         mol.set_molecular_charge(charge0)
         mol.set_multiplicity(mult0)
         psi4.print_out('\n\t==> IP Fitting SCF: Neutral, Omega = %11.3E <==\n' % omega)
-        E0 = energy('scf')
-        ref = psi4.wavefunction()
+        E0, ref = energy('scf', return_wfn=True)
         eps_a = ref.epsilon_a()
         eps_b = ref.epsilon_b()
         E_HOMO = 0.0;

@@ -48,84 +48,72 @@ set {
 set ao_basis        none
 set dcft_functional dc-06
 set algorithm       simultaneous
-gradient('dcft')
-grad_sim = psi4.wavefunction().gradient()                                            #TEST
+grad_sim = gradient('dcft')
 compare_matrices(ref_dc06, grad_sim, 8, "DC-06 analytic gradient (simultaneous, ao_basis=none)")      #TEST
 
 set ao_basis        none
 set dcft_functional dc-06
 set algorithm       qc
-gradient('dcft')
-grad_qc = psi4.wavefunction().gradient()                                             #TEST
+grad_qc = gradient('dcft')
 compare_matrices(ref_dc06, grad_qc, 8, "DC-06 analytic gradient (qc, ao_basis=none)")                 #TEST
 
 set ao_basis        none
 set dcft_functional odc-06
 set algorithm simultaneous
-gradient('dcft')
-grad_odc06 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc06 = gradient('dcft')
 compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (simultaneous, ao_basis=none)")  #TEST
 
 set ao_basis        none
 set dcft_functional odc-06
 set algorithm       qc
-gradient('dcft')
-grad_odc06 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc06 = gradient('dcft')
 compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (qc, ao_basis=none)")  #TEST
 
 set ao_basis        none
 set dcft_functional odc-12
 set algorithm       simultaneous
-gradient('dcft')
-grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc12 = gradient('dcft')
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous, ao_basis=none)")  #TEST
 
 set ao_basis        none
 set dcft_functional odc-12
 set algorithm       qc
-gradient('dcft')
-grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc12 = gradient('dcft')
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (qc, ao_basis=none)")  #TEST
 
 set ao_basis        none
 set dcft_functional odc-13
 set algorithm       simultaneous
-gradient('dcft')
-grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc13 = gradient('dcft')
 compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=none)")  #TEST
 
 set ao_basis        none
 set dcft_functional odc-13
 set algorithm       qc
-gradient('dcft')
-grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc13 = gradient('dcft')
 compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (qc, ao_basis=none)")  #TEST
 
 #AO_BASIS = DISK
 set ao_basis        disk
 set dcft_functional dc-06
 set algorithm       simultaneous
-gradient('dcft')
-grad_sim = psi4.wavefunction().gradient()                                            #TEST
+grad_sim = gradient('dcft')
 compare_matrices(ref_dc06, grad_sim, 8, "DC-06 analytic gradient (simultaneous, ao_basis=disk)")      #TEST
 
 set ao_basis        disk
 set dcft_functional odc-06
 set algorithm simultaneous
-gradient('dcft')
-grad_odc06 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc06 = gradient('dcft')
 compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
 
 set ao_basis        disk
 set dcft_functional odc-12
 set algorithm       simultaneous
-gradient('dcft')
-grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc12 = gradient('dcft')
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
 
 set ao_basis        disk
 set dcft_functional odc-13
 set algorithm       simultaneous
-gradient('dcft')
-grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+grad_odc13 = gradient('dcft')
 compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
