@@ -12,8 +12,8 @@ set globals {
   basis cc-pvdz
   delete_tei false
 }
-gradient('CCSD')
-plugin("./backtrans")
+grad, ccsd_wfn = gradient('CCSD', return_wfn=True)
+plugin("./backtrans", ccsd_wfn)
 
 clean()
 

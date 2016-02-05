@@ -13,7 +13,10 @@
 
 using namespace boost;
 
-namespace psi{ namespace mollerplesset2{
+namespace psi{
+class Wavefunction;
+
+namespace mollerplesset2{
     // Nasty, nasty global variables.
     EXTERN int nirreps, nmo;
     EXTERN shared_ptr<PSIO> psio;
@@ -23,6 +26,6 @@ namespace psi{ namespace mollerplesset2{
     EXTERN double eSCF;
     EXTERN double *aOccEvals, *bOccEvals, *aVirEvals, *bVirEvals;
     
-    EXTERN double plugin_mp2_unrestricted(Options &options);
-    EXTERN double plugin_mp2_restricted(Options &options);
+    EXTERN double plugin_mp2_unrestricted(boost::shared_ptr<Wavefunction> wfn, Options &options);
+    EXTERN double plugin_mp2_restricted(boost::shared_ptr<Wavefunction> wfn, Options &options);
 }} // Namespaces
