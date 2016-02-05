@@ -245,7 +245,7 @@ def select_mp3(name, **kwargs):
                 func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module in ['', 'DETCI']:
+            if module == 'DETCI':  # no default for this case
                 func = run_detci
 
     if func is None:
@@ -833,7 +833,7 @@ def select_mp4(name, **kwargs):
                 func = run_fnocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module in ['', 'DETCI']:
+            if module == 'DETCI':  # no default for this case
                 func = run_detci
 
     if func is None:
