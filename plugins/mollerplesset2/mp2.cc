@@ -3,7 +3,7 @@
 #include <liboptions/liboptions.h>
 #include <libplugin/plugin.h>
 #include "psifiles.h"
-#include "globals.h"
+#include "mp2.h"
 
 INIT_PLUGIN
 
@@ -25,8 +25,8 @@ read_options(std::string name, Options &options){
 }
 
 
-extern "C" PsiReturnType
-mollerplesset2(Options &options)
+extern "C"
+SharedWavefunction mollerplesset2(SharedWavefunction ref_wfn, Options &options)
 {
     int print = options.get_int("PRINT");
     // This will print out all of the user-provided options for this module
@@ -34,22 +34,22 @@ mollerplesset2(Options &options)
    
     psio = _default_psio_lib_;
 
-    eSCF = Process::environment.wavefunction()->reference_energy();
+    eSCF = ref_wfn->reference_energy();
 
-    nirreps             = Process::environment.wavefunction()->nirrep();
-    SharedVector aEvals = Process::environment.wavefunction()->epsilon_a();
-    SharedVector bEvals = Process::environment.wavefunction()->epsilon_b();
-    char **labels       = Process::environment.wavefunction()->molecule()->irrep_labels();
+    nirreps             = ref_wfn->nirrep();
+    SharedVector aEvals = ref_wfn->epsilon_a();
+    SharedVector bEvals = ref_wfn->epsilon_b();
+    char **labels       = ref_wfn->molecule()->irrep_labels();
     aOccOrbsPI          = new int[nirreps];
     bOccOrbsPI          = new int[nirreps];
     aVirOrbsPI          = new int[nirreps];
     bVirOrbsPI          = new int[nirreps];
-    mopi                = Process::environment.wavefunction()->nmopi();
-    nmo                 = Process::environment.wavefunction()->nmo();
-    clsdpi              = Process::environment.wavefunction()->doccpi();
-    openpi              = Process::environment.wavefunction()->soccpi();
-    frzcpi              = Process::environment.wavefunction()->frzcpi();
-    frzvpi              = Process::environment.wavefunction()->frzvpi();
+    mopi                = ref_wfn->nmopi();
+    nmo                 = ref_wfn->nmo();
+    clsdpi              = ref_wfn->doccpi();
+    openpi              = ref_wfn->soccpi();
+    frzcpi              = ref_wfn->frzcpi();
+    frzvpi              = ref_wfn->frzvpi();
 
     numAOcc = 0; numBOcc = 0; numAVir = 0; numBVir = 0;
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
@@ -102,11 +102,11 @@ mollerplesset2(Options &options)
 
     double eMP2;
     if(options.get_str("REFERENCE") == "UHF"){
-        eMP2 = plugin_mp2_unrestricted(options);
+        eMP2 = plugin_mp2_unrestricted(ref_wfn, options);
     }else if(options.get_str("REFERENCE") == "ROHF"){
-        eMP2 = plugin_mp2_unrestricted(options);
+        eMP2 = plugin_mp2_unrestricted(ref_wfn, options);
     }else if(options.get_str("REFERENCE") == "RHF"){
-        eMP2 = plugin_mp2_restricted(options);
+        eMP2 = plugin_mp2_restricted(ref_wfn, options);
     }else{
          std::string str1 = options.get_str("REFERENCE");
          std::string str2 = "reference in mollerplesset2";
@@ -118,7 +118,7 @@ mollerplesset2(Options &options)
     outfile->Printf("\n\t\tSCF Reference energy  = %20.16f\n", eSCF);
     outfile->Printf("\t\tMP2 Total Energy      = %20.16f\n\n", eMP2 + eSCF);
 
-    return Success;   
+    return ref_wfn;
 }
 
 }} // End Namespaces
