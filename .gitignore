@@ -49,6 +49,9 @@ tests/*/cavity.npz
 tests/*/cavity.off
 tests/*/pcmsolver.inp
 lib/python/pcm_placeholder.py
+tests/*/*.grad
+tests/*/*.hess
+
 
 # Compilation directories that people use
 objdir
