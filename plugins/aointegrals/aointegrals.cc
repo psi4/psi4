@@ -25,15 +25,16 @@ read_options(std::string name, Options &options)
     return true;
 }
 
-extern "C" PsiReturnType
-aointegrals(Options &options)
+extern "C"
+SharedWavefunction aointegrals(SharedWavefunction ref_wfn, Options &options)
 {
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
 
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    shared_ptr<Molecule> molecule = ref_wfn->molecule();
 
     // Form basis object:
+    //shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
     shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "BASIS", options.get_str("BASIS"));
 
     // The integral factory oversees the creation of integral objects
@@ -102,7 +103,7 @@ aointegrals(Options &options)
         outfile->Printf("\n\tThere are %d unique integrals\n\n", count);
     }
 
-    return Success;
+    return ref_wfn;
 }
 
 }} // End Namespaces

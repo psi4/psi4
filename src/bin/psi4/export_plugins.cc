@@ -80,7 +80,7 @@ int py_psi_plugin_load(std::string fullpathname)
     @param fullpathname Used to identity loaded plugin.
     @returns The result from the plugin.
 */
-int py_psi_plugin(std::string fullpathname)
+SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction ref_wfn)
 {
     boost::filesystem::path pluginPath(fullpathname);
     boost::filesystem::path pluginStem = pluginPath.stem();
@@ -89,7 +89,7 @@ int py_psi_plugin(std::string fullpathname)
         plugins[uc] = plugin_load(fullpathname);
     }
     plugin_info& tmpinfo = plugins[uc];
-//    Process::environment.options.set_current_module(name);
+
     outfile->Printf("\nReading options from the %s block\n", tmpinfo.name.c_str());
     py_psi_prepare_options_for_module(tmpinfo.name);
 
@@ -102,9 +102,17 @@ int py_psi_plugin(std::string fullpathname)
     outfile->Printf("Calling plugin %s.\n\n\n", fullpathname.c_str());
 
     // Call the plugin
-    int ret = info.plugin(Process::environment.options);
-
-    return ret;
+    if (ref_wfn){
+        return info.plugin(ref_wfn, Process::environment.options);
+    }
+    else if (Process::environment.legacy_wavefunction()){
+        outfile->Printf("Using the legacy wavefunction call, please use conventional wavefunction passing in the future.");
+        return info.plugin(Process::environment.legacy_wavefunction(),
+                           Process::environment.options);
+    }
+    else{
+        throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");
+    }
 }
 
 /**

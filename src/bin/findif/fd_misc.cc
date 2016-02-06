@@ -93,18 +93,7 @@ void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> 
     }
   }
 
-  //freq_vector->print_out();
-  if (psi::Process::environment.wavefunction()) {
-    Process::environment.wavefunction()->set_frequencies(freq_vector);
-  }
   Process::environment.set_frequencies(freq_vector);
-
-  //nm_vector->print_out();
-  if (psi::Process::environment.wavefunction()) {
-    Process::environment.wavefunction()->set_normalmodes(nm_vector);
-  }
-  // Process::environment.set_normalmodes(nm_vector);
-
 
   double sum = 0.0;
   for (int a=0; a<Natom; ++a)

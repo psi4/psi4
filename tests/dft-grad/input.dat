@@ -27,8 +27,7 @@ set {
     d_convergence         8
 }
 
-gradient('bp86-d')
-grad = psi4.wavefunction().gradient()                                    #TEST
+grad = gradient('bp86-d')
 compare_matrices(ref, grad, 7, "Analytic dft gradients called by name")    #TEST
 clean()
 
@@ -40,6 +39,5 @@ set {
     dft_spherical_points 302
 }
 
-gradient('bp86-d')
-grad = psi4.wavefunction().gradient()                                    #TEST
+grad = gradient('bp86-d')
 compare_matrices(ref, grad, 7, "Analytic dft gradients called by options") #TEST

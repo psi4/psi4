@@ -253,7 +253,7 @@ PsiReturnType transqt2(SharedWavefunction ref_wfn, Options & options)
         
     }
     // Add frozen-core energy to wfn
-    Process::environment.wavefunction()->set_efzc(efzc);
+    Process::environment.legacy_wavefunction()->set_efzc(efzc);
 
     /*** One-electron forward transforms.  Note that all orbitals are
        transformed, including those in the inactive space. ***/
