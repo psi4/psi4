@@ -531,11 +531,9 @@ def energy(name, **kwargs):
         ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
+    print('energy():', molecule, molecule.natom(), molecule.name())
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -590,7 +588,7 @@ def energy(name, **kwargs):
                 targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
                 shutil.copy(item, targetfile)
 
-        wfn = procedures['energy'][lowername](lowername, **kwargs)
+        wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
 
     except KeyError:
         alternatives = ""
@@ -687,12 +685,9 @@ def gradient(name, **kwargs):
             raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
 
     # Make sure the molecule the user provided is the active one
-    if ('molecule' in kwargs):
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+    print('gradient():', molecule, molecule.natom(), molecule.name())
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     opt_mode = 'continuous'
@@ -732,7 +727,7 @@ def gradient(name, **kwargs):
         psi4.print_out("gradient() will perform analytic gradient computation.\n")
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
-        wfn = procedures['gradient'][lowername](lowername, **kwargs)
+        wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
@@ -829,7 +824,7 @@ def gradient(name, **kwargs):
 
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
-                E, wfn = func(lowername, return_wfn=True, **kwargs)
+                E, wfn = func(lowername, return_wfn=True, molecule=molecule, **kwargs)
                 E = psi4.get_variable('CURRENT ENERGY')
                 #E = func(**kwargs)
 
@@ -951,12 +946,9 @@ def property(name, **kwargs):
         ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
-    if ('molecule' in kwargs):
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    #psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+    print('property():', molecule, molecule.natom(), molecule.name())
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -1166,10 +1158,10 @@ def optimize(name, **kwargs):
         mol.update_geometry()
         current_sym = mol.schoenflies_symbol()
         if initial_sym != current_sym:
-            raise Exception("""Point group changed!  You should restart using """
-                            """the last geometry in the output, after carefully """
-                            """making sure all symmetry-dependent information in """
-                            """the input, such as DOCC, is correct.""")
+            raise ValidationError("""Point group changed! You should restart """
+                                  """using the last geometry in the output, after """
+                                  """carefully making sure all symmetry-dependent """
+                                  """input, such as DOCC, is correct.""")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1919,4 +1911,4 @@ def parse_cotton_irreps(irrep):
     try:
         return cotton[point_group][irreducible_representation]
     except KeyError:
-        raise ValidationError("Irrep \'%s\' not valid for point group \'%s\'." % (str(irrep), point_group))
+        raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))

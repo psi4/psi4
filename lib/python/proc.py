@@ -978,7 +978,10 @@ def scf_helper(name, **kwargs):
         if scf_molecule.schoenflies_symbol() != 'c1':
             psi4.print_out("""  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n""")
-            scf_molecule = scf_molecule.clone()
+            molname = scf_molecule.name()
+            scf_molecule = psi4.Molecule.create_molecule_from_string(scf_molecule.create_psi4_string_from_molecule())
+            scf_molecule.set_name(molname)
+            #scf_molecule = scf_molecule.clone()
             scf_molecule.reset_point_group('c1')
             scf_molecule.fix_orientation(True)
             scf_molecule.fix_com(True)
@@ -2648,19 +2651,28 @@ def run_sapt(name, **kwargs):
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = psi4.get_active_molecule()
+        sapt_dimer = kwargs.pop('molecule', psi4.get_active_molecule())
     else:
         psi4.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
+    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
+    print('run_sapt():', sapt_dimer, sapt_dimer.natom(), sapt_dimer.name())
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        molname = sapt_dimer.name()
+        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
+        sapt_dimer.set_name(molname)
+        #sapt_dimer = sapt_dimer.clone()  # copy the molecule
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.fix_com(True)
+        print('not c1 so cloning')
         sapt_dimer.update_geometry()
+    else:
+        print('is c1 so pass')
+    print('run_sapt():', sapt_dimer, sapt_dimer.natom(), sapt_dimer.name())
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
@@ -2792,18 +2804,22 @@ def run_sapt_ct(name, **kwargs):
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = psi4.get_active_molecule()
+        sapt_dimer = kwargs.pop('molecule', psi4.get_active_molecule())
     else:
         psi4.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
+    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        molname = sapt_dimer.name()
+        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
+        sapt_dimer.set_name('sapt_dimer')
+        #sapt_dimer = sapt_dimer.clone()  # copy the molecule
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
@@ -2942,18 +2958,22 @@ def run_fisapt(name, **kwargs):
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = psi4.get_active_molecule()
+        sapt_dimer = kwargs.pop('molecule', psi4.get_active_molecule())
     else:
         psi4.print_out('Warning! FISAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
+    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone() # Copy the molecule
+        molname = sapt_dimer.name()
+        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
+        sapt_dimer.set_name(molname)
+        #sapt_dimer = sapt_dimer.clone()  # copy the molecule
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)  # This should always have been set, very dangerous bug here
+        sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
