@@ -1839,7 +1839,6 @@ def run_ccenergy_gradient(name, **kwargs):
     psi4.ccdensity(ccwfn)
     grad = psi4.deriv(ccwfn)
     ccwfn.set_gradient(grad)
-    psi4.set_wavefunction(ccwfn)
 
     optstash.restore()
     return ccwfn
@@ -2220,8 +2219,9 @@ def run_detci_property(name, **kwargs):
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
-    else:
-        scf_wfn = psi4.wavefunction()
+
+    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     ciwfn = psi4.detci(ref_wfn)
 
@@ -2312,7 +2312,6 @@ def run_eom_cc_gradient(name, **kwargs):
     psi4.ccdensity(ref_wfn)
     grad = psi4.deriv(ref_wfn)
     ref_wfn.set_gradient(grad)
-    psi4.set_wavefunction(ref_wfn)
 
     optstash.restore()
     return ref_wfn

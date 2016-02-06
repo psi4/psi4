@@ -64,7 +64,6 @@ SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options)
    ciwfn->compute_energy();
 
    SharedWavefunction base_ciwfn = static_cast<SharedWavefunction>(ciwfn);
-   Process::environment.set_wavefunction(base_ciwfn);
    return base_ciwfn;
 }
 

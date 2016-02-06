@@ -56,9 +56,7 @@ def run_@plugin@(name, **kwargs):
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
-    psi4.set_wavefunction(ref_wfn)
-    passed = psi4.plugin('@plugin@.so')
-    @plugin@_wfn = psi4.wavefunction()
+    passed = psi4.plugin('@plugin@.so', ref_wfn)
 
     return @plugin@_wfn
 

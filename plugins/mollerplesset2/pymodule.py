@@ -29,7 +29,8 @@ def run_plugin_mp2(name, **kwargs):
     if psi4.get_global_option('REFERENCE') == 'ROHF':
         scf_wfn.semicanonicalize()
 
-    returnvalue = psi4.plugin('mollerplesset2.so')
+    #psi4.set_legacy_wavefunction(scf_wfn)
+    returnvalue = psi4.plugin('mollerplesset2.so', scf_wfn)
 
     return returnvalue
 

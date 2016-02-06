@@ -115,7 +115,7 @@ void local_init(Options & options)
   int num_zero;
   double **RS;
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
   C = wfn->Ca()->pointer();
   natom = wfn->molecule()->natom();
   nshell = wfn->basisset()->nshell();

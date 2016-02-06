@@ -44,8 +44,6 @@ SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options)
     outfile->Printf(    "\t***********************************************************************************\n");
 
     SharedWavefunction dcft = SharedWavefunction(new DCFTSolver(ref_wfn, options));
-    Process::environment.set_wavefunction(dcft);
-
     dcft->compute_energy();
 
     // Shut down the timers

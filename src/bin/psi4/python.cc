@@ -522,7 +522,6 @@ SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn)
             ref_wfn,
             Process::environment.options)
     );
-    Process::environment.set_wavefunction(cclambda);
 
     double energy = cclambda->compute_energy();
     return cclambda;
@@ -1013,21 +1012,12 @@ boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
 
 void py_psi_set_gradient(SharedMatrix grad)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_gradient(grad);
-    } else {
-        Process::environment.set_gradient(grad);
-    }
+    Process::environment.set_gradient(grad);
 }
 
 SharedMatrix py_psi_get_gradient()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->gradient();
-    } else {
-        return Process::environment.gradient();
-    }
+    return Process::environment.gradient();
 }
 
 void py_psi_set_efp_torque(SharedMatrix torq)
@@ -1051,52 +1041,18 @@ SharedMatrix py_psi_get_efp_torque()
 
 void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_frequencies(freq);
-    } else {
-        Process::environment.set_frequencies(freq);
-    }
-}
-
-void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
-{
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_normalmodes(norm);
-    } else {
-//      Process::environment.set_normalmodes(norm);
-    }
+    Process::environment.set_frequencies(freq);
 }
 
 boost::shared_ptr<Vector> py_psi_get_frequencies()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->frequencies();
-    } else {
-        return Process::environment.frequencies();
-    }
+    return Process::environment.frequencies();
 }
 
 boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->get_atomic_point_charges();
-    }
-    else {
-        boost::shared_ptr<psi::Vector> empty(new psi::Vector());
-        return empty; // charges not added to process.h for environment - yet(?)
-    }
-}
-
-boost::shared_ptr<Vector> py_psi_get_normalmodes()
-{
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->normalmodes();
-    } else {
-//      return Process::environment.normalmodes();
-    }
+    boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+    return empty; // charges not added to process.h for environment - yet(?)
 }
 
 double py_psi_get_variable(const std::string& key)
@@ -1155,14 +1111,6 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-boost::shared_ptr<Wavefunction> py_psi_wavefunction()
-{
-    return Process::environment.wavefunction();
-}
-void py_psi_set_wavefunction(SharedWavefunction wfn)
-{
-    Process::environment.set_wavefunction(wfn);
-}
 boost::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
 {
     return Process::environment.legacy_wavefunction();
@@ -1280,7 +1228,6 @@ bool psi4_python_module_initialize()
 
 void psi4_python_module_finalize()
 {
-    Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();
 
     // Shut things down:
@@ -1396,12 +1343,6 @@ BOOST_PYTHON_MODULE (psi4)
         py_psi_set_legacy_molecule,
         "Activates a previously defined (in the input) molecule, by name.");
     def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
-    def("wavefunction",
-        py_psi_wavefunction,
-        "Returns the current wavefunction object from the most recent computation.");
-    def("set_wavefunction",
-        py_psi_set_wavefunction,
-        "Returns the current wavefunction object from the most recent computation.");
     def("legacy_wavefunction",
         py_psi_legacy_wavefunction,
         "Returns the current legacy_wavefunction object from the most recent computation.");
@@ -1428,13 +1369,9 @@ BOOST_PYTHON_MODULE (psi4)
     def("get_atomic_point_charges",
         py_psi_get_atomic_point_charges,
         "Returns the most recently computed atomic point charges, as a double * object.");
-    def("get_normalmodes", py_psi_get_normalmodes, "Returns the most recently computed normal modes Vector object.");
     def("set_frequencies",
         py_psi_set_frequencies,
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
-    def("set_normalmodes",
-        py_psi_set_normalmodes,
-        "Assigns the global normalmodes to the values stored in a Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
@@ -1790,6 +1727,6 @@ void Python::run(FILE *input)
     if (s)
         free(s);
     Process::environment.molecule().reset();
-    Process::environment.wavefunction().reset();
+    Process::environment.legacy_wavefunction().reset();
     py_psi_plugin_close_all();
 }

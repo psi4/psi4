@@ -31,8 +31,6 @@ set globals {
     diis_min_vecs            1
 }
 
-gradient('dcft')
-
-grad = psi4.wavefunction().gradient()
+grad = gradient('dcft')
 compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")
 clean()

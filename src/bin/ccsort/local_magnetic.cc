@@ -73,7 +73,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   boolean = init_int_array(natom);
   rank = (int *) malloc(natom * sizeof(int *));
 
-  MintsHelper mints(Process::environment.wavefunction()->basisset(),
+  MintsHelper mints(Process::environment.legacy_wavefunction()->basisset(),
                     Process::environment.options, 0);
   vector<SharedMatrix> angmom = mints.so_angular_momentum();
 

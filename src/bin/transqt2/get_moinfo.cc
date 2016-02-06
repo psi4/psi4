@@ -147,7 +147,7 @@ void get_moinfo(SharedWavefunction wfn, Options& options)
 
     if(params.semicanonical)
       throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
-      //Process::environment.wavefunction()->semicanonicalize();
+      //Process::environment.legacy_wavefunction()->semicanonicalize();
 
     /* SO symmetry array */
     moinfo.sosym = init_int_array(moinfo.nso);

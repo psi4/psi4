@@ -277,7 +277,7 @@ double * EFP::get_frag_atom_coord(int frag_idx)
 efp_result electron_density_field_fn(size_t n_pt, const double *xyz, double *field, void *user_data)
 {
     // TODO These should all be members of the SCF class in the final implementation.
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
     boost::shared_ptr<Molecule> mol = wfn->molecule();
     boost::shared_ptr<BasisSet> basis = wfn->basisset();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
@@ -324,7 +324,7 @@ void EFP::set_options()
 {
     enum efp_result res;
 
-    molecule_ = Process::environment.legacy_molecule();
+    molecule_ = Process::environment.molecule();
 
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
@@ -451,7 +451,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     // Scale multipole integrals by multipole magnitudes.  The result goes into V
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
     boost::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
 
                                // 0    X    Y    Z      XX       YY       ZZ       XY       XZ       YZ
@@ -557,7 +557,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
     id->scale(0.5);
 
     // scale field integrals by induced dipole magnitudes.  the result goes into V
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
     boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
     int nbf = wfn->basisset()->nbf();
@@ -709,7 +709,7 @@ void EFP::print_efp_geometry()
 {
     if ( nfrag_ == 0 ) return;
 
-    Molecule::GeometryUnits units = Process::environment.legacy_molecule()->units();
+    Molecule::GeometryUnits units = Process::environment.molecule()->units();
     bool is_angstrom = ( units == Molecule::Angstrom ) ;
 
     outfile->Printf("\n");
@@ -812,7 +812,7 @@ void EFP::print_out() {
 //{
 //    enum efp_result res;
 //
-//    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+//    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
 //
 //    int nbf = wfn->basisset()->nbf();
 //
@@ -919,7 +919,7 @@ void EFP::print_out() {
 //double EFP::EFP_QM_nuclear_repulsion_energy()
 //{
 //    double nu = 0.0;
-//    boost::shared_ptr<Molecule> mol = Process::environment.legacy_molecule();
+//    boost::shared_ptr<Molecule> mol = Process::environment.molecule();
 //
 //    for (int frag=0; frag<nfrag_; frag++) {
 //        size_t natom = 0;

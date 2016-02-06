@@ -731,7 +731,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
-        #RAK for EFP psi4.wavefunction().energy()
+        #RAK for EFP psi4.legacy_wavefunction().energy()
         # TODO: add EFP contributions to the gradient
 
         optstash.restore()
@@ -869,8 +869,6 @@ def gradient(name, **kwargs):
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
-#        return energies[-1]
-        psi4.set_wavefunction(wfn)
 
         if return_wfn:
             return (wfn.gradient(), wfn)
@@ -1171,6 +1169,7 @@ def optimize(name, **kwargs):
 
         # Compute the gradient
         G, wfn = gradient(name, return_wfn=True, **kwargs)
+        psi4.set_gradient(G)
         thisenergy = psi4.get_variable('CURRENT ENERGY')
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
@@ -1487,7 +1486,7 @@ def hessian(name, **kwargs):
             raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
-        psi4.set_variable('CURRENT ENERGY', psi4.wavefunction().energy())
+        psi4.set_variable('CURRENT ENERGY', wfn.energy())
 
         # TODO: return hessian matrix
 
@@ -1543,9 +1542,7 @@ def hessian(name, **kwargs):
         psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
         H = psi4.fd_freq_1(molecule, gradients, irrep)
         wfn.set_hessian(H)
-        #freqs = wfn.frequencies()
-        #freqs.print_out()
-        #psi4.set_wavefunction(wfn)  #TODO try without
+        wfn.set_frequencies(psi4.get_frequencies())
 
         print(' Computation complete.')
 
@@ -1702,6 +1699,7 @@ def hessian(name, **kwargs):
         psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
         H = psi4.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
+        wfn.set_frequencies(psi4.get_frequencies())
 
         print(' Computation complete.')
 
@@ -1794,12 +1792,8 @@ def frequency(name, **kwargs):
     H, wfn = hessian(name, return_wfn=True, **kwargs)
 
     if not (kwargs.get('mode') == 'sow'):
-    #if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
-        # call thermo module
-#        raise Exception('Thermo will fail because we are not yet passing it a wavefunction')
-#        psi4.thermo(wfn.get_frequencies())
-        psi4.set_wavefunction(wfn)  # TODO try without
 
+        wfn.frequencies().print_out()
         psi4.thermo(wfn, wfn.frequencies())
 
     for postcallback in hooks['frequency']['post']:
@@ -1817,13 +1811,13 @@ frequencies = frequency
 freq = frequency
 
 
-def molden(filename):
+def molden(filename, wfn):
     """Function to write wavefunction information in molden
     format to *filename*
 
     """
     #TODO
-    m = psi4.MoldenWriter(psi4.wavefunction())
+    m = psi4.MoldenWriter(wfn)
     m.write(filename)
 
 

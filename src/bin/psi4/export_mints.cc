@@ -889,6 +889,7 @@ void export_mints()
             def("hessian", &Wavefunction::hessian, "docstring").
             def("set_hessian", &Wavefunction::set_hessian, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").

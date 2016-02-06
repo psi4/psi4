@@ -98,11 +98,7 @@ void MOLECULE::read_geom_grad(void) {
   using namespace psi;
 
   SharedMatrix pgradient;
-  if (psi::Process::environment.wavefunction()) {
-    pgradient = psi::Process::environment.wavefunction()->gradient();
-  } else {
-    pgradient = psi::Process::environment.gradient();
-  }
+  pgradient = psi::Process::environment.gradient();
 
   Matrix& gradient = *pgradient.get();
 
