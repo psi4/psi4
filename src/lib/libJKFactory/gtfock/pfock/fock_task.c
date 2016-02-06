@@ -30,6 +30,153 @@ static inline void atomic_add_f64(volatile double* global_value, double addend)
 #endif
 }
 
+static void update_F_asym(int num_dmat, double *integrals, int dimM, int dimN,
+                    int dimP, int dimQ,
+                    int flag1, int flag2, int flag3,
+                    int iMN, int iPQ, int iMP, int iNP, int iMQ, int iNQ,
+                    int iMP0, int iMQ0, int iNP0,
+                    double **D1, double **D2, double **D3,
+                    double *F_MN, double *F_PQ, double *F_NQ,
+                    double *F_MP, double *F_MQ, double *F_NP,
+                    int sizeX1, int sizeX2, int sizeX3,
+                    int sizeX4, int sizeX5, int sizeX6,
+                    int ldMN, int ldPQ, int ldNQ, int ldMP, int ldMQ, int ldNP)
+{
+    // ==> WHAT ARE THE FLAGS ??? <==
+    //
+    // This section explains these flags and is repeated everywhere to make sure
+    // anyone would find it.
+    //
+    // The flags are here to prevent double-counting diagonal elements.
+    // flag1 is for MN diagonal, flag2 is for PQ diagonal.
+    // if both are active, the factor needs to be 4 and not 3, so
+    // flag4 is only here for that
+    // flag3 is for elements of the type (MN|MN), indicating
+    // that the PQ elements of the J matrix is not to be computed.
+    // flag5, flag6 and flag7 are equivalent to flag1, flag2 and flag4
+    // combined with flag3.
+    // The flags are 1 if the element is off the specified diagonal, and
+    // are 0 otherwise. In the integral contraction routine, the specified
+    // density matrix elements are contracted with the integral and multiplied
+    // by the appropriate sum of flags, resulting in the correct multiplication factor.
+    //
+    // flag1 is necessary because the J and K matrices are computed in a weird triangular
+    // way: except for the diagonal, every other element is computed, i.e. for indices M
+    // and N, elements are skipped if ( M > N and M + N is odd ) or
+    // if ( M < M and M + N is even).
+    // The resulting matrices are then symmetrized by computing (A + A^{T})*0.5 (where T is for
+    // transposition), hence the elements of A^{T} fill the holes of A. The factor of 0.5 ensures
+    // the diagonal is correct, but then the off-diagonal needs to be multiplied by 2 at matrix
+    // construction time. And that is why we have flag1 to detect when J_MN is diagonal, for example.
+    //
+    // This seems really overly complicated. But I did not write this code.
+    // - JFG - 10/16/2015
+    int flag4 = (flag1 == 1 && flag2 == 1) ? 1 : 0;
+    int flag5 = (flag1 == 1 && flag3 == 1) ? 1 : 0;
+    int flag6 = (flag2 == 1 && flag3 == 1) ? 1 : 0;
+    int flag7 = (flag4 == 1 && flag3 == 1) ? 1 : 0;
+
+    int num_uniqdmat = num_dmat / 2;
+    int offset;
+    for (int i = 0 ; i < num_dmat; i++) {
+        if ( i < num_uniqdmat) {
+            offset = num_uniqdmat;
+        } else {
+            offset = -num_uniqdmat;
+        }
+        double *D_MN = D1[i] + iMN;
+        // We set up pointers to the transpose matrix
+        // so that we get the NM and QP elements of asymetric density matrices
+        double *D_NM = D1[i + offset] + iMN;
+        double *D_PQ = D2[i] + iPQ;
+        double *D_QP = D2[i + offset] + iPQ;
+        double *D_NQ = D3[i] + iNQ;
+        double *D_MP = D3[i] + iMP0;
+        double *D_MQ = D3[i] + iMQ0;
+        double *D_NP = D3[i] + iNP0;
+        double *J_MN = &F_MN[i * sizeX1] + iMN;
+        double *J_PQ = &F_PQ[i * sizeX2] + iPQ;
+        double *K_NQ = &F_NQ[i * sizeX3] + iNQ;
+        double *K_MP = &F_MP[i * sizeX4] + iMP;
+        double *K_MQ = &F_MQ[i * sizeX5] + iMQ;
+        double *K_NP = &F_NP[i * sizeX6] + iNP;
+
+        for (int iN = 0; iN < dimN; iN++) {
+            for (int iQ = 0; iQ < dimQ; iQ++) {
+                int inq = iN * ldNQ + iQ;
+                double k_NQ = 0;
+                for (int iM = 0; iM < dimM; iM++) {
+                    int imn = iM * ldMN + iN;
+                    int imq = iM * ldMQ + iQ;
+                    double j_MN = 0;
+                    double k_MQ = 0;
+                    for (int iP = 0; iP < dimP; iP++) {
+                        int ipq = iP * ldPQ + iQ;
+                        int imp = iM * ldMP + iP;
+                        int inp = iN * ldNP + iP;
+                        double I =integrals[iM*dimN*dimP*dimQ
+                                           +iN*dimP*dimQ+iP*dimQ+iQ];
+                        //double I =
+                        //    integrals[iM + dimM*(iN + dimN * (iP + dimP * iQ))];
+                        // F(m, n) += D(p, q) * 2 * I(m, n, p, q)
+                        // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
+                        // F(m, n) += D(q, p) * 2 * I(m, n, q, p)
+                        // F(n, m) += D(q, p) * 2 * I(n, m, q, p)
+                        double vMN = 2.0 * (
+                                (1 + flag1) * D_PQ[iP * ldPQ + iQ] +
+                                (flag2 + flag4) * D_QP[iP *ldPQ + iQ]
+                                ) * I;
+                        j_MN += vMN;
+                        // F(p, q) += D(m, n) * 2 * I(p, q, m, n)
+                        // F(p, q) += D(n, m) * 2 * I(p, q, n, m)
+                        // F(q, p) += D(m, n) * 2 * I(q, p, m, n)
+                        // F(q, p) += D(n, m) * 2 * I(q, p, n, m)
+                        double vPQ = 2.0 * (
+                                (flag3 + flag5) * D_MN[iM * ldMN + iN] +
+                                (flag6 + flag7) * D_NM[iM * ldMN + iN]
+                                ) * I;
+                //        if( i == 3) {
+                //            printf("M is %i\n", iM);
+                //            printf("N is %i\n", iN);
+                //            printf("D_MN is %e\n", D_MN[iM * ldMN + iN]);
+                //            printf("D_NM is %e\n", D_NM[iM * ldMN + iN]);
+                //        } else if ( i == 4 ) {
+                //            printf("M is %i\n", iM);
+                //            printf("N is %i\n", iN);
+                //            printf("D_MN asym is %e\n", D_MN[iM * ldMN + iN]);
+                //            printf("D_NM asym is %e\n", D_NM[iM * ldMN + iN]);
+                //        }
+                        atomic_add_f64(&J_PQ[ipq], vPQ);
+                        // F(m, p) -= D(n, q) * I(m, n, p, q)
+                        // F(p, m) -= D(q, n) * I(p, q, m, n)
+                        double vMP = (1 + flag3) *
+                            1.0 * D_NQ[iN * ldNQ + iQ] * I;
+                        atomic_add_f64(&K_MP[imp], -vMP);
+                        // F(n, p) -= D(m, q) * I(n, m, p, q)
+                        // F(p, n) -= D(q, m) * I(p, q, n, m)
+                        double vNP = (flag1 + flag5) *
+                            1.0 * D_MQ[iM * ldNQ + iQ] * I;
+                        atomic_add_f64(&K_NP[inp], -vNP);
+                        // F(m, q) -= D(n, p) * I(m, n, q, p)
+                        // F(q, m) -= D(p, n) * I(q, p, m, n)
+                        double vMQ = (flag2 + flag6) *
+                            1.0 * D_NP[iN * ldNQ + iP] * I;
+                        k_MQ -= vMQ;
+                        // F(n, q) -= D(m, p) * I(n, m, q, p)
+                        // F(q, n) -= D(p, m) * I(q, p, n, m)
+                        double vNQ = (flag4 + flag7) *
+                            1.0 * D_MP[iM * ldNQ + iP] * I;
+                        k_NQ -= vNQ;
+                    }
+                    atomic_add_f64(&J_MN[imn], j_MN);
+                    atomic_add_f64(&K_MQ[imq], k_MQ);
+                }
+                atomic_add_f64(&K_NQ[inq], k_NQ);
+            }
+        } // for (int iN = 0; iN < dimN; iN++)
+    } // for (int i = 0 ; i < num_dmat; i++)
+}
+
 
 static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                     int dimP, int dimQ,
@@ -43,6 +190,35 @@ static void update_F(int num_dmat, double *integrals, int dimM, int dimN,
                     int sizeX4, int sizeX5, int sizeX6,
                     int ldMN, int ldPQ, int ldNQ, int ldMP, int ldMQ, int ldNP)
 {
+    // ==> WHAT ARE THE FLAGS ??? <==
+    //
+    // This section explains these flags and is repeated everywhere to make sure
+    // anyone would find it.
+    //
+    // The flags are here to prevent double-counting diagonal elements.
+    // flag1 is for MN diagonal, flag2 is for PQ diagonal.
+    // if both are active, the factor needs to be 4 and not 3, so
+    // flag4 is only here for that
+    // flag3 is for elements of the type (MN|MN), indicating
+    // that the PQ elements of the J matrix is not to be computed.
+    // flag5, flag6 and flag7 are equivalent to flag1, flag2 and flag4
+    // combined with flag3.
+    // The flags are 1 if the element is off the specified diagonal, and
+    // are 0 otherwise. In the integral contraction routine, the specified
+    // density matrix elements are contracted with the integral and multiplied
+    // by the appropriate sum of flags, resulting in the correct multiplication factor.
+    //
+    // flag1 is necessary because the J and K matrices are computed in a weird triangular
+    // way: except for the diagonal, every other element is computed, i.e. for indices M
+    // and N, elements are skipped if ( M > N and M + N is odd ) or
+    // if ( M < M and M + N is even).
+    // The resulting matrices are then symmetrized by computing (A + A^{T})*0.5 (where T is for
+    // transposition), hence the elements of A^{T} fill the holes of A. The factor of 0.5 ensures
+    // the diagonal is correct, but then the off-diagonal needs to be multiplied by 2 at matrix
+    // construction time. And that is why we have flag1 to detect when J_MN is diagonal, for example.
+    //
+    // This seems really overly complicated. But I did not write this code.
+    // - JFG - 10/16/2015
     int flag4 = (flag1 == 1 && flag2 == 1) ? 1 : 0;
     int flag5 = (flag1 == 1 && flag3 == 1) ? 1 : 0;
     int flag6 = (flag2 == 1 && flag3 == 1) ? 1 : 0;
@@ -133,12 +309,12 @@ void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,               int *sh
                int startM, int endM, int startP, int endP,
                double **D1, double **D2, double **D3,
                double *F1, double *F2, double *F3,
-               double *F4, double *F5, double *F6, 
+               double *F4, double *F5, double *F6,
                int ldX1, int ldX2, int ldX3,
                int ldX4, int ldX5, int ldX6,
                int sizeX1, int sizeX2, int sizeX3,
                int sizeX4, int sizeX5, int sizeX6,
-               double *nitl, double *nsq)              
+               double *nitl, double *nsq, int nosymm)
 {
     int startMN = shellptr[startM];
     int endMN = shellptr[endM + 1];
@@ -169,10 +345,42 @@ void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,               int *sh
             int iX3M = rowpos[M]; 
             int iXN = rowptr[i];
             int iMN = iX1M * ldX1+ iXN;
-            int flag1 = (value1 < 0.0) ? 1 : 0;   
+
+            // ==> WHAT ARE THE FLAGS ??? <==
+            //
+            // This section explains these flags and is repeated everywhere to make sure
+            // anyone would find it.
+            //
+            // The flags are here to prevent double-counting diagonal elements.
+            // flag1 is for MN diagonal, flag2 is for PQ diagonal.
+            // if both are active, the factor needs to be 4 and not 3, so
+            // flag4 is only here for that
+            // flag3 is for elements of the type (MN|MN), indicating
+            // that the PQ elements of the J matrix is not to be computed.
+            // flag5, flag6 and flag7 are equivalent to flag1, flag2 and flag4
+            // combined with flag3.
+            // The flags are 1 if the element is off the specified diagonal, and
+            // are 0 otherwise. In the integral contraction routine, the specified
+            // density matrix elements are contracted with the integral and multiplied
+            // by the appropriate sum of flags, resulting in the correct multiplication factor.
+            //
+            // flag1 is necessary because the J and K matrices are computed in a weird triangular
+            // way: except for the diagonal, every other element is computed, i.e. for indices M
+            // and N, elements are skipped if ( M > N and M + N is odd ) or
+            // if ( M < M and M + N is even).
+            // The resulting matrices are then symmetrized by computing (A + A^{T})*0.5 (where T is for
+            // transposition), hence the elements of A^{T} fill the holes of A. The factor of 0.5 ensures
+            // the diagonal is correct, but then the off-diagonal needs to be multiplied by 2 at matrix
+            // construction time. And that is why we have flag1 to detect when J_MN is diagonal, for example.
+            //
+            // This seems really overly complicated. But I did not write this code.
+            // - JFG - 10/16/2015
+
+            int flag1 = (value1 < 0.0) ? 1 : 0;
             for (int j = startPQ; j < endPQ; j++) {
                 int P = shellrid[j];
                 int Q = shellid[j];
+                // Why? But why?
                 if ((M > P && (M + P) % 2 == 1) || 
                     (M < P && (M + P) % 2 == 0))
                     continue;                
@@ -205,14 +413,25 @@ void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,               int *sh
                     //CInt_computeShellQuartet(basis, erd, nt,
                     //                         M, N, P, Q, &integrals, &nints);
                     if (nints != 0) {
-                        update_F(num_dmat, integrals, dimM, dimN, dimP, dimQ,
-                                 flag1, flag2, flag3,
-                                 iMN, iPQ, iMP, iNP, iMQ, iNQ,
-                                 iMP0, iMQ0, iNP0,
-                                 D1, D2, D3,
-                                 F_MN, F_PQ, F_NQ, F_MP, F_MQ, F_NP,
-                                 sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6,
-                                 ldX1, ldX2, ldX3, ldX4, ldX5, ldX6);
+                        if (!nosymm) {
+                            update_F(num_dmat, integrals, dimM, dimN, dimP, dimQ,
+                                     flag1, flag2, flag3,
+                                     iMN, iPQ, iMP, iNP, iMQ, iNQ,
+                                     iMP0, iMQ0, iNP0,
+                                     D1, D2, D3,
+                                     F_MN, F_PQ, F_NQ, F_MP, F_MQ, F_NP,
+                                     sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6,
+                                     ldX1, ldX2, ldX3, ldX4, ldX5, ldX6);
+                        } else {
+                            update_F_asym(num_dmat, integrals, dimM, dimN, dimP, dimQ,
+                                          flag1, flag2, flag3,
+                                          iMN, iPQ, iMP, iNP, iMQ, iNQ,
+                                          iMP0, iMQ0, iNP0,
+                                          D1, D2, D3,
+                                          F_MN, F_PQ, F_NQ, F_MP, F_MQ, F_NP,
+                                          sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6,
+                                          ldX1, ldX2, ldX3, ldX4, ldX5, ldX6);
+                        }
                     }
                 }
             }

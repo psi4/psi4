@@ -6,7 +6,9 @@
 #include <string.h>
 #include <sys/time.h>
 #include <omp.h>
-#include <mkl.h>
+#ifdef HAVE_MKL
+  #include <mkl.h>
+#endif
 #include <assert.h>
 #include <math.h>
 
@@ -340,15 +342,18 @@ static PFockStatus_t create_GA (PFock_t pfock)
     nprow = pfock->nprow;
     npcol = pfock->npcol;
     map = (int *)PFOCK_MALLOC(sizeof(int) * (nprow + npcol));
-    if (NULL == map) {
+    if (NULL == map)
+    {
         PFOCK_PRINTF(1, "memory allocation failed\n");
         return PFOCK_STATUS_ALLOC_FAILED;
     }
     
-    for (i = 0; i < nprow; i++) {       
+    for (i = 0; i < nprow; i++)
+    {       
         map[i] = pfock->rowptr_f[i];
     }   
-    for (i = 0; i < npcol; i++) {
+    for (i = 0; i < npcol; i++)
+    {
         map[i + nprow] = pfock->colptr_f[i];
     } 
     dims[0] = nbf;
@@ -643,10 +648,10 @@ static PFockStatus_t create_buffers (PFock_t pfock)
     pfock->sizeX1 = sizeX1;
     pfock->sizeX2 = sizeX2;
     pfock->sizeX3 = sizeX3;
-    if (myrank == 0) {
-        //printf("  FD size (%d %d %d %d)\n",
-        //    maxrowfuncs, maxcolfuncs, maxrowsize, maxcolsize);
-    }
+    //if (myrank == 0) {
+    //    printf("  FD size (%d %d %d %d)\n",
+    //        maxrowfuncs, maxcolfuncs, maxrowsize, maxcolsize);
+    //}
     
     // D buf
     pfock->D1 = (double **)PFOCK_MALLOC(sizeof(double *) * pfock->max_numdmat2);
@@ -784,15 +789,17 @@ PFockStatus_t init_GA(int nbf, int nprow, int npcol,
     stack += sizestack;
 
     GA_Initialize();
-    if (!MA_init(C_DBL, heap, stack)) {
-        return PFOCK_STATUS_INIT_FAILED;
+    if (!MA_initialized()) {
+        if (!MA_init(C_DBL, heap, stack)) {
+            return PFOCK_STATUS_INIT_FAILED;
+        }
     }
     
     return PFOCK_STATUS_SUCCESS;
 }
 
 
-void finalize_GA(void)
+void finalize_GA()
 {    
     GA_Terminate();
 }
@@ -857,6 +864,7 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
         return PFOCK_STATUS_INVALID_VALUE;
     } else {
         pfock->max_numdmat = max_numdmat;
+        // Ewww. This is max_numdmat if nosymm is 0 and 2 * max_numdmat otherwise.
         pfock->max_numdmat2 = (pfock->nosymm + 1) * max_numdmat;
     }
           
@@ -902,12 +910,13 @@ PFockStatus_t PFock_create(BasisSet_t basis, int nprow, int npcol, int ntasks,
     }
     pfock->s_startind[pfock->natoms] = pfock->nshells;
 
+
     PFockStatus_t ret;
     // init comm
     if ((ret = init_fock(pfock)) != PFOCK_STATUS_SUCCESS) {
         return ret;
     }
-    
+
     // init scheduler
     if (init_taskq(pfock) != 0) {
         PFOCK_PRINTF(1, "task queue initialization failed\n");
@@ -1016,6 +1025,9 @@ PFockStatus_t PFock_destroy(PFock_t pfock)
     clean_screening(pfock);
     destroy_GA(pfock);
     destroy_buffers(pfock);
+    // I thought we should call that but apparently this
+    // breaks everything. -JFG 
+    //finalize_GA();
 
     PFOCK_FREE(pfock->mpi_timepass);
     PFOCK_FREE(pfock->mpi_timereduce);
@@ -1394,7 +1406,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                   ldX1, ldX2, ldX3, ldX4, ldX5, ldX6,
                   sizeX1, sizeX2, sizeX3,
                   sizeX4, sizeX5, sizeX6,
-                  &(pfock->uitl), &(pfock->usq));
+                  &(pfock->uitl), &(pfock->usq),pfock->nosymm);
         gettimeofday (&tv4, NULL);
         pfock->timecomp += (tv4.tv_sec - tv3.tv_sec) +
                     (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;
@@ -1558,7 +1570,9 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
             int endP = pfock->blkcolptr_sh[vsblk_col + colid + 1] - 1;
 
             gettimeofday (&tv3, NULL);
-            fock_task(basis, pfock->erd, pfock->ncpu_f, pfock->num_dmat2,
+            // Should we modify this as well?
+            //fock_task(basis, pfock->erd, pfock->ncpu_f, pfock->num_dmat2,
+            fock_task(basis, pfock->ncpu_f, pfock->num_dmat2,
                       pfock->shellptr, pfock->shellvalue,
                       pfock->shellid, pfock->shellrid,
                       pfock->f_startind,
@@ -1569,7 +1583,7 @@ PFockStatus_t PFock_computeFock(BasisSet_t basis,
                       D1_task, D2_task, VD3, F1, F2, F3, F4, F5, F6,
                       ldX1, ldX2, ldX3, ldX4, ldX5, ldX6,
                       sizeX1, sizeX2, sizeX3, sizeX4, sizeX5, sizeX6,
-                      &(pfock->uitl), &(pfock->usq));
+                      &(pfock->uitl), &(pfock->usq), pfock->nosymm);
             gettimeofday (&tv4, NULL);
             pfock->timecomp += (tv4.tv_sec - tv3.tv_sec) +
                         (tv4.tv_usec - tv3.tv_usec) / 1000.0 / 1000.0;

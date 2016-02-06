@@ -454,7 +454,7 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     try {
-        jk_ = JK::build_JK();
+        jk_ = JK::build_JK(2, true);
     }
     catch(const BasisSetNotFound& e) {
         if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
@@ -464,7 +464,7 @@ void HF::integrals()
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_str("SCF", "SCF_TYPE", "PK");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK();
+            jk_ = JK::build_JK(2,true);
         }
         else
             throw; // rethrow the error

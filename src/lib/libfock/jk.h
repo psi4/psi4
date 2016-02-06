@@ -346,9 +346,12 @@ public:
     /**
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
     * using knobs in options.
+    * Nmat and sym are options for GTFock
+    * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK();
+    static boost::shared_ptr<JK> build_JK(size_t Nmat = 1, bool sym = true);
+
 
     // => Knobs <= //
 
