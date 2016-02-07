@@ -269,19 +269,20 @@ def convert(p, symbol):
     return d / 1.5
 
 
-def auto_fragments(name, **kwargs):
+def auto_fragments(**kwargs):
     r"""
     Detects fragments if the user does not supply them.
     Currently only used for the WebMO implementation of SAPT
     Returns a new fragmented molecule
 
-    usage: auto_fragments('')
+    usage: auto_fragment()
+
+    auto_fragment(molecule=mol)
     """
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
+    molname = molecule.name()
 
     geom = molecule.save_string_xyz()
 
@@ -341,9 +342,14 @@ def auto_fragments(name, **kwargs):
         new_geom = new_geom + F[j].lstrip() + """\n"""
     new_geom = new_geom + """units angstrom\n"""
 
-    new_mol = geometry(new_geom)
-    new_mol.print_out()
-    psi4.print_out("Exiting auto_fragments\n")
+    moleculenew = psi4.Molecule.create_molecule_from_string(new_geom)
+    moleculenew.set_name(molname)
+    moleculenew.update_geometry()
+    moleculenew.print_cluster()
+    psi4.print_out("""  Exiting auto_fragments\n""")
+
+    return moleculenew
+
 
 def GetCalcDetails(methodname):
     energylist=[]
