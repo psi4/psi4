@@ -51,7 +51,7 @@ if(NOT PCMSolver_FOUND)
   ExternalProject_Add(interface_pcmsolver
     PREFIX ${CUSTOM_PCMSolver_LOCATION}
     GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-    GIT_TAG master
+    GIT_TAG v1.1.0
     CMAKE_ARGS "${PCMSolverCMakeArgs}"
     INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
     )
