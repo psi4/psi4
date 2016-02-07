@@ -350,7 +350,7 @@ public:
     * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK(size_t Nmat = 1, bool sym = true);
+    static boost::shared_ptr<JK> build_JK();
 
 
     // => Knobs <= //
@@ -705,8 +705,7 @@ public:
  *   this, you'll need to manually build a GTFockJK
  *   object and pass it into the constructor.  Don't worry
  *   building a GTFockJK object is easy, take a look at
- *   the static JK member build_JK() and just fill in the last two
- *   arguments of the constructor.
+ *   the Hartree-Fock code in HF.cc
  *
  */
 class GTFockJK: public JK{

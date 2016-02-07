@@ -454,7 +454,20 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     try {
-        jk_ = JK::build_JK(2, true);
+        if(options_.get_str("SCF_TYPE") == "GTFOCK") {
+          #ifdef HAVE_JK_FACTORY
+            boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
+        "BASIS", options.get_str("BASIS"));
+            if(options_.get_bool("SOSCF"))
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(primary,2,false));
+            else
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(primary,2,true));
+          #else
+            throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+          #endif
+        } else {
+            jk_ = JK::build_JK();
+        }
     }
     catch(const BasisSetNotFound& e) {
         if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
@@ -464,7 +477,7 @@ void HF::integrals()
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_str("SCF", "SCF_TYPE", "PK");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(2,true);
+            jk_ = JK::build_JK();
         }
         else
             throw; // rethrow the error
