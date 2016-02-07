@@ -2,7 +2,7 @@
 #! Finite different test of the gradient is performed to validate forces.
 memory 500 mb
 
-molecule {
+molecule water {
   0 1
   O  -0.778803000000  0.000000000000  1.132683000000
   H  -0.666682000000  0.764099000000  1.706291000000
@@ -10,6 +10,14 @@ molecule {
   symmetry c1
   no_reorient
   no_com
+}
+
+# This molecule defined here only to trip up the driver
+#   Removing the interloper molecule and optionally removing the "molecule=water"
+#   arguments below would produce exactly the same result.
+molecule interloper {
+H
+H 1 1.0
 }
 
 # Define a TIP3P water as the external potential
@@ -25,7 +33,11 @@ set {
     basis 6-31G*
 }
 
-fd_grad = gradient('scf', dertype=0)
-an_grad = gradient('scf')
+fd_grad = gradient('scf', molecule=water, dertype=0)
+fd_ener = psi4.get_variable('CURRENT ENERGY')
+an_grad = gradient('scf', molecule=water)
+an_ener = psi4.get_variable('CURRENT ENERGY')
 
 compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gradient to 10^-5") #TEST
+compare_values(-76.0194112285529968, fd_ener, 6, 'Finite difference energy')  #TEST
+compare_values(-76.0194112285529968, an_ener, 6, 'Analytic energy')  #TEST
