@@ -58,7 +58,7 @@ JK::JK( boost::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-boost::shared_ptr<JK> JK::build_JK(size_t Nmat, bool sym)
+boost::shared_ptr<JK> JK::build_JK()
 {
     Options& options = Process::environment.options;
     boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(), 
@@ -174,12 +174,6 @@ boost::shared_ptr<JK> JK::build_JK(size_t Nmat, bool sym)
 
     }
     else if (options.get_str("SCF_TYPE") == "DIRECT") {
-       //Just going to massively ghetto this up
-       #ifdef HAVE_JK_FACTORY
-          outfile->Printf("  Setting up GTFock for %i %s density matrices.\n", 
-                          Nmat, sym ? "symmetric" : "asymmetric");
-          return boost::shared_ptr<JK>(new GTFockJK(primary,Nmat,sym));
-       #endif
         DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
