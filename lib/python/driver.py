@@ -1212,7 +1212,7 @@ def optimize(name, **kwargs):
                 if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
                     psi4.opt_clean()
             # Changing environment to optimized geometry as expected by user
-            psi4.set_active_molecule(moleculeclone)
+            molecule.set_geometry(moleculeclone.geometry())
             for postcallback in hooks['optimize']['post']:
                 postcallback(lowername, **kwargs)
             psi4.clean()
@@ -1235,7 +1235,7 @@ def optimize(name, **kwargs):
             print('Optimizer: Optimization failed!')
             if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
-            psi4.set_active_molecule(moleculeclone)
+            molecule.set_geometry(moleculeclone.geometry())
             psi4.clean()
             optstash.restore()
             return thisenergy
