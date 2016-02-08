@@ -77,15 +77,13 @@ extern double str_to_double(const std::string& s);
 Matrix::Matrix()
 {
     matrix_ = NULL;
-    rowspi_ = NULL;
-    colspi_ = NULL;
     nirrep_ = 0;
     symmetry_ = 0;
     numpy_dims_ = 0;
 }
 
 Matrix::Matrix(const string& name, int symmetry)
-    : matrix_(0), nirrep_(0),
+    : matrix_(NULL), nirrep_(0),
       name_(name), symmetry_(symmetry)
 {
     numpy_dims_ = 0;
@@ -534,6 +532,12 @@ void Matrix::alloc()
 {
     if (matrix_)
         release();
+
+    // This is probably a default constructor matrix
+    if (!nirrep_){
+        matrix_ = NULL;
+        return;
+    }
 
     matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
     for (int h=0; h<nirrep_; ++h) {

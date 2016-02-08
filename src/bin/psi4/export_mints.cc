@@ -210,7 +210,7 @@ boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
-    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n"); 
+    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
         outfile->Printf( "  Active molecule not set!");
@@ -854,10 +854,13 @@ void export_mints()
             def("d", &DFChargeFitter::d, "docstring").
             def("fit", &DFChargeFitter::fit, "docstring");
 
+    typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
             // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
+            def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
+            def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "docstring").
             def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "docstring").
             def("same_a_b_dens", &Wavefunction::same_a_b_dens, "docstring").
             def("nfrzc", &Wavefunction::nfrzc, "docstring").
