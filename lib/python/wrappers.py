@@ -361,8 +361,12 @@ def GetCalcDetails(methodname):
    
 def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
     oldmolecule = psi4.get_active_molecule()
-    frag=geometry(molecule)
-    activate(frag)
+    frag=geometry(molecule)  # TODO
+    activate(frag)  # TODO
+    # TODO: Ryan, molecule is a string molecule?
+    #   If so, switch to frag = psi4.Molecule.create_molecule_from_string(geom),
+    #   avoid activate(frag) (now deprecated in driver), and pass
+    #   energy(methodname, molecule=frag, ...)
     frag.update_geometry()
     if(BeQuiet==1):
         psi4.be_quiet()
@@ -373,7 +377,7 @@ def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
         energylist[v]=psi4.get_variable(v)
     if(BeQuiet==1):
         psi4.reopen_outfile()
-    activate(oldmolecule)  
+    activate(oldmolecule)  # TODO
     oldmolecule.update_geometry()
     psi4.clean()
     return energylist
@@ -412,25 +416,14 @@ def n_body(name, **kwargs):
         kwargs['name'] = name.lower()
 
     # Establish function to call
-    if not('n_body_func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['n_body_func'] = kwargs['func']
-            del kwargs['func']
-        else:
-            kwargs['n_body_func'] = energy
-    func = kwargs['n_body_func']
-    if not func:
-        raise ValidationError('Function \'%s\' does not exist to be called by wrapper n_body.' % (func.__name__))
-    if (func is db):
-        raise ValidationError('Wrapper n_body is unhappy to be calling function \'%s\'.' % (func.__name__))
+    func = kwargs.pop('n_body_func', kwargs.pop('func', energy))
+    kwargs['n_body_func'] = func
+    if func is db:
+        raise ValidationError("""Wrapper n_body is unhappy to be calling function '%s'.""" % (func.__name__))
 
     # Make sure the molecule the user provided is the active one
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    psi4.set_global_option("BASIS", psi4.get_global_option("BASIS"))
 
     # N-body run configuration
     bsse = 'on'
@@ -572,7 +565,6 @@ def n_body(name, **kwargs):
             energies_full[n] = []
             clusters = extract_clusters(molecule, True, n)
             for k in range(len(clusters)):
-                activate(clusters[k])
                 # Do the external field for this cluster or not?
                 if (external):
                     do_extern = False
@@ -583,7 +575,7 @@ def n_body(name, **kwargs):
                     if do_extern:
                         psi4.set_global_option_python("EXTERN", external)
                 psi4.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Full Basis) <=\n' % (n, k + 1))
-                energies_full[n].append(call_function_in_1st_argument(func, **kwargs))
+                energies_full[n].append(func(molecule=clusters[k], **kwargs))
                 # Turn the external field off
                 if (external):
                     psi4.set_global_option_python("EXTERN", externNone)
@@ -597,7 +589,6 @@ def n_body(name, **kwargs):
             energies_mon[n] = []
             clusters = extract_clusters(molecule, False, n)
             for k in range(len(clusters)):
-                activate(clusters[k])
                 # Do the external field for this cluster or not?
                 if (external):
                     do_extern = False
@@ -608,7 +599,7 @@ def n_body(name, **kwargs):
                     if do_extern:
                         psi4.set_global_option_python("EXTERN", external)
                 psi4.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Cluster Basis) <=\n' % (n, k + 1))
-                energies_mon[n].append(call_function_in_1st_argument(func, **kwargs))
+                energies_mon[n].append(func(molecule=clusters[k], **kwargs))
                 # Turn the external field off
                 if (external):
                     psi4.set_global_option_python("EXTERN", externNone)
@@ -775,7 +766,6 @@ def n_body(name, **kwargs):
     psi4.set_global_option('DF_INTS_IO', ri_ints_io)
     psioh.set_specific_retention(97, False)
     psi4.clean()
-    activate(molecule)
 
     if bsse == 'on' or bsse == 'both':
         return energies_n_full[Ns[0]]
@@ -847,7 +837,7 @@ def cp(name, **kwargs):
     :examples:
 
     >>> # [1] counterpoise-corrected density-fitted mp2 interaction energy
-    >>> cp('df-mp2')
+    >>> cp('mp2')
 
     """
     lowername = name.lower()
@@ -858,17 +848,10 @@ def cp(name, **kwargs):
         kwargs['name'] = name.lower()
 
     # Establish function to call
-    if not('cp_func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['cp_func'] = kwargs['func']
-            del kwargs['func']
-        else:
-            kwargs['cp_func'] = energy
-    func = kwargs['cp_func']
-    if not func:
-        raise ValidationError('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
-    if (func is db):
-        raise ValidationError('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
+    func = kwargs.pop('cp_func', kwargs.pop('func', energy))
+    kwargs['cp_func'] = func
+    if func is db:
+        raise ValidationError("""Wrapper cp is unhappy to be calling function '%s'.""" % (func.__name__))
 
     if 'check_bsse' in kwargs and yes.match(str(kwargs['check_bsse'])):
         check_bsse = True
@@ -876,12 +859,8 @@ def cp(name, **kwargs):
         check_bsse = False
 
     # Make sure the molecule the user provided is the active one
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    psi4.set_global_option("BASIS", psi4.get_global_option("BASIS"))
 
     df_ints_io = psi4.get_global_option('DF_INTS_IO')
     # inquire if above at all applies to dfmp2 or just scf
@@ -889,20 +868,11 @@ def cp(name, **kwargs):
     psioh = psi4.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
 
-    activate(molecule)
-    molecule.update_geometry()
-
     psi4.print_out("\n")
     p4util.banner("CP Computation: Complex.\nFull Basis Set.")
     psi4.print_out("\n")
 
-    # DGAS: was this just experimenting?
-    #if val == 'gradient':
-    #    dimer_quantity, dimer_wfn = gradient('MP2/ADZ', return_wfn)
-
-    #dimer_quantity = procedures['gradient']['CCSD(T)/CBS'](func, **kwargs)
-    e_dimer = call_function_in_1st_argument(func, **kwargs)
-    #e_dimer = energy(name, **kwargs)
+    e_dimer = func(molecule=molecule, **kwargs)
 
     psi4.clean()
     psi4.set_global_option('DF_INTS_IO', 'LOAD')
@@ -913,38 +883,31 @@ def cp(name, **kwargs):
 
     cluster_n = 0
     for cluster in monomers:
-        activate(cluster)
         psi4.print_out("\n")
         p4util.banner(("CP Computation: Monomer %d.\n Full Basis Set." % (cluster_n + 1)))
         psi4.print_out("\n")
-        e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
-        #e_monomer_full.append(energy(name,**kwargs))
+        e_monomer_full.append(func(molecule=cluster, **kwargs))
         cluster_n = cluster_n + 1
         psi4.clean()
 
     psi4.set_global_option('DF_INTS_IO', 'NONE')
-    if (check_bsse):
+    if check_bsse:
         # All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
         e_monomer_bsse = []
 
         cluster_n = 0
         for cluster in monomers:
-            activate(cluster)
             psi4.print_out("\n")
-            #cluster.print_to_output()
             p4util.banner(("CP Computation: Monomer %d.\n Monomer Set." % (cluster_n + 1)))
             psi4.print_out("\n")
-            e_monomer_bsse.append(call_function_in_1st_argument(func, **kwargs))
-            #e_monomer_bsse.append(energy(name,**kwargs))
+            e_monomer_bsse.append(func(molecule=cluster, **kwargs))
             cluster_n = cluster_n + 1
 
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
     psioh.set_specific_retention(97, False)
 
-    activate(molecule)
-
-    if (check_bsse == False):
+    if not check_bsse:
         cp_table = p4util.Table(rows=["System:"], cols=["Energy (full):"])
         cp_table["Complex"] = [e_dimer]
         for cluster_n in range(0, len(monomers)):
@@ -974,15 +937,6 @@ def cp(name, **kwargs):
         cp_table["Totals:"] = [e_full, e_bsse, e_full - e_bsse]
 
         psi4.set_variable('UNCP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
-
-    #cp_energy = dimer_wfn.energy()
-    #cp_gradient = dimer_wfn.gradient()
-    #for iter_wfn in wfn_list:
-    #    cp_energy -= iter_wfn.energy()
-    #    cp_gradient.subtract(iter_wfn.gradient)
-    #    #e_full = e_full - e_monomer_full[cluster_n]
-    #    #e_bsse = e_bsse - e_monomer_bsse[cluster_n]
-
 
     psi4.print_out("\n")
     p4util.banner("CP Computation: Results.")
@@ -1159,7 +1113,7 @@ def database(name, db_name, **kwargs):
 
     >>> # [2] Counterpoise-corrected interaction energies for three complexes in S22
     >>> #     Error statistics computed wrt an old benchmark, S22A
-    >>> database('df-mp2','S22',cp=1,subset=[16,17,8],benchmark='S22A')
+    >>> database('mp2','S22',cp=1,subset=[16,17,8],benchmark='S22A')
 
     >>> # [3] SAPT0 on the neon dimer dissociation curve
     >>> db('sapt0',subset='NeNe',cp=0,symm=0,db_name='RGC10')
