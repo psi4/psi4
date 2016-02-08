@@ -904,12 +904,11 @@ def scf_helper(name, **kwargs):
 
     # sort out broken_symmetry settings.
     if 'brokensymmetry' in kwargs:
-        molecule = psi4.get_active_molecule()
-        multp = molecule.multiplicity()
+        multp = scf_molecule.multiplicity()
         if multp != 1:
             raise ValidationError('Broken symmetry is only for singlets.')
-        if psi4.get_option('SCF', 'REFERENCE') != 'UHF' and psi4.get_option('SCF', 'REFERENCE') != 'UKS':
-            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
+        if psi4.get_option('SCF', 'REFERENCE') not in ['UHF', 'UKS']:
+            raise ValidationError("""You must specify 'set reference uhf' to use broken symmetry.""")
         do_broken = True
     else:
         do_broken = False
@@ -931,7 +930,7 @@ def scf_helper(name, **kwargs):
 
     # broken set-up
     if do_broken:
-        molecule.set_multiplicity(3)
+        scf_molecule.set_multiplicity(3)
         psi4.print_out('\n')
         p4util.banner('  Computing high-spin triplet guess  ')
         psi4.print_out('\n')
@@ -995,7 +994,7 @@ def scf_helper(name, **kwargs):
 
     # broken clean-up
     if do_broken:
-        molecule.set_multiplicity(1)
+        scf_molecule.set_multiplicity(1)
         psi4.set_local_option('SCF', 'GUESS', 'READ')
         psi4.print_out('\n')
         p4util.banner('  Computing broken symmetry solution from high-spin triplet guess  ')
@@ -1020,7 +1019,7 @@ def scf_helper(name, **kwargs):
     # EFP preparation
     efp = psi4.get_active_efp()
     if efp.nfragments() > 0:
-        psi4.set_legacy_molecule(psi4.get_active_molecule())
+        psi4.set_legacy_molecule(scf_molecule)
         psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
         psi4.efp_set_options()
         efp.set_qm_atoms()
@@ -1671,13 +1670,14 @@ def run_mcscf(name, **kwargs):
     a multiconfigurational self-consistent-field calculation.
 
     """
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-                                        psi4.get_global_option('BASIS'))
+    # Make sure the molecule the user provided is the active one
+    mcscf_molecule = kwargs.get('molecule', psi4.get_active_molecule())
+    mcscf_molecule.update_geometry()
+    if 'ref_wfn' in kwargs:
+        raise ValidationError("It is not possible to pass run_mcscf a reference wavefunction")
+    new_wfn = psi4.new_wavefunction(mcscf_molecule, psi4.get_global_option('BASIS'))
 
-    return psi4.mcscf(ref_wfn)
+    return psi4.mcscf(new_wfn)
 
 
 def run_dfmp2_gradient(name, **kwargs):
@@ -2577,7 +2577,7 @@ def run_dmrgscf(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG does not have a wavefunction /lib/python/proc.py:2898')
+    print('DMRG incomplete wavefunction is only SCF')
     return dmrg_wfn
 
 
@@ -2605,7 +2605,7 @@ def run_dmrgci(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG does not have a wavefunction /lib/python/proc.py:2930')
+    print('DMRG incomplete wavefunction is only SCF') 
     return dmrg_wfn
 
 
@@ -2616,7 +2616,8 @@ def run_psimrcc(name, **kwargs):
     """
     mcscf_wfn = run_mcscf(name, **kwargs)
     psimrcc_e = psi4.psimrcc(mcscf_wfn)
-    print('PSIMRCC does not have a wavefunction (returning mcscf) /lib/python/proc.py:1899')
+
+    print('PSIMRCC incomplete wavefunction is only MCSCF') 
     return mcscf_wfn
 
 
@@ -2631,7 +2632,8 @@ def run_psimrcc_scf(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     psimrcc_e = psi4.psimrcc(ref_wfn)
-    print('PSIMRCC does not have a wavefunction (returning scf) /lib/python/proc.py:1914')
+
+    print('PSIMRCC incomplete wavefunction is only SCF') 
     return ref_wfn
 
 
@@ -2781,8 +2783,9 @@ def run_sapt(name, **kwargs):
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
-    print('SAPT does not have a wavefunction /lib/python/proc.py:2056')  # TODO
-    return e_sapt
+    print('SAPT incomplete wavefunction is only dimer SCF') 
+    #return e_sapt
+    return dimer_wfn
 
 
 def run_sapt_ct(name, **kwargs):
@@ -2938,8 +2941,9 @@ def run_sapt_ct(name, **kwargs):
     psi4.set_variable('SAPT CT ENERGY', CT)
 
     optstash.restore()
-    print('SAPT does not have a wavefunction /lib/python/proc.py:2208')  # TODO
-    return e_sapt
+    #return e_sapt
+    print('SAPT incomplete wavefunction is only dimer SCF') 
+    return dimer_wfn
 
 
 def run_fisapt(name, **kwargs):
@@ -2983,7 +2987,7 @@ def run_fisapt(name, **kwargs):
     fisapt_wfn = psi4.fisapt(ref_wfn)
 
     optstash.restore()
-    print('FISAPT does not have a wavefunction /lib/python/proc.py:2245')  # TODO
+    print('FISAPT incomplete wavefunction is only dimer SCF') 
     return fisapt_wfn
 
 
@@ -3158,8 +3162,7 @@ def run_mrcc(name, **kwargs):
     psi4.print_out('\n')
     psi4.print_out(iface_contents)
 
-    #return ene
-    print('MRCC does not have a wavefunction /lib/python/proc.py:2420')  # TODO
+    print('MRCC incomplete wavefunction is only SCF')  # TODO
     return ref_wfn
 
 
@@ -3525,7 +3528,6 @@ def run_efp(name, **kwargs):
 
     """
     # initialize library
-    psi4.set_legacy_molecule(psi4.get_active_molecule())
     efp = psi4.get_active_efp()
 
     if efp.nfragments() == 0:
@@ -3537,23 +3539,6 @@ def run_efp(name, **kwargs):
 
     efp.print_out()
     returnvalue = efp.compute()
-    print('EFP does not have a wavefunction /lib/python/proc.py:2806')  # TODO
+    print('EFP incomplete wavefunction is only ') 
     return returnvalue
 
-
-#def run_efp_gradient(name, **kwargs):
-#    """Function encoding sequence of module calls for a pure EFP
-#    gradient computation (ignore any QM atoms).
-#
-#    """
-#    # initialize library
-#    efp = psi4.get_active_efp()
-#
-#    # set options
-#    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
-#    psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
-#    psi4.efp_set_options()
-#
-#    efp.print_out()
-#    returnvalue = efp.compute()
-#    return returnvalue

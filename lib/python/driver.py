@@ -152,9 +152,10 @@ procedures = {
             'dmrgscf'       : run_dmrgscf,
             'dmrgci'        : run_dmrgci,
             # Upon adding a method to this list, add it to the docstring in energy() below
-            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
-            #    whole driver to find uses of name in return values and psi variables and
-            #    extend the logic to encompass the new alias.
+            # Aliases are discouraged. If you must add an alias to this list (e.g.,
+            #    lccd/cepa(0)), please search the whole driver to find uses of
+            #    name in return values and psi variables and extend the logic to
+            #    encompass the new alias.
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -171,7 +172,6 @@ procedures = {
             'cepa(0)'       : select_cepa_0__gradient,
             'ocepa(0)'      : select_ocepa_0__gradient,
             'ccd'           : run_dfocc_gradient,
-            #'efp'           : run_efp_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
@@ -450,7 +450,7 @@ def energy(name, **kwargs):
     .. include:: cfour_table_energy.rst
 
     :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
@@ -533,7 +533,6 @@ def energy(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    print('energy():', molecule, molecule.natom(), molecule.name())
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -687,7 +686,6 @@ def gradient(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    print('gradient():', molecule, molecule.natom(), molecule.name())
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     opt_mode = 'continuous'
@@ -719,45 +717,45 @@ def gradient(name, **kwargs):
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if procedures['energy'][lowername] not in [run_scf, run_dft]:
-        #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
-        psi4.print_out("gradient() will perform analytic gradient computation.\n")
-        # Nothing to it but to do it. Gradient information is saved
-        # into the current reference wavefunction
+        psi4.print_out("""gradient() will perform analytic gradient computation.\n""")
+
+        # Perform the gradient calculation
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
-        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+        if kwargs.get('mode') == 'sow':
             raise ValidationError("""Optimize execution mode 'sow' not valid for analytic gradient calculation.""")
-        #RAK for EFP psi4.legacy_wavefunction().energy()
-        # TODO: add EFP contributions to the gradient
 
         optstash.restore()
-        psi4.print_out('CURRENT ENERGY: %15.10f\n' % psi4.get_variable('CURRENT ENERGY'))
-        #return psi4.get_variable('CURRENT ENERGY')
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
             return wfn.gradient()
 
     else:
-        # If not, perform finite difference of energies
+        psi4.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
 
-        opt_iter = 1
-        if ('opt_iter' in kwargs):
-            opt_iter = kwargs['opt_iter']
+        opt_iter = kwargs.get('opt_iter', 1)
 
         if opt_iter == 1:
             print('Performing finite difference calculations')
 
+        # Shifting the geometry so need to copy the active molecule
+        molname = molecule.name()
+        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
+        moleculeclone.set_name(molname)
+        moleculeclone.update_geometry()
+        #moleculeclone = molecule.clone()
+
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_1_0(molecule)
+        displacements = psi4.fd_geoms_1_0(moleculeclone)
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print(' %d displacements needed ...' % (ndisp), end="")
+        print(""" %d displacements needed ...""" % (ndisp), end='')
         energies = []
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
@@ -810,26 +808,19 @@ def gradient(name, **kwargs):
             banners += """psi4.print_out('\\n')\n\n"""
 
             if (opt_mode.lower() == 'continuous'):
-                # Print information to output.dat
+
+                # print progress to file and screen
                 psi4.print_out('\n')
                 p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-
-                # Print information to the screen
-                print(' %d' % (n + 1), end="")
-                if (n + 1) == ndisp:
-                    print('\n', end="")
+                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
+                sys.stdout.flush()
 
                 # Load in displacement into the active molecule
-                psi4.get_active_molecule().set_geometry(displacement)
+                moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                #E = func(lowername, **kwargs)
-                E, wfn = func(lowername, return_wfn=True, molecule=molecule, **kwargs)
-                E = psi4.get_variable('CURRENT ENERGY')
-                #E = func(**kwargs)
-
-                # Save the energy
-                energies.append(E)
+                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+                energies.append(psi4.get_variable('CURRENT ENERGY'))
 
             # S/R: Write each displaced geometry to an input file
             elif (opt_mode.lower() == 'sow'):
@@ -862,12 +853,11 @@ def gradient(name, **kwargs):
         if (opt_mode.lower() == 'reap'):
             psi4.set_variable('CURRENT ENERGY', energies[-1])
 
-        # Obtain the gradient
+        # Compute the gradient; last item in 'energies' is undisplaced
         psi4.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
         G = psi4.fd_1_0(molecule, energies)
         wfn.set_gradient(G)
 
-        # The last item in the list is the reference energy, return it
         optstash.restore()
 
         if return_wfn:
@@ -946,7 +936,6 @@ def property(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    print('property():', molecule, molecule.natom(), molecule.name())
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -971,7 +960,6 @@ def property(name, **kwargs):
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 8)
 
         wfn = procedures['property'][lowername](lowername, **kwargs)
@@ -984,14 +972,11 @@ def property(name, **kwargs):
         raise ValidationError("""Property method %s not available.%s""" % (lowername, alternatives))
 
     optstash.restore()
+
     if return_wfn:
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
-
-
-# Aliases
-prop = property
 
 
 def optimize(name, **kwargs):
@@ -1077,7 +1062,7 @@ def optimize(name, **kwargs):
        with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
     :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
@@ -1134,27 +1119,31 @@ def optimize(name, **kwargs):
     hessian_with_method = kwargs.get('hessian_with', name)
 
     # are we in sow/reap mode?
-    isSowReap = False
-    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
-        isSowReap = True
-    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
-        isSowReap = True
+    isSowReap = True if kwargs.get('mode', None) in ['sow', 'reap'] else False
+
     optstash = p4util.OptionsState(
         ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
+        ['FINDIF', 'HESSIAN_WRITE'],
+        ['OPTKING', 'CART_HESS_READ'],
+        ['SCF', 'GUESS_PERSIST'],  # handle on behalf of cbs()
         ['SCF', 'GUESS'])
 
-    n = 1
-    if ('opt_iter' in kwargs):
-        n = kwargs['opt_iter']
+    n = kwargs.get('opt_iter', 1)
 
-    psi4.get_active_molecule().update_geometry()
-    mol = psi4.get_active_molecule()
-    mol.update_geometry()
-    initial_sym = mol.schoenflies_symbol()
-    while n <= psi4.get_global_option('GEOM_MAXITER'):
-        mol = psi4.get_active_molecule()
-        mol.update_geometry()
-        current_sym = mol.schoenflies_symbol()
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+    molecule.update_geometry()
+
+    # Shifting the geometry so need to copy the active molecule
+    molname = molecule.name()
+    moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
+    moleculeclone.set_name(molname)
+    moleculeclone.update_geometry()
+    #moleculeclone = molecule.clone()
+
+    initial_sym = moleculeclone.schoenflies_symbol()
+    while n <= psi4.get_option('OPTKING', 'GEOM_MAXITER'):
+        current_sym = moleculeclone.schoenflies_symbol()
         if initial_sym != current_sym:
             raise ValidationError("""Point group changed! You should restart """
                                   """using the last geometry in the output, after """
@@ -1168,9 +1157,10 @@ def optimize(name, **kwargs):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
-        G, wfn = gradient(name, return_wfn=True, **kwargs)
+        G, wfn = gradient(name, return_wfn=True, molecule=moleculeclone, **kwargs)
         psi4.set_gradient(G)
         thisenergy = psi4.get_variable('CURRENT ENERGY')
+
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
 
@@ -1208,18 +1198,21 @@ def optimize(name, **kwargs):
             psi4.set_global_option('CART_HESS_READ', False)
             steps_since_last_hessian += 1
 
-        # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
-        # Take step
-        psi4.set_legacy_molecule(mol)
+        # Take step. communicate to/from/within optking through legacy_molecule
+        psi4.set_legacy_molecule(moleculeclone)
         optking_rval = psi4.optking()
+        moleculeclone = psi4.get_legacy_molecule()
+        moleculeclone.update_geometry()
         if optking_rval == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
-            psi4.get_active_molecule().print_in_input_format()
+            moleculeclone.print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
                 if psi4.get_option('OPTKING', 'KEEP_INTCOS') == False:
                     psi4.opt_clean()
+            # Changing environment to optimized geometry as expected by user
+            psi4.set_active_molecule(moleculeclone)
             for postcallback in hooks['optimize']['post']:
                 postcallback(lowername, **kwargs)
             psi4.clean()
@@ -1232,21 +1225,23 @@ def optimize(name, **kwargs):
                 fmaster.close()
 
             optstash.restore()
+
             if return_wfn:
                 return (thisenergy, wfn)
             else:
                 return thisenergy
 
-        elif optking_rval == psi4.PsiReturnType.Failure:  # new 10-14 RAK
+        elif optking_rval == psi4.PsiReturnType.Failure:
             print('Optimizer: Optimization failed!')
             if (psi4.get_option('OPTKING', 'KEEP_INTCOS') == False):
                 psi4.opt_clean()
+            psi4.set_active_molecule(moleculeclone)
             psi4.clean()
             optstash.restore()
             return thisenergy
 
         psi4.print_out('\n    Structure for next step:\n')
-        psi4.get_active_molecule().print_in_input_format()
+        moleculeclone.print_in_input_format()
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
@@ -1261,10 +1256,6 @@ def optimize(name, **kwargs):
             psi4.opt_clean()
 
     optstash.restore()
-    #return 0.0
-
-# Aliases
-opt = optimize
 
 
 def parse_arbitrary_order(name):
@@ -1361,6 +1352,7 @@ def hessian(name, **kwargs):
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
+        ['FINDIF', 'HESSIAN_WRITE'],
         ['E_CONVERGENCE'])
 
     # Order of precedence:
@@ -1427,12 +1419,8 @@ def hessian(name, **kwargs):
             % (lowername, dertype, alternatives))
 
     # Make sure the molecule the user provided is the active one
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     freq_mode = 'continuous'
@@ -1465,97 +1453,93 @@ def hessian(name, **kwargs):
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
-#        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
         if procedures['energy'][lowername] not in [run_scf, run_dft]:
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Select certain irreps
     if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # A1 irrep is externally 1, internally 0
+        irrep = parse_cotton_irreps(kwargs['irrep'], molecule.schoenflies_symbol())
+        irrep -= 1  # A1 irrep is externally 1, internally 0
     else:
         irrep = -1  # do all irreps
 
     # Does an analytic procedure exist for the requested method?
     if dertype == 2:
+        psi4.print_out("""hessian() will perform analytic frequency computation.\n""")
+
         # We have the desired method. Do it.
-        wfn = procedures['hessian'][lowername](lowername, **kwargs)
+        wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
         optstash.restore()
 
         if kwargs.get('mode') == 'sow':
-        #if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
-            raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
+            raise ValidationError("""Frequency execution mode 'sow' not valid """
+                                  """for analytic frequency calculation.""")
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         psi4.set_variable('CURRENT ENERGY', wfn.energy())
 
-        # TODO: return hessian matrix
+        if return_wfn:
+            return (wfn.hessian(), wfn)
+        else:
+            return wfn.hessian()
 
     elif dertype == 1:
-        # Ok, we're doing frequencies by gradients
-        print('Performing finite difference by gradient calculations')
+        psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
         func = procedures['gradient'][lowername]
 
+        # Shifting the geometry so need to copy the active molecule
+        molname = molecule.name()
+        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
+        moleculeclone.set_name(molname)
+        moleculeclone.update_geometry()
+        #moleculeclone = molecule.clone()
+
         if kwargs.get('mode') == 'sow':
-        #if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
-            raise ValidationError("""Frequency execution mode 'sow' not yet implemented for finite difference of analytic gradient calculation.""")
+            raise ValidationError("""Frequency execution mode 'sow' not yet """
+                                  """implemented for finite difference of """
+                                  """analytic gradient calculation.""")
 
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_freq_1(molecule, irrep)
+        displacements = psi4.fd_geoms_freq_1(moleculeclone, irrep)
+        moleculeclone.reinterpret_coordentry(False)
+        moleculeclone.fix_orientation(True)
 
-        molecule.reinterpret_coordentry(False)
-        molecule.fix_orientation(True)
-        # Make a note of the undisplaced molecule's symmetry
+        # Record undisplaced symmetry for projection of diplaced point groups
         psi4.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
-        print(' %d displacements needed.' % ndisp)
+        print(""" %d displacements needed.""" % ndisp)
 
         gradients = []
         for n, displacement in enumerate(displacements):
-            # Print information to output.dat
+
+            # print progress to file and screen
             psi4.print_out('\n')
             p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-
-            # Print information to the screen
-            print(' %d' % (n + 1), end='')
-            if (n + 1) == ndisp:
-                #print('\n', end='')
-                print('')
+            print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
             sys.stdout.flush()
 
             # Load in displacement into the active molecule (xyz coordinates only)
-            molecule.set_geometry(displacement)
+            moleculeclone.set_geometry(displacement)
 
             # Perform the gradient calculation
-            wfn = func(lowername, **kwargs)
+            wfn = func(lowername, molecule=moleculeclone, **kwargs)
             G = wfn.gradient()
-
-            # Save the gradient
-#TODO            G = psi4.get_gradient()
             gradients.append(G)
 
             # clean may be necessary when changing irreps of displacements
             psi4.clean()
 
-#        psi4.fd_freq_1(molecule, gradients, irrep)
-        psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
-        H = psi4.fd_freq_1(molecule, gradients, irrep)
+        # Assemble Hessian from gradients
+        #   Final disp is undisp, so wfn has mol, G, H general to freq calc
+        H = psi4.fd_freq_1(molecule, gradients, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(H)
         wfn.set_frequencies(psi4.get_frequencies())
 
-        print(' Computation complete.')
-
-        # Clear the "parent" symmetry now
-        psi4.set_parent_symmetry("")
-
-        # TODO: These need to be restored to the user specified setting
-        psi4.get_active_molecule().fix_orientation(False)
-        # But not this one, it always goes back to True
-        psi4.get_active_molecule().reinterpret_coordentry(True)
+        psi4.set_parent_symmetry('')
 
         optstash.restore()
-        # TODO: add return statement of hessian matrix
         # TODO: set current energy to un-displaced energy
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1563,8 +1547,7 @@ def hessian(name, **kwargs):
             return wfn.hessian()
 
     else:
-        # If not, perform finite difference of energies
-        print('Performing finite difference calculations by energies')
+        psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic energies.\n""")
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
@@ -1582,14 +1565,21 @@ def hessian(name, **kwargs):
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 10)
 
+        # Shifting the geometry so need to copy the active molecule
+        molname = molecule.name()
+        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
+        moleculeclone.set_name(molname)
+        moleculeclone.update_geometry()
+        #moleculeclone = molecule.clone()
+
         # Obtain list of displacements
-        displacements = psi4.fd_geoms_freq_0(molecule, irrep)
-        molecule.fix_orientation(True)
-        molecule.reinterpret_coordentry(False)
-        # Make a note of the undisplaced molecule's symmetry
+        displacements = psi4.fd_geoms_freq_0(moleculeclone, irrep)
+        moleculeclone.fix_orientation(True)
+        moleculeclone.reinterpret_coordentry(False)
+
+        # Record undisplaced symmetry for projection of diplaced point groups
         psi4.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
@@ -1625,8 +1615,8 @@ def hessian(name, **kwargs):
 
             fmaster = open('FREQ-master.in', 'wb')
             fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
-            fmaster.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-            fmaster.write(p4util.format_options_for_input(molecule, **kwargs))
+            fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
+            fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
             p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
             fmaster.write(("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
             fmaster.write(instructionsM.encode('utf-8'))
@@ -1643,23 +1633,18 @@ def hessian(name, **kwargs):
             banners += """psi4.print_out('\\n')\n\n"""
 
             if freq_mode.lower() == 'continuous':
-                # Print information to output.dat
+
+                # print progress to file and screen
                 psi4.print_out('\n')
                 p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-
-                # Print information to the screen
-                print(' %d' % (n + 1), end='')
-                if (n + 1) == ndisp:
-                    print('\n', end='')
+                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
                 sys.stdout.flush()
 
                 # Load in displacement into the active molecule
-                molecule.set_geometry(displacement)
+                moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                E, wfn = func(lowername, return_wfn=True, **kwargs)
-
-                # Save the energy
+                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
                 # clean may be necessary when changing irreps of displacements
@@ -1667,13 +1652,13 @@ def hessian(name, **kwargs):
 
             # S/R: Write each displaced geometry to an input file
             elif (freq_mode.lower() == 'sow'):
-                molecule.set_geometry(displacement)
+                moleculeclone.set_geometry(displacement)
 
                 # S/R: Prepare molecule, options, and kwargs
                 freagent = open('%s.in' % (rfile), 'wb')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                freagent.write(p4util.format_molecule_for_input(molecule).encode('utf-8'))
-                freagent.write(p4util.format_options_for_input(molecule, **kwargs).encode('utf-8'))
+                freagent.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
+                freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                 p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
@@ -1685,7 +1670,7 @@ def hessian(name, **kwargs):
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif freq_mode.lower() == 'reap':
                 exec(banners)
-                psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
                 energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
 
         # S/R: Quit sow after writing files
@@ -1693,30 +1678,16 @@ def hessian(name, **kwargs):
             optstash.restore()
             return None
 
-        # Obtain the gradient. This function stores the gradient in the wavefunction.
-#        wfn = psi4.new_wavefunction(psi4.get_active_molecule(),
-#                                        psi4.get_global_option('BASIS'))
-        psi4.set_local_option('FINDIF', 'HESSIAN_WRITE', True)
+        # Assemble Hessian from energies
         H = psi4.fd_freq_0(molecule, energies, irrep)
         wfn.set_hessian(H)
         wfn.set_frequencies(psi4.get_frequencies())
 
-        print(' Computation complete.')
-
-        # Clear the "parent" symmetry now
-        psi4.set_parent_symmetry('')
-
-        # TODO: These need to be restored to the user specified setting
-        psi4.get_active_molecule().fix_orientation(False)
-        # But not this one, it always goes back to True
-        psi4.get_active_molecule().reinterpret_coordentry(True)
-
-        # Clear the "parent" symmetry now
-        psi4.set_parent_symmetry("")
-
         # The last item in the list is the reference energy, return it
-        optstash.restore()
         psi4.set_variable('CURRENT ENERGY', energies[-1])
+
+        psi4.set_parent_symmetry('')
+        optstash.restore()
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1741,7 +1712,7 @@ def frequency(name, **kwargs):
     .. _`table:freq_gen`:
 
     :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
@@ -1777,8 +1748,8 @@ def frequency(name, **kwargs):
 
     :examples:
 
-    >>> # [1] <example description>
-    >>> <example python command>
+    >>> # [1] Frequency calculation for all modes through highest available derivatives
+    >>> frequency('ccsd')
 
     >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
     >>> frequencies('scf', dertype=1, irrep=4)
@@ -1788,42 +1759,38 @@ def frequency(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+    molecule.update_geometry()
+
     # Compute the hessian
-    H, wfn = hessian(name, return_wfn=True, **kwargs)
+    H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
 
-    if not (kwargs.get('mode') == 'sow'):
-
+    if kwargs.get('mode') != 'sow':
         wfn.frequencies().print_out()
         psi4.thermo(wfn, wfn.frequencies())
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, **kwargs)
 
-    #TODO add return current energy once satisfied that's set to energy at eq, not a findif
-    #return psi4.get_variable('CURRENT ENERGY')
     if return_wfn:
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
 
-# Aliases
-frequencies = frequency
-freq = frequency
-
 
 def molden(filename, wfn):
-    """Function to write wavefunction information in molden
-    format to *filename*
+    """Function to write wavefunction information in *wfn* to *filename* in
+    molden format.
 
     """
-    #TODO
-    m = psi4.MoldenWriter(wfn)
-    m.write(filename)
+    mw = psi4.MoldenWriter(wfn)
+    mw.write(filename)
 
 
-def parse_cotton_irreps(irrep):
-    r"""Function to return validated Cotton ordering index from string or integer
-    irreducible representation *irrep*.
+def parse_cotton_irreps(irrep, point_group):
+    r"""Function to return validated Cotton ordering index for molecular
+    *point_group* from string or integer irreducible representation *irrep*.
 
     """
     cotton = {
@@ -1899,10 +1866,14 @@ def parse_cotton_irreps(irrep):
         }
     }
 
-    point_group = psi4.get_active_molecule().schoenflies_symbol().lower()
-    irreducible_representation = str(irrep).lower()
-
     try:
-        return cotton[point_group][irreducible_representation]
+        return cotton[point_group.lower()][str(irrep).lower()]
     except KeyError:
         raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))
+
+
+# Aliases
+opt = optimize
+freq = frequency
+frequencies = frequency
+prop = property

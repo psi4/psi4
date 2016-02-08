@@ -293,7 +293,8 @@ dynamic_variable_bind(psi4.Molecule)  # pass class type, not class instance
 #
 def geometry(geom, name="default"):
     """Function to create a molecule object of name *name*
-    from the geometry in string *geom*.
+    from the geometry in string *geom*. Permitted for user use but deprecated in
+    driver in favor of explicit molecule-passing.
 
     """
     molecule = psi4.Molecule.create_molecule_from_string(geom)
@@ -305,5 +306,9 @@ def geometry(geom, name="default"):
 
 
 def activate(mol):
-    """Function to set molecule object *mol* as the current active molecule."""
+    """Function to set molecule object *mol* as the current active molecule.
+    Permitted for user use but deprecated in driver in favor of explicit
+    molecule-passing.
+
+    """
     psi4.set_active_molecule(mol)
