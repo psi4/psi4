@@ -1135,17 +1135,17 @@ def database(name, db_name, **kwargs):
         kwargs['db_name'] = db_name
 
     # Establish function to call
-    if not('db_func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['db_func'] = kwargs['func']
-            del kwargs['func']
-        else:
-            kwargs['db_func'] = energy
-    func = kwargs['db_func']
-    if not func:
-        raise ValidationError('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
-    if (func is cp):
-        raise ValidationError('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
+    func = kwargs.pop('db_func', kwargs.pop('func', energy))
+    kwargs['db_func'] = func
+    if func is cp:
+        raise ValidationError("""Wrapper database is unhappy to be calling function '%s'. Use the cp keyword within database instead'.""" % (func.__name__))
+
+    optstash = p4util.OptionsState(
+        ['WRITER_FILE_LABEL'],
+        ['SCF', 'REFERENCE'])
+
+    # Wrapper wholly defines molecule. discard any passed-in
+    kwargs.pop('molecule', None)
 
     # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
     psidatadir = os.environ.get('PSIDATADIR', None)
@@ -1176,20 +1176,8 @@ def database(name, db_name, **kwargs):
         except AttributeError:
             DATA = {}
 
-    # Must collect (here) and set (below) basis sets after every new molecule activation
-    user_basis = psi4.get_global_option('BASIS')
-    user_df_basis_scf = psi4.get_global_option('DF_BASIS_SCF')
-    user_df_basis_mp2 = psi4.get_global_option('DF_BASIS_MP2')
-    user_df_basis_sapt = psi4.get_global_option('DF_BASIS_SAPT')
-    user_df_basis_elst = psi4.get_global_option('DF_BASIS_ELST')
-
     user_writer_file_label = psi4.get_global_option('WRITER_FILE_LABEL')
-
-    b_user_reference = psi4.has_global_option_changed('REFERENCE')
     user_reference = psi4.get_global_option('REFERENCE')
-    user_memory = psi4.get_memory()
-
-    user_molecule = psi4.get_active_molecule()
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -1417,11 +1405,6 @@ def database(name, db_name, **kwargs):
     for rgt in HSYS:
         VRGT[rgt] = {}
 
-        # extra definition of molecule so that logic in building commands string has something to act on
-        geometry(GEOS[rgt].create_psi4_string_from_molecule(), name=rgt)
-        #exec(p4util.format_molecule_for_input(GEOS[rgt]))
-        molecule = psi4.get_active_molecule()
-
         # build string of title banner
         banners = ''
         banners += """psi4.print_out('\\n')\n"""
@@ -1440,7 +1423,7 @@ def database(name, db_name, **kwargs):
 
         # build string of commands for options from the input file  TODO: handle local options too
         commands = ''
-        commands += """\npsi4.set_memory(%s)\n\n""" % (user_memory)
+        commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
         for chgdopt in psi4.get_global_option_list():
             if psi4.has_global_option_changed(chgdopt):
                 chgdoptval = psi4.get_global_option(chgdopt)
@@ -1455,21 +1438,11 @@ def database(name, db_name, **kwargs):
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
-        commands += """psi4.set_global_option('BASIS', '%s')\n""" % (user_basis)
-        if not((user_df_basis_scf == "") or (user_df_basis_scf == 'NONE')):
-            commands += """psi4.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
-        if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
-            commands += """psi4.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
-        if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
-            commands += """psi4.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
-        if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):
-            commands += """psi4.set_global_option('DF_BASIS_ELST', '%s')\n""" % (user_df_basis_elst)
-        commands += """molecule = psi4.get_active_molecule()\n"""
-        commands += """molecule.update_geometry()\n"""
 
         if symmetry_override:
             commands += """molecule.reset_point_group('c1')\n"""
-            commands += """molecule.fix_orientation(1)\n"""
+            commands += """molecule.fix_orientation(True)\n"""
+            commands += """molecule.fix_com(True)\n"""
             commands += """molecule.update_geometry()\n"""
 
         if (openshell_override) and (molecule.multiplicity() != 1):
@@ -1487,27 +1460,22 @@ def database(name, db_name, **kwargs):
         # reap: opens individual reagent output file, collects results into a dictionary
         if (db_mode.lower() == 'continuous'):
             exec(banners)
-            geometry(GEOS[rgt].create_psi4_string_from_molecule(), name=rgt)
-            #exec(p4util.format_molecule_for_input(GEOS[rgt]))
+
+            molecule = psi4.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
+            molecule.set_name(rgt)
+            molecule.update_geometry()
+
             exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, psi4.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            psi4.set_variable('NATOM', molecule.natom())
-            psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
-            if re.match(r'^verify', lowername):
-                compare_values(DATA['NUCLEAR REPULSION ENERGY'][rgt], psi4.get_variable('NUCLEAR REPULSION ENERGY'),
-                    4, '%s  %.4f' % (rgt, psi4.get_variable('NUCLEAR REPULSION ENERGY')))
-                ERGT[rgt] = 7.0
-            else:
-                ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
-            #print ERGT[rgt]
+            ERGT[rgt] = func(molecule=molecule, **kwargs)
             psi4.print_variables()
             exec(actives)
             for envv in db_tabulate:
                 VRGT[rgt][envv.upper()] = psi4.get_variable(envv)
             psi4.set_global_option("REFERENCE", user_reference)
             psi4.clean()
-            psi4.opt_clean()
+            #psi4.opt_clean()
             psi4.clean_variables()
 
         elif (db_mode.lower() == 'sow'):
@@ -1682,21 +1650,13 @@ def database(name, db_name, **kwargs):
         psi4.set_variable('%s DATABASE MEAN ABSOLUTE DEVIATION' % (db_name), MADerror)
         psi4.set_variable('%s DATABASE ROOT-MEAN-SQUARE DEVIATION' % (db_name), RMSDerror)
 
-        #print tables
         psi4.print_out(tables)
         finalenergy = MADerror
 
     else:
         finalenergy = 0.0
 
-    # restore molecule and options
-    activate(user_molecule)
-    user_molecule.update_geometry()
-    psi4.set_global_option("BASIS", user_basis)
-    psi4.set_global_option("REFERENCE", user_reference)
-    if not b_user_reference:
-        psi4.revoke_global_option_changed('REFERENCE')
-    psi4.set_global_option('WRITER_FILE_LABEL', user_writer_file_label)
+    optstash.restore()
 
     DB_RGT.clear()
     DB_RGT.update(VRGT)
@@ -2064,20 +2024,17 @@ def complete_basis_set(name, **kwargs):
         kwargs['name'] = name.lower()
 
     # Establish function to call (only energy makes sense for cbs)
-    if not('cbs_func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['cbs_func'] = kwargs['func']
-            del kwargs['func']
-        else:
-            kwargs['cbs_func'] = energy
-    func = kwargs['cbs_func']
-    if not func:
-        raise ValidationError('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
-    if not(func is energy):
-        raise ValidationError('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
+    func = kwargs.pop('cbs_func', kwargs.pop('func', energy))
+    kwargs['cbs_func'] = func
+    if func is not energy:
+        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling function '%s' instead of 'energy'.""" % (func.__name__))
+
+    optstash = p4util.OptionsState(
+        ['BASIS'],
+        ['WFN'],
+        ['WRITER_FILE_LABEL'])
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
-
 
     finalenergy = 0.0
     do_scf = True
@@ -2088,26 +2045,11 @@ def complete_basis_set(name, **kwargs):
     do_delta4 = False
     do_delta5 = False
 
-    # Must collect (here) and set (below) basis sets after every new molecule activation
-    b_user_basis = psi4.has_global_option_changed('BASIS')
-    user_basis = psi4.get_global_option('BASIS')
-    #user_df_basis_scf = psi4.get_option('DF_BASIS_SCF')
-    #user_df_basis_mp2 = psi4.get_option('DF_BASIS_MP2')
-    #user_df_basis_cc = psi4.get_option('DF_BASIS_CC')
-    #user_df_basis_sapt = psi4.get_option('DF_BASIS_SAPT')
-    #user_df_basis_elst = psi4.get_option('DF_BASIS_ELST')
-    b_user_wfn = psi4.has_global_option_changed('WFN')
-    user_wfn = psi4.get_global_option('WFN')
-
     user_writer_file_label = psi4.get_global_option('WRITER_FILE_LABEL')
 
     # Make sure the molecule the user provided is the active one
-    if 'molecule' in kwargs:
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = psi4.get_active_molecule()
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-    psi4.set_global_option("BASIS", psi4.get_global_option("BASIS"))
 
     # Establish method for reference energy
     if 'scf_wfn' in kwargs:
@@ -2466,6 +2408,7 @@ def complete_basis_set(name, **kwargs):
     psioh = psi4.IOManager.shared_object()
     psioh.set_specific_retention(p4const.PSIF_SCF_MOS, True)
     # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+    #   needs to be communicated to optimize() so reset by that optstash
     psi4.set_local_option('SCF', 'GUESS_PERSIST', True)
 
     # Run necessary computations
@@ -2488,7 +2431,7 @@ def complete_basis_set(name, **kwargs):
         exec(commands)
 
         # Make energy() call
-        mc['f_energy'] = call_function_in_1st_argument(func, **kwargs)
+        mc['f_energy'] = call_function_in_1st_argument(func, molecule=molecule, **kwargs)
 
         # Fill in energies for subsumed methods
         for menial in VARH[mc['f_wfn']]:
@@ -2581,18 +2524,7 @@ def complete_basis_set(name, **kwargs):
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
 
-    #print tables
     psi4.print_out(tables)
-
-    # Restore molecule and options
-    #psi4.set_local_option('SCF', "WFN", user_wfn)    # TODO refuses to set global option WFN - rejects SCF as option
-    psi4.set_global_option('BASIS', user_basis)
-
-    psi4.set_global_option('WFN', user_wfn)
-    if not b_user_wfn:
-        psi4.revoke_global_option_changed('WFN')
-
-    psi4.set_global_option('WRITER_FILE_LABEL', user_writer_file_label)
 
     psi4.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
     psi4.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
@@ -2603,6 +2535,8 @@ def complete_basis_set(name, **kwargs):
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     wfn = psi4.new_wavefunction(molecule, BSTR[-1])
+
+    optstash.restore()
 
     if return_wfn:
         return (finalenergy, wfn)
