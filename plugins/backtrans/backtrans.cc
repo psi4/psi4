@@ -2,7 +2,6 @@
 #include <libmints/mints.h>
 #include "libciomr/libciomr.h"
 #include <liboptions/liboptions.h>
-#include "libchkpt/chkpt.h"
 #include "libdpd/dpd.h"
 #include "psifiles.h"
 #include "libiwl/iwl.h"
@@ -31,8 +30,8 @@ read_options(std::string name, Options &options)
     return true;
 }
 
-extern "C" PsiReturnType
-backtrans(Options &options)
+extern "C"
+SharedWavefunction backtrans(SharedWavefunction wfn, Options &options)
 {
     dpdbuf4 I, G;
     int print = options.get_int("PRINT");
@@ -44,7 +43,6 @@ backtrans(Options &options)
   
     std::string reference = options.get_str("REFERENCE");
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(wfn,
                            spaces,
@@ -68,15 +66,15 @@ backtrans(Options &options)
     psio->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
 
 
-    char **labels = Process::environment.molecule()->irrep_labels();
-    int nso       = Process::environment.wavefunction()->nso();
-    int nmo       = Process::environment.wavefunction()->nmo();
-    int nIrreps   = Process::environment.wavefunction()->nirrep();
-    int *orbspi   = Process::environment.wavefunction()->nmopi();
-    int *frzcpi   = Process::environment.wavefunction()->frzcpi();
-    int *frzvpi   = Process::environment.wavefunction()->frzvpi();
-    int *clsdpi   = Process::environment.wavefunction()->doccpi();
-    double eNuc   = Process::environment.molecule()->nuclear_repulsion_energy();
+    char **labels = wfn->molecule()->irrep_labels();
+    int nso       = wfn->nso();
+    int nmo       = wfn->nmo();
+    int nIrreps   = wfn->nirrep();
+    int *orbspi   = wfn->nmopi();
+    int *frzcpi   = wfn->frzcpi();
+    int *frzvpi   = wfn->frzvpi();
+    int *clsdpi   = wfn->doccpi();
+    double eNuc   = wfn->molecule()->nuclear_repulsion_energy();
     double eOne   = 0.0;
     double eTwo   = 0.0;
 
@@ -258,7 +256,7 @@ backtrans(Options &options)
 
     delete [] temp;
 
-    return Success;   
+    return wfn;
 }
 
 }} // End Namespace

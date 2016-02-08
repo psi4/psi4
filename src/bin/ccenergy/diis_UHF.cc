@@ -34,12 +34,9 @@
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
-
-void diis_invert_B(double**, double*, int, double);
 
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
@@ -55,7 +52,7 @@ void diis_invert_B(double**, double*, int, double);
 ** Updated for UHF refs, TDC, 6/03
 */
 
-void diis_UHF(int iter)
+void CCEnergyWavefunction::diis_UHF(int iter)
 {
   int nvector=8;  /* Number of error vectors to keep */
   int h, nirreps;
@@ -71,7 +68,7 @@ void diis_UHF(int iter)
   double **B, *C, **vector;
   double product, determinant, maximum;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
   /* Compute the length of a single error vector */
   global_dpd_->file2_init(&T1a, PSIF_CC_TMP0, 0, 0, 1, "tIA");

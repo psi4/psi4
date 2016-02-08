@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list transtwo_rhf.cc cache.cc get_params.cc transtwo_uhf.cc transqt.cc semicanonical.cc transone.cc get_moinfo.cc file_build_presort.cc idx_error.cc idx_permute_presort.cc )
+list(APPEND sources_list transtwo_rhf.cc cache.cc get_params.cc transtwo_uhf.cc transqt.cc transone.cc get_moinfo.cc file_build_presort.cc idx_error.cc idx_permute_presort.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

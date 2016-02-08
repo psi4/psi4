@@ -41,11 +41,10 @@ namespace psi {
 
 namespace fisapt {
 
-CubicScalarGrid::CubicScalarGrid(
-        boost::shared_ptr<BasisSet> primary) :
+CubicScalarGrid::CubicScalarGrid(boost::shared_ptr<BasisSet> primary, Options& options) :
         primary_(primary),
         mol_(primary->molecule()),
-        options_(Process::environment.options)
+        options_(options)
 {
     filepath_ = "";
     npoints_ = 0L;

@@ -57,12 +57,10 @@ namespace dcft{
 class DCFTSolver:public Wavefunction
 {
 public:
-    DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    DCFTSolver(SharedWavefunction ref_wfn, Options &options);
     ~DCFTSolver();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
-    virtual bool same_a_b_dens() const { if(options_.get_str("REFERENCE") == "RHF") return true; else return false; }
 
 protected:
     IntegralTransform *_ints;
@@ -88,7 +86,6 @@ protected:
     void transform_tau();
     void build_gtau();
     void print_opdm();
-    void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
     void build_cumulant_intermediates();

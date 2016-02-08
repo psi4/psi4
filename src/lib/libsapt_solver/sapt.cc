@@ -24,9 +24,25 @@
 
 namespace psi { namespace sapt {
 
-SAPT::SAPT(Options& options, boost::shared_ptr<PSIO> psio, 
-  boost::shared_ptr<Chkpt> chkpt) : Wavefunction(options, psio, chkpt)
+SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+           SharedWavefunction MonomerB, Options& options,
+           boost::shared_ptr<PSIO> psio)
+            : Wavefunction(options)
 {
+  shallow_copy(Dimer);
+
+  if ((Dimer->nirrep() != 1) || (MonomerA->nirrep() != 1) || (MonomerA->nirrep() != 1)){
+    throw PSIEXCEPTION("SAPT must be run in C1 symmetry. Period.");
+  }
+
+  if ((Dimer->soccpi().sum() != 0) || (MonomerA->soccpi().sum() != 0) ||
+       (MonomerA->soccpi().sum() != 0)){
+    throw PSIEXCEPTION("This is a RHF SAPT constructor. Pair those electrons up cracker!");
+  }
+
+
+  psio_ = psio;
+
 #ifdef HAVE_MKL
   mkl_set_dynamic(1);
 #endif
@@ -35,7 +51,7 @@ SAPT::SAPT(Options& options, boost::shared_ptr<PSIO> psio,
   omp_set_nested(0);
 #endif
 
-  initialize();
+  initialize(MonomerA, MonomerB);
   get_denom();
 }
 
@@ -58,7 +74,7 @@ SAPT::~SAPT()
   zero_.reset();
 }
 
-void SAPT::initialize()
+void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 {
   evalsA_ = NULL;
   evalsB_ = NULL;
@@ -74,7 +90,7 @@ void SAPT::initialize()
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_, 
+  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
     "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"),
     "RIFIT", options_.get_str("BASIS")));
   elst_basis_ = 0;
@@ -119,69 +135,45 @@ void SAPT::initialize()
 
   ndf_ = ribasis_->nbf();
 
-  psio_->open(PSIF_SAPT_DIMER,PSIO_OPEN_OLD);
-  psio_->open(PSIF_SAPT_MONOMERA,PSIO_OPEN_OLD);
-  psio_->open(PSIF_SAPT_MONOMERB,PSIO_OPEN_OLD);
-
   double enucD, enucA, enucB;
   double eHFD, eHFA, eHFB;
 
-  psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NSO",(char *) &nso_,sizeof(int));
-  psio_->read_entry(PSIF_SAPT_DIMER,"Dimer NMO",(char *) &nmo_,sizeof(int));
-  psio_->read_entry(PSIF_SAPT_DIMER,"Dimer HF Energy",(char *) &eHFD, 
-    sizeof(double));
-  psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Nuclear Repulsion Energy",(char *)
-    &enucD, sizeof(double));
+  eHFD = energy_;
+  enucD = molecule_->nuclear_repulsion_energy();
 
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NSO",(char *) &nsoA_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NMO",(char *) &nmoA_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NOCC",(char *) &noccA_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NVIR",(char *) &nvirA_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Number of Electrons",(char *)
-    &NA_, sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Energy",(char *) &eHFA, 
-    sizeof(double));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Nuclear Repulsion Energy",
-    (char *) &enucA, sizeof(double));
-
+  // Monomer A info
+  nsoA_  = MonomerA->nso();
+  nmoA_  = MonomerA->nmo();
+  noccA_ = MonomerA->doccpi().sum();
+  nvirA_ = nmoA_ - noccA_;
+  NA_    = 2 * noccA_;
+  eHFA   = MonomerA->reference_energy();
+  enucA  = MonomerA->molecule()->nuclear_repulsion_energy();
   aoccA_ = noccA_ - foccA_;
 
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NSO",(char *) &nsoB_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NMO",(char *) &nmoB_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NOCC",(char *) &noccB_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NVIR",(char *) &nvirB_, 
-    sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Number of Electrons",(char *)
-    &NB_, sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Energy",(char *) &eHFB, 
-    sizeof(double));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Nuclear Repulsion Energy",
-    (char *) &enucB, sizeof(double));
-
+  // Monomer B info
+  nsoB_  = MonomerB->nso();
+  nmoB_  = MonomerB->nmo();
+  noccB_ = MonomerB->doccpi().sum();
+  nvirB_ = nmoB_ - noccB_;
+  NB_    = 2 * noccB_;
+  eHFB   = MonomerB->reference_energy();
+  enucB  = MonomerB->molecule()->nuclear_repulsion_energy();
   aoccB_ = noccB_ - foccB_;
 
   enuc_ = enucD - enucA - enucB;
   eHF_ =  eHFD - eHFA - eHFB;
 
   evalsA_ = init_array(nmoA_);
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Eigenvalues",(char *)
-    &(evalsA_[0]), sizeof(double)*nmoA_);
+  std::memcpy(evalsA_, MonomerA->epsilon_a()->pointer(), sizeof(double) * nmoA_);
 
   evalsB_ = init_array(nmoB_);
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Eigenvalues",(char *)
-    &(evalsB_[0]), sizeof(double)*nmoB_);
+  std::memcpy(evalsB_, MonomerB->epsilon_a()->pointer(), sizeof(double) * nmoB_);
 
   CA_ = block_matrix(nso_,nmoA_);
   double **tempA = block_matrix(nsoA_,nmoA_);
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
-    &(tempA[0][0]), sizeof(double)*nmoA_*nsoA_);
+  std::memcpy(tempA[0], MonomerA->Ca()->pointer()[0], sizeof(double) * nmoA_ * nsoA_);
+
   if (nsoA_ != nso_) {
     for (int n=0; n<nsoA_; n++)
       C_DCOPY(nmoA_,tempA[n],1,CA_[n],1);
@@ -192,8 +184,7 @@ void SAPT::initialize()
 
   CB_ = block_matrix(nso_,nmoB_);
   double **tempB = block_matrix(nsoB_,nmoB_);
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *)
-    &(tempB[0][0]), sizeof(double)*nmoB_*nsoB_);
+  std::memcpy(tempB[0], MonomerB->Ca()->pointer()[0], sizeof(double) * nmoB_ * nsoB_);
   if (nsoB_ != nso_) {
     for (int n=0; n<nsoB_; n++)
       C_DCOPY(nmoB_,tempB[n],1,CB_[n+nsoA_],1);
@@ -202,22 +193,18 @@ void SAPT::initialize()
     C_DCOPY(nso_*nmoB_,tempB[0],1,CB_[0],1);
   free_block(tempB);
 
-  psio_->close(PSIF_SAPT_DIMER,1);
-  psio_->close(PSIF_SAPT_MONOMERA,1);
-  psio_->close(PSIF_SAPT_MONOMERB,1);
-
   int nbf[8];
   nbf[0] = nso_;
-  boost::shared_ptr<MatrixFactory> fact = 
+  boost::shared_ptr<MatrixFactory> fact =
     boost::shared_ptr<MatrixFactory>(new MatrixFactory);
   fact->init_with(1, nbf, nbf);
 
-  boost::shared_ptr<IntegralFactory> intfact = 
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, 
+  boost::shared_ptr<IntegralFactory> intfact =
+    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
     basisset_, basisset_, basisset_));
 
   boost::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
-  SharedMatrix Smat = SharedMatrix 
+  SharedMatrix Smat = SharedMatrix
     (fact->create_matrix("Overlap"));
   Sint->compute(Smat);
 
@@ -246,7 +233,7 @@ void SAPT::initialize()
       ZxyzA->set(0, p, 2, y);
       ZxyzA->set(0, p, 3, z);
       p++;
-    } 
+    }
   }
   potA->set_charge_field(ZxyzA);
   SharedMatrix VAmat = SharedMatrix
@@ -267,7 +254,7 @@ void SAPT::initialize()
       ZxyzB->set(0, p, 2, y);
       ZxyzB->set(0, p, 3, z);
       p++;
-    } 
+    }
   }
   potB->set_charge_field(ZxyzB);
   SharedMatrix VBmat = SharedMatrix
@@ -321,7 +308,7 @@ void SAPT::get_denom()
 
   denom_ = SAPTDenominator::buildDenominator(
     options_.get_str("DENOMINATOR_ALGORITHM"),
-    evals_aoccA, evals_virA, evals_aoccB, evals_virB, 
+    evals_aoccA, evals_virA, evals_aoccB, evals_virB,
     options_.get_double("DENOMINATOR_DELTA"), debug_);
 
   if (debug_ > 1)

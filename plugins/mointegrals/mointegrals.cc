@@ -26,8 +26,8 @@ read_options(std::string name, Options &options)
 }
 
 
-extern "C" PsiReturnType
-mointegrals(Options &options)
+extern "C"
+SharedWavefunction mointegrals(SharedWavefunction wfn, Options &options)
 {
     /*
      * This plugin shows a simple way of obtaining MO basis integrals, directly from a DPD buffer.  It is also
@@ -39,7 +39,6 @@ mointegrals(Options &options)
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
 
     // Now we want the reference (SCF) wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     if(!wfn) throw PSIEXCEPTION("SCF has not been run yet!");
 
     // Quickly check that there are no open shell orbitals here...
@@ -94,7 +93,7 @@ mointegrals(Options &options)
     global_dpd_->buf4_close(&K);
     psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    return Success;
+    return wfn;
 }
 
 }} // End Namespaces

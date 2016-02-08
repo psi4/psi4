@@ -67,6 +67,10 @@ class BasisSet
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
     std::string name_;
 
+    // Key and target information from constructing
+    std::string key_;
+    std::string target_;
+
     //! Array of gaussian shells
     GaussianShell *shells_;
 
@@ -247,6 +251,10 @@ public:
     /// Returns the name of this basis set
     const std::string & name() const { return name_; }
     void set_name(const std::string str) {name_ = str;}
+
+    /// Return the construction key and target information
+    const std::string & key() const { return key_; }
+    const std::string & target() const { return target_; }
 
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.

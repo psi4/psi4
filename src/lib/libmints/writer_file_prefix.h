@@ -27,7 +27,7 @@
 
 namespace psi {
 
-std::string get_writer_file_prefix(void);
+std::string get_writer_file_prefix(std::string molecule_name);
 
 }
 

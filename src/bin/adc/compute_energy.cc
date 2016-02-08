@@ -36,7 +36,7 @@ struct lambda{
 };
 
 double 
-ADC::compute_energy()
+ADCWfn::compute_energy()
 {   
     int nprint;
     char lbl[32];
@@ -65,7 +65,7 @@ ADC::compute_energy()
     int iter = 0;
     double denom;
     std::string state_top = "ADC ROOT ";
-    char **irrep_      = Process::environment.molecule()->irrep_labels();
+    char **irrep_      = molecule_->irrep_labels();
     
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_ADC_SEM,      PSIO_OPEN_OLD);

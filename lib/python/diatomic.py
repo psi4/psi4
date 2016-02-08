@@ -65,14 +65,15 @@ def anharmonicity(rvals, energies, mol = None):
     elif (npoints == 9):
         optx = rvals[4]
 
-    # Molecule can be passed in be user. Look at the function definition above.
-    if mol == None:
-        mol = psi4.get_active_molecule()
-    natoms = mol.natom()
+    # Make sure the molecule the user provided is the active one
+    molecule = mol if mol is not None else psi4.get_active_molecule()
+    molecule.update_geometry()
+
+    natoms = molecule.natom()
     if natoms != 2:
         raise Exception("The current molecule must be a diatomic for this code to work!")
-    m1 = mol.mass(0)
-    m2 = mol.mass(1)
+    m1 = molecule.mass(0)
+    m2 = molecule.mass(1)
 
     maxit = 30
     thres = 1.0e-9

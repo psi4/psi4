@@ -37,15 +37,15 @@ def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0
     else:
         raise ValidationError('%s is not a valid property')
 
-def oeprop(*args, **kwargs):
-    oe = psi4.OEProp()
+def oeprop(wfn, *args, **kwargs):
+    oe = psi4.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:
         oe.add(prop)
     oe.compute()
 
-def cubeprop(*args, **kwargs):
+def cubeprop(wfn, *args, **kwargs):
     """Evaluate properties on a grid and generate cube files.
 
     """
@@ -53,7 +53,7 @@ def cubeprop(*args, **kwargs):
     if not psi4.has_global_option_changed('CUBEPROP_TASKS'):
         psi4.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
 
-    cp = psi4.CubeProperties()
+    cp = psi4.CubeProperties(wfn)
     cp.compute_properties()
 
 def set_memory(bytes):

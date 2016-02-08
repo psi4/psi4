@@ -70,8 +70,6 @@ protected:
 
 public:
 
-    /// Default constructor, for python
-    FittingMetric();
     /// DF Fitting Metric
     FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1 = false);
     /// DF Fitting Metric

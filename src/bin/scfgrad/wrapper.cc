@@ -29,33 +29,31 @@
 namespace psi{ 
 namespace scfgrad {
 
-PsiReturnType scfgrad(Options &options)
+SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
 {
     tstart();
 
-    boost::shared_ptr<SCFGrad> grad(new SCFGrad());
-    SharedMatrix G = grad->compute_gradient();
+    SCFGrad grad(ref_wfn, options);
+    SharedMatrix G = grad.compute_gradient();
 
     Process::environment.arrays["SCF TOTAL GRADIENT"] = G;
     Process::environment.arrays["CURRENT GRADIENT"] = G;
     Process::environment.set_gradient(G); 
-    Process::environment.wavefunction()->set_gradient(G);
 
     tstop();
-
-    return Success;
+    return G;
 }
 
-PsiReturnType scfhess(Options &options)
+SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
 {
     tstart();
 
-    boost::shared_ptr<SCFGrad> grad(new SCFGrad());
-    SharedMatrix G = grad->compute_hessian();
+    SCFGrad grad(ref_wfn, options);
+    SharedMatrix H = grad.compute_hessian();
 
     tstop();
 
-    return Success;
+    return H;
 }
 
 }} // End Namespaces

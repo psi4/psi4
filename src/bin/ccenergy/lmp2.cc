@@ -33,12 +33,9 @@
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
-
-void local_filter_T2(dpdbuf4 *T2);
 
 /* lmp2(): Computes the local-MP2 energy and the local-MP2 weak-pair energy.
 **
@@ -65,7 +62,7 @@ void local_filter_T2(dpdbuf4 *T2);
 ** TDC, June 2002
 */
 
-void lmp2(void)
+void CCEnergyWavefunction::lmp2(void)
 {
   int i, j, k, ij, ab, iter, conv, row, col, nocc, nvir, natom, weak;
   double energy, rms, weak_pair_energy;
@@ -73,20 +70,20 @@ void lmp2(void)
   dpdfile2 fij, fab;
   psio_address next;
 
-  nocc = local.nocc;
-  nvir = local.nvir;
-  natom = local.natom;
+  nocc = local_.nocc;
+  nvir = local_.nvir;
+  natom = local_.natom;
 
-  local.domain = (int **) malloc(local.nocc*sizeof(int *));
+  local_.domain = (int **) malloc(local_.nocc*sizeof(int *));
   next = PSIO_ZERO;
   for(i=0; i<nocc; i++) {
-    local.domain[i] = (int *) malloc(local.natom*sizeof(int));
-    psio_read(PSIF_CC_INFO, "Local Domains", (char *) local.domain[i],
+    local_.domain[i] = (int *) malloc(local_.natom*sizeof(int));
+    psio_read(PSIF_CC_INFO, "Local Domains", (char *) local_.domain[i],
               natom*sizeof(int), next, &next);
   }
 
   /* First, turn on all weak pairs for the LMP2 */
-  for(ij=0; ij < nocc*nocc; ij++) local.weak_pairs[ij] = 0;
+  for(ij=0; ij < nocc*nocc; ij++) local_.weak_pairs[ij] = 0;
 
   /* Clean out diagonal element of occ-occ Fock matrix */
   global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
@@ -106,7 +103,7 @@ void lmp2(void)
   global_dpd_->buf4_close(&D);
 
   global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
-  if(params.local) {
+  if(params_.local) {
     local_filter_T2(&T2);
   }
   else {
@@ -151,7 +148,7 @@ void lmp2(void)
     global_dpd_->buf4_copy(&T2, PSIF_CC_TAMPS, "New LMP2 tIjAb");
     global_dpd_->buf4_close(&T2);
 
-    if(params.local) {
+    if(params_.local) {
       local_filter_T2(&newT2);
     }
     else {
@@ -196,7 +193,7 @@ void lmp2(void)
 
     outfile->Printf( "\titer = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
 
-    if(rms < params.convergence) {
+    if(rms < params_.convergence) {
       conv = 1;
       outfile->Printf( "\n\tLMP2 Iterations converged.\n");
       break;
@@ -210,7 +207,7 @@ void lmp2(void)
 
   if(!conv) {
     outfile->Printf( "\n\tLMP2 Iterative procedure failed.\n");
-    throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params.convergence, rms, __FILE__, __LINE__);
+    throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params_.convergence, rms, __FILE__, __LINE__);
   }
 
   /* Turn off weak pairs again for the LCCSD */
@@ -219,10 +216,10 @@ void lmp2(void)
     for(j=0; j < nocc; j++,ij++) {
       weak = 1;
       for(k=0; k < natom; k++)
-        if(local.domain[i][k] && local.domain[j][k]) weak = 0;
+        if(local_.domain[i][k] && local_.domain[j][k]) weak = 0;
 
-      if(weak) local.weak_pairs[ij] = 1;
-      else local.weak_pairs[ij] = 0;
+      if(weak) local_.weak_pairs[ij] = 1;
+      else local_.weak_pairs[ij] = 0;
     }
 
   /* Compute the MP2 weak-pair energy */
@@ -235,7 +232,7 @@ void lmp2(void)
 
   weak_pair_energy = 0.0;
   for(ij=0; ij < nocc*nocc; ij++)
-    if(local.weak_pairs[ij])
+    if(local_.weak_pairs[ij])
       for(ab=0; ab < nvir*nvir; ab++)
         weak_pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
 
@@ -246,13 +243,13 @@ void lmp2(void)
 
   outfile->Printf( "\n\tLMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
   outfile->Printf( "\tLMP2 Correlation Energy = %20.14f\n", energy);
-  outfile->Printf( "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo.eref);
+  outfile->Printf( "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
   
 
-  local.weak_pair_energy = weak_pair_energy;
+  local_.weak_pair_energy = weak_pair_energy;
 
   for(i=0; i<nocc; i++)
-    free(local.domain[i]);
-  free(local.domain);
+    free(local_.domain[i]);
+  free(local_.domain);
 }
 }} // namespace psi::ccenergy

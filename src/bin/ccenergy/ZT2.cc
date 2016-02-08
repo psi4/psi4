@@ -28,19 +28,18 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void ZT2(void)
+void CCEnergyWavefunction::ZT2(void)
 {
   dpdbuf4 ZIJMA, ZIJAM, Zijma, Zijam, ZIjMa, ZIjAm, Z;
   dpdbuf4 newtIJAB, newtijab, newtIjAb, T2;
   dpdfile2 tIA, tia, T1;
   dpdbuf4 t2, X;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&X, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "X(Ab,Ij)");
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->buf4_init(&Z, PSIF_CC_MISC, 0, 10, 0, 10, 0, 0, "ZMbIj");
@@ -51,7 +50,7 @@ void ZT2(void)
     global_dpd_->buf4_sort_axpy(&X, PSIF_CC_TAMPS, srqp, 0, 5, "New tIjAb", 1);
     global_dpd_->buf4_close(&X);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->buf4_init(&ZIJMA, PSIF_CC_MISC, 0, 2, 10, 2, 10, 0, "ZIJMA");
     global_dpd_->buf4_init(&ZIJAM, PSIF_CC_MISC, 0, 2, 11, 2, 11, 0, "ZIJAM");
     global_dpd_->buf4_init(&Zijma, PSIF_CC_MISC, 0, 2, 10, 2, 10, 0, "Zijma");
@@ -95,7 +94,7 @@ void ZT2(void)
     global_dpd_->buf4_close(&ZIjMa); 
     global_dpd_->buf4_close(&ZIjAm);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&ZIJMA, PSIF_CC_MISC, 0, 2, 20, 2, 20, 0, "ZIJMA");
     global_dpd_->buf4_init(&ZIJAM, PSIF_CC_MISC, 0, 2, 21, 2, 21, 0, "ZIJAM");

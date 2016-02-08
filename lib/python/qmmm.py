@@ -71,12 +71,12 @@ class Diffuse(object):
         scftype = psi4.get_option("SCF_TYPE")
 
         psi4.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
-        activate(self.molecule)
 
         psi4.set_global_option("BASIS", self.basisname)
         psi4.set_global_option("DF_BASIS_SCF", self.ribasisname)
         psi4.set_global_option("SCF_TYPE", "DF")
-        energy('scf')
+        E, ref = energy('scf', return_wfn=True, molecule=self.molecule)
+        self.wfn = ref
         psi4.print_out("\n")
 
         self.fitGeneral()
@@ -100,7 +100,6 @@ class Diffuse(object):
 
         """
         psi4.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
-        self.wfn = psi4.wavefunction()
         self.Da = self.wfn.Da()
         self.basis = self.wfn.basisset()
         parser = psi4.Gaussian94BasisSetParser()

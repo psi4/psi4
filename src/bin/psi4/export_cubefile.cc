@@ -28,7 +28,8 @@ using namespace psi;
 
 void export_cubefile()
 {
-    class_<CubeFile, boost::shared_ptr<CubeFile> >("CubeFile", "docstring").
+    class_<CubeFile, boost::shared_ptr<CubeFile> >("CubeFile", "docstring", no_init).
+        def(init<boost::shared_ptr<Wavefunction> >()).
         def("set_npts", &CubeFile::set_npts, "docstring").
         def("set_buffer", &CubeFile::set_buffer, "docstring").
         def("set_filename", &CubeFile::set_filename, "docstring").

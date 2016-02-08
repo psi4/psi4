@@ -132,8 +132,9 @@ protected:
     const char *, double *, double *, int, int, int, int, int, int);
 
 public:
-  SAPT2p(Options& options, boost::shared_ptr<PSIO> psio,
-    boost::shared_ptr<Chkpt> chkpt);
+  SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+         SharedWavefunction MonomerB, Options& options,
+         boost::shared_ptr<PSIO>psio);
   virtual ~SAPT2p();
 
   virtual double compute_energy();

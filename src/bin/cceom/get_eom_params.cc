@@ -41,12 +41,10 @@ namespace psi { namespace cceom {
 
 namespace {
 
-void map_irreps(int* array)
+void map_irreps(int* array, boost::shared_ptr<PointGroup> full, boost::shared_ptr<PointGroup> sub)
 {
-    boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
     // If the parent symmetry hasn't been set, no displacements have been made
     if(!full) return;
-    boost::shared_ptr<PointGroup> sub = Process::environment.molecule()->point_group();
 
     // If the point group between the full and sub are the same return
     if (full->symbol() == sub->symbol())
@@ -66,7 +64,7 @@ void map_irreps(int* array)
 
 }
 
-void get_eom_params(Options &options)
+void get_eom_params(SharedWavefunction ref_wfn, Options &options)
 {
   // Number of excited states per irrep
   if (options["ROOTS_PER_IRREP"].has_changed()) {
@@ -80,7 +78,7 @@ void get_eom_params(Options &options)
         int *temp_docc = new int[full_nirreps];
         for(int h = 0; h < full_nirreps; ++h)
             temp_docc[h] = options["ROOTS_PER_IRREP"][h].to_integer();
-        map_irreps(temp_docc);
+        map_irreps(temp_docc, old_pg, ref_wfn->molecule()->point_group());
         eom_params.states_per_irrep = new int[moinfo.nirreps];
         for (int h=0; h<moinfo.nirreps; h++)
             eom_params.states_per_irrep[h] = temp_docc[h];

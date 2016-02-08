@@ -47,6 +47,7 @@ def run_gaussian_2(name, **kwargs):
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
+        ['MP2_TYPE'],
         ['SCF','SCF_TYPE'])
 
     # override default scf_type
@@ -59,14 +60,13 @@ def run_gaussian_2(name, **kwargs):
     psi4.clean()
 
     # scf frequencies for zpe
-    frequency('scf')
+    scf_e, ref= frequency('scf', return_wfn=True)
 
     # thermodynamic properties
     du = psi4.get_variable('INTERNAL ENERGY CORRECTION')
     dh = psi4.get_variable('ENTHALPY CORRECTION')
     dg = psi4.get_variable('GIBBS FREE ENERGY CORRECTION')
 
-    ref     = psi4.wavefunction()
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
     freqsum = 0.0
@@ -78,17 +78,17 @@ def run_gaussian_2(name, **kwargs):
     # optimize geometry at mp2 (no frozen core) level
     # note: freeze_core isn't an option in MP2
     psi4.set_global_option('FREEZE_CORE',"FALSE")
-    optimize('conv-mp2')
+    psi4.set_global_option('MP2_TYPE', 'CONV')
+    optimize('mp2')
     psi4.clean()
 
     # qcisd(t)
     psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
     psi4.set_global_option('FREEZE_CORE',"TRUE")
     psi4.set_global_option('BASIS',"6-311G(D_P)")
-    run_fnocc('qcisd(t)',**kwargs)
+    ref = run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
 
     # HLC: high-level correction based on number of valence electrons
-    ref    = psi4.wavefunction()
     nirrep = ref.nirrep()
     frzcpi = ref.frzcpi()
     nfzc = 0
@@ -123,7 +123,7 @@ def run_gaussian_2(name, **kwargs):
     # big basis mp2
     psi4.set_global_option('BASIS',"6-311+G(3DF_2P)")
     #run_fnocc('_mp2',**kwargs)
-    energy('conv-mp2')
+    energy('mp2')
     emp2_big = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
 

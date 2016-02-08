@@ -21,6 +21,7 @@ Sample inputs accessible through :ref:`interfaced executables
    autodoc_testsuite_mrcc
    autodoc_testsuite_cfour
    autodoc_testsuite_libefp
+   autodoc_testsuite_pcmsolver
 
 Sample inputs for |PSIfour| as distributed are below.
 

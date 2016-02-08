@@ -34,8 +34,8 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-CCMRCC::CCMRCC(Options &options):
-        CCManyBody(options),
+CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options):
+        CCManyBody(ref_wfn, options),
         options_(options)
 {
   triples_type = ccsd;

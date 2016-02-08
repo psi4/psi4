@@ -21,8 +21,6 @@
  */
 
 #include <cstdio>
-
-#include <libchkpt/chkpt.hpp>
 #include <liboptions/liboptions.h>
 #include "scf.h"
 

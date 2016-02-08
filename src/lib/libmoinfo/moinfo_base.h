@@ -43,10 +43,11 @@ typedef std::vector<bool>                   boolvec;
 namespace psi {
 
 class Options;
+class Wavefunction;
 
 class MOInfoBase{
 public:
-  MOInfoBase(Options& options_, bool silent_ = false);
+  MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
   ~MOInfoBase();
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
@@ -71,7 +72,6 @@ public:
   double**    get_scf_mos()                      const {return(scf);}
   double**    get_scf_mos(int i)                 const {return(scf_irrep[i]);}
   double      get_scf_mos(int i,int j)           const {if((i<nmo)&&(j<nso)) return(scf[i][j]); else return(0.0);}
-  void        write_chkpt_mos();
 protected:
   void        read_data();
   void        compute_number_of_electrons();
@@ -84,6 +84,7 @@ protected:
   void        cleanup();
   void        compute_ioff();
 
+  Wavefunction& ref_wfn;
   Options&    options;
   int         nirreps;
   int         wfn_sym;

@@ -28,18 +28,17 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void cc2_WmbijT2(void) {
+void CCEnergyWavefunction::cc2_WmbijT2(void) {
 
   dpdfile2 t1, tia, tIA;
   dpdbuf4 Z, W;
   dpdbuf4 t2, t2a, t2b, tIJAB, tijab, tIjAb;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
 
@@ -54,7 +53,7 @@ void cc2_WmbijT2(void) {
 
     global_dpd_->file2_close(&t1);
   }
-  else if(params.ref == 1) { /** ROHF **/  
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
 
@@ -106,7 +105,7 @@ void cc2_WmbijT2(void) {
     global_dpd_->file2_close(&tIA); 
     global_dpd_->file2_close(&tia);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");

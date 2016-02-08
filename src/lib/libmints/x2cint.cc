@@ -22,10 +22,11 @@ X2CInt::~X2CInt()
 {
 }
 
-void X2CInt::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, Options& options)
+void X2CInt::compute(boost::shared_ptr<Molecule> molecule, SharedMatrix S,
+                     SharedMatrix T, SharedMatrix V, Options& options)
 {
     tstart();
-    setup(options);
+    setup(molecule, options);
     compute_integrals();
     form_dirac_h();
     diagonalize_dirac_h();
@@ -45,15 +46,12 @@ void X2CInt::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, Options& op
     tstop();
 }
 
-void X2CInt::setup(Options& options)
+void X2CInt::setup(boost::shared_ptr<Molecule> molecule, Options& options)
 {
     outfile->Printf("         ------------------------------------------------------------");
     outfile->Printf("\n         Spin-Free X2C Integrals at the One-Electron Level (SFX2C-1e)");
     outfile->Printf("\n                 by Prakash Verma and Francesco A. Evangelista");
     outfile->Printf("\n         ------------------------------------------------------------\n");
-
-    // Read the molecule information
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     basis_ = options.get_str("BASIS");
     x2c_basis_ = options.get_str("REL_BASIS");
@@ -427,15 +425,6 @@ void X2CInt::write_integrals_to_disk()
 
 void X2CInt::project()
 {
-    // Read the molecule information
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-
-    // Construct a new basis set that uses X2C_BASIS.
-//    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "REL_BASIS",x2c_basis_);
-
-    // Construct a new basis set that uses BASIS.
-//    boost::shared_ptr<BasisSet> aoBasis_contracted = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_); //pv
-
     // Integral factory for the BASIS/X2C_BASIS mixed basis
     boost::shared_ptr<IntegralFactory> integral_contracted(new IntegralFactory(aoBasis_contracted_, aoBasis_, aoBasis_, aoBasis_));
 

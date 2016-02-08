@@ -78,7 +78,7 @@ namespace psi { namespace ccresponse {
 void print_tensor_der(boost::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list);
 
 //void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
-void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
+void scatter(boost::shared_ptr<Molecule> molecule, Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 {
     double mstep = options.get_double("DISP_SIZE");
     //-> This is troublesome, need to decide if option should be set as global or local-"FINDIF"
@@ -199,7 +199,6 @@ void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std:
     derivs->Printf( "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
     print_tensor_der(derivs, quad_grad);
 
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
     SharedMatrix geom(new Matrix(natom,3));
 

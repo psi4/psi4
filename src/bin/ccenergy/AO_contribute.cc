@@ -34,10 +34,11 @@
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO)
+int CCEnergyWavefunction::AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO)
 {
   int idx, p, q, r, s;
   double value;

@@ -32,7 +32,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
+std::vector< SharedMatrix > fd_geoms_1_0(boost::shared_ptr<Molecule> mol, Options &options) {
 
   outfile->Printf("\n-------------------------------------------------------------\n\n");
 
@@ -45,9 +45,6 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
   double disp_size = options.get_double("DISP_SIZE");
   outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
-
-  // read in molecular data: Natom, reference geometry, and SALC coordinates
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   int Natom = mol->natom();
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);
@@ -90,13 +87,13 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
       // - displacement
       SharedMatrix geom_m(ref_geom->clone());
       geom_m->set_name("Displacement - SALC #" + to_string(i+1));
-      displace_cart(geom_m, cdsalc, i, -1, disp_size);
+      displace_cart(mol, geom_m, cdsalc, i, -1, disp_size);
       disp_geoms.push_back(geom_m);
 
       // + displacement
       SharedMatrix geom_p(ref_geom->clone());
       geom_p->set_name("Displacement + SALC #" + to_string(i+1));
-      displace_cart(geom_p, cdsalc, i, +1, disp_size);
+      displace_cart(mol, geom_p, cdsalc, i, +1, disp_size);
       disp_geoms.push_back(geom_p);
 
     }
@@ -106,22 +103,22 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
       SharedMatrix geom_m2(ref_geom->clone());
       geom_m2->set_name("Displacement - SALC #" + to_string(i+1) + " * 2");
-      displace_cart(geom_m2, cdsalc, i, -2, disp_size);
+      displace_cart(mol, geom_m2, cdsalc, i, -2, disp_size);
       disp_geoms.push_back(geom_m2);
 
       SharedMatrix geom_m1(ref_geom->clone());
       geom_m1->set_name("Displacement - SALC #" + to_string(i+1));
-      displace_cart(geom_m1, cdsalc, i, -1, disp_size);
+      displace_cart(mol, geom_m1, cdsalc, i, -1, disp_size);
       disp_geoms.push_back(geom_m1);
 
       SharedMatrix geom_p1(ref_geom->clone());
       geom_p1->set_name("Displacement + SALC #" + to_string(i+1));
-      displace_cart(geom_p1, cdsalc, i, +1, disp_size);
+      displace_cart(mol, geom_p1, cdsalc, i, +1, disp_size);
       disp_geoms.push_back(geom_p1);
 
       SharedMatrix geom_p2(ref_geom->clone());
       geom_p2->set_name("Displacement + SALC #" + to_string(i+1) + " * 2");
-      displace_cart(geom_p2, cdsalc, i, +2, disp_size);
+      displace_cart(mol, geom_p2, cdsalc, i, +2, disp_size);
       disp_geoms.push_back(geom_p2);
 
     }

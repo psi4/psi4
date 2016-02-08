@@ -24,9 +24,7 @@
 #include <stdlib.h>
 #include "psi4-dec.h"
 #include "libqt/qt.h"
-#include "libchkpt/chkpt.hpp"
 #include "libpsio/psio.h"
-#include "libchkpt/chkpt.h"
 #include "defines.h"
 #include "dcft.h"
 
@@ -35,10 +33,8 @@ using namespace boost;
 
 namespace psi{ namespace dcft{
 
-PsiReturnType
-dcft(Options &options)
+SharedWavefunction dcft(SharedWavefunction ref_wfn, Options& options)
 {
-
     // Start the timers
     tstart();
 
@@ -47,15 +43,12 @@ dcft(Options &options)
     outfile->Printf(    "\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf(    "\t***********************************************************************************\n");
 
-    boost::shared_ptr<Wavefunction> dcft = boost::shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.wavefunction(), options));
-    Process::environment.set_wavefunction(dcft);
-
+    SharedWavefunction dcft = SharedWavefunction(new DCFTSolver(ref_wfn, options));
     dcft->compute_energy();
 
     // Shut down the timers
     tstop();
-
-    return Success;
+    return dcft;
 }
 
 }} // End Namespaces

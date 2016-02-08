@@ -120,7 +120,7 @@ void CIWavefunction::get_mo_info()
   // useful if the user wants to just say "freeze_core = true"
   int *core_guess = init_int_array(CalcInfo_->nirreps);
   for (int h=0; h<CalcInfo_->nirreps; h++) {
-    core_guess[h] = Process::environment.wavefunction()->frzcpi()[h];
+    core_guess[h] = reference_wavefunction_->frzcpi()[h];
   }
 
   // This routine sets all orbital subspace arrays properly given

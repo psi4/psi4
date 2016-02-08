@@ -19,8 +19,9 @@ set {
   scf_type df
   guess sad
   reference uhf
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
