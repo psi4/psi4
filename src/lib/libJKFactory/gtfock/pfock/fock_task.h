@@ -18,7 +18,7 @@ void fock_task(BasisSet_t basis, int ncpu_f, int num_dmat,
                int ldX4, int ldX5, int ldX6,
                int sizeX1, int sizeX2, int sizeX3,
                int sizeX4, int sizeX5, int sizeX6,
-               double *nitl, double *nsq);
+               double *nitl, double *nsq, int nosymm);
 
 void reset_F(int numF, int num_dmat, double *F1, double *F2, double *F3,
              double *F4, double *F5, double *F6,
