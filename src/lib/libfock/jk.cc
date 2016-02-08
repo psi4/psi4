@@ -58,11 +58,7 @@ JK::JK( boost::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-<<<<<<< HEAD
 boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options)
-=======
-boost::shared_ptr<JK> JK::build_JK()
->>>>>>> 5bbd6b9... GTFock moved out of JK_build until we support it.
 {
     if (options.get_str("SCF_TYPE") == "CD") {
 

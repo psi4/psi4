@@ -404,17 +404,15 @@ void HF::integrals()
     try {
         if(options_.get_str("SCF_TYPE") == "GTFOCK") {
           #ifdef HAVE_JK_FACTORY
-            boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
-        "BASIS", options.get_str("BASIS"));
             if(options_.get_bool("SOSCF"))
-                jk_ = boost::shared_ptr<JK>(new GTFockJK(primary,2,false));
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
             else
-                jk_ = boost::shared_ptr<JK>(new GTFockJK(primary,2,true));
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
           #else
             throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
           #endif
         } else {
-            jk_ = JK::build_JK();
+            jk_ = JK::build_JK(basisset_, options_);
         }
     }
     catch(const BasisSetNotFound& e) {
