@@ -52,10 +52,13 @@ DCFTSolver::run_qc_dcft()
     int cycle_jacobi = 0;
 
     // Copy the reference orbitals and to use them as the reference for the orbital rotation
+    outfile->Printf("About to Copied C matrices\n");
     old_ca_->copy(Ca_);
     old_cb_->copy(Cb_);
+    outfile->Printf("Copied C matrices\n");
 
     orbitals_convergence_ = compute_scf_error_vector();
+    outfile->Printf("Compute scf_error_vector\n");
 
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -172,8 +175,6 @@ DCFTSolver::run_qc_dcft()
             if (orbital_idp_ != 0) {
                 // Update the density
                 densityConverged_ = update_scf_density() < orbitals_threshold_;
-                // Write orbitals to the checkpoint file
-                write_orbitals_to_checkpoint();
                 // Transform two-electron integrals to the MO basis using new orbitals, build denominators
                 // TODO: Transform_integrals shouldn't call build denominators for the QC alogorithm
                 transform_integrals();

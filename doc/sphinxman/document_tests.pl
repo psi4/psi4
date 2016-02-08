@@ -27,6 +27,7 @@ my %ExeFolder = (
    "mrcc/"      => "mrcc",
    "cfour/"     => "cfour",
    "libefp/"    => "libefp",
+   "pcmsolver/" => "pcmsolver",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -44,6 +45,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^mrcc$/;
     next if $File =~ /^cfour$/;
     next if $File =~ /^libefp$/;
+    next if $File =~ /^pcmsolver$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }

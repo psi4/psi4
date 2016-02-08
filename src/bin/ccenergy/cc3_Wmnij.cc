@@ -27,8 +27,7 @@
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
@@ -43,12 +42,12 @@ namespace psi { namespace ccenergy {
 
 void purge_Wmnij(void);
 
-void cc3_Wmnij(void)
+void CCEnergyWavefunction::cc3_Wmnij(void)
 {
   dpdbuf4 A, E, D, Z, W, Z1, X;
   dpdfile2 t1, tIA, tia;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     global_dpd_->buf4_copy(&A, PSIF_CC3_HET1, "CC3 WMnIj (Mn,Ij)");
@@ -78,7 +77,7 @@ void cc3_Wmnij(void)
     global_dpd_->file2_close(&t1);
   }
 
-  else if (params.ref == 1) {
+  else if (params_.ref == 1) {
     /** W(M>N,I>J) <--- <MN||IJ> **/
     /** W(m>n,i>j) <--- <mn||ij> **/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <ij|kl>");
@@ -183,7 +182,7 @@ void cc3_Wmnij(void)
     purge_Wmnij();
   }
 
-  else if (params.ref == 2) {
+  else if (params_.ref == 2) {
 
     /** W(M>N,I>J) <--- <MN||IJ> **/
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <IJ|KL>");
@@ -292,7 +291,7 @@ void cc3_Wmnij(void)
 }
 
 
-void purge_Wmnij(void) {
+void CCEnergyWavefunction::purge_Wmnij(void) {
   dpdfile2 FAE, Fmi, FME, Fme;
   dpdfile4 W;
   int *occpi, *virtpi;
@@ -304,11 +303,11 @@ void purge_Wmnij(void) {
   int *occ_sym, *vir_sym;
   int *openpi, nirreps;
 
-  nirreps = moinfo.nirreps;
-  occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-  occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
-  occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
-  openpi = moinfo.openpi;
+  nirreps = moinfo_.nirreps;
+  occpi = moinfo_.occpi; virtpi = moinfo_.virtpi;
+  occ_off = moinfo_.occ_off; vir_off = moinfo_.vir_off;
+  occ_sym = moinfo_.occ_sym; vir_sym = moinfo_.vir_sym;
+  openpi = moinfo_.openpi;
 
   /* Purge Wmnij matrix elements */
   global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 2, 2,"CC3 Wmnij (m>n,i>j)");

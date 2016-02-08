@@ -49,15 +49,14 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-CCSort::CCSort(SortAlgorithm algorithm):
+CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
   fraction_of_memory_for_sorting(0.5),nfzc(0),efzc(0.0),frozen_core(0)
 {
 
   // Use libtrans to generate MO basis integrals in Pitzer order
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   std::vector<boost::shared_ptr<MOSpace> > spaces;
   spaces.push_back(MOSpace::all);
-  IntegralTransform *ints = new IntegralTransform(wfn, spaces,
+  IntegralTransform *ints = new IntegralTransform(ref_wfn, spaces,
                                                   IntegralTransform::Restricted,
                                                   IntegralTransform::IWLOnly,
                                                   IntegralTransform::PitzerOrder,

@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     Script::language->finalize();
 
 
-    Process::environment.wavefunction().reset();
+    Process::environment.legacy_wavefunction().reset();
 
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;

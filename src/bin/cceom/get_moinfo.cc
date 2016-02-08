@@ -48,13 +48,12 @@ namespace psi { namespace cceom {
 ** Modified by TDC, March 1999
 */
 
-void get_moinfo(void)
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
 {
     int i, j, h, p, q, errcod, nactive, nirreps, sym;
     double ***C, ***Ca, ***Cb;
     psio_address next;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.nso = wfn->nso();

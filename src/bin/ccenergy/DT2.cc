@@ -28,21 +28,20 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void DT2(void)
+void CCEnergyWavefunction::DT2(void)
 {
   dpdbuf4 D;
 
-  if(params.ref == 0) { /*** RHF ***/
+  if(params_.ref == 0) { /*** RHF ***/
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
     global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "New tIjAb");
     global_dpd_->buf4_close(&D);
   }
-  else if(params.ref == 1) { /*** ROHF ***/
+  else if(params_.ref == 1) { /*** ROHF ***/
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
     global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "New tIJAB");
@@ -53,7 +52,7 @@ void DT2(void)
     global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "New tIjAb");
     global_dpd_->buf4_close(&D);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
     global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "New tIJAB");

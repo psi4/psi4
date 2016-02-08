@@ -35,9 +35,12 @@
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
+#include <libscf_solver/rohf.h>
+#include <libscf_solver/cuhf.h>
 
 #include <libfock/jk.h>
 #include <../bin/detci/ciwave.h>
+#include <../bin/detci/civect.h>
 
 #include <string>
 
@@ -53,7 +56,7 @@ overlap matrix:
 
 import numpy as np
 ...
-mints = MintsHelper()
+mints = MintsHelper(wfn.basisset())
 overlap = mints.ao_overlap()
 np.sum(wavefunction().Ca())
 
@@ -201,13 +204,13 @@ boost::python::list make_vector_array_interfaces(SharedVector vec){
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
-    //SharedMolecule mol = Process::environment.molecule();
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
+    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
         outfile->Printf( "  Active molecule not set!");
@@ -229,6 +232,11 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     matfac->init_with(dim, dim);
 
     return matfac;
+}
+
+// Just a little patch until we can figure out options python-side.
+boost::shared_ptr<JK> py_build_JK(boost::shared_ptr<BasisSet> basis){
+    return JK::build_JK(basis, Process::environment.options);
 }
 
 
@@ -568,7 +576,7 @@ void export_mints()
     typedef SharedMatrix (MintsHelper::*oneelectron)();
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
 
-    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
+    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring", no_init).
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integral", &MintsHelper::integral, "docstring").
             def("integrals", &MintsHelper::integrals, "docstring").
@@ -621,7 +629,8 @@ void export_mints()
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
 
-    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring").
+    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring", no_init).
+            def(init<boost::shared_ptr<BasisSet>, bool>()).
             def("get_algorithm", &FittingMetric::get_algorithm, "docstring").
             def("is_poisson", &FittingMetric::is_poisson, "docstring").
             def("is_inverted", &FittingMetric::is_inverted, "docstring").
@@ -716,9 +725,6 @@ void export_mints()
             def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "Do reinterpret coordinate entries during update_geometry().").
             def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame").
             def("fix_com", &Molecule::set_com_fixed, "Whether to fix the Cartesian position, or to translate to the C.O.M.").
-            def("init_with_checkpoint", &Molecule::init_with_chkpt, "Populate arg1 member data with information from checkpoint file arg2").
-            def("save_to_checkpoint", &Molecule::save_to_chkpt, "Saves molecule information to checkpoint file arg2 with prefix arg3").
-            def("init_with_io", &Molecule::init_with_psio, "Creates a new checkpoint file with information from arg2").
             def("add_atom", &Molecule::add_atom, "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr (arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and lineno arg9 (optional)").
             def("natom", &Molecule::natom, "Number of real atoms").
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
@@ -758,6 +764,7 @@ void export_mints()
             def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units").
             def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr").
             def("print_out_in_angstrom", &Molecule::print_in_angstrom, "Prints the molecule in Cartesians in Angstroms").
+            def("print_cluster", &Molecule::print_cluster, "Prints the molecule in Cartesians in input units adding fragment separators").
             def("rotational_constants", &Molecule::rotational_constants, "Prints the rotational constants of the molecule").
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "Computes nuclear repulsion energy").
             def("find_point_group", &Molecule::find_point_group, "Finds computational molecular point group, user can override this with the symmetry keyword").
@@ -847,7 +854,15 @@ void export_mints()
             def("d", &DFChargeFitter::d, "docstring").
             def("fit", &DFChargeFitter::fit, "docstring");
 
+    typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
+            // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
+            def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
+            def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
+            def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
+            def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "docstring").
+            def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "docstring").
+            def("same_a_b_dens", &Wavefunction::same_a_b_dens, "docstring").
             def("nfrzc", &Wavefunction::nfrzc, "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring").
@@ -865,7 +880,6 @@ void export_mints()
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
-            def("TPDM", &Wavefunction::TPDM, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
@@ -875,7 +889,11 @@ void export_mints()
             def("sobasisset", &Wavefunction::sobasisset, "docstring").
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
+            def("set_gradient", &Wavefunction::set_gradient, "docstring").
+            def("hessian", &Wavefunction::hessian, "docstring").
+            def("set_hessian", &Wavefunction::set_hessian, "docstring").
             def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
@@ -890,10 +908,21 @@ void export_mints()
             def("frzcpi", &Wavefunction::frzcpi, return_value_policy<copy_const_reference>(), "docstring").
             def("frzvpi", &Wavefunction::frzvpi, return_value_policy<copy_const_reference>(), "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
-            def("nbeta", &Wavefunction::nbeta, "docstring");
+            def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("compute_energy", &Wavefunction::compute_energy, "docstring").
+            def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
-    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
+    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
+            def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
+
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
+
+    class_<scf::ROHF, boost::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init).
+            def("moFeff", &scf::ROHF::moFeff, "docstring").
+            def("moFa", &scf::ROHF::moFa, "docstring").
+            def("moFb", &scf::ROHF::moFb, "docstring");
+
+    class_<scf::CUHF, boost::shared_ptr<scf::CUHF>, bases<scf::HF, Wavefunction> >("CUHF", "docstring", no_init);
 
     typedef boost::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>);
 
@@ -930,11 +959,11 @@ void export_mints()
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
-
     // LIBFOCK wrappers
     class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
 //            .def(init<boost::shared_ptr<BasisSet> >())
-            .def("build_JK", &JK::build_JK, "docstring")
+            // .def("build_JK", &JK::build_JK, "docstring")
+            .def("build_JK", py_build_JK, "docstring")
             .staticmethod("build_JK")
             .def("initialize", &JK::initialize)
             .def("compute", &JK::compute)
@@ -965,20 +994,53 @@ void export_mints()
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
 
+    void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
+                                            boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                            &detci::CIWavefunction::sigma;
+
     // Looks like this has to go here.
     class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
         .def(init<boost::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
+        .def("ndet", &detci::CIWavefunction::ndet, "docstring")
         .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
         .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
         .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
         .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
+        .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
+        .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring");
+        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring")
+        .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
+        .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
+        .def("sigma", py_ci_sigma, "docstring");
+
+    void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                            &detci::CIvect::copy;
+    void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
+
+    class_<detci::CIvect, boost::shared_ptr<detci::CIvect> >("CIVector", "docstring", no_init)
+        .def("vdot", &detci::CIvect::vdot, "docstring")
+        .def("axpy", &detci::CIvect::axpy, "docstring")
+        .def("copy", py_civ_copy, "docstring")
+        .def("zero", &detci::CIvect::zero, "docstring")
+        .def("scale", py_civ_scale, "docstring")
+        .def("norm", &detci::CIvect::norm, "docstring")
+
+        .def("dcalc", &detci::CIvect::dcalc3, "docstring")
+        .def("symnormalize", &detci::CIvect::symnormalize, "docstring")
+
+        .def("read", &detci::CIvect::read, "docstring")
+        .def("write", &detci::CIvect::write, "docstring")
+        .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
+        .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
+        .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
+        .add_property("__array_interface__", &detci::CIvect::numpy_array_interface, "docstring");
+        // .def("blank", &detci::CIWavefunction::blank, "docstring")
 
 
 }

@@ -38,7 +38,7 @@ protected:
     void common_init();
     
 public:
-    SCFGrad();
+    SCFGrad(SharedWavefunction ref_wfn, Options& options);
     virtual ~SCFGrad();
     
     double compute_energy() { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }

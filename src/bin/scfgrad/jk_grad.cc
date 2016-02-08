@@ -46,11 +46,9 @@ JKGrad::JKGrad(int deriv, boost::shared_ptr<BasisSet> primary) :
 JKGrad::~JKGrad()
 {
 }
-boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv)
+boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, boost::shared_ptr<BasisSet> primary)
 {
     Options& options = Process::environment.options;
-    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
-        "BASIS", options.get_str("BASIS"));
 
     if (options.get_str("SCF_TYPE") == "DF") {
 

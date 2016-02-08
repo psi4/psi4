@@ -101,7 +101,7 @@ namespace psi {
     outfile->Printf( "\n\n  Options:");
     outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
     outfile->Printf( "%s\n", list.c_str());
-    
+
   }
 
   std::string Options::globals_to_string() const {

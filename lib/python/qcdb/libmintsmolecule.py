@@ -810,20 +810,6 @@ class LibmintsMolecule(object):
         self.fragment_types.append('Real')
         self.set_has_zmatrix(zmatrix)
 
-    def init_with_checkpoint(self, chkpt):
-        """ **NYI** Pull information from the *chkpt* object passed
-        (method name in libmints is init_with_chkpt)
-
-        """
-        raise FeatureNotImplemented('Molecule::init_with_checkpoint')  # FINAL
-
-    def init_with_io(self, psio):
-        """ **NYI** Pull information from a chkpt object created from psio
-        (method name in libmints is init_with_psio)
-
-        """
-        raise FeatureNotImplemented('Molecule::init_with_io')  # FINAL
-
     @classmethod
     def init_with_xyz(cls, xyzfilename):
         """Pull information from an XYZ file. No fragment or chg/mult info detected.
@@ -2034,13 +2020,6 @@ class LibmintsMolecule(object):
         outfile = open(filename, 'w')
         outfile.write(self.save_string_xyz(save_ghosts))
         outfile.close()
-
-    def save_to_checkpoint(self, chkpt, prefix=""):
-        """ **NYI** Save information to checkpoint file
-        (method name in libmints is save_to_chkpt)
-
-        """
-        raise FeatureNotImplemented('Molecule::save_to_checkpoint')  # FINAL
 
     # <<< Methods for Symmetry >>>
 

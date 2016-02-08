@@ -8,21 +8,19 @@
 #include "psifiles.h"
 #include "libiwl/iwl.hpp"
 #define EXTERN
-#include "globals.h"
+#include "mp2.h"
 #include "libdpd/dpd.gbl"
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_unrestricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
+double plugin_mp2_unrestricted(SharedWavefunction wfn, Options &options)
 {
     bool ROHF = options.get_str("REFERENCE") == "ROHF";
 
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    IntegralTransform ints(wfn, spaces,
-                                ROHF ? IntegralTransform::SemiCanonical : IntegralTransform::Unrestricted);
+    IntegralTransform ints(wfn, spaces, IntegralTransform::Unrestricted);
     ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
     dpdbuf4 K;

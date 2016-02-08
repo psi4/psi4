@@ -350,7 +350,8 @@ public:
     * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK();
+    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+                                          Options& options);
 
 
     // => Knobs <= //
@@ -520,6 +521,9 @@ class DiskJK : public JK {
     /// Absolute AO index to irrep
     int* so2symblk_;
 
+    /// Options object
+    Options& options_;
+
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return false; }
     /// Setup integrals, files, etc
@@ -542,7 +546,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DiskJK(boost::shared_ptr<BasisSet> primary);
+    DiskJK(boost::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~DiskJK();
 
@@ -565,6 +569,9 @@ class PKJK : public JK {
 
     /// The PSIO instance to use for I/O
     boost::shared_ptr<PSIO> psio_;
+
+    /// Options object
+    Options& options_;
 
     /// Absolute AO index to relative SO index
     int* so2index_;
@@ -600,6 +607,13 @@ class PKJK : public JK {
     /// Common initialization
     void common_init();
 
+    /// Total number of SOs
+    int nso_;
+    /// Number of irreps
+    int nirrep_;
+    /// Number of so per irrep
+    Dimension nsopi_;
+
 public:
     // => Constructors < = //
 
@@ -611,7 +625,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    PKJK(boost::shared_ptr<BasisSet> primary);
+    PKJK(boost::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~PKJK();
 
@@ -894,7 +908,7 @@ public:
 /**
  * Class CDJK
  *
- * JK implementation using 
+ * JK implementation using
  * cholesky decomposition technology
  */
 class CDJK : public DFJK {
@@ -1017,8 +1031,8 @@ protected:
     void build_auxiliary_partition();
     void build_Bpq();
     void bump(boost::shared_ptr<Matrix> J,
-              const std::vector<double>& bump_atoms, 
-              const std::vector<int>& auxiliary_atoms, 
+              const std::vector<double>& bump_atoms,
+              const std::vector<int>& auxiliary_atoms,
               bool bump_diagonal);
     void build_J(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
@@ -1026,7 +1040,7 @@ protected:
     void build_K(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
                  const std::vector<boost::shared_ptr<Matrix> >& K);
-    
+
 public:
     // => Constructors < = //
 
@@ -1055,7 +1069,7 @@ public:
      */
     void set_condition(double condition) { condition_ = condition; }
     /**
-     * Metric for FastDF fitting 
+     * Metric for FastDF fitting
      * @param metric COULOMB or EWALD,
      *       defaults to COULOMB
      */
@@ -1077,7 +1091,7 @@ public:
      */
     void set_df_bump_R1(double R1) { bump_R1_ = R1; }
     /**
-     * Range-Separation parameter for EWALD metric fitting 
+     * Range-Separation parameter for EWALD metric fitting
      * @param theta theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
      *       defaults to 1.0
      */

@@ -73,7 +73,7 @@ psi::MinimalInterface::MinimalInterface(const int NMats,
     SplitProcs(NPRow_,NPCol_);
     psi::Options& options = psi::Process::environment.options;
     SharedBasis primary = psi::BasisSet::pyconstruct_orbital(
-    		                  psi::Process::environment.molecule(),
+    		                  psi::Process::environment.legacy_molecule(),
                               "BASIS", options.get_str("BASIS"));
    NBasis_=primary->nbf();
    BlockDims(NBasis_);

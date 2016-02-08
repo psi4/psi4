@@ -42,6 +42,6 @@ set psimrcc {
   tikhonow_omega 0.001         # Regularization of the c_mu/c_nu fractions to make sure we converge
 }
 
-freq('psimrcc')
-fd_freq = psi4.wavefunction().frequencies()            #TEST
+psimrcc_e, psimrcc_wfn = freq('psimrcc', return_wfn=True)
+fd_freq = psimrcc_wfn.frequencies()            #TEST
 compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST

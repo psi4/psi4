@@ -130,7 +130,8 @@ public:
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
     static boost::shared_ptr<IBOLocalizer2> build(
         boost::shared_ptr<BasisSet> primary, 
-        boost::shared_ptr<Matrix> C);
+        boost::shared_ptr<Matrix> C,
+        Options& options);
 
     // => Computers <= //
 

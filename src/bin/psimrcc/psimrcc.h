@@ -27,10 +27,10 @@ namespace psi{ namespace psimrcc{
 
 void run_psimrcc();
 void transform_integrals();
-void mrccsd(Options &options);
-void mrpt2(Options &options);
+void mrccsd(SharedWavefunction ref_wfn, Options &options);
+void mrpt2(SharedWavefunction ref_wfn, Options &options);
 void mrccsd_check();
-void mp2_ccsd(Options &options);
+void mp2_ccsd(SharedWavefunction ref_wfn, Options &options);
 
 }} /* End Namespaces */
 

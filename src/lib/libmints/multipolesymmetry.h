@@ -92,9 +92,9 @@ public:
                      boost::shared_ptr<Molecule> mol,
                      boost::shared_ptr<IntegralFactory> ints,
                      boost::shared_ptr<MatrixFactory> mats);
-    OperatorSymmetry(int order,
-                     boost::shared_ptr<Molecule> mol,
-                     boost::shared_ptr<IntegralFactory> ints);
+    //OperatorSymmetry(int order,
+    //                 boost::shared_ptr<Molecule> mol,
+    //                 boost::shared_ptr<IntegralFactory> ints);
     virtual ~OperatorSymmetry();
 
     std::string name_of_component(int i);
@@ -144,9 +144,9 @@ public:
                      boost::shared_ptr<Molecule> mol,
                      boost::shared_ptr<IntegralFactory> ints,
                      boost::shared_ptr<MatrixFactory> mats);
-    MultipoleSymmetry(int order,
-                     boost::shared_ptr<Molecule> mol,
-                     boost::shared_ptr<IntegralFactory> ints);
+    //MultipoleSymmetry(int order,
+    //                 boost::shared_ptr<Molecule> mol,
+    //                 boost::shared_ptr<IntegralFactory> ints);
     virtual ~MultipoleSymmetry();
 
     /**

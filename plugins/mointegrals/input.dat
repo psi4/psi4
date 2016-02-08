@@ -9,6 +9,11 @@ plugin_load("./mointegrals.so")
 set basis cc-pvdz
 set mointegrals print 1
 
-scf()
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+psi4.set_legacy_wavefunction(scf_wfn)
 
-plugin("mointegrals.so")
+# Need to compute the two-electron integrals for the plugin
+mints = MintsHelper(scf_wfn.basisset())
+mints.integrals()
+
+plugin("mointegrals.so", scf_wfn)

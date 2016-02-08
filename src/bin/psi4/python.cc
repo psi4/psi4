@@ -39,6 +39,7 @@
 
 #include <libefp_solver/efp_solver.h>
 #include <libmints/mints.h>
+#include <libmints/matrix.h>
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
 #include "libparallel/local.h"
@@ -54,8 +55,6 @@
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
-//#include "../../lib/libbabel/LibBabel.h"
-//#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
 #include <libqt/qt.h>
@@ -79,12 +78,10 @@ void export_benchmarks();
 void export_blas_lapack();
 void export_plugins();
 void export_psio();
-void export_chkpt();
 void export_mints();
 void export_functional();
 void export_oeprop();
 void export_cubefile();
-void export_libfrag();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -105,69 +102,79 @@ psi::PsiReturnType optking(psi::Options&);
 void opt_clean(void);
 }
 
+// Forward declare /src/bin/ methods
 namespace psi {
-namespace mints { PsiReturnType mints(Options&); }
-namespace deriv { PsiReturnType deriv(Options&); }
-namespace scfgrad { PsiReturnType scfgrad(Options&); }
-namespace scfgrad { PsiReturnType scfhess(Options&); }
-namespace scf { PsiReturnType scf(Options&, PyObject *pre, PyObject *post); }
-namespace scf { PsiReturnType scf_dummy(Options&); }
-namespace libfock { PsiReturnType libfock(Options&); }
-namespace dfmp2 { PsiReturnType dfmp2(Options&); }
-namespace dfmp2 { PsiReturnType dfmp2grad(Options&); }
-namespace sapt { PsiReturnType sapt(Options&); }
-namespace fisapt { PsiReturnType fisapt(Options&); }
-namespace dcft { PsiReturnType dcft(Options&); }
-namespace lmp2 { PsiReturnType lmp2(Options&); }
-namespace mcscf { PsiReturnType mcscf(Options&); }
-namespace psimrcc { PsiReturnType psimrcc(Options&); }
-namespace transqt2 { PsiReturnType transqt2(Options&); }
-namespace ccsort { PsiReturnType ccsort(Options&); }
-namespace cctransort { PsiReturnType cctransort(Options&); }
-//    namespace lmp2       { PsiReturnType lmp2(Options&);      }
-namespace cctriples { PsiReturnType cctriples(Options&); }
-namespace cchbar { PsiReturnType cchbar(Options&); }
-namespace cclambda { PsiReturnType cclambda(Options&); }
-namespace ccdensity { PsiReturnType ccdensity(Options&); }
-namespace ccresponse {
-PsiReturnType ccresponse(Options&);
-void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot,
-             std::vector<SharedMatrix> quad);
-}
-namespace cceom { PsiReturnType cceom(Options&); }
-namespace detci { PsiReturnType detci(Options&); }
-#ifdef ENABLE_CHEMPS2
-namespace dmrg       { PsiReturnType dmrg(Options&);     }
-#endif
-//    namespace detcas     { PsiReturnType detcas(Options&);     }
-namespace fnocc { PsiReturnType fnocc(Options&); }
-namespace efp { PsiReturnType efp_init(Options&); }
-namespace efp { PsiReturnType efp_set_options(); }
-namespace occwave { PsiReturnType occwave(Options&); }
-namespace dfoccwave { PsiReturnType dfoccwave(Options&); }
-namespace adc { PsiReturnType adc(Options&); }
-namespace thermo { PsiReturnType thermo(Options&); }
-namespace mrcc {
-PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
-PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
-}
-namespace findif {
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_1_0(Options&);
-//std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options&, int irrep = -1);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options&, int irrep = -1);
-std::vector<boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options&);
-std::vector<boost::shared_ptr<Matrix> > atomic_displacements(Options&);
 
-PsiReturnType fd_1_0(Options&, const boost::python::list&);
-//PsiReturnType fd_2_0(Options &, const boost::python::list&);
-PsiReturnType fd_freq_0(Options&, const boost::python::list&, int irrep = -1);
-PsiReturnType fd_freq_1(Options&, const boost::python::list&, int irrep = -1);
-PsiReturnType fd_hessian_0(Options&, const boost::python::list&);
+// Wavefunction returns
+namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
+namespace dcft { SharedWavefunction   dcft(SharedWavefunction, Options&); }
+namespace detci { SharedWavefunction detci(SharedWavefunction, Options&); }
+namespace dfmp2 { SharedWavefunction dfmp2(SharedWavefunction, Options&); }
+namespace dfoccwave { SharedWavefunction dfoccwave(SharedWavefunction, Options&); }
+namespace libfock { SharedWavefunction libfock(SharedWavefunction, Options&); }
+namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
+namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
+namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
+namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+
+// Matrix returns
+namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
+namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
+namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
+
+// Does not create a wavefunction
+namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
+namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
+namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&); }
+namespace thermo { PsiReturnType thermo(SharedWavefunction, SharedVector, Options&); }
+
+#ifdef ENABLE_CHEMPS2
+namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
+#endif
+
+namespace mrcc {
+PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const boost::python::dict&);
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const boost::python::dict&);
+}
+
+// Should die soon
+namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
+
+// Finite difference functions
+namespace findif {
+std::vector<SharedMatrix> fd_geoms_1_0(boost::shared_ptr<Molecule>, Options&);
+std::vector<SharedMatrix> fd_geoms_freq_0(boost::shared_ptr<Molecule>, Options&,
+                                          int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_freq_1(boost::shared_ptr<Molecule>, Options&,
+                                          int irrep = -1);
+std::vector<SharedMatrix> atomic_displacements(boost::shared_ptr<Molecule>, Options&);
+
+SharedMatrix fd_1_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&);
+SharedMatrix fd_freq_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
+SharedMatrix fd_freq_1(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
 SharedMatrix displace_atom(SharedMatrix geom, const int atom,
                            const int coord, const int sign,
                            const double disp_size);
 }
+
+// CC functions
+namespace ccsort { PsiReturnType ccsort(Options&); }
+namespace cctransort { PsiReturnType cctransort(SharedWavefunction, Options&); }
+namespace cctriples { PsiReturnType cctriples(SharedWavefunction, Options&); }
+namespace cchbar { PsiReturnType cchbar(SharedWavefunction, Options&); }
+namespace cclambda { PsiReturnType cclambda(SharedWavefunction, Options&); }
+namespace ccdensity { PsiReturnType ccdensity(SharedWavefunction, Options&); }
+namespace ccresponse {
+PsiReturnType ccresponse(SharedWavefunction, Options&);
+void scatter(boost::shared_ptr<Molecule> molecule, Options&, double step, std::vector<SharedMatrix> dip,
+             std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
+}
+namespace cceom { PsiReturnType cceom(SharedWavefunction, Options&); }
+
+// No idea what to do with these yet
+namespace efp { PsiReturnType efp_init(Options&); }
+namespace efp { PsiReturnType efp_set_options(); }
+
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
 extern void print_version(std::string);
@@ -239,164 +246,116 @@ void py_psi_opt_clean(void)
     opt::opt_clean();
 }
 
-int py_psi_mints()
-{
-    py_psi_prepare_options_for_module("MINTS");
-    return mints::mints(Process::environment.options);
-}
+// int py_psi_mints()
+// {
+//     py_psi_prepare_options_for_module("MINTS");
+//     return mints::mints(Process::environment.options);
+// }
 
-int py_psi_scfgrad()
-{
-    py_psi_prepare_options_for_module("SCF");
-    return scfgrad::scfgrad(Process::environment.options);
-}
-
-int py_psi_scfhess()
+SharedMatrix py_psi_scfgrad(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("SCF");
-    return scfgrad::scfhess(Process::environment.options);
+    return scfgrad::scfgrad(ref_wfn, Process::environment.options);
 }
 
-int py_psi_deriv()
+SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn)
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scfgrad::scfhess(ref_wfn, Process::environment.options);
+}
+
+SharedMatrix py_psi_deriv(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DERIV");
-    return deriv::deriv(Process::environment.options);
+    return deriv::deriv(ref_wfn, Process::environment.options);
 }
 
-double py_psi_occ()
+SharedWavefunction py_psi_occ(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("OCC");
-    if (occwave::occwave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return occwave::occwave(ref_wfn, Process::environment.options);
 }
 
-double py_psi_dfocc()
+SharedWavefunction py_psi_dfocc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DFOCC");
-    if (dfoccwave::dfoccwave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dfoccwave::dfoccwave(ref_wfn, Process::environment.options);
 }
 
-int py_psi_libfock()
+SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CPHF");
-    return libfock::libfock(Process::environment.options);
+    return libfock::libfock(ref_wfn, Process::environment.options);
 }
 
-double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
-{
-    py_psi_prepare_options_for_module("SCF");
-    if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
+// double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
+// {
+//     py_psi_prepare_options_for_module("SCF");
+//     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
+//         return Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     else
+//         return 0.0;
+// }
 
-/*double py_psi_lmp2()
-{
-    py_psi_prepare_options_for_module("LMP2");
-    if (lmp2::lmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-*/
-
-double py_psi_mcscf()
+SharedWavefunction py_psi_mcscf(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("MCSCF");
-    if (mcscf::mcscf(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return mcscf::mcscf(ref_wfn, Process::environment.options);
 }
 
-PsiReturnType py_psi_mrcc_generate_input(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_generate_input(SharedWavefunction ref_wfn, const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc_generate_input(Process::environment.options, level);
+    return mrcc::mrcc_generate_input(ref_wfn, Process::environment.options, level);
 }
 
-PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
+    return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_1_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_1_0(boost::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_1_0(Process::environment.options);
+    return findif::fd_geoms_1_0(mol, Process::environment.options);
 }
 
-
-//std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
-//{
-//py_psi_prepare_options_for_module("FINDIF");
-//return findif::fd_geoms_2_0(Process::environment.options);
-//}
-
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(boost::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_0(Process::environment.options, irrep);
+    return findif::fd_geoms_freq_0(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_hessian_0()
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_hessian_0(Process::environment.options);
+    return findif::fd_geoms_freq_1(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(int irrep)
+std::vector<SharedMatrix> py_psi_atomic_displacements(boost::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_1(Process::environment.options, irrep);
+    return findif::atomic_displacements(mol, Process::environment.options);
 }
 
-PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
+SharedMatrix py_psi_fd_1_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_1_0(Process::environment.options, energies);
+    return findif::fd_1_0(mol, Process::environment.options, energies);
 }
 
-//PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
-//{
-//py_psi_prepare_options_for_module("FINDIF");
-//return findif::fd_2_0(Process::environment.options, energies);
-//}
-
-PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
+SharedMatrix py_psi_fd_freq_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(Process::environment.options, energies, irrep);
+    return findif::fd_freq_0(mol, Process::environment.options, energies, irrep);
 }
 
-PsiReturnType py_psi_fd_hessian_0(const boost::python::list& energies)
+SharedMatrix py_psi_fd_freq_1(boost::shared_ptr<Molecule> mol, const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_hessian_0(Process::environment.options, energies);
-}
-
-PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(Process::environment.options, grads, irrep);
-}
-
-std::vector<SharedMatrix> py_psi_atomic_displacements()
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::atomic_displacements(Process::environment.options);
+    return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
 }
 
 SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
@@ -406,81 +365,66 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
-double py_psi_scf()
-{
-    return py_psi_scf_callbacks(Py_None, Py_None);
-}
-
-double py_psi_scf_dummy()
+SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn, PyObject *precallback,
+                              PyObject *postcallback)
 {
     py_psi_prepare_options_for_module("SCF");
-    return scf::scf_dummy(Process::environment.options);
+    return scf::scf(ref_wfn, Process::environment.options, precallback, postcallback);
 }
 
-double py_psi_dcft()
+// double py_psi_scf_dummy()
+// {
+//     py_psi_prepare_options_for_module("SCF");
+//     return scf::scf_dummy(Process::environment.options);
+// }
+
+SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DCFT");
-    if (dcft::dcft(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dcft::dcft(ref_wfn, Process::environment.options);
 }
 
-double py_psi_lmp2()
-{
-    py_psi_prepare_options_for_module("LMP2");
-    if (lmp2::lmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-
-double py_psi_dfmp2()
+SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DFMP2");
-    if (dfmp2::dfmp2(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dfmp2::dfmp2(ref_wfn, Process::environment.options);
 }
 
-double py_psi_dfmp2grad()
-{
-    py_psi_prepare_options_for_module("DFMP2");
-    if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
+// double py_psi_dfmp2grad()
+// {
+//     py_psi_prepare_options_for_module("DFMP2");
+//     if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
+//         return Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     else
+//         return 0.0;
+// }
 
-double py_psi_sapt()
+double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+                   SharedWavefunction MonomerB)
 {
     py_psi_prepare_options_for_module("SAPT");
-    if (sapt::sapt(Process::environment.options) == Success) {
+    if (sapt::sapt(Dimer, MonomerA, MonomerB, Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
         return 0.0;
 }
 
-double py_psi_fisapt()
+double py_psi_fisapt(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("FISAPT");
-    if (fisapt::fisapt(Process::environment.options) == Success) {
+    if (fisapt::fisapt(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
         return 0.0;
 }
 
-double py_psi_transqt2()
+double py_psi_transqt2(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("TRANSQT2");
-    transqt2::transqt2(Process::environment.options);
+    transqt2::transqt2(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
@@ -491,57 +435,29 @@ double py_psi_ccsort()
     return 0.0;
 }
 
-double py_psi_cctransort()
+void py_psi_cctransort(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCTRANSORT");
-    cctransort::cctransort(Process::environment.options);
-    return 0.0;
+    cctransort::cctransort(ref_wfn, Process::environment.options);
+    // return 0.0;
 }
-
-double py_psi_ccenergy()
+SharedWavefunction py_psi_ccenergy(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCENERGY");
-    boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
-            Process::environment.wavefunction(),
+    SharedWavefunction ccwave(new ccenergy::CCEnergyWavefunction(
+            ref_wfn,
             Process::environment.options)
     );
 
-    std::string name = Process::environment.wavefunction()->name();
-    std::string wfn = Process::environment.options.get_str("WFN");
-    if (wfn != name) {
-        ccwave->set_name(wfn);
-        Process::environment.set_wavefunction(ccwave);
-    }
-
     double energy = ccwave->compute_energy();
-    return energy;
+    return ccwave;
 
-//    if (ccenergy::ccenergy(Process::environment.options) == Success) {
-//        return Process::environment.globals["CURRENT ENERGY"];
-//    }
-//    else
-//        return 0.0;
 }
 
-/*
-double py_psi_mp2()
-{
-    py_psi_prepare_options_for_module("MP2");
-    boost::shared_ptr<Wavefunction> mp2wave(new mp2::MP2Wavefunction(
-                                                Process::environment.wavefunction(),
-                                                Process::environment.options)
-                                           );
-    Process::environment.set_wavefunction(mp2wave);
-
-    double energy = mp2wave->compute_energy();
-    return energy;
-}
-*/
-
-double py_psi_cctriples()
+double py_psi_cctriples(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCTRIPLES");
-    if (cctriples::cctriples(Process::environment.options) == Success) {
+    if (cctriples::cctriples(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -564,89 +480,65 @@ void py_psi_efp_set_options()
     Process::environment.get_efp()->set_options();
 }
 
-double py_psi_fnocc()
+SharedWavefunction py_psi_fnocc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("FNOCC");
-    if (fnocc::fnocc(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return fnocc::fnocc(ref_wfn, Process::environment.options);
 }
 
-double py_psi_detci()
+SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DETCI");
-    if (detci::detci(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return detci::detci(ref_wfn, Process::environment.options);
 }
 
 #ifdef ENABLE_CHEMPS2
-double py_psi_dmrg()
+double py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DMRG");
-    if (dmrg::dmrg(Process::environment.options) == Success) {
+    if (dmrg::dmrg(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
 }
 #else
-double py_psi_dmrg()
+double py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     throw PSIEXCEPTION("DMRG not enabled.");
 }
 #endif
 
-// DGAS
-// double py_psi_detcas()
-// {
-//     py_psi_prepare_options_for_module("DETCAS");
-//     return detcas::detcas(Process::environment.options);
-// }
-
-double py_psi_cchbar()
+void py_psi_cchbar(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCHBAR");
-    cchbar::cchbar(Process::environment.options);
-    return 0.0;
+    cchbar::cchbar(ref_wfn, Process::environment.options);
 }
 
-// double py_psi_cclambda()
-// {
-//     py_psi_prepare_options_for_module("CCLAMBDA");
-//     cclambda::cclambda(Process::environment.options);
-//     return 0.0;
-// }
-
-double py_psi_cclambda()
+SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
     boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
-            Process::environment.wavefunction(),
+            ref_wfn,
             Process::environment.options)
     );
-    Process::environment.set_wavefunction(cclambda);
 
     double energy = cclambda->compute_energy();
-    return energy;
+    return cclambda;
 }
 
 
-double py_psi_ccdensity()
+double py_psi_ccdensity(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCDENSITY");
-    ccdensity::ccdensity(Process::environment.options);
+    ccdensity::ccdensity(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
-double py_psi_ccresponse()
+double py_psi_ccresponse(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
-    ccresponse::ccresponse(Process::environment.options);
+    ccresponse::ccresponse(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
@@ -655,7 +547,7 @@ void py_psi_print_list(python::list py_list)
     return;
 }
 
-void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list,
+void py_psi_scatter(boost::shared_ptr<Molecule> molecule, double step, python::list dip_polar_list, python::list opt_rot_list,
                     python::list dip_quad_polar_list)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
@@ -696,40 +588,38 @@ void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_r
 //    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
 //        (*i)->print(stdout);
 
-    ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
+    ccresponse::scatter(molecule, Process::environment.options, step, dip_polar_tensors,
+                        opt_rot_tensors, dip_quad_polar_tensors);
 }
 
-double py_psi_cceom()
+double py_psi_cceom(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCEOM");
-    if (cceom::cceom(Process::environment.options) == Success) {
+    if (cceom::cceom(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
 }
 
-double py_psi_psimrcc()
+double py_psi_psimrcc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("PSIMRCC");
-    psimrcc::psimrcc(Process::environment.options);
+    psimrcc::psimrcc(ref_wfn, Process::environment.options);
     return 0.0;
 }
 
-double py_psi_adc()
+SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("ADC");
-    if (adc::adc(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    SharedWavefunction adc_wfn = adc::adc(ref_wfn, Process::environment.options);
+    return adc_wfn;
 }
 
-double py_psi_thermo()
+double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs)
 {
     py_psi_prepare_options_for_module("THERMO");
-    thermo::thermo(Process::environment.options);
+    thermo::thermo(ref_wfn, vib_freqs, Process::environment.options);
     return 0.0;
 }
 
@@ -1091,6 +981,10 @@ void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
 {
     Process::environment.set_molecule(molecule);
 }
+void py_psi_set_legacy_molecule(boost::shared_ptr<Molecule> legacy_molecule)
+{
+    Process::environment.set_legacy_molecule(legacy_molecule);
+}
 
 void py_psi_set_parent_symmetry(std::string pg)
 {
@@ -1106,6 +1000,10 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
 }
+boost::shared_ptr<Molecule> py_psi_get_legacy_molecule()
+{
+    return Process::environment.legacy_molecule();
+}
 
 boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
 {
@@ -1114,21 +1012,12 @@ boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
 
 void py_psi_set_gradient(SharedMatrix grad)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_gradient(grad);
-    } else {
-        Process::environment.set_gradient(grad);
-    }
+    Process::environment.set_gradient(grad);
 }
 
 SharedMatrix py_psi_get_gradient()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->gradient();
-    } else {
-        return Process::environment.gradient();
-    }
+    return Process::environment.gradient();
 }
 
 void py_psi_set_efp_torque(SharedMatrix torq)
@@ -1152,52 +1041,18 @@ SharedMatrix py_psi_get_efp_torque()
 
 void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
 {
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_frequencies(freq);
-    } else {
-        Process::environment.set_frequencies(freq);
-    }
-}
-
-void py_psi_set_normalmodes(boost::shared_ptr<Vector> norm)
-{
-    if (Process::environment.wavefunction()) {
-        Process::environment.wavefunction()->set_normalmodes(norm);
-    } else {
-//      Process::environment.set_normalmodes(norm);
-    }
+    Process::environment.set_frequencies(freq);
 }
 
 boost::shared_ptr<Vector> py_psi_get_frequencies()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->frequencies();
-    } else {
-        return Process::environment.frequencies();
-    }
+    return Process::environment.frequencies();
 }
 
 boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
 {
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->get_atomic_point_charges();
-    }
-    else {
-        boost::shared_ptr<psi::Vector> empty(new psi::Vector());
-        return empty; // charges not added to process.h for environment - yet(?)
-    }
-}
-
-boost::shared_ptr<Vector> py_psi_get_normalmodes()
-{
-    if (Process::environment.wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
-        return wf->normalmodes();
-    } else {
-//      return Process::environment.normalmodes();
-    }
+    boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+    return empty; // charges not added to process.h for environment - yet(?)
 }
 
 double py_psi_get_variable(const std::string& key)
@@ -1256,9 +1111,19 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-boost::shared_ptr<Wavefunction> py_psi_wavefunction()
+boost::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
 {
-    return Process::environment.wavefunction();
+    return Process::environment.legacy_wavefunction();
+}
+void py_psi_set_legacy_wavefunction(SharedWavefunction wfn)
+{
+    Process::environment.set_legacy_wavefunction(wfn);
+}
+SharedWavefunction py_psi_new_wavefunction(boost::shared_ptr<Molecule> molecule,
+                                           const std::string& basis)
+{
+    // Ultimately options will not go here
+    return SharedWavefunction(new Wavefunction(molecule, basis, Process::environment.options));
 }
 
 string py_psi_get_input_directory()
@@ -1363,7 +1228,6 @@ bool psi4_python_module_initialize()
 
 void psi4_python_module_finalize()
 {
-    Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();
 
     // Shut things down:
@@ -1475,9 +1339,19 @@ BOOST_PYTHON_MODULE (psi4)
         py_psi_set_active_molecule,
         "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    def("wavefunction",
-        py_psi_wavefunction,
-        "Returns the current wavefunction object from the most recent computation.");
+    def("set_legacy_molecule",
+        py_psi_set_legacy_molecule,
+        "Activates a previously defined (in the input) molecule, by name.");
+    def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
+    def("legacy_wavefunction",
+        py_psi_legacy_wavefunction,
+        "Returns the current legacy_wavefunction object from the most recent computation.");
+    def("set_legacy_wavefunction",
+        py_psi_set_legacy_wavefunction,
+        "Returns the current legacy_wavefunction object from the most recent computation.");
+    def("new_wavefunction",
+        py_psi_new_wavefunction,
+        "Builds a new wavefunction from scratch.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient",
         py_psi_set_gradient,
@@ -1495,13 +1369,9 @@ BOOST_PYTHON_MODULE (psi4)
     def("get_atomic_point_charges",
         py_psi_get_atomic_point_charges,
         "Returns the most recently computed atomic point charges, as a double * object.");
-    def("get_normalmodes", py_psi_get_normalmodes, "Returns the most recently computed normal modes Vector object.");
     def("set_frequencies",
         py_psi_set_frequencies,
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
-    def("set_normalmodes",
-        py_psi_set_normalmodes,
-        "Assigns the global normalmodes to the values stored in a Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
@@ -1591,7 +1461,6 @@ BOOST_PYTHON_MODULE (psi4)
         py_psi_get_array_variable,
         "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
-//    def("print_array_variables", py_psi_print_array_variable_map, "Prints all PSI variables that have been set internally.");
     def("get_array_variables",
         py_psi_return_array_variable_map,
         "Returns dictionary of the PSI variables set internally by the modules or python driver.");
@@ -1611,50 +1480,31 @@ BOOST_PYTHON_MODULE (psi4)
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv",
         py_psi_deriv,
         "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
-    typedef double (*scf_module_none)();
-    typedef double (*scf_module_two)(PyObject *, PyObject *);
-
-    def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
-    def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
-    def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
-    def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
-//    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
-    def("fd_geoms_1_0",
-        py_psi_fd_geoms_1_0,
-        "Gets the list of displacements needed for a finite difference gradient computation, from energy points.");
-    //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
-    def("fd_geoms_freq_0",
-        py_psi_fd_geoms_freq_0,
-        "Gets the list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_geoms_freq_1",
-        py_psi_fd_geoms_freq_1,
-        "Gets the list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
-    def("fd_geoms_hessian_0",
-        py_psi_fd_geoms_hessian_0,
-        "Gets the list of displacements needed fof a finite difference frequency computation, from energy points.");
-    def("fd_1_0", py_psi_fd_1_0, "Performs a finite difference gradient computation, from energy points.");
-    //def("fd_2_0", py_psi_fd_2_0);
-    def("fd_freq_0",
-        py_psi_fd_freq_0,
+    def("fd_geoms_1_0", py_psi_fd_geoms_1_0,
+        "Gets list of displacements needed for a finite difference gradient computation, from energy points.");
+    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0,
+        "Gets list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1,
+        "Gets list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
+    def("fd_1_0", py_psi_fd_1_0,
+        "Performs a finite difference gradient computation, from energy points.");
+    def("fd_freq_0", py_psi_fd_freq_0,
         "Performs a finite difference frequency computation, from energy points, for a given irrep.");
-    def("fd_freq_1",
-        py_psi_fd_freq_1,
+    def("fd_freq_1", py_psi_fd_freq_1,
         "Performs a finite difference frequency computation, from gradients, for a given irrep.");
-    def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
     def("atomic_displacements",
         py_psi_atomic_displacements,
         "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
@@ -1671,7 +1521,6 @@ BOOST_PYTHON_MODULE (psi4)
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
-// DGAS    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
@@ -1689,10 +1538,8 @@ BOOST_PYTHON_MODULE (psi4)
 
     // Define library classes
     export_psio();
-    export_chkpt();
     export_mints();
     export_functional();
-    export_libfrag();
     export_libparallel();
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
@@ -1880,6 +1727,6 @@ void Python::run(FILE *input)
     if (s)
         free(s);
     Process::environment.molecule().reset();
-    Process::environment.wavefunction().reset();
+    Process::environment.legacy_wavefunction().reset();
     py_psi_plugin_close_all();
 }

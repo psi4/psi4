@@ -35,11 +35,13 @@ __pycache__
 _coverage_html
 
 # Files resulting from running PSI4
+ijk.dat
 output.dat
 *.32
 *.clean
 #*.dat
 *.timer.dat
+*timer.dat
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
 tests/*/PEDRA.OUT
@@ -47,6 +49,9 @@ tests/*/cavity.npz
 tests/*/cavity.off
 tests/*/pcmsolver.inp
 lib/python/pcm_placeholder.py
+tests/*/*.grad
+tests/*/*.hess
+
 
 # Compilation directories that people use
 objdir

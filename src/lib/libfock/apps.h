@@ -68,12 +68,10 @@ protected:
     boost::shared_ptr<VBase> v_;
 
     double Eref_;
-
-    void common_init();
     
 public:
 
-    RBase();
+    RBase(SharedWavefunction ref_wfn, Options& options);
     // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
     RBase(bool flag);
     virtual ~RBase();
@@ -158,7 +156,7 @@ protected:
     virtual std::pair<SharedMatrix, SharedMatrix > ADao(SharedMatrix T1);
 
 public:
-    RCIS();
+    RCIS(SharedWavefunction ref_wfn, Options& options);
     virtual ~RCIS();
 
     virtual double compute_energy();
@@ -179,7 +177,7 @@ protected:
     virtual void print_header();
 
 public:
-    RTDHF();
+    RTDHF(SharedWavefunction ref_wfn, Options& options);
     virtual ~RTDHF();
 
     virtual double compute_energy();
@@ -206,7 +204,7 @@ protected:
     std::set<std::string> tasks_;
 
 public:
-    RCPHF();
+    RCPHF(SharedWavefunction ref_wfn, Options& options);
     virtual ~RCPHF();
 
     /// Solve for all perturbations currently in b 
@@ -228,7 +226,7 @@ protected:
     virtual void print_header();
 
 public:
-    RCPKS();
+    RCPKS(SharedWavefunction ref_wfn, Options& options);
     virtual ~RCPKS();
 
     virtual double compute_energy();
@@ -240,7 +238,7 @@ protected:
     virtual void print_header();
 
 public:
-    RTDA();
+    RTDA(SharedWavefunction ref_wfn, Options& options);
     virtual ~RTDA();
 
     virtual double compute_energy();
@@ -252,7 +250,7 @@ protected:
     virtual void print_header();
 
 public:
-    RTDDFT();
+    RTDDFT(SharedWavefunction ref_wfn, Options& options);
     virtual ~RTDDFT();
 
     virtual double compute_energy();

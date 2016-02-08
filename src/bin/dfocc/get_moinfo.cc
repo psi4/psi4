@@ -54,7 +54,7 @@ if (reference_ == "RESTRICTED") {
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();
@@ -121,8 +121,8 @@ if (reference_ == "RESTRICTED") {
             }
         }
 
-        // Read orbital coefficients from chkpt
-	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+        // Read orbital coefficients from reference_wavefunction
+    	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
         CmoA->set(Ca_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
@@ -159,7 +159,7 @@ else if (reference_ == "UNRESTRICTED") {
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();
@@ -275,8 +275,8 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
 
-        // Read orbital coefficients from chkpt
-	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+        // Read orbital coefficients from reference_wavefunction
+    	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
         CmoA->set(Ca_);
         if (print_ > 2) CmoA->print();

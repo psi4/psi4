@@ -35,21 +35,21 @@ namespace psi{ namespace @plugin@ {
 class @Plugin@ : public Wavefunction
 {
 public:
-    @Plugin@(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options);
+    @Plugin@(SharedWavefunction ref_wfn, Options& options);
     virtual ~@Plugin@();
 
     double compute_energy();
 
 private:
-    Dimension nvirtpi_;
+    Dimension virtpi_;
     void common_init();
 };
 
-@Plugin@::@Plugin@(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
-    : Wavefunction(options, _default_psio_lib_)
+@Plugin@::@Plugin@(SharedWavefunction ref_wfn, Options& options)
+    : Wavefunction(options)
 {
-    Process::environment.set_wavefunction(reference_wavefunction);
-    reference_wavefunction_ = reference_wavefunction;
+    // Shallow copy ref_wfn data into this wavefunction
+    shallow_copy(ref_wfn);
     common_init();
 }
 
@@ -59,16 +59,16 @@ private:
 
 void @Plugin@::common_init()
 {
-    nso_     = reference_wavefunction_->nso();
-    nirrep_  = reference_wavefunction_->nirrep();
-    nmo_     = reference_wavefunction_->nmo();
-    soccpi_  = reference_wavefunction_->soccpi();
-    doccpi_  = reference_wavefunction_->doccpi();
-    frzcpi_  = reference_wavefunction_->frzcpi();
-    frzvpi_  = reference_wavefunction_->frzvpi();
-    nmopi_   = reference_wavefunction_->nmopi();
-    nsopi_   = reference_wavefunction_->nsopi();
-    nvirtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi_;
+    // nsopi_, frzcpi_, etc are Dimension objects for symmetry orbitals
+    // These are copied from ref_wfn when we call for shallow_copy
+    virtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi_;
+
+    outfile->Printf("The wavefunction has the following dimensions:\n");
+    nsopi_.print();
+    frzcpi_.print();
+    doccpi_.print();
+    virtpi_.print();
+    frzvpi_.print();
 }
 
 double @Plugin@::compute_energy()
@@ -92,9 +92,13 @@ int read_options(std::string name, Options& options)
 extern "C"
 PsiReturnType @plugin@(Options& options)
 {
-    @Plugin@ wave(Process::environment.wavefunction(), options);
-    wave.compute_energy();
 
+    // Note that if this function was integrated into Psi4 we would not be using P::e.wavefunction
+    // Instead everything would be explicitly passed
+    SharedWavefunction wfn(new @Plugin@(Process::environment.wavefunction(), options));
+    wfn->compute_energy();
+
+    Process::environment.set_wavefunction(wfn);
     return Success;
 }
 

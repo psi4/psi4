@@ -29,18 +29,17 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void ET2(void)
+void CCEnergyWavefunction::ET2(void)
 {
   dpdfile2 tIA, tia;
   dpdbuf4 newtIJAB, newtijab, newtIjAb;
   dpdbuf4 E, t2, t2a, t2b;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -57,7 +56,7 @@ void ET2(void)
 
     global_dpd_->buf4_close(&newtIjAb);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tijab");
@@ -111,7 +110,7 @@ void ET2(void)
     global_dpd_->buf4_close(&newtIjAb);
 
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "New tijab");

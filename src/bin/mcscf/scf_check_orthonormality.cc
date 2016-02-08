@@ -23,9 +23,6 @@
 #include <iostream>
 #include <cmath>
 #include <cstdio>
-
-#include <libchkpt/chkpt.hpp>
-
 #include "scf.h"
 
 extern FILE* outfile;

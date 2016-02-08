@@ -43,16 +43,16 @@ public:
     }
 };
 
-extern "C" PsiReturnType
-sointegrals(Options &options)
+extern "C"
+SharedWavefunction sointegrals(SharedWavefunction ref_wfn, Options &options)
 {
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
 
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    shared_ptr<Molecule> molecule = ref_wfn->molecule();
 
-    // Form basis object:
-    shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "BASIS", options.get_str("BASIS"));
+    // Grab basis object:
+    shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
     // The integral factory oversees the creation of integral objects
     shared_ptr<IntegralFactory> integral(new IntegralFactory
@@ -129,7 +129,7 @@ sointegrals(Options &options)
         }
     }
 
-    return Success;
+    return ref_wfn;
 }
 
 }} // End namespaces

@@ -71,7 +71,7 @@ protected:
 
 public:
 
-    UStab();
+    UStab(SharedWavefunction ref_wfn, Options& options);
     virtual ~UStab();
 
     /// Gets a handle to the JK object, if built by preiterations

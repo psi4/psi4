@@ -38,7 +38,6 @@
 #include <limits>
 
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
@@ -235,11 +234,16 @@ Molecule& Molecule::operator=(const Molecule& other)
     full_pg_        = other.full_pg_;
     full_pg_n_      = other.full_pg_n_;
 
-    atoms_.clear();
     // Deep copy the map of variables
+    full_atoms_.clear();
     std::vector<boost::shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
-    for(; iter != other.full_atoms_.end(); ++iter)
+    for(; iter != other.full_atoms_.end(); ++iter){
         full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
+    }
+    atoms_.clear();
+    for(iter = other.atoms_.begin(); iter != other.atoms_.end(); ++iter){
+        atoms_.push_back((*iter)->clone(atoms_, geometry_variables_));
+    }
 
     // This is called here, so that the atoms list is populated
     update_geometry();
@@ -698,40 +702,6 @@ int Molecule::nfrozen_core(const std::string& depth)
     }
 }
 
-void Molecule::init_with_psio(boost::shared_ptr<PSIO> psio)
-{
-    // User sent a psio object. Create a chkpt object based on it.
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
-    init_with_chkpt(chkpt);
-}
-
-void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
-{
-    lock_frame_ = false;
-    int natoms = 0;
-    double *zvals, **geom;
-    molecular_charge_       = 0;
-    multiplicity_           = 1;
-
-    natoms = chkpt->rd_natom();
-    zvals = chkpt->rd_zvals();
-    geom = chkpt->rd_geom();
-
-    for (int i=0; i<natoms; ++i) {
-        add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
-    }
-
-    // We need to make 1 fragment with all atoms
-    fragments_.push_back(std::make_pair(0, natoms));
-    fragment_types_.push_back(Real);
-
-    // chkpt is already in AU set the conversion to 1
-    input_units_to_au_ = 1.0;
-
-    Chkpt::free(zvals);
-    Chkpt::free(geom);
-}
-
 void Molecule::init_with_xyz(const std::string& xyzfilename)
 {
     lock_frame_ = false;
@@ -821,7 +791,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     fragment_multiplicities_.push_back(0);
     fragment_charges_.push_back(0);
 
-    // chkpt is already in AU set the conversion to 1
+    // old checkpoint file is already in AU set the conversion to 1
     input_units_to_au_ = 1.0;
 
     // Set the units to bohr since we did the conversion above, if needed.
@@ -1659,74 +1629,29 @@ boost::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &re
     return clone;
 }
 
-void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
-{
-    // Save the current prefix
-    string pre = chkpt->get_prefix();
-    // If needed switch the prefix in the chkpt file.
-    if (!prefix.empty()) {
-        chkpt->set_prefix(prefix.c_str());
-    }
-
-    // Need to save natom, zvals, geom
-    chkpt->wt_natom(natom());
-    chkpt->wt_nallatom(nallatom());
-
-    double *zvals = new double[natom()];
-    double **geom = block_matrix(natom(), 3);
-    double **fgeom = block_matrix(nallatom(), 3);
-    int *dummyflags = new int[nallatom()];
-
-    for (int i=0; i<natom(); ++i) {
-        zvals[i] = static_cast<double>(Z(i));
-        geom[i][0] = x(i); geom[i][1] = y(i); geom[i][2] = z(i);
-    }
-
-    for (int i=0; i<nallatom(); ++i) {
-        fgeom[i][0] = fx(i); geom[i][1] = fy(i); geom[i][2] = fz(i);
-        dummyflags[i] = fZ(i) > 0 ? 0 : 1;
-    }
-
-    chkpt->wt_zvals(zvals);
-    chkpt->wt_atom_dummy(dummyflags);
-    chkpt->wt_fgeom(fgeom);
-
-    chkpt->wt_enuc(nuclear_repulsion_energy());
-
-    // Reset the prefix
-    if (!prefix.empty()) {
-        chkpt->set_prefix(pre.c_str());
-    }
-
-    delete[]dummyflags;
-    delete[]zvals;
-    free_block(geom);
-    free_block(fgeom);
-}
-
 void Molecule::print_in_angstrom() const
 {
     // Sometimes one just wants angstroms regardless of input units
 
-        if (natom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    "Angstrom", molecular_charge_, multiplicity_);
-            outfile->Printf("       Center              X                  Y                   Z       \n");
-            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
+    if (natom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                "Angstrom", molecular_charge_, multiplicity_);
+        outfile->Printf("       Center              X                  Y                   Z       \n");
+        outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            for(int i = 0; i < natom(); ++i){
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
-                for(int j = 0; j < 3; j++)
-                    outfile->Printf( "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
-                outfile->Printf("\n");
-            }
+        for(int i = 0; i < natom(); ++i){
+            outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
+            for(int j = 0; j < 3; j++)
+                outfile->Printf( "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
             outfile->Printf("\n");
-
         }
-        else
-            outfile->Printf( "  No atoms in this molecule.\n");
+        outfile->Printf("\n");
+
+    }
+    else
+        outfile->Printf( "  No atoms in this molecule.\n");
 
 }
 
@@ -1736,156 +1661,156 @@ void Molecule::print_in_bohr() const
     // I'm tired of wanting to compare geometries with cints and psi4 will use what's in the input
     // and psi3 using bohr.
 
-        if (natom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    "Bohr", molecular_charge_, multiplicity_);
-            outfile->Printf("       Center              X                  Y                   Z       \n");
-            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
+    if (natom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                "Bohr", molecular_charge_, multiplicity_);
+        outfile->Printf("       Center              X                  Y                   Z       \n");
+        outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            for(int i = 0; i < natom(); ++i){
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
-                for(int j = 0; j < 3; j++)
-                    outfile->Printf( "  %17.12f", xyz(i, j));
-                outfile->Printf("\n");
-            }
+        for(int i = 0; i < natom(); ++i){
+            outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
+            for(int j = 0; j < 3; j++)
+                outfile->Printf( "  %17.12f", xyz(i, j));
             outfile->Printf("\n");
-
         }
-        else
-            outfile->Printf( "  No atoms in this molecule.\n");
+        outfile->Printf("\n");
+
+    }
+    else
+        outfile->Printf( "  No atoms in this molecule.\n");
 
 }
 
 void Molecule::print_in_input_format() const
 {
-        if (nallatom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+    if (nallatom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
 
-            for(int i = 0; i < nallatom(); ++i){
-                if (fZ(i) || (fsymbol(i) == "X")) {
-                    outfile->Printf( "    %-8s", fsymbol(i).c_str());
-                } else {
-                    std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
-                    outfile->Printf( "    %-8s", stmp.c_str());
-                }
-                full_atoms_[i]->print_in_input_format();
+        for(int i = 0; i < nallatom(); ++i){
+            if (fZ(i) || (fsymbol(i) == "X")) {
+                outfile->Printf( "    %-8s", fsymbol(i).c_str());
+            } else {
+                std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
+                outfile->Printf( "    %-8s", stmp.c_str());
             }
-            outfile->Printf("\n");
-
-            if(geometry_variables_.size()){
-                std::map<std::string, double>::const_iterator iter;
-                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
-                    outfile->Printf( "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
-                }
-                outfile->Printf( "\n");
-            }
+            full_atoms_[i]->print_in_input_format();
         }
+        outfile->Printf("\n");
+
+        if(geometry_variables_.size()){
+            std::map<std::string, double>::const_iterator iter;
+            for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                outfile->Printf( "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
+            }
+            outfile->Printf( "\n");
+        }
+    }
 
 }
 
 void Molecule::print() const
 {
 
-        if (natom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            outfile->Printf("       Center              X                  Y                   Z               Mass       \n");
-            outfile->Printf("    ------------   -----------------  -----------------  -----------------  -----------------\n");
+    if (natom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+        outfile->Printf("       Center              X                  Y                   Z               Mass       \n");
+        outfile->Printf("    ------------   -----------------  -----------------  -----------------  -----------------\n");
 
-            for(int i = 0; i < natom(); ++i){
-                Vector3 geom = atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
-                for(int j = 0; j < 3; j++)
-                    outfile->Printf( "  %17.12f", geom[j]);
-                outfile->Printf("  %17.12f", mass(i));
-                outfile->Printf("\n");
-            }
-            if (Process::environment.options.get_int("PRINT") > 2) {
-                outfile->Printf("\n");
-                for(int i = 0; i < natom(); ++i) {
-                    outfile->Printf("    %8s\n", label(i).c_str());
-                    std::map<std::string, std::string>::const_iterator iter;
-                    for (iter = atoms_[i]->basissets().begin(); iter!=atoms_[i]->basissets().end(); ++iter){
-                        std::map<std::string, std::string>::const_iterator otheriter = atoms_[i]->shells().find(iter->first);
-                        outfile->Printf("              %-15s %-20s %s\n", iter->first.c_str(),
-                            iter->second.c_str(), otheriter->second.c_str());
-                    }
-                }
-            }
+        for(int i = 0; i < natom(); ++i){
+            Vector3 geom = atoms_[i]->compute();
+            outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
+            for(int j = 0; j < 3; j++)
+                outfile->Printf( "  %17.12f", geom[j]);
+            outfile->Printf("  %17.12f", mass(i));
             outfile->Printf("\n");
         }
-        else
-            outfile->Printf( "  No atoms in this molecule.\n");
+        if (Process::environment.options.get_int("PRINT") > 2) {
+            outfile->Printf("\n");
+            for(int i = 0; i < natom(); ++i) {
+                outfile->Printf("    %8s\n", label(i).c_str());
+                std::map<std::string, std::string>::const_iterator iter;
+                for (iter = atoms_[i]->basissets().begin(); iter!=atoms_[i]->basissets().end(); ++iter){
+                    std::map<std::string, std::string>::const_iterator otheriter = atoms_[i]->shells().find(iter->first);
+                    outfile->Printf("              %-15s %-20s %s\n", iter->first.c_str(),
+                        iter->second.c_str(), otheriter->second.c_str());
+                }
+            }
+        }
+        outfile->Printf("\n");
+    }
+    else
+        outfile->Printf( "  No atoms in this molecule.\n");
 
 }
 
 void Molecule::print_cluster() const
 {
 
-        if (natom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            outfile->Printf("       Center              X                  Y                   Z       \n");
-            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
+    if (natom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+        outfile->Printf("       Center              X                  Y                   Z       \n");
+        outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            size_t cluster_index = 1;
-            bool look_for_separators = (fragments_.size() > 1);
+        size_t cluster_index = 1;
+        bool look_for_separators = (fragments_.size() > 1);
 
-            for(int i = 0; i < natom(); ++i){
-                if (look_for_separators && fragments_[cluster_index].first == i) {
-                    outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
-                    cluster_index++;
-                    if (cluster_index == fragments_.size()) {
-                        look_for_separators = false;
-                    }
+        for(int i = 0; i < natom(); ++i){
+            if (look_for_separators && fragments_[cluster_index].first == i) {
+                outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
+                cluster_index++;
+                if (cluster_index == fragments_.size()) {
+                    look_for_separators = false;
                 }
-
-                Vector3 geom = atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
-                for(int j = 0; j < 3; j++)
-                    outfile->Printf( "  %17.12f", geom[j]);
-                outfile->Printf("\n");
             }
-            outfile->Printf("\n");
 
+            Vector3 geom = atoms_[i]->compute();
+            outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)");
+            for(int j = 0; j < 3; j++)
+                outfile->Printf( "  %17.12f", geom[j]);
+            outfile->Printf("\n");
         }
-        else
-            outfile->Printf( "  No atoms in this molecule.\n");
+        outfile->Printf("\n");
+
+    }
+    else
+        outfile->Printf( "  No atoms in this molecule.\n");
 
 }
 
 void Molecule::print_full() const
 {
 
-        if (natom()) {
-            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
-            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            outfile->Printf("       Center              X                  Y                   Z       \n");
-            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
+    if (natom()) {
+        if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+        if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+        outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+        outfile->Printf("       Center              X                  Y                   Z       \n");
+        outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
-            for(size_t i = 0; i < full_atoms_.size(); ++i){
-                Vector3 geom = full_atoms_[i]->compute();
-                outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)");
-                for(int j = 0; j < 3; j++)
-                    outfile->Printf( "  %17.12f", geom[j]);
-                outfile->Printf("\n");
-            }
+        for(size_t i = 0; i < full_atoms_.size(); ++i){
+            Vector3 geom = full_atoms_[i]->compute();
+            outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)");
+            for(int j = 0; j < 3; j++)
+                outfile->Printf( "  %17.12f", geom[j]);
             outfile->Printf("\n");
-
         }
-        else
-            outfile->Printf( "  No atoms in this molecule.\n");
+        outfile->Printf("\n");
+
+    }
+    else
+        outfile->Printf( "  No atoms in this molecule.\n");
 
 }
 

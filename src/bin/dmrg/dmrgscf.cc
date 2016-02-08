@@ -11,10 +11,9 @@
 //Header above this comment contains typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
-#include <libchkpt/chkpt.h>
 #include <libfock/jk.h>
 #include <libmints/writer_file_prefix.h>
-//Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix()
+//Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix(std::string name)
 
 #include <stdlib.h>
 #include <iostream>
@@ -190,7 +189,7 @@ void buildHamDMRG( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<
         half.gemm(true, false, 1.0, wfn->Ca(), soOei, 0.0);
         moOei.gemm(false, false, 1.0, half, wfn->Ca(), 0.0);
 
-        double Econstant = Process::environment.molecule()->nuclear_repulsion_energy();
+        double Econstant = wfn->molecule()->nuclear_repulsion_energy();
         for (int h = 0; h < iHandler->getNirreps(); h++){
             const int NOCC = iHandler->getNOCC(h);
             for (int froz = 0; froz < NOCC; froz++){
@@ -366,7 +365,7 @@ void update_WFNco( CheMPS2::DMRGSCFmatrix * Coeff_orig, CheMPS2::DMRGSCFindices 
 }
 
 
-PsiReturnType dmrg(Options &options)
+PsiReturnType dmrg(SharedWavefunction wfn, Options &options)
 {
     tstart();
 
@@ -376,8 +375,6 @@ PsiReturnType dmrg(Options &options)
      *   Environment information   *
      *******************************/
     boost::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction(); // The reference (SCF) wavefunction
-    if (!wfn){ throw PSIEXCEPTION("SCF has not been run yet!"); }
 
     /*************************
      *   Fetch the options   *
@@ -408,14 +405,14 @@ PsiReturnType dmrg(Options &options)
     const string dmrgscf_active_space = options.get_str("DMRG_ACTIVE_SPACE");
     const bool dmrgscf_loc_random     = options.get_bool("DMRG_LOC_RANDOM");
     const int dmrgscf_num_vec_diis    = CheMPS2::DMRGSCF_numDIISvecs;
-    const std::string unitaryname     = psi::get_writer_file_prefix() + ".unitary.h5";
-    const std::string diisname        = psi::get_writer_file_prefix() + ".DIIS.h5";
+    const std::string unitaryname     = psi::get_writer_file_prefix(wfn->molecule()->name()) + ".unitary.h5";
+    const std::string diisname        = psi::get_writer_file_prefix(wfn->molecule()->name()) + ".DIIS.h5";
 
     /****************************************
      *   Check if the input is consistent   *
      ****************************************/
 
-    const int SyGroup= chemps2_groupnumber( Process::environment.molecule()->sym_label() );
+    const int SyGroup= chemps2_groupnumber( wfn->molecule()->sym_label() );
     const int nmo    = wfn->nmo();
     const int nirrep = wfn->nirrep();
     int * orbspi     = wfn->nmopi();
@@ -534,7 +531,7 @@ PsiReturnType dmrg(Options &options)
 
     SharedMatrix work1; work1 = SharedMatrix( new Matrix("work1", nirrep, orbspi, orbspi) );
     SharedMatrix work2; work2 = SharedMatrix( new Matrix("work2", nirrep, orbspi, orbspi) );
-    boost::shared_ptr<JK> myJK; myJK = boost::shared_ptr<JK>(new DiskJK(wfn->basisset()));
+    boost::shared_ptr<JK> myJK; myJK = boost::shared_ptr<JK>(new DiskJK(wfn->basisset(), options));
     myJK->set_cutoff(0.0);
     myJK->initialize();
     CheMPS2::DMRGSCFmatrix * Coeff_orig  = new CheMPS2::DMRGSCFmatrix( iHandler );

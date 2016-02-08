@@ -23,9 +23,11 @@
 #ifndef __psi4_src_lib_libplugin_plugin_h
 #define __psi4_src_lib_libplugin_plugin_h
 
+#include <libmints/mints.h>
 #include <libparallel/parallel.h>
 #include <psi4-dec.h>
 #include <string>
+
 
 namespace boost {
 template<class T>
@@ -40,7 +42,7 @@ class Communicator;
 class PSIO;
 
 // Useful typedef's
-typedef PsiReturnType (*plugin_t)(Options&);
+typedef SharedWavefunction (*plugin_t)(SharedWavefunction, Options&);
 typedef int (*read_options_t)(std::string, Options&);
 
 // DEPRECATED but left so that existing plugins will work.

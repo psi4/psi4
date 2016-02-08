@@ -134,6 +134,8 @@ BasisSet::BasisSet()
     xyz_[1] = 0.0;
     xyz_[2] = 0.0;
     name_ = "(Empty Basis Set)";
+    key_ = "(Empty Basis Set)";
+    target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(0, nprimitive_, uoriginal_coefficients_, ucoefficients_, uerd_coefficients_,
                                uexponents_, GaussianType(0), 0, xyz_, 0);
 }
@@ -461,7 +463,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
         const std::string& key, const std::string& target,
         const int forced_puream)
 {
-    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream); 
+    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
     // Uncontract the primary basis set
     std::string str = Process::environment.options.get_str("BASIS");
     if (str.size() > 11){
@@ -469,7 +471,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_pt
        if (pos != std::string::npos){
            return basisset->decontract();
        }
-    } 
+    }
     return basisset;
 }
 
@@ -694,6 +696,8 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     boost::shared_ptr<BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
     basisset->name_.clear();
     basisset->name_ = basisname;
+    basisset->key_ = key;
+    basisset->target_ = target;
 
     //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
     //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());

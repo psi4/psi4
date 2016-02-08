@@ -82,7 +82,6 @@ void CIWavefunction::transform_ci_integrals()
 
   // Indices should be empty
   std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
-
   std::vector<int> orbitals(CalcInfo_->num_ci_orbs, 0);
 
   for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo_->nirreps; h++){
@@ -127,42 +126,20 @@ void CIWavefunction::transform_ci_integrals()
 void CIWavefunction::setup_dfmcscf_ints(){
 
   outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
+
   /// Grab and build basis sets
   boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
-    Process::environment.molecule(), "BASIS", options_.get_str("BASIS"));
+    molecule_, "BASIS", options_.get_str("BASIS"));
   boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
       "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"), "JKFIT",
       options_.get_str("BASIS"), primary->has_puream());
 
   /// Build JK object
-  jk_ = JK::build_JK();
+  jk_ = JK::build_JK(basisset_, options_);
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();
   jk_->set_memory(Process::environment.get_memory() * 0.8);
-  // DFJK* jk = new DFJK(primary,auxiliary);
-
-  // if (options_["INTS_TOLERANCE"].has_changed())
-  //     jk->set_cutoff(options_.get_double("INTS_TOLERANCE"));
-  // if (options_["PRINT"].has_changed())
-  //     jk->set_print(options_.get_int("PRINT"));
-  // if (options_["DEBUG"].has_changed())
-  //     jk->set_debug(options_.get_int("DEBUG"));
-  // if (options_["BENCH"].has_changed())
-  //     jk->set_bench(options_.get_int("BENCH"));
-  // if (options_["DF_INTS_IO"].has_changed())
-  //     jk->set_df_ints_io(options_.get_str("DF_INTS_IO"));
-  // if (options_["DF_FITTING_CONDITION"].has_changed())
-  //     jk->set_condition(options_.get_double("DF_FITTING_CONDITION"));
-  // if (options_["DF_INTS_NUM_THREADS"].has_changed())
-  //     jk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
-
-  // jk_ = boost::shared_ptr<JK>(jk);
-  // jk_->set_memory(Process::environment.get_memory() * 0.8);
-
-  // jk_->set_do_J(true);
-  // jk_->set_do_K(true);
-  // jk_->initialize();
 
   /// Build DF object
   dferi_ = DFERI::build(primary,auxiliary,options_);
@@ -371,7 +348,7 @@ void CIWavefunction::setup_mcscf_ints(){
   ints_->set_print(0);
 
   // Conventional JK build
-  jk_ = JK::build_JK();
+  jk_ = JK::build_JK(basisset_, options_);
   jk_->set_do_J(true);
   jk_->set_do_K(true);
   jk_->initialize();

@@ -206,17 +206,6 @@ public:
     void operator+=(const Molecule& other);
     /// @}
 
-    /**
-     * Pull information from a chkpt object created from psio
-     * \param psio PSIO object to initialize with (will create Chkpt object).
-     */
-    void init_with_psio(boost::shared_ptr<PSIO> psio);
-
-    /**
-     * Pull information from the chkpt object passed
-     * \param chkpt Chkpt object to initialize with
-     */
-    void init_with_chkpt(boost::shared_ptr<Chkpt> chkpt);
 
     /**
      * Pull information from an XYZ file. Useful for debugging.
@@ -440,9 +429,6 @@ public:
 
     /// Save an XYZ string
     std::string save_string_xyz() const;
-
-    /// Save information to checkpoint file.
-    void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
 
     ///
     /// Unique details

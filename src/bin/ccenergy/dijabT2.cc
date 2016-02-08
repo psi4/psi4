@@ -28,25 +28,24 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
 void local_filter_T2(dpdbuf4 *T2);
 
-void dijabT2(void)
+void CCEnergyWavefunction::dijabT2(void)
 {
   dpdbuf4 newtIJAB, newtijab, newtIjAb, tIjAb;
   dpdbuf4 dIJAB, dijab, dIjAb;
 
-  if(params.ref == 0) { /*** RHF ***/
+  if(params_.ref == 0) { /*** RHF ***/
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
     global_dpd_->buf4_copy(&newtIjAb, PSIF_CC_TAMPS, "New tIjAb Increment");
     global_dpd_->buf4_close(&newtIjAb);
 
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb Increment");
-    if(params.local) {
+    if(params_.local) {
       local_filter_T2(&newtIjAb);
     }
     else {
@@ -66,7 +65,7 @@ void dijabT2(void)
     global_dpd_->buf4_close(&tIjAb);
     global_dpd_->buf4_close(&newtIjAb);
   }
-  else if(params.ref == 1) { /*** ROHF ***/
+  else if(params_.ref == 1) { /*** ROHF ***/
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&dIJAB, PSIF_CC_DENOM, 0, 1, 6, 1, 6, 0, "dIJAB");
     global_dpd_->buf4_dirprd(&dIJAB, &newtIJAB);
@@ -85,7 +84,7 @@ void dijabT2(void)
     global_dpd_->buf4_close(&newtIjAb);
     global_dpd_->buf4_close(&dIjAb);
   }
-  else if(params.ref ==2) { /*** UHF ***/
+  else if(params_.ref ==2) { /*** UHF ***/
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&dIJAB, PSIF_CC_DENOM, 0, 1, 6, 1, 6, 0, "dIJAB");
     global_dpd_->buf4_dirprd(&dIJAB, &newtIJAB);

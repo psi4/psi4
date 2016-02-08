@@ -105,7 +105,8 @@ public:
         Options& options);
     virtual ~VBase();
     
-    static boost::shared_ptr<VBase> build_V(Options& options, const std::string& type = "RV");
+    static boost::shared_ptr<VBase> build_V(boost::shared_ptr<BasisSet> primary, 
+                                            Options& options, const std::string& type = "RV");
 
     boost::shared_ptr<BasisSet> basis() const { return primary_; }
     boost::shared_ptr<SuperFunctional> functional() const { return functional_; }

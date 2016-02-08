@@ -41,8 +41,6 @@ class CoupledCluster: public Wavefunction{
     ~CoupledCluster();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
 
   protected:
 
@@ -214,12 +212,10 @@ class CoupledCluster: public Wavefunction{
 class DFCoupledCluster : public CoupledCluster{
 
   public:
-    DFCoupledCluster(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    DFCoupledCluster(SharedWavefunction ref_wfn, Options&options);
     ~DFCoupledCluster();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
 
   protected:
     void finalize();
@@ -281,8 +277,6 @@ class CoupledPair : public CoupledCluster{
     CoupledPair(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
     ~CoupledPair();
 
-    virtual bool same_a_b_orbs() const { return true; }
-    virtual bool same_a_b_dens() const { return true; }
     double compute_energy();
 
   protected:

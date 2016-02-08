@@ -30,8 +30,8 @@
 #include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
+#include "libciomr/libciomr.h"
 
 namespace psi { namespace ccenergy {
 
@@ -43,18 +43,18 @@ namespace psi { namespace ccenergy {
 **
 */
 
-void pair_energies(double** epair_aa, double** epair_ab)
+void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab)
 {
   dpdbuf4 tau, D, E;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     int i, j, ij;
     int irrep;
     int nocc_act = 0;
     int naa, nab;
-    for(irrep=0; irrep<moinfo.nirreps; irrep++)
-      nocc_act += moinfo.clsdpi[irrep];
+    for(irrep=0; irrep<moinfo_.nirreps; irrep++)
+      nocc_act += moinfo_.clsdpi[irrep];
     naa = nocc_act * (nocc_act-1)/2;
     nab = nocc_act * nocc_act;
 
@@ -70,7 +70,7 @@ void pair_energies(double** epair_aa, double** epair_ab)
       //dpd_buf4_print(&E, outfile, 1);
 
       /* Extract diagonal elements (i.e. pair energies) and print them out nicely */
-      for(irrep=0; irrep<moinfo.nirreps; irrep++) {
+      for(irrep=0; irrep<moinfo_.nirreps; irrep++) {
         double **block;
         dpdparams4 *Params = E.params;
         int p;
@@ -111,7 +111,7 @@ void pair_energies(double** epair_aa, double** epair_ab)
       //dpd_buf4_print(&E, outfile, 1);
 
       /* Extract diagonal elements (i.e. pair energies) and print them out nicely */
-      for(irrep=0; irrep<moinfo.nirreps; irrep++) {
+      for(irrep=0; irrep<moinfo_.nirreps; irrep++) {
         double **block;
         dpdparams4 *Params = E.params;
         int p;
@@ -143,27 +143,27 @@ void pair_energies(double** epair_aa, double** epair_ab)
   
 }
 
-void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab)
+void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab)
 {
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     int i, j, ij;
     int irrep;
     int nocc_act = 0;
     int naa, nab;
-    for(irrep=0; irrep<moinfo.nirreps; irrep++)
-      nocc_act += moinfo.clsdpi[irrep];
+    for(irrep=0; irrep<moinfo_.nirreps; irrep++)
+      nocc_act += moinfo_.clsdpi[irrep];
     naa = nocc_act * (nocc_act-1)/2;
     nab = nocc_act * nocc_act;
 
-    if (!params.spinadapt_energies) {
+    if (!params_.spinadapt_energies) {
       double emp2_aa_tot = 0.0;
       double emp2_ab_tot = 0.0;
       double ecc_aa_tot = 0.0;  
       double ecc_ab_tot = 0.0;  
 
       outfile->Printf( "\tAlpha-alpha pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
       outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
@@ -178,7 +178,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
 
       outfile->Printf( "\tAlpha-beta pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
       outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (nab) {
         ij = 0;
@@ -201,7 +201,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       double ecc_t_tot = 0.0;
 
       outfile->Printf( "\tSinglet pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
       outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       ij = 0;
       for(i=0; i<nocc_act; i++)
@@ -235,7 +235,7 @@ void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, doubl
       outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
 
       outfile->Printf( "\tTriplet pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params.wfn.c_str());
+      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
       outfile->Printf( "\t  -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;

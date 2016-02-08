@@ -30,14 +30,11 @@
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void local_filter_T1(dpdfile2 *T1);
-
-void t1_build(void)
+void CCEnergyWavefunction::t1_build(void)
 {
   dpdfile2 newtIA, newtia, tIA, tia, fIA, fia;
   dpdfile2 FAE, Fae, FMI, Fmi, FME, Fme;
@@ -46,7 +43,7 @@ void t1_build(void)
   dpdbuf4 C, C_anti, D, F_anti, F, E_anti, E, Z;
   int Gma, Gmi, Gm, Gi, Ga, ma, m, a, A, nrows, ncols;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "New tIA");
     global_dpd_->file2_close(&fIA);
@@ -103,7 +100,7 @@ void t1_build(void)
     global_dpd_->file2_mat_rd(&newtIA);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
     global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-    for(Gma=0; Gma < moinfo.nirreps; Gma++) {
+    for(Gma=0; Gma < moinfo_.nirreps; Gma++) {
       Gmi = Gma; /* T1 is totally symmetric */
 
       global_dpd_->buf4_mat_irrep_row_init(&F, Gma);
@@ -121,12 +118,12 @@ void t1_build(void)
 	Gi = Ga; /* T1 is totally symmetric */
 	A = a - F.params->qoff[Ga];
 
-	nrows = moinfo.occpi[Gi];
+    nrows = moinfo_.occpi[Gi];
 	ncols = F.params->coltot[Gma];
 
-	if(nrows && ncols && moinfo.virtpi[Ga])
+    if(nrows && ncols && moinfo_.virtpi[Ga])
 	  C_DGEMV('n',nrows,ncols,1.0,T2.matrix[Gmi][T2.row_offset[Gmi][m]],ncols,
-		  F.matrix[Gma][0],1,1.0,&newtIA.matrix[Gi][0][A],moinfo.virtpi[Ga]);
+          F.matrix[Gma][0],1,1.0,&newtIA.matrix[Gi][0][A],moinfo_.virtpi[Ga]);
 
       }
 
@@ -144,7 +141,7 @@ void t1_build(void)
     global_dpd_->buf4_close(&E);
     global_dpd_->buf4_close(&tIjAb);
 
-    if (params.just_residuals) {
+    if (params_.just_residuals) {
       global_dpd_->file2_close(&newtIA);
       return;
     }
@@ -174,7 +171,7 @@ void t1_build(void)
     dpd_file2_close(&newtIA);
 */
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "New tIA");
@@ -310,7 +307,7 @@ void t1_build(void)
 
     global_dpd_->file2_close(&newtIA);  global_dpd_->file2_close(&newtia);
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "New tIA");

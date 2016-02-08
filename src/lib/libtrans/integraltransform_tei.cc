@@ -21,7 +21,6 @@
  */
 
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>

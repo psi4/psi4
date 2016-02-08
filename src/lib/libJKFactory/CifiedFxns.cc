@@ -47,7 +47,7 @@ static SharedFac factory_;
 void SetUp(){
     psi::Options& options = psi::Process::environment.options;
     primary_=psi::BasisSet::pyconstruct_orbital(
-        psi::Process::environment.molecule(),
+        psi::Process::environment.legacy_molecule(),
         "BASIS", options.get_str("BASIS")
     );
    factory_=SharedFac(new IntFac(primary_,primary_,primary_,primary_));

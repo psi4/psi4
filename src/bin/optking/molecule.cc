@@ -806,9 +806,9 @@ int MOLECULE::form_delocalized_coord_combinations(void) {
 
       bool symm_rfo_step = false;
 #if defined(OPTKING_PACKAGE_PSI)
-      psi::Process::environment.molecule()->set_geometry(displaced_geom);
-      symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
-      psi::Process::environment.molecule()->set_geometry(orig_geom);
+      psi::Process::environment.legacy_molecule()->set_geometry(displaced_geom);
+      symm_rfo_step = psi::Process::environment.legacy_molecule()->valid_atom_map(Opt_params.symm_tol);
+      psi::Process::environment.legacy_molecule()->set_geometry(orig_geom);
 #elif defined(OPTKING_PACKAGE_QCHEM)
       // TODO QCHEM
       symm_rfo_step = true;
@@ -907,9 +907,9 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
 
   bool symm_rfo_step = false;
 #if defined(OPTKING_PACKAGE_PSI)
-  psi::Process::environment.molecule()->set_geometry(displaced_geom);
-  symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map(Opt_params.symm_tol);
-  psi::Process::environment.molecule()->set_geometry(orig_geom);
+  psi::Process::environment.legacy_molecule()->set_geometry(displaced_geom);
+  symm_rfo_step = psi::Process::environment.legacy_molecule()->valid_atom_map(Opt_params.symm_tol);
+  psi::Process::environment.legacy_molecule()->set_geometry(orig_geom);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // TODO QCHEM
   symm_rfo_step = true;

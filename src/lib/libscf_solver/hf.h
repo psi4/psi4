@@ -70,6 +70,12 @@ protected:
     /// Old C Beta matrix (if needed for MOM)
     SharedMatrix Cb_old_;
 
+    /// Energy convergence threshold
+    double energy_threshold_;
+
+    /// Density convergence threshold
+    double density_threshold_;
+
     /// Previous iteration's energy and current energy
     double Eold_;
     double E_;
@@ -166,8 +172,6 @@ protected:
 
     /// Are we doing second-order convergence acceleration?
     bool soscf_enabled_;
-    /// What is the energy diff that we should start?
-    double soscf_e_start_;
     /// What is the gradient threshold that we should start?
     double soscf_r_start_;
     /// Maximum number of iterations
@@ -246,7 +250,7 @@ protected:
 
     /// Fractional occupation UHF/UKS
     void frac();
-    /// Renormalize orbitals to 1.0 before saving to chkpt
+    /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
 
     /// Check the stability of the wavefunction, and correct (if requested)
@@ -376,15 +380,8 @@ protected:
     /** Load orbitals from previous computation, projecting if needed **/
     virtual void load_orbitals();
 
-    /** Save SAPT info (TODO: Move to Python driver **/
-    virtual void save_sapt_info() {}
-
-    /** Saves all wavefunction information to the checkpoint file*/
-    void dump_to_checkpoint();
-
 public:
-    HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    HF(Options& options, boost::shared_ptr<PSIO> psio);
+    HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 
@@ -408,6 +405,13 @@ public:
     /// Clears memory and closes files (Should they be open) prior to correlated code execution
     /// Derived classes override it for additional operations and then call HF::finalize()
     virtual void finalize();
+
+    /// Semicanonicalizes ROHF/CUHF orbitals, breaking the alpha-beta degeneracy
+    /// On entrance, there's only one set of orbitals and orbital energies.  On
+    /// exit, the alpha and beta Fock matrices correspond to those in the semicanonical
+    /// basis, and there are distinct alpha and beta C and epsilons, also in the
+    /// semicanonical basis.
+    virtual void semicanonicalize();
 };
 
 }} // Namespaces

@@ -50,10 +50,9 @@ void VBase::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-boost::shared_ptr<VBase> VBase::build_V(Options& options, const std::string& type)
+boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary, 
+                                        Options& options, const std::string& type)
 {
-    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
-        "BASIS", options.get_str("BASIS"));
 
     int depth = 1; // By default, do first partials of the kernel
     if (type == "RK" || type == "UK")

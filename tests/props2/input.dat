@@ -62,8 +62,8 @@ for R in Rvals:
 
     activate(dimer)
 
-    eehf = energy('scf')
-    oeprop("DIPOLE", "QUADRUPOLE", title='BZH3O+ SCF')
+    eehf, hf_wfn = energy('scf', return_wfn=True)
+    oeprop(hf_wfn, "DIPOLE", "QUADRUPOLE", title='BZH3O+ SCF')
 
     compare_values(refENuc[count], dimer.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
@@ -79,8 +79,8 @@ for R in Rvals:
 
     monoB = dimer.extract_subsets(2)
 
-    eehf = energy('scf')
-    oeprop("DIPOLE", "QUADRUPOLE",title="H3O+ SCF")
+    eehf, hf_wfn = energy('scf', return_wfn=True)
+    oeprop(hf_wfn, "DIPOLE", "QUADRUPOLE",title="H3O+ SCF")
     
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST

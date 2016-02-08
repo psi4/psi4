@@ -29,7 +29,6 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
@@ -56,46 +55,52 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
-    options_(options), psio_(psio)
+Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
+                           Options & options) :
+                           options_(options), molecule_(molecule)
 {
-    chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
+    // Load in molecule and basis
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", basis);
     common_init();
 }
 
-Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-    options_(options), psio_(psio), chkpt_(chkpt)
+Wavefunction::Wavefunction(Options & options) :
+    options_(options)
 {
-    common_init();
 }
 
 Wavefunction::~Wavefunction()
 {
 }
-
-void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
+void Wavefunction::shallow_copy(SharedWavefunction other)
 {
+    shallow_copy(other.get());
+}
+
+void Wavefunction::shallow_copy(const Wavefunction* other)
+{
+
     name_ = other->name_;
     basisset_ = other->basisset_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
     S_ = other->S_;
-    H_ = other->H_;
     molecule_ = other->molecule_;
+
     psio_ = other->psio_;
-    chkpt_ = other->chkpt_;
     integral_ = other->integral_;
     factory_ = other->factory_;
-    reference_wavefunction_ = other;
     memory_ = other->memory_;
-    print_ = other->print_;
-    debug_ = other->debug_;
-    density_fitted_ = other->density_fitted_;
-    energy_threshold_ = other->energy_threshold_;
-    density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
     nfrzc_ = other->nfrzc_;
+
+    print_ = other->print_;
+    debug_ = other->debug_;
+    density_fitted_ = other->density_fitted_;
+
+    energy_ = other->energy_;
+    efzc_ = other->efzc_;
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -106,13 +111,15 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     nsopi_ = other->nsopi_;
     nmopi_ = other->nmopi_;
 
-    energy_ = other->energy_;
-    efzc_ = other->efzc_;
-
     nso_ = other->nso_;
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
+    same_a_b_dens_ = other->same_a_b_dens_;
+    same_a_b_orbs_ = other->same_a_b_orbs_;
+
+    // Set by other classes
+    H_ = other->H_;
     Ca_ = other->Ca_;
     Cb_ = other->Cb_;
     Da_ = other->Da_;
@@ -123,18 +130,83 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     epsilon_b_ = other->epsilon_b_;
 
     gradient_ = other->gradient_;
+    hessian_ = other->hessian_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
+}
+void Wavefunction::deep_copy(SharedWavefunction other)
+{
+    deep_copy(other.get());
+}
+
+void Wavefunction::deep_copy(const Wavefunction* other)
+{
+    if (!S_){
+        throw PSIEXCEPTION("Wavefunction::deep_copy must copy an initialized wavefunction.");
+    }
+
+    /// From typical constructor
+    /// Some member data is not clone-able so we will copy
+    name_ = other->name_;
+    molecule_ = boost::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, other->basisset()->key(),
+                                              other->basisset()->target());
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(other->nsopi_, other->nsopi_);
+    AO2SO_ = other->AO2SO_->clone();
+    S_ = other->S_->clone();
+
+    psio_ = other->psio_; // We dont actually copy psio
+    memory_ = other->memory_;
+    nalpha_ = other->nalpha_;
+    nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
+
+    print_ = other->print_;
+    debug_ = other->debug_;
+    density_fitted_ = other->density_fitted_;
+
+    energy_ = other->energy_;
+    efzc_ = other->efzc_;
+
+    doccpi_ = other->doccpi_;
+    soccpi_ = other->soccpi_;
+    frzcpi_ = other->frzcpi_;
+    frzvpi_ = other->frzvpi_;
+    nalphapi_ = other->nalphapi_;
+    nbetapi_ = other->nbetapi_;
+    nsopi_ = other->nsopi_;
+    nmopi_ = other->nmopi_;
+
+    nso_ = other->nso_;
+    nmo_ = other->nmo_;
+    nirrep_ = other->nirrep_;
+
+    same_a_b_dens_ = other->same_a_b_dens_;
+    same_a_b_orbs_ = other->same_a_b_orbs_;
+
+    /// Below is not set in the typical constructor
+    if (other->H_) H_ = other->H_->clone();
+    if (other->Ca_) Ca_ = other->Ca_->clone();
+    if (other->Cb_) Cb_ = other->Cb_->clone();
+    if (other->Da_) Da_ = other->Da_->clone();
+    if (other->Db_) Db_ = other->Db_->clone();
+    if (other->Fa_) Fa_ = other->Fa_->clone();
+    if (other->Fb_) Fb_ = other->Fb_->clone();
+    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
+    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+
+    if (other->gradient_) gradient_ = other->gradient_->clone();
+    if (other->hessian_) hessian_ = other->hessian_->clone();
+    if (other->tpdm_gradient_contribution_)
+        tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
+
 }
 
 void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
-
-    // Take the molecule from the environment
-    molecule_ = Process::environment.molecule();
-
-    // Load in the basis set
-    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", options_.get_str("BASIS"));
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
@@ -149,18 +221,19 @@ void Wavefunction::common_init()
     AO2SO_ = pet->aotoso();
 
     // Obtain the dimension object to initialize the factory.
-    const Dimension dimension = sobasisset_->dimension();
-    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
-    factory_->init_with(dimension, dimension);
+    nsopi_ = sobasisset_->dimension();
+    nsopi_.set_name("SOs per irrep");
 
-    nirrep_ = dimension.n();
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(nsopi_, nsopi_);
+
+    nirrep_ = nsopi_.n();
 
     S_ = factory_->create_shared_matrix("S");
     boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
     Sint->compute(S_);
 
     // Initialize array that hold dimensionality information
-    nsopi_    = Dimension(nirrep_, "SOs per irrep");
     nmopi_    = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
@@ -175,7 +248,6 @@ void Wavefunction::common_init()
     nso_ = basisset_->nbf();
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
-        nsopi_[k] = dimension[k];
         nmopi_[k] = 0;
         doccpi_[k] = 0;
         soccpi_[k] = 0;
@@ -183,24 +255,61 @@ void Wavefunction::common_init()
         nbetapi_[k] = 0;
     }
 
+    density_fitted_ = false;
     energy_ = 0.0;
+    efzc_ = 0.0;
+    same_a_b_dens_ = true;
+    same_a_b_orbs_ = false;
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");
 
-    // Read in energy convergence threshold
-    energy_threshold_ = options_.get_double("E_CONVERGENCE");
+    // Determine the number of electrons in the system
+    int nelectron  = 0;
+    for (int i=0; i<molecule_->natom(); ++i)
+        nelectron += (int)molecule_->Z(i);
+    nelectron -= molecule_->molecular_charge();
 
-    // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGENCE");;
+    // If the user told us the multiplicity, read it from the input
+    int multiplicity;
+    if(molecule_->multiplicity_specified()){
+        multiplicity = molecule_->multiplicity();
+    }else{
+        if(nelectron%2){
+            multiplicity = 2;
+            molecule_->set_multiplicity(2);
+            // There are an odd number of electrons
+            outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
+                            "    Specify the multiplicity in the molecule input block.\n\n");
+        }else{
+            multiplicity = 1;
+            molecule_->set_multiplicity(1);
+            // There are an even number of electrons
+            outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
+                            "    Specify the multiplicity in the molecule input block.\n\n");
+        }
+    }
 
-    density_fitted_ = false;
+    // Make sure that the multiplicity is reasonable
+    if(multiplicity - 1 > nelectron){
+        char *str = new char[100];
+        sprintf(str, "There are not enough electrons for multiplicity = %d.\n"
+                     "Please check your input", multiplicity);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+        delete [] str;
+    }
+    if(multiplicity%2 == nelectron%2){
+        char *str = new char[100];
+        sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
+                     "Please check your input",
+                     multiplicity, nelectron);
+        throw SanityCheckError(str, __FILE__, __LINE__);
+        delete [] str;
+    }
 
-    /* Xiao Wang */
-    // not a DCFT computation by default
-    isDCFT_ = false;
-    /* Xiao Wang */
+    nbeta_  = (nelectron - multiplicity + 1)/2;
+    nalpha_ = nbeta_ + multiplicity - 1;
 }
 
 void Wavefunction::map_irreps(std::vector<int*> &arrays)
@@ -245,11 +354,6 @@ void Wavefunction::map_irreps(Dimension &array)
     map_irreps(vec);
 }
 
-double Wavefunction::compute_energy()
-{
-    return 0.0;
-}
-
 void Wavefunction::initialize_singletons()
 {
     static bool done = false;
@@ -276,11 +380,6 @@ void Wavefunction::initialize_singletons()
         fac[i] = i*fac[i-1];
 
     done = true;
-}
-
-void Wavefunction::semicanonicalize()
-{
-    throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
 }
 
 boost::shared_ptr<Molecule> Wavefunction::molecule() const
@@ -343,17 +442,19 @@ void Wavefunction::add_postiteration_callback(PyObject *pyobject)
 void Wavefunction::call_preiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
+    SharedWavefunction this_wfn = shared_from_this();
     for (iter = precallbacks_.begin(); iter != precallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
+            boost::python::call<void>((PyObject*)*iter, this_wfn);
     }
 }
 void Wavefunction::call_postiteration_callbacks()
 {
     std::vector<void*>::const_iterator iter;
+    SharedWavefunction this_wfn = shared_from_this();
     for (iter = postcallbacks_.begin(); iter != postcallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
+            boost::python::call<void>((PyObject*)*iter, this_wfn);
     }
 }
 
@@ -739,9 +840,14 @@ void Wavefunction::set_gradient(SharedMatrix& grad)
     gradient_ = grad;
 }
 
-SharedMatrix Wavefunction::TPDM() const
+SharedMatrix Wavefunction::hessian() const
 {
-    return TPDM_;
+    return hessian_;
+}
+
+void Wavefunction::set_hessian(SharedMatrix& hess)
+{
+    hessian_ = hess;
 }
 
 boost::shared_ptr<Vector> Wavefunction::frequencies() const
@@ -768,18 +874,6 @@ void Wavefunction::save() const
 {
 }
 
-/* Xiao Wang */
-void Wavefunction::set_DCFT(bool val)
-{
-    isDCFT_ = val;
-}
-
-bool Wavefunction::isDCFT()
-{
-    return isDCFT_;
-}
-/* Xiao Wang */
-
 boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     boost::shared_ptr<double[]> q = atomic_point_charges();
 
@@ -788,164 +882,5 @@ boost::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const {
     for (int i=0; i<n; ++i)
       q_vector->set(i, q[i]);
     return q_vector;
-}
-
-void Wavefunction::load_values_from_chkpt()
-{
-/*
- Below is a list of all quantities that could be stored in the chkpt file as of August 2014.
- Presumably, not all of them are still in use.  At present, I am bothering to code the
- reading of variables into the wavefunction object necessary for single-point CC
- computations.  Other variables may have to be added to support other kinds of restarts.
-- RAK
-*/
-
-// Symmetry information
-    nirrep_ = chkpt_->rd_nirreps();
-
-// ** Orbital information (closed, frozen, etc., per irrep)
-//    int nfzc
-//    int nfzv
-//    nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
-//    nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
-
-    int *v;
-    if (chkpt_->exist_add_prefix("SO's per irrep")) {
-      v = chkpt_->rd_sopi();
-      for (int i=0; i<nirrep_; ++i) nsopi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("MO's per irrep")) {
-      v = chkpt_->rd_orbspi();
-      for (int i=0; i<nirrep_; ++i) nmopi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Open shells per irrep")) {
-      v = chkpt_->rd_openpi();
-      for (int i=0; i<nirrep_; ++i) soccpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Closed shells per irrep")) {
-      v = chkpt_->rd_clsdpi();
-      for (int i=0; i<nirrep_; ++i) doccpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Frozen DOCC per irrep")) {
-      v = chkpt_->rd_frzcpi();
-      for (int i=0; i<nirrep_; ++i) frzcpi_[i] = v[i];
-      free(v);
-    }
-
-    if (chkpt_->exist_add_prefix("Frozen UOCC per irrep")) {
-      v = chkpt_->rd_frzvpi();
-      for (int i=0; i<nirrep_; ++i) frzvpi_[i] = v[i];
-      free(v);
-    }
-
-// Necessary for restarting complex calculations (e.g., multiple irrep ones)
-/*
-int ref
-char *prefix             const char label               int disp
-int disp_irrep           int ncalcs                     int override_occ
-int *rd_statespi(void)   double *rd_vib_freqs(void)
-*/
-
-// Variables which store current energies, gradient
-    energy_ = chkpt_->rd_escf();
-/*
-double eref	double ecorr
-double efzc	double etot
-double eccsd	double e_t	double emp2
-double *grad	double e_labeled (varies, const char *key)
-*/
-
-// Geometry information
-/*
-    nuclearrep_ = chkpt_->rd_enuc();
-int *atom_dummy
-int *atom_position
-char **felement
-double **fgeom
-double **geom
-int iopen
-int nallatom
-int natom
-int num_unique_atom
-double **rref
-struct z_entry *rd_zmat(void);
-double *rd_zvals(void);
-int rottype
-int rd_nfragment(void);
-int *rd_natom_per_fragment(void);
-int *rd_nallatom_per_fragment(void);
-int *rd_nref_per_fragment(void);
-double *rd_rotconst(void);
-double ***rd_fragment_coeff(void);
-int rd_rot_symm_num(void);
-*/
-
-    nmo_ = chkpt_->rd_nmo();
-    nso_ = chkpt_->rd_nso();
-
-// basis-set/symmetry info
-/*
-nao  ; initialized by basis set object we hope ?
-irrep_labels
-int *am2canon_shell_order
-double **cartrep
-double **cdsalc2cd
-double *contr
-double **contr_full
-double *exps (varies, const char *key)
-int **ict
-char **irr_labels
-char **irr_labels_lowercase
-int max_am(varies, const char *key2 = "");
-bool puream(varies, const char *key2 = "");
-int nprim
-int nshell
-int nsymhf
-int num_unique_shell
-int **rd_shell_transm(const char *key2 = "");
-int *rd_sloc(const char *key2 = "");
-int *rd_shells_per_am(const char *key2 = "");
-int *rd_sloc_new(const char *key2 = "");
-int *rd_snuc(const char *key2 = "");
-int *rd_snumg(const char *key2 = "");
-int *rd_ua2a(void);
-int *rd_us2s(const char *key2 = "");
-double **rd_usotao(const char *key2 = "");
-double **rd_usotbf(const char *key2 = "");
-int *rd_cdsalcpi();
-int *rd_sprim(const char *key2 = "");
-int *rd_stype(const char *key2 = "");
-char *rd_sym_label(void);
-int *rd_symoper(void);
-*/
-
-// scf solution
-/*
-double **ccvecs
-double *evals
-double *alpha_evals
-double *beta_evals
-double *fock
-double **lagr
-double **alpha_lagr
-double **beta_lagr
-double **rd_scf(void);
-double **rd_alpha_scf(void);
-double **rd_beta_scf(void);
-double **rd_local_scf(void);
-double **rd_scf_irrep(int irrep);
-double **rd_alpha_scf_irrep(int irrep);
-double **rd_beta_scf_irrep(int irrep);
-double **set_mo_phases(double**, int, int);
-int phase_check
-*/
 }
 
