@@ -3,7 +3,7 @@ set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
 set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
 
 set(PLUG "mollerplesset2")
-set(PLUGSRC __init__.py globals.h mp2.cc mp2_restricted.cc mp2_unrestricted.cc pymodule.py input.dat)
+set(PLUGSRC __init__.py mp2.h mp2.cc mp2_restricted.cc mp2_unrestricted.cc pymodule.py input.dat)
 
 foreach(src ${PLUGSRC})
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/${src} ${CCBD}/${src})
