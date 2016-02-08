@@ -53,6 +53,7 @@ import gzip
 import re
 import sys
 import os
+from p4xcpt import *
 
 
 class PubChemObj(object):
@@ -85,7 +86,7 @@ class PubChemObj(object):
                     return matches[0].text
                 else:
                     print(matches)
-                    raise TooManyMatchesException
+                    raise ValidationError("""PubChem: too many matches found %d""" % (len(matches)))
 
             url = "http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi"
             initial_request = """
@@ -121,7 +122,7 @@ class PubChemObj(object):
             xml = ET.fromstring(server_response)
             for attempt in range(4):
                 if attempt == 3:
-                    raise PubChemTimeoutError
+                    raise ValidationError("""PubChem: timed out""")
                 # Look for a download location in the XML response
                 download_url = extract_xml_keyval(xml, 'PCT-Download-URL_url')
                 if download_url:
@@ -170,7 +171,7 @@ class PubChemObj(object):
                     #print(server_response)
                 else:
                     # We can't find a ticket number, or a download location. Bail.
-                    raise PubChemDownloadError
+                    raise ValidationError("""PubChem: download error""")
         return self.dataSDF
 
     def name(self):
@@ -195,8 +196,8 @@ class PubChemObj(object):
         if (m):
             self.natom = int(m.group(1))
 
-        if (self.natom == 0):
-            raise Exception("PubchemError\n Cannot find the number of atoms.  3D data doesn't appear\n" +
+        if self.natom == 0:
+            raise ValidationError("PubChem: Cannot find the number of atoms.  3D data doesn't appear\n" +
                             "to be available for %s.\n" % self.iupac)
 
         lines = re.split('\n', sdfText)
@@ -262,7 +263,7 @@ def getPubChemResults(name):
     except URLError as e:
         msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
         msg += "\tCheck your internet connection, and the above URL, and try again.\n"
-        raise Exception(msg)
+        raise ValidationError(msg)
     data = loc.read()
 
     ans = []
