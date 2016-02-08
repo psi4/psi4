@@ -47,9 +47,9 @@ def kwargs_lower(kwargs):
     # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.iteritems():
         lkey = key.lower()
-        if yes.match(str(key)) and 'dertype' not in lkey:
+        if yes.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
             caseless_kwargs[lkey] = True
-        elif no.match(str(key)) and 'dertype' not in lkey:
+        elif no.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
             caseless_kwargs[lkey] = False
         else:
             caseless_kwargs[lkey] = value

@@ -53,12 +53,15 @@ except ImportError:
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 
-def fake_file11(filename='fake_file11.dat'):
+def fake_file11(filename='fake_file11.dat', **kwargs):
     r"""Function to print a file *filename* of the old file11 format.
 
     """
-    molecule = psi4.get_active_molecule()
-    gradient = psi4.get_gradient()
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+    molecule.update_geometry()
+
+    gradient = psi4.get_gradient()  # TODO deprected usage
 
     with open(filename, 'w') as handle:
         handle.write('%d\n' % (molecule.natom()))
@@ -92,30 +95,21 @@ def sherrill_gold_standard(name='mp2', **kwargs):
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
 
-    if not ('func_cbs' in kwargs):
-        kwargs['func_cbs'] = energy
+    kwargs['func_cbs'] = kwargs.get('func_cbs', energy)
 
-    if not ('scf_basis' in kwargs):
-        kwargs['scf_basis'] = 'aug-cc-pVQZ'
-    if not ('scf_scheme' in kwargs):
-        kwargs['scf_scheme'] = highest_1
+    kwargs['scf_basis'] = kwargs.get('scf_basis', 'aug-cc-pVQZ')
+    kwargs['scf_scheme'] = kwargs.get('scf_scheme', highest_1)
 
-    if not ('corl_wfn' in kwargs):
+    if 'corl_wfn' not in kwargs:
         kwargs['corl_wfn'] = 'mp2'
         name = 'mp2'
-    if not ('corl_basis' in kwargs):
-        kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
-    if not ('corl_scheme' in kwargs):
-        kwargs['corl_scheme'] = corl_xtpl_helgaker_2
+    kwargs['corl_basis'] = kwargs.get('corl_basis', 'aug-cc-pV[TQ]Z')
+    kwargs['corl_scheme'] = kwargs.get('corl_scheme', corl_xtpl_helgaker_2)
 
-    if not ('delta_wfn' in kwargs):
-        kwargs['delta_wfn'] = 'ccsd(t)'
-    if not ('delta_wfn_lesser' in kwargs):
-        kwargs['delta_wfn_lesser'] = 'mp2'
-    if not ('delta_basis' in kwargs):
-        kwargs['delta_basis'] = 'aug-cc-pVTZ'
-    if not ('delta_scheme' in kwargs):
-        kwargs['delta_scheme'] = highest_1
+    kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'ccsd(t)')
+    kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
+    kwargs['delta_basis'] = kwargs.get('delta_basis', 'aug-cc-pVTZ')
+    kwargs['delta_scheme'] = kwargs.get('delta_scheme', highest_1)
 
     return cbs(name, **kwargs)
 
@@ -142,63 +136,42 @@ def allen_focal_point(name='mp2', **kwargs):
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
 
-    if not ('func_cbs' in kwargs):
-        kwargs['func_cbs'] = energy
+    kwargs['func_cbs'] = kwargs.get('func_cbs', energy)
 
     # SCF
-    if not ('scf_basis' in kwargs):
-        kwargs['scf_basis'] = 'cc-pV[Q56]Z'
-    if not ('scf_scheme' in kwargs):
-        kwargs['scf_scheme'] = scf_xtpl_helgaker_3
+    kwargs['scf_basis'] = kwargs.get('scf_basis', 'cc-pV[Q56]Z')
+    kwargs['scf_scheme'] = kwargs.get('scf_scheme', scf_xtpl_helgaker_3)
 
     # delta MP2 - SCF
-    if not ('corl_wfn' in kwargs):
+    if 'corl_wfn' not in kwargs:
         kwargs['corl_wfn'] = 'mp2'
         name = 'mp2'
-    if not ('corl_basis' in kwargs):
-        kwargs['corl_basis'] = 'cc-pV[56]Z'
-    if not ('corl_scheme' in kwargs):
-        kwargs['corl_scheme'] = corl_xtpl_helgaker_2
+    kwargs['corl_basis'] = kwargs.get('corl_basis', 'cc-pV[56]Z')
+    kwargs['corl_scheme'] = kwargs.get('corl_scheme', corl_xtpl_helgaker_2)
 
     # delta CCSD - MP2
-    if not ('delta_wfn' in kwargs):
-        kwargs['delta_wfn'] = 'mrccsd'
-    if not ('delta_wfn_lesser' in kwargs):
-        kwargs['delta_wfn_lesser'] = 'mp2'
-    if not ('delta_basis' in kwargs):
-        kwargs['delta_basis'] = 'cc-pV[56]Z'
-    if not ('delta_scheme' in kwargs):
-        kwargs['delta_scheme'] = corl_xtpl_helgaker_2
+    kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'mrccsd')
+    kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
+    kwargs['delta_basis'] = kwargs.get('delta_basis', 'cc-pV[56]Z')
+    kwargs['delta_scheme'] = kwargs.get('delta_scheme', corl_xtpl_helgaker_2)
 
     # delta CCSD(T) - CCSD
-    if not ('delta2_wfn' in kwargs):
-        kwargs['delta2_wfn'] = 'mrccsd(t)'
-    if not ('delta2_wfn_lesser' in kwargs):
-        kwargs['delta2_wfn_lesser'] = 'mrccsd'
-    if not ('delta2_basis' in kwargs):
-        kwargs['delta2_basis'] = 'cc-pV[56]Z'
-    if not ('delta2_scheme' in kwargs):
-        kwargs['delta2_scheme'] = corl_xtpl_helgaker_2
+    kwargs['delta2_wfn'] = kwargs.get('delta2_wfn', 'mrccsd(t)')
+    kwargs['delta2_wfn_lesser'] = kwargs.get('delta2_wfn_lesser', 'mrccsd')
+    kwargs['delta2_basis'] = kwargs.get('delta2_basis', 'cc-pV[56]Z')
+    kwargs['delta2_scheme'] = kwargs.get('delta2_scheme', corl_xtpl_helgaker_2)
 
     # delta CCSDT - CCSD(T)
-    if not ('delta3_wfn' in kwargs):
-        kwargs['delta3_wfn'] = 'mrccsdt'
-    if not ('delta3_wfn_lesser' in kwargs):
-        kwargs['delta3_wfn_lesser'] = 'mrccsd(t)'
-    if not ('delta3_basis' in kwargs):
-        kwargs['delta3_basis'] = 'cc-pVTZ'
-    if not ('delta3_scheme' in kwargs):
-        kwargs['delta3_scheme'] = highest_1
+    kwargs['delta3_wfn'] = kwargs.get('delta3_wfn', 'mrccsdt')
+    kwargs['delta3_wfn_lesser'] = kwargs.get('delta3_wfn_lesser', 'mrccsd(t)')
+    kwargs['delta3_basis'] = kwargs.get('delta3_basis', 'cc-pVTZ')
+    kwargs['delta3_scheme'] = kwargs.get('delta3_scheme', highest_1)
 
     # delta CCSDT(Q) - CCSDT
-    if not ('delta4_wfn' in kwargs):
-        kwargs['delta4_wfn'] = 'mrccsdt(q)'
-    if not ('delta4_wfn_lesser' in kwargs):
-        kwargs['delta4_wfn_lesser'] = 'mrccsdt'
-    if not ('delta4_basis' in kwargs):
-        kwargs['delta4_basis'] = 'cc-pVDZ'
-    if not ('delta4_scheme' in kwargs):
-        kwargs['delta4_scheme'] = highest_1
+    kwargs['delta4_wfn'] = kwargs.get('delta4_wfn', 'mrccsdt(q)')
+    kwargs['delta4_wfn_lesser'] = kwargs.get('delta4_wfn_lesser', 'mrccsdt')
+    kwargs['delta4_basis'] = kwargs.get('delta4_basis', 'cc-pVDZ')
+    kwargs['delta4_scheme'] = kwargs.get('delta4_scheme', highest_1)
 
     return cbs(name, **kwargs)
 
