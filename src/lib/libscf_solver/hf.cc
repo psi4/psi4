@@ -402,7 +402,22 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     try {
-        jk_ = JK::build_JK(basisset_, options_);
+        if(options_.get_str("SCF_TYPE") == "GTFOCK") {
+          #ifdef HAVE_JK_FACTORY
+            //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+            boost::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+            Process::environment.set_legacy_wavefunction(molecule_);
+            if(options_.get_bool("SOSCF"))
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
+            else
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+            Process::environment.set_legacy_molecule(other_legacy);
+          #else
+            throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+          #endif
+        } else {
+            jk_ = JK::build_JK(basisset_, options_);
+        }
     }
     catch(const BasisSetNotFound& e) {
         if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {

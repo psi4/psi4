@@ -346,11 +346,14 @@ public:
     /**
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
     * using knobs in options.
+    * Nmat and sym are options for GTFock
+    * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
 //    static boost::shared_ptr<JK> build_JK();
     static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
                                           Options& options);
+
 
     // => Knobs <= //
 
@@ -717,8 +720,7 @@ public:
  *   this, you'll need to manually build a GTFockJK
  *   object and pass it into the constructor.  Don't worry
  *   building a GTFockJK object is easy, take a look at
- *   the static JK member build_JK() and just fill in the last two
- *   arguments of the constructor.
+ *   the Hartree-Fock code in HF.cc
  *
  */
 class GTFockJK: public JK{
