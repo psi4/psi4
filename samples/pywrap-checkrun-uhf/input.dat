@@ -23,16 +23,15 @@ Earray = [
   'SCF',
   'CCSD',
   'CCSD(T)',
-  'CONV-MP2',
-#  'DF-MP2',
+  'MP2',
   'DCFT',
   'OMP2',
   'OMP3',
   'MP3',
   'MP2.5',
   'OMP2.5',
-  'CEPA0',
-  'OCEPA',
+  'CEPA(0)',
+  'OCEPA(0)',
   'BP86',
 ]
 random.shuffle(Earray)
@@ -43,7 +42,8 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
-   ans = gradient(method)
+   G, wfn = gradient(method, return_wfn=True)
+   ans = wfn.energy()
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY') - ans, ans))
    clean()
 
@@ -66,7 +66,8 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
-   ans = gradient(method)
+   G, wfn = gradient(method, return_wfn=True)
+   ans = wfn.energy()
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY') - ans, ans))
    clean()
 
@@ -76,8 +77,7 @@ print('  Checking energy methods (ground state) ...')
 
 Earray = [
   'SCF',
-  'CONV-MP2',
-  'DF-MP2',
+  'MP2',
   'MCSCF',
   'CC2',
   'CCSD',
@@ -91,8 +91,8 @@ Earray = [
 #  'FCI',
   'DCFT',
   'MP2.5',
-  'OCEPA',
-  'CEPA0',
+  'OCEPA(0)',
+  'CEPA(0)',
   'BP86',
   'B2PLYP-D',
 ]

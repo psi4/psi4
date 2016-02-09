@@ -15,6 +15,7 @@ set {
   reference rohf
   guess gwh
 }
-gradient('omp2.5')
+
+grad = gradient('omp2.5')
 
 

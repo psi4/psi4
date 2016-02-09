@@ -28,7 +28,7 @@ set globals {
   scf_type pk
 }
 
-frequencies('scf', dertype=1)
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 
 
 # Compute A2 frequencies by 5-pt formula.
@@ -37,12 +37,12 @@ set findif {
  disp_size 0.01
 }
 
-frequencies('scf', dertype=1, irrep=2)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=2, return_wfn=True)
 
 
 # Compute B2 frequencies by 5-pt formula.
 
-frequencies('scf', dertype=1, irrep=4)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
 
 
 clean()

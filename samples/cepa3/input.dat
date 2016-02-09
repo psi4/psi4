@@ -15,12 +15,15 @@ set {
   dipmom true
   print 2
 }
-energy('sdci')
+
+set qc_module fnocc
+energy('cisd')
 
 corr1 = get_variable("CISD CORRELATION ENERGY")
 dipz1 = get_variable("CISD DIPOLE Z")
 qzz1  = get_variable("CISD QUADRUPOLE ZZ")
 
+set qc_module detci
 energy("cisd")
 
 corr2 = get_variable("CI CORRELATION ENERGY")

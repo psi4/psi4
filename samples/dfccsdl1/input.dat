@@ -17,8 +17,10 @@ set {
   scf_type df
   guess gwh
   freeze_core true
+  cc_type df
 }
-energy('df-ccsdl')
+
+energy('ccsdl')
 
 
 

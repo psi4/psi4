@@ -18,8 +18,10 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  mp_type df
 }
-gradient('df-omp3')
+
+grad = gradient('omp3')
 
 
 

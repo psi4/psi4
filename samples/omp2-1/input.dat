@@ -12,8 +12,9 @@ h 1 0.958 2 104.4776
 
 set {
   basis cc-pvdz
+  mp2_type conv
 }
 
-energy('conv-omp2')
+energy('omp2')
 
 

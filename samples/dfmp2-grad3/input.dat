@@ -18,10 +18,10 @@ set {
   df_basis_cc cc-pvdz-ri
   guess sad
   scf_type df
-  orb_opt false
+  qc_module occ
+  mp2_type df
   freeze_core true
 }
-gradient('df-omp2')
 
-
+grad = gradient('mp2')
 

@@ -6,6 +6,9 @@
 memory 250 mb
 
 
+refgrad.set(ref_vals)
+
+
 molecule h2 {
     H
     H 1 1.00
@@ -25,7 +28,7 @@ set globals {
 
 
 banner('Test [1] optimize(cbs(energy()))')
-optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
+E, wfn = optimize('mp2', func=cbs, corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='3-21g', return_wfn=True)
 
 banner('Test [2] database(energy())')
 set basis_guess sto-3g

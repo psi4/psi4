@@ -15,5 +15,6 @@ set globals {
   max_disp_g_convergence  0.0001
 }
 
+set qc_module detci
 thisenergy = optimize('cisd', dertype = 0)
 
