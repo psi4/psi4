@@ -18,9 +18,11 @@ set {
   df_basis_cc cc-pvdz-ri
   guess sad
   scf_type df
-  orb_opt false
+  mp2_type df
+  qc_module occ
 }
-gradient('df-omp2')
+
+grad = gradient('mp2')
 
 
 

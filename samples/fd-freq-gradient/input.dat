@@ -16,24 +16,24 @@ set globals {
 
 
 # Compute all frequencies with default 3-point formula.
-frequencies('scf', dertype=1)
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 
 
 
 # Compute A1 frequencies only.
-frequencies('scf', dertype=1, irrep=1)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=1, return_wfn=True)
 
 
 
 # Compute B2 frequency only.
-frequencies('scf', dertype=1, irrep=4)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
 
 
 
 # Compute all frequencies with 5-point formula.
 set findif { points 5 }
 
-frequencies('scf', dertype=1)
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 
 
 

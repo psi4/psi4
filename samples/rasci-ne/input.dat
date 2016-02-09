@@ -34,7 +34,7 @@ set detci {
   nat_orbs true
 }
 
-thisenergy = energy('detci')
+thisenergy, this_wfn = energy('detci', return_wfn=True)
 
 
 ## Now, run the RASCI
@@ -69,5 +69,5 @@ set detci {
   r4s true
 }
 
-thisenergy = energy('detci',bypass_scf='True')
+thisenergy = energy('detci', ref_wfn=this_wfn)
 

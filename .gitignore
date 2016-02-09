@@ -51,7 +51,7 @@ tests/*/pcmsolver.inp
 lib/python/pcm_placeholder.py
 tests/*/*.grad
 tests/*/*.hess
-
+plugins/skeleton/input.dat
 
 # Compilation directories that people use
 objdir

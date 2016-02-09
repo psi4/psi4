@@ -38,7 +38,7 @@ for basisset in basissets:
     set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
     set df_basis_mp2 $ribasis
-    edfmp2 = energy('df-mp2')
+    edfmp2 = energy('mp2')
     edfscf = get_variable('SCF TOTAL ENERGY')
     # Store the computed values in the tables
     table[basisset]     = [edfscf, edfmp2]

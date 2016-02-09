@@ -13,7 +13,9 @@ h 1 0.958 2 104.4776
 
 set {
   basis cc-pvdz
+  mp2_type conv
 }
-gradient('conv-mp2')
+
+grad = gradient('mp2')
 
 
