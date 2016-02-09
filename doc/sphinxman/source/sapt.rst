@@ -125,7 +125,7 @@ approximation introduces negligible errors into the SAPT energy
 improves efficiency. 
 
 The S\ :superscript:`2` approximation and scaling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All exchange terms in SAPT arise from the antisymmetrization
 of the wavefunctions of monomers A and B. Taking into account exchange of all possible
