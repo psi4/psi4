@@ -139,15 +139,6 @@ def select_mp2_gradient(name, **kwargs):
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_gradient
-            #elif module in ['', 'DFMP2']:
-            #    func = run_dfmp2_gradient  # missing though advertised
-    #elif reference == 'ROHF':
-    #    if mtd_type == 'CONV':
-    #        if module in ['', 'OCC']:
-    #            func = run_occ_gradient  # missing though advertised
-    #    if mtd_type == 'DF':
-    #        if module in ['', 'OCC']:
-    #            func = run_dfocc_gradient  # missing though advertised
 
     if func is None:
         raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
@@ -1125,14 +1116,6 @@ def run_dfocc(name, **kwargs):
         psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         set_cholesky_from('CC_TYPE')
-    elif lowername == 'ccdl':  # TODO ask Ugur forbidden CD?
-        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        set_cholesky_from('CC_TYPE')
-    elif lowername == 'ccsdl':  # TODO ask Ugur forbidden CD?
-        psi4.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        set_cholesky_from('CC_TYPE')
     elif lowername == 'dfocc':
         pass
     else:
@@ -1154,7 +1137,7 @@ def run_dfocc(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1= True, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     else:
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
@@ -1213,7 +1196,7 @@ def run_dfocc_gradient(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     else:
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
@@ -1257,7 +1240,7 @@ def run_dfocc_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     else:
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
@@ -1298,7 +1281,7 @@ def run_qchf(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     else:
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  QCHF does not make use of molecular symmetry: """
@@ -1425,7 +1408,7 @@ def run_occ(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
@@ -1495,7 +1478,7 @@ def run_occ_gradient(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
@@ -1700,11 +1683,7 @@ def run_dfmp2_gradient(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
-    else:
-        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
-            raise ValidationError("""  DFMP2 does not make use of molecular symmetry: """
-                                  """reference wavefunction must be C1.\n""")
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
@@ -1776,7 +1755,7 @@ def run_ccenergy(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
@@ -1864,7 +1843,7 @@ def run_bccd(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
         mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
@@ -2089,15 +2068,14 @@ def run_dfmp2_property(name, **kwargs):
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        #psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')  # insufficient b/c SCF option read in DFMP2
-        psi4.set_global_option('SCF_TYPE', 'DF')
+        psi4.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
 
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
@@ -2215,7 +2193,7 @@ def run_detci_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
@@ -2508,7 +2486,7 @@ def run_detci(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
@@ -2535,11 +2513,7 @@ def run_dfmp2(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
-    else:
-        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
-            raise ValidationError("""  DFMP2 does not make use of molecular symmetry: """
-                                  """reference wavefunction must be C1.\n""")
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')
@@ -3170,7 +3144,8 @@ def run_fnodfcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DF-CCSD(T) computation.
 
-    >>> energy('df-ccsd(t)')
+    >>> set cc_type df
+    >>> energy('fno-ccsd(t)')
 
     """
     lowername = name.lower()
@@ -3192,7 +3167,7 @@ def run_fnodfcc(name, **kwargs):
 
     # throw an exception for open-shells
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
+        raise ValidationError("""Error: %s requires 'reference rhf'.""" % lowername)
 
     def set_cholesky_from(mtd_type):
         type_val = psi4.get_global_option(mtd_type)
@@ -3233,17 +3208,14 @@ def run_fnodfcc(name, **kwargs):
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     else:
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  FNOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-
     fnocc_wfn = psi4.fnocc(ref_wfn)
-    # TODO this needs C1?
 
-    # restore options
     optstash.restore()
     return fnocc_wfn
 
@@ -3339,7 +3311,7 @@ def run_fnocc(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # if the scf type is df/cd, then the ao integrals were never written to disk.
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
@@ -3347,7 +3319,6 @@ def run_fnocc(name, **kwargs):
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
-    # run ccsd
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
     # set current correlation energy and total energy.  only need to treat mpn here.
@@ -3421,32 +3392,28 @@ def run_cepa(name, **kwargs):
         cepa_level = 'aqcc'
     elif lowername in ['cisd', 'fno-cisd']:
         cepa_level = 'cisd'
-    #elif lowername in ['cid', 'fno-dci']:  # TODO not really implemented?
-    #    cepa_level = 'cisd'
     else:
         raise ValidationError("""Error: %s not implemented\n""" % lowername)
 
     psi4.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
 
     if lowername in ['fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
-                     'fno-acpf', 'fno-aqcc', 'fno-cisd']:  # 'fno-cid'
+                     'fno-acpf', 'fno-aqcc', 'fno-cisd']:
         psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
 
-    # TODO need c1?
     # throw an exception for open-shells
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("""Error: %s requires 'reference rhf'.""" % lowername)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
-    # run cepa
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
     # one-electron properties
@@ -3484,7 +3451,7 @@ def run_detcas(name, **kwargs):
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     molecule = ref_wfn.molecule()
 
