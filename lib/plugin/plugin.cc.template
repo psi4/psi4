@@ -44,13 +44,14 @@ int read_options(std::string name, Options& options)
 }
 
 extern "C"
-PsiReturnType @plugin@(Options& options)
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
     int print = options.get_int("PRINT");
 
     /* Your code goes here */
 
-    return Success;
+    // Typically you would build a new wavefunction and populate it with data
+    return ref_wfn;
 }
 
 }} // End namespaces

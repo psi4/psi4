@@ -85,7 +85,6 @@ void Wavefunction::shallow_copy(const Wavefunction* other)
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
     S_ = other->S_;
-    H_ = other->H_;
     molecule_ = other->molecule_;
 
     psio_ = other->psio_;
@@ -116,6 +115,11 @@ void Wavefunction::shallow_copy(const Wavefunction* other)
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
+    same_a_b_dens_ = other->same_a_b_dens_;
+    same_a_b_orbs_ = other->same_a_b_orbs_;
+
+    // Set by other classes
+    H_ = other->H_;
     Ca_ = other->Ca_;
     Cb_ = other->Cb_;
     Da_ = other->Da_;
@@ -128,8 +132,76 @@ void Wavefunction::shallow_copy(const Wavefunction* other)
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
+}
+void Wavefunction::deep_copy(SharedWavefunction other)
+{
+    deep_copy(other.get());
+}
+
+void Wavefunction::deep_copy(const Wavefunction* other)
+{
+    if (!S_){
+        throw PSIEXCEPTION("Wavefunction::deep_copy must copy an initialized wavefunction.");
+    }
+
+    /// From typical constructor
+    /// Some member data is not clone-able so we will copy
+    name_ = other->name_;
+    molecule_ = boost::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
+    basisset_ = BasisSet::pyconstruct_orbital(molecule_, other->basisset()->key(),
+                                              other->basisset()->target());
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_->init_with(other->nsopi_, other->nsopi_);
+    AO2SO_ = other->AO2SO_->clone();
+    S_ = other->S_->clone();
+
+    psio_ = other->psio_; // We dont actually copy psio
+    memory_ = other->memory_;
+    nalpha_ = other->nalpha_;
+    nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
+
+    print_ = other->print_;
+    debug_ = other->debug_;
+    density_fitted_ = other->density_fitted_;
+
+    energy_ = other->energy_;
+    efzc_ = other->efzc_;
+
+    doccpi_ = other->doccpi_;
+    soccpi_ = other->soccpi_;
+    frzcpi_ = other->frzcpi_;
+    frzvpi_ = other->frzvpi_;
+    nalphapi_ = other->nalphapi_;
+    nbetapi_ = other->nbetapi_;
+    nsopi_ = other->nsopi_;
+    nmopi_ = other->nmopi_;
+
+    nso_ = other->nso_;
+    nmo_ = other->nmo_;
+    nirrep_ = other->nirrep_;
+
     same_a_b_dens_ = other->same_a_b_dens_;
     same_a_b_orbs_ = other->same_a_b_orbs_;
+
+    /// Below is not set in the typical constructor
+    if (other->H_) H_ = other->H_->clone();
+    if (other->Ca_) Ca_ = other->Ca_->clone();
+    if (other->Cb_) Cb_ = other->Cb_->clone();
+    if (other->Da_) Da_ = other->Da_->clone();
+    if (other->Db_) Db_ = other->Db_->clone();
+    if (other->Fa_) Fa_ = other->Fa_->clone();
+    if (other->Fb_) Fb_ = other->Fb_->clone();
+    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
+    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+
+    if (other->gradient_) gradient_ = other->gradient_->clone();
+    if (other->hessian_) hessian_ = other->hessian_->clone();
+    if (other->tpdm_gradient_contribution_)
+        tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
+
 }
 
 void Wavefunction::common_init()
@@ -185,6 +257,7 @@ void Wavefunction::common_init()
 
     density_fitted_ = false;
     energy_ = 0.0;
+    efzc_ = 0.0;
     same_a_b_dens_ = true;
     same_a_b_orbs_ = false;
 

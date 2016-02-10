@@ -1478,7 +1478,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK");
     /*- JK Independent options
      -*/
     options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");

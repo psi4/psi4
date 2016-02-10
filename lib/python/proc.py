@@ -42,7 +42,7 @@ from roa import *
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
-# consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
+# consult http://psicode.org/psi4manual/master/proc_py.html
 
 
 def select_mp2(name, **kwargs):
@@ -2631,7 +2631,6 @@ def run_sapt(name, **kwargs):
         psi4.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
-    print('run_sapt():', sapt_dimer, sapt_dimer.natom(), sapt_dimer.name())
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
@@ -2643,11 +2642,7 @@ def run_sapt(name, **kwargs):
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
-        print('not c1 so cloning')
         sapt_dimer.update_geometry()
-    else:
-        print('is c1 so pass')
-    print('run_sapt():', sapt_dimer, sapt_dimer.natom(), sapt_dimer.name())
 
     if psi4.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
