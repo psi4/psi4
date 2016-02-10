@@ -46,8 +46,22 @@ namespace psi { namespace detci {
 // DGAS this is still awkward, I think the TPDM code can be less general than the OPDM one for now.
 void CIWavefunction::form_tpdm(void)
 {
+
+  SharedCIVector Ivec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);
+  Ivec->init_io_files(true);
+  SharedCIVector Jvec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);
+  Jvec->init_io_files(true);
+
   std::vector<SharedMatrix> tpdm_list;
-  tpdm_list = tpdm(Parameters_->num_roots, Parameters_->d_filenum, Parameters_->d_filenum);
+  std::vector<std::tuple<int, int, double> > states_vec;
+  for (int root_idx = 0; root_idx < Parameters_->average_num; root_idx++){
+    states_vec.push_back(std::make_tuple(Parameters_->average_states[root_idx],
+                                         Parameters_->average_states[root_idx],
+                                         Parameters_->average_weights[root_idx]));
+  }
+
+  tpdm_list = tpdm(Ivec, Jvec, states_vec);
+
   tpdm_aa_ = tpdm_list[0];
   tpdm_ab_ = tpdm_list[1];
   tpdm_bb_ = tpdm_list[2];
@@ -55,35 +69,40 @@ void CIWavefunction::form_tpdm(void)
   tpdm_called_ = true;
 }
 
-// We always return the state-averaged tpdm here, not sure what else we really need.
-std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int Jfirstunit)
+/*
+Compute a single root without weighting
+ */
+std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVector Jvec, int Iroot, int Jroot)
+{
+  std::vector<std::tuple<int, int, double> > states_vec;
+  states_vec.push_back(std::make_tuple(Iroot, Jroot, 1.0));
+  return tpdm(Ivec, Jvec, states_vec);
+
+}
+
+
+/*
+** Computes the two-particle density matrix between CIVectors I and J.
+** The states vec tuple represents (Iroot, Jroot, weight).
+** \Gamma_{tuvw} = < Iroot | \hat{e}^{tuvw} | Jroot >
+*/
+std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                               std::vector<std::tuple<int, int, double> > states_vec)
 {
 
    unsigned long bufsz;
    double **transp_tmp = NULL;
    double **transp_tmp2 = NULL;
-   double *buffer1, *buffer2, value;
+   double value;
    int Iroot, Jroot;
    int Iblock, Iblock2, Ibuf, Iac, Ibc, Inas, Inbs, Iairr;
    int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
    int do_Jblock, do_Jblock2;
    char opdm_key[80];
-   int root_idx;   /* what root we're on */
+   // int root_idx;    what root we're on
    double weight;  /* the weight of that root */
 
    timer_on("CIWave: tpdm");
-   CIvect Ivec(Parameters_->icore, nroots, 1, Ifirstunit, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);
-   Ivec.init_io_files(true);
-
-   CIvect Jvec(Parameters_->icore, nroots, 1, Jfirstunit, CIblks_, CalcInfo_, Parameters_,
-               H0block_, false);
-   Jvec.init_io_files(true);
-
-   buffer1 = Ivec.buf_malloc();
-   buffer2 = Jvec.buf_malloc();
-   Ivec.buf_lock(buffer1);
-   Jvec.buf_lock(buffer2);
 
    int nact = CalcInfo_->num_ci_orbs;
    int nact2 = nact * nact;
@@ -96,12 +115,12 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    double* tpdm_abp = tpdm_ab->pointer();
    double* tpdm_bbp = tpdm_bb->pointer();
 
-   if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) ||
-       (Ivec.icore_==0 && Ivec.Ms0_)) {
+   if ((Ivec->icore_==2 && Ivec->Ms0_ && CalcInfo_->ref_sym != 0) ||
+       (Ivec->icore_==0 && Ivec->Ms0_)) {
      int maxrows=0, maxcols=0;
-     for (int i=0; i<Ivec.num_blocks_; i++) {
-       if (Ivec.Ia_size_[i] > maxrows) maxrows = Ivec.Ia_size_[i];
-       if (Ivec.Ib_size_[i] > maxcols) maxcols = Ivec.Ib_size_[i];
+     for (int i=0; i<Ivec->num_blocks_; i++) {
+       if (Ivec->Ia_size_[i] > maxrows) maxrows = Ivec->Ia_size_[i];
+       if (Ivec->Ib_size_[i] > maxcols) maxcols = Ivec->Ib_size_[i];
      }
      if (maxcols > maxrows) maxrows = maxcols;
      transp_tmp = (double **) malloc (maxrows * sizeof(double *));
@@ -109,7 +128,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
      if (transp_tmp == NULL || transp_tmp2 == NULL) {
        printf("(tpdm): Trouble with malloc'ing transp_tmp\n");
      }
-     bufsz = Ivec.get_max_blk_size();
+     bufsz = Ivec->get_max_blk_size();
      transp_tmp[0] = init_array(bufsz);
      transp_tmp2[0] = init_array(bufsz);
      if (transp_tmp[0] == NULL || transp_tmp2[0] == NULL) {
@@ -121,97 +140,97 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    if (Parameters_->icore == 0) {
 
      /* loop over all the roots requested */
-     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
-       Iroot = Parameters_->average_states[root_idx];
-       weight = Parameters_->average_weights[root_idx];
-       Jroot = Iroot;  /* change later if need transition matrix elements */
+     for (int root_idx=0; root_idx<states_vec.size(); root_idx++)  {
+       Iroot  = std::get<0>(states_vec[root_idx]);
+       Jroot  = std::get<1>(states_vec[root_idx]);
+       weight = std::get<2>(states_vec[root_idx]);
 
-       for (Ibuf=0; Ibuf<Ivec.buf_per_vect_; Ibuf++) {
-         Ivec.read(Iroot, Ibuf);
-         Iblock = Ivec.buf2blk_[Ibuf];
-         Iac = Ivec.Ia_code_[Iblock];
-         Ibc = Ivec.Ib_code_[Iblock];
-         Inas = Ivec.Ia_size_[Iblock];
-         Inbs = Ivec.Ib_size_[Iblock];
+       for (Ibuf=0; Ibuf<Ivec->buf_per_vect_; Ibuf++) {
+         Ivec->read(Iroot, Ibuf);
+         Iblock = Ivec->buf2blk_[Ibuf];
+         Iac = Ivec->Ia_code_[Iblock];
+         Ibc = Ivec->Ib_code_[Iblock];
+         Inas = Ivec->Ia_size_[Iblock];
+         Inbs = Ivec->Ib_size_[Iblock];
 
-         for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
+         for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
            do_Jblock=0; do_Jblock2=0;
-           Jblock = Jvec.buf2blk_[Jbuf];
+           Jblock = Jvec->buf2blk_[Jbuf];
            Jblock2 = -1;
-           Jac = Jvec.Ia_code_[Jblock];
-           Jbc = Jvec.Ib_code_[Jblock];
-           if (Jvec.Ms0_) Jblock2 = Jvec.decode_[Jbc][Jac];
-             Jnas = Jvec.Ia_size_[Jblock];
-             Jnbs = Jvec.Ib_size_[Jblock];
+           Jac = Jvec->Ia_code_[Jblock];
+           Jbc = Jvec->Ib_code_[Jblock];
+           if (Jvec->Ms0_) Jblock2 = Jvec->decode_[Jbc][Jac];
+             Jnas = Jvec->Ia_size_[Jblock];
+             Jnbs = Jvec->Ib_size_[Jblock];
              if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock]
                || s3_contrib_[Iblock][Jblock])
              do_Jblock = 1;
-           if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
+           if (Jvec->buf_offdiag_[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
              s2_contrib_[Iblock][Jblock2] ||
              s3_contrib_[Iblock][Jblock2]))
              do_Jblock2 = 1;
            if (!do_Jblock && !do_Jblock2) continue;
 
-           Jvec.read(Jroot, Jbuf);
+           Jvec->read(Jroot, Jbuf);
 
            if (do_Jblock) {
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-               Ivec.num_alpcodes_, Ivec.num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp,
-               Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
+               Ivec->num_alpcodes_, Ivec->num_betcodes_, tpdm_aap, tpdm_bbp, tpdm_abp,
+               Jvec->blocks_[Jblock], Ivec->blocks_[Iblock],
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
            }
 
            if (do_Jblock2) {
-             Jvec.transp_block(Jblock, transp_tmp);
+             Jvec->transp_block(Jblock, transp_tmp);
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-               Ivec.num_alpcodes_, Ivec.num_betcodes_,
-               tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock],
+               Ivec->num_alpcodes_, Ivec->num_betcodes_,
+               tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec->blocks_[Iblock],
                Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
            }
 
          } /* end loop over Jbuf */
 
-         if (Ivec.buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
-           Iblock2 = Ivec.decode_[Ibc][Iac];
-           Iac = Ivec.Ia_code_[Iblock2];
-           Ibc = Ivec.Ib_code_[Iblock2];
-           Inas = Ivec.Ia_size_[Iblock2];
-           Inbs = Ivec.Ib_size_[Iblock2];
+         if (Ivec->buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
+           Iblock2 = Ivec->decode_[Ibc][Iac];
+           Iac = Ivec->Ia_code_[Iblock2];
+           Ibc = Ivec->Ib_code_[Iblock2];
+           Inas = Ivec->Ia_size_[Iblock2];
+           Inbs = Ivec->Ib_size_[Iblock2];
 
-           Ivec.transp_block(Iblock, transp_tmp2);
+           Ivec->transp_block(Iblock, transp_tmp2);
 
-           for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
-	     do_Jblock=0; do_Jblock2=0;
-	     Jblock = Jvec.buf2blk_[Jbuf];
-	     Jblock2 = -1;
-	     Jac = Jvec.Ia_code_[Jblock];
-	     Jbc = Jvec.Ib_code_[Jblock];
-	     if (Jvec.Ms0_) Jblock2 = Jvec.decode_[Jbc][Jac];
-	     Jnas = Jvec.Ia_size_[Jblock];
-	     Jnbs = Jvec.Ib_size_[Jblock];
-	     if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock] ||
-	         s3_contrib_[Iblock2][Jblock])
-	       do_Jblock = 1;
-	     if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
+           for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
+       do_Jblock=0; do_Jblock2=0;
+       Jblock = Jvec->buf2blk_[Jbuf];
+       Jblock2 = -1;
+       Jac = Jvec->Ia_code_[Jblock];
+       Jbc = Jvec->Ib_code_[Jblock];
+       if (Jvec->Ms0_) Jblock2 = Jvec->decode_[Jbc][Jac];
+       Jnas = Jvec->Ia_size_[Jblock];
+       Jnbs = Jvec->Ib_size_[Jblock];
+       if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock] ||
+           s3_contrib_[Iblock2][Jblock])
+         do_Jblock = 1;
+       if (Jvec->buf_offdiag_[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
                s2_contrib_[Iblock2][Jblock2] ||
                s3_contrib_[Iblock2][Jblock2]))
                do_Jblock2 = 1;
              if (!do_Jblock && !do_Jblock2) continue;
 
-             Jvec.read(Jroot, Jbuf);
+             Jvec->read(Jroot, Jbuf);
 
              if (do_Jblock) {
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                 Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock],
+                 Ivec->num_alpcodes_, Ivec->num_betcodes_,
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec->blocks_[Jblock],
                  transp_tmp2, Jac, Jbc, Jnas,
                  Jnbs, Iac, Ibc, Inas, Inbs, weight);
              }
 
              if (do_Jblock2) {
-               Jvec.transp_block(Jblock, transp_tmp);
+               Jvec->transp_block(Jblock, transp_tmp);
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                 Ivec.num_alpcodes_, Ivec.num_betcodes_,
+                 Ivec->num_alpcodes_, Ivec->num_betcodes_,
                  tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2,
                  Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
              }
@@ -223,30 +242,29 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    } /* end icore==0 */
 
    else if (Parameters_->icore==1) { /* whole vectors in-core */
+     for (int root_idx=0; root_idx<states_vec.size(); root_idx++)  {
+       Iroot  = std::get<0>(states_vec[root_idx]);
+       Jroot  = std::get<1>(states_vec[root_idx]);
+       weight = std::get<2>(states_vec[root_idx]);
 
-     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
-       Iroot = Parameters_->average_states[root_idx];
-       weight = Parameters_->average_weights[root_idx];
-       Jroot = Iroot;  /* change later if need transition matrix elements */
-
-       Ivec.read(Iroot, 0);
-       Jvec.read(Jroot, 0);
-       for (Iblock=0; Iblock<Ivec.num_blocks_; Iblock++) {
-         Iac = Ivec.Ia_code_[Iblock];
-         Ibc = Ivec.Ib_code_[Iblock];
-         Inas = Ivec.Ia_size_[Iblock];
-         Inbs = Ivec.Ib_size_[Iblock];
+       Ivec->read(Iroot, 0);
+       Jvec->read(Jroot, 0);
+       for (Iblock=0; Iblock<Ivec->num_blocks_; Iblock++) {
+         Iac = Ivec->Ia_code_[Iblock];
+         Ibc = Ivec->Ib_code_[Iblock];
+         Inas = Ivec->Ia_size_[Iblock];
+         Inbs = Ivec->Ib_size_[Iblock];
          if (Inas==0 || Inbs==0) continue;
-         for (Jblock=0; Jblock<Jvec.num_blocks_; Jblock++) {
-           Jac = Jvec.Ia_code_[Jblock];
-           Jbc = Jvec.Ib_code_[Jblock];
-           Jnas = Jvec.Ia_size_[Jblock];
-           Jnbs = Jvec.Ib_size_[Jblock];
+         for (Jblock=0; Jblock<Jvec->num_blocks_; Jblock++) {
+           Jac = Jvec->Ia_code_[Jblock];
+           Jbc = Jvec->Ib_code_[Jblock];
+           Jnas = Jvec->Ia_size_[Jblock];
+           Jnbs = Jvec->Ib_size_[Jblock];
            if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
              s3_contrib_[Iblock][Jblock])
              tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-               Ivec.num_alpcodes_, Ivec.num_betcodes_,
-               tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
+               Ivec->num_alpcodes_, Ivec->num_betcodes_,
+               tpdm_aap, tpdm_bbp, tpdm_abp, Jvec->blocks_[Jblock], Ivec->blocks_[Iblock],
                Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
          }
        } /* end loop over Iblock */
@@ -254,85 +272,85 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
    } /* end icore==1 */
 
    else if (Parameters_->icore==2) { /* icore==2 */
-     for (root_idx=0; root_idx<Parameters_->average_num; root_idx++)  {
-       Iroot = Parameters_->average_states[root_idx];
-       weight = Parameters_->average_weights[root_idx];
-       Jroot = Iroot;  /* change later if need transition matrix elements */
+     for (int root_idx=0; root_idx<states_vec.size(); root_idx++)  {
+       Iroot  = std::get<0>(states_vec[root_idx]);
+       Jroot  = std::get<1>(states_vec[root_idx]);
+       weight = std::get<2>(states_vec[root_idx]);
 
-       for (Ibuf=0; Ibuf<Ivec.buf_per_vect_; Ibuf++) {
-         Ivec.read(Iroot, Ibuf);
-         Iairr = Ivec.buf2blk_[Ibuf];
+       for (Ibuf=0; Ibuf<Ivec->buf_per_vect_; Ibuf++) {
+         Ivec->read(Iroot, Ibuf);
+         Iairr = Ivec->buf2blk_[Ibuf];
 
-         for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
-           Jvec.read(Jroot, Jbuf);
-           Jairr = Jvec.buf2blk_[Jbuf];
+         for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
+           Jvec->read(Jroot, Jbuf);
+           Jairr = Jvec->buf2blk_[Jbuf];
 
-           for (Iblock=Ivec.first_ablk_[Iairr]; Iblock<=Ivec.last_ablk_[Iairr];
+           for (Iblock=Ivec->first_ablk_[Iairr]; Iblock<=Ivec->last_ablk_[Iairr];
              Iblock++) {
-             Iac = Ivec.Ia_code_[Iblock];
-             Ibc = Ivec.Ib_code_[Iblock];
-             Inas = Ivec.Ia_size_[Iblock];
-             Inbs = Ivec.Ib_size_[Iblock];
+             Iac = Ivec->Ia_code_[Iblock];
+             Ibc = Ivec->Ib_code_[Iblock];
+             Inas = Ivec->Ia_size_[Iblock];
+             Inbs = Ivec->Ib_size_[Iblock];
 
-             for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
+             for (Jblock=Jvec->first_ablk_[Jairr]; Jblock<=Jvec->last_ablk_[Jairr];
                Jblock++) {
-               Jac = Jvec.Ia_code_[Jblock];
-               Jbc = Jvec.Ib_code_[Jblock];
-               Jnas = Jvec.Ia_size_[Jblock];
-               Jnbs = Jvec.Ib_size_[Jblock];
+               Jac = Jvec->Ia_code_[Jblock];
+               Jbc = Jvec->Ib_code_[Jblock];
+               Jnas = Jvec->Ia_size_[Jblock];
+               Jnbs = Jvec->Ib_size_[Jblock];
 
                if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock] ||
                  s3_contrib_[Iblock][Jblock])
                tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                 Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], Ivec.blocks_[Iblock],
+                 Ivec->num_alpcodes_, Ivec->num_betcodes_,
+                 tpdm_aap, tpdm_bbp, tpdm_abp, Jvec->blocks_[Jblock], Ivec->blocks_[Iblock],
                  Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
-               if (Jvec.buf_offdiag_[Jbuf]) {
-                 Jblock2 = Jvec.decode_[Jbc][Jac];
+               if (Jvec->buf_offdiag_[Jbuf]) {
+                 Jblock2 = Jvec->decode_[Jbc][Jac];
                  if (s1_contrib_[Iblock][Jblock2] ||
                    s2_contrib_[Iblock][Jblock2] ||
                    s3_contrib_[Iblock][Jblock2]) {
-                   Jvec.transp_block(Jblock, transp_tmp);
+                   Jvec->transp_block(Jblock, transp_tmp);
                    tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                     Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec.blocks_[Iblock],
+                     Ivec->num_alpcodes_, Ivec->num_betcodes_,
+                     tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, Ivec->blocks_[Iblock],
                      Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
                  }
                }
 
              } /* end loop over Jblock */
 
-             if (Ivec.buf_offdiag_[Ibuf]) {
-               Iblock2 = Ivec.decode_[Ibc][Iac];
-               Ivec.transp_block(Iblock, transp_tmp2);
-               Iac = Ivec.Ia_code_[Iblock2];
-               Ibc = Ivec.Ib_code_[Iblock2];
-               Inas = Ivec.Ia_size_[Iblock2];
-               Inbs = Ivec.Ib_size_[Iblock2];
+             if (Ivec->buf_offdiag_[Ibuf]) {
+               Iblock2 = Ivec->decode_[Ibc][Iac];
+               Ivec->transp_block(Iblock, transp_tmp2);
+               Iac = Ivec->Ia_code_[Iblock2];
+               Ibc = Ivec->Ib_code_[Iblock2];
+               Inas = Ivec->Ia_size_[Iblock2];
+               Inbs = Ivec->Ib_size_[Iblock2];
 
-               for (Jblock=Jvec.first_ablk_[Jairr];
-                 Jblock<=Jvec.last_ablk_[Jairr]; Jblock++) {
-                 Jac = Jvec.Ia_code_[Jblock];
-                 Jbc = Jvec.Ib_code_[Jblock];
-                 Jnas = Jvec.Ia_size_[Jblock];
-                 Jnbs = Jvec.Ib_size_[Jblock];
+               for (Jblock=Jvec->first_ablk_[Jairr];
+                 Jblock<=Jvec->last_ablk_[Jairr]; Jblock++) {
+                 Jac = Jvec->Ia_code_[Jblock];
+                 Jbc = Jvec->Ib_code_[Jblock];
+                 Jnas = Jvec->Ia_size_[Jblock];
+                 Jnbs = Jvec->Ib_size_[Jblock];
 
                  if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock]
                    || s3_contrib_[Iblock2][Jblock])
                    tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                     Ivec.num_alpcodes_, Ivec.num_betcodes_,
-                     tpdm_aap, tpdm_bbp, tpdm_abp, Jvec.blocks_[Jblock], transp_tmp2,
+                     Ivec->num_alpcodes_, Ivec->num_betcodes_,
+                     tpdm_aap, tpdm_bbp, tpdm_abp, Jvec->blocks_[Jblock], transp_tmp2,
                      Jac, Jbc, Jnas, Jnbs, Iac, Ibc, Inas, Inbs, weight);
 
-                 if (Jvec.buf_offdiag_[Jbuf]) {
-                   Jblock2 = Jvec.decode_[Jbc][Jac];
+                 if (Jvec->buf_offdiag_[Jbuf]) {
+                   Jblock2 = Jvec->decode_[Jbc][Jac];
                    if (s1_contrib_[Iblock][Jblock2] ||
                      s2_contrib_[Iblock][Jblock2] ||
                      s3_contrib_[Iblock][Jblock2]) {
-                     Jvec.transp_block(Jblock, transp_tmp);
+                     Jvec->transp_block(Jblock, transp_tmp);
                      tpdm_block(alplist_, betlist_, CalcInfo_->num_ci_orbs,
-                     Ivec.num_alpcodes_, Ivec.num_betcodes_,
+                     Ivec->num_alpcodes_, Ivec->num_betcodes_,
                      tpdm_aap, tpdm_bbp, tpdm_abp, transp_tmp, transp_tmp2, Jbc, Jac,
                      Jnbs, Jnas, Iac, Ibc, Inas, Inbs, weight);
                    }
@@ -406,12 +424,10 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(int nroots, int Ifirstunit, int J
                           tpdm_abmp[pq][rs] + tpdm_abmp[rs][pq]);
    }}}}
 
-   Ivec.buf_unlock();
-   Jvec.buf_unlock();
+   // Ivec->buf_unlock();
+   // Jvec->buf_unlock();
    if (transp_tmp != NULL) free_block(transp_tmp);
    if (transp_tmp2 != NULL) free_block(transp_tmp2);
-   free(buffer1);
-   free(buffer2);
 
    std::vector<SharedMatrix> ret_list;
    ret_list.push_back(tpdm_aam);

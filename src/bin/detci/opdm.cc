@@ -94,11 +94,21 @@ void CIWavefunction::form_opdm(void)
 
   }
 
-  // Transition-OPDM's
+  SharedCIVector Ivec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);
+  Ivec->init_io_files(true);
+  SharedCIVector Jvec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);
+  Jvec->init_io_files(true);
+
   std::vector<std::vector<SharedMatrix> > opdm_list;
+  std::vector<std::tuple<int, int> > states_vec;
+
+  // Transition-OPDM's
   if (Parameters_->transdens) {
-    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
-                     Parameters_->d_filenum, true);
+    states_vec.clear();
+    for (int i = 0; i < Parameters_->num_roots-1; ++i){
+      states_vec.push_back(std::make_tuple(0, i+1));
+    }
+    opdm_list = opdm(Ivec, Jvec, states_vec);
     for (int i=0; i<Parameters_->num_roots-1; i++){
         opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
         opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
@@ -107,8 +117,11 @@ void CIWavefunction::form_opdm(void)
   }
 
   // OPDM's
-  opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
-                   Parameters_->d_filenum, false);
+  states_vec.clear();
+  for (int i = 0; i < Parameters_->num_roots; ++i){
+    states_vec.push_back(std::make_tuple(i, i));
+  }
+  opdm_list = opdm(Ivec, Jvec, states_vec);
   for (int i=0; i<Parameters_->num_roots; i++){
       opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
       opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
@@ -188,14 +201,22 @@ SharedMatrix CIWavefunction::opdm_add_inactive(SharedMatrix opdm, double value, 
 
 }
 
+std::vector<SharedMatrix> CIWavefunction::opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                                            int Iroot, int Jroot)
+{
+  std::vector<std::tuple<int, int> > states_vec;
+  states_vec.push_back(std::make_tuple(Iroot, Jroot));
+  return opdm(Ivec, Jvec, states_vec)[0];
+}
+
 /*
 ** Computes the one-particle density matrix for all nroots starting at root_start.
 ** If transden is true, opdm will then compute transition matrices for Iroot = root_start
 ** and Jroot from Iroot to Iroot + Nroots.
 ** \gamma_{tu} = < Iroot | \hat{E}^{tu} | Jroot >
 */
-std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int nroots, int Ifile,
-                                                             int Jfile, bool transden)
+std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                                            std::vector<std::tuple<int, int> > states_vec)
 {
   timer_on("CIWave: opdm");
 
@@ -203,37 +224,18 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
   unsigned long bufsz;
   double **transp_tmp = NULL;
   double **transp_tmp2 = NULL;
-  double *buffer1, *buffer2;
+  // double *buffer1, *buffer2;
   int Iblock, Iblock2, Ibuf, Iac, Ibc, Inas, Inbs, Iairr;
   int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
   int do_Jblock, do_Jblock2;
 
-  int Iroot = root_start;
-  int Jroot;
-  if (transden) Jroot = root_start + 1;
-  else Jroot = root_start;
-
-  CIvect Ivec(Parameters_->icore, nroots, 1, Ifile, CIblks_, CalcInfo_, Parameters_,
-              H0block_, false);
-  Ivec.init_io_files(true);
-
-  CIvect Jvec(Parameters_->icore, nroots, 1, Jfile, CIblks_, CalcInfo_, Parameters_,
-              H0block_, false);
-  Jvec.init_io_files(true);
-
   std::vector<std::vector<SharedMatrix> > opdm_list;
 
-
-  buffer1 = Ivec.buf_malloc();
-  buffer2 = Jvec.buf_malloc();
-  Ivec.buf_lock(buffer1);
-  Jvec.buf_lock(buffer2);
-
-  if ((Ivec.icore_==2 && Ivec.Ms0_ && CalcInfo_->ref_sym != 0) ||
-      (Ivec.icore_==0 && Ivec.Ms0_)) {
-    for (i=0, maxrows=0, maxcols=0; i<Ivec.num_blocks_; i++) {
-      if (Ivec.Ia_size_[i] > maxrows) maxrows = Ivec.Ia_size_[i];
-      if (Ivec.Ib_size_[i] > maxcols) maxcols = Ivec.Ib_size_[i];
+  if ((Ivec->icore_==2 && Ivec->Ms0_ && CalcInfo_->ref_sym != 0) ||
+      (Ivec->icore_==0 && Ivec->Ms0_)) {
+    for (i=0, maxrows=0, maxcols=0; i<Ivec->num_blocks_; i++) {
+      if (Ivec->Ia_size_[i] > maxrows) maxrows = Ivec->Ia_size_[i];
+      if (Ivec->Ib_size_[i] > maxcols) maxcols = Ivec->Ib_size_[i];
     }
     if (maxcols > maxrows) maxrows = maxcols;
     transp_tmp = (double **) malloc (maxrows * sizeof(double *));
@@ -241,14 +243,13 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
     if (transp_tmp == NULL || transp_tmp2 == NULL) {
       printf("(opdm): Trouble with malloc'ing transp_tmp\n");
     }
-    bufsz = Ivec.get_max_blk_size();
+    bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == NULL || transp_tmp2[0] == NULL) {
       printf("(opdm): Trouble with malloc'ing transp_tmp[0]\n");
     }
   }
-
 
   int nci = CalcInfo_->num_ci_orbs;
   Dimension act_dim = get_dimension("ACT");
@@ -257,90 +258,91 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
   double** scratch_ap = scratch_a->pointer();
   double** scratch_bp = scratch_b->pointer();
 
-  for (; Jroot<nroots; Jroot++) {
+  for (int root_idx=0; root_idx<states_vec.size(); root_idx++)  {
+    int Iroot = std::get<0>(states_vec[root_idx]);
+    int Jroot = std::get<1>(states_vec[root_idx]);
 
     scratch_a->zero();
     scratch_b->zero();
 
-
     if (Parameters_->icore == 0) {
 
-      for (Ibuf=0; Ibuf<Ivec.buf_per_vect_; Ibuf++) {
-        Ivec.read(Iroot, Ibuf);
-        Iblock = Ivec.buf2blk_[Ibuf];
-        Iac = Ivec.Ia_code_[Iblock];
-        Ibc = Ivec.Ib_code_[Iblock];
-        Inas = Ivec.Ia_size_[Iblock];
-        Inbs = Ivec.Ib_size_[Iblock];
+      for (Ibuf=0; Ibuf<Ivec->buf_per_vect_; Ibuf++) {
+        Ivec->read(Iroot, Ibuf);
+        Iblock = Ivec->buf2blk_[Ibuf];
+        Iac = Ivec->Ia_code_[Iblock];
+        Ibc = Ivec->Ib_code_[Iblock];
+        Inas = Ivec->Ia_size_[Iblock];
+        Inbs = Ivec->Ib_size_[Iblock];
 
-        for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
+        for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
           do_Jblock=0; do_Jblock2=0;
-          Jblock = Jvec.buf2blk_[Jbuf];
+          Jblock = Jvec->buf2blk_[Jbuf];
           Jblock2 = -1;
-          Jac = Jvec.Ia_code_[Jblock];
-          Jbc = Jvec.Ib_code_[Jblock];
-          if (Jvec.Ms0_) Jblock2 = Jvec.decode_[Jbc][Jac];
-          Jnas = Jvec.Ia_size_[Jblock];
-          Jnbs = Jvec.Ib_size_[Jblock];
+          Jac = Jvec->Ia_code_[Jblock];
+          Jbc = Jvec->Ib_code_[Jblock];
+          if (Jvec->Ms0_) Jblock2 = Jvec->decode_[Jbc][Jac];
+          Jnas = Jvec->Ia_size_[Jblock];
+          Jnbs = Jvec->Ib_size_[Jblock];
           if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
             do_Jblock = 1;
-          if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
+          if (Jvec->buf_offdiag_[Jbuf] && (s1_contrib_[Iblock][Jblock2] ||
                                          s2_contrib_[Iblock][Jblock2]))
             do_Jblock2 = 1;
           if (!do_Jblock && !do_Jblock2) continue;
 
-          Jvec.read(Jroot, Jbuf);
+          Jvec->read(Jroot, Jbuf);
 
           if (do_Jblock) {
-            opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
-                       Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
+            opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec->blocks_[Jblock],
+                       Ivec->blocks_[Iblock], Jac, Jbc, Jnas,
                        Jnbs, Iac, Ibc, Inas, Inbs);
             }
 
           if (do_Jblock2) {
-            Jvec.transp_block(Jblock, transp_tmp);
+            Jvec->transp_block(Jblock, transp_tmp);
             opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
-                       Ivec.blocks_[Iblock], Jbc, Jac, Jnbs,
+                       Ivec->blocks_[Iblock], Jbc, Jac, Jnbs,
                        Jnas, Iac, Ibc, Inas, Inbs);
           }
 
         } /* end loop over Jbuf */
 
-        if (Ivec.buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
-          Iblock2 = Ivec.decode_[Ibc][Iac];
-          Iac = Ivec.Ia_code_[Iblock2];
-          Ibc = Ivec.Ib_code_[Iblock2];
-          Inas = Ivec.Ia_size_[Iblock2];
-          Inbs = Ivec.Ib_size_[Iblock2];
+        if (Ivec->buf_offdiag_[Ibuf]) { /* need to get contrib of transpose */
+          Iblock2 = Ivec->decode_[Ibc][Iac];
+          Iac = Ivec->Ia_code_[Iblock2];
+          Ibc = Ivec->Ib_code_[Iblock2];
+          Inas = Ivec->Ia_size_[Iblock2];
+          Inbs = Ivec->Ib_size_[Iblock2];
 
-          Ivec.transp_block(Iblock, transp_tmp2);
+          Ivec->transp_block(Iblock, transp_tmp2);
 
-          for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
+          for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
             do_Jblock=0; do_Jblock2=0;
-            Jblock = Jvec.buf2blk_[Jbuf];
+            Jblock = Jvec->buf2blk_[Jbuf];
             Jblock2 = -1;
-            Jac = Jvec.Ia_code_[Jblock];
-            Jbc = Jvec.Ib_code_[Jblock];
-            if (Jvec.Ms0_) Jblock2 = Jvec.decode_[Jbc][Jac];
-            Jnas = Jvec.Ia_size_[Jblock];
-            Jnbs = Jvec.Ib_size_[Jblock];
+            Jac = Jvec->Ia_code_[Jblock];
+            Jbc = Jvec->Ib_code_[Jblock];
+            if (Jvec->Ms0_) Jblock2 = Jvec->decode_[Jbc][Jac];
+            Jnas = Jvec->Ia_size_[Jblock];
+            Jnbs = Jvec->Ib_size_[Jblock];
             if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock])
               do_Jblock = 1;
-            if (Jvec.buf_offdiag_[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
+            if (Jvec->buf_offdiag_[Jbuf] && (s1_contrib_[Iblock2][Jblock2] ||
                                            s2_contrib_[Iblock2][Jblock2]))
               do_Jblock2 = 1;
             if (!do_Jblock && !do_Jblock2) continue;
 
-            Jvec.read(Jroot, Jbuf);
+            Jvec->read(Jroot, Jbuf);
 
             if (do_Jblock) {
-              opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
+              opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec->blocks_[Jblock],
                          transp_tmp2, Jac, Jbc, Jnas,
                          Jnbs, Iac, Ibc, Inas, Inbs);
             }
 
             if (do_Jblock2) {
-              Jvec.transp_block(Jblock, transp_tmp);
+              Jvec->transp_block(Jblock, transp_tmp);
               opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
                          transp_tmp2, Jbc, Jac, Jnbs,
                          Jnas, Iac, Ibc, Inas, Inbs);
@@ -351,99 +353,99 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
     } /* end icore==0 */
 
     else if (Parameters_->icore==1) { /* whole vectors in-core */
-      Ivec.read(Iroot, 0);
-      Jvec.read(Jroot, 0);
-      for (Iblock=0; Iblock<Ivec.num_blocks_; Iblock++) {
-        Iac = Ivec.Ia_code_[Iblock];
-        Ibc = Ivec.Ib_code_[Iblock];
-        Inas = Ivec.Ia_size_[Iblock];
-        Inbs = Ivec.Ib_size_[Iblock];
+      Ivec->read(Iroot, 0);
+      Jvec->read(Jroot, 0);
+      for (Iblock=0; Iblock<Ivec->num_blocks_; Iblock++) {
+        Iac = Ivec->Ia_code_[Iblock];
+        Ibc = Ivec->Ib_code_[Iblock];
+        Inas = Ivec->Ia_size_[Iblock];
+        Inbs = Ivec->Ib_size_[Iblock];
         if (Inas==0 || Inbs==0) continue;
-        for (Jblock=0; Jblock<Jvec.num_blocks_; Jblock++) {
-          Jac = Jvec.Ia_code_[Jblock];
-          Jbc = Jvec.Ib_code_[Jblock];
-          Jnas = Jvec.Ia_size_[Jblock];
-          Jnbs = Jvec.Ib_size_[Jblock];
+        for (Jblock=0; Jblock<Jvec->num_blocks_; Jblock++) {
+          Jac = Jvec->Ia_code_[Jblock];
+          Jbc = Jvec->Ib_code_[Jblock];
+          Jnas = Jvec->Ia_size_[Jblock];
+          Jnbs = Jvec->Ib_size_[Jblock];
           if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
-            opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
-                       Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
+            opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec->blocks_[Jblock],
+                       Ivec->blocks_[Iblock], Jac, Jbc, Jnas,
                        Jnbs, Iac, Ibc, Inas, Inbs);
         }
       } /* end loop over Iblock */
     } /* end icore==1 */
 
     else if (Parameters_->icore==2) { /* icore==2 */
-      for (Ibuf=0; Ibuf<Ivec.buf_per_vect_; Ibuf++) {
-        Ivec.read(Iroot, Ibuf);
-        Iairr = Ivec.buf2blk_[Ibuf];
+      for (Ibuf=0; Ibuf<Ivec->buf_per_vect_; Ibuf++) {
+        Ivec->read(Iroot, Ibuf);
+        Iairr = Ivec->buf2blk_[Ibuf];
 
-        for (Jbuf=0; Jbuf<Jvec.buf_per_vect_; Jbuf++) {
-          Jvec.read(Jroot, Jbuf);
-          Jairr = Jvec.buf2blk_[Jbuf];
+        for (Jbuf=0; Jbuf<Jvec->buf_per_vect_; Jbuf++) {
+          Jvec->read(Jroot, Jbuf);
+          Jairr = Jvec->buf2blk_[Jbuf];
 
-        for (Iblock=Ivec.first_ablk_[Iairr]; Iblock<=Ivec.last_ablk_[Iairr];
+        for (Iblock=Ivec->first_ablk_[Iairr]; Iblock<=Ivec->last_ablk_[Iairr];
              Iblock++) {
-          Iac = Ivec.Ia_code_[Iblock];
-          Ibc = Ivec.Ib_code_[Iblock];
-          Inas = Ivec.Ia_size_[Iblock];
-          Inbs = Ivec.Ib_size_[Iblock];
+          Iac = Ivec->Ia_code_[Iblock];
+          Ibc = Ivec->Ib_code_[Iblock];
+          Inas = Ivec->Ia_size_[Iblock];
+          Inbs = Ivec->Ib_size_[Iblock];
 
-          for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
+          for (Jblock=Jvec->first_ablk_[Jairr]; Jblock<=Jvec->last_ablk_[Jairr];
                Jblock++) {
-            Jac = Jvec.Ia_code_[Jblock];
-            Jbc = Jvec.Ib_code_[Jblock];
-            Jnas = Jvec.Ia_size_[Jblock];
-            Jnbs = Jvec.Ib_size_[Jblock];
+            Jac = Jvec->Ia_code_[Jblock];
+            Jbc = Jvec->Ib_code_[Jblock];
+            Jnas = Jvec->Ia_size_[Jblock];
+            Jnbs = Jvec->Ib_size_[Jblock];
 
             if (s1_contrib_[Iblock][Jblock] || s2_contrib_[Iblock][Jblock])
-              opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
-                         Ivec.blocks_[Iblock], Jac, Jbc, Jnas,
+              opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec->blocks_[Jblock],
+                         Ivec->blocks_[Iblock], Jac, Jbc, Jnas,
                          Jnbs, Iac, Ibc, Inas, Inbs);
 
-            if (Jvec.buf_offdiag_[Jbuf]) {
-              Jblock2 = Jvec.decode_[Jbc][Jac];
+            if (Jvec->buf_offdiag_[Jbuf]) {
+              Jblock2 = Jvec->decode_[Jbc][Jac];
               if (s1_contrib_[Iblock][Jblock2] ||
                   s2_contrib_[Iblock][Jblock2]) {
-              Jvec.transp_block(Jblock, transp_tmp);
+              Jvec->transp_block(Jblock, transp_tmp);
                 opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
-                  Ivec.blocks_[Iblock], Jbc, Jac,
+                  Ivec->blocks_[Iblock], Jbc, Jac,
                   Jnbs, Jnas, Iac, Ibc, Inas, Inbs);
-	      }
-	    }
+        }
+      }
 
           } /* end loop over Jblock */
 
-          if (Ivec.buf_offdiag_[Ibuf]) {
-            Iblock2 = Ivec.decode_[Ibc][Iac];
-            Ivec.transp_block(Iblock, transp_tmp2);
-            Iac = Ivec.Ia_code_[Iblock2];
-            Ibc = Ivec.Ib_code_[Iblock2];
-            Inas = Ivec.Ia_size_[Iblock2];
-            Inbs = Ivec.Ib_size_[Iblock2];
+          if (Ivec->buf_offdiag_[Ibuf]) {
+            Iblock2 = Ivec->decode_[Ibc][Iac];
+            Ivec->transp_block(Iblock, transp_tmp2);
+            Iac = Ivec->Ia_code_[Iblock2];
+            Ibc = Ivec->Ib_code_[Iblock2];
+            Inas = Ivec->Ia_size_[Iblock2];
+            Inbs = Ivec->Ib_size_[Iblock2];
 
-            for (Jblock=Jvec.first_ablk_[Jairr]; Jblock<=Jvec.last_ablk_[Jairr];
+            for (Jblock=Jvec->first_ablk_[Jairr]; Jblock<=Jvec->last_ablk_[Jairr];
               Jblock++) {
-              Jac = Jvec.Ia_code_[Jblock];
-              Jbc = Jvec.Ib_code_[Jblock];
-              Jnas = Jvec.Ia_size_[Jblock];
-              Jnbs = Jvec.Ib_size_[Jblock];
+              Jac = Jvec->Ia_code_[Jblock];
+              Jbc = Jvec->Ib_code_[Jblock];
+              Jnas = Jvec->Ia_size_[Jblock];
+              Jnbs = Jvec->Ib_size_[Jblock];
 
               if (s1_contrib_[Iblock2][Jblock] || s2_contrib_[Iblock2][Jblock])
-                opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec.blocks_[Jblock],
+                opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, Jvec->blocks_[Jblock],
                            transp_tmp2, Jac, Jbc, Jnas, Jnbs, Iac, Ibc,
                            Inas, Inbs);
 
-                if (Jvec.buf_offdiag_[Jbuf]) {
-                  Jblock2 = Jvec.decode_[Jbc][Jac];
+                if (Jvec->buf_offdiag_[Jbuf]) {
+                  Jblock2 = Jvec->decode_[Jbc][Jac];
                   if (s1_contrib_[Iblock][Jblock2] ||
                     s2_contrib_[Iblock][Jblock2]) {
-                    Jvec.transp_block(Jblock, transp_tmp);
+                    Jvec->transp_block(Jblock, transp_tmp);
                     opdm_block(alplist_, betlist_, scratch_ap, scratch_bp, transp_tmp,
                       transp_tmp2, Jbc, Jac, Jnbs, Jnas, Iac, Ibc, Inas, Inbs);
                   }
-	        }
+          }
 
-	      } /* end loop over Jblock */
+        } /* end loop over Jblock */
             } /* end Ivec offdiag */
 
           } /* end loop over Iblock */
@@ -488,9 +490,6 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
       offset += CalcInfo_->ci_orbs[h];
     }
 
-    //new_OPDM_a->print();
-    //new_OPDM->print();
-
     std::vector<SharedMatrix> opdm_root_vec;
     opdm_root_vec.push_back(new_OPDM_a);
     opdm_root_vec.push_back(new_OPDM_b);
@@ -499,16 +498,10 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(int root_start, int
     opdm_list.push_back(opdm_root_vec);
 
 
-    if (!transden) Iroot++;
-  } /* end loop over num_roots Jroot */
-
+  } /* end loop over states_vec */
 
   if (transp_tmp != NULL) free_block(transp_tmp);
   if (transp_tmp2 != NULL) free_block(transp_tmp2);
-  Ivec.buf_unlock();
-  Jvec.buf_unlock();
-  free(buffer1);
-  free(buffer2);
 
   scratch_a.reset();
   scratch_b.reset();
