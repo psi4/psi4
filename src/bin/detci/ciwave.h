@@ -124,12 +124,34 @@ public:
                            bool full_space=false);
 
     /**!
+     * Compute the one-particle density matrix between two CIVectors
+     * @param Ivec       The SharedCIVector for I
+     * @param Jvec       The SharedCIVector for J
+     * @param Jroot      Jroot to use
+     * @param Iroot      Iroot to use
+     * @return           AA, BB, and summed OPDM's
+    **/
+    std::vector<SharedMatrix> opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                    int Iroot, int Jroot);
+
+    /**!
      * Obtains the "special" TPDM, other TPDM roots are not held here.
      * @param spin       Selects which spin to return AA, AB, BB, or SUM
      * @param symmetrize Symmetrize the TPDM, only works for SUM currently
      * @return           The request 4D active TPDM
      **/
     SharedMatrix get_tpdm(const std::string& spin = "SUM", bool symmetrize=true);
+
+    /**!
+     * Compute the two-particle density matrix between two CIVectors
+     * @param Ivec       The SharedCIVector for I
+     * @param Jvec       The SharedCIVector for J
+     * @param Jroot      Jroot to use
+     * @param Iroot      Iroot to use
+     * @return           AA, AB, BB, and summed TPDM's
+    **/
+    std::vector<SharedMatrix> tpdm(SharedCIVector Ivec, SharedCIVector Jvec, int Iroot,
+                                                   int Jroot);
 
     /**!
      Builds and returns a new CIvect object.
@@ -165,7 +187,6 @@ public:
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
 
 
-    SharedMatrix orbital_ci_block(int fi, int fj);
     // Compute functions
     void compute_mcscf();
     void compute_cc();
@@ -339,13 +360,15 @@ private:
     void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
           int *Iaidx, int *Ibidx, double *coeff);
 
+    /// => MCSCF helpers <= //
+
 
     /// => MPn helpers <= //
     void mpn_generator(CIvect &Hd);
 
     /// => Density Matrix helpers <= //
-    std::vector<std::vector<SharedMatrix> > opdm(int root_start, int nroots, int Ifile,
-                                                 int Jfile, bool transden);
+    std::vector<std::vector<SharedMatrix> > opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                                std::vector<std::tuple<int, int> > states_vec);
     SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt=false);
     void opdm_properties(void);
 
@@ -363,7 +386,10 @@ private:
     SharedMatrix opdm_a_;
     SharedMatrix opdm_b_;
 
-    std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
+    std::vector<SharedMatrix> tpdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                   std::vector<std::tuple<int, int, double> > states_vec);
+
+    // std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
     void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
             int nbf, int nalplists, int nbetlists,
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,

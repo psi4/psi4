@@ -994,11 +994,16 @@ void export_mints()
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
 
+    /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
                                             boost::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIWavefunction::sigma;
 
-    // Looks like this has to go here.
+    typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          int, int);
+
     class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
         .def(init<boost::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
@@ -1013,8 +1018,9 @@ void export_mints()
         .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
+        .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
         .def("sigma", py_ci_sigma, "docstring");
