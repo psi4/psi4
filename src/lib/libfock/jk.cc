@@ -171,14 +171,6 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
     }
     else if (options.get_str("SCF_TYPE") == "DIRECT") {
-       //Just going to massively ghetto this up
-       #ifdef HAVE_JK_FACTORY
-          //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-          SharedWavefunction other_legacy = Process::environment.legacy_wavefunction();
-          Process::environment.set_legacy_wavefunction(primary->molecule());
-          return boost::shared_ptr<JK>(new GTFockJK(primary));
-          Process::environment.set_legacy_wavefunction(other_legacy);
-       #endif
         DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
