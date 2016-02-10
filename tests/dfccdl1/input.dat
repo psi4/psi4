@@ -22,7 +22,7 @@ set {
   freeze_core true
   cc_type df
 }
-energy('ccdl')
+energy('ccd')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
