@@ -162,20 +162,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
   options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
   /*- Algorithm to use for MP2 computation.
-  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP2_TYPE", "DF", "DF CONV CD");
   /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
-  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP_TYPE", "CONV", "DF CONV CD");
   /*- Algorithm to use for CEPA computation (e.g., CEPA(3) or ACPF or OCEPA(0)).
-  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CEPA_TYPE", "CONV", "DF CONV CD");
   // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files, while CONV results in no approximations being made.
   /*- Algorithm to use for CC computation (e.g., CCD, CCSD, CCSD(T)).
-  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CC_TYPE", "CONV", "DF CONV CD");
   /*- Algorithm to use for CI computation (e.g., CID or CISD).
-  See :ref:`Cross-module Redundancies <table:method_type>` for gory details. -*/
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CI_TYPE", "CONV", "CONV");
 
   // CDS-TODO: We should go through and check that the user hasn't done
