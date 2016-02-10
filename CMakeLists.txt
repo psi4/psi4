@@ -272,8 +272,8 @@ add_subdirectory(interfaces)
 # Recursively add source directories
 add_subdirectory(src)
 
-# Add the library directory, for install purposes
-add_subdirectory(lib)
+# Add the share directory (formerly lib), for install purposes
+add_subdirectory(share)
 
 # Handle creation of Makefile for plugins
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
