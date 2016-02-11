@@ -550,6 +550,45 @@ This failure can be fixed by either setting |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or by setting |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
+Second-order Convergence
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Second-order convergence takes into account both the gradient and Hessian to
+take a full Newton step with respect to the orbital parameters. This results in
+quadratic convergence with respect to density for SCF methods. For cases where
+normal acceleration methods either fail or take many iterations to converge,
+second-order can reduce the total time to solution.
+
+Solving second-order (SO) methods exactly would require an inversion of the
+orbital Hessian (an expensive :math:`\mathbb{N}^6` operation); however, these
+equations are normally solved iteratively where each iteration costs the same
+as a normal Fock build (:math:`\mathbb{N}^4`). The overall SOSCF operation is
+thus broken down into micro- and macroiterations where the microiterations
+refer to solving the SOSCF equations and macroiterations are the construction
+of a new Fock matrix based on the orbitals from a SOSCF step.
+
+SOSCF requires that all elements of the gradient to be less than one before the
+method is valid. To this end, pre-SOSCF SCF iterations use normal
+gradient-based extrapolation procedures (e.g., DIIS) until the gradient
+conditions are met. Note that while the total number of macroiterations will be
+less for SOSCF than gradient-based convergence acceleration the cost of solving
+the microiterations typically results in the overall cost being greater for
+SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
+it is difficult to locate a stable minimum.
+
+SOSCF is only available for RHF, ROHF, and UHF reference. To turn on simply set
+the option |scf__soscf| to ``true``. Additional options to modify the number of
+microiterations taken are as follows:
+
+    |scf__soscf_r_start|: when to start SOSCF based on the current density RMS
+
+    |scf__soscf_max_iter|: the maximum number of SOSCF microiterations per macroiteration
+
+    |scf__soscf_conv|: the relative convergence tolerance of the SOSCF microiterations
+
+    |scf__soscf_print|: option to print the microiterations or not
+
+
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
 
