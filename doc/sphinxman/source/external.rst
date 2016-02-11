@@ -269,7 +269,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Mainly for use by developers, this overrides the value of
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
-   library (psi4/lib) 
+   library (psi4/share) 
 
 .. option:: -m, --messy
 
@@ -419,5 +419,5 @@ These environment variables will influence |PSIfours| behavior.
    so this variable is relevant primarily to developers running the
    executable directly from the compilation directory. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
-   ``psi4/lib``.
+   ``psi4/share``.
 

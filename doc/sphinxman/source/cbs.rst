@@ -115,7 +115,7 @@ Aliases
 
 When a particular composite method or its functional form is going to be
 reused often, it is convenient to define an alias to it. A convenient
-place for such Python code to reside is in :source:`lib/python/aliases.py`
+place for such Python code to reside is in :source:`share/python/aliases.py`
 (source location) or ``psi4/share/psi/python/aliases.py`` (installed
 location). No recompilation is necessary after defining an alias. Some
 existing examples are below.
