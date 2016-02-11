@@ -47,7 +47,7 @@ Scratch Files, |psirc| File and Elementary Restart
 ==================================================
 
 One very important part of user configuration at the end of the
-installation process (:ref:`details here <sec:install_III_7>`)
+installation process
 is to tell |PSIfour| where to write its temporary
 ("scratch") files.  Electronic structure packages like |PSIfour| can
 create rather large temporary disk files.  It is very important to 
