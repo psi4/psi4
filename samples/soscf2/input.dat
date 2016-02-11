@@ -1,3 +1,5 @@
+#! Triple and Singlet Oxygen energy SOSCF
+
 #### UHF Triplet Oxygen energy, triplet
 molecule mol {
     0 3
