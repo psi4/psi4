@@ -41,7 +41,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_bases.pl ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_psi4bases.rst
         DEPENDS ${CCSD}/document_bases.pl
-                ${CMAKE_SOURCE_DIR}/lib/basis/*.gbs
+                ${CMAKE_SOURCE_DIR}/share/basis/*.gbs
         COMMENT "Autodoc basis sets")
 
 
@@ -93,7 +93,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_cfour.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodir_psivariables/module__cfour.rst
         DEPENDS ${CCSD}/document_cfour.py
-                ${CMAKE_SOURCE_DIR}/lib/python/qcdb/cfour.py
+                ${CMAKE_SOURCE_DIR}/share/python/qcdb/cfour.py
                 ${CCBD}/source/autodoc_psivariables_bymodule.rst
         COMMENT "Autodoc Cfour PSI variables")
 
@@ -103,7 +103,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_databases.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_available_databases.rst
         DEPENDS ${CCSD}/document_databases.py
-                ${CMAKE_SOURCE_DIR}/lib/databases/*.py
+                ${CMAKE_SOURCE_DIR}/share/databases/*.py
         COMMENT "Autodoc databases")
 
 
@@ -122,7 +122,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_driver.rst
-        DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/*.py
+        DEPENDS ${CMAKE_SOURCE_DIR}/share/python/*.py
                 ${CCSD}/document_driver.py
         COMMENT "Autodoc driver")
 
@@ -163,7 +163,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_dhybrid.rst
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
-        DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/functional.py
+        DEPENDS ${CMAKE_SOURCE_DIR}/share/python/functional.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-dft/input.dat
                 ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
@@ -174,9 +174,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-bases
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-bases/autodoc_basissets_byfamily.rst ${CCBD}/source
         OUTPUT ${CCBD}/source/autodoc_basissets_byfamily.rst
-        DEPENDS ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislist.py
-                ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistdunning.py
-                ${CMAKE_SOURCE_DIR}/lib/python/p4util/basislistother.py
+        DEPENDS ${CMAKE_SOURCE_DIR}/share/python/p4util/basislist.py
+                ${CMAKE_SOURCE_DIR}/share/python/p4util/basislistdunning.py
+                ${CMAKE_SOURCE_DIR}/share/python/p4util/basislistother.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-bases/input.dat
                 ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
@@ -203,7 +203,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
         DEPENDS ${CCSD}/document_efpfrag.py
-                ${CMAKE_SOURCE_DIR}/lib/efpfrag/*.efp
+                ${CMAKE_SOURCE_DIR}/share/efpfrag/*.efp
         COMMENT "Autodoc efp fragments")
 
     # Format git log for feed

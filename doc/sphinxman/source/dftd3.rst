@@ -21,7 +21,7 @@ Installation
 Follow the instructions provided with the source to build the DFTD3
 program (essentially, unpack the source, edit the Makefile to select a
 Fortran compiler, and run make). For the moment, you must apply a patch,
-:source:`lib/scripts/patch_grimme_dftd3.3.0.2`, to the dftd3 source before building.
+:source:`share/scripts/patch_grimme_dftd3.3.0.2`, to the dftd3 source before building.
 To be used by |PSIfour|, the program binary (``dftd3``) must be found in
 your :envvar:`PATH`. If |PSIfour| is unable to execute the binary, an
 error will be reported.
