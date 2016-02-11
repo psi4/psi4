@@ -19,7 +19,7 @@ set {
   freeze_core true
   cc_type df
 }
-energy('ccdl')
+energy('ccd')
 
 
 
