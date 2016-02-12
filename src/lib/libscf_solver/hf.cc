@@ -1708,7 +1708,7 @@ void HF::initialize()
 
     // Andy trick 2.0
     old_scf_type_ = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD")) {
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD" || old_scf_type_ == "PK" || old_scf_type_ == "OUT_OF_CORE")) {
          outfile->Printf( "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets

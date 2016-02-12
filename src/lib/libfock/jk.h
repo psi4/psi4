@@ -350,7 +350,6 @@ public:
     * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-//    static boost::shared_ptr<JK> build_JK();
     static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
                                           Options& options);
 

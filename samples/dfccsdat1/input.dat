@@ -17,8 +17,9 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  cc_type df
 }
-energy('df-ccsd(at)')
+energy('ccsd(at)')
 
 
 

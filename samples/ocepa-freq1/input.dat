@@ -17,4 +17,4 @@ set {
 }
 
 
-frequencies('ocepa',dertype=0)
+cepa_e, cepa_wfn = frequencies('ocepa(0)', dertype=0, return_wfn=True)

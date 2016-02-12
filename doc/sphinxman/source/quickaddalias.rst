@@ -5,7 +5,7 @@
    pair: method alias; adding new
 
 .. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR`` aka :source:`lib`, including those described below.
+    files in ``$PSIDATADIR`` aka :source:`share`, including those described below.
 
 .. _`sec:methodAlias`:
 
@@ -15,7 +15,7 @@ Defining a Method Alias
 Since quantum chemical methods in |PSIfour| are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
-:source:`lib/python/aliases.py` file is intended for editing by the user for
+:source:`share/python/aliases.py` file is intended for editing by the user for
 this purpose.
 
 As an example, the MP2.5 method is the average of MP2 and MP3. The latter is
@@ -38,7 +38,7 @@ and return the MP2.5 energy. ::
     
         return e_mp25
 
-Compare the above to the method that resides in :source:`lib/python/aliases.py`.
+Compare the above to the method that resides in :source:`share/python/aliases.py`.
 The rationale for the changes is indicated in the comments below. ::
 
     def run_mp2_5(name, **kwargs):

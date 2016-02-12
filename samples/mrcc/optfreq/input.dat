@@ -14,7 +14,7 @@ set {
 }
 
 optimize('mrccsdt')
-frequencies('mrccsdt')
+E, wfn = frequencies('mrccsdt', return_wfn=True)
 
 
 

@@ -49,7 +49,7 @@ approximations. JKFIT sets are appropriate for fitting :math:`(oo|`\ -type produ
 such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
 RI sets are appropriate for fitting :math:`(ov|`\ -type products, such as encountered in
 MP2 and most SAPT terms.  Citations for basis sets can be found in their
-definition files at :source:`lib/basis` in the source.  For basis set availability by
+definition files at :source:`share/basis` in the source.  For basis set availability by
 element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 
@@ -174,10 +174,10 @@ after applying the following transformations.
 * Replace all ``+`` with ``p``
 * Replace all ``(`` ``)`` ``,`` with ``_`` (underscores replace parentheses and commas)
 
-For example, basis 6-31++G** is stored in :source:`lib/basis/6-31ppgss.gbs`, 
-and cc-pV(D+d)Z is stored in :source:`lib/basis/cc-pv_dpd_z.gbs`.
+For example, basis 6-31++G** is stored in :source:`share/basis/6-31ppgss.gbs`, 
+and cc-pV(D+d)Z is stored in :source:`share/basis/cc-pv_dpd_z.gbs`.
 Only one basis set may be specified per file.
-Copy the new basis set file into :source:`lib/basis`.
+Copy the new basis set file into :source:`share/basis`.
 Request the new basis set in an input file in the usual manner. ::
 
    set basis new_basis_name

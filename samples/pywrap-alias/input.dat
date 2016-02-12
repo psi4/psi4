@@ -111,6 +111,7 @@ clean()
 banner('opt(arbitraryorder())')
 optimize('mp3')
 compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 5, '[13] opt(mp3())')
+compare_values(-5.738452948227, get_variable('CURRENT ENERGY'), 5, '[13b] opt(mp3())')
 
 #molecule h2o {
 #     O

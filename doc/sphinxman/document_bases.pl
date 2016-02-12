@@ -2,7 +2,7 @@
 
 my $DriverPath = "";
 if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
-my $BasisFolder = $DriverPath . "../../lib/basis/";
+my $BasisFolder = $DriverPath . "../../share/basis/";
 
 # Create a HTML table for the Trac page
 #open(HTML_OUT,">psi4bases.html") or die "I can't write to psi4bases.html\n";

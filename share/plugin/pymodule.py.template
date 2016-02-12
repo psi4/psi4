@@ -52,11 +52,13 @@ def run_@plugin@(name, **kwargs):
     # Compute a SCF reference, a wavefunction is return which holds the molecule used, orbitals
     # Fock matrices, and more
     print('Attention! This SCF is density-fitted.')
-    ref_wfn = scf_helper(name, **kwargs)
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
-    passed = psi4.plugin('@plugin@.so', ref_wfn)
+    @plugin@_wfn = psi4.plugin('@plugin@.so', ref_wfn)
 
     return @plugin@_wfn
 

@@ -67,8 +67,6 @@ procedures = {
             'dfocc'         : run_dfocc,
             'qchf'          : run_qchf,
             'ccd'           : run_dfocc,
-            'ccsdl'         : run_dfocc,
-            'ccdl'          : run_dfocc,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -141,8 +139,6 @@ procedures = {
             'fno-acpf'      : run_cepa,
             'fno-aqcc'      : run_cepa,
             'fno-cisd'      : run_cepa,
-            #'fno-cid'       : run_cepa,  # not functioning
-            #'cid'           : run_cepa,  # not functioning
             'cepa(0)'       : select_cepa_0_,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -271,7 +267,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | hf                      | HF self consistent field (SCF)
+    | hf                      | HF self consistent field (SCF) :ref:`[manual] <sec:scf>`                              |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+

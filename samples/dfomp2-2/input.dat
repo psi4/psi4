@@ -17,7 +17,8 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 

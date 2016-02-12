@@ -19,8 +19,10 @@ set {
   guess gwh
   freeze_core true
   reference uhf
+  mp_type df
 }
-gradient('df-omp3')
+
+grad = gradient('omp3')
 
 
 

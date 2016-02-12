@@ -16,7 +16,7 @@ set {
   reference rhf
 }
 
-energy('a-ccsd(t)')
+energy('ccsd(at)')
 
 
 

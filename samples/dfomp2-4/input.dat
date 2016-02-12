@@ -16,7 +16,8 @@ set {
   scf_type df
   guess sad
   reference uhf
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 

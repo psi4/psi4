@@ -1,3 +1,5 @@
+#! dipole moment for HF and B3LYP in presence of perturbation
+
 molecule h2o {
 symmetry c1
 0 1
