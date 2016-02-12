@@ -13,7 +13,7 @@ infile = sys.argv[1]
 logfile = sys.argv[2]
 psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
-psidatadir = top_srcdir + '/lib'
+psidatadir = top_srcdir + '/share'
 sowreap=sys.argv[5]
 if len(sys.argv) in [7, 8]:
     outfile = sys.argv[6]

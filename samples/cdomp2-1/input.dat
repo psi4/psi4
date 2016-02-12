@@ -15,8 +15,9 @@ set {
   guess sad
   freeze_core true
   scf_type cd
+  mp2_type cd
 }
-energy('cd-omp2')
+energy('omp2')
 
 
 

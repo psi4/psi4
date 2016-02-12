@@ -1,4 +1,4 @@
-# Second-order SCF convergnece: Benzene
+#! Second-order SCF convergnece: Benzene
 molecule mol {
 C    1.39410    0.00000   0.00000
 C    0.69705   -1.20732   0.00000

@@ -27,7 +27,7 @@ set globals {
    d_convergence 11
 }
 
-e_dim = energy('df-mp2')
+e_dim = energy('mp2')
 
 
 # The @ symbol represents a ghost atom
@@ -46,7 +46,7 @@ molecule mon_b {
 }
 
 set basis cc-pvdz
-e_mon_b = energy('df-mp2')
+e_mon_b = energy('mp2')
 
 # The Gh(X) notation also represents a ghost atom
 molecule mon_a {
@@ -66,7 +66,7 @@ molecule mon_a {
 # We have to specify the basis set again, not that the 
 set basis cc-pvdz
 
-e_mon_a = energy('df-mp2')
+e_mon_a = energy('mp2')
 
 e_cp = e_dim - e_mon_a - e_mon_b
 

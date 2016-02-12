@@ -1,4 +1,4 @@
-#! MP2.5 cc-pVDZ gradient for the H2O molecule.
+#! OMP2.5 cc-pVDZ gradient for the H2O molecule.
 
 ref.set(ref_vals)
 
@@ -14,6 +14,7 @@ h 1 0.958 2 104.4776
 set {
   basis cc-pvdz
 }
-gradient('mp2.5')
+
+grad = gradient('omp2.5')
 
 

@@ -71,9 +71,9 @@ Much of the documentation is auto-generated from the source. At present,
 this covers:
 
 * Physical Constants: :source:`include/physconst.h`
-* Python Driver: docstrings from \*.py files in :source:`lib/python`
-* Databases: docstrings from \*.py files in :source:`lib/databases`
-* Basis Sets: \*.gbs files in :source:`lib/basis`
+* Python Driver: docstrings from \*.py files in :source:`share/python`
+* Databases: docstrings from \*.py files in :source:`share/databases`
+* Basis Sets: \*.gbs files in :source:`share/basis`
 * C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
 * Sample Inputs: input.dat files in :source:`samples`
 * PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
@@ -83,8 +83,8 @@ this covers:
 Some documentation is even extracted from Psi4 objects at runtime.
 
 * psi4: docstrings for the psi4 built-in module constructed in :source:`src/bin/psi4`
-* DFT: functional availibility and characteristics as encoded in :source:`lib/python/functional.py`
-* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`lib/python/basislistdunning.py` and :source:`lib/python/basislistother.py`
+* DFT: functional availibility and characteristics as encoded in :source:`share/python/functional.py`
+* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`share/python/basislistdunning.py` and :source:`share/python/basislistother.py`
 
 Building all the documentation takes ~10 minutes. There is now good
 dependency structure built into the :source:`doc/sphinxman/CMakeLists.txt`

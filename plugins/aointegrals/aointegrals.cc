@@ -34,7 +34,6 @@ SharedWavefunction aointegrals(SharedWavefunction ref_wfn, Options &options)
     shared_ptr<Molecule> molecule = ref_wfn->molecule();
 
     // Form basis object:
-    //shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
     shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule, "BASIS", options.get_str("BASIS"));
 
     // The integral factory oversees the creation of integral objects
@@ -44,7 +43,11 @@ SharedWavefunction aointegrals(SharedWavefunction ref_wfn, Options &options)
     // N.B. This should be called after the basis has been built, because the geometry has not been
     // fully initialized until this time.
     molecule->print();
-    int nbf[] = { aoBasis->nbf() };
+    
+    // Build a dimension object with a single dim since this is AO's
+    Dimension nbf(Dimension(1, "Number of basis functions"));
+    nbf[0] = aoBasis->nbf();
+
     double nucrep = molecule->nuclear_repulsion_energy();
     outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 

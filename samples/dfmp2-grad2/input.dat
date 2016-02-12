@@ -17,7 +17,9 @@ set {
   scf_type df
   guess sad
   reference uhf
-  orb_opt false
+  qc_module occ
+  mp2_type df
 }
-gradient('df-omp2')
+
+grad = gradient('mp2')
 
