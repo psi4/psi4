@@ -184,7 +184,9 @@ void SAPT0::print_results()
   // Now we compute everything once without scaling, and then with scaling.
   std::vector<double> Xscal;
   Xscal.push_back(1.0);
-  Xscal.push_back(sapt_Xscal);
+  // This is SAPT0 so we only compute sSAPT0 and do not print
+  // scaled individual terms
+  // Xscal.push_back(sapt_Xscal);
 
   // The main loop, computes everything with all scaling factors in
   // the Xscal vector. Only exports variables once, for the scaling factor
@@ -197,9 +199,10 @@ void SAPT0::print_results()
     e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
                *scal_it * (e_exch_ind20_ + e_exch_disp20_);
     double e_sSAPT0 = 0.0;
-    if( *scal_it == sapt_Xscal) {
-      e_sSAPT0 = e_elst10_ + e_exch10_ + e_ind20_ + dHF2 + sapt_Xscal * e_exch_ind20_ +
-                 e_disp20_ + sSAPT_Xscal * e_exch_disp20_ + (sSAPT_Xscal - 1.0) * e_exch_ind20_;
+    // sSAPT0 energy is now computed in the unscaled part for clarity
+    if( scal_it == Xscal.begin()) {
+      e_sSAPT0 = e_elst10_ + e_exch10_ + e_ind20_ + sSAPT_Xscal * e_exch_ind20_ +
+                 e_disp20_ + sSAPT_Xscal * e_exch_disp20_ + dHF2;
     }
 
     double tot_elst = e_elst10_;
@@ -250,10 +253,13 @@ void SAPT0::print_results()
   
     outfile->Printf("\n  Total HF                      %16.8lf mH %16.8lf kcal mol^-1\n",
       eHF_*1000.0,eHF_*pc_hartree2kcalmol);
-    outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-    if(*scal_it == sapt_Xscal && (scal_it != Xscal.begin()) ) {
-          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n",
+    if (scal_it == Xscal.begin() ) {
+        outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
+          scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
+    }
+    if(scal_it == Xscal.begin())  {
+          outfile->Printf("\n  Special recipe for scaled SAPT0 (see Manual):\n");
+          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n\n",
           e_sSAPT0*1000.0,e_sSAPT0*pc_hartree2kcalmol);
     }
     outfile->Printf("  --------------------------------------------------------------------------\n");
