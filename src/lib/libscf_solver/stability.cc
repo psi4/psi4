@@ -286,7 +286,7 @@ void UStab::rotate_orbs(double step_scale)
     // Rotate the beta orbitals
         for (int i = 0; i < noccb; ++i) {
             for (int a = noccb; a < nvirb + noccb; ++a) {
-                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a - nocca));
+                Cb_->rotate_columns(h, i, a, scale*unvecb->get(h,i,a - noccb));
             }
         }
     }
