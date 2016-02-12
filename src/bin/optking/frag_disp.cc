@@ -303,6 +303,10 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
       bt_iter_done = true;
       bt_converged = false;
     }
+    else if ( dx_rms > 100.0 ) { // Give up.
+      bt_iter_done = true;
+      bt_converged = false;
+    }
     dx_rms_last = dx_rms;
 
     set_geom_array(new_geom);
