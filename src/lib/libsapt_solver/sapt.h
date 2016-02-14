@@ -87,6 +87,9 @@ protected:
 
   long int mem_;
 
+  // Alpha exponent for exchange scaling
+  double exch_scale_alpha_;
+
   double enuc_;
   double eHF_;
   double schwarz_;

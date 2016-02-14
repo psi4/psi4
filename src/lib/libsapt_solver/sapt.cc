@@ -87,6 +87,13 @@ void SAPT::initialize()
   }
   zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
 
+  if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
+      exch_scale_alpha_ = 0.0;
+  } else if (options_.get_str("EXCH_SCALE_ALPHA") == "TRUE") {
+      exch_scale_alpha_ = 1.0;                // Default value for alpha
+  } else {
+      exch_scale_alpha_ = std::atof(options_.get_str("EXCH_SCALE_ALPHA").c_str());
+  }
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");
   schwarz_ = options_.get_double("INTS_TOLERANCE");

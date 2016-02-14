@@ -790,6 +790,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
+    /*- Whether or not to perform exchange scaling for SAPT exchange components.
+     * Default is false, i.e. no scaling. If set to true, performs scaling with
+     * Exch10 / Exch10(S^2). If set to a value \alpha, performs scaling with
+     * (Exch10 / Exch10(S^2))^{\alpha}. 
+     */
+    options.add_str("EXCH_SCALE_ALPHA", "FALSE", "");
     /* For SAPT0 only, compute only first-order electrostatics and exchange.
      * The integrals are computed before any terms, so all integrals will
      * be computed even if they are not needed for the requested term !expert */

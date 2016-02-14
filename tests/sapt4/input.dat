@@ -51,14 +51,14 @@ ESAPT2 = psi4.get_variable("SAPT SAPT2 ENERGY")
 ESAPT2p = psi4.get_variable("SAPT SAPT2+ ENERGY")
 ESAPT2pp3 = psi4.get_variable("SAPT SAPT2+(3) ENERGY")
 
-Eref = [ -0.040757702991,  #TEST
-          0.046258791045,  #TEST
-         -0.018035667760,  #TEST
-         -0.011824632354,  #TEST
-         -0.029474943370,  #TEST
-         -0.022874936113,  #TEST
-         -0.024614353195,  #TEST
-         -0.024359212060 ] #TEST
+Eref = [ -0.04076062059,   #TEST
+          0.04625663134,   #TEST
+         -0.01803478948,   #TEST
+         -0.01182385927,   #TEST
+         -0.02947494369,   #TEST
+         -0.02287621746,   #TEST
+         -0.02461486146,   #TEST
+         -0.02436263800  ] #TEST
 
 compare_values(Eref[0], Eelst, 6, "SAPT Elst")           #TEST
 compare_values(Eref[1], Eexch, 6, "SAPT Exch")           #TEST
