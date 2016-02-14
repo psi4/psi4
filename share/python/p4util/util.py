@@ -81,8 +81,10 @@ def success(label):
     Used by :py:func:`util.compare_values` family when functions pass.
 
     """
-    print('\t{0:.<66}PASSED'.format(label))
+    msg = '\t{0:.<66}PASSED'.format(label)
+    print(msg)
     sys.stdout.flush()
+    psi4.print_out(msg + '\n')
 
 
 # Test functions

@@ -238,9 +238,12 @@ before_script:
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
 - export FC=${Fortran_COMPILER}
+- ${CXX_COMPILER} --version
+- ${Fortran_COMPILER} --version
+- ${C_COMPILER} --version
 - ${BOOSTBUILD}
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} ${BOOSTSTR} --max-am-eri=4 --chemps2=off objdir
 - cd objdir
 - ../.scripts/travis_build.sh
 script:
-- ../.scripts/travis_run.sh
+- python ../.scripts/travis_run.py
