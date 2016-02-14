@@ -75,7 +75,7 @@ if(NOT PCMSolver_FOUND)
   include_directories(SYSTEM "${PCMSolver_INCLUDE_DIRS}")
   set(PCMSolver_PARSE_DIR ${INSTALL_DIR}/bin)
   configure_file(${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py.in
-    ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
+    ${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py)
 endif()
 
 add_definitions(-DHAVE_PCMSOLVER=1)
