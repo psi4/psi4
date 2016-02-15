@@ -19,10 +19,11 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  cc_type df
 }
-energy('df-ccsd(at)')
+energy('ccsd(at)')
 
-compare_values(refcc, get_variable("DF-CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
-compare_values(refcc_at, get_variable("DF-CCSD(AT) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
+compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
+compare_values(refcc_at, get_variable("CCSD(AT) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
 
 

@@ -75,10 +75,10 @@ protected:
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
     /// Build functional, grid, etc
-    void common_init();
+    void common_init(SharedWavefunction ref_wfn);
 
 public:
-    KS(Options & options, boost::shared_ptr<PSIO> psio);
+    KS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio);
     virtual ~KS();
 };
 
@@ -99,8 +99,7 @@ protected:
 
     void common_init();
 public:
-    RKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    RKS(Options& options, boost::shared_ptr<PSIO> psio);
+    RKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RKS();
 };
 
@@ -125,8 +124,7 @@ protected:
 
     void common_init();
 public:
-    UKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    UKS(Options& options, boost::shared_ptr<PSIO> psio);
+    UKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UKS();
 };
 

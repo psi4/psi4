@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list fd_geoms_hessian_0.cc fd_misc.cc fd_geoms_freq_1.cc fd_geoms_1_0.cc fd_1_0.cc fd_geoms_freq_0.cc fd_freq_0.cc fd_freq_1.cc fd_hessian_0.cc )
+list(APPEND sources_list fd_misc.cc fd_geoms_freq_1.cc fd_geoms_1_0.cc fd_1_0.cc fd_geoms_freq_0.cc fd_freq_0.cc fd_freq_1.cc )
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

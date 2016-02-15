@@ -20,7 +20,8 @@ set {
     scf_type      df
     basis         cc-pvdz
     freeze_core   true
+    mp2_type      df
 }
 
-gradient("df-mp2")
+grad = gradient("mp2")
 

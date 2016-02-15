@@ -62,10 +62,11 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
 void Sort_OV3_LowMemory(long int memory,long int o,long int v);
 
 // coupled cluster constructor
-CoupledCluster::CoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        Wavefunction(options, _default_psio_lib_)
+CoupledCluster::CoupledCluster(SharedWavefunction ref_wfn, Options &options):
+        Wavefunction(options)
 {
-    reference_wavefunction_ = reference_wavefunction;
+    shallow_copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
     common_init();
 }
 
@@ -152,8 +153,6 @@ void CoupledCluster::finalize() {
           free(CCTasklist[i].name);
       }
   }
-  // there is something weird with chkpt_ ... reset it
-  chkpt_.reset();
 }
 
 double CoupledCluster::compute_energy() {

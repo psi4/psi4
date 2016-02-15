@@ -22,7 +22,7 @@ set {
     d_convergence 8
 }
 
-gradient('bp86-d2gr')
+grad = gradient('bp86-d2gr')
 clean()
 
 
@@ -31,4 +31,4 @@ set {
     reference rks
 }
 
-gradient('bp86-d2gr')
+grad = gradient('bp86-d2gr')

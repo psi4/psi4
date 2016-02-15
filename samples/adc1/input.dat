@@ -16,4 +16,5 @@ set {
     roots_per_irrep [20]
 }
 
-energy('adc')
+ref_energy = -76.22243196371332 
+adc_energy = energy('adc')

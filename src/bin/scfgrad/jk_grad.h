@@ -83,7 +83,7 @@ public:
     * @param options Options reference, with preset parameters
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JKGrad> build_JKGrad(int deriv = 1);
+    static boost::shared_ptr<JKGrad> build_JKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }

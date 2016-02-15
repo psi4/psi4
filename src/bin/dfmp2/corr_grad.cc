@@ -46,11 +46,9 @@ CorrGrad::CorrGrad(boost::shared_ptr<BasisSet> primary) :
 CorrGrad::~CorrGrad()
 {
 }
-boost::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad()
+boost::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(boost::shared_ptr<BasisSet> primary)
 {
     Options& options = Process::environment.options;
-    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(Process::environment.molecule(),
-        "BASIS", options.get_str("BASIS"));
 
     if (options.get_str("SCF_TYPE") == "DF") {
 

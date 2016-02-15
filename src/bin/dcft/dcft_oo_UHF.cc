@@ -177,8 +177,6 @@ DCFTSolver::run_simult_dcft_oo()
             outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
-        // Write orbitals to the checkpoint file
-        write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
         // Update SCF density (Kappa) and check its RMS
@@ -200,14 +198,20 @@ DCFTSolver::run_simult_dc_guess()
 
     double lambda_conv = cumulant_threshold_;
     double orbital_conv = orbitals_threshold_;
+    double energy_conv = energy_threshold_;
 
     cumulant_threshold_ = options_.get_double("GUESS_R_CONVERGENCE");
     orbitals_threshold_ = options_.get_double("GUESS_R_CONVERGENCE");
+    energy_threshold_   = options_.get_double("GUESS_R_CONVERGENCE");
     orbital_optimized_ = false;
 
-    outfile->Printf( "\n\n\tComputing the guess using the %s functional", exact_tau_ ? "DC-12" : "DC-06");
+    std::string prefix = options_.get_str("DCFT_TYPE") == "DF"? "DF-" : "";
+    outfile->Printf( "\n\n\tComputing the guess using the %s%s functional", prefix.c_str(), exact_tau_ ? "DC-12" : "DC-06");
     outfile->Printf( "\n\tGuess energy, orbitals and cumulants will be converged to %4.3e", options_.get_double("GUESS_R_CONVERGENCE"));
-    run_simult_dcft();
+    if(options_.get_str("REFERENCE") == "RHF")
+        run_simult_dcft_RHF();
+    else
+        run_simult_dcft();
 
     orbital_optimized_ = true;
     cumulantDone_ = false;
@@ -215,8 +219,9 @@ DCFTSolver::run_simult_dc_guess()
 
     cumulant_threshold_ = lambda_conv;
     orbitals_threshold_ = orbital_conv;
+    energy_threshold_ = energy_conv;
 
-    outfile->Printf( "\n\tNow running the %s computation...", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf( "\n\tNow running the %s%s computation...", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str());
 
 }
 

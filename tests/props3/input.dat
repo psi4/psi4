@@ -53,9 +53,9 @@ set {
 }
 
 
-energy('scf')
+scf_e, scf_wfn = energy('scf', return_wfn=True)
 
-oeprop("MULTIPOLES(7)", "ESP_AT_NUCLEI")
+oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
 for mpole,val in reversed(sorted(refs.items())):        #TEST
     compare_values(val, get_variable(mpole),  4, mpole) #TEST

@@ -28,13 +28,13 @@ using namespace std;
 
 namespace psi{
 
-OperatorSymmetry::OperatorSymmetry(int order,
-                                   boost::shared_ptr<Molecule> mol,
-                                   boost::shared_ptr<IntegralFactory> ints)
-    : order_(order), molecule_(mol), integral_(ints)
-{
-    common_init();
-}
+//OperatorSymmetry::OperatorSymmetry(int order,
+//                                   boost::shared_ptr<Molecule> mol,
+//                                   boost::shared_ptr<IntegralFactory> ints)
+//    : order_(order), molecule_(mol), integral_(ints)
+//{
+//    common_init();
+//}
 
 OperatorSymmetry::OperatorSymmetry(int order,
                                    boost::shared_ptr<Molecule> mol,
@@ -148,14 +148,12 @@ string OperatorSymmetry::name_of_component(int i)
 vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basename)
 {
     vector<SharedMatrix > matrices;
-    if (matrix_) {
-        string name;
+    string name;
     
-        for (int i=0; i<INT_NCART(order_); ++i) {
-            name = basename + " " + name_of_component(i);
+    for (int i=0; i<INT_NCART(order_); ++i) {
+        name = basename + " " + name_of_component(i);
     
-            matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[i]));
-        }
+        matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[i]));
     }
 
     return matrices;
@@ -163,13 +161,13 @@ vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basen
 
 
 
-MultipoleSymmetry::MultipoleSymmetry(int order,
-                                   boost::shared_ptr<Molecule> mol,
-                                   boost::shared_ptr<IntegralFactory> ints)
-    : order_(order), molecule_(mol), integral_(ints)
-{
-    common_init();
-}
+//MultipoleSymmetry::MultipoleSymmetry(int order,
+//                                   boost::shared_ptr<Molecule> mol,
+//                                   boost::shared_ptr<IntegralFactory> ints)
+//    : order_(order), molecule_(mol), integral_(ints)
+//{
+//    common_init();
+//}
 
 MultipoleSymmetry::MultipoleSymmetry(int order,
                                    boost::shared_ptr<Molecule> mol,
@@ -259,8 +257,6 @@ vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &base
 {
     vector<SharedMatrix > matrices;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-
     int component = 0;
     for(int l = 1; l <= order_; ++l){
         for(int ii = 0; ii <= l; ii++) {
@@ -290,16 +286,11 @@ vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &base
 
                 name = basename + name;
                 if(ignore_symmetry){
-                    SharedMatrix mat(new Matrix(name, wfn->basisset()->nbf(), wfn->basisset()->nbf()));
+                    SharedMatrix mat(new Matrix(name, matrix_->norb(), matrix_->norb()));
                     matrices.push_back(mat);
                 }else{
                     int sym = component_symmetry_[component];
-                    if (matrix_) {
-                        matrices.push_back(matrix_->create_shared_matrix(name, sym));
-                    }else{
-                        SharedMatrix mat(new Matrix(name, wfn->nsopi(), wfn->nsopi(), sym));
-                        matrices.push_back(mat);
-                    }
+                    matrices.push_back(matrix_->create_shared_matrix(name, sym));
                 }
                 ++component;
             }

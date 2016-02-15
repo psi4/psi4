@@ -76,9 +76,9 @@ set globals {
   scf_type pk
 }
 
-frequencies('scf', dertype=1)
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
+fd_freqs = scf_wfn.frequencies() #TEST
 
-fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(anal_freqs, fd_freqs, 1, "C4NH4 frequencies by gradients (3-pt.) to 0.1 cm^-1") #TEST
 del fd_freqs #TEST
 
@@ -88,17 +88,17 @@ set findif {
  disp_size 0.01
 }
 
-frequencies('scf', dertype=1, irrep=2)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=2, return_wfn=True)
+fd_freqs = scf_wfn.frequencies() #TEST
 
-fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(a2_freqs, fd_freqs, 3, "C4NH4 frequencies (A2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 
 # Compute B2 frequencies by 5-pt formula.
 
-frequencies('scf', dertype=1, irrep=4)
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
+fd_freqs = scf_wfn.frequencies() #TEST
 
-fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(b2_freqs, fd_freqs, 3, "C4NH4 frequencies (B2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 

@@ -64,7 +64,7 @@ namespace psi{
             /// Find the size of the grid needed to encapsulate the molecule
             void init_dimensions();
         public:
-            CubeFile();
+            CubeFile(boost::shared_ptr<Wavefunction>);
             void process_density();
             void set_npts(int x, int y, int z) { nptsx_ = x; nptsy_ = y; nptsz_ = z; }
             void set_buffer(double val) { buffer_region_ = val; }

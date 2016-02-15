@@ -64,7 +64,7 @@ enum TriplesCouplingType  {nocoupling,linear,quadratic,cubic};
 */
 class CCManyBody{
 public:
-  CCManyBody(Options &options);
+  CCManyBody(SharedWavefunction ref_wfn, Options &options);
   virtual ~CCManyBody();
   void        generate_integrals();
   void        generate_denominators();
@@ -77,6 +77,7 @@ public:
 //  void        zero_internal_delta_amps();
 protected:
   Options &options_;
+  SharedWavefunction ref_wfn_;
   // Effective Hamiltonian and the correpsonding eigenvectors
   void        print_eigensystem(int ndets, double** Heff,double*& eigenvector);
   double      diagonalize_Heff(int root,int ndets, double** Heff,double*& right_eigenvector,double*& left_eigenvector, bool initial);

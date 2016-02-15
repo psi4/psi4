@@ -23,7 +23,6 @@
 #include <iostream>
 #include <cmath>
 
-#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libciomr/libciomr.h>
 #include <libpsi4util/libpsi4util.h>

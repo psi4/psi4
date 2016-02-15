@@ -89,10 +89,10 @@ void fock_uhf(void)
 
   // Take Fock matrix from the wavefunction and transform it to the MO basis
 
-  SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
-  SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
-  SharedMatrix Ca = Process::environment.wavefunction()->Ca();
-  SharedMatrix Cb = Process::environment.wavefunction()->Cb();
+  SharedMatrix Fa = Process::environment.legacy_wavefunction()->Fa()->clone();
+  SharedMatrix Fb = Process::environment.legacy_wavefunction()->Fb()->clone();
+  SharedMatrix Ca = Process::environment.legacy_wavefunction()->Ca();
+  SharedMatrix Cb = Process::environment.legacy_wavefunction()->Cb();
   Fa->transform(Ca);
   Fb->transform(Cb);
 
@@ -203,10 +203,10 @@ void fock_rhf(void)
   frdocc = moinfo.frdocc;
   fruocc = moinfo.fruocc;
 
-  SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
-  SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
-  SharedMatrix Ca = Process::environment.wavefunction()->Ca();
-  SharedMatrix Cb = Process::environment.wavefunction()->Cb();
+  SharedMatrix Fa = Process::environment.legacy_wavefunction()->Fa()->clone();
+  SharedMatrix Fb = Process::environment.legacy_wavefunction()->Fb()->clone();
+  SharedMatrix Ca = Process::environment.legacy_wavefunction()->Ca();
+  SharedMatrix Cb = Process::environment.legacy_wavefunction()->Cb();
 
   Fa->transform(Ca);
   Fb->transform(Cb);

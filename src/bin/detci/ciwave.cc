@@ -36,16 +36,20 @@
 namespace psi { namespace detci {
 
 CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
-    : Wavefunction(Process::environment.options, ref_wfn->psio())
+    : Wavefunction(Process::environment.options)
 {
+    // Copy the wavefuntion then update
+    shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
 
 CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
                                Options &options)
-    : Wavefunction(options, ref_wfn->psio())
+    : Wavefunction(options)
 {
+    // Copy the wavefuntion then update
+    shallow_copy(ref_wfn);
     set_reference_wavefunction(ref_wfn);
     common_init();
 }
@@ -54,8 +58,6 @@ CIWavefunction::~CIWavefunction()
 }
 void CIWavefunction::common_init()
 {
-    // Copy the wavefuntion then update
-    copy(reference_wavefunction_);
 
     title();
     init_ioff();
@@ -116,6 +118,10 @@ void CIWavefunction::common_init()
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
+}
+size_t CIWavefunction::ndet()
+{
+  return (size_t)CIblks_->vectlen;
 }
 double CIWavefunction::compute_energy()
 {
@@ -333,6 +339,9 @@ Dimension CIWavefunction::get_dimension(const std::string& orbital_name)
 SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& spin, bool full_space)
 {
 
+    if (!opdm_called_){
+      throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
+    }
     double inact_value = (spin == "SUM") ? 2.0 : 1.0;
     SharedMatrix opdm;
 
@@ -367,6 +376,9 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
 }
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize)
 {
+   if (!tpdm_called_){
+     throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
+   }
 
   if (symmetrize){
     if (spin != "SUM")
@@ -492,7 +504,6 @@ void CIWavefunction::init_ioff(void)
     }
 }
 
-
 SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum, bool use_disk,
                                             bool buf_init)
 {
@@ -501,9 +512,21 @@ SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum, bool use_
    return civect;
 
 }
-SharedMatrix CIWavefunction::hamiltonian(void)
+SharedCIVector CIWavefunction::Hd_vector(int hd_type)
 {
-    BIGINT size = CIblks_->vectlen;
+    hd_type = (hd_type == -1) ? Parameters_->hd_ave : hd_type;
+    SharedCIVector Hd = new_civector(1, Parameters_->hd_filenum, true, true);
+    Hd->init_io_files(false); // False for do not open old
+    Hd->diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
+                     CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+                     CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs, hd_type);
+    Hd->write(0,0);
+    return Hd;
+
+}
+SharedMatrix CIWavefunction::hamiltonian(size_t hsize)
+{
+    BIGINT size = (hsize) ? (BIGINT)hsize : CIblks_->vectlen;
     double h_size_gb = (double)(8 * size * size) / 1E9;
     if (h_size_gb > 1){
         outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size_gb);

@@ -33,7 +33,6 @@
 
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
@@ -52,14 +51,8 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : HF(options, psio, chkpt)
-{
-    common_init();
-}
-
-RHF::RHF(Options& options, boost::shared_ptr<PSIO> psio)
-    : HF(options, psio)
+RHF::RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, options, psio)
 {
     common_init();
 }
@@ -89,6 +82,8 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
 
+    same_a_b_dens_ = true;
+    same_a_b_orbs_ = true;
 }
 
 void RHF::finalize()
@@ -292,109 +287,6 @@ double RHF::compute_E()
     return Etotal;
 }
 
-void RHF::save_sapt_info()
-{
-    if (factory_->nirrep() != 1)
-    {
-        outfile->Printf("Must run in C1. Period.\n");
-        abort();
-    }
-    if (soccpi_[0] != 0)
-    {
-        outfile->Printf("Aren't we in RHF Here? Pair those electrons up cracker!\n");
-        abort();
-    }
-
-    outfile->Printf("\n  Saving SAPT %s file.\n",options_.get_str("SAPT").c_str());
-
-    int fileno;
-    char* body_type = (char*)malloc(400*sizeof(char));
-    char* key_buffer = (char*)malloc(4000*sizeof(char));
-
-    string type = options_.get_str("SAPT");
-    if (type == "2-DIMER") {
-        fileno = PSIF_SAPT_DIMER;
-        sprintf(body_type,"Dimer");
-    } else if (type == "2-MONOMER_A") {
-        fileno = PSIF_SAPT_MONOMERA;
-        sprintf(body_type,"Monomer");
-    } else if (type == "2-MONOMER_B") {
-        fileno = PSIF_SAPT_MONOMERB;
-        sprintf(body_type,"Monomer");
-    } else if (type == "3-TRIMER") {
-        fileno = PSIF_3B_SAPT_TRIMER;
-        sprintf(body_type,"Trimer");
-    } else if (type == "3-DIMER_AB") {
-        fileno = PSIF_3B_SAPT_DIMER_AB;
-        sprintf(body_type,"Dimer");
-    } else if (type == "3-DIMER_BC") {
-        fileno = PSIF_3B_SAPT_DIMER_BC;
-        sprintf(body_type,"Dimer");
-    } else if (type == "3-DIMER_AC") {
-        fileno = PSIF_3B_SAPT_DIMER_AC;
-        sprintf(body_type,"Dimer");
-    } else if (type == "3-MONOMER_A") {
-        fileno = PSIF_3B_SAPT_MONOMER_A;
-        sprintf(body_type,"Monomer");
-    } else if (type == "3-MONOMER_B") {
-        fileno = PSIF_3B_SAPT_MONOMER_B;
-        sprintf(body_type,"Monomer");
-    } else if (type == "3-MONOMER_C") {
-        fileno = PSIF_3B_SAPT_MONOMER_C;
-        sprintf(body_type,"Monomer");
-    } else {
-        throw std::domain_error("SAPT Output option invalid");
-    }
-
-    psio_->open(fileno,0);
-
-    int sapt_nso = basisset_->nbf();
-    int sapt_nmo = nmo_;
-    int sapt_nocc = doccpi_[0];
-    int sapt_nvir = sapt_nmo-sapt_nocc;
-    int sapt_ne = 2*sapt_nocc;
-    double sapt_E_HF = E_;
-    double sapt_E_nuc = nuclearrep_;
-    double *sapt_evals = epsilon_a_->to_block_vector();
-    double **sapt_C = Ca_->to_block_matrix();
-    //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
-    double *sapt_V_ints = V_->to_lower_triangle();
-    double *sapt_S_ints = S_->to_lower_triangle();
-
-    sprintf(key_buffer,"%s NSO",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_nso, sizeof(int));
-    sprintf(key_buffer,"%s NMO",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_nmo, sizeof(int));
-    sprintf(key_buffer,"%s NOCC",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_nocc, sizeof(int));
-    sprintf(key_buffer,"%s NVIR",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_nvir, sizeof(int));
-    sprintf(key_buffer,"%s Number of Electrons",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_ne,sizeof(int));
-    sprintf(key_buffer,"%s HF Energy",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_E_HF,sizeof(double));
-    sprintf(key_buffer,"%s Nuclear Repulsion Energy",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &sapt_E_nuc, sizeof(double));
-    sprintf(key_buffer,"%s HF Eigenvalues",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &(sapt_evals[0]),sizeof(double)*sapt_nmo);
-    sprintf(key_buffer,"%s Nuclear Attraction Integrals",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &(sapt_V_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
-    sprintf(key_buffer,"%s Overlap Integrals",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &(sapt_S_ints[0]), sizeof(double)*sapt_nso*(sapt_nso+1)/2);
-    sprintf(key_buffer,"%s HF Coefficients",body_type);
-    psio_->write_entry(fileno,key_buffer,(char *) &(sapt_C[0][0]),sizeof(double)*sapt_nmo*sapt_nso);
-
-    psio_->close(fileno,1);
-
-    delete[] sapt_evals;
-    delete[] sapt_V_ints;
-    delete[] sapt_S_ints;
-    free_block(sapt_C);
-
-    free(body_type);
-    free(key_buffer);
-}
-
 void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret)
 {
     // => Effective one electron part <= //
@@ -407,13 +299,13 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
 
         // ret_ia = F_ij X_ja
         C_DGEMM('N','N',doccpi_[h],virpi[h],doccpi_[h],1.0,
-                IFp[0],nsopi_[h],
+                IFp[0],nmopi_[h],
                 xp[0],virpi[h],0.0,retp[0],virpi[h]);
 
         // ret_ia -= X_ib F_ba
         C_DGEMM('N','N',doccpi_[h],virpi[h],virpi[h],-1.0,
                 xp[0],virpi[h],
-                (IFp[doccpi_[h]]+doccpi_[h]),nsopi_[h],1.0,retp[0],virpi[h]);
+                (IFp[doccpi_[h]]+doccpi_[h]),nmopi_[h],1.0,retp[0],virpi[h]);
     }
 
     // => Two electron part <= //
@@ -452,17 +344,6 @@ void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix
 
 int RHF::soscf_update()
 {
-    if (soscf_print_){
-        outfile->Printf("\n");
-        outfile->Printf("    ==> SORHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
-    }
-
     time_t start, stop;
     start = time(NULL);
 
@@ -492,6 +373,25 @@ int RHF::soscf_update()
                 denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
             }
         }
+    }
+
+    // Make sure the MO gradient is reasonably small
+    if (Gradient->absmax() > 0.3){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
+
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SORHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
     }
 
     // => Initial CG guess <= //
@@ -533,6 +433,7 @@ int RHF::soscf_update()
         double rzpre = r->vector_dot(z);
         double alpha = rzpre / p->vector_dot(Ap);
         if (std::isnan(alpha)){
+            outfile->Printf("RHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
             alpha = 0.0;
         }
 
@@ -597,9 +498,7 @@ bool RHF::stability_analysis()
         std::vector<boost::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
-        // Ref wfn is really "this"
-        boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-        IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);

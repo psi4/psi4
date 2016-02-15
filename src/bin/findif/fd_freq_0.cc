@@ -54,13 +54,13 @@ namespace psi { namespace findif {
 int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
  int irrep, int ii, int jj, int disp_i, int disp_j);
 
-PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_energies, int freq_irrep_only)
+SharedMatrix fd_freq_0(boost::shared_ptr<Molecule> mol, Options &options,
+                      const boost::python::list& python_energies, int freq_irrep_only)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
   int print_lvl = options.get_int("PRINT");
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
   boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
@@ -269,7 +269,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   }
 
   // This print function also saves frequencies in wavefunction.
-  print_vibrations(modes);
+  print_vibrations(mol, modes);
 
   for (int i=0; i<modes.size(); ++i)
     delete modes[i];
@@ -305,7 +305,9 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       //for (int xyz=0; xyz<3; ++xyz)
         //B[i][3*a+xyz] *= sqrt(mol->mass(a));
 
-  double **Hx = block_matrix(3*Natom, 3*Natom);
+//  double **Hx = block_matrix(3*Natom, 3*Natom);
+  SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3*Natom, 3*Natom));
+  double** Hx = mat_Hx->pointer(); 
 
   // Hx = Bt H B
   for (int i=0; i<dim; ++i)
@@ -441,7 +443,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 
   // Print a hessian file
   if ( options.get_bool("HESSIAN_WRITE") ) {
-    std::string hess_fname = get_writer_file_prefix() + ".hess";
+    std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
     boost::shared_ptr<OutFile> printer(new OutFile(hess_fname,TRUNCATE));
     //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
     printer->Printf("%5d", Natom);
@@ -458,11 +460,11 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       }
     }
   }
-  free_block(Hx);
+//  free_block(Hx);
 
   outfile->Printf("\n-------------------------------------------------------------\n");
 
-  return Success;
+  return mat_Hx;
 }
 
 /* iE0() returns index for the energy of a displacement, according to the order

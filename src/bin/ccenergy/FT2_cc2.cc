@@ -26,17 +26,16 @@
 */
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void FT2_CC2(void)
+void CCEnergyWavefunction::FT2_CC2(void)
 {
   dpdbuf4 newT2, T2, Z;
   dpdfile2 F;
 
-  if(params.ref == 0) { /* RHF */
+  if(params_.ref == 0) { /* RHF */
     global_dpd_->buf4_init(&newT2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -50,7 +49,7 @@ void FT2_CC2(void)
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_close(&newT2);
   }
-  else if(params.ref == 1) { /* ROHF */
+  else if(params_.ref == 1) { /* ROHF */
     global_dpd_->buf4_init(&newT2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -86,7 +85,7 @@ void FT2_CC2(void)
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_close(&newT2);
   }
-  else if(params.ref == 2) { /* UHF */
+  else if(params_.ref == 2) { /* UHF */
 
     global_dpd_->buf4_init(&newT2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");

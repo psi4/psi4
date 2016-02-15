@@ -38,8 +38,8 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-MP2_CCSD::MP2_CCSD(Options &options):
-        CCManyBody(options)
+MP2_CCSD::MP2_CCSD(SharedWavefunction ref_wfn, Options &options):
+        CCManyBody(ref_wfn, options)
 {
   triples_type = pt2;
   add_matrices();
@@ -181,7 +181,7 @@ void MP2_CCSD::read_mp2_ccsd_integrals()
 
   // CCSort reads the one and two electron integrals
   // and creates the Fock matrices
-  sorter = new CCSort(out_of_core_sort);
+  sorter = new CCSort(ref_wfn_, out_of_core_sort);
 
   END_TIMER(1);
 }

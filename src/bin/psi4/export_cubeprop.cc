@@ -22,12 +22,15 @@
 
 #include <boost/python.hpp>
 #include <libcubeprop/cubeprop.h>
+#include <liboptions/liboptions.h>
+#include <libmints/wavefunction.h>
 
 using namespace boost::python;
 using namespace psi;
 
 void export_cubeprop()
 {
-    class_<CubeProperties, boost::shared_ptr<CubeProperties> >("CubeProperties", "docstring").
-        def("compute_properties", &CubeProperties::compute_properties, "docstring");
+    class_<CubeProperties, boost::shared_ptr<CubeProperties> >("CubeProperties", "docstring", no_init)
+        .def(init<boost::shared_ptr<Wavefunction>>())
+        .def("compute_properties", &CubeProperties::compute_properties, "docstring");
 }

@@ -133,7 +133,6 @@ void PseudoTrial::print_header()
 
 void PseudoTrial::form_molecule()
 {
-    molecule_ = Process::environment.molecule(); 
     outfile->Printf(" => Molecule <= \n\n");
     molecule_->print();
 }
@@ -711,7 +710,7 @@ void PseudoTrial::form_A()
 
 void PseudoTrial::form_I()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     I_ = mints->ao_eri();
     I_->print();
 }

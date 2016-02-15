@@ -38,12 +38,12 @@ using namespace std;
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(Options& options_, bool silent_)
-: options(options_), silent(silent_)
+MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
+: options(options_), silent(silent_), ref_wfn(ref_wfn_)
 {
     startup();
-    charge       = Process::environment.molecule()->molecular_charge();
-    multiplicity = Process::environment.molecule()->multiplicity();
+    charge       = ref_wfn.molecule()->molecular_charge();
+    multiplicity = ref_wfn.molecule()->multiplicity();
 }
 
 MOInfoBase::~MOInfoBase()
@@ -75,24 +75,22 @@ void MOInfoBase::cleanup()
 
 void MOInfoBase::read_data()
 {
-    if(!Process::environment.wavefunction())
-        throw PSIEXCEPTION("The reference wavefunction does not exist yet");
 
-    nirreps        = Process::environment.wavefunction()->nirrep();
-    nso            = Process::environment.wavefunction()->nso();
+    nirreps        = ref_wfn.nirrep();
+    nso            = ref_wfn.nso();
     // Read sopi and save as a STL vector
-    sopi           = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->nsopi());
-    irr_labs       = Process::environment.molecule()->irrep_labels();
-    nuclear_energy = Process::environment.molecule()->nuclear_repulsion_energy();
+    sopi           = convert_int_array_to_vector(nirreps, ref_wfn.nsopi());
+    irr_labs       = ref_wfn.molecule()->irrep_labels();
+    nuclear_energy = ref_wfn.molecule()->nuclear_repulsion_energy();
 }
 
 void MOInfoBase::compute_number_of_electrons()
 {
     int nel   = 0;
-    int natom = Process::environment.molecule()->natom();
+    int natom = ref_wfn.molecule()->natom();
 
     for(int i=0; i < natom;i++){
-        nel += static_cast<int>(Process::environment.molecule()->Z(i));
+        nel += static_cast<int>(ref_wfn.molecule()->Z(i));
     }
     nel -= charge;
 

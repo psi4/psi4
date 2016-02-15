@@ -45,7 +45,7 @@
 namespace psi { namespace ccsort {
 
 /* get_moinfo(): Routine to obtain basic orbital information from
-** Process::environment.wavefunction() and compute the associated lookup arrays.
+** Process::environment.legacy_wavefunction() and compute the associated lookup arrays.
 **
 ** Several loookup arrays are written to CC_INFO at the end of this
 ** routine for use in other CC programs.  I do this for two reasons:
@@ -72,7 +72,7 @@ void get_moinfo(void)
     int *pitz2qt_A, *qt2pitz_A, *pitz2qt_B, *qt2pitz_B;
     psio_address next;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
@@ -108,7 +108,7 @@ void get_moinfo(void)
         moinfo.nfzv += moinfo.fruocc[i];
     }
 
-    if(moinfo.nfzc) moinfo.efzc = Process::environment.wavefunction()->efzc();
+    if(moinfo.nfzc) moinfo.efzc = Process::environment.legacy_wavefunction()->efzc();
     else moinfo.efzc = 0.0;
 
     /* Calculation consistency check */

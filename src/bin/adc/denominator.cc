@@ -27,7 +27,7 @@
 namespace psi{ namespace adc{
     
 void 
-ADC::shift_denom2(int root, int irrep, double omega)
+ADCWfn::shift_denom2(int root, int irrep, double omega)
 {
     char lbl[32];
     dpdfile2 D, L;
@@ -61,7 +61,7 @@ ADC::shift_denom2(int root, int irrep, double omega)
 }
     
 void 
-ADC::shift_denom4(int irrep, double omega)
+ADCWfn::shift_denom4(int irrep, double omega)
 {
     char lbl[32];
     dpdbuf4 D;

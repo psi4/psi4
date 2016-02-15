@@ -51,7 +51,7 @@ if(NOT PCMSolver_FOUND)
   ExternalProject_Add(interface_pcmsolver
     PREFIX ${CUSTOM_PCMSolver_LOCATION}
     GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-    GIT_TAG master
+    GIT_TAG v1.1.0
     CMAKE_ARGS "${PCMSolverCMakeArgs}"
     INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
     )
@@ -74,8 +74,8 @@ if(NOT PCMSolver_FOUND)
 
   include_directories(SYSTEM "${PCMSolver_INCLUDE_DIRS}")
   set(PCMSolver_PARSE_DIR ${INSTALL_DIR}/bin)
-  configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in
-    ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
+  configure_file(${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py.in
+    ${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py)
 endif()
 
 add_definitions(-DHAVE_PCMSOLVER=1)

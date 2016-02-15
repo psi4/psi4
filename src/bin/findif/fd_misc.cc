@@ -39,9 +39,8 @@ bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
 }
 
 // function to print out (frequencies and normal modes) vector of vibrations
-void print_vibrations(std::vector<VIBRATION *> modes) {
+void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes) {
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   char **irrep_lbls = mol->irrep_labels();
   int Natom = mol->natom();
 
@@ -94,18 +93,7 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
     }
   }
 
-  //freq_vector->print_out();
-  if (psi::Process::environment.wavefunction()) {
-    Process::environment.wavefunction()->set_frequencies(freq_vector);
-  }
   Process::environment.set_frequencies(freq_vector);
-
-  //nm_vector->print_out();
-  if (psi::Process::environment.wavefunction()) {
-    Process::environment.wavefunction()->set_normalmodes(nm_vector);
-  }
-  // Process::environment.set_normalmodes(nm_vector);
-
 
   double sum = 0.0;
   for (int a=0; a<Natom; ++a)
@@ -151,12 +139,10 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
+void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size) {
 
   geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor));
-
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   int nc = salclist[salc_i].ncomponent();
 
@@ -174,13 +160,11 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
+void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
 
   geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor_i)
     + "Coord: " + to_string(salc_j) + ", Disp: " + to_string(disp_factor_j));
-
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   int a, xyz;
   double coef;
@@ -205,8 +189,7 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 }
 
 // it's assumed columns are cartesian dimensions
-void mass_weight_columns_plus_one_half(SharedMatrix B) {
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+void mass_weight_columns_plus_one_half(boost::shared_ptr<Molecule> mol, SharedMatrix B) {
   double u;
 
   for (int col=0; col<B->ncol(); ++col) {
@@ -223,8 +206,7 @@ void displace_atom(SharedMatrix geom, const int atom, const int coord, const int
   return;
 }
 
-std::vector< SharedMatrix > atomic_displacements(Options &options) {
-  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+std::vector< SharedMatrix > atomic_displacements(boost::shared_ptr<Molecule> mol, Options &options) {
 
   // This is the size in bohr because geometry is in bohr at this point
   // This equals 0.1 angstrom displacement

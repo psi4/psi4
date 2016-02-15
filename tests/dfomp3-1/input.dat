@@ -20,11 +20,12 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  mp_type df
 }
-energy('df-omp3')
+energy('omp3')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy");                        #TEST
-compare_values(refomp3, get_variable("DF-OMP3 TOTAL ENERGY"), 6, "DF-OMP3 Total Energy");               #TEST
+compare_values(refomp3, get_variable("OMP3 TOTAL ENERGY"), 6, "DF-OMP3 Total Energy");               #TEST
 
 

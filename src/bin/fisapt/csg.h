@@ -91,7 +91,7 @@ protected:
 public:
     // => Constructors <= //
 
-    CubicScalarGrid(boost::shared_ptr<BasisSet> primary);
+    CubicScalarGrid(boost::shared_ptr<BasisSet> primary, Options& options);
     virtual ~CubicScalarGrid(); 
 
     // => High-Level Setup Routines <= //

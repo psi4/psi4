@@ -98,7 +98,7 @@ Adding Basis Option to Code
     options.add_str("DF_BASIS_ELST", "");
 
 - Register new basis keyword with the input parser
-  :source:`lib/python/inputparser.py`. In the main function
+  :source:`share/python/inputparser.py`. In the main function
   `process_input`, add it to the regex below. This ensures that users can
   define ``basis_keyword basis_name {...}`` blocks where the contents of
   the block get associated with basis_name and assigned to your
@@ -115,7 +115,7 @@ Deprecated Steps: Don't do these anymore!
   Don't do this anymore!
 
 - Deprecated Step: adding `corresponding_rifit` and surrounding
-  boilerplate to `run_{method}` function :source:`lib/python/proc.py`.
+  boilerplate to `run_{method}` function :source:`share/python/proc.py`.
   Don't do this anymore!
 
 - Building a parser object in module code as preparation to building a

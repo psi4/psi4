@@ -50,7 +50,7 @@ namespace psi { namespace ccresponse {
 ** Modified for ccresponse by TDC May, 2003
 */
 
-void get_moinfo(void)
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
 {
     int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
     int *actpi, offset, act_offset;
@@ -59,8 +59,6 @@ void get_moinfo(void)
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref),
                     sizeof(int));
-
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();

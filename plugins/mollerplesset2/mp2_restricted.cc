@@ -6,17 +6,16 @@
 #include <libtrans/mospace.h>
 #include "psifiles.h"
 #define EXTERN
-#include "globals.h"
+#include "mp2.h"
 #include "libdpd/dpd.gbl"
 
 namespace psi{ namespace mollerplesset2{
 
-double plugin_mp2_restricted(Options &options, boost::shared_ptr<Chkpt> chkpt)
+double plugin_mp2_restricted(SharedWavefunction wfn, Options &options)
 {
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
                IntegralTransform::DPDOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
     ints.set_dpd_id(0);

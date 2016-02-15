@@ -29,12 +29,11 @@
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void tau_build(void)
+void CCEnergyWavefunction::tau_build(void)
 {
   int h, ij, ab, i, j, a, b, I, J, A, B;
   int Isym, Jsym, Asym, Bsym;
@@ -43,9 +42,9 @@ void tau_build(void)
   dpdbuf4 tIJAB, tijab, tIjAb;
   dpdfile2 tIA, tia;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tauIjAb");
@@ -95,7 +94,7 @@ void tau_build(void)
     global_dpd_->file2_mat_close(&tIA);
     global_dpd_->file2_close(&tIA);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");
@@ -238,7 +237,7 @@ void tau_build(void)
     global_dpd_->file2_close(&tia);
 
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");

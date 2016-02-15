@@ -91,7 +91,7 @@ Comments
 
 04-Jul-2012, LAB
 
-This is an example comment that refers to :ref:`sec:pep1` and a trac ticket :trac:`#221`. 
+.. comment This is an example comment that refers to :ref:`sec:pep1` and a trac ticket :trac:`#221`. 
 
 ----
 

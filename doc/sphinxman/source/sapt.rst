@@ -125,7 +125,7 @@ approximation introduces negligible errors into the SAPT energy
 improves efficiency. 
 
 The S\ :superscript:`2` approximation and scaling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All exchange terms in SAPT arise from the antisymmetrization
 of the wavefunctions of monomers A and B. Taking into account exchange of all possible
@@ -150,7 +150,7 @@ yielding improved results over regular SAPT0 in the jun-cc-pVDZ basis set (see [
 .. math:: E_{sSAPT0} = E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
    p_{EX}(3.0) E_{exch-ind,resp}^{(20)} + E_{disp}^{(20)} + p_{EX}(3.0) E_{exch-disp}^{(20)} 
    + \delta_{HF}^{(2)}
-   :label: SAPT0
+   :label: sSAPT0
 
 where :math:`\delta_{HF}^{(2)}` is computed without any scaling.
 
@@ -258,8 +258,6 @@ Advanced SAPT0 Keywords
 .. include:: autodir_options_c/sapt__ints_tolerance.rst
 .. include:: autodir_options_c/sapt__denominator_delta.rst
 .. include:: autodir_options_c/sapt__denominator_algorithm.rst
-.. include:: autodir_options_c/sapt__sapt_os_scale.rst
-.. include:: autodir_options_c/sapt__sapt_ss_scale.rst
 .. include:: autodir_options_c/globals__debug.rst
 
 .. index:: SAPT; higher-order

@@ -1,0 +1,104 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.h>
+
+namespace psi{ namespace @plugin@ {
+
+extern "C"
+int read_options(std::string name, Options &options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed
+            to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- Whether to compute two-electron integrals -*/
+        options.add_bool("DO_TEI", true);
+    }
+
+    return true;
+}
+
+extern "C"
+PsiReturnType @plugin@(Options &options)
+{
+    // Grab options from the options object
+    int print = options.get_int("PRINT");
+    int doTei = options.get_bool("DO_TEI");
+
+    // Obtain the Wavefunction from globals that we set python-side
+    SharedWavefunction ref_wfn = Process::environment.wavefunction();
+
+    // Molecule is a member of the wavefunction option
+    // Lets print out some molecule information here
+    ref_wfn->molecule()->print();
+    double nucrep = ref_wfn->molecule()->nuclear_repulsion_energy();
+    psi::outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
+
+    // MintsHelper are convenient objects that take a basisset, options, and print level
+    // After this object is formed we can request a variety of matrix types
+    MintsHelper mints(MintsHelper(ref_wfn->basisset(), options, 0));
+
+    // mints is a reference, so we use the "." operator to access this object
+    SharedMatrix sMat = mints.ao_overlap();
+    SharedMatrix tMat = mints.ao_kinetic();
+    SharedMatrix vMat = mints.ao_potential();
+
+    // The SharedMatrix class is a boost::shared_ptr to a Matrix
+    // Since we have a point to the object we can access it through the "->" operator
+    sMat->print();
+    tMat->print();
+    vMat->print();
+
+    // Now that we have these matrices we can manipulate them in various ways
+    // Form h = T + V by first cloning T and then adding V
+    SharedMatrix hMat = tMat->clone();
+    hMat->add(vMat);
+
+    // Before we print lets give hMat a name so that we know what it is
+    hMat->set_name("Core Hamiltonian Matrix");
+    hMat->print();
+
+    // We can build the two-electron integrals in a similar manner
+    if(doTei){
+        // As a note building the ERI's in this way is typically for debugging purposes and not normally recommended
+
+        // First lets make sure this Matrix is not too large, lets stop at 100 basis function
+        size_t nbf = ref_wfn->basisset()->nbf();
+        if (nbf > 100){
+            throw PSIEXCEPTION("There are too many basis function to construct the two-electron integrals!");
+        }
+
+        SharedMatrix eri = mints.ao_eri();
+
+    }
+
+    return Success;
+}
+
+}} // End Namespaces

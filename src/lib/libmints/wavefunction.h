@@ -30,6 +30,8 @@
 #include "exception.h"
 #include <libparallel/parallel.h>
 
+#include <boost/enable_shared_from_this.hpp>
+
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
 
@@ -77,7 +79,7 @@ class OrbitalSpace;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction
+class Wavefunction : public boost::enable_shared_from_this<Wavefunction>
 {
 protected:
     /// Name of the wavefunction
@@ -100,7 +102,6 @@ protected:
 
     // PSI file access variables
     boost::shared_ptr<PSIO> psio_;
-    boost::shared_ptr<Chkpt> chkpt_;
 
     /// Integral factory
     boost::shared_ptr<IntegralFactory> integral_;
@@ -117,15 +118,6 @@ protected:
     unsigned int debug_;
     /// Print flag
     unsigned int print_;
-
-    /// Whether this wavefunction was obtained using density fitting
-    bool density_fitted_;
-
-    /// Energy convergence threshold
-    double energy_threshold_;
-
-    /// Density convergence threshold
-    double density_threshold_;
 
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
@@ -150,6 +142,9 @@ protected:
     Dimension nsopi_;
     /// Number of mo per irrep
     Dimension nmopi_;
+
+    /// Whether this wavefunction was obtained using density fitting
+    bool density_fitted_;
 
     /// The energy associated with this wavefunction
     double energy_;
@@ -201,11 +196,11 @@ protected:
     /// If a gradient is available it will be here:
     SharedMatrix gradient_;
 
+    /// If a Hessian is available it will be here:
+    SharedMatrix hessian_;
+
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
-
-    /// The active part of the TPDM
-    SharedMatrix TPDM_;
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
@@ -223,47 +218,58 @@ protected:
     /// If normal modes are available, they will be here:
     boost::shared_ptr<Vector> normalmodes_;
 
-    /* Xiao Wang */
-    /// Flag to tell if this is a DCFT computation
-    bool isDCFT_;
-    /* Xiao Wang */
+    /// Same orbs or dens
+    bool same_a_b_dens_;
+    bool same_a_b_orbs_;
 
 private:
     // Wavefunction() {}
     void common_init();
 
 public:
-    /// Set the PSIO object.
-    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
-    Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+
+    /// Constructor for an entirely new wavefunction
+    Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
+                 Options & options);
+
+    /// Blank constructor for derived classes
+    Wavefunction(Options & options);
+
+    /**
+    * Copy the contents of another Wavefunction into this one.
+    * Useful at the beginning of correlated wavefunction computations.
+    * -Does not set options, callbacks, or reference_wavefunction_
+    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are copied by reference,
+    *  so if you change these, you must reallocate to avoid compromising the
+    *  reference wavefunction's data.
+    **/
+    void shallow_copy(SharedWavefunction other);
+    void shallow_copy(const Wavefunction* other);
+
     /**
     * Copy the contents of another Wavefunction into this one.
     * Useful at the beginning of correlated wavefunction computations.
     * -Does not set options or callbacks
     * -reference_wavefunction_ is set to other
-    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are copied by reference,
-    *  so if you change these, you must reallocate to avoid compromising the
-    *  reference wavefunction's data.
+    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
     **/
-    void copy(boost::shared_ptr<Wavefunction> other);
+    void deep_copy(SharedWavefunction other);
+    void deep_copy(const Wavefunction* other);
 
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.
-    virtual double compute_energy() = 0;
-
-
-    virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
+    virtual double compute_energy() {throw PSIEXCEPTION("Compute energy has not been implemented for this wavefunction.");}
 
     /// Compute gradient.  Subclasses override this function to compute the gradient.
+    virtual SharedMatrix compute_gradient() {throw PSIEXCEPTION("Analytic gradients are not available for this wavefunction.");}
 
-    /// Initialize internal variables from checkpoint file.
-    //void init_with_chkpt(); // Does this function exist??
-    void load_values_from_chkpt();
+    /// Compute Hessian.  Subclasses override this function to compute the Hessian.
+    virtual SharedMatrix compute_hessian() {throw PSIEXCEPTION("Analytic Hessians are not available for this wavefunction.");}
 
     /// Is this a restricted wavefunction?
-    virtual bool same_a_b_orbs() const { return true;  }
-    virtual bool same_a_b_dens() const { return false; }
+    bool same_a_b_orbs() const { return same_a_b_orbs_; }
+    bool same_a_b_dens() const { return same_a_b_dens_; }
 
     /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
     void map_irreps(std::vector<int*> &arrays);
@@ -338,12 +344,6 @@ public:
     /// Returns the core Hamiltonian matrix
     SharedMatrix H() const { return H_; }
 
-    /** Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
-     * On entrance, there's only one set of orbitals and orbital energies.  On
-     * exit, the alpha and beta Fock matrices correspond to those in the semicanonical
-     * basis, and there are distinct alpha and beta C and epsilons, also in the
-     * semicanonical basis. */
-    virtual void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
@@ -461,8 +461,10 @@ public:
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
 
-    /// Returns the active part of the TPDM
-    SharedMatrix TPDM() const;
+    /// Returns the Hessian
+    SharedMatrix hessian() const;
+    /// Set the Hessian for the wavefunction
+    void set_hessian(SharedMatrix& hess);
 
     /// Returns the atomic point charges
     boost::shared_ptr<double[]> atomic_point_charges()const{
@@ -492,7 +494,6 @@ public:
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
 
-
     // Set the print flag level
     void set_print(unsigned int print) { print_ = print; }
 
@@ -501,13 +502,6 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
-
-    /* Xiao Wang */
-    /// Returns true if this is a DCFT computation
-    bool isDCFT();
-    /// Set if this is a DCFT computation
-    void set_DCFT(bool val);
-    /* Xiao Wang */
 };
 
 }

@@ -116,7 +116,7 @@ illustrated in the following example::
 
 Here, the contents of the ``cfour {...}`` block are written directly to a
 ``ZMAT`` file. This is joined by a default ``GENBAS`` file
-(:source:`lib/basis/GENBAS`).  To preferentially use your own ``GENBAS``,
+(:source:`share/basis/GENBAS`).  To preferentially use your own ``GENBAS``,
 place it in :envvar:`PATH` or :envvar:`PSIPATH`. The line calling
 :py:func:`~driver.energy` with argument ``'cfour'`` invokes
 :program:`xcfour`.

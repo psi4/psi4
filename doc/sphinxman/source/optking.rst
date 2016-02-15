@@ -180,117 +180,118 @@ Transition States, Reaction Paths, and Constrained Optimizations
    frequencies('scf')
    optimize('scf')
 
-* Optimize a geometry (HOOH) at a frozen dihedral angle of 90 degrees.::
-  molecule {
-    H
-    O 1 0.90
-    O 2 1.40 1 100.0
-    H 3 0.90 2 100.0 1 90.0
-  }
+* Optimize a geometry (HOOH) at a frozen dihedral angle of 90 degrees. ::
 
-  set optking {
-    frozen_dihedral = ("
-      1 2 3 4
-    ")
-  }
-  optimize('scf')
+   molecule {
+     H
+     O 1 0.90
+     O 2 1.40 1 100.0
+     H 3 0.90 2 100.0 1 90.0
+   }
+
+   set optking {
+     frozen_dihedral = ("
+       1 2 3 4
+     ")
+   }
+   optimize('scf')
 
 * To instead freeze the two O-H bond distances ::
 
-  set optking {
-    frozen_distance = ("
-      1  2
-      3  4
-    ")
-  }
+   set optking {
+     frozen_distance = ("
+       1  2
+       3  4
+     ")
+   }
 
 For bends, the corresponding keyword is "frozen_bend".
 
 * To freeze the cartesian coordinates of atom 2 ::
 
-  freeze_list = """
-    2 xyz
-  """
-  set optking frozen_cartesian $freeze_list
+   freeze_list = """
+     2 xyz
+   """
+   set optking frozen_cartesian $freeze_list
 
 * To freeze only the y coordinates of atoms 2 and 3 ::
 
-  freeze_list = """
-    2 y
-    3 y
-  """
-  set optking frozen_cartesian $freeze_list
+   freeze_list = """
+     2 y
+     3 y
+   """
+   set optking frozen_cartesian $freeze_list
 
 * To optimize toward a value of 0.95 Angstroms for the distance between 
   atoms 1 and 3, as well as that between 2 and 4 ::
 
-  set optking {
-    fixed_distance = ("
-      1  3 0.95
-      2  4 0.95
-    ")
-  }
+   set optking {
+     fixed_distance = ("
+       1  3 0.95
+       2  4 0.95
+     ")
+   }
 
 Note that the effect of the frozen and fixed keywords is independent of
 how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
 
 * To scan the potential energy surface by optimizing at several fixed values
-of the dihedral angle of HOOH.::
+  of the dihedral angle of HOOH. ::
 
-  molecule hooh {
-   0 1
-   H  0.850718   0.772960    0.563468
-   O  0.120432   0.684669   -0.035503
-   O -0.120432  -0.684669   -0.035503
-   H -0.850718  -0.772960    0.563468
-  }
-  
-  set {
-    basis cc-pvdz
-    intrafrag_step_limit 0.1
-  }
-  
-  dihedrals = [100,110,120,130,140,150]
-  PES = []
-  
-  for phi in dihedrals:
-    my_string = "1 2 3 4 " + str(phi)
-    set optking fixed_dihedral = $my_string
-    E = optimize('scf')
-    PES.append((phi, E))
-  
-  print "\n\tcc-pVDZ SCF energy as a function of phi\n"
-  for point in PES:
-    print "\t%5.1f%20.10f" % (point[0], point[1])
+   molecule hooh {
+    0 1
+    H  0.850718   0.772960    0.563468
+    O  0.120432   0.684669   -0.035503
+    O -0.120432  -0.684669   -0.035503
+    H -0.850718  -0.772960    0.563468
+   }
+   
+   set {
+     basis cc-pvdz
+     intrafrag_step_limit 0.1
+   }
+   
+   dihedrals = [100,110,120,130,140,150]
+   PES = []
+   
+   for phi in dihedrals:
+     my_string = "1 2 3 4 " + str(phi)
+     set optking fixed_dihedral = $my_string
+     E = optimize('scf')
+     PES.append((phi, E))
+   
+   print "\n\tcc-pVDZ SCF energy as a function of phi\n"
+   for point in PES:
+     print "\t%5.1f%20.10f" % (point[0], point[1])
 
 
 Dealing with problematic optimizations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Although optking is continuously improved with robustness in mind, some
 attempted optimizations will inevitably fail to converge to the desired minima.
 For difficult cases, the following suggestions are made.
 
 * As for any optimizer, computing the Hessian and limiting the step size will
-successfully converge a higher percentage of cases.  The default settings have
-been chosen because they perform efficiently for common, representative test sets.
-More restrictive, cautious steps are sometimes necessary.
+  successfully converge a higher percentage of cases.  The default settings have
+  been chosen because they perform efficiently for common, representative test sets.
+  More restrictive, cautious steps are sometimes necessary.
 
 * |optking__dynamic_level| allows optking to change the method of optimization
-toward algorithms that, while often less efficient, may help to converge difficult
-cases.  If this is initially set to 1, then optking, as poor steps are detected,
-will increase the level through several forms of more robust and cautious algorithms.
-The changes will reduce the trust radius, allow backward steps (partial line
-searching), add cartesian coordinates, switch to cartesian coordinates, and take
-steepest-descent steps.
+  toward algorithms that, while often less efficient, may help to converge difficult
+  cases.  If this is initially set to 1, then optking, as poor steps are detected,
+  will increase the level through several forms of more robust and cautious algorithms.
+  The changes will reduce the trust radius, allow backward steps (partial line
+  searching), add cartesian coordinates, switch to cartesian coordinates, and take
+  steepest-descent steps.
 
 * The developers have found the |optking__opt_coordinates| set to "BOTH" which
-includes both the redundant internal coordinate set, as well as cartesian coordinates,
-works well for systems with long 'arms' or floppy portions of a molecule poorly
-described by local internals.
+  includes both the redundant internal coordinate set, as well as cartesian coordinates,
+  works well for systems with long 'arms' or floppy portions of a molecule poorly
+  described by local internals.
 
 Direct manipulation of the optmization coordinates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Generate the internal coordinates and then stop::
 
    set intcos_generate_exit true

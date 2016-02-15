@@ -38,7 +38,6 @@
 #include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
@@ -65,19 +64,13 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
-    : Wavefunction(options, psio, chkpt),
+HF::HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : Wavefunction(options),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6)
 {
-    common_init();
-}
-
-HF::HF(Options& options, boost::shared_ptr<PSIO> psio)
-    : Wavefunction(options, psio),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6)
-{
+    shallow_copy(ref_wfn);
+    psio_ = psio;
     common_init();
 }
 
@@ -111,6 +104,14 @@ void HF::common_init()
         nso_ += nsopi_[h];
         nmo_ += nmopi_[h]; //For now
     }
+
+    // Read in energy convergence threshold
+    energy_threshold_ = options_.get_double("E_CONVERGENCE");
+
+    // Read in density convergence threshold
+    density_threshold_ = options_.get_double("D_CONVERGENCE");;
+
+    density_fitted_ = false;
 
     Eold_    = 0.0;
     E_       = 0.0;
@@ -190,61 +191,11 @@ void HF::common_init()
             soccpi_[i] = 0;
     }
 
-
-
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
-
-    // Determine the number of electrons in the system
     charge_ = molecule_->molecular_charge();
-    nelectron_  = 0;
-    for (int i=0; i<molecule_->natom(); ++i)
-        nelectron_ += (int)molecule_->Z(i);
-    nelectron_ -= charge_;
-
-    // If the user told us the multiplicity, read it from the input
-    if(molecule_->multiplicity_specified()){
-        multiplicity_ = molecule_->multiplicity();
-    }else{
-        if(nelectron_%2){
-            multiplicity_ = 2;
-            molecule_->set_multiplicity(2);
-
-            // There are an odd number of electrons
-                outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
-                            "    Specify the multiplicity with the MULTP option in the\n"
-                            "    input if this is incorrect\n\n");
-
-        }else{
-            multiplicity_ = 1;
-            // There are an even number of electrons
-
-                outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
-                            "    Specify the multiplicity with the MULTP option in the\n"
-                            "    input if this is incorrect\n\n");
-
-        }
-    }
-
-    // Make sure that the multiplicity is reasonable
-    if(multiplicity_ - 1 > nelectron_){
-        char *str = new char[100];
-        sprintf(str, "There are not enough electrons for multiplicity = %d, \n"
-                     "please check your input and use the MULTP keyword", multiplicity_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
-    }
-    if(multiplicity_%2 == nelectron_%2){
-        char *str = new char[100];
-        sprintf(str, "A multiplicity of %d with %d electrons is impossible.\n"
-                     "Please check your input and use the MULTP and/or CHARGE keywords",
-                     multiplicity_, nelectron_);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete [] str;
-    }
-
-    nbeta_  = (nelectron_ - multiplicity_ + 1)/2;
-    nalpha_ = nbeta_ + multiplicity_ - 1;
+    multiplicity_ = molecule_->multiplicity();
+    nelectron_ = nbeta_ + nalpha_;
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -363,7 +314,6 @@ void HF::common_init()
 
     // Second-order convergence acceleration
     soscf_enabled_ = options_.get_bool("SOSCF");
-    soscf_e_start_ = options_.get_double("SOSCF_E_START");
     soscf_r_start_ = options_.get_double("SOSCF_R_START");
     soscf_min_iter_ = options_.get_int("SOSCF_MIN_ITER");
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
@@ -403,44 +353,42 @@ int HF::soscf_update()
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
     // => Rotate orbitals <= //
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
     Dimension tsize = x->colspi() + x->rowspi();
-    if (tsize != nmopi_){
-        throw PSIEXCEPTION("HF::rotate_orbitals: x dimension do not match nmo_ dimension.");
+    if ((reference != "ROHF") && (tsize != nmopi_)){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
+    }
+    tsize = x->colspi() + x->rowspi() - soccpi_;
+    if ((reference == "ROHF") && (tsize != nmopi_)){
+        throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
 
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
+        // Whatever the dimension are, we set top right/bot left
         size_t doccpih = (size_t)x->rowspi()[h];
-        if (!doccpih || !x->colspi()[h]) continue;
+        size_t virpih = (size_t)x->colspi()[h];
+        if (!doccpih || !virpih) continue;
         double** tp = tmp->pointer(h);
         double*  xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpih; i++){
-            for (size_t a=doccpih; a < nmopi_[h]; a++){
+            for (size_t a=(nmopi_[h] - virpih); a < nmopi_[h]; a++){
                 tp[a][i] = xp[target];
                 tp[i][a] = -1.0 * xp[target++];
             }
         }
+
     }
 
-    // Build exp(U) = 1 + U + 0.5 U U
     SharedMatrix U = tmp->clone();
-    for (size_t h=0; h<nirrep_; h++){
-        double** Up = U->pointer(h);
-        for (size_t i=0; i<U->rowspi()[h]; i++){
-            Up[i][i] += 1.0;
-        }
-    }
-    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
+    U->expm(4);
 
-    // We did not fully exponentiate the matrix, need to orthogonalize
-    // We need QR here, shmidt isnt cutting it
-    U->schmidt();
     tmp->gemm(false, false, 1.0, C, U, 0.0);
     C->copy(tmp);
 
@@ -454,7 +402,22 @@ void HF::integrals()
 
     // Build the JK from options, symmetric type
     try {
-        jk_ = JK::build_JK();
+        if(options_.get_str("SCF_TYPE") == "GTFOCK") {
+          #ifdef HAVE_JK_FACTORY
+            //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+            boost::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+            Process::environment.set_legacy_wavefunction(molecule_);
+            if(options_.get_bool("SOSCF"))
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
+            else
+                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+            Process::environment.set_legacy_molecule(other_legacy);
+          #else
+            throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+          #endif
+        } else {
+            jk_ = JK::build_JK(basisset_, options_);
+        }
     }
     catch(const BasisSetNotFound& e) {
         if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
@@ -464,7 +427,7 @@ void HF::integrals()
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_str("SCF", "SCF_TYPE", "PK");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK();
+            jk_ = JK::build_JK(basisset_, options_);
         }
         else
             throw; // rethrow the error
@@ -603,7 +566,7 @@ double HF::finalize_E()
 
         // Properties
         if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp());
+            boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
             oe->set_title("SCF");
             oe->add("DIPOLE");
 
@@ -659,8 +622,6 @@ double HF::finalize_E()
 
     // Orbitals are always saved, in case an MO guess is requested later
     save_orbitals();
-    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
-        save_sapt_info();
 
     finalize();
 
@@ -690,8 +651,6 @@ void HF::finalize()
     compute_fvpi();
     energy_ = E_;
 
-    dump_to_checkpoint();
-
     //Sphalf_.reset();
     X_.reset();
     T_.reset();
@@ -700,10 +659,12 @@ void HF::finalize()
     diag_F_temp_.reset();
     diag_C_temp_.reset();
 
-    // Close the chkpt
-    if(psio_->open_check(PSIF_CHKPT))
-        psio_->close(PSIF_CHKPT, 1);
 
+}
+
+void HF::semicanonicalize()
+{
+    throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");
 }
 
 void HF::find_occupation()
@@ -865,7 +826,7 @@ void HF::form_H()
         int nao = basisset_->nao();
 
         // Set up AO->SO transformation matrix (u)
-        MintsHelper helper(options_, 0);
+        MintsHelper helper(basisset_, options_, 0);
         SharedMatrix aotoso = helper.petite_list(true)->aotoso();
         int *col_offset = new int[nirrep_];
         col_offset[0] = 0;
@@ -1469,7 +1430,7 @@ void HF::save_orbitals()
                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
     Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     // Write Fock matrix to file 280 after removing symmetry
-    MintsHelper helper(options_, 0);
+    MintsHelper helper(basisset_, options_, 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
     SharedMatrix Fa(new Matrix(nbf,nbf));
     SharedMatrix Fb(new Matrix(nbf,nbf));
@@ -1513,7 +1474,7 @@ void HF::load_fock()
   int nbf = basisset_->nbf();
   psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
   // Read Fock matrix from file 280, applying current symmetry
-  MintsHelper helper(options_, 0);
+  MintsHelper helper(basisset_, options_, 0);
   SharedMatrix aotoso = helper.petite_list()->aotoso();
   SharedMatrix Fa(new Matrix("ALPHA FOCK C1",nbf,nbf));
   SharedMatrix Fb(new Matrix("BETA FOCK C1",nbf,nbf));
@@ -1728,88 +1689,6 @@ void HF::check_phases()
     }
 }
 
-void HF::dump_to_checkpoint()
-{
-    // avoid overwriting TOC entries if nmo has changed by writing
-    // an all-new checkpoint file every time!  (Will delete any
-    // post-HF stuff, hopefully don't need that in a future iteration)
-    // CDS 3/19/14
-    /*
-    if(!psio_->open_check(PSIF_CHKPT))
-        psio_->open(PSIF_CHKPT, PSIO_OPEN_OLD);
-    */
-    if(psio_->open_check(PSIF_CHKPT)) psio_->close(PSIF_CHKPT, 0);
-    psio_->open(PSIF_CHKPT, PSIO_OPEN_NEW);
-
-    chkpt_->wt_nirreps(nirrep_);
-    char **labels = molecule_->irrep_labels();
-    chkpt_->wt_irr_labs(labels);
-    for(int h = 0; h < nirrep_; ++h)
-        free(labels[h]);
-    free(labels);
-    chkpt_->wt_nmo(nmo_);
-    chkpt_->wt_nso(nso_);
-    chkpt_->wt_nao(basisset_->nao());
-    chkpt_->wt_ref(0);
-    chkpt_->wt_etot(E_);
-    chkpt_->wt_escf(E_);
-    chkpt_->wt_eref(E_);
-    chkpt_->wt_enuc(nuclearrep_);
-    chkpt_->wt_orbspi(nmopi_);
-    chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_openpi(soccpi_);
-    chkpt_->wt_phase_check(1); // Jet's phase check supposed to always work?
-    chkpt_->wt_sopi(nsopi_);
-    // Figure out total number of frozen docc/uocc orbitals
-    int nfzc = 0;
-    int nfzv = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        nfzc += frzcpi_[h];
-        nfzv += frzvpi_[h];
-    }
-    chkpt_->wt_nfzc(nfzc);
-    chkpt_->wt_nfzv(nfzv);
-    // These were computed by HF::finalize()
-    chkpt_->wt_frzcpi(frzcpi_);
-    chkpt_->wt_frzvpi(frzvpi_);
-
-    int m = 0;
-    for(int h = 0; h < nirrep_; ++h)
-        if(soccpi_[h]) ++m;
-    chkpt_->wt_iopen(m*(m+1)/2);
-
-    if(options_.get_str("REFERENCE") == "UHF" ||
-        options_.get_str("REFERENCE") == "CUHF"){
-
-        double* values = epsilon_a_->to_block_vector();
-        chkpt_->wt_alpha_evals(values);
-        delete[] values;
-        values = epsilon_b_->to_block_vector();
-        chkpt_->wt_beta_evals(values);
-        delete[] values;
-        double** vectors = Ca_->to_block_matrix();
-        chkpt_->wt_alpha_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-        vectors = Cb_->to_block_matrix();
-        chkpt_->wt_beta_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-    }else{
-        // All other reference type yield restricted orbitals
-        double* values = epsilon_a_->to_block_vector();
-        chkpt_->wt_evals(values);
-        delete[] values;
-        double** vectors = Ca_->to_block_matrix();
-        chkpt_->wt_scf(vectors);
-        delete[] vectors[0];
-        delete[] vectors;
-        double *ftmp = Fa_->to_lower_triangle();
-        chkpt_->wt_fock(ftmp);
-        delete[] ftmp;
-    }
-    psio_->close(PSIF_CHKPT, 1);
-}
 
 void HF::initialize()
 {
@@ -1829,7 +1708,7 @@ void HF::initialize()
 
     // Andy trick 2.0
     old_scf_type_ = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD")) {
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD" || old_scf_type_ == "PK" || old_scf_type_ == "OUT_OF_CORE")) {
          outfile->Printf( "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets
@@ -1840,7 +1719,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
         mints->one_electron_integrals();
 
         integrals();
@@ -1974,15 +1853,22 @@ void HF::iterations()
 #endif
         std::string status = "";
 
-        // We either do SOSCF or everything else
+        // We either do SOSCF or DIIS
         double ediff = fabs(E_ - Eold_);
-        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (ediff < soscf_e_start_) && (iteration_ > 1)){
+        bool did_soscf = false;
+        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)){
             compute_orbital_gradient(false);
+
             if (!test_convergency()){
                 int nmicro = soscf_update();
-                find_occupation();
-                status += "SOSCF, nmicro = ";
-                status += psi::to_string(nmicro);
+                diis_performed_ = false;
+                if (nmicro > 0){ // If zero the soscf call bounced for some reason
+                    did_soscf = true;
+                    find_occupation();
+                    status += "SOSCF, nmicro = ";
+                    status += psi::to_string(nmicro);
+                }
+
             }
             else{
                 // We need to ensure orthogonal orbitals and set epsilon
@@ -1990,9 +1876,11 @@ void HF::iterations()
                 timer_on("HF: Form C");
                 form_C();
                 timer_off("HF: Form C");
+                did_soscf = true; // Just to stop DIIS
             }
-        }
-        else{ // Normal convergence procedures if we do not do SOSCF
+        } // End SOSCF block
+
+        if (!did_soscf){ // Normal convergence procedures if we do not do SOSCF
 
             timer_on("HF: DIIS");
             bool add_to_diis_subspace = false;
@@ -2014,30 +1902,30 @@ void HF::iterations()
                 Fb_->print("outfile");
             }
 
-            // If we're too well converged, or damping wasn't enabled, do DIIS
-            damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
-
-            if(diis_performed_){
-                if(status != "") status += "/";
-                status += "DIIS";
-            }
-            if(MOM_performed_){
-                if(status != "") status += "/";
-                status += "MOM";
-            }
-            if(damping_performed_){
-                if(status != "") status += "/";
-                status += "DAMP";
-            }
-            if(frac_performed_){
-                if(status != "") status += "/";
-                status += "FRAC";
-            }
-
             timer_on("HF: Form C");
             form_C();
             timer_off("HF: Form C");
-        } // End SOSCF else
+        }
+
+        // If we're too well converged, or damping wasn't enabled, do DIIS
+        damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
+
+        if(diis_performed_){
+            if(status != "") status += "/";
+            status += "DIIS";
+        }
+        if(MOM_performed_){
+            if(status != "") status += "/";
+            status += "MOM";
+        }
+        if(damping_performed_){
+            if(status != "") status += "/";
+            status += "DAMP";
+        }
+        if(frac_performed_){
+            if(status != "") status += "/";
+            status += "FRAC";
+        }
 
         timer_on("HF: Form D");
         form_D();
@@ -2060,9 +1948,8 @@ void HF::iterations()
         df = (options_.get_str("SCF_TYPE") == "DF");
 
 
-            outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
-                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-
+        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
+                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
 
 
         // If a an excited MOM is requested but not started, don't stop yet

@@ -35,7 +35,7 @@ class CubicScalarGrid;
 class CubeProperties {
 
 protected:
-    
+
     // => Task specification <= //
 
     /// Global options object
@@ -43,7 +43,7 @@ protected:
 
     // => Key Member Data <= //
 
-    /// Orbital Basis Set 
+    /// Orbital Basis Set
     boost::shared_ptr<BasisSet> basisset_;
     /// AO-basis (C1) OPDM for alpha electrons
     boost::shared_ptr<Matrix> Da_;
@@ -70,20 +70,21 @@ protected:
 
 public:
     // => Constructors <= //
-    
+
     /// Construct a CubeProperties object from a Wavefunction (possibly with symmetry in wfn)
-    CubeProperties();
+    CubeProperties(SharedWavefunction wfn);
+
     /// Common Destructor
     virtual ~CubeProperties();
 
     // => High-Level Property Computers <= //
 
     /// Compute all relevant properties from options object specifications
-    void compute_properties();    
+    void compute_properties();
 
     // => Low-Level Property Computers (Do not use unless you are an advanced client code) <= //
-    
-    /// Obligatory title info 
+
+    /// Obligatory title info
     void print_header();
     /// Compute a density grid task (key.cube)
     void compute_density(boost::shared_ptr<Matrix> D, const std::string& key);

@@ -1,4 +1,6 @@
-#### UHF Oxygen energy, triplet
+#! Triple and Singlet Oxygen energy SOSCF
+
+#### UHF Triplet Oxygen energy, triplet
 molecule mol {
     0 3
     O
@@ -14,22 +16,43 @@ set {
     reference uhf
 }
 
-df_uhf_energy = energy('HF')
+df_uhf_energy = energy('SCF')
 df_triplet_energy = -149.6286212486618865
-compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Energy')
+compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Triplet Energy')
 
 # Non-DF case
 set {
     scf_type out_of_core
 }
 
-uhf_energy = energy('HF')
+uhf_energy = energy('SCF')
 triplet_energy = -149.6289923133230104
-compare_values(triplet_energy, uhf_energy, 6, 'UHF Energy')
+compare_values(triplet_energy, uhf_energy, 6, 'UHF Triplet Energy')
+
+
+# ROHF Triplet
+set {
+    reference rohf
+}
+
+df_rohf_energy = energy('SCF')
+df_triplet_energy = -149.60946112073864
+compare_values(df_triplet_energy, df_rohf_energy, 6, 'DF-ROHF Triplet Energy')
+
+# Non-DF case
+set {
+    scf_type out_of_core
+}
+
+rohf_energy = energy('SCF')
+triplet_energy = -149.60946112073862
+compare_values(triplet_energy, rohf_energy, 6, 'ROHF Triplet Energy')
 
 
 
-#### RHF Oxygen energy, singlet
+
+
+#### RHF Singlet Oxygen energy, singlet
 molecule mol {
     0 1
     O
@@ -42,15 +65,15 @@ set {
     reference rhf
 }
 
-df_rhf_energy = energy('HF')
+df_rhf_energy = energy('SCF')
 df_singlet_energy = -149.5439580186044850
-compare_values(df_singlet_energy, df_rhf_energy, 6, 'DF-RHF Energy')
+compare_values(df_singlet_energy, df_rhf_energy, 6, 'DF-RHF Singlet Energy')
 
 # Non-DF case
 set {
     scf_type out_of_core
 }
 
-uhf_energy = energy('HF')
+uhf_energy = energy('SCF')
 singlet_energy = -149.5442147477362198
-compare_values(singlet_energy, uhf_energy, 6, 'RHF Energy')
+compare_values(singlet_energy, uhf_energy, 6, 'RHF Singlet Energy')

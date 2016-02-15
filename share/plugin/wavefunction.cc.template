@@ -1,0 +1,106 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.hpp>
+
+using namespace boost;
+
+namespace psi{ namespace @plugin@ {
+
+class @Plugin@ : public Wavefunction
+{
+public:
+    @Plugin@(SharedWavefunction ref_wfn, Options& options);
+    virtual ~@Plugin@();
+
+    double compute_energy();
+
+private:
+    Dimension virtpi_;
+    void common_init();
+};
+
+@Plugin@::@Plugin@(SharedWavefunction ref_wfn, Options& options)
+    : Wavefunction(options)
+{
+    // Shallow copy ref_wfn data into this wavefunction
+    shallow_copy(ref_wfn);
+    common_init();
+}
+
+@Plugin@::~@Plugin@()
+{
+}
+
+void @Plugin@::common_init()
+{
+    // nsopi_, frzcpi_, etc are Dimension objects for symmetry orbitals
+    // These are copied from ref_wfn when we call for shallow_copy
+    virtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi_;
+
+    outfile->Printf("The wavefunction has the following dimensions:\n");
+    nsopi_.print();
+    frzcpi_.print();
+    doccpi_.print();
+    virtpi_.print();
+    frzvpi_.print();
+}
+
+double @Plugin@::compute_energy()
+{
+    /* Your code goes here. */
+
+    return 0.0;
+}
+
+extern "C"
+int read_options(std::string name, Options& options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed to the output file -*/
+        options.add_int("PRINT", 1);
+    }
+
+    return true;
+}
+
+extern "C"
+PsiReturnType @plugin@(Options& options)
+{
+
+    // Note that if this function was integrated into Psi4 we would not be using P::e.wavefunction
+    // Instead everything would be explicitly passed
+    SharedWavefunction wfn(new @Plugin@(Process::environment.wavefunction(), options));
+    wfn->compute_energy();
+
+    Process::environment.set_wavefunction(wfn);
+    return Success;
+}
+
+}} // End namespaces
+

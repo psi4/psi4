@@ -63,6 +63,7 @@ class Deriv
     SharedMatrix SCF_D_;
 
     int natom_;
+    bool tpdm_presorted_;
 
     std::vector<SharedMatrix> dH_;
     std::vector<SharedMatrix> dS_;

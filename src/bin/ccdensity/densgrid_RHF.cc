@@ -57,7 +57,7 @@ boost::shared_ptr<Molecule> molecule;
 boost::shared_ptr<BasisSet> basis;
 boost::shared_ptr<Wavefunction> wfn;
 
-void densgrid_RHF(Options& options)
+void densgrid_RHF(boost::shared_ptr<Wavefunction> wfn, Options& options)
 {
   double dens;
   double **D, **delta;
@@ -67,7 +67,6 @@ void densgrid_RHF(Options& options)
   int *order;
   double **scf_pitzer;
 
-  wfn = Process::environment.wavefunction();
   molecule = wfn->molecule();
   basis = wfn->basisset();
 
@@ -80,7 +79,7 @@ void densgrid_RHF(Options& options)
   delta = block_matrix(nmo, nmo); // Dirac delta function 
 
   // Set up AO->SO transformation matrix (u)
-  MintsHelper helper(options, 0);
+  MintsHelper helper(wfn->basisset(), options, 0);
   SharedMatrix aotoso = helper.petite_list(true)->aotoso();
   int *col_offset = new int[wfn->nirrep()];
   col_offset[0] = 0;

@@ -36,13 +36,11 @@ using namespace boost::python;
 
 namespace psi { namespace findif {
 
-PsiReturnType
-fd_1_0(Options &options, const boost::python::list& python_energies)
+SharedMatrix fd_1_0(boost::shared_ptr<Molecule> mol, Options &options, const boost::python::list& python_energies)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
 
-  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
 
@@ -139,22 +137,15 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
   // Print a gradient file
   if ( options.get_bool("GRADIENT_WRITE") ) {
     GradientWriter grad(mol, gradient_matrix);
-    std::string gradfile = get_writer_file_prefix() + ".grad";
+    std::string gradfile = get_writer_file_prefix(mol->name()) + ".grad";
     grad.write(gradfile);
     outfile->Printf("\tGradient written.\n");
   }
 
   SharedMatrix sgradient(gradient_matrix.clone());
-  if (Process::environment.wavefunction()) {
-    Process::environment.wavefunction()->set_gradient(sgradient);
-    outfile->Printf("\tGradient saved to wavefunction.\n");
-  } else {
-    Process::environment.set_gradient(sgradient);
-    outfile->Printf("\tGradient saved to environment.\n");
-  }
   outfile->Printf("\n-------------------------------------------------------------\n");
 
-  return Success;
+  return sgradient;
 }
 
 }}

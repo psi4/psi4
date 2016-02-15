@@ -149,9 +149,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PCM", false);
   /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
   options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-  /*- The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files,
-      while CONVENTIONAL results in no approximations being made. -*/
-  options.add_str("CC_TYPE", "CONVENTIONAL", "CONVENTIONAL DF");
   /*- The density fitting basis to use in coupled cluster computations. -*/
   options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
@@ -160,6 +157,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   molecule, options, percent blocks, etc. Access through ``cfour {...}``
   block. -*/
   options.add_str_i("LITERAL_CFOUR", "");
+  /*- When several modules can compute the same methods and the default
+  routing is not suitable, this targets a module. ``CCENERGY`` covers
+  CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
+  options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
+  /*- Algorithm to use for MP2 computation.
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+  options.add_str("MP2_TYPE", "DF", "DF CONV CD");
+  /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+  options.add_str("MP_TYPE", "CONV", "DF CONV CD");
+  /*- Algorithm to use for CEPA computation (e.g., CEPA(3) or ACPF or OCEPA(0)).
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+  options.add_str("CEPA_TYPE", "CONV", "DF CONV CD");
+  // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files, while CONV results in no approximations being made.
+  /*- Algorithm to use for CC computation (e.g., CCD, CCSD, CCSD(T)).
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+  options.add_str("CC_TYPE", "CONV", "DF CONV CD");
+  /*- Algorithm to use for CI computation (e.g., CID or CISD).
+  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+  options.add_str("CI_TYPE", "CONV", "CONV");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -307,7 +324,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     for two things: (1) determining the phase of the redundant half of the CI
     vector when the $M@@s = 0$ component is used (i.e., |detci__ms0| = ``TRUE``), and (2) making
     sure the guess vector has the desired value of $\langle S^2\rangle$
-    (if |detci__s_squared| is ``TRUE`` and |detci__icore| = ``1``). -*/
+    (if |detci__calc_s_squared| is ``TRUE`` and |detci__icore| = ``1``). -*/
     options.add_double("S", 0.0);
 
     /*- Do use the $M@@s = 0$ component of the state? Defaults to TRUE
@@ -1223,14 +1240,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_VIR", new ArrayType());
     /*- Do use second-order SCF convergence methods? -*/
     options.add_bool("SOSCF", false);
-    /*- When to start second-order SCF iterations based on energy congergence.-*/
-    options.add_double("SOSCF_E_START", 1.0E-2);
     /*- When to start second-order SCF iterations based on gradient RMS. -*/
     options.add_double("SOSCF_R_START", 1.0E-2);
     /*- Minimum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MIN_ITER", 1);
     /*- Maximum number of second-order microiterations to perform. -*/
-    options.add_int("SOSCF_MAX_ITER", 4);
+    options.add_int("SOSCF_MAX_ITER", 5);
     /*- Secord order convergence threshold. -*/
     options.add_double("SOSCF_CONV", 5.0E-3);
     /*- Do we print the SOSCF microiterations?. -*/
@@ -1244,7 +1259,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
         by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
-    /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify FOLLOW_STEP_SCALE_ value
+    /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify |scf__follow_step_scale| value
         if we end up in the same SCF solution. !expert -*/
     options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
     /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
@@ -1477,7 +1492,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK");
     /*- JK Independent options
      -*/
     options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
@@ -1525,35 +1540,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
-//  if (name == "MP2"|| options.read_globals()) {
-//      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
-//          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
-//          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
-//    /*- Wavefunction type !expert -*/
-//    options.add_str("WFN", "MP2", "MP2");
-//    /*- Reference wavefunction type -*/
-//    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-//    /*- Type of job being performed !expert -*/
-//    options.add_str("JOBTYPE", "SP");
-//    /*- Do compute the one particle density matrix, for properties? -*/
-//    options.add_bool("OPDM", false);
-//    /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
-//    options.add_bool("OPDM_RELAX", false);
-//    /*- The amount of cacheing of data to perform -*/
-//    options.add_int("CACHELEVEL", 2);
-//    /*- The criterion used to retain/release cached data -*/
-//    options.add_str("CACHETYPE", "LRU", "LRU LOW");
-//    /*- Do perform a spin component scaled MP2 computation? -*/
-//    options.add_bool("SCS", false);
-//    /*- Do perform a spin component scaled (N) MP2 computation? -*/
-//    options.add_bool("SCS_N", false);
-//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-//    /*- The scale factor used for same-spin pairs in SCS computations-*/
-//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-//    /*- What algorithm to use for the MP2 computation -*/
-//    options.add_str("MP2_TYPE", "DF", "DF CONV");
-//  }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This
@@ -1584,145 +1570,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // options.add("ACTIVE", new ArrayType());
   }
   // Options of this module not standardized since it's bound for deletion
-  if(name == "TRANSQT"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION The predecessor to Transqt2.  Currently used by the configuration interaction codes, but
-          it is being phased out. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "CCSD");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF");
-    /*- The amount of information to print to the output file.  1 prints
-     basic information, and higher levels print more information. A value
-     of 5 will print very large amounts of debugging information. -*/
-    options.add_int("PRINT_LVL", 1);
-    /*- The way of transformation, from ao basis to mo basis or vice versa -*/
-    options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
-    /*- Do specific arrangements for PSIMRCC? -*/
-    options.add_bool("PSIMRCC", false);
-    /*- Transformations for explicitly-correlated MP2 methods -*/
-    options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- One-electron parameters file -*/
-    options.add_int("OEI_FILE", PSIF_OEI);
-    /*- Alpha-spin one-electron parameters file -*/
-    options.add_int("OEI_A_FILE", PSIF_OEI);
-    /*- Beta-spin one-electron parameters file -*/
-    options.add_int("OEI_B_FILE", PSIF_OEI);
-    /*- Frozen-core file -*/
-    options.add_int("FZC_FILE", PSIF_OEI);
-    /*- Alpha-spin frozen-core file -*/
-    options.add_int("FZC_A_FILE", PSIF_OEI);
-    /*- Beta-spin frozen-core file -*/
-    options.add_int("FZC_B_FILE", PSIF_OEI);
-    /*- MO-basis sorted two-electron integrals file -*/
-    options.add_int("SORTED_TEI_FILE", PSIF_MO_TEI);
-    /*- MO-basis two-particle density matrix file -*/
-    options.add_int("TPDM_FILE", PSIF_MO_TPDM);
-    /*- SO basis overlap matrix file -*/
-    options.add_int("SO_S_FILE", PSIF_OEI);
-    /*- SO basis kinetic energy matrix file -*/
-    options.add_int("SO_T_FILE", PSIF_OEI);
-    /*- SO basis potential energy matrix file -*/
-    options.add_int("SO_V_FILE", PSIF_OEI);
-    /*- SO basis two-electron integrals file -*/
-    options.add_int("SO_TEI_FILE", PSIF_SO_TEI); // ?
-    /*- First temporary file -*/
-    options.add_int("FIRST_TMP_FILE", 150);
-    /*- MO-basis one-particle density matrix file -*/
-    options.add_int("OPDM_IN_FILE", PSIF_MO_OPDM);
-    /*- AO-basis one-particle density matrix file -*/
-    options.add_int("OPDM_OUT_FILE", PSIF_AO_OPDM);
-    /*- MO-basis MO-lagrangian file -*/
-    options.add_int("LAG_IN_FILE", PSIF_MO_LAG);
-    /*- SO-basis presort file -*/
-    options.add_int("PRESORT_FILE", PSIF_SO_PRESORT);
-    /*- Do keep presort file? -*/
-    options.add_bool("KEEP_PRESORT", false);
-    /*- Half-transformed integrals -*/
-    options.add_int("J_FILE", 91);
-    /*- Do keep half-transformed integrals? -*/
-    options.add_bool("KEEP_J", false);
-    /*- Output integrals file -*/
-    options.add_int("M_FILE", 0); // output integrals file; depends on direction
-    /*- MO basis (PQ|RS) type two-electron integrals file -*/
-    options.add_int("AA_M_FILE", PSIF_MO_AA_TEI);
-    /*- MO basis (pq|rs) type two-electron integrals file -*/
-    options.add_int("BB_M_FILE", PSIF_MO_BB_TEI);
-    /*- MO basis (PQ|rs) type two-electron integrals file -*/
-    options.add_int("AB_M_FILE", PSIF_MO_AB_TEI);
-    /*- Maximum buckets -*/
-    options.add_int("MAX_BUCKETS", 499);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Do delete AO integral files? -*/
-    options.add_bool("DELETE_AO", true);
-    /*- Do delete TPDM file? -*/
-    options.add_bool("DELETE_TPDM", true);
-    /*- Do print two-electron integrals? -*/
-    options.add_bool("PRINT_TE_INTEGRALS", false);
-    /*- Do print one-electron integrals? -*/
-    options.add_bool("PRINT_OE_INTEGRALS", false);
-    /*- Do print sorted one-electron integrals? -*/
-    options.add_bool("PRINT_SORTED_OE_INTS", false);
-    /*- Do print sorted two-electron integrals (TEIs)? -*/
-    options.add_bool("PRINT_SORTED_TE_INTS", false);
-    /*- Do print MOs? -*/
-    options.add_bool("PRINT_MOS", false);
-
-    /*- Do multiply the MO-lagrangian by 2.0? -*/
-    options.add_bool("LAGRAN_DOUBLE", false);
-    /*- Do divide the MO-lagrangian by 2.0? -*/
-    options.add_bool("LAGRAN_HALVE", false);
-    /*- Do transform all TEIs -*/
-    options.add_bool("DO_ALL_TEI", false);
-    /*- Do add reference contribution to TPDM? -*/
-    options.add_bool("TPDM_ADD_REF", false);
-    /*- Do delete restricted doubly occupieds? -*/
-    options.add_bool("DELETE_RESTR_DOCC", true);
-    /*- Do print reordered MOs? -*/
-    options.add_bool("PRINT_REORDER", false);
-    /*- Do use Pitzer ordering? -*/
-    options.add_bool("PITZER", false);
-    /*- Do reorder MOs? -*/
-    options.add_bool("REORDER", false);
-    /*- Do check MO orthogonality condition? -*/
-    options.add_bool("CHECK_C_ORTHONORM", false);
-    /*- Do form quasi RHF (QRHF) orbitals? -*/
-    options.add_bool("QRHF", false);
-    /*- Do form improved virtual orbitals (IVO)? -*/
-    options.add_bool("IVO", false);
-    /*- Numbering of MOs for reordering requests?  -*/
-    options.add("MOORDER", new ArrayType());
-
-    // /*- An array giving the number of active orbitals (occupied plus
-    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    // using RAS keywords) -*/
-    // options.add("ACTIVE", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
-    // options.add("RAS1", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
-    // options.add("RAS2", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
-    // options.add("RAS3", new ArrayType());
-
-    // /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
-    // options.add("RAS4", new ArrayType());
-
-    // /*- An array giving the number of restricted doubly-occupied orbitals per
-    // irrep (not excited in CI wavefunctions, but orbitals can be optimized
-    // in MCSCF) -*/
-    // options.add("RESTRICTED_DOCC", new ArrayType());
-
-    // /*- An array giving the number of restricted unoccupied orbitals per
-    // irrep (not occupied in CI wavefunctions, but orbitals can be optimized
-    // in MCSCF) -*/
-    // options.add("RESTRICTED_UOCC", new ArrayType());
-
-  }
   if(name == "CCTRANSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Transforms and sorts integrals for CC codes. Called before (non-density-fitted) MP2 and coupled cluster computations. -*/
     /*- Wavefunction type !expert -*/
@@ -1735,8 +1582,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DELETE_TEI", true);
     /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL", 2);
-    /*- Convert ROHF MOs to semicanonical MOs -*/
-    options.add_bool("SEMICANONICAL", true);
+    /*- Force conversion of ROHF MOs to semicanonical MOs to run UHF-based energies -*/
+    options.add_bool("SEMICANONICAL", false);
   }
   if(name == "CCSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Sorts integrals for efficiency. Called before (non density-fitted) MP2 and
@@ -1918,15 +1765,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use zeta?  -*/
     options.add_bool("ZETA",false);
   }
-//  if(name == "CLAG"|| options.read_globals()) {
-//     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
-//    /*- Wavefunction type !expert -*/
-//    options.add_str("WFN","NONE");
-//    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
-//    options.add_bool("CAS_FILES_WRITE",0);
-//    /*- Root to get OPDM -*/
-//    options.add_int("FOLLOW_ROOT",1);
-//  }
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
@@ -2348,108 +2186,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-//  if(name == "CIS"|| options.read_globals()) {
-//    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
-//        Psi4. -*/
-//
-//    /*- Wavefunction type !expert -*/
-//    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
-//    /*- Reference wavefunction type -*/
-//    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-//    /*- Cutoff value for printing local amplitudes -*/
-//    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
-//    /*- Maximum number of iterations -*/
-//    options.add_int("MAXITER", 500);
-//    /*- Convergence criterion for CIS wavefunction. -*/
-//    options.add_double("R_CONVERGENCE", 1e-7);
-//    /*- The number of electronic states to computed, per irreducible
-//    representation-*/
-//    options.add("ROOTS_PER_IRREP", new ArrayType());
-//    /*- Diagonalization method for the CI matrix -*/
-//    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
-//    /*- Do simulate the effects of local correlation techniques? -*/
-//    options.add_bool("LOCAL", false);
-//    /*- Value (always between one and zero) for the Broughton-Pulay completeness
-//    check used to contruct orbital domains for local-CC calculations. See
-//    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
-//    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
-//    options.add_double("LOCAL_CUTOFF", 0.02);
-//    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
-//    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
-//    developed by G.E. Scuseria and co-workers. -*/
-//    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
-//    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
-//    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
-//    the same manner as strong pairs. A value of MP2 uses second-order perturbation
-//    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
-//    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
-//    /*- -*/
-//    options.add_int("LOCAL_GHOST", -1);
-//    /*- -*/
-//    options.add("DOMAINS", new ArrayType());
-//    /*- Do print the domains? -*/
-//    options.add_bool("DOMAIN_PRINT", 0);
-//  }
-//  if(name == "LMP2"|| options.read_globals()) {
-//    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
-//
-//    /*- Wavefunction type !expert -*/
-//    options.add_str("WFN", "LMP2");
-//    /*- Reference wavefunction type -*/
-//    options.add_str("REFERENCE", "RHF", "RHF");
-//    /*- Auxiliary basis set for MP2 density fitting calculations -*/
-//    options.add_str("DF_BASIS_MP2", "");
-//    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
-//    if(options.get_str("DF_BASIS_MP2") != "")
-//      options.add_bool("DF_LMP2", true);
-//    else
-//      options.add_bool("DF_LMP2", false);
-//    /*- Maximum number of iterations -*/
-//    options.add_int("MAXITER", 50);
-//    /*- Convergence criterion for energy (change). See Table
-//    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
-//    criteria for different calculation types. -*/
-//    options.add_double("E_CONVERGENCE", 1e-6);
-//    /*- Convergence criterion for T2 amplitudes (RMS change). -*/
-//    options.add_double("R_CONVERGENCE", 1e-5);
-//    /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
-//    options.add_double("FOCK_TOLERANCE", 1e-2);
-//    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-//    options.add_bool("DIIS", 1);
-//    /*- Do neglect distant pairs? -*/
-//    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
-//    /*-  Distant pair cutoff -*/
-//    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
-//    /*- Iteration at which to start DIIS extrapolation -*/
-//    options.add_int("DIIS_START_ITER", 3);
-//    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-//    options.add_int("DIIS_MAX_VECS", 5);
-//    /*- Localization cutoff -*/
-//    options.add_double("LOCAL_CUTOFF", 0.02);
-//    /*- The amount of memory available (in Mb) -*/
-//    options.add_int("MEMORY", 2000);
-//    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
-//    options.add_bool("SCS", false);
-//    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
-//    options.add_bool("SCS_N", false);
-//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-//    /*- The scale factor used for same-spin pairs in SCS computations-*/
-//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-//    /*- Do screen integrals? -*/
-//    options.add_bool("SCREEN_INTS", false);
-//    /*- Minimum absolute value below which integrals are neglected. -*/
-//    options.add_double("INTS_TOLERANCE", 1e-7);
-//    /*- Do exit after printing the domains? -*/
-//    options.add_bool("DOMAIN_PRINT_EXIT", 0);
-//   }
   if(name == "DFMP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
 
     /*- A helpful option, used only in debugging the MADNESS version !expert-*/
     options.add_int("MADMP2_SLEEP", 0);
-    /*- Algorithm to use for the MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
     /*- Auxiliary basis set for MP2 density fitting computations.
@@ -2780,8 +2521,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "OCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
 
-    /*- Algorithm to use for non-OO MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -3150,7 +2889,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (in Cotton order) so a user can specify the number of retained
       natural orbitals rather than determining them with |fnocc__occ_tolerance|.
       This keyword overrides |fnocc__occ_tolerance| and
-      |fnocc__occ_fraction|. -*/
+      |fnocc__occ_percentage|. -*/
       options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
@@ -3211,11 +2950,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Pressure in Pascal for thermodynamic analysis. -*/
       options.add_double("P", 101325);
   }
-    if (name == "LMP2"|| options.read_globals()) {
-        /*- The localization scheme to use. -*/
-        options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
-        options.add_int("MAXITER", 50);
-    }
   if (name == "CFOUR"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to CFOUR program written by Stanton and Gauss.
       Keyword descriptions taken from the
@@ -4841,6 +4575,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
         options.add_bool("DMRG_LOC_RANDOM", true);
 
+    }
+    if (name == "DERIV"|| options.read_globals()) {
+        options.add_bool("DERIV_TPDM_PRESORTED", false);
     }
 
   return true;

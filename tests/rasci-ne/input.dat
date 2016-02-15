@@ -38,7 +38,7 @@ set detci {
   nat_orbs true
 }
 
-thisenergy = energy('detci')
+thisenergy, this_wfn = energy('detci', return_wfn=True)
 
 compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
@@ -81,7 +81,7 @@ set detci {
   r4s true
 }
 
-thisenergy = energy('detci',bypass_scf='True')
+thisenergy = energy('detci', ref_wfn=this_wfn)
 
 compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("current REFerence energy"),     9, "SCF energy") #TEST

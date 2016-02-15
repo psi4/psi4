@@ -20,10 +20,11 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
-compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Energy (a.u.)");               #TEST
+compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Energy (a.u.)");               #TEST
 

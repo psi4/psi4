@@ -22,7 +22,7 @@ set {
     d_convergence         8
 }
 
-gradient('bp86-d')
+grad = gradient('bp86-d')
 clean()
 
 
@@ -33,4 +33,4 @@ set {
     dft_spherical_points 302
 }
 
-gradient('bp86-d')
+grad = gradient('bp86-d')

@@ -30,33 +30,30 @@
 #include <libpsio/psio.h>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void local_filter_T2(dpdbuf4 *T2);
-
-void init_amps(void)
+void CCEnergyWavefunction::init_amps(void)
 {
   dpdfile2 tIA, tia, fIA, fia, dIA, dia;
   dpdbuf4 tIJAB, tijab, tIjAb, D, dIJAB, dijab, dIjAb;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    if(!params.restart || !psio_tocscan(PSIF_CC_OEI, "tIA"))
+    if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA"))
       global_dpd_->file2_scm(&tIA, 0);
     else outfile->Printf( "\tUsing old T1 amplitudes.\n");
     global_dpd_->file2_close(&tIA);
 
-    if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb")) {
+    if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb")) {
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb");
       global_dpd_->buf4_close(&D);
 
       global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-      if(params.local) {
+      if(params_.local) {
 	local_filter_T2(&tIjAb);
       }
       else {
@@ -68,8 +65,8 @@ void init_amps(void)
     }
     else outfile->Printf( "\tUsing old T2 amplitudes.\n\n");
   }
-  else if(params.ref == 1) { /*** ROHF ***/
-    if(!params.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
+  else if(params_.ref == 1) { /*** ROHF ***/
+    if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
        !psio_tocscan(PSIF_CC_OEI, "tia")) {
 
       global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
@@ -100,7 +97,7 @@ void init_amps(void)
     }
     else outfile->Printf( "\tUsing old T1 amplitudes.\n");
 
-    if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") || 
+    if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
 
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
@@ -133,9 +130,9 @@ void init_amps(void)
     else 
       outfile->Printf( "\tUsing old T2 amplitudes.\n");
   }
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
-    if(!params.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
+    if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
        !psio_tocscan(PSIF_CC_OEI, "tia")) {
 
       global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
@@ -166,7 +163,7 @@ void init_amps(void)
     }
     else outfile->Printf( "\tUsing old T1 amplitudes.\n");
 
-    if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") || 
+    if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
 
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");

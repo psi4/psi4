@@ -193,7 +193,7 @@ void CIWavefunction::get_parameters(Options &options)
     Parameters_->energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
-  Parameters_->multp = Process::environment.molecule()->multiplicity();
+  Parameters_->multp = molecule_->multiplicity();
   Parameters_->S = (((double) Parameters_->multp) - 1.0) / 2.0;
   if (options["S"].has_changed())
     Parameters_->S = options.get_double("S");

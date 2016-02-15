@@ -94,10 +94,10 @@ if (reference_ == "RESTRICTED") {
 	}
 	
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
-        Escf=reference_wavefunction_->reference_energy();
+    Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
 
@@ -367,7 +367,7 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
-        // read orbital coefficients from chkpt
+        // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 	
@@ -463,10 +463,10 @@ else if (reference_ == "UNRESTRICTED") {
 
 
 	// Read in nuclear repulsion energy
-	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
-        Escf=reference_wavefunction_->reference_energy();
+    Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
 
@@ -731,7 +731,7 @@ else if (reference_ == "UNRESTRICTED") {
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
-        // read orbital coefficients from chkpt
+        // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));

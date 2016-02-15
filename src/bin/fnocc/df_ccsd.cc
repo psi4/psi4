@@ -50,10 +50,9 @@ void DefineLinearTasks();
 void DefineQuadraticTasks();
 
 // coupled cluster constructor
-DFCoupledCluster::DFCoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        CoupledCluster(reference_wavefunction,options)
+DFCoupledCluster::DFCoupledCluster(SharedWavefunction ref_wfn, Options &options):
+        CoupledCluster(ref_wfn, options)
 {
-    reference_wavefunction_ = reference_wavefunction;
     common_init();
 }
 
@@ -690,7 +689,7 @@ void DFCoupledCluster::AllocateMemory() {
   Ca = reference_wavefunction_->Ca()->pointer();
 
   // one-electron integrals
-  boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+  boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
   H = mints->so_kinetic();
   H->add(mints->so_potential());
 

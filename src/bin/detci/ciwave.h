@@ -70,7 +70,11 @@ public:
     CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CIWavefunction();
 
+
     double compute_energy();
+
+    /// Simple accessors
+    size_t ndet();
 
     /**!
      * Similar to wavefunction.Ca_subset(); however, this version knows about all of the CI
@@ -138,6 +142,29 @@ public:
     SharedCIVector new_civector(int maxnvect, int filenum, bool use_disk=true,
                                 bool buf_init=true);
 
+    /**
+     * Builds a CIVector that is the diagonal of the Hamiltonian
+     * @param hd_type The type of diagonal to be taken, if -1 defaults to current parameters
+     *                 0 = HD_EXACT
+     *                 1 = HD_KAVE
+     *                 2 = ORB_ENER
+     *                 3 = EVANGELISTI
+     *                 4 = LEININGER
+     *                 5 = Z_HD_KAVE
+     * @return The Hamiltonian diagonal
+     */
+    SharedCIVector Hd_vector(int hd_type = -1);
+
+    /**
+     * Compute a sigma vector
+     * @param C    Input vector
+     * @param S    Output vector
+     * @param cvec Which vector number to use for the C vec
+     * @param svec Which vector number to use for the S vec
+     */
+    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
+
+
     SharedMatrix orbital_ci_block(int fi, int fj);
     // Compute functions
     void compute_mcscf();
@@ -160,7 +187,7 @@ public:
      of 1GiB in size.
      * @ return CI hamiltonian
      **/
-    SharedMatrix hamiltonian();
+    SharedMatrix hamiltonian(size_t hsize = 0);
 
 
 private:

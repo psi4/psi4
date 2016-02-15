@@ -31,12 +31,11 @@
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-double diagnostic(void)
+double CCEnergyWavefunction::diagnostic(void)
 {
   int h, nirreps, Gi, Ga;
   int i, a, I, A, row, col;
@@ -48,14 +47,14 @@ double diagnostic(void)
   double t1diag, t1diag_a, t1diag_b;
   dpdfile2 T1A, T1B;
 
-  nirreps = moinfo.nirreps;
-  clsdpi = moinfo.clsdpi; 
-  uoccpi = moinfo.uoccpi;
-  openpi = moinfo.openpi;
+  nirreps = moinfo_.nirreps;
+  clsdpi = moinfo_.clsdpi;
+  uoccpi = moinfo_.uoccpi;
+  openpi = moinfo_.openpi;
 
-  if(params.ref != 2) {
-    occpi = moinfo.occpi; virtpi = moinfo.virtpi;
-    occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
+  if(params_.ref != 2) {
+    occpi = moinfo_.occpi; virtpi = moinfo_.virtpi;
+    occ_sym = moinfo_.occ_sym; vir_sym = moinfo_.vir_sym;
   }
 
   /* Compute the number of electrons */
@@ -65,7 +64,7 @@ double diagnostic(void)
   }
   num_elec = num_elec_a + num_elec_b;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
 
     global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     t1diag = global_dpd_->file2_dot_self(&T1A);
@@ -75,7 +74,7 @@ double diagnostic(void)
     t1diag = sqrt(t1diag);
 
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_mat_init(&T1A);
@@ -122,7 +121,7 @@ double diagnostic(void)
     global_dpd_->file2_close(&T1B);
 
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_mat_init(&T1A);

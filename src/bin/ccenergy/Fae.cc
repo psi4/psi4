@@ -30,12 +30,12 @@
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "libciomr/libciomr.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void Fae_build(void)
+void CCEnergyWavefunction::Fae_build(void)
 {
   int h,a,e,nirreps;
   int ma,fe,ef,m,f,M,A,Gm,Ga,Ge,Gf,Gma,nrows,ncols;
@@ -48,14 +48,14 @@ void Fae_build(void)
   dpdbuf4 F_anti, F, D_anti, D;
   dpdbuf4 tautIJAB, tautijab, tautIjAb, taut;
 
-  nirreps = moinfo.nirreps;
+  nirreps = moinfo_.nirreps;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
     global_dpd_->file2_copy(&fAB, PSIF_CC_OEI, "FAE");
     global_dpd_->file2_close(&fAB);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
     global_dpd_->file2_copy(&fAB, PSIF_CC_OEI, "FAE");
     global_dpd_->file2_close(&fAB);
@@ -64,7 +64,7 @@ void Fae_build(void)
     global_dpd_->file2_copy(&fab, PSIF_CC_OEI, "Fae");
     global_dpd_->file2_close(&fab);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
     global_dpd_->file2_copy(&fAB, PSIF_CC_OEI, "FAE");
     global_dpd_->file2_close(&fAB);
@@ -74,7 +74,7 @@ void Fae_build(void)
     global_dpd_->file2_close(&fab);
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
   
     global_dpd_->file2_mat_init(&FAE);
@@ -91,7 +91,7 @@ void Fae_build(void)
     global_dpd_->file2_mat_close(&FAE);
     global_dpd_->file2_close(&FAE);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->file2_init(&Fae, PSIF_CC_OEI, 0, 1, 1, "Fae");
   
@@ -100,7 +100,7 @@ void Fae_build(void)
     global_dpd_->file2_mat_init(&Fae);
     global_dpd_->file2_mat_rd(&Fae);
   
-    for(h=0; h < moinfo.nirreps; h++) {
+    for(h=0; h < moinfo_.nirreps; h++) {
       
       for(a=0; a < FAE.params->rowtot[h]; a++) 
 	for(e=0; e < FAE.params->coltot[h]; e++) 
@@ -120,7 +120,7 @@ void Fae_build(void)
     global_dpd_->file2_close(&FAE);
     global_dpd_->file2_close(&Fae);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->file2_init(&Fae, PSIF_CC_OEI, 0, 3, 3, "Fae");
   
@@ -129,7 +129,7 @@ void Fae_build(void)
     global_dpd_->file2_mat_init(&Fae);
     global_dpd_->file2_mat_rd(&Fae);
   
-    for(h=0; h < moinfo.nirreps; h++) {
+    for(h=0; h < moinfo_.nirreps; h++) {
       
       for(a=0; a < FAE.params->rowtot[h]; a++) 
 	for(e=0; e < FAE.params->coltot[h]; e++) 
@@ -150,7 +150,7 @@ void Fae_build(void)
     global_dpd_->file2_close(&Fae);
   }
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -205,8 +205,8 @@ void Fae_build(void)
 	  X[fe] = 2.0 * F.matrix[Gma][0][fe] - F.matrix[Gma][0][ef];
 	}
 	
-	nrows = moinfo.virtpi[Gf];
-	ncols = moinfo.virtpi[Ge];
+    nrows = moinfo_.virtpi[Gf];
+    ncols = moinfo_.virtpi[Ge];
 	if(nrows && ncols)
 	  C_DGEMV('t',nrows,ncols,1.0,&X[F.col_offset[Gma][Gf]],ncols,
 		  tIA.matrix[Gm][M],1,1.0,
@@ -245,7 +245,7 @@ void Fae_build(void)
   
     global_dpd_->file2_close(&FAEt);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->file2_init(&Fae, PSIF_CC_OEI, 0, 1, 1, "Fae");
 
@@ -324,7 +324,7 @@ void Fae_build(void)
     global_dpd_->file2_close(&FAEt);
     global_dpd_->file2_close(&Faet); 
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     global_dpd_->file2_init(&Fae, PSIF_CC_OEI, 0, 3, 3, "Fae");

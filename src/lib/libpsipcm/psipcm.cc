@@ -33,9 +33,8 @@ extern "C" void host_writer(const char * message, size_t /* message_length */)
 
 namespace psi {
 
-void collect_atoms(double charges[], double centers[])
+void collect_atoms(boost::shared_ptr<Molecule> molecule, double charges[], double centers[])
 {
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int nat = molecule->natom();
     for(int i = 0; i < nat; ++i) {
         charges[i] = molecule->fZ(i);
@@ -102,7 +101,7 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost
 
   potential_int_ = static_cast<PCMPotentialInt*>(integrals->pcm_potentialint());
 
-  boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
+  boost::shared_ptr<Molecule> molecule = basisset->molecule();
 
   /* PCMSolver needs to know who has to parse the input.
    * We should have something like this here:
@@ -113,7 +112,7 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost
    */
   double * charges = new double[molecule->natom()];
   double * coordinates = new double[3*molecule->natom()];
-  collect_atoms(charges, coordinates);
+  collect_atoms(molecule, charges, coordinates);
   int symmetry_info[4] = {0, 0, 0, 0};
   int PSI4_provides_input = false;
   PCMInput host_input;

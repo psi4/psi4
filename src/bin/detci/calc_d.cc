@@ -55,12 +55,13 @@ double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
    for (i=0; i<size; i++) {
       tval = lambda - Hd[i];
       if (precon == PRECON_LANCZOS) tval = 1.0;
-      if (fabs(tval) > HD_MIN) { 
+
+      if (fabs(tval) > HD_MIN){ 
          tval2 = (target[i] /= tval);
          norm += tval2 * tval2;
-         }
-      else target[i] = 0.0;
       }
+      else target[i] = 0.0;
+   }
 
    return(norm);
 }

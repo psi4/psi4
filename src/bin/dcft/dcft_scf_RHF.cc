@@ -28,7 +28,6 @@
 #include <libqt/qt.h>
 #include <libmints/matrix.h>
 #include <libmints/wavefunction.h>
-#include <libchkpt/chkpt.hpp>
 #include <libtrans/integraltransform.h>
 #include "defines.h"
 
@@ -61,35 +60,15 @@ DCFTSolver::scf_guess_RHF()
 
     std::string guess = options_.get_str("DCFT_GUESS"); // The default DCFT_GUESS is mp2
 
-    if(guess != "DCFT"){
-        epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-        epsilon_b_->copy(epsilon_a_.get());
-        Ca_->copy(reference_wavefunction_->Ca());
-        Cb_->copy(Ca_);
-        moFa_->copy(reference_wavefunction_->Fa());
-        moFa_->transform(Ca_);
-        moFb_->copy(moFa_);
-        update_scf_density_RHF();
-    }
-    else {
-        outfile->Printf( "\n\n\tReading orbitals from previous job");
-        // Read the orbitals from the checkpoint file
-        double **aEvecs = chkpt_->rd_alpha_scf();
-        Ca_->set(aEvecs);
-        free_block(aEvecs);
-        Cb_->copy(Ca_);
+    epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+    epsilon_b_->copy(epsilon_a_.get());
+    Ca_->copy(reference_wavefunction_->Ca());
+    Cb_->copy(Ca_);
+    moFa_->copy(reference_wavefunction_->Fa());
+    moFa_->transform(Ca_);
+    moFb_->copy(moFa_);
+    update_scf_density_RHF();
 
-        Fa_ = SharedMatrix(new Matrix("Alpha SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
-        Fb_ = SharedMatrix(new Matrix("Beta SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
-        Fa_->copy(so_h_);
-        Fb_->copy(so_h_);
-        moFa_->copy(so_h_);
-        moFb_->copy(so_h_);
-        moFa_->transform(Ca_);
-        moFb_->transform(Cb_);
-        update_scf_density_RHF();
-
-    }
     dcft_timer_off("DCFTSolver::rhf_guess");
 
 }
@@ -526,5 +505,37 @@ DCFTSolver::compute_scf_energy_RHF()
     dcft_timer_off("DCFTSolver::compute_scf_energy");
 }
 
+double
+DCFTSolver::compute_scf_error_vector_RHF()
+{
+    dcft_timer_on("DCFTSolver::compute_scf_error_vector");
+
+    size_t nElements = 0;
+    double sumOfSquares = 0.0;
+    SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
+    SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
+    // form FDS
+    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
+    // form SDF
+    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    scf_error_a_->subtract(tmp2);
+    // Orthogonalize
+    scf_error_a_->transform(s_half_inv_);
+    scf_error_b_->copy(scf_error_a_);
+
+    for(int h = 0; h < nirrep_; ++h){
+        for(int p = 0; p < nsopi_[h]; ++p){
+            for(int q = 0; q < nsopi_[h]; ++q){
+                nElements += 2;
+                sumOfSquares += pow(scf_error_a_->get(h, p, q), 2.0);
+                sumOfSquares += pow(scf_error_b_->get(h, p, q), 2.0);
+            }
+        }
+    }
+    dcft_timer_off("DCFTSolver::compute_scf_error_vector");
+    return sqrt(sumOfSquares / nElements);
+}
 
 }} // Namespace

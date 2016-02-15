@@ -337,7 +337,7 @@ SharedMatrix DFTensor::Qmo()
 }
 SharedMatrix DFTensor::Imo()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     return mints->mo_eri(C_,C_);
 }
 SharedMatrix DFTensor::Idfmo()

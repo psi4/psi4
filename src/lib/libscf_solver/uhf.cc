@@ -29,7 +29,6 @@
 
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
@@ -50,12 +49,8 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-UHF::UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) : HF(options, psio, chkpt)
-{
-    common_init();
-}
-
-UHF::UHF(Options& options, boost::shared_ptr<PSIO> psio) : HF(options, psio)
+UHF::UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, options, psio)
 {
     common_init();
 }
@@ -90,6 +85,8 @@ void UHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
 
+    same_a_b_dens_ = false;
+    same_a_b_orbs_ = false;
 }
 
 void UHF::finalize()
@@ -294,13 +291,13 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 
             // ret_ia = F_ij X_ja
             C_DGEMM('N','N',nalphapi_[h],virpi_a[h],nalphapi_[h],1.0,
-                    IFp[0],nsopi_[h],
+                    IFp[0],nmopi_[h],
                     xp[0],virpi_a[h],0.0,retp[0],virpi_a[h]);
 
             // ret_ia -= X_ib F_ba
             C_DGEMM('N','N',nalphapi_[h],virpi_a[h],virpi_a[h],-1.0,
                     xp[0],virpi_a[h],
-                    (IFp[nalphapi_[h]]+nalphapi_[h]),nsopi_[h],1.0,retp[0],virpi_a[h]);
+                    (IFp[nalphapi_[h]]+nalphapi_[h]),nmopi_[h],1.0,retp[0],virpi_a[h]);
 
         }
         // Beta
@@ -311,13 +308,13 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 
             // ret_ia = F_ij X_ja
             C_DGEMM('N','N',nbetapi_[h],virpi_b[h],nbetapi_[h],1.0,
-                    IFp[0],nsopi_[h],
+                    IFp[0],nmopi_[h],
                     xp[0],virpi_b[h],0.0,retp[0],virpi_b[h]);
 
             // ret_ia -= X_ib F_ba
             C_DGEMM('N','N',nbetapi_[h],virpi_b[h],virpi_b[h],-1.0,
                     xp[0],virpi_b[h],
-                    (IFp[nbetapi_[h]]+nbetapi_[h]),nsopi_[h],1.0,retp[0],virpi_b[h]);
+                    (IFp[nbetapi_[h]]+nbetapi_[h]),nmopi_[h],1.0,retp[0],virpi_b[h]);
 
         }
     }
@@ -372,17 +369,6 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 }
 int UHF::soscf_update(void)
 {
-    if (soscf_print_){
-        outfile->Printf("\n");
-        outfile->Printf("    ==> SOUHF Iterations <==\n");
-        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
-    }
-
     time_t start, stop;
     start = time(NULL);
 
@@ -438,6 +424,25 @@ int UHF::soscf_update(void)
         }
     }
 
+    // Make sure the MO gradient is reasonably small
+    if ((Gradient_a->absmax() > 0.3) || (Gradient_b->absmax() > 0.3)){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
+
+    if (soscf_print_){
+        outfile->Printf("\n");
+        outfile->Printf("    ==> SOUHF Iterations <==\n");
+        outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
+        outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
+        outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
+        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
+        outfile->Printf("    ---------------------------------------\n");
+    }
+
     // => Initial CG guess <= //
     SharedMatrix x_a = Gradient_a->clone();
     x_a->apply_denominator(Precon_a);
@@ -489,6 +494,7 @@ int UHF::soscf_update(void)
         double rzpre = r_a->vector_dot(z_a) + r_b->vector_dot(z_b);
         double alpha = rzpre / (p_a->vector_dot(Ap_a) + p_b->vector_dot(Ap_b));
         if (std::isnan(alpha)){
+            outfile->Printf("UHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
             alpha = 0.0;
         }
 
@@ -579,7 +585,7 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(shared_from_this(), options_));
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
     outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");

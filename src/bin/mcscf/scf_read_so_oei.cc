@@ -27,7 +27,6 @@
 #include <iostream>
 
 #include <psifiles.h>
-#include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libiwl/iwl.hpp>
