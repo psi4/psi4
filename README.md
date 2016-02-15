@@ -29,7 +29,7 @@ Psi4: Open-Source Quantum Chemistry
 
 * **YouTube Channel** https://www.youtube.com/psitutorials
 
-* **Travis CI build status** [![Build Status](https://travis-ci.org/psi4/psi4public.svg?branch=master)](https://travis-ci.org/psi4/psi4public)
+* **Travis CI build status** [![Build Status](https://travis-ci.org/psi4/psi4.svg?branch=master)](https://travis-ci.org/psi4/psi4)
 
 Psi4 is an open-source suite of ab initio quantum chemistry programs
 designed for efficient, high-accuracy simulations of a variety of
