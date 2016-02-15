@@ -141,18 +141,25 @@ recommend to scale all :math:`S^{2}` approximated exchange terms by the ratio:
 
 .. math:: p_{EX}(\alpha) = \left( \frac{E_{exch}^{(10)}}{E_{exch}^{(10)}(S^{2})} \right)^{\alpha}
 
-where the recommended exponent is :math:`\alpha = 1`. SAPT energies with and without
-exchange scaling are reported in the output file.
+where the recommended exponent is :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
+simply set the keyword ``exch_scale_alpha true``. Alternatively, another value for :math:`\alpha`
+can be specified by setting ``exch_scale_alpha`` to a value. For example, ::
 
-In addition, the sSAPT0 method uses an empirically adjusted exponent :math:`\alpha = 3.0`, 
-yielding improved results over regular SAPT0 in the jun-cc-pVDZ basis set (see [Parker:2014:094106]_).
+  set exch_scale_alpha 1.0
+
+will set :math:`\alpha = 1.0` and scale exchange energies with :math:`p_{EX}(1.0)`.
+
+Instead of this straightforward scaling, SAPT0 energies benefit from a slightly modified 
+recipe that involves an empirically adjusted exponent :math:`\alpha = 3.0`. 
+To distinguish it from its unscaled counterpart, this energy is denoted sSAPT0 (see [Parker:2014:094106]_).
 
 .. math:: E_{sSAPT0} = E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
    p_{EX}(3.0) E_{exch-ind,resp}^{(20)} + E_{disp}^{(20)} + p_{EX}(3.0) E_{exch-disp}^{(20)} 
    + \delta_{HF}^{(2)}
    :label: sSAPT0
 
-where :math:`\delta_{HF}^{(2)}` is computed without any scaling.
+where :math:`\delta_{HF}^{(2)}` is computed *without* any scaling. Please note that 
+sSAPT0 is thus not the same as requesting ``exch_scale_alpha 3.0``.
 
 
 A First Example
@@ -229,7 +236,10 @@ jun-cc-pVDZ (which we have referred to in previous work as
 aug-cc-pVDZ').  We do not recommend using SAPT0 with large basis sets
 like aug-cc-pVTZ.  A systematic study of the accuracy of SAPT0 and other SAPT 
 truncations, using different basis sets, is reported in 
-[Parker:2014:094106]_.
+[Parker:2014:094106]_. In particular, an empirical recipe for scaled SAPT0
+can yield improved performance and has been included in the output file as
+the sSAPT0 interaction energy. sSAPT0 is a free by-product and is automatically 
+computed when SAPT0 is requested (see above for more details).
 The SAPT module has been used to perform SAPT0 computations with over
 200 atoms and 2800 basis functions; this code should be scalable to 4000
 basis functions. Publications resulting from the use of the SAPT0 code 
@@ -255,6 +265,7 @@ Advanced SAPT0 Keywords
 .. include:: autodir_options_c/sapt__aio_cphf.rst
 .. include:: autodir_options_c/sapt__aio_df_ints.rst
 .. include:: autodir_options_c/sapt__no_response.rst
+.. include:: autodir_options_c/sapt__exch_scale_alpha.rst
 .. include:: autodir_options_c/sapt__ints_tolerance.rst
 .. include:: autodir_options_c/sapt__denominator_delta.rst
 .. include:: autodir_options_c/sapt__denominator_algorithm.rst
@@ -456,7 +467,7 @@ them in the evaluation of the triples correction to dispersion, and the
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
 results::
 
-    SAPT Results ==> NO EXCHANGE SCALING APPLIED <==  
+    SAPT Results 
   --------------------------------------------------------------------------
     Electrostatics              -13.06509072 mH      -8.19846854 kcal mol^-1
       Elst10,r                  -13.37542914 mH      -8.39320885 kcal mol^-1
@@ -497,6 +508,14 @@ results::
   Total SAPT2+                       -7.33405078 mH      -4.60218654 kcal mol^-1
   Total SAPT2+(3)                    -7.00901577 mH      -4.39822398 kcal mol^-1
   Total SAPT2+3                      -7.18054690 mH      -4.50586139 kcal mol^-1
+
+  Special recipe for scaled SAPT0 (see Manual):
+    Electrostatics sSAPT0       -13.37542914 mH      -8.39320885 kcal mol^-1
+    Exchange sSAPT0              11.21822694 mH       7.03954398 kcal mol^-1
+    Induction sSAPT0             -3.47550468 mH      -2.18091220 kcal mol^-1
+    Dispersion sSAPT0            -2.88342088 mH      -1.80937400 kcal mol^-1
+  Total sSAPT0                       -8.51612775 mH      -5.34395107 kcal mol^-1
+
   --------------------------------------------------------------------------
 
 
@@ -516,15 +535,21 @@ and ``Est.Disp22(T)`` results appear if MP2 natural orbitals are
 used to evaluate the triples correction to dispersion. The ``Disp22(T)`` 
 result is the triples correction as computed in the truncated NO basis;  
 ``Est.Disp22(T)`` is a scaled result that attempts to recover
-the effect of the truncated virtual space. The ``Est.Disp22(T)``
+the effect of the truncated virtual space and is our best estimate. The ``Est.Disp22(T)``
 value is used in the SAPT energy and dispersion component (see [Hohenstein:2010:104107]_ 
-for details). As indicated at the top of the result section, all results
-are presented without exchange scaling. Results with scaling are reported in the
-following section: ::
+for details). Finally, this part of the output file contains sSAPT0, a special scaling
+scheme of the SAPT0 energy that can yield improved results and was described in more details
+above. The corresponding scaled total component energies are printed as well.
 
-    SAPT Results ==> ALL S2 TERMS SCALED <== 
+As mentioned above, SAPT results with scaled exchange are also optionally available
+by setting the ``exch_scale_alpha`` keyword. When activated, the unscaled results are
+printed first as reported above, and then repeated with exchange scaling for all 
+relevant terms: :: 
 
-    Scaling factor:     1.007200  
+    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== 
+
+    Scaling factor (Exch10/Exch10(S^2))^{Alpha} =     1.007200
+    with Alpha =     1.000000 
   --------------------------------------------------------------------------
     Electrostatics              -13.06509072 mH      -8.19846854 kcal mol^-1
       Elst10,r                  -13.37542914 mH      -8.39320885 kcal mol^-1
@@ -561,15 +586,14 @@ following section: ::
 
   Total HF                           -5.68662563 mH      -3.56841161 kcal mol^-1
   Total SAPT0 scal.                  -8.57944196 mH      -5.38368133 kcal mol^-1
-  Total sSAPT0                       -8.51612775 mH      -5.34395107 kcal mol^-1
   Total SAPT2 scal.                  -6.69968948 mH      -4.20411879 kcal mol^-1
   Total SAPT2+ scal.                 -7.31030174 mH      -4.58728379 kcal mol^-1
   Total SAPT2+(3) scal.              -6.98526674 mH      -4.38332124 kcal mol^-1
   Total SAPT2+3 scal.                -7.15142193 mH      -4.48758520 kcal mol^-1
   --------------------------------------------------------------------------
 
-Here, all previous results are repeated with all relevant exchange terms scaled. 
-The scaling factor is reported at the top (here ``1.0072``) and all terms that
-are scaled are indicated by the ``scal.`` keyword. The sSAPT0 energy is also reported
-here. If the scaling factor is 1.0, scaled results are still reported to facilitate
-automatic processing of the output file.
+The scaling factor is reported at the top (here ``1.0072``) together with the 
+:math:`\alpha` parameter. All terms that are scaled are indicated by the ``scal.`` 
+keyword. Note that if Exch10 is less than :math:`1.0e-5`, the scaling factor is
+set to :math:`1.0`.
+
