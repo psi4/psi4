@@ -155,6 +155,9 @@ struct OPT_PARAMS {
 
   double linear_bend_threshold; // if bend exceeds this value, then also add linear bend complement
 
+  // if bend is smaller than this, then never fix its associated vectors
+  double small_bend_fix_threshold;
+
   // threshold for which entries in diagonalized redundant matrix are kept and inverted
   // while computing a generalized inverse of a matrix
   double redundant_eval_tol;
