@@ -22,8 +22,10 @@ set {
   docc [10, 1, 4, 3]
   freeze_core true
   ao_basis disk
+  restart true
 }
 
 energy('ccsd(t)')
+
 
 

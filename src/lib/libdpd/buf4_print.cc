@@ -63,8 +63,7 @@ int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
 
     if(print_data) {
         for(h=0; h < Buf->params->nirreps; h++) {
-            outfile->Printf( "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum,
-                    Buf->file.label);
+            outfile->Printf( "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum, Buf->file.label);
             outfile->Printf(   "\tMatrix for Irrep %1d\n", h);
             outfile->Printf(   "\t----------------------------------------\n");
             buf4_mat_irrep_init(Buf, h);
@@ -72,6 +71,7 @@ int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
             mat4_irrep_print(Buf->matrix[h], Buf->params, h, all_buf_irrep, "outfile");
             buf4_mat_irrep_close(Buf, h);
         }
+        outfile->Printf("\tTrace = %20.14f\n", buf4_trace(Buf));
     }
 
     return 0;

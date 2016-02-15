@@ -1,5 +1,5 @@
-# Test of SFX2C-1e on water uncontracted cc-pVDZ-DK
-# The reference numbers are from Lan Cheng's implementation in Cfour
+#! Test of SFX2C-1e on water uncontracted cc-pVDZ-DK
+#! The reference numbers are from Lan Cheng's implementation in Cfour
 
 ref_nuc_energy =  8.316179709840201 #TEST
 ref_nr_energy  = -76.00770336258013 #TEST 

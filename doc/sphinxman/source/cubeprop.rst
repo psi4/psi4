@@ -168,7 +168,7 @@ Running the Script
 
 The desired image in this case is called "AlphaMOs.tga", and looks like	this:
 
-.. image:: /AlphaMos.png
+.. image:: /AlphaMOs.png
     :align: center
     :scale: 100%
     :alt: Alpha MOs	

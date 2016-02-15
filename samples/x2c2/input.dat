@@ -1,6 +1,6 @@
-# Test of SFX2C-1e on Water cc-pVDZ-DK.  In this test the Dirac
-# equation is solved in the uncontracted cc-pVDZ-DK basis.
-# The reference numbers are from Lan Cheng's implementation in Cfour
+#! Test of SFX2C-1e on Water cc-pVDZ-DK.  In this test the Dirac
+#! equation is solved in the uncontracted cc-pVDZ-DK basis.
+#! The reference numbers are from Lan Cheng's implementation in Cfour
 
 
 molecule h2o {
