@@ -26,8 +26,8 @@
 */
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
-#define EXTERN
-#include "globals.h"
+#include "libciomr/libciomr.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
@@ -53,7 +53,7 @@ namespace psi { namespace ccenergy {
 ** double beta:      Multiplicative factor for the target
 */
 
-void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2, 
+void CCEnergyWavefunction::halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2,
                int nirreps, int **mo_row, int **so_row, int *mospi_left, int *mospi_right, 
                int *sospi, int type, double alpha, double beta)
 {

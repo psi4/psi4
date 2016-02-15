@@ -50,8 +50,8 @@ using namespace psi;
 namespace psi {
 
 
-PKJK::PKJK(boost::shared_ptr<BasisSet> primary) :
-    JK(primary)
+PKJK::PKJK(boost::shared_ptr<BasisSet> primary, Options& options) :
+    JK(primary), options_(options)
 {
     common_init();
 }
@@ -90,57 +90,56 @@ void PKJK::preiterations()
         psio_->open(pk_file_, PSIO_OPEN_NEW);
 
     // Start by generating conventional integrals on disk
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     mints->integrals();
     if(do_wK_)
         mints->integrals_erf(omega_);
-    mints.reset();
 
-    int nso   = Process::environment.wavefunction()->nso();
-    int *sopi = Process::environment.wavefunction()->nsopi();
-    int nirreps = Process::environment.wavefunction()->nirrep();
+    nsopi_ = mints->sobasisset()->dimension();
+    nso_ = nsopi_.sum();
+    nirrep_ = nsopi_.n();
 
-    so2symblk_ = new int[nso];
-    so2index_  = new int[nso];
+    so2symblk_ = new int[nso_];
+    so2index_  = new int[nso_];
     size_t so_count = 0;
     size_t offset = 0;
-    for (int h = 0; h < nirreps; ++h) {
-        for (int i = 0; i < sopi[h]; ++i) {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < nsopi_[h]; ++i) {
             so2symblk_[so_count] = h;
             so2index_[so_count] = so_count-offset;
             ++so_count;
         }
-        offset += sopi[h];
+        offset += nsopi_[h];
     }
 
     // The first SO in each irrep
-    int* orb_offset = new int[nirreps];
+    int* orb_offset = new int[nirrep_];
     orb_offset[0] = 0;
-    for(int h = 1; h < nirreps; ++h)
-        orb_offset[h] = orb_offset[h-1] + sopi[h-1];
+    for(int h = 1; h < nirrep_; ++h)
+        orb_offset[h] = orb_offset[h-1] + nsopi_[h-1];
 
     // Compute PK symmetry mapping
-    int *pk_symoffset = new int[nirreps];
+    int *pk_symoffset = new int[nirrep_];
     pk_size_ = 0;  // Size of PK matrix triangle, i.e. ncol*(ncol - 1)/2 + ncol
     pk_pairs_ = 0; // Number of pk pairs, i.e. ncol of PK matrix
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         pk_symoffset[h] = pk_pairs_;
         // Add up possible pair combinations that yield A1 symmetry
-        pk_pairs_ += sopi[h]*(sopi[h] + 1)/2;
+        pk_pairs_ += nsopi_[h]*(nsopi_[h] + 1)/2;
     }
     // Compute the number of pairs in PK
     pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
 
     // Count the pairs
     size_t npairs = 0;
-    size_t *pairpi = new size_t[nirreps];
-    ::memset(pairpi, '\0', nirreps*sizeof(size_t));
-    for(int pq_sym = 0; pq_sym < nirreps; ++pq_sym){
-        for(int p_sym = 0; p_sym < nirreps; ++p_sym){
+    size_t *pairpi = new size_t[nirrep_];
+    ::memset(pairpi, '\0', nirrep_*sizeof(size_t));
+    for(int pq_sym = 0; pq_sym < nirrep_; ++pq_sym){
+        for(int p_sym = 0; p_sym < nirrep_; ++p_sym){
             int q_sym = pq_sym ^ p_sym;
             if(p_sym >= q_sym){
-                for(int p = 0; p < sopi[p_sym]; ++p){
-                    for(int q = 0; q < sopi[q_sym]; ++q){
+                for(int p = 0; p < nsopi_[p_sym]; ++p){
+                    for(int q = 0; q < nsopi_[q_sym]; ++q){
                         int p_abs = p + orb_offset[p_sym];
                         int q_abs = q + orb_offset[q_sym];
                         if(p_abs >= q_abs){
@@ -391,9 +390,6 @@ void PKJK::preiterations()
 
 void PKJK::compute_JK()
 {
-    int nirreps = Process::environment.wavefunction()->nirrep();
-    int *sopi   = Process::environment.wavefunction()->nsopi();
-
 //    bool file_was_open = psio_->open_check(pk_file_);
 //    if(!file_was_open);
         psio_->open(pk_file_, PSIO_OPEN_OLD);
@@ -422,16 +418,16 @@ void PKJK::compute_JK()
         if(C_left_[N] != C_right_[N]) {
             asym = true;
             // Limited support for asymmetric density matrices: only C1 symmetry.
-            if ( nirreps != 1 ) {
+            if ( nirrep_ != 1 ) {
                 throw PSIEXCEPTION("PK integrals can be used for this type of calculation only in C1 symmetry");
             }
-            square_dim = sopi[0] * sopi[0];
+            square_dim = nsopi_[0] * nsopi_[0];
             // So we are going to do something dumb and store
             // explicitly all indices first.
             pind = new int[pk_pairs_];
             qind = new int[pk_pairs_];
             int counter = 0;
-            for(int p = 0; p < sopi[0]; ++p) {
+            for(int p = 0; p < nsopi_[0]; ++p) {
                 for(int q = 0; q <= p; ++q) {
                     pind[counter] = p;
                     qind[counter] = q;
@@ -455,12 +451,12 @@ void PKJK::compute_JK()
             double *D_vector = new double[square_dim];
             ::memset(D_vector, 0, square_dim * sizeof(double));
             D_vectors.push_back(D_vector);
-            for(int p = 0; p < sopi[0]; ++p) {
-                for(int q = 0; q < sopi[0]; ++q) {
+            for(int p = 0; p < nsopi_[0]; ++p) {
+                for(int q = 0; q < nsopi_[0]; ++q) {
                     if(p != q) {
-                        D_vector[p*sopi[0] + q] = D_[N]->get(p,q);
+                        D_vector[p*nsopi_[0] + q] = D_[N]->get(p,q);
                     } else {
-                        D_vector[p*sopi[0] + q] = 0.5 * D_[N]->get(p,q);
+                        D_vector[p*nsopi_[0] + q] = 0.5 * D_[N]->get(p,q);
                     }
                 }
             }
@@ -473,8 +469,8 @@ void PKJK::compute_JK()
             D_vectors.push_back(D_vector);
             // The off-diagonal terms need to be doubled here
             size_t pqval = 0;
-            for (int h = 0; h < nirreps; ++h) {
-                for (int p = 0; p < sopi[h]; ++p) {
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int p = 0; p < nsopi_[h]; ++p) {
                     for (int q = 0; q <= p; ++q) {
                         if (p != q) {
                             D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
@@ -516,10 +512,10 @@ void PKJK::compute_JK()
                             q = qind[pq];
                             r = pind[rs];
                             s = qind[rs];
-                            J_vector[p][q] += *j_ptr * (D_vec[r * sopi[0] + s] + D_vec[s * sopi[0] + r]);
-                            J_vector[q][p] += *j_ptr * (D_vec[r * sopi[0] + s] + D_vec[s * sopi[0] + r]);
-                            J_vector[r][s] += *j_ptr * (D_vec[p * sopi[0] + q] + D_vec[q * sopi[0] + p]);
-                            J_vector[s][r] += *j_ptr * (D_vec[p * sopi[0] + q] + D_vec[q * sopi[0] + p]);
+                            J_vector[p][q] += *j_ptr * (D_vec[r * nsopi_[0] + s] + D_vec[s * nsopi_[0] + r]);
+                            J_vector[q][p] += *j_ptr * (D_vec[r * nsopi_[0] + s] + D_vec[s * nsopi_[0] + r]);
+                            J_vector[r][s] += *j_ptr * (D_vec[p * nsopi_[0] + q] + D_vec[q * nsopi_[0] + p]);
+                            J_vector[s][r] += *j_ptr * (D_vec[p * nsopi_[0] + q] + D_vec[q * nsopi_[0] + p]);
                             ++j_ptr;
                         }
                     }
@@ -587,15 +583,15 @@ void PKJK::compute_JK()
 
     for(size_t N = 0; N < J_.size(); ++N){
         if(C_left_[N] != C_right_[N]) {
-            for(int p = 0; p < sopi[0]; ++p) {
+            for(int p = 0; p < nsopi_[0]; ++p) {
                 J_[N]->set(p, p, J_[N]->get(p,p) * 0.5);
             }
             delete [] D_vectors[N];
         } else {
             // Copy the results from the vector to the buffer
             double *J = J_vectors[N];
-            for (int h = 0; h < nirreps; ++h) {
-                for (int p = 0; p < sopi[h]; ++p) {
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int p = 0; p < nsopi_[h]; ++p) {
                     for (int q = 0; q <= p; ++q) {
                         J_[N]->set(h, p, q, *J++);
                     }
@@ -625,8 +621,8 @@ void PKJK::compute_JK()
             D_vectors.push_back(D_vector);
             // The off-diagonal terms need to be doubled here
             size_t pqval = 0;
-            for (int h = 0; h < nirreps; ++h) {
-                for (int p = 0; p < sopi[h]; ++p) {
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int p = 0; p < nsopi_[h]; ++p) {
                     for (int q = 0; q <= p; ++q) {
                         if (p != q) {
                             D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
@@ -684,8 +680,8 @@ void PKJK::compute_JK()
         if(C_left_[N] == C_right_[N]) {
             // Copy the results from the vector to the buffer
             double *K = K_vectors[N];
-            for (int h = 0; h < nirreps; ++h) {
-                for (int p = 0; p < sopi[h]; ++p) {
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int p = 0; p < nsopi_[h]; ++p) {
                     for (int q = 0; q <= p; ++q) {
                         K_[N]->set(h, p, q, *K++);
                     }
@@ -714,8 +710,8 @@ void PKJK::compute_JK()
         D_vectors.push_back(D_vector);
         // The off-diagonal terms need to be doubled here
         size_t pqval = 0;
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int p = 0; p < nsopi_[h]; ++p) {
                 for (int q = 0; q <= p; ++q) {
                     if (p != q) {
                         D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
@@ -769,8 +765,8 @@ void PKJK::compute_JK()
     for(size_t N = 0; N < wK_.size(); ++N){
         // Copy the results from the vector to the buffer
         double *K = wK_vectors[N];
-        for (int h = 0; h < nirreps; ++h) {
-            for (int p = 0; p < sopi[h]; ++p) {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int p = 0; p < nsopi_[h]; ++p) {
                 for (int q = 0; q <= p; ++q) {
                     wK_[N]->set(h, p, q, *K++);
                 }

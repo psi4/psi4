@@ -55,7 +55,7 @@ namespace psi { namespace sapt {
 class SAPT : public Wavefunction {
 
 private:
-  void initialize();
+  void initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB);
   void get_denom();
 
 protected:
@@ -63,8 +63,6 @@ protected:
   boost::shared_ptr<BasisSet> elstbasis_;
   boost::shared_ptr<BasisSet> zero_;
 
-  int nso_;
-  int nmo_;
   int nsoA_;
   int nmoA_;
   int nsoB_;
@@ -116,11 +114,9 @@ protected:
   void zero_disk(int, const char *, int, int);
 
 public:
-  virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
-  virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
-
-  SAPT(Options& options, boost::shared_ptr<PSIO> psio,
-    boost::shared_ptr<Chkpt> chkpt);
+  SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
+       SharedWavefunction MonomerB, Options& options,
+       boost::shared_ptr<PSIO> psio);
   virtual ~SAPT();
 
   virtual double compute_energy()=0;

@@ -22,13 +22,15 @@
 
 #include <boost/python.hpp>
 #include <libmints/oeprop.h>
+#include <libmints/wavefunction.h>
 
 using namespace boost::python;
 using namespace psi;
 
 void export_oeprop()
 {
-    class_<OEProp, boost::shared_ptr<OEProp> >("OEProp", "docstring").
+    class_<OEProp, boost::shared_ptr<OEProp> >("OEProp", "docstring", no_init).
+        def(init<boost::shared_ptr<Wavefunction> >()).
         def("add", &OEProp::oepy_add, "docstring").
         def("compute", &OEProp::oepy_compute, "docstring").
         def("set_title", &OEProp::oepy_set_title, "docstring");

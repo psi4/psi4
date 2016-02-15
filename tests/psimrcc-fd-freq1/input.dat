@@ -39,6 +39,6 @@ set psimrcc {
   wfn_sym         B1g                    # Select the B1g state
 }
 
-frequencies('psimrcc', dertype=0)
-fd_freq = psi4.wavefunction().frequencies()            #TEST
+mrcc_e, mrcc_wfn = frequencies('psimrcc', dertype=0, return_wfn=True)
+fd_freq = mrcc_wfn.frequencies()                         #TEST
 compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST

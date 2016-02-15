@@ -30,8 +30,7 @@
 #include <cmath>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 #include "libparallel/ParallelPrinter.h"
 
 namespace psi { namespace ccenergy {
@@ -55,55 +54,55 @@ void twostack_insert(struct twostack *stack, double value, int i, int j,
 void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
 void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
 
-void amp_write(void)
+void CCEnergyWavefunction::amp_write(void)
 {
   dpdfile2 T1;
   dpdbuf4 T2;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
 }

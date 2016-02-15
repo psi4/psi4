@@ -19,9 +19,10 @@ h 1 0.958 2 104.4776
 
 set {
   basis cc-pvdz
+  mp2_type conv
 }
-gradient('conv-mp2')
 
-grad = psi4.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+grad = gradient('mp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 

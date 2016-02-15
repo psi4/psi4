@@ -38,7 +38,7 @@ Best Practices for Python Functions
 
 - Upon checking in a new python file, edit the file ``psi4/doc/userman/source/index.rst`` and follow the instructions therein that your file may be autodocumented here.
 
-- Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in ``psi4/lib/python/example_docstring`` and replace anything that looks like ``<this>``. For a behind-the-scenes function or if you don't want the bother of dealing with `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_, just write an ordinary docstring. It will get slurped into the documentation in plain text.
+- Write docstrings! For a major function intended for use in input files, emulate any docstring in ``psi4/share/python/driver.py``. For a behind-the-scenes function or if you don't want the bother of dealing with `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_, just write an ordinary docstring. It will get slurped into the documentation in plain text.
 
 - Your python function should follow `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_ conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason. The second line is for database Python files.
 

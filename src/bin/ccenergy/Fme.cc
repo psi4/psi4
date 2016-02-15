@@ -28,17 +28,16 @@
 #include <cstdlib>
 #include <libdpd/dpd.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-void Fme_build(void)
+void CCEnergyWavefunction::Fme_build(void)
 {
   dpdfile2 FME, Fme, fIA, fia, tIA, tia;
   dpdbuf4 D_anti, D;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "FME");
     global_dpd_->file2_close(&fIA);
@@ -58,7 +57,7 @@ void Fme_build(void)
 
     global_dpd_->file2_close(&FME);
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "FME");
@@ -90,7 +89,7 @@ void Fme_build(void)
     global_dpd_->file2_close(&FME);
     global_dpd_->file2_close(&Fme);
   }
-  else if(params.ref == 2) { /** UHF **/
+  else if(params_.ref == 2) { /** UHF **/
 
     global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
     global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "FME");

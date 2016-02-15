@@ -54,8 +54,10 @@ public:
         boost::shared_ptr<efp::EFP> efp_;
         SharedMatrix efp_torque_;
         boost::shared_ptr<Vector> frequencies_;
-        boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
+
+        boost::shared_ptr<Molecule> legacy_molecule_;
+        boost::shared_ptr<Wavefunction> legacy_wavefunction_;
     public:
         void initialize();
 
@@ -72,10 +74,18 @@ public:
         /// Return active molecule
         boost::shared_ptr<Molecule> molecule() const;
 
+
+        /// Temporary slots for legacy as a stop-gap
+        /// Set active molecule
+        void set_legacy_molecule(const boost::shared_ptr<Molecule>& molecule);
+        /// Return active molecule
+        boost::shared_ptr<Molecule> legacy_molecule() const;
+
         /// Set wavefunction
-        void set_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction);
+        void set_legacy_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction);
         /// Get wavefunction
-        boost::shared_ptr<Wavefunction> wavefunction() const;
+        boost::shared_ptr<Wavefunction> legacy_wavefunction() const;
+
 
         /// Set gradient manually
         void set_gradient(const SharedMatrix g) { gradient_ = g; }

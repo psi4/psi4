@@ -1,4 +1,4 @@
-molecule {
+molecule mol {
 H
 H 1 R
 
@@ -15,4 +15,5 @@ set sointegrals {
   do_tei True
 }
 
-plugin("sointegrals.so")
+ref_wfn = psi4.new_wavefunction(mol, psi4.get_global_option('BASIS'))
+plugin("sointegrals.so", ref_wfn)

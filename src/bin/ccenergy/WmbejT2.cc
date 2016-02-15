@@ -29,8 +29,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include "Params.h"
-#define EXTERN
-#include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
@@ -111,11 +110,11 @@ namespace psi { namespace ccenergy {
 ** Last revised October 2001
 */
 
-void WmbejT2(void)
+void CCEnergyWavefunction::WmbejT2(void)
 {
   dpdbuf4 T2new, T2, W, T2B, W1, W2, Z;
 
-  if(params.ref == 0) { /** RHF **/
+  if(params_.ref == 0) { /** RHF **/
     /*** AB ***/
 
     /* 2 W(ME,jb) + W(Me,Jb) */
@@ -179,7 +178,7 @@ void WmbejT2(void)
     global_dpd_->buf4_close(&T2new);
 
   }
-  else if(params.ref == 1) { /** ROHF **/
+  else if(params_.ref == 1) { /** ROHF **/
 
     /*** AA ***/
 
@@ -339,7 +338,7 @@ void WmbejT2(void)
     global_dpd_->buf4_close(&T2new);
 
   } /*** ROHF ***/
-  else if(params.ref == 2) { /*** UHF ***/
+  else if(params_.ref == 2) { /*** UHF ***/
 
     /*** AA ***/
 

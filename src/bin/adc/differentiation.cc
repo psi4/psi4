@@ -36,7 +36,7 @@ namespace psi{ namespace adc{
 //
     
 double 
-ADC::rhf_differentiate_omega(int irrep, int root)
+ADCWfn::rhf_differentiate_omega(int irrep, int root)
 {
     char lbl[32];
     double dot;

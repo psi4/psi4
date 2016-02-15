@@ -18,8 +18,10 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  mp2_type df
 }
-gradient('df-omp2')
+
+grad = gradient('omp2')
 
 
 

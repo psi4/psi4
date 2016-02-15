@@ -23,10 +23,11 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  mp2_type df
 }
-gradient('df-omp2')
 
-grad = psi4.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+grad = gradient('omp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
 

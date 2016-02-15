@@ -26,25 +26,18 @@ using namespace boost;
 
 namespace psi{ namespace dfoccwave {
 
-PsiReturnType
-dfoccwave(Options &options)
+SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options)
 {
     // Start the timers
     tstart();
    
-    DFOCC dfocc(Process::environment.wavefunction(), options);
-    dfocc.compute_energy();
-
-    /*
-    boost::shared_ptr<Wavefunction> dfocc = boost::shared_ptr<Wavefunction>(new DFOCC(Process::environment.wavefunction(), options));
-    Process::environment.set_wavefunction(dfocc);
-    dfocc->compute_energy();
-    */
+    SharedWavefunction dfocc_wfn = SharedWavefunction(new DFOCC(ref_wfn, options));
+    dfocc_wfn->compute_energy();
 
     // Shut down the timers
     tstop();
 
-    return Success;
+    return dfocc_wfn;
 }
 }} // End Namespaces
 

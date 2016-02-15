@@ -15,15 +15,11 @@ set {
   roots_per_irrep [0, 0, 0, 1]
 }
 
-gradient('eom-ccsd')
-analytic_grad = psi4.get_gradient()
-
-gradient('eom-ccsd', dertype=0)
-findif_grad = psi4.get_gradient()
+analytic_grad = gradient('eom-ccsd')
+findif_grad = gradient('eom-ccsd', dertype=0)
 
 
 set findif points 5
 
-gradient('eom-ccsd', dertype=0)
-findif_grad = psi4.get_gradient()
+findif_grad = gradient('eom-ccsd', dertype=0)
 

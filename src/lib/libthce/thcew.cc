@@ -52,7 +52,7 @@ using namespace boost;
 namespace psi {
 
 THCEW::THCEW() :
-    Wavefunction(Process::environment.options, boost::shared_ptr<PSIO>(new PSIO()), _default_chkpt_lib_)
+    Wavefunction(Process::environment.options)
 {
     common_init();
 }
@@ -64,15 +64,18 @@ void THCEW::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    reference_wavefunction_ = Process::environment.wavefunction();
+    
+    //reference_wavefunction_ = Process::environment.legacy_wavefunction();
+    throw PSIEXCEPTION("Rob: I broke your code. Check your email.");
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("THCEW: Run SCF first");
     }
 
     if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-        reference_wavefunction_->semicanonicalize();
+        throw PSIEXCEPTION("Does not currently work for non RHF references. Blame DGAS.");
+        // reference_wavefunction_->semicanonicalize();
 
-    copy(reference_wavefunction_);
+    shallow_copy(reference_wavefunction_);
 
     thce_ = boost::shared_ptr<THCE>(new THCE());
 }

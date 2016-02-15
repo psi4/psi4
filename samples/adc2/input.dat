@@ -19,4 +19,5 @@ set globals {
     roots_per_irrep [2]
 }
 
-energy('adc')
+ref_energy = -152.52670794053822
+adc_energy = energy('adc')

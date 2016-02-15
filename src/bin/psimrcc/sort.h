@@ -52,7 +52,7 @@ enum SortAlgorithm {out_of_core_sort,mrpt2_sort};
 */
 class CCSort{
 public:
-  CCSort(SortAlgorithm algorithm);
+  CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm);
   ~CCSort();
 private:
   void init();

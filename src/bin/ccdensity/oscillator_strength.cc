@@ -44,7 +44,7 @@ using namespace std;
 namespace psi { namespace ccdensity {
 #include <physconst.h>
 
-void oscillator_strength(struct TD_Params *S)
+void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S)
 {
   int nmo, nso, i, I, h, j;
   int *order, *order_A, *order_B, *doccpi;
@@ -60,8 +60,6 @@ void oscillator_strength(struct TD_Params *S)
   double ds_x, ds_y, ds_z;
   double f_x, f_y, f_z;
   double f;
-
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
 
   if ((params.ref == 0) || (params.ref == 1))
     scf_pitzer = wfn->Ca()->to_block_matrix();
@@ -126,7 +124,7 @@ void oscillator_strength(struct TD_Params *S)
 
   /*** Transform the SO dipole integrals to the MO basis ***/
 
-  MintsHelper mints(Process::environment.options, 0);
+  MintsHelper mints(wfn->basisset(), Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_dipole();
   MUX_SO = dipole[0]->to_block_matrix();
   MUY_SO = dipole[1]->to_block_matrix();

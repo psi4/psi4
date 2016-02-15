@@ -91,7 +91,7 @@ In progress:
 and make similar changes.
 
   o We should not be getting the guess frozen_per_irrep out of the
-current Process::environment.wavefunction()->frzcpi()[h].  Who knows where
+current Process::environment.legacy_wavefunction()->frzcpi()[h].  Who knows where
 that came from?  Need another mechanism to pass this information.  Maybe
 generate it from the molecule itself... is SCF really necessary to get this
 info?  See what the SCF does.

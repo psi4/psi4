@@ -39,7 +39,7 @@ struct onestack{
 //void onestack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen);
     
 void 
-ADC::amps_write(dpdfile2 *B, int length, std::string out)
+ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
 {
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             boost::shared_ptr<OutFile>(new OutFile(out)));
@@ -80,7 +80,7 @@ ADC::amps_write(dpdfile2 *B, int length, std::string out)
 }
     
 void 
-ADC::onestack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen)
+ADCWfn::onestack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen)
 {
     struct onestack temp;
     

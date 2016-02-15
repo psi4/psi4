@@ -49,7 +49,7 @@ namespace psi { namespace ccdensity {
 
 void init_io(void);
 void title(void);
-void get_moinfo(void);
+void get_moinfo(boost::shared_ptr<Wavefunction> wfn);
 void get_frozen(void);
 void get_params(Options& options);
 void exit_io(void);
@@ -76,8 +76,8 @@ void add_core_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *);
 void dump_RHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_ROHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *, struct RHO_Params rho_params);
-void kinetic(void);
-void dipole(void);
+void kinetic(boost::shared_ptr<Wavefunction> wfn);
+void dipole(boost::shared_ptr<Wavefunction> wfn);
 void probable(void);
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
@@ -107,8 +107,8 @@ void get_td_params(Options& options);
 void td_setup(struct TD_Params S);
 void tdensity(struct TD_Params S);
 void td_print(void);
-void oscillator_strength(struct TD_Params *S);
-void rotational_strength(struct TD_Params *S);
+void oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
+void rotational_strength(MintsHelper &mints, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
 void cleanup(void);
 void td_cleanup(void);
@@ -119,11 +119,12 @@ void V_build(void);
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
-void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
-void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
+                            struct XTD_Params *xtd_data);
+void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
 
-PsiReturnType ccdensity(Options& options)
+PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& options)
 {
   int i;
   int **cachelist, *cachefiles;
@@ -136,7 +137,7 @@ PsiReturnType ccdensity(Options& options)
   title();
   /*  get_frozen(); */
   get_params( options );
-  get_moinfo();
+  get_moinfo(ref_wfn);
   get_rho_params(options);
 
   if ((moinfo.nfzc || moinfo.nfzv) && params.relax_opdm) {
@@ -258,7 +259,7 @@ PsiReturnType ccdensity(Options& options)
     if (!params.onepdm) {
       if(!params.aobasis) energy(rho_params[i]);
 
-      kinetic(); /* puts kinetic energy integrals into MO basis */
+      kinetic(ref_wfn); /* puts kinetic energy integrals into MO basis */
 
       lag(rho_params[i]); /* builds the orbital lagrangian pieces, I */
 
@@ -296,9 +297,9 @@ PsiReturnType ccdensity(Options& options)
 
       // ==> One-Electron Properties <== //
       outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
-      dipole();
+      dipole(ref_wfn);
 
-      if(params.onepdm_grid_dump) dx_write(options, moinfo.opdm);
+      if(params.onepdm_grid_dump) dx_write(ref_wfn, options, moinfo.opdm);
  
       dump_RHF(&OutBuf, rho_params[i]);
 
@@ -311,7 +312,10 @@ PsiReturnType ccdensity(Options& options)
 
       add_core_ROHF(&OutBuf);
       add_ref_ROHF(&OutBuf);
-      dipole();
+
+      // ==> One-Electron Properties <== //
+      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
+      dipole(ref_wfn);
 
       dump_ROHF(&OutBuf, rho_params[i]);
 
@@ -328,7 +332,7 @@ PsiReturnType ccdensity(Options& options)
       add_ref_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB);
 
       outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
-      dipole();
+      dipole(ref_wfn);
 
       dump_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB, rho_params[i]);
 
@@ -358,20 +362,27 @@ PsiReturnType ccdensity(Options& options)
   if ( params.ael && (params.nstates > 1) )
     ael(rho_params);
 */
+  outfile->Printf("I am here\n");
 
   if(params.transition) {
 
+    MintsHelper mints(ref_wfn->basisset(), options, 0); 
     get_td_params(options);
     for(i=0; i < params.nstates; i++) {
       td_setup(td_params[i]);
       tdensity(td_params[i]);
-      oscillator_strength(&(td_params[i]));
+      outfile->Printf("Doing transition\n");
+      oscillator_strength(ref_wfn, &(td_params[i]));
+      outfile->Printf("Doing transition\n");
       if(params.ref == 0) {
-        rotational_strength(&(td_params[i]));
+        rotational_strength(mints, &(td_params[i]));
       }
+      outfile->Printf("Doing transition\n");
       td_cleanup();
     }
+    outfile->Printf("Doing transition\n");
     td_print();
+    outfile->Printf("Doing transition\n");
 
     /* Excited State Transition Data */
        //  The convention is that the transition is one of absorption.
@@ -442,10 +453,10 @@ PsiReturnType ccdensity(Options& options)
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           
           //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-          ex_oscillator_strength(&(td_params[state1]),&(td_params[state2]), &xtd_data);
+          ex_oscillator_strength(ref_wfn, &(td_params[state1]),&(td_params[state2]), &xtd_data);
           if(params.ref == 0) {
             //ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-            ex_rotational_strength(&(td_params[state1]),&(td_params[state2]), &xtd_data);
+            ex_rotational_strength(mints, &(td_params[state1]),&(td_params[state2]), &xtd_data);
           }
 
           xtd_params.push_back(xtd_data);
@@ -459,6 +470,7 @@ PsiReturnType ccdensity(Options& options)
 
   }  // End params.transition IF loop
 
+  outfile->Printf("I am here\n");
   dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);

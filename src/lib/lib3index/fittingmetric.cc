@@ -53,34 +53,6 @@ using namespace psi;
 
 namespace psi {
 
-FittingMetric::FittingMetric()
-{
-    Options& opt = Process::environment.options;
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-
-    if (molecule.get() == 0) {
-        outfile->Printf( "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-
-    // Make sure molecule is valid.
-    molecule->update_geometry();
-
-    // Grab the auxiliary bases (use the SCF tags for now)
-    aux_ = BasisSet::pyconstruct_auxiliary(molecule,
-        "DF_BASIS_SCF", opt.get_str("DF_BASIS_SCF"), "JKFIT", opt.get_str("BASIS"));
-
-    if (opt.get_str("POISSON_BASIS_SCF") != "") {
-        // basis access translated but code defunct
-        pois_ = BasisSet::pyconstruct_auxiliary(molecule,
-            "POISSON_BASIS_SCF", opt.get_str("POISSON_BASIS_SCF"), "JKFIT", opt.get_str("BASIS"));
-        is_poisson_ = true;
-    } else {
-        is_poisson_ = false;
-    }
-    is_inverted_ = false;
-    force_C1_ = false;
-}
 FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1) :
     aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1), omega_(0.0)
 {

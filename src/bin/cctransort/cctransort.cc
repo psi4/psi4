@@ -68,12 +68,11 @@ double scf_check(int reference, Dimension &openpi);
 void denom_rhf(Dimension &openpi);
 void denom_uhf();
 
-PsiReturnType cctransort(Options& options)
+PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 {
   tstart();
 
   boost::shared_ptr<PSIO> psio(_default_psio_lib_);
-  boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
   if(!ref) throw PSIEXCEPTION("SCF has not been run yet!");
 
   int print = options.get_int("PRINT");
@@ -346,7 +345,8 @@ PsiReturnType cctransort(Options& options)
     ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
   else if(options.get_str("REFERENCE") == "ROHF") {
     if(semicanonical)
-      ints = new IntegralTransform(ref, transspaces, IntegralTransform::SemiCanonical, IntegralTransform::DPDOnly);
+      // Importantly the transform is handled python-side so we technically have unrestricted orbitals at this point
+      ints = new IntegralTransform(ref, transspaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly);
     else
       ints = new IntegralTransform(ref, transspaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly);
   }
@@ -647,10 +647,10 @@ PsiReturnType cctransort(Options& options)
   if(reference == 2) denom_uhf();
   else denom_rhf(openpi);
 
-  outfile->Printf("\tNuclear Rep. energy    =  %20.14f\n", enuc);
-  outfile->Printf("\tSCF energy             =  %20.14f\n", escf);
+  outfile->Printf("\tNuclear Rep. energy          =  %20.14f\n", enuc);
+  outfile->Printf("\tSCF energy                   =  %20.14f\n", escf);
   double eref = scf_check(reference, openpi) + enuc + efzc;
-  outfile->Printf("\tReference energy       =  %20.14f\n", eref);
+  outfile->Printf("\tReference energy             =  %20.14f\n", eref);
   psio->write_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(eref), sizeof(double));
 
   SharedMatrix Ca_vir, Cb_vir, Ca_occ;

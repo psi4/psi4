@@ -50,8 +50,7 @@ DCFTSolver::mp2_guess_RHF()
     spaces.push_back(MOSpace::all);
 
     // This wavefunction is really the global reference wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    _ints = new IntegralTransform(wfn, spaces, IntegralTransform::Restricted);
+    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::Restricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());

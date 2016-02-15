@@ -105,41 +105,41 @@ void CIWavefunction::form_opdm(void)
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
   }
+
   // OPDM's
-  if (Parameters_->opdm) {
-    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
-                     Parameters_->d_filenum, false);
-    for (int i=0; i<Parameters_->num_roots; i++){
-        opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
-        opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
-        opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
-    }
-
-    // Figure out which OPDM should be current
-    if (Parameters_->opdm_ave){
-        Dimension act_dim = get_dimension("ACT");
-        opdm_a_ = SharedMatrix(new Matrix("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim));
-        opdm_b_ = SharedMatrix(new Matrix("MO-basis Beta OPDM", nirrep_, act_dim, act_dim));
-        opdm_   = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
-
-        for(int i=0; i<Parameters_->average_num; i++) {
-            int croot = Parameters_->average_states[i];
-            double weight = Parameters_->average_weights[i];
-            opdm_a_->axpy(weight, opdm_list[croot][0]);
-            opdm_b_->axpy(weight, opdm_list[croot][1]);
-            opdm_->axpy(weight, opdm_list[croot][2]);
-        }
-    }
-    else{
-        int croot = Parameters_->root;
-        opdm_a_ = opdm_list[croot][0]->clone();
-        opdm_b_ = opdm_list[croot][1]->clone();
-        opdm_ = opdm_list[croot][2]->clone();
-    }
-    Da_ = opdm_add_inactive(opdm_a_, 1.0, true);
-    Db_ = opdm_add_inactive(opdm_b_, 1.0, true);
+  opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
+                   Parameters_->d_filenum, false);
+  for (int i=0; i<Parameters_->num_roots; i++){
+      opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
+      opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
+      opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
   }
-  opdm_called_ = true;
+
+  // Figure out which OPDM should be current
+  if (Parameters_->opdm_ave){
+      Dimension act_dim = get_dimension("ACT");
+      opdm_a_ = SharedMatrix(new Matrix("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim));
+      opdm_b_ = SharedMatrix(new Matrix("MO-basis Beta OPDM", nirrep_, act_dim, act_dim));
+      opdm_   = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
+
+      for(int i=0; i<Parameters_->average_num; i++) {
+          int croot = Parameters_->average_states[i];
+          double weight = Parameters_->average_weights[i];
+          opdm_a_->axpy(weight, opdm_list[croot][0]);
+          opdm_b_->axpy(weight, opdm_list[croot][1]);
+          opdm_->axpy(weight, opdm_list[croot][2]);
+      }
+  }
+  else{
+      int croot = Parameters_->root;
+      opdm_a_ = opdm_list[croot][0]->clone();
+      opdm_b_ = opdm_list[croot][1]->clone();
+      opdm_ = opdm_list[croot][2]->clone();
+  }
+  Da_ = opdm_add_inactive(opdm_a_, 1.0, true);
+  Db_ = opdm_add_inactive(opdm_b_, 1.0, true);
+
+opdm_called_ = true;
 
 }
 /*
@@ -598,7 +598,7 @@ void CIWavefunction::opdm_properties()
         }
     }
 
-    boost::shared_ptr<OEProp> oe(new OEProp());
+    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Ca(get_orbitals("ALL"));
     SharedMatrix opdm_a;
     SharedMatrix opdm_b;

@@ -53,9 +53,8 @@ void DefineQuadraticTasks();
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 
 CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
-        CoupledCluster(reference_wavefunction,options)
+        CoupledCluster(reference_wavefunction, options)
 {
-    reference_wavefunction_ = reference_wavefunction;
     common_init();
 
     // which cepa level? 0,1,2,3
@@ -752,8 +751,6 @@ void CoupledPair::finalize(){
   free(I1p);
   free(diisvec);
 
-  // there is something weird with chkpt_ ... reset it
-  chkpt_.reset();
 }
 
 

@@ -42,7 +42,7 @@ for basisset in basissets:
     set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
     set df_basis_mp2 $ribasis
-    edfmp2 = energy('df-mp2')
+    edfmp2 = energy('mp2')
     edfscf = get_variable('SCF TOTAL ENERGY')
     compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST
     compare_values(edfmp2, refmp2[count], 10, basisset + " DF-MP2 Energy")            #TEST

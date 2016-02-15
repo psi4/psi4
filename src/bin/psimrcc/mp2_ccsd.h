@@ -33,7 +33,7 @@ namespace psi{ namespace psimrcc{
 class MP2_CCSD : public CCManyBody
 {
 public:
-  MP2_CCSD(Options &options);
+  MP2_CCSD(SharedWavefunction ref_wfn, Options &options);
   virtual ~MP2_CCSD();
   void compute_mp2_ccsd_energy();
 private:

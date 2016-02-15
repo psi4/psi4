@@ -602,9 +602,9 @@ SharedMatrix Deriv::compute()
                                               IntegralTransform::None));     // Frozen orbitals?
             dpd_set_default(ints_transform->get_dpd_id());
 
-            /* Xiao Wang */
-            if(wfn_->isDCFT() && wfn_->same_a_b_orbs()) ints_transform->set_tpdm_already_presorted(true);
-            /* Xiao Wang */
+            // Some codes already presort the tpdm, do not follow this as an example
+            if(Process::environment.options.get_bool("DERIV_TPDM_PRESORTED"))
+                ints_transform->set_tpdm_already_presorted(true);
 
             ints_transform->backtransform_density();
 

@@ -338,8 +338,12 @@ void CIWavefunction::set_ciblks()
      outfile->Printf(
        "   The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
        (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
-     
      }
+
+    // If we only have less than two dets we die
+   if (CIblks_->vectlen < 2){
+     throw PSIEXCEPTION("DETCI requires at least two determinants! Quitting...");
+   }
 
    //if (Parameters_->print_lvl)
    //   outfile->Printf( "\n   CI space contains %4d blocks\n", nblocks);

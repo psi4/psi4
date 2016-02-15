@@ -78,8 +78,8 @@ double DCFTSolver::compute_energy_UHF()
         throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
-    if (!(options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") && options_.get_str("DCFT_TYPE") == "DF")
-        throw FeatureNotImplemented("DC-06/DC-12/ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
+    if (!(options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12" || options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "DC-12") && options_.get_str("DCFT_TYPE") == "DF")
+        throw FeatureNotImplemented("ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCFT_TYPE") == "DF")
         throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
 
@@ -112,9 +112,9 @@ double DCFTSolver::compute_energy_UHF()
 
     std::string prefix = options_.get_str("DCFT_TYPE") == "DF"? "DF-" : " ";
 
-    outfile->Printf("\n\t*%3s%6s SCF Energy                                 = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    outfile->Printf(  "\t*%3s%6s Lambda Energy                              = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    outfile->Printf(  "\t*%3s%6s Total Energy                               = %20.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+    outfile->Printf("\n\t*%3s%5s SCF Energy                                 = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    outfile->Printf(  "\t*%3s%5s Lambda Energy                              = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    outfile->Printf(  "\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(), options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
 
 
     Process::environment.globals["DCFT SCF ENERGY"]    = scf_energy_;
@@ -413,8 +413,6 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
         if (fabs(orbitals_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
 
     }
-    // Write orbitals to the checkpoint file
-    write_orbitals_to_checkpoint();
     orbitalsDone_ = nSCFCycles == 1;
     energyConverged_ = false;
     // Transform the Fock matrix to the MO basis
@@ -467,20 +465,55 @@ DCFTSolver::run_simult_dcft()
             refine_tau();
         }
         transform_tau();
-        // Copy core hamiltonian into the Fock matrix array: F = H
-        Fa_->copy(so_h_);
-        Fb_->copy(so_h_);
-        // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
-        process_so_ints();
-        // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-        Fa_->add(g_tau_a_);
-        Fb_->add(g_tau_b_);
-        // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
-        moFa_->copy(Fa_);
-        moFb_->copy(Fb_);
-        // Transform the Fock matrix to the MO basis
-        moFa_->transform(Ca_);
-        moFb_->transform(Cb_);
+        if (options_.get_str("DCFT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE"){
+
+            build_DF_tensors_UHF();
+
+            SharedMatrix mo_h_A = SharedMatrix(new Matrix("MO-based H Alpha", nirrep_, nmopi_, nmopi_));
+            mo_h_A->copy(so_h_);
+            mo_h_A->transform(Ca_);
+
+            SharedMatrix mo_h_B = SharedMatrix(new Matrix("MO-based H Beta", nirrep_, nmopi_, nmopi_));
+            mo_h_B->copy(so_h_);
+            mo_h_B->transform(Cb_);
+
+            moFa_->copy(mo_h_A);
+            moFb_->copy(mo_h_B);
+
+            moFa_->add(mo_gbarGamma_A_);
+            moFb_->add(mo_gbarGamma_B_);
+
+            // Back-transform the Fock matrix to the SO basis: F_so = (Ct)^-1 F_mo C^-1 = (C^-1)t F_mo C^-1
+            SharedMatrix Ca_inverse = SharedMatrix(new Matrix("Ca_ inverse", nirrep_, nmopi_, nsopi_));
+            Ca_inverse->copy(Ca_);
+            Ca_inverse->general_invert();
+            Fa_->copy(moFa_);
+            Fa_->transform(Ca_inverse);
+
+            SharedMatrix Cb_inverse = SharedMatrix(new Matrix("Cb_ inverse", nirrep_, nmopi_, nsopi_));
+            Cb_inverse->copy(Cb_);
+            Cb_inverse->general_invert();
+            Fb_->copy(moFa_);
+            Fb_->transform(Cb_inverse);
+
+        }
+        else{
+            // Copy core hamiltonian into the Fock matrix array: F = H
+            Fa_->copy(so_h_);
+            Fb_->copy(so_h_);
+            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            process_so_ints();
+            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
+            Fa_->add(g_tau_a_);
+            Fb_->add(g_tau_b_);
+            // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
+            moFa_->copy(Fa_);
+            moFb_->copy(Fb_);
+            // Transform the Fock matrix to the MO basis
+            moFa_->transform(Ca_);
+            moFb_->transform(Cb_);
+        }
+
         // Compute new SCF energy
         compute_scf_energy();
         // Add SCF energy contribution to the total DCFT energy
@@ -549,8 +582,6 @@ DCFTSolver::run_simult_dcft()
             outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
-        // Write orbitals to the checkpoint file
-        write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
         // Update SCF density (Kappa) and check its RMS

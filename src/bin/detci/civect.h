@@ -22,10 +22,13 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #ifndef _psi_src_bin_detci_civect_h
 #define _psi_src_bin_detci_civect_h
+// namespace boost {
+// boost::python::dict;
+// }
 
 namespace psi { namespace detci {
 // Forward declarations
@@ -61,7 +64,7 @@ class CIvect {
 
       void common_init();        /* common init func */
 
-      BIGINT vectlen_;            /* total vector length */ 
+      BIGINT vectlen_;            /* total vector length */
       unsigned long buffer_size_; /* size of largest in-core chunk */
       int num_blocks_;            /* number of blocks in vector */
       int icore_;                 /* in-core option. 1 = whole vector in-core,
@@ -90,7 +93,7 @@ class CIvect {
       int buf_locked_;            /* is a memory buffer locked in/available?  */
       int *units_;                /* file numbers */
       int *file_number_;          /* unit number for given vector/block */
-      unsigned long *buf_size_;   /* size of each buffer on disk 
+      unsigned long *buf_size_;   /* size of each buffer on disk
                                      (0...buf_per_vect) */
       int *buf2blk_;              /* buffer number -> block number for
                                      icore=0, else buf->irrep for icore=2 */
@@ -105,21 +108,21 @@ class CIvect {
       int *zero_blocks_;          /* array for which blocks happen to be 0   */
       int in_file_;               /* increment for how many buffers in a file */
       int extras_;                /* accounts for extra buffers */
-      int units_used_;            /* accounts for number of unit files used */  
+      int units_used_;            /* accounts for number of unit files used */
       int cur_unit_;              /* current unit file */
       int cur_size_;              /* current size of buffer */
-      int first_unit_;            /* first file unit number (if > 1) */ 
+      int first_unit_;            /* first file unit number (if > 1) */
       int subgr_per_irrep_;       /* possible number of Olsen subgraphs per irrep */
 
       double ssq(struct stringwr *alplist, struct stringwr *betlist,
            double **CL, double **CR, int nas, int nbs,
            int Ja_list, int Jb_list);
-      
+
    public:
       CIvect();
       CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
-         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
-         int nirr, int cdperirr, int maxvect, int nunits, 
+         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
+         int nirr, int cdperirr, int maxvect, int nunits,
          int funit, int *fablk, int *lablk, int **dc,
          struct calcinfo *CI_CalcInfo, struct params *CI_Params,
          struct H_zero_block *CI_H0block, bool buf_init = true);
@@ -128,16 +131,39 @@ class CIvect {
          struct H_zero_block *CI_H0block, bool buf_init = true);
       ~CIvect();
 
+      /// Numpy interface to the current buffer
+      boost::python::dict numpy_array_interface();
+
+      /// BLAS equivalents for CIVectors
+      void axpy(double a, SharedCIVector x, int tvec, int ovec);
+      void scale(double a, int tvec);
+      void copy(SharedCIVector src, int tvec, int ovec);
+      double vdot(SharedCIVector b, int tvec, int ovec);
+      void zero(void);
+      double norm(int tvec);
+
+      /// Specific CIVector operations
+      double dcalc3(double lambda, SharedCIVector Hd, int rootnum);
+      void symnormalize(double a, int tvec);
+
+      // Disk/memory manipulation
+      void init_io_files(bool open_old);
+      void close_io_files(int keep);
+      int read(int tvec, int ibuf);
+      int write(int tvec, int ibuf);
+      void buf_lock(double *a);
+      void buf_unlock(void);
       double * buf_malloc(void);
-      void set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks); 
+      void set_nvect(int i);
+
+      // Questionable functions and/or should be private
+      void set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks);
       void set(BIGINT vl, int nb, int incor, int ms0, int *iac,
-         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc, 
+         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
          int nirr, int cdperirr, int maxvect, int nunits, int funit,
          int *fablk, int *lablk, int **dc);
       void print(std::string OutFileRMR);
-      double dot(SharedCIVector b);
       double operator*(CIvect &b);
-      void set_nvect(int i);
       void setarray(const double *a, BIGINT len);
       void max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
          double *coeff, int neg_only);
@@ -148,48 +174,41 @@ class CIvect {
       BIGINT strings2det(int alp_code, int alp_idx,
          int bet_code, int bet_idx);
       void diag_mat_els(struct stringwr **alplist, struct stringwr
-         **betlist, double *oei, double *tei, double edrc, int na, int nb, 
+         **betlist, double *oei, double *tei, double edrc, int na, int nb,
          int nbf, int method);
       void diag_mat_els_otf(struct stringwr **alplist, struct stringwr
-         **betlist, double *oei, double *tei, double edrc, int na, int nb, 
+         **betlist, double *oei, double *tei, double edrc, int na, int nb,
          int nbf, int buf, int method);
-      void init_vals(int ivect, int nvals, int *alplist, int *alpidx, 
+      void init_vals(int ivect, int nvals, int *alplist, int *alpidx,
          int *betlist, int *betidx, int *blknums, double *value);
-      void set_vals(int ivect, int nvals, int *alplist, int *alpidx, 
+      void set_vals(int ivect, int nvals, int *alplist, int *alpidx,
          int *betlist, int *betidx, int *blknums, double *value);
-      void extract_vals(int ivect, int nvals, int *alplist, int *alpidx, 
+      void extract_vals(int ivect, int nvals, int *alplist, int *alpidx,
          int *betlist, int *betidx, int *blknums, double *value);
       void symnorm(double a, int vecode, int gather_vec);
       double zero_det(int iac, int ia, int ibc, int ib);
       void scale(double a, int vecode, int gather_vec);
       void symmetrize(double phase, int iblock);
-      void buf_lock(double *a);
-      void buf_unlock(void);
       double ** blockptr(int blknum);
-      void init_io_files(bool open_old);
-      void close_io_files(int keep);
-      int read(int ivect, int ibuf);
-      int write(int ivect, int ibuf);
       int schmidt_add(CIvect &c, int L);
       int schmidt_add2(CIvect &c, int first_vec, int last_vec, int source_vec,
           int target_vec, double *dotval, double *nrm, double *ovlpmax);
-      void zero(void);
       void dcalc(int nr, int L, double **alpha, double *lambda,
-         double *norm_arr, CIvect &C, CIvect &S, double *buf1, double *buf2, 
+         double *norm_arr, CIvect &C, CIvect &S, double *buf1, double *buf2,
          int *root_converged, int printflag, std::string OutFileRMR, double *E_est);
-      void sigma_renorm(int nr, int L, double renorm_C, CIvect &S, 
+      void sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
          double *buf1, int printflag, std::string OutFileRMR);
-      double dcalc2(int rootnum, double lambda, CIvect &Hd, 
+      double dcalc2(int rootnum, double lambda, CIvect &Hd,
            int precon, struct stringwr **alplist, struct stringwr **betlist);
-      double dcalc_evangelisti(int rootnum, int num_vecs, double lambda, 
-           CIvect &Hd, CIvect &C, double *buf1, double *buf2, int precon, 
-           int L, struct stringwr **alplist, struct stringwr **betlist, 
+      double dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
+           CIvect &Hd, CIvect &C, double *buf1, double *buf2, int precon,
+           int L, struct stringwr **alplist, struct stringwr **betlist,
            double **alpha);
-      void construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C, 
+      void construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
            struct stringwr **alplist, struct stringwr **betlist, double *buf1,
            double *buf2, int k, double *mp_energy, double **bvec_overlap,
            double *bvec_norm);
-      void wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C, 
+      void wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            struct stringwr **alplist, struct stringwr **betlist, double *buf1,
            double *buf2, int k, double *mp2k_energy, double **wfn_overlap,
            double **bvec_overlap, double *bvec_norm, int kvec_offset);
@@ -205,7 +224,7 @@ class CIvect {
       void gather(int ivec, int nvec, int nroot, double **alpha, CIvect &C);
       void restart_reord_fp(int L);
       void print_fptrs(void);
-      double calc_ssq(double *buffer1, double *buffer2, 
+      double calc_ssq(double *buffer1, double *buffer2,
            struct stringwr **alplist, struct stringwr **betlist, int vec_num);
       void h0block_buf_init(void);
       void h0block_buf_ols(double *norm,double *ovrlap,double *c1norm,
@@ -219,7 +238,7 @@ class CIvect {
       void copy_zero_blocks(CIvect &src);
       void print_zero_blocks(void);
       void scale_sigma(CIvect &Hd, CIvect &C,
-        struct stringwr **alplist, struct stringwr **betlist, int i, 
+        struct stringwr **alplist, struct stringwr **betlist, int i,
         double *buf1, double *buf2);
       int read_new_first_buf(void);
       void write_new_first_buf(void);

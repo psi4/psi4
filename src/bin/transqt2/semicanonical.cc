@@ -76,16 +76,17 @@ void semicanonical_fock(void)
   /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
      and Eigenvalues to the Wfn */
 
-  Process::environment.wavefunction()->semicanonicalize();
+  throw PSIEXCEPTION("SemiCanonical transform does not work at the moment");
+  //Process::environment.legacy_wavefunction()->semicanonicalize();
 
   C_a = block_matrix(nmo,nmo);
   C_b = block_matrix(nmo,nmo);
-  C_a = Process::environment.wavefunction()->Ca()->to_block_matrix();
-  C_b = Process::environment.wavefunction()->Cb()->to_block_matrix();
+  C_a = Process::environment.legacy_wavefunction()->Ca()->to_block_matrix();
+  C_b = Process::environment.legacy_wavefunction()->Cb()->to_block_matrix();
   alpha_evals = init_array(nmo);
   beta_evals = init_array(nmo);
-  alpha_evals = Process::environment.wavefunction()->epsilon_a()->to_block_vector();
-  beta_evals = Process::environment.wavefunction()->epsilon_b()->to_block_vector();
+  alpha_evals = Process::environment.legacy_wavefunction()->epsilon_a()->to_block_vector();
+  beta_evals = Process::environment.legacy_wavefunction()->epsilon_b()->to_block_vector();
 
   if(params.print_lvl > 2) {
     outfile->Printf( "\nAlpha Eigenvalues\n");
@@ -111,6 +112,7 @@ void semicanonical_fock(void)
 
 void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
 {
+  throw PSIEXCEPTION("UHF Fock build is deprecated");
   int i, j, ij;
   int nso=0;
   int ntri=0;
@@ -134,7 +136,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       Dt[p][q] = D_a[p][q] + D_b[p][q];
 
   /* one-electron contributions */
-  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+  double **H = Process::environment.legacy_wavefunction()->H()->to_block_matrix();
 
   for(i=0; i < nso; i++) {
       for(j=0; j <= i; j++) {

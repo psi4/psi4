@@ -23,7 +23,6 @@
  */
 
 #include "stability.h"
-#include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -43,19 +42,22 @@ namespace psi{
 
 namespace scf {
 
-PsiReturnType stability(Options& options)
+PsiReturnType stability(SharedWavefunction ref_wfn, Options& options)
 {
 
     tstart();
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab());
+    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(ref_wfn, options));
     stab->compute_energy();
     tstop();
 
     return Success;
 }
 
-UStab::UStab() : options_(Process::environment.options) {
+UStab::UStab(SharedWavefunction ref_wfn, Options& options) :
+       options_(options)
+{
     common_init();
+    set_reference(ref_wfn);
 }
 
 UStab::~UStab() {
@@ -63,12 +65,6 @@ UStab::~UStab() {
 
 void UStab::common_init()
 {
-    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
-    if (!ref) {
-        throw PSIEXCEPTION("Need an SCF wavefunction in Process::environment !!");
-    }
-
-    set_reference(ref);
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
@@ -299,7 +295,7 @@ void UStab::preiterations()
             jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
             outfile->Printf("    Reusing JK object from SCF.\n\n");
         } else {
-            jk_ = JK::build_JK();
+            jk_ = JK::build_JK(basis_, options_);
             unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();

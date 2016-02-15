@@ -18,3 +18,11 @@ emp3   = energy('mp3')
 emp4   = energy('mp4')
 
 
+set qc_module detci
+
+ecisd  = energy('cisd')
+ecisdt = energy('cisdt')
+emp3   = energy('mp3')
+emp4   = energy('mp4')
+
+
