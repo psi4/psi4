@@ -692,6 +692,10 @@ void set_params(void)
 // if bend exceeds this value, then also create linear bend complement
   Opt_params.linear_bend_threshold = 3.05; // about 175 degrees
 
+// If bend is smaller than this value, then never fix its associated vectors
+// this allows iterative steps through and near zero degrees. 
+  Opt_params.small_bend_fix_threshold = 0.35;
+
 // threshold for which entries in diagonalized redundant matrix are kept and inverted
 // while computing a generalized inverse of a matrix
   Opt_params.redundant_eval_tol = 1.0e-10;
