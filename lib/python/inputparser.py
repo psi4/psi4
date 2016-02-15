@@ -739,6 +739,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from p4const import *\n'
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
+    imports += 'from diatomic import anharmonicity\n'
 #CU    imports += 'from driver import *\n'
 #CU    imports += 'from wrappers import *\n'
 #CU    imports += 'from wrappers_cfour import *\n'

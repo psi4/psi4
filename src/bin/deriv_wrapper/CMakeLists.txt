@@ -22,4 +22,4 @@ if(BUILD_CUSTOM_BOOST)
 endif()
 
 # Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/libderiv_wrapper)
+install_list_FILES("${headers_list}" include/psi4/libderiv_wrapper)

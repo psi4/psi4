@@ -82,10 +82,15 @@ void DCFTSolver::df_build_b_ao()
     auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
                                                  "DF_BASIS_DCFT", options_.get_str("DF_BASIS_DCFT"),
                                                  "RIFIT", options_.get_str("BASIS"));
+    auxiliary_scf_ = BasisSet::pyconstruct_auxiliary(molecule_,
+                                                     "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
+                                                     "JKFIT", options_.get_str("BASIS"));
+
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     nn_ = primary_->nbf();
     nQ_ = auxiliary_->nbf();
+    nQ_scf_ = auxiliary_scf_->nbf();
 
     // Print memory
     // TODO: print memory information for UHF
@@ -100,6 +105,16 @@ void DCFTSolver::df_build_b_ao()
     dcft_timer_on("DCFTSolver::Form B(Q,mn)");
     formb_ao(primary_, auxiliary_, zero);
     dcft_timer_off("DCFTSolver::Form B(Q,mn)");
+
+    // Form J(P,Q)^-1/2 for SCF terms
+    dcft_timer_on("DCFTSolver::Form J^-1/2 (SCF terms)");
+    formJm12_scf(auxiliary_scf_, zero);
+    dcft_timer_off("DCFTSolver::Form J^-1/2 (SCF terms)");
+
+    // Form B(Q, mu, nu) for SCF terms
+    dcft_timer_on("DCFTSolver::Form B(Q,mn) (SCF terms)");
+    formb_ao_scf(primary_, auxiliary_scf_, zero);
+    dcft_timer_off("DCFTSolver::Form B(Q,mn) (SCF terms)");
 
     dcft_timer_off("DCFTSolver::df_build_b_ao()");
 }
@@ -351,12 +366,11 @@ void DCFTSolver::transform_b()
 {
     dcft_timer_on("DCFTSolver::Transform B(Q,mn) -> B(Q,pq)");
 
-    transform_b_ao2so();
-
     formb_oo();
     formb_ov();
     formb_vv();
     formb_pq();
+
     dcft_timer_off("DCFTSolver::Transform B(Q,mn) -> B(Q,pq)");
 }
 
@@ -411,6 +425,8 @@ void DCFTSolver::transform_b_ao2so()
         offset[h] += nsopi_[hm] * nsopi_[hn];
         }
     }
+
+    bQmn_ao_.reset();
 
     dcft_timer_off("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 }
@@ -1532,6 +1548,8 @@ void DCFTSolver::build_gbarGamma_RHF()
 {
     dcft_timer_on("DCFTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
 
+    build_gbarKappa_RHF();
+
     int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
@@ -1539,9 +1557,10 @@ void DCFTSolver::build_gbarGamma_RHF()
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
     mo_gammaA_ = SharedMatrix (new Matrix("MO-basis Gamma", nirrep_, nmopi_, nmopi_));
-    mo_gammaA_->copy(kappa_mo_a_);
-    mo_gammaA_->add(mo_tauA_);
+//    mo_gammaA_->copy(kappa_mo_a_);
+//    mo_gammaA_->add(mo_tauA_);
     mo_gbarGamma_A_ = SharedMatrix (new Matrix("MO-basis Gbar*Gamma", nirrep_, nmopi_, nmopi_));
+    mo_gammaA_->copy(mo_tauA_);
 
     // Put detailed information of b(Q|pq) block into 'block'
     std::vector<std::vector<std::pair<long int, long int>>> block;
@@ -1625,9 +1644,113 @@ void DCFTSolver::build_gbarGamma_RHF()
         }
     }
 
+    mo_gbarGamma_A_->add(mo_gbarKappa_A_);
+
     dcft_timer_off("DCFTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
 
 }
+
+void DCFTSolver::build_gbarKappa_RHF()
+{
+    dcft_timer_on("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
+
+    formb_pq_scf();
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    mo_gbarKappa_A_ = SharedMatrix (new Matrix("MO-basis Gbar*Kappa", nirrep_, nmopi_, nmopi_));
+
+    // Put detailed information of b(Q|pq) block into 'block'
+    std::vector<std::vector<std::pair<long int, long int>>> block;
+    for (int hpq = 0; hpq < nirrep_; ++hpq){
+        long int entrance = 0;
+        std::vector<std::pair<long int, long int>> subblock;
+        for (int hp = 0; hp < nirrep_; ++hp){
+            int hq = hpq ^ hp;
+            std::pair<long int, long int> subsubblock(entrance, nsopi_[hp] * nsopi_[hq]);
+            subblock.push_back(subsubblock);
+            entrance += subsubblock.second;
+        }
+        block.push_back(subblock);
+    }
+
+    /*
+     *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
+     *                  = 2 g(QP|SR) gamma<R|S> - g(QR|SP) gamma<R|S>
+     *                  = 2 b(QP|Aux) b(Aux|SR) gamma<R|S> - b(QR|Aux) b(Aux|SP) gamma<R|S>
+     */
+
+    // f_tilde <Q|P> = 2 b(QP|Aux) b(Aux|SR) gamma<R|S>
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    for (int hq = 0; hq < nirrep_; ++hq){
+        int hp = hq;
+        if (nsopi_[hq] > 0){
+            double** tFAp = mo_gbarKappa_A_->pointer(hq);
+            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
+            SharedMatrix Q (new Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_));
+            double** Qp = Q->pointer();
+            // (Q) = b(Q|SR) gamma<R|S>
+            for (int hr = 0; hr < nirrep_; ++hr){
+                int hs = hr;
+                if (nsopi_[hr] > 0){
+                    double** gamma_rs_p = kappa_mo_a_->pointer(hr);
+                    C_DGEMV('N', nQ_scf_, nsopi_[hr]*nsopi_[hs], 1.0, bQpqAp[0]+block[0][hr].first, bQpqA_mo_scf_->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
+                }
+            }
+            // tilde_f <Q|P> = 2 b(QP|Aux)*(Aux) where (Aux) = (Q)
+            C_DGEMV('T', nQ_scf_, nsopi_[hp]*nsopi_[hq], 2.0, bQpqAp[0]+block[0][hp].first, bQpqA_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFAp[0], 1);
+        }
+    }
+
+    // f_tilde <Q|P> -= b(QR|Aux) b(Aux|SP) gamma<R|S>
+    for (int hq = 0; hq < nirrep_; ++hq){
+        int hp = hq;
+        if (nsopi_[hq] > 0){
+            for (int hr = 0; hr < nirrep_; ++hr){
+                int hs = hr;
+                if (nsopi_[hr] > 0){
+                    double** bQpqAp = bQpqA_mo_scf_->pointer(hq^hr);
+                    double** gamma_rs_p = kappa_mo_a_->pointer(hr);
+
+                    std::vector<SharedMatrix> rs;
+                    for (int i = 0; i < nthreads; ++i){
+                        rs.push_back(SharedMatrix(new Matrix("<Q'P'|RS>", nsopi_[hr], nsopi_[hs])));
+                    }
+
+                    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                    for (int q = 0; q < nsopi_[hq]; ++q){
+                        for (int p = q; p < nsopi_[hp]; ++p){
+
+                            int thread = 0;
+                            #ifdef _OPENMP
+                            thread = omp_get_thread_num();
+                            #endif
+                            double** rsp = rs[thread]->pointer();
+
+                            // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
+                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0, bQpqAp[0]+block[hq^hr][hq].first+q*nsopi_[hr], bQpqA_mo_scf_->coldim(hq^hr), bQpqAp[0]+block[hp^hs][hp].first+p*nsopi_[hs], bQpqA_mo_scf_->coldim(hp^hs), 0.0, rsp[0], nsopi_[hs]);
+                            // - <Q'P'|RS> * gamma<R|S>
+                            double value = - C_DDOT(nsopi_[hr]*nsopi_[hs], rsp[0], 1, gamma_rs_p[0], 1);
+                            mo_gbarKappa_A_->add(hp, q, p, value);
+                            if (q != p){
+                                mo_gbarKappa_A_->add(hp, p, q, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bQpqA_mo_scf_.reset();
+
+    dcft_timer_off("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
+
+}
+
 
 /**
  * Compute the density-fitted ERI <vv||vv> tensors in G intermediates
@@ -2040,6 +2163,8 @@ void DCFTSolver::build_gbarGamma_UHF()
 {
     dcft_timer_on("DCFTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
 
+    build_gbarKappa_UHF();
+
     int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
@@ -2047,13 +2172,16 @@ void DCFTSolver::build_gbarGamma_UHF()
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
     mo_gammaA_ = SharedMatrix (new Matrix("MO-basis Gamma Alpha", nirrep_, nmopi_, nmopi_));
-    mo_gammaA_->copy(kappa_mo_a_);
-    mo_gammaA_->add(mo_tauA_);
+//    mo_gammaA_->copy(kappa_mo_a_);
+//    mo_gammaA_->add(mo_tauA_);
     mo_gbarGamma_A_ = SharedMatrix (new Matrix("MO-basis Gbar_Gamma_A", nirrep_, nmopi_, nmopi_))    ;
     mo_gammaB_ = SharedMatrix (new Matrix("MO-basis Gamma Beta", nirrep_, nmopi_, nmopi_));
-    mo_gammaB_->copy(kappa_mo_b_);
-    mo_gammaB_->add(mo_tauB_);
+//    mo_gammaB_->copy(kappa_mo_b_);
+//    mo_gammaB_->add(mo_tauB_);
     mo_gbarGamma_B_ = SharedMatrix (new Matrix("MO-basis Gbar_Gamma_B", nirrep_, nmopi_, nmopi_))    ;
+
+    mo_gammaA_->copy(mo_tauA_);
+    mo_gammaB_->copy(mo_tauB_);
 
     // Put detailed information of b(Q|pq) block into 'block'
     std::vector<std::vector<std::pair<long int, long int>>> block;
@@ -2191,7 +2319,599 @@ void DCFTSolver::build_gbarGamma_UHF()
         }
     }
 
+    mo_gbarGamma_A_->add(mo_gbarKappa_A_);
+    mo_gbarGamma_B_->add(mo_gbarKappa_B_);
+
     dcft_timer_off("DCFTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
+}
+
+void DCFTSolver::build_gbarKappa_UHF()
+{
+    dcft_timer_on("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
+
+    formb_pq_scf();
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    mo_gbarKappa_A_ = SharedMatrix (new Matrix("MO-basis Gbar_Kappa_A", nirrep_, nmopi_, nmopi_))    ;
+    mo_gbarKappa_B_ = SharedMatrix (new Matrix("MO-basis Gbar_Kappa_B", nirrep_, nmopi_, nmopi_))    ;
+
+    // Put detailed information of b(Q|pq) block into 'block'
+    std::vector<std::vector<std::pair<long int, long int>>> block;
+    for (int hpq = 0; hpq < nirrep_; ++hpq){
+        long int entrance = 0;
+        std::vector<std::pair<long int, long int>> subblock;
+        for (int hp = 0; hp < nirrep_; ++hp){
+            int hq = hpq ^ hp;
+            std::pair<long int, long int> subsubblock(entrance, nsopi_[hp] * nsopi_[hq]);
+            subblock.push_back(subsubblock);
+            entrance += subsubblock.second;
+        }
+        block.push_back(subblock);
+    }
+
+    /*
+     *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
+     *             = g(QP|SR) gamma<R|S> - g(QR|SP) gamma<R|S> + g(QP|sr) gamma<r|s>
+     *
+     *  f_tilde <q|p> = gbar<qs|pr> gamma<r|s> + gbar<qS|pR> gamma<R|S>
+     *             = g(qp|sr) gamma<r|s> - g(qr|sp) gamma<r|s> + g(qp|SR) gamma<R|S>
+     */
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    for (int hQ = 0; hQ < nirrep_; ++hQ){
+        int hP = hQ;
+        if (nsopi_[hQ] > 0){
+            double** tFAp = mo_gbarKappa_A_->pointer(hQ);
+            double** tFBp = mo_gbarKappa_B_->pointer(hQ);
+
+            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
+            double** bQpqBp = bQpqB_mo_scf_->pointer(0);
+
+            // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
+            SharedMatrix Q (new Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_));
+            double** Qp = Q->pointer();
+            for (int hR = 0; hR < nirrep_; ++hR){
+                int hS = hR;
+                if (nsopi_[hR] > 0){
+                    double** gamma_rsAp = kappa_mo_a_->pointer(hR);
+                    double** gamma_rsBp = kappa_mo_b_->pointer(hR);
+                    // (Q) = b(Q|SR) gamma<R|S>
+                    C_DGEMV('N', nQ_scf_, nsopi_[hR]*nsopi_[hS], 1.0, bQpqAp[0]+block[0][hR].first, bQpqA_mo_scf_->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
+                    // (Q) += b(Q|sr) gamma<r|s>
+                    C_DGEMV('N', nQ_scf_, nsopi_[hR]*nsopi_[hS], 1.0, bQpqBp[0]+block[0][hR].first, bQpqB_mo_scf_->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
+                }
+            }
+
+            // f_tilde <Q|P> = b(QP|Aux)*(Aux) where (Aux) = (Q)
+            C_DGEMV('T', nQ_scf_, nsopi_[hP]*nsopi_[hQ], 1.0, bQpqAp[0]+block[0][hP].first, bQpqA_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFAp[0], 1);
+
+            // f_tilde <q|p> = b(qp|Aux)*(Aux) where (Aux) = (Q)
+            C_DGEMV('T', nQ_scf_, nsopi_[hP]*nsopi_[hQ], 1.0, bQpqBp[0]+block[0][hP].first, bQpqB_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFBp[0], 1);
+        }
+
+    }
+
+
+    // f_tilde <Q|P> -= b(QR|Aux) b(Aux|SP) gamma<R|S>
+    for (int hQ = 0; hQ < nirrep_; ++hQ){
+        int hP = hQ;
+        if (nsopi_[hQ] > 0){
+            for (int hR = 0; hR < nirrep_; ++hR){
+                int hS = hR;
+                if (nsopi_[hR] > 0){
+                    double** bQpqAp = bQpqA_mo_scf_->pointer(hQ^hR);
+                    double** gamma_rsA_p = kappa_mo_a_->pointer(hR);
+
+                    std::vector<SharedMatrix> RS;
+                    for (int i = 0; i < nthreads; ++i){
+                        RS.push_back(SharedMatrix(new Matrix("<Q'P'|RS>", nsopi_[hR], nsopi_[hS])));
+                    }
+
+                    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                    for (int Q = 0; Q < nsopi_[hQ]; ++Q){
+                        for (int P = Q; P < nsopi_[hP]; ++P){
+                            int thread = 0;
+                            #ifdef _OPENMP
+                                thread = omp_get_thread_num();
+                            #endif
+                            double** RSp = RS[thread]->pointer();
+
+                            // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
+                            C_DGEMM('T', 'N', nsopi_[hR], nsopi_[hS], nQ_scf_, 1.0, bQpqAp[0]+block[hQ^hR][hQ].first+Q*nsopi_[hR], bQpqA_mo_scf_->coldim(hQ^hR), bQpqAp[0]+block[hP^hS][hP].first+P*nsopi_[hS], bQpqA_mo_scf_->coldim(hP^hS), 0.0, RSp[0], nsopi_[hS]);
+                            // - <Q'P'|RS> * gamma<R|S>
+                            double value = - C_DDOT(nsopi_[hR]*nsopi_[hS], RSp[0], 1, gamma_rsA_p[0], 1);
+                            mo_gbarKappa_A_->add(hP, Q, P, value);
+                            if (Q != P){
+                                mo_gbarKappa_A_->add(hP, P, Q, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    // f_tilde <q|p> -= b(qr|Aux) b(Aux|sp) gamma<r|s>
+    for (int hq = 0; hq < nirrep_; ++hq){
+        int hp = hq;
+        if (nsopi_[hq] > 0){
+            for (int hr = 0; hr < nirrep_; ++hr){
+                int hs = hr;
+                if (nsopi_[hr] > 0){
+                    double** bQpqBp = bQpqB_mo_scf_->pointer(hq^hr);
+                    double** gamma_rsB_p = kappa_mo_b_->pointer(hr);
+
+                    std::vector<SharedMatrix> rs;
+                    for (int i = 0; i < nthreads; ++i){
+                        rs.push_back(SharedMatrix (new Matrix("<q'p'|rs>", nsopi_[hr], nsopi_[hs])));
+                    }
+
+                    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                    for (int q = 0; q < nsopi_[hq]; ++q){
+                        for (int p = q; p < nsopi_[hp]; ++p){
+                            int thread = 0;
+                            #ifdef _OPENMP
+                                thread = omp_get_thread_num();
+                            #endif
+                            double** rsp = rs[thread]->pointer();
+
+                            // <q'p'|rs> = b(q'r|Aux) b(Aux|p's)
+                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0, bQpqBp[0]+block[hq^hr][hq].first+q*nsopi_[hr], bQpqB_mo_scf_->coldim(hq^hr), bQpqBp[0]+block[hp^hs][hp].first+p*nsopi_[hs], bQpqB_mo_scf_->coldim(hp^hs), 0.0, rsp[0], nsopi_[hs]);
+                            // - <q'p'|rs> * gamma<r|s>
+                            double value = - C_DDOT(nsopi_[hr]*nsopi_[hs], rsp[0], 1, gamma_rsB_p[0], 1);
+                            mo_gbarKappa_B_->add(hp, q, p, value);
+                            if (q != p){
+                                mo_gbarKappa_B_->add(hp, p, q, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bQpqA_mo_scf_.reset();
+    bQpqB_mo_scf_.reset();
+
+    dcft_timer_off("DCFTSolver::Gbar<QS|PR> Kappa<R|S>");
+
+}
+
+/**
+  * Form J(P,Q)^-1/2 for SCF terms
+  */
+void DCFTSolver::formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+{
+//    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    double **J = block_matrix(nQ_scf_, nQ_scf_);
+    Jm12_scf_ = block_matrix(nQ_scf_, nQ_scf_);
+
+    // => Integrals <= //
+    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, auxiliary, zero));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++){
+        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        buffer.push_back(Jint[t]->buffer());
+    }
+
+    std::vector<std::pair<int, int> > PQ_pairs;
+    for (int P = 0; P < auxiliary->nshell(); P++){
+        for (int Q = 0; Q <= P; Q++){
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
+        }
+    }
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++){
+        int P = PQ_pairs[PQ].first;
+        int Q = PQ_pairs[PQ].second;
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        Jint[thread]->compute_shell(P, 0, Q, 0);
+
+        int nP = auxiliary->shell(P).nfunction();
+        int oP = auxiliary->shell(P).function_index();
+
+        int nQ = auxiliary->shell(Q).nfunction();
+        int oQ = auxiliary->shell(Q).function_index();
+
+        int index = 0;
+        for (int p = 0; p < nP; p++){
+            for (int q = 0; q < nQ; q++, ++index){
+                J[p + oP][q + oQ] = buffer[thread][index];
+            }
+        }
+    }
+
+    // First, diagonalize J(P,Q)
+    int lwork = nQ_scf_ * 3;
+    double* eigval = init_array(nQ_scf_);
+    double* work = init_array(lwork);
+    int status = C_DSYEV('v', 'u', nQ_scf_, J[0], nQ_scf_, eigval, work, lwork);
+    if(status){
+        throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
+    }
+    free(work);
+
+    // Now J contains eigenvectors of the original J
+    double **J_copy = block_matrix(nQ_scf_, nQ_scf_);
+    C_DCOPY(nQ_scf_ * nQ_scf_, J[0], 1, J_copy[0], 1);
+
+    // Now form J^-1/2 = U(T) * j^-1/2 * U
+    // where j^-1/2 is the diagonal matrix of inverse square
+    // of the eigenvalues, and U is the matrix of eigenvectors of J
+    for (int i = 0; i < nQ_scf_; ++i){
+        eigval[i] = (eigval[i] < 1.0E-10) ? 0.0 : 1.0 / sqrt(eigval[i]);
+        // scale one set of eigenvectors by the diagonal elements j^-1/2
+        C_DSCAL(nQ_scf_, eigval[i], J[i], 1);
+    }
+    free(eigval);
+
+    // J^-1/2 = J_copy(T) * J
+    C_DGEMM('t', 'n', nQ_scf_, nQ_scf_, nQ_scf_, 1.0, J_copy[0], nQ_scf_, J[0], nQ_scf_, 0.0, Jm12_scf_[0], nQ_scf_);
+    free_block(J);
+    free_block(J_copy);
+
+}
+
+/**
+  * Form b(Q|mn) for SCF terms
+  */
+void DCFTSolver::formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+{
+    bQmn_ao_scf_ = SharedMatrix(new Matrix(nQ_scf_, nso_ * nso_));
+    double **Ap = bQmn_ao_scf_->pointer();
+    double **Bp = block_matrix(nQ_scf_, nso_ * nso_);
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    boost::shared_ptr<ERISieve> sieve = boost::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
+    int npairs = shell_pairs.size();
+
+    // => Memory Constraints <= //
+    int max_rows;
+    max_rows = auxiliary->nshell();
+
+    // => Block Sizing <= //
+    std::vector<int> Pstarts;
+    int counter = 0;
+    Pstarts.push_back(0);
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+        int nP = auxiliary->shell(P).nfunction();
+        if (counter + nP > max_rows) {
+            counter = 0;
+            Pstarts.push_back(P);
+        }
+        counter += nP;
+    }
+    Pstarts.push_back(auxiliary->nshell());
+
+    // => Integrals <= //
+    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary, zero, primary, primary));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++) {
+        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        buffer.push_back(eri[t]->buffer());
+    }
+
+    // => Master Loop <= //
+
+    for (int block = 0; block < Pstarts.size() - 1; block++) {
+
+        // > Sizing < //
+
+        int Pstart = Pstarts[block];
+        int Pstop  = Pstarts[block+1];
+        int NP = Pstop - Pstart;
+
+        int pstart = auxiliary->shell(Pstart).function_index();
+        int pstop  = (Pstop == auxiliary->nshell() ? nQ_scf_ : auxiliary->shell(Pstop ).function_index());
+        int np = pstop - pstart;
+
+        // > Integrals < //
+        #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            int P =  PMN / npairs + Pstart;
+            int MN = PMN % npairs;
+            int M = shell_pairs[MN].first;
+            int N = shell_pairs[MN].second;
+
+            eri[thread]->compute_shell(P,0,M,N);
+
+            int nP = auxiliary->shell(P).nfunction();
+            int oP = auxiliary->shell(P).function_index();
+
+            int nM = primary->shell(M).nfunction();
+            int oM = primary->shell(M).function_index();
+
+            int nN = primary->shell(N).nfunction();
+            int oN = primary->shell(N).function_index();
+
+            int index = 0;
+            for (int p = 0; p < nP; p++) {
+                for (int m = 0; m < nM; m++) {
+                    for (int n = 0; n < nN; n++, index++) {
+                         Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
+                         Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
+                    }
+                }
+            }
+        }
+    }
+
+    C_DGEMM('N','N', nQ_scf_, nso_ * nso_, nQ_scf_, 1.0, Jm12_scf_[0], nQ_scf_, Bp[0], nso_ * nso_, 0.0, Ap[0], nso_ * nso_);
+}
+
+/**
+  * Transform b(Q|mu,nu) from AO basis to SO basis for SCF terms
+  */
+void DCFTSolver::transform_b_ao2so_scf()
+{
+    dcft_timer_on("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    double** bQmn_ao_p = bQmn_ao_scf_->pointer();
+
+    // Set up dimensions for SO-basis b(Q|mn)
+    Dimension Q(nirrep_), mn(nirrep_);
+    for (int hn = 0; hn < nirrep_; ++hn){
+        Q[hn] = nQ_scf_;
+        for (int hm = 0; hm < nirrep_; ++hm){
+            mn[hm ^ hn] += nsopi_[hm] * nsopi_[hn];
+        }
+    }
+    bQmn_so_scf_ = SharedMatrix(new Matrix("Fully-transformed b", Q, mn));
+
+    std::vector<int> offset(nirrep_);
+    for (int h = 0; h < nirrep_; ++h){
+        offset.push_back(0);
+    }
+
+    // AO-basis b(Q|mn) -> SO-basis b(Q|mn)
+    for (int h = 0; h < nirrep_; ++h){
+        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
+        for (int hm = 0; hm < nirrep_; ++hm){
+            int hn = h ^ hm;
+            if (nsopi_[hm] > 0 && nsopi_[hn] > 0){
+
+                SharedMatrix tmp (new Matrix("Half-transformed b", nQ_scf_, nso_ * nsopi_[hn]));
+                double** tmpp = tmp->pointer();
+                double** ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
+                double** ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
+                // First-half transformation
+                C_DGEMM('N', 'N', nQ_scf_ * nso_, nsopi_[hn], nso_, 1.0, bQmn_ao_p[0], nso_, ao2so_n_p[0], nsopi_[hn], 0.0, tmpp[0], nsopi_[hn]);
+                // Second-half transformation
+                #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                for (int Q = 0; Q < nQ_scf_; ++Q){
+                    C_DGEMM('T', 'N', nsopi_[hm], nsopi_[hn], nso_, 1.0, ao2so_m_p[0], nsopi_[hm], tmpp[Q], nsopi_[hn], 0.0, bQmn_so_p[Q]+offset[h], nsopi_[hn]);
+                }
+            }
+        offset[h] += nsopi_[hm] * nsopi_[hn];
+        }
+    }
+
+    bQmn_ao_scf_.reset();
+
+    dcft_timer_off("DCFTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
+}
+
+/**
+  * form b(Q,ij) for SCF terms
+  */
+void DCFTSolver::formb_oo_scf()
+{
+    dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|ij)");
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    // Set up dimensions for b(Q|IJ)
+    Dimension OO(nirrep_), Q(nirrep_);
+    for (int hI = 0; hI < nirrep_; ++hI){
+        Q[hI] = nQ_scf_;
+        for (int hJ = 0; hJ < nirrep_; ++hJ){
+            OO[hI ^ hJ] += naoccpi_[hI] * naoccpi_[hJ];
+        }
+    }
+    bQijA_mo_scf_ = SharedMatrix(new Matrix("b(Q|IJ)", Q, OO));
+
+    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
+    for (int h = 0; h < nirrep_; ++h){
+        offset_so.push_back(0);
+        offset_mo.push_back(0);
+    }
+
+    for (int h = 0; h < nirrep_; ++h){
+        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
+        double** bQijA_mo_p = bQijA_mo_scf_->pointer(h);
+        for (int hI = 0; hI < nirrep_; ++hI){
+            int hJ = h ^ hI;
+            if (naoccpi_[hI] > 0 && naoccpi_[hJ] > 0){
+                double** CaJp = Ca_->pointer(hJ);
+                double** CaIp = Ca_->pointer(hI);
+                SharedMatrix tmp (new Matrix("Half-transformed b_IJ", nQ_scf_, nsopi_[hI] * naoccpi_[hJ]));
+                double** tmpp = tmp->pointer();
+                #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                for (int Q = 0; Q < nQ_scf_; ++Q){
+                    // First-half transformation
+                    C_DGEMM('N', 'N', nsopi_[hI], naoccpi_[hJ], nsopi_[hJ], 1.0, bQmn_so_p[Q] + offset_so[h], nsopi_[hJ], CaJp[0], nsopi_[hJ], 0.0, tmpp[Q], naoccpi_[hJ]);
+                    // Second-half transformation
+                    C_DGEMM('T', 'N', naoccpi_[hI], naoccpi_[hJ], nsopi_[hI], 1.0, CaIp[0], nsopi_[hI], tmpp[Q], naoccpi_[hJ], 0.0, bQijA_mo_p[Q] + offset_mo[h], naoccpi_[hJ]);
+                }
+            }
+            offset_so[h] += nsopi_[h ^ hI] * nsopi_[hI];
+            offset_mo[h] += naoccpi_[h ^ hI] * naoccpi_[hI];
+        }
+    }
+
+    if (options_.get_str("REFERENCE") != "RHF"){
+
+        // Set up dimensions for b(Q|ij)
+        Dimension oo(nirrep_), Q(nirrep_);
+        for (int hi = 0; hi < nirrep_; ++hi){
+            Q[hi] = nQ_scf_;
+            for (int hj = 0; hj < nirrep_; ++hj){
+                oo[hi ^ hj] += nboccpi_[hi] * nboccpi_[hj];
+            }
+        }
+
+        bQijB_mo_scf_ = SharedMatrix(new Matrix("b(Q|ij)", Q, oo));
+
+        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
+        for (int h = 0; h < nirrep_; ++h){
+            offset_so.push_back(0);
+            offset_mo.push_back(0);
+        }
+
+        for (int h = 0; h < nirrep_; ++h){
+            double** bQmn_so_p = bQmn_so_scf_->pointer(h);
+            double** bQijB_mo_p = bQijB_mo_scf_->pointer(h);
+            for (int hi = 0; hi < nirrep_; ++hi){
+                int hj = h ^ hi;
+                if (nboccpi_[hi] > 0 && nboccpi_[hj] > 0){
+                    double** Cbjp = Cb_->pointer(hj);
+                    double** Cbip = Cb_->pointer(hi);
+                    SharedMatrix tmp (new Matrix("Half-transformed b_ij", nQ_scf_, nsopi_[hi] * nboccpi_[hj]));
+                    double** tmpp = tmp->pointer();
+                    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                    for (int Q = 0; Q < nQ_scf_; ++Q){
+                        // First-half transformation
+                        C_DGEMM('N', 'N', nsopi_[hi], nboccpi_[hj], nsopi_[hj], 1.0, bQmn_so_p[Q] + offset_so[h], nsopi_[hj], Cbjp[0], nsopi_[hj], 0.0, tmpp[Q], nboccpi_[hj]);
+                        // Second-half transformation
+                        C_DGEMM('T', 'N', nboccpi_[hi], nboccpi_[hj], nsopi_[hi], 1.0, Cbip[0], nsopi_[hi], tmpp[Q], nboccpi_[hj], 0.0, bQijB_mo_p[Q] + offset_mo[h], nboccpi_[hj]);
+                    }
+                }
+                offset_so[h] += nsopi_[h ^ hi] * nsopi_[hi];
+                offset_mo[h] += nboccpi_[h ^ hi] * nboccpi_[hi];
+            }
+        }
+
+
+    }
+
+    dcft_timer_off("DCFTSolver::b(Q|mn) -> b(Q|ij)");
+}
+
+/**
+  * form b(Q,pq) for SCF terms
+  */
+void DCFTSolver::formb_pq_scf()
+{
+    dcft_timer_on("DCFTSolver::b(Q|mn) -> b(Q|pq)");
+
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    // Set up dimensions for b(Aux|PQ)
+    Dimension PQ(nirrep_), Aux(nirrep_);
+    for (int hP = 0; hP < nirrep_; ++hP){
+        Aux[hP] = nQ_scf_;
+        for (int hQ = 0; hQ < nirrep_; ++hQ){
+            PQ[hP ^ hQ] += nsopi_[hP] * nsopi_[hQ];
+        }
+    }
+    bQpqA_mo_scf_ = SharedMatrix(new Matrix("b(Aux|PQ)", Aux, PQ));
+
+    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
+    for (int h = 0; h < nirrep_; ++h){
+        offset_so.push_back(0);
+        offset_mo.push_back(0);
+    }
+
+    for (int h = 0; h < nirrep_; ++h){
+        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
+        double** bQpqA_mo_p = bQpqA_mo_scf_->pointer(h);
+        for (int hP = 0; hP < nirrep_; ++hP){
+            int hQ = h ^ hP;
+            if (nsopi_[hP] > 0 && nsopi_[hQ] > 0){
+                double** Caqp = Ca_->pointer(hQ);
+                double** Capp = Ca_->pointer(hP);
+                SharedMatrix tmp (new Matrix("Half-transformed b_PQ", nQ_scf_, nsopi_[hP] * nsopi_[hQ]));
+                double** tmpp = tmp->pointer();
+                #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                for (int Aux = 0; Aux < nQ_scf_; ++Aux){
+                    // First-half transformation
+                    C_DGEMM('N', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hQ], 1.0, bQmn_so_p[Aux] + offset_so[h], nsopi_[hQ], Caqp[0], nsopi_[hQ], 0.0, tmpp[Aux], nsopi_[hQ]);
+                    // Second-half transformation
+                    C_DGEMM('T', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hP], 1.0, Capp[0], nsopi_[hP], tmpp[Aux], nsopi_[hQ], 0.0, bQpqA_mo_p[Aux] + offset_mo[h], nsopi_[hQ]);
+                }
+
+            }
+            offset_so[h] += nsopi_[h ^ hP] * nsopi_[hP];
+            offset_mo[h] += nsopi_[h ^ hP] * nsopi_[hP];
+        }
+    }
+
+    if (options_.get_str("REFERENCE") != "RHF"){
+        // Set up dimensions for b(Aux|pq)
+        bQpqB_mo_scf_ = SharedMatrix(new Matrix("b(Aux|pq)", Aux, PQ));
+
+        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
+        for (int h = 0; h < nirrep_; ++h){
+            offset_so.push_back(0);
+            offset_mo.push_back(0);
+        }
+
+        for (int h = 0; h < nirrep_; ++h){
+            double** bQmn_so_p = bQmn_so_scf_->pointer(h);
+            double** bQpqB_mo_p = bQpqB_mo_scf_->pointer(h);
+            for (int hp = 0; hp < nirrep_; ++hp){
+                int hq = h ^ hp;
+                if (nsopi_[hp] > 0 && nsopi_[hq] > 0){
+                    double** Cbqp = Cb_->pointer(hq);
+                    double** Cbpp = Cb_->pointer(hp);
+                    SharedMatrix tmp (new Matrix("Half-transformed b_pq", nQ_scf_, nsopi_[hp] * nsopi_[hq]));
+                    double** tmpp = tmp->pointer();
+                    #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                    for (int Aux = 0; Aux < nQ_scf_; ++Aux){
+                        // First-half transformation
+                        C_DGEMM('N', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hq], 1.0, bQmn_so_p[Aux] + offset_so[h], nsopi_[hq], Cbqp[0], nsopi_[hq], 0.0, tmpp[Aux], nsopi_[hq]);
+                        // Second-half transformation
+                        C_DGEMM('T', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hp], 1.0, Cbpp[0], nsopi_[hp], tmpp[Aux], nsopi_[hq], 0.0, bQpqB_mo_p[Aux] + offset_mo[h], nsopi_[hq]);
+                    }
+                }
+                offset_so[h] += nsopi_[h ^ hp] * nsopi_[hp];
+                offset_mo[h] += nsopi_[h ^ hp] * nsopi_[hp];
+            }
+        }
+    }
+
+    dcft_timer_off("DCFTSolver::b(Q|mn) -> b(Q|pq)");
+
 }
 
 }} // End namespace

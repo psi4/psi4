@@ -120,8 +120,8 @@ void fock_uhf(void)
   global_dpd_->file2_mat_wrt(&fIJ);
   global_dpd_->file2_mat_wrt(&fij);
 #if DEBUG
-  dpd_file2_print(&fIJ, outfile);
-  dpd_file2_print(&fij, outfile);
+  global_dpd_->file2_print(&fIJ, "outfile");
+  global_dpd_->file2_print(&fij, "outfile");
 #endif
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fij);
@@ -146,8 +146,8 @@ void fock_uhf(void)
   global_dpd_->file2_mat_wrt(&fAB);
   global_dpd_->file2_mat_wrt(&fab);
 #if DEBUG
-  dpd_file2_print(&fAB, outfile);
-  dpd_file2_print(&fab, outfile);
+  global_dpd_->file2_print(&fAB, "outfile");
+  global_dpd_->file2_print(&fab, "outfile");
 #endif
   global_dpd_->file2_close(&fAB);
   global_dpd_->file2_close(&fab);
@@ -176,8 +176,8 @@ void fock_uhf(void)
   global_dpd_->file2_mat_close(&fIA);
   global_dpd_->file2_mat_close(&fia);
 #if DEBUG
-  dpd_file2_print(&fIA, outfile);
-  dpd_file2_print(&fia, outfile);
+  global_dpd_->file2_print(&fIA, "outfile");
+  global_dpd_->file2_print(&fia, "outfile");
 #endif
   global_dpd_->file2_close(&fIA);
   global_dpd_->file2_close(&fia);
@@ -239,8 +239,8 @@ void fock_rhf(void)
   global_dpd_->file2_mat_close(&fIJ);
   global_dpd_->file2_mat_close(&fij);
 #if DEBUG
-  dpd_file2_print(&fIJ, outfile);
-  dpd_file2_print(&fij, outfile);
+  global_dpd_->file2_print(&fIJ, "outfile");
+  global_dpd_->file2_print(&fij, "outfile");
 #endif
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fij);
@@ -281,8 +281,8 @@ void fock_rhf(void)
   global_dpd_->file2_mat_close(&fAB);
   global_dpd_->file2_mat_close(&fab);
 #if DEBUG
-  dpd_file2_print(&fAB, outfile);
-  dpd_file2_print(&fab, outfile);
+  global_dpd_->file2_print(&fAB, "outfile");
+  global_dpd_->file2_print(&fab, "outfile");
 #endif
   global_dpd_->file2_close(&fAB);
   global_dpd_->file2_close(&fab);
@@ -316,8 +316,8 @@ void fock_rhf(void)
   global_dpd_->file2_mat_close(&fIA);
   global_dpd_->file2_mat_close(&fia);
 #if DEBUG
-  dpd_file2_print(&fIA, outfile);
-  dpd_file2_print(&fia, outfile);
+  global_dpd_->file2_print(&fIA, "outfile");
+  global_dpd_->file2_print(&fia, "outfile");
 #endif
   global_dpd_->file2_close(&fIA);
   global_dpd_->file2_close(&fia);

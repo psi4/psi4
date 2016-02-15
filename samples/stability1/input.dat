@@ -1,4 +1,5 @@
 #! UHF->UHF stability analysis test for BH with cc-pVDZ
+#! Test direct SCF with and without symmetry, test PK without symmetry
 
 
 
@@ -52,6 +53,13 @@ set globals = {
     solver_n_guess 6
     solver_n_root 2
 }
+
+thisenergy = energy('scf')
+
+stab = get_array_variable("SCF STABILITY EIGENVALUES")
+
+
+set scf_type pk
 
 thisenergy = energy('scf')
 

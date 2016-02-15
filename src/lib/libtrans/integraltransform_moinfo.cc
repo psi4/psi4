@@ -183,7 +183,7 @@ IntegralTransform::process_spaces()
             int numAVir = 0, aVirCount = 0;
             for(int h = 0; h < nirreps_; ++h){
                 if(transformationType_ == Restricted){
-                    aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
+                    aOrbsPI[h] = mopi_[h] - nbetapi_[h] - frzvpi_[h]; // TDC -- keep soccs
                 }else{
                     aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
                 }
@@ -647,11 +647,13 @@ IntegralTransform::process_eigenvectors()
         }else if(moSpace->label() == MOSPACE_VIR){
             // This is the virtual space
             if(transformationType_ == Restricted){
-                // This is a slightly strange one, but we actually take the beta
-                // orbitals here, so that the singly occupied orbitals are included.
-                // Makes no difference for closed shell cases, of course.
-                View Vavir(Ca_, sopi_, bvir, zero, clsdpi_);
-                Ca = Vavir();
+                // Take the true virtual orbitals, and then append the SOCC orbitals
+                View Vavir(Ca_, sopi_, avir, zero, nalphapi_);
+                View Vasoc(Ca_, sopi_, openpi_, zero, clsdpi_);
+                std::vector<SharedMatrix> virandsoc;
+                virandsoc.push_back(Vavir());
+                virandsoc.push_back(Vasoc());
+                Ca = Matrix::horzcat(virandsoc);
                 Ca->set_name("Alpha virtual orbitals");
             }else{
                 View Vavir(Ca_, sopi_, avir, zero, nalphapi_);

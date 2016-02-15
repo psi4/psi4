@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.199 Driver
+                              Psi4 0.3.527 Driver
 
-                          Git: Rev {master} 75ac49d dirty
+                          Git: Rev {master} eb7fb1a 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tue Nov 10 15:14:59 2015
+    Psi4 started on: Thu Jan 21 16:07:14 2016
 
-    Process ID:   8780
+    Process ID:   9602
     PSI4DATADIR: /Users/xiaowang/Programs/psi4/lib
     Memory level set to 256.000 MB
 
@@ -60,8 +60,8 @@ set globals {
 
 gradient('dcft')
 
-grad = psi4.wavefunction().gradient()
-compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")
+#grad = psi4.wavefunction().gradient()
+#compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")
 clean()
 --------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ clean()
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on Xiaos-MacBook-Pro.local
-*** at Tue Nov 10 15:14:59 2015
+*** at Thu Jan 21 16:07:14 2016
 
 
          ---------------------------------------------------------
@@ -140,9 +140,6 @@ gradient() will perform analytic gradient computation.
     Total      60      60       9       7       7       2
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -180,35 +177,35 @@ gradient() will perform analytic gradient computation.
     DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
     SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
 
-   @DF-UHF iter   1:  -131.91232606436350   -1.31912e+02   3.46996e-01 
-   @DF-UHF iter   2:  -141.64759117841052   -9.73527e+00   1.70378e-01 
-   @DF-UHF iter   3:  -148.16271748744566   -6.51513e+00   1.02910e-01 
-   @DF-UHF iter   4:  -149.43996086360170   -1.27724e+00   3.62909e-02 
-   @DF-UHF iter   5:  -149.64248208047826   -2.02521e-01   1.35395e-02 
-   @DF-UHF iter   6:  -149.66715893255133   -2.46769e-02   4.47583e-03 
-   @DF-UHF iter   7:  -149.67005896276339   -2.90003e-03   1.51728e-03 
-   @DF-UHF iter   8:  -149.67040534833615   -3.46386e-04   5.19575e-04 
-   @DF-UHF iter   9:  -149.67044952179481   -4.41735e-05   1.78736e-04 
-   @DF-UHF iter  10:  -149.67045580100273   -6.27921e-06   6.63871e-05 
-   @DF-UHF iter  11:  -149.67045683222992   -1.03123e-06   2.51995e-05 
-   @DF-UHF iter  12:  -149.67045702763559   -1.95406e-07   1.10195e-05 
-   @DF-UHF iter  13:  -149.67045706891736   -4.12818e-08   4.85551e-06 
-   @DF-UHF iter  14:  -149.67045707823880   -9.32144e-09   2.34163e-06 
-   @DF-UHF iter  15:  -149.67045708041968   -2.18088e-09   1.11386e-06 
-   @DF-UHF iter  16:  -149.67045708093886   -5.19179e-10   5.47873e-07 
-   @DF-UHF iter  17:  -149.67045708106360   -1.24743e-10   2.66739e-07 
-   @DF-UHF iter  18:  -149.67045708109373   -3.01270e-11   1.31413e-07 
-   @DF-UHF iter  19:  -149.67045708110098   -7.24754e-12   6.44038e-08 
-   @DF-UHF iter  20:  -149.67045708110265   -1.67688e-12   3.17075e-08 
-   @DF-UHF iter  21:  -149.67045708110300   -3.41061e-13   1.55717e-08 
-   @DF-UHF iter  22:  -149.67045708110322   -2.27374e-13   7.66191e-09 
-   @DF-UHF iter  23:  -149.67045708110311    1.13687e-13   3.76568e-09 
-   @DF-UHF iter  24:  -149.67045708110319   -8.52651e-14   1.85232e-09 
-   @DF-UHF iter  25:  -149.67045708110317    2.84217e-14   9.10678e-10 
-   @DF-UHF iter  26:  -149.67045708110317    0.00000e+00   4.47903e-10 
-   @DF-UHF iter  27:  -149.67045708110314    2.84217e-14   2.20245e-10 
-   @DF-UHF iter  28:  -149.67045708110317   -2.84217e-14   1.08321e-10 
-   @DF-UHF iter  29:  -149.67045708110322   -5.68434e-14   5.32696e-11 
+   @DF-UHF iter   1:  -131.91232606436029   -1.31912e+02   3.46996e-01 
+   @DF-UHF iter   2:  -141.64759117839532   -9.73527e+00   1.70378e-01 
+   @DF-UHF iter   3:  -148.16271748743748   -6.51513e+00   1.02910e-01 
+   @DF-UHF iter   4:  -149.43996086359596   -1.27724e+00   3.62909e-02 
+   @DF-UHF iter   5:  -149.64248208047292   -2.02521e-01   1.35395e-02 
+   @DF-UHF iter   6:  -149.66715893254607   -2.46769e-02   4.47583e-03 
+   @DF-UHF iter   7:  -149.67005896275825   -2.90003e-03   1.51728e-03 
+   @DF-UHF iter   8:  -149.67040534833089   -3.46386e-04   5.19575e-04 
+   @DF-UHF iter   9:  -149.67044952178964   -4.41735e-05   1.78736e-04 
+   @DF-UHF iter  10:  -149.67045580099753   -6.27921e-06   6.63871e-05 
+   @DF-UHF iter  11:  -149.67045683222474   -1.03123e-06   2.51995e-05 
+   @DF-UHF iter  12:  -149.67045702763033   -1.95406e-07   1.10195e-05 
+   @DF-UHF iter  13:  -149.67045706891219   -4.12819e-08   4.85551e-06 
+   @DF-UHF iter  14:  -149.67045707823360   -9.32141e-09   2.34163e-06 
+   @DF-UHF iter  15:  -149.67045708041442   -2.18083e-09   1.11386e-06 
+   @DF-UHF iter  16:  -149.67045708093366   -5.19236e-10   5.47873e-07 
+   @DF-UHF iter  17:  -149.67045708105843   -1.24771e-10   2.66739e-07 
+   @DF-UHF iter  18:  -149.67045708108836   -2.99281e-11   1.31413e-07 
+   @DF-UHF iter  19:  -149.67045708109569   -7.33280e-12   6.44038e-08 
+   @DF-UHF iter  20:  -149.67045708109737   -1.67688e-12   3.17075e-08 
+   @DF-UHF iter  21:  -149.67045708109774   -3.69482e-13   1.55717e-08 
+   @DF-UHF iter  22:  -149.67045708109799   -2.55795e-13   7.66191e-09 
+   @DF-UHF iter  23:  -149.67045708109796    2.84217e-14   3.76568e-09 
+   @DF-UHF iter  24:  -149.67045708109799   -2.84217e-14   1.85232e-09 
+   @DF-UHF iter  25:  -149.67045708109796    2.84217e-14   9.10678e-10 
+   @DF-UHF iter  26:  -149.67045708109805   -8.52651e-14   4.47903e-10 
+   @DF-UHF iter  27:  -149.67045708109802    2.84217e-14   2.20245e-10 
+   @DF-UHF iter  28:  -149.67045708109796    5.68434e-14   1.08321e-10 
+   @DF-UHF iter  29:  -149.67045708109799   -2.84217e-14   5.32697e-11 
 
   ==> Post-Iterations <==
 
@@ -224,54 +221,54 @@ gradient() will perform analytic gradient computation.
     Alpha Occupied:                                                       
 
        1Ag   -20.756902     1B1u  -20.756304     2Ag    -1.696315  
-       2B1u   -1.212296     1B3u   -0.833318     1B2u   -0.833318  
-       3Ag    -0.755176     1B2g   -0.563357     1B3g   -0.563357  
+       2B1u   -1.212296     1B2u   -0.833318     1B3u   -0.833318  
+       3Ag    -0.755176     1B3g   -0.563357     1B2g   -0.563357  
 
     Alpha Virtual:                                                        
 
        3B1u    0.357250     2B2u    0.682584     2B3u    0.682584  
-       4B1u    0.718045     4Ag     0.733879     2B2g    0.790910  
-       2B3g    0.790910     5Ag     0.880521     5B1u    1.431286  
-       1B1g    1.454130     6Ag     1.454130     3B2u    1.526325  
-       3B3u    1.526325     1Au     1.850100     6B1u    1.850100  
-       7Ag     2.354448     3B2g    2.438856     3B3g    2.438856  
-       7B1u    2.449171     4B3u    3.844193     4B2u    3.844193  
-       8Ag     4.047780     4B2g    4.123711     4B3g    4.123711  
-       9Ag     4.999035     2B1g    4.999035     5B3u    5.052027  
+       4B1u    0.718045     4Ag     0.733879     2B3g    0.790910  
+       2B2g    0.790910     5Ag     0.880521     5B1u    1.431286  
+       6Ag     1.454130     1B1g    1.454130     3B3u    1.526325  
+       3B2u    1.526325     6B1u    1.850100     1Au     1.850100  
+       7Ag     2.354448     3B3g    2.438856     3B2g    2.438856  
+       7B1u    2.449171     4B2u    3.844193     4B3u    3.844193  
+       8Ag     4.047780     4B3g    4.123711     4B2g    4.123711  
+       2B1g    4.999035     9Ag     4.999035     5B3u    5.052027  
        5B2u    5.052027     8B1u    5.163586    10Ag     5.285865  
        6B2u    5.330116     6B3u    5.330116     5B3g    5.552545  
-       5B2g    5.552545     9B1u    6.074702     2Au     6.074702  
-      10B1u    6.319406    11Ag     6.495441     3B1g    6.495441  
-      11B1u    6.706525     3Au     6.706525     6B2g    6.742419  
-       6B3g    6.742419     7B3u    6.852094     7B2u    6.852094  
-      12B1u    7.095708    12Ag     7.451125     7B3g    7.593591  
-       7B2g    7.593591    13Ag     8.084544    13B1u   12.351948  
+       5B2g    5.552545     2Au     6.074702     9B1u    6.074702  
+      10B1u    6.319406     3B1g    6.495441    11Ag     6.495441  
+       3Au     6.706525    11B1u    6.706525     6B3g    6.742419  
+       6B2g    6.742419     7B2u    6.852094     7B3u    6.852094  
+      12B1u    7.095708    12Ag     7.451125     7B2g    7.593591  
+       7B3g    7.593591    13Ag     8.084544    13B1u   12.351948  
 
     Beta Occupied:                                                        
 
        1Ag   -20.702187     1B1u  -20.701081     2Ag    -1.562620  
-       2B1u   -1.000497     3Ag    -0.696686     1B2u   -0.564734  
-       1B3u   -0.564734  
+       2B1u   -1.000497     3Ag    -0.696686     1B3u   -0.564734  
+       1B2u   -0.564734  
 
     Beta Virtual:                                                         
 
        1B2g    0.100223     1B3g    0.100223     3B1u    0.415851  
-       4Ag     0.745071     2B2u    0.753845     2B3u    0.753845  
-       4B1u    0.757937     2B2g    0.882544     2B3g    0.882544  
-       5Ag     0.897337     5B1u    1.472565     1B1g    1.507643  
-       6Ag     1.507643     3B3u    1.582507     3B2u    1.582507  
-       1Au     1.945969     6B1u    1.945969     7Ag     2.404587  
-       7B1u    2.472997     3B2g    2.488215     3B3g    2.488215  
-       4B2u    3.961542     4B3u    3.961542     8Ag     4.071802  
-       4B2g    4.234636     4B3g    4.234636     9Ag     5.036575  
-       2B1g    5.036575     5B2u    5.083743     5B3u    5.083743  
+       4Ag     0.745071     2B3u    0.753845     2B2u    0.753845  
+       4B1u    0.757937     2B3g    0.882544     2B2g    0.882544  
+       5Ag     0.897337     5B1u    1.472565     6Ag     1.507643  
+       1B1g    1.507643     3B3u    1.582507     3B2u    1.582507  
+       6B1u    1.945969     1Au     1.945969     7Ag     2.404587  
+       7B1u    2.472997     3B3g    2.488215     3B2g    2.488215  
+       4B3u    3.961542     4B2u    3.961542     8Ag     4.071802  
+       4B2g    4.234636     4B3g    4.234636     2B1g    5.036575  
+       9Ag     5.036575     5B3u    5.083743     5B2u    5.083743  
        8B1u    5.197430    10Ag     5.322058     6B2u    5.391603  
        6B3u    5.391603     5B3g    5.619344     5B2g    5.619344  
-       9B1u    6.126752     2Au     6.126752    10B1u    6.364177  
-      11Ag     6.621253     3B1g    6.621253     6B3g    6.809981  
-       6B2g    6.809981    11B1u    6.821591     3Au     6.821591  
-       7B2u    6.915519     7B3u    6.915519    12B1u    7.130046  
-      12Ag     7.493114     7B3g    7.621948     7B2g    7.621948  
+       2Au     6.126752     9B1u    6.126752    10B1u    6.364177  
+       3B1g    6.621253    11Ag     6.621253     6B2g    6.809981  
+       6B3g    6.809981     3Au     6.821591    11B1u    6.821591  
+       7B3u    6.915519     7B2u    6.915519    12B1u    7.130046  
+      12Ag     7.493114     7B2g    7.621948     7B3g    7.621948  
       13Ag     8.132712    13B1u   12.394800  
 
     Final Occupation by Irrep:
@@ -281,18 +278,18 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-UHF Final Energy:  -149.67045708110322
+  @DF-UHF Final Energy:  -149.67045708109799
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             27.5344238615934920
-    One-Electron Energy =                -260.6468820920965754
-    Two-Electron Energy =                  83.4420011493998572
+    One-Electron Energy =                -260.6468820920986786
+    Two-Electron Energy =                  83.4420011494072043
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -149.6704570811032227
+    Total Energy =                       -149.6704570810979931
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -318,27 +315,27 @@ Properties computed using the SCF density matrix
   Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
-  HONO-2 :    1B3u 1.9911913
-  HONO-1 :    1B3g 1.0000000
-  HONO-0 :    1B2g 1.0000000
-  LUNO+0 :    2B3u 0.0088087
-  LUNO+1 :    2B2u 0.0088087
+  HONO-2 :    1B2u 1.9911913
+  HONO-1 :    1B2g 1.0000000
+  HONO-0 :    1B3g 1.0000000
+  LUNO+0 :    2B2u 0.0088087
+  LUNO+1 :    2B3u 0.0088087
   LUNO+2 :    3B1u 0.0034996
   LUNO+3 :    4 Ag 0.0010972
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Tue Nov 10 15:15:00 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:07:15 2016
 Module time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on Xiaos-MacBook-Pro.local
-*** at Tue Nov 10 15:15:00 2015
+*** at Thu Jan 21 16:07:15 2016
 
 
 
@@ -388,12 +385,12 @@ Total time:
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        = -149.670457081103223
-	 Alpha - Alpha MP2 energy         =   -0.062831777352401
-	 Alpha - Beta  MP2 energy         =   -0.330623667330132
-	 Beta  - Beta  MP2 energy         =   -0.070575343579085
-	 Total MP2 correlation energy     =   -0.464030788261617
-	*Total MP2 energy                 = -150.134487869364875
+	*Total Hartree-Fock energy        = -149.670457081097993
+	 Alpha - Alpha MP2 energy         =   -0.062831777352404
+	 Alpha - Beta  MP2 energy         =   -0.330623667330158
+	 Beta  - Beta  MP2 energy         =   -0.070575343579093
+	 Total MP2 correlation energy     =   -0.464030788261654
+	*Total MP2 energy                 = -150.134487869359646
 
 	DCFT Functional:    		 ODC-12
 	DCFT Type:          		 DF
@@ -403,66 +400,66 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        6.952e-02         1.424e-03      3.166e-02   -150.102826299495376  S   *
-	* 2        1.884e-02         4.251e-04     -7.431e-02   -150.177131323288393  S/E *
-	* 3        7.581e-03         1.701e-04      4.135e-02   -150.135778968661583  S/E *
-	* 4        1.948e-03         6.244e-05     -1.141e-02   -150.147192780822280  S/E *
-	* 5        5.801e-04         2.169e-05      4.932e-03   -150.142260827763721  S/E *
-	* 6        1.791e-04         1.011e-05     -1.002e-03   -150.143262393759017  S/E *
-	* 7        4.767e-05         4.430e-06      1.256e-04   -150.143136816498043  S/E *
-	* 8        1.968e-05         1.664e-06      5.334e-06   -150.143131482652990  S/E *
-	* 9        6.586e-06         3.104e-07      3.327e-05   -150.143098214538639  S/E *
-	* 10       1.699e-06         1.167e-07     -1.009e-05   -150.143108306881601  S/E *
-	* 11       3.628e-07         4.011e-08      1.741e-06   -150.143106566164647  S/E *
-	* 12       1.038e-07         1.157e-08     -1.431e-06   -150.143107996903638  S/E *
-	* 13       4.194e-08         4.715e-09      4.937e-07   -150.143107503169063  S/E *
-	* 14       1.442e-08         1.971e-09     -1.044e-07   -150.143107607581840  S/E *
-	* 15       6.547e-09         5.125e-10      8.105e-10   -150.143107606771309  S/E *
+	* 1        6.952e-02         1.424e-03      3.181e-02   -150.102678459314717  S   *
+	* 2        1.884e-02         4.250e-04     -7.441e-02   -150.177088607423400  S/E *
+	* 3        7.577e-03         1.701e-04      4.134e-02   -150.135747544236665  S/E *
+	* 4        1.949e-03         6.247e-05     -1.143e-02   -150.147172888062158  S/E *
+	* 5        5.805e-04         2.169e-05      4.936e-03   -150.142236915605338  S/E *
+	* 6        1.791e-04         1.011e-05     -1.000e-03   -150.143237211372224  S/E *
+	* 7        4.763e-05         4.429e-06      1.251e-04   -150.143112119883540  S/E *
+	* 8        1.968e-05         1.664e-06      5.500e-06   -150.143106619823300  S/E *
+	* 9        6.582e-06         3.101e-07      3.316e-05   -150.143073462039581  S/E *
+	* 10       1.696e-06         1.166e-07     -1.005e-05   -150.143083509284054  S/E *
+	* 11       3.616e-07         4.004e-08      1.727e-06   -150.143081782584147  S/E *
+	* 12       1.037e-07         1.154e-08     -1.426e-06   -150.143083208404278  S/E *
+	* 13       4.193e-08         4.709e-09      4.924e-07   -150.143082715970337  S/E *
+	* 14       1.443e-08         1.968e-09     -1.046e-07   -150.143082820531760  S/E *
+	* 15       6.500e-09         5.109e-10      9.765e-10   -150.143082819555275  S/E *
 	*=================================================================================*
 
-	*DF-ODC-12 SCF Energy                                 = -149.173567622222180
-	*DF-ODC-12 Lambda Energy                              =   -0.969539984549130
-	*DF-ODC-12 Total Energy                               = -150.143107606771309
+	*DF-ODC-12 SCF Energy                                 = -149.173688156878143
+	*DF-ODC-12 Lambda Energy                              =   -0.969394662677120
+	*DF-ODC-12 Total Energy                               = -150.143082819555275
 
 	Orbital occupations:
 		Alpha occupied orbitals
 		   1Ag       0.9998     1B1u      0.9998     2Ag       0.9935     2B1u      0.9904  
-		   1B3u      0.9876     1B2u      0.9876     1B2g      0.9835     1B3g      0.9835  
+		   1B2u      0.9876     1B3u      0.9876     1B3g      0.9835     1B2g      0.9835  
 		   3Ag       0.9714  
 
 		Beta occupied orbitals
 		   1Ag       0.9998     1B1u      0.9998     2Ag       0.9897     2B1u      0.9829  
-		   3Ag       0.9735     1B2u      0.9566     1B3u      0.9566  
+		   3Ag       0.9735     1B3u      0.9566     1B2u      0.9566  
 
 		Alpha virtual orbitals
-		   3B1u      0.0269     2B2u      0.0089     2B3u      0.0089     4Ag       0.0056  
+		   3B1u      0.0269     2B3u      0.0089     2B2u      0.0089     4Ag       0.0056  
 		   2B2g      0.0055     2B3g      0.0055     4B1u      0.0041     5Ag       0.0039  
-		   1B1g      0.0039     3B2u      0.0035     3B3u      0.0035     5B1u      0.0033  
+		   1B1g      0.0039     3B3u      0.0035     3B2u      0.0035     5B1u      0.0033  
 		   1Au       0.0033     6Ag       0.0032     6B1u      0.0016     3B2g      0.0014  
 		   3B3g      0.0014     7Ag       0.0013     4B3u      0.0005     4B2u      0.0005  
-		   4B2g      0.0004     4B3g      0.0004     8Ag       0.0003     2B1g      0.0003  
-		   5B3u      0.0003     5B2u      0.0003     7B1u      0.0003     9Ag       0.0003  
+		   4B2g      0.0004     4B3g      0.0004     2B1g      0.0003     8Ag       0.0003  
+		   5B2u      0.0003     5B3u      0.0003     7B1u      0.0003     9Ag       0.0003  
 		   6B2u      0.0002     6B3u      0.0002    10Ag       0.0002     5B3g      0.0002  
-		   5B2g      0.0002     8B1u      0.0002     2Au       0.0002     9B1u      0.0002  
-		  11Ag       0.0002    12Ag       0.0002     3B1g      0.0002     7B2u      0.0001  
-		   7B3u      0.0001     6B2g      0.0001     6B3g      0.0001    10B1u      0.0001  
-		   3Au       0.0001    11B1u      0.0001    12B1u      0.0001     7B3g      0.0001  
-		   7B2g      0.0001    13Ag       0.0000    13B1u      0.0000  
+		   5B2g      0.0002     8B1u      0.0002     9B1u      0.0002     2Au       0.0002  
+		  11Ag       0.0002    12Ag       0.0002     3B1g      0.0002     7B3u      0.0001  
+		   7B2u      0.0001     6B2g      0.0001     6B3g      0.0001    10B1u      0.0001  
+		  11B1u      0.0001     3Au       0.0001    12B1u      0.0001     7B2g      0.0001  
+		   7B3g      0.0001    13Ag       0.0000    13B1u      0.0000  
 
 		Beta virtual orbitals
-		   1B2g      0.0370     1B3g      0.0370     3B1u      0.0213     4Ag       0.0054  
-		   2B2u      0.0040     2B3u      0.0040     4B1u      0.0040     5Ag       0.0032  
+		   1B3g      0.0370     1B2g      0.0370     3B1u      0.0213     4Ag       0.0054  
+		   2B3u      0.0040     2B2u      0.0040     4B1u      0.0040     5Ag       0.0032  
 		   3B3u      0.0028     3B2u      0.0028     6Ag       0.0025     1B1g      0.0025  
-		   2B3g      0.0014     2B2g      0.0014     5B1u      0.0012     6B1u      0.0011  
-		   1Au       0.0011     7Ag       0.0011     3B3g      0.0007     3B2g      0.0007  
-		   4B2u      0.0003     4B3u      0.0003     8Ag       0.0002     9Ag       0.0002  
-		   2B1g      0.0002     7B1u      0.0002    10Ag       0.0002     5B3u      0.0002  
+		   2B2g      0.0014     2B3g      0.0014     5B1u      0.0012     6B1u      0.0011  
+		   1Au       0.0011     7Ag       0.0011     3B2g      0.0007     3B3g      0.0007  
+		   4B3u      0.0003     4B2u      0.0003     8Ag       0.0002     2B1g      0.0002  
+		   9Ag       0.0002     7B1u      0.0002    10Ag       0.0002     5B3u      0.0002  
 		   5B2u      0.0002     8B1u      0.0002    11Ag       0.0002     4B2g      0.0001  
 		   4B3g      0.0001     6B3u      0.0001     6B2u      0.0001    12Ag       0.0001  
-		   3B1g      0.0001     9B1u      0.0001     5B2g      0.0001     5B3g      0.0001  
-		  10B1u      0.0001     2Au       0.0001     7B2u      0.0001     7B3u      0.0001  
-		   6B2g      0.0001     6B3g      0.0001     3Au       0.0001    11B1u      0.0001  
-		  12B1u      0.0001    13Ag       0.0000     7B2g      0.0000     7B3g      0.0000  
+		   3B1g      0.0001     9B1u      0.0001     5B3g      0.0001     5B2g      0.0001  
+		   2Au       0.0001    10B1u      0.0001     7B3u      0.0001     7B2u      0.0001  
+		   6B3g      0.0001     6B2g      0.0001    11B1u      0.0001     3Au       0.0001  
+		  12B1u      0.0001    13Ag       0.0000     7B3g      0.0000     7B2g      0.0000  
 		  13B1u      0.0000  
 
 
@@ -484,18 +481,18 @@ Properties computed using the ODC-12 density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Tue Nov 10 15:15:26 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:07:41 2016
 Module time:
-	user time   =      22.78 seconds =       0.38 minutes
-	system time =       2.92 seconds =       0.05 minutes
+	user time   =      26.48 seconds =       0.44 minutes
+	system time =       3.39 seconds =       0.06 minutes
 	total time  =         26 seconds =       0.43 minutes
 Total time:
-	user time   =      23.57 seconds =       0.39 minutes
-	system time =       3.00 seconds =       0.05 minutes
+	user time   =      27.22 seconds =       0.45 minutes
+	system time =       3.45 seconds =       0.06 minutes
 	total time  =         27 seconds =       0.45 minutes
 
 *** tstart() called on Xiaos-MacBook-Pro.local
-*** at Tue Nov 10 15:15:26 2015
+*** at Thu Jan 21 16:07:41 2016
 
 
 
@@ -505,21 +502,21 @@ Total time:
 	***********************************************************************************
 
 	 Computing energy-weighted density matrix from one- and two-particle densities...
-	 OPDM trace: 	 15.997729		Deviation: 	2.2709e-03
-	 TPDM trace: 	239.929609		Deviation: 	7.0391e-02
+	 OPDM trace: 	 15.997730		Deviation: 	2.2700e-03
+	 TPDM trace: 	239.929635		Deviation: 	7.0365e-02
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Tue Nov 10 15:15:36 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:07:49 2016
 Module time:
-	user time   =       8.96 seconds =       0.15 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       8.37 seconds =       0.14 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 Total time:
-	user time   =      32.53 seconds =       0.54 minutes
-	system time =       3.21 seconds =       0.05 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      35.59 seconds =       0.59 minutes
+	system time =       3.65 seconds =       0.06 minutes
+	total time  =         35 seconds =       0.58 minutes
 
 *** tstart() called on Xiaos-MacBook-Pro.local
-*** at Tue Nov 10 15:15:36 2015
+*** at Thu Jan 21 16:07:49 2016
 
  DERIV: Derivative code.
    by Justin Turney
@@ -575,40 +572,40 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000   -24.823486272906
-       2        0.000000000000     0.000000000000    24.823486272906
+       1        0.000000000000     0.000000000000   -24.823372160042
+       2        0.000000000000     0.000000000000    24.823372160042
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.587356496839
-       2        0.000000000000     0.000000000000    -0.587356496839
+       1        0.000000000000     0.000000000000     0.587350301637
+       2        0.000000000000     0.000000000000    -0.587350301637
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    12.352838191693
-       2        0.000000000000     0.000000000000   -12.352838191693
+       1        0.000000000000     0.000000000000    12.352737025980
+       2        0.000000000000     0.000000000000   -12.352737025980
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.037283812657
-       2        0.000000000000     0.000000000000     0.037283812657
+       1        0.000000000000     0.000000000000    -0.037277060707
+       2        0.000000000000     0.000000000000     0.037277060707
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Tue Nov 10 15:15:42 2015
+*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:07:55 2016
 Module time:
-	user time   =       5.54 seconds =       0.09 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       5.09 seconds =       0.08 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      38.07 seconds =       0.63 minutes
-	system time =       3.37 seconds =       0.06 minutes
-	total time  =         43 seconds =       0.72 minutes
-CURRENT ENERGY: -150.1431076068
+	user time   =      40.68 seconds =       0.68 minutes
+	system time =       3.75 seconds =       0.06 minutes
+	total time  =         41 seconds =       0.68 minutes
+CURRENT ENERGY: -150.1430828196
 
 *** PSI4 exiting successfully. Buy a developer a beer!

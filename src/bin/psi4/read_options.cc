@@ -210,6 +210,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
 
+  // Temporary: turn on/off cctransort module.  Remove after stability is proven. -TDC (1/19/2016)
+  options.add_bool("RUN_CCTRANSORT", true);
+
 
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
@@ -787,6 +790,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
+    /* For SAPT0 only, compute only first-order electrostatics and exchange.
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E10",false);
+    /* For SAPT0 only, compute only second-order induction
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E20IND",false);
+    /* For SAPT0 only, compute only second-order induction
+     * The integrals are computed before any terms, so all integrals will
+     * be computed even if they are not needed for the requested term !expert */
+    options.add_bool("SAPT0_E20DISP",false);
+
+
     /*- Convergence criterion for energy (change) in the SAPT
     $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
 
@@ -990,6 +1007,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
+      /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+      Convergence <table:conv_corl>` for default convergence criteria for
+      different calculation types. -*/
+      options.add_double("E_CONVERGENCE", 1e-10);
       /*- Convergence criterion for the density cumulant and orbital guess for the
       variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
       options.add_double("GUESS_R_CONVERGENCE", 1e-3);
@@ -1701,6 +1722,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // in MCSCF) -*/
     // options.add("RESTRICTED_UOCC", new ArrayType());
 
+  }
+  if(name == "CCTRANSORT"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Transforms and sorts integrals for CC codes. Called before (non-density-fitted) MP2 and coupled cluster computations. -*/
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE", "RHF");
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- Delete the SO two-electron integrals after the transformation? -*/
+    options.add_bool("DELETE_TEI", true);
+    /*- Cacheing level for libdpd -*/
+    options.add_int("CACHELEVEL", 2);
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Sorts integrals for efficiency. Called before (non density-fitted) MP2 and
