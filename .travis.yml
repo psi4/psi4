@@ -42,6 +42,7 @@ matrix:
         - cmake-data
         - liblapack-dev
         - clang-3.5
+        - libhdf5-serial-dev
         - libboost-filesystem1.55-dev
         - libboost-chrono1.55-dev
         - libboost-system1.55-dev
@@ -99,6 +100,7 @@ matrix:
         - cmake-data
         - liblapack-dev
         - clang-3.7
+        - libhdf5-serial-dev
         - libboost-filesystem1.55-dev
         - libboost-chrono1.55-dev
         - libboost-system1.55-dev
@@ -145,6 +147,7 @@ matrix:
         - cmake
         - cmake-data
         - liblapack-dev
+        - libhdf5-serial-dev
         - g++-4.8
         - gcc-4.8
         - gfortran-4.8
@@ -182,6 +185,7 @@ matrix:
         packages:
         - cmake
         - cmake-data
+        - libhdf5-serial-dev
         - liblapack-dev
         - g++-5
         - gcc-5
