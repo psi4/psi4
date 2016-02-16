@@ -33,7 +33,7 @@ namespace psi {
 
 #define CHARARR_SIZE 100
 #define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
-#define NotImplementedException() NotImplementedException_(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__)
+#define NOT_IMPLEMENTED_EXCEPTION() NotImplementedException_(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__)
 
 /**
     Generic exception class for Psi4

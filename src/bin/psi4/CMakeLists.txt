@@ -34,11 +34,17 @@ else()
    list(REMOVE_ITEM sources_list "")
 endif()
 
+if(APPLE)
+    set(PRE_LIBRARY_OPTION -Wl,-all_load)
+elseif(UNIX)
+    set(PRE_LIBRARY_OPTION -Wl,--whole-archive)
+    set(POST_LIBRARY_OPTION -Wl,--no-whole-archive)
+endif()
 
 get_property(from_src_bin GLOBAL PROPERTY PSILIB)
 get_property(from_src_lib GLOBAL PROPERTY LIBLIST)
 get_property(from_interfaces GLOBAL PROPERTY INTERFACES)
-list(APPEND psi_libraries "${from_src_bin}" "${from_src_lib}" "${from_interfaces}")
+list(APPEND psi_libraries ${PRE_LIBRARY_OPTION} "${from_src_bin}" "${from_src_lib}" "${from_interfaces}" ${POST_LIBRARY_OPTION})
 
 # Prepare for linking executable
 list(APPEND
@@ -62,6 +68,9 @@ if(ENABLE_CHEMPS2)
 endif()
 if(ENABLE_PCMSOLVER)
   target_link_libraries(psi4 PCMSolver::PCMSolver)
+endif()
+if(ENABLE_AMBIT)
+    target_link_libraries(psi4 Ambit::Ambit)
 endif()
 
 # standalone python module psi4.so

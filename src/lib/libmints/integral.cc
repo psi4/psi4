@@ -340,7 +340,7 @@ ShellRotation IntegralFactory::shell_rotation(int am, SymmetryOperation &so, int
 SphericalTransformIter* IntegralFactory::spherical_transform_iter(int am, int inv, int subl) const
 {
     if (subl != -1)
-        throw NotImplementedException();
+        throw NOT_IMPLEMENTED_EXCEPTION();
 
     if (inv) {
         return new SphericalTransformIter(ispherical_transforms_[am]);

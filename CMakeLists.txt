@@ -47,6 +47,8 @@ CMAKE_DEPENDENT_OPTION(
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
                              "CMAKE_Fortran_COMPILER"                      OFF)
+option(ENABLE_AMBIT          "Enable Ambit interface"                      ON)
+
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -242,6 +244,11 @@ set_property(GLOBAL PROPERTY PSILIB)
 # PCMSolver Detection
 if(ENABLE_PCMSOLVER)
   include(ConfigPCMSolver)
+endif()
+
+# Ambit
+if (ENABLE_AMBIT)
+   include(ConfigAmbit)
 endif()
 
 #If we have MPI we may want to also build JKFactory which makes J and K's
