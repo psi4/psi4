@@ -353,7 +353,7 @@ int HF::soscf_update()
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
     // => Rotate orbitals <= //
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
@@ -373,23 +373,22 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
         size_t doccpih = (size_t)x->rowspi()[h];
         size_t virpih = (size_t)x->colspi()[h];
         if (!doccpih || !virpih) continue;
-        double** tp = tmp->pointer(h);
+        double** up = U->pointer(h);
         double*  xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpih; i++){
             for (size_t a=(nmopi_[h] - virpih); a < nmopi_[h]; a++){
-                tp[a][i] = xp[target];
-                tp[i][a] = -1.0 * xp[target++];
+                up[a][i] = xp[target];
+                up[i][a] = -1.0 * xp[target++];
             }
         }
 
     }
-
-    SharedMatrix U = tmp->clone();
     U->expm(4);
 
-    tmp->gemm(false, false, 1.0, C, U, 0.0);
+    // Need to build a new one here incase nmo != nso
+    SharedMatrix tmp = Matrix::doublet(C, U, false, false);
     C->copy(tmp);
 
     U.reset();
