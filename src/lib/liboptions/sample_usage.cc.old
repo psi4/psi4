@@ -47,7 +47,7 @@
   catch (DataTypeException e) {
     std::cout << "DataTypeException caught: " << e.what() << std::endl;
   }
-  catch (NotImplementedException e) {
-    std::cout << "NotImplementedException caught: " << e.what() << std::endl;
+  catch (NOT_IMPLEMENTED_EXCEPTION e) {
+    std::cout << "NOT_IMPLEMENTED_EXCEPTION caught: " << e.what() << std::endl;
   }
 

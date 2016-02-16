@@ -327,6 +327,19 @@ def parse_input():
             'lib/chemps2.so' and 'include/chemps2/DMRG.h' should be in this directory.
             If this is left blank cmake will build one for you.""",
             metavar='PATH')
+    # Ambit
+    group.add_argument('--ambit',
+                       action='store',
+                       choices=('on', 'off'),
+                       default=None,
+                       help="""Enable Ambit external project (requires hdf5).""")
+    group.add_argument('--ambit-dir',
+                       action='store',
+                       default=None,
+                       help="""The install directory for a pre-built Ambit.
+            'lib/libambit.a' and 'include/ambit/tensor.h' should be in this directory.
+            If this is left blank cmake will build one for you.""",
+                       metavar='PATH')
 
     group = parser.add_argument_group('External libraries')
     # ZLIB
@@ -463,6 +476,7 @@ def gen_cmake_command(args):
     command += translate_cmake('ENABLE_DUMMY_PLUGIN',   args.dummy_plugin)
     command += translate_cmake('ENABLE_PCMSOLVER',      args.pcmsolver)
     command += translate_cmake('ENABLE_CHEMPS2',        args.chemps2)
+    command += translate_cmake('ENABLE_AMBIT',          args.ambit)
     command += translate_cmake('ENABLE_CXX11_SUPPORT',  args.cxx11)
     command += ' -DLIBINT_OPT_AM={0}'.format(args.max_am_eri)
     command += ' -DEXECUTABLE_SUFFIX={0}'.format(args.suffix)
@@ -543,6 +557,8 @@ def gen_cmake_command(args):
         command += ' -DPCMSOLVER_ROOT={0}'.format(args.pcmsolver_dir)
     if args.chemps2_dir:
         command += ' -DCHEMPS2_ROOT={0}'.format(args.chemps2_dir)
+    if args.ambit_dir:
+        command += ' -DAMBIT_ROOT={0}'.format(args.ambit_dir)
 
     if args.extra_cc_flags:
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
