@@ -368,7 +368,7 @@ int RHF::soscf_update()
         double** fp = IFock->pointer(h);
 
         for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            for (size_t a=doccpi_[h]; a < nsopi_[h]; a++){
+            for (size_t a=doccpi_[h]; a < nmopi_[h]; a++){
                 gp[target] = -4.0 * fp[i][a];
                 denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
             }
