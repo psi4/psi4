@@ -1854,21 +1854,25 @@ void HF::iterations()
         std::string status = "";
 
         // We either do SOSCF or DIIS
-        double ediff = fabs(E_ - Eold_);
         bool did_soscf = false;
         if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)){
             compute_orbital_gradient(false);
+            diis_performed_ = false;
 
             if (!test_convergency()){
                 int nmicro = soscf_update();
-                diis_performed_ = false;
                 if (nmicro > 0){ // If zero the soscf call bounced for some reason
-                    did_soscf = true;
                     find_occupation();
                     status += "SOSCF, nmicro = ";
                     status += psi::to_string(nmicro);
+                    did_soscf = true; // Stops DIIS
                 }
-
+                else{
+                    if (print_){
+                        outfile->Printf("Did not take a SOSCF step, using normal convergence methods\n");
+                    }
+                    did_soscf = false; // Back to DIIS
+                }
             }
             else{
                 // We need to ensure orthogonal orbitals and set epsilon
@@ -1876,7 +1880,7 @@ void HF::iterations()
                 timer_on("HF: Form C");
                 form_C();
                 timer_off("HF: Form C");
-                did_soscf = true; // Just to stop DIIS
+                did_soscf = true; // Stops DIIS
             }
         } // End SOSCF block
 
