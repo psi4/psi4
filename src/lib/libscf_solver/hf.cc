@@ -1075,9 +1075,13 @@ void HF::form_Shalf()
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
+        Ca_->init(nirrep_,nsopi_,nmopi_,"Alpha MO coefficients");
         epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
+        Cb_->init(nirrep_,nsopi_,nmopi_,"Beta MO coefficients");
+
+        // Extra matrix dimension changes for specific derived classes
+        prepare_canonical_orthogonalization();
+
     }
 
     // Temporary variables needed by diagonalize_F
