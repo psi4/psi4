@@ -56,11 +56,11 @@ Eind  = psi4.get_variable("SAPT IND ENERGY")
 Edisp = psi4.get_variable("SAPT DISP ENERGY")
 ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
 
-Eref = [ -0.00156580604,  #TEST
-          0.00393298906,  #TEST
-         -0.00047901962,  #TEST
-         -0.00463104331,  #TEST
-         -0.00274287991 ] #TEST
+Eref = [ -0.00156580384,  #TEST
+          0.00393298774,  #TEST
+         -0.00047902050,  #TEST
+         -0.00463104246,  #TEST
+         -0.00274287907 ] #TEST
 
 compare_values(Eref[0], Eelst, 6, "SAPT0 Eelst")   #TEST
 compare_values(Eref[1], Eexch, 6, "SAPT0 Eexch")   #TEST
