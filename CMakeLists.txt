@@ -47,7 +47,7 @@ CMAKE_DEPENDENT_OPTION(
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
                              "CMAKE_Fortran_COMPILER"                      OFF)
-option(ENABLE_AMBIT          "Enable Ambit interface"                      ON)
+option(ENABLE_AMBIT          "Enable Ambit interface"                      OFF)
 
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
