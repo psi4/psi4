@@ -96,6 +96,7 @@ protected:
     virtual bool stability_analysis();
     virtual void integrals();
     virtual void finalize();
+    virtual int soscf_update();
 
     void common_init();
 public:
@@ -121,6 +122,7 @@ protected:
     virtual bool stability_analysis();
     virtual void integrals();
     virtual void finalize();
+    virtual int soscf_update();
 
     void common_init();
 public:
