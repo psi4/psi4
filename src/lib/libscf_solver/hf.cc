@@ -353,7 +353,7 @@ int HF::soscf_update()
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
     // => Rotate orbitals <= //
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
@@ -373,23 +373,22 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
         size_t doccpih = (size_t)x->rowspi()[h];
         size_t virpih = (size_t)x->colspi()[h];
         if (!doccpih || !virpih) continue;
-        double** tp = tmp->pointer(h);
+        double** up = U->pointer(h);
         double*  xp = x->pointer(h)[0];
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<doccpih; i++){
             for (size_t a=(nmopi_[h] - virpih); a < nmopi_[h]; a++){
-                tp[a][i] = xp[target];
-                tp[i][a] = -1.0 * xp[target++];
+                up[a][i] = xp[target];
+                up[i][a] = -1.0 * xp[target++];
             }
         }
 
     }
-
-    SharedMatrix U = tmp->clone();
     U->expm(4);
 
-    tmp->gemm(false, false, 1.0, C, U, 0.0);
+    // Need to build a new one here incase nmo != nso
+    SharedMatrix tmp = Matrix::doublet(C, U, false, false);
     C->copy(tmp);
 
     U.reset();
@@ -1076,9 +1075,13 @@ void HF::form_Shalf()
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
+        Ca_->init(nirrep_,nsopi_,nmopi_,"Alpha MO coefficients");
         epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
+        Cb_->init(nirrep_,nsopi_,nmopi_,"Beta MO coefficients");
+
+        // Extra matrix dimension changes for specific derived classes
+        prepare_canonical_orthogonalization();
+
     }
 
     // Temporary variables needed by diagonalize_F
@@ -1854,21 +1857,25 @@ void HF::iterations()
         std::string status = "";
 
         // We either do SOSCF or DIIS
-        double ediff = fabs(E_ - Eold_);
         bool did_soscf = false;
         if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)){
             compute_orbital_gradient(false);
+            diis_performed_ = false;
 
             if (!test_convergency()){
                 int nmicro = soscf_update();
-                diis_performed_ = false;
                 if (nmicro > 0){ // If zero the soscf call bounced for some reason
-                    did_soscf = true;
                     find_occupation();
                     status += "SOSCF, nmicro = ";
                     status += psi::to_string(nmicro);
+                    did_soscf = true; // Stops DIIS
                 }
-
+                else{
+                    if (print_){
+                        outfile->Printf("Did not take a SOSCF step, using normal convergence methods\n");
+                    }
+                    did_soscf = false; // Back to DIIS
+                }
             }
             else{
                 // We need to ensure orthogonal orbitals and set epsilon
@@ -1876,7 +1883,7 @@ void HF::iterations()
                 timer_on("HF: Form C");
                 form_C();
                 timer_off("HF: Form C");
-                did_soscf = true; // Just to stop DIIS
+                did_soscf = true; // Stops DIIS
             }
         } // End SOSCF block
 

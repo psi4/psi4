@@ -61,7 +61,7 @@ void ROHF::common_init()
 {
     Fa_      = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
     Fb_      = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
-    Feff_    = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
     Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
@@ -75,8 +75,8 @@ void ROHF::common_init()
     Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
     Dt_old_  = SharedMatrix(factory_->create_matrix("D alpha old"));
     Dt_      = SharedMatrix(factory_->create_matrix("D beta old"));
-    moFa_    = SharedMatrix(factory_->create_matrix("MO Basis alpha Fock Matrix"));
-    moFb_    = SharedMatrix(factory_->create_matrix("MO Basis beta Fock Matrix"));
+    moFa_    = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
+    moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
@@ -228,28 +228,28 @@ void ROHF::finalize()
     //
     // --EGH
     //
-    // Let's build the MO Lagrangian in Feff_
+    // Let's build the MO Lagrangian in moFeff_
     // ...I'm assuming these bitches are square
-    Feff_->zero();
+    moFeff_->zero();
     moFa_->transform(Fa_, Ca_);
     moFb_->transform(Fb_, Ca_);
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Feff_->rowdim(h); ++m) {
+        for (int m=0; m<moFeff_->rowdim(h); ++m) {
             double tval;
             for (int i=0; i<doccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
                 tval += moFb_->get(h, m, i);
-                Feff_->set(h, m, i, tval);
+                moFeff_->set(h, m, i, tval);
             }
             for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
-                Feff_->set(h, m, i, tval);
+                moFeff_->set(h, m, i, tval);
             }
         }
     }
-    Lagrangian_->back_transform(Feff_, Ca_);
+    Lagrangian_->back_transform(moFeff_, Ca_);
 
-    Feff_.reset();
+    moFeff_.reset();
     Ka_.reset();
     Kb_.reset();
     Ga_.reset();
@@ -279,7 +279,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
     Dimension noccpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-    View vMOgradient(Feff_, noccpi, virpi, dim_zero, doccpi_);
+    View vMOgradient(moFeff_, noccpi, virpi, dim_zero, doccpi_);
     SharedMatrix MOgradient = vMOgradient();
 
     // Zero out act-act part
@@ -294,10 +294,11 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     }
 
     // Grab inact-act and act-vir orbs
-    View vCia(Ct_, nsopi_, noccpi, dim_zero, dim_zero);
+    // Ct_ is actuall (nmo x nmo)
+    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
     SharedMatrix Cia = vCia();
 
-    View vCav(Ct_, nsopi_, virpi, dim_zero, doccpi_);
+    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
     SharedMatrix Cav = vCav();
 
     // Back transform MOgradient
@@ -377,36 +378,36 @@ void ROHF::form_F()
      *  open    | 2(Fc-Fo)     Fc      2Fo
      *  virtual |    Fc       2Fo       Fc
      */
-    Feff_->copy(moFa_);
-    Feff_->add(moFb_);
-    Feff_->scale(0.5);
+    moFeff_->copy(moFa_);
+    moFeff_->add(moFb_);
+    moFeff_->scale(0.5);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i) {
             // Set the open/closed portion
             for (int j = 0; j < doccpi_[h]; ++j) {
                 double val = moFb_->get(h, i, j);
-                Feff_->set(h, i, j, val);
-                Feff_->set(h, j, i, val);
+                moFeff_->set(h, i, j, val);
+                moFeff_->set(h, j, i, val);
             }
             // Set the open/virtual portion
             for (int j = doccpi_[h] + soccpi_[h]; j < nmopi_[h]; ++j) {
                 double val = moFa_->get(h, i, j);
-                Feff_->set(h, i, j, val);
-                Feff_->set(h, j, i, val);
+                moFeff_->set(h, i, j, val);
+                moFeff_->set(h, j, i, val);
             }
         }
     }
 
-    // Form the orthogonalized SO basis Feff matrix, for use in DIIS
-    soFeff_->copy(Feff_);
-    soFeff_->back_transform(Ct_);
+    // Form the orthogonalized SO basis moFeff matrix, for use in DIIS
+    diag_F_temp_->gemm(false, false, 1.0, Ct_, moFeff_, 0.0);
+    soFeff_->gemm(false, true, 1.0, diag_F_temp_, Ct_, 0.0);
 
     if (debug_) {
         Fa_->print();
         Fb_->print();
         moFa_->print();
         moFb_->print();
-        Feff_->print();
+        moFeff_->print();
         soFeff_->print();
     }
 }
@@ -425,15 +426,29 @@ void ROHF::form_C()
         Ct_->eivprint(epsilon_a_);
     }
 }
-
+void ROHF::prepare_canonical_orthogonalization()
+{
+    // Some matrix size changes if we canonical orthogonalization
+    Ct_->init(nirrep_, nmopi_, nmopi_);
+    moFa_->init(nirrep_, nmopi_, nmopi_);
+    moFb_->init(nirrep_, nmopi_, nmopi_);
+    moFeff_->init(nirrep_, nmopi_, nmopi_);
+    soFeff_->init(nirrep_, nmopi_, nmopi_); // This is in the "Orthogonalized SO" basis
+}
 void ROHF::form_initial_C()
 {
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use Fa to generate the first C, where Fa was set by guess()
     // to either H or the GWH Hamiltonian.
-    Fa_->transform(X_);
-    Fa_->diagonalize(Ct_, epsilon_a_);
-    find_occupation();
+
+    //Form F' = X'FX for canonical orthogonalization
+    diag_temp_->gemm(true, false, 1.0, X_, Fa_, 0.0);
+    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+
+    //Form C' = eig(F')
+    diag_F_temp_->diagonalize(Ct_, epsilon_a_);
+
+    //Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
     if (print_ > 3)
@@ -482,7 +497,7 @@ double ROHF::compute_initial_E()
 
 double ROHF::compute_E()
 {
-    double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);;
+    double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);
     double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
 
     energies_["Nuclear"] = nuclearrep_;
@@ -803,7 +818,7 @@ int ROHF::soscf_update()
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
 
-    View vMOgradient(Feff_, occpi, virpi, dim_zero, doccpi_);
+    View vMOgradient(moFeff_, occpi, virpi, dim_zero, doccpi_);
     SharedMatrix Gradient = vMOgradient();
     Gradient->scale(-4.0);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, occpi, virpi));
@@ -813,7 +828,7 @@ int ROHF::soscf_update()
 
         double** preconp = Precon->pointer(h);
         double** gradientp = Gradient->pointer(h);
-        double** feffp = Feff_->pointer(h);
+        double** feffp = moFeff_->pointer(h);
 
         // Precon
         for (size_t i=0; i < occpi[h]; i++){

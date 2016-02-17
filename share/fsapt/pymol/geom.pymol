@@ -1,16 +1,17 @@
 # Zero everything out
-reinitialize
+cmd.reinitialize()
 
 # Load Monomer A
-load Disp.pdb
-util.cbaw
-show sticks, all
+cmd.load("Disp.pdb","pdb")
+#cmd.util.cbaw()
+cmd.show("sticks", "all")
+cmd.label("all", "name")
 
 # Visualization
-@vis.pymol
+cmd.run("vis.pymol")
 
 # Orientation
-@orient.pymol
+cmd.run("orient.pymol")
 
 # Raytraced png
-png Geom.png, width=1200, height=1200, dpi=300, ray=1
+cmd.png("Geom.png", width=1200, height=1200, dpi=300, ray=1)
