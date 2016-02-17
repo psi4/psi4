@@ -1,7 +1,6 @@
-@Geom.pymol
-@Elst.pymol
-@Exch.pymol
-@IndAB.pymol
-@IndBA.pymol
-@Disp.pymol
-@Total.pymol
+cmd.run("Elst.pymol")
+cmd.run("Exch.pymol")
+cmd.run("IndAB.pymol")
+cmd.run("IndBA.pymol")
+cmd.run("Disp.pymol")
+cmd.run("Total.pymol")
