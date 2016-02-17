@@ -227,8 +227,12 @@ protected:
     // Temporarily converting to virtual function for testing embedding
     // potentials.  TDC, 5/23/12.
     virtual void form_H();
+
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
+
+    /// Edit matrices if we are doing canonical orthogonalization
+    virtual void prepare_canonical_orthogonalization() { return; }
 
     /// Prints the orbital occupation
     void print_occupation();

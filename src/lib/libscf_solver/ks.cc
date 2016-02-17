@@ -225,6 +225,11 @@ void RKS::finalize()
 {
     RHF::finalize();
 }
+int RKS::soscf_update()
+{
+    throw PSIEXCEPTION("Sorry, second-order convergence has not been implemented for this "
+                       "type of SCF wavefunction yet.");
+}
 bool RKS::stability_analysis()
 {
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
@@ -401,6 +406,11 @@ double UKS::compute_E()
 void UKS::finalize()
 {
     UHF::finalize();
+}
+int UKS::soscf_update()
+{
+    throw PSIEXCEPTION("Sorry, second-order convergence has not been implemented for this "
+                       "type of SCF wavefunction yet.");
 }
 bool UKS::stability_analysis()
 {

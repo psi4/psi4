@@ -35,7 +35,7 @@ namespace psi { namespace scf {
 
 class ROHF : public HF {
 protected:
-    SharedMatrix Feff_;
+    SharedMatrix moFeff_;
     SharedMatrix soFeff_;
     SharedMatrix Dt_old_;
     SharedMatrix Dt_;
@@ -54,6 +54,7 @@ protected:
     double compute_initial_E();
     double compute_E();
     virtual bool stability_analysis();
+    virtual void prepare_canonical_orthogonalization();
     void semicanonicalize();
 
     void form_G();
@@ -79,7 +80,7 @@ public:
     ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 
-    SharedMatrix moFeff() const {return Feff_; }
+    SharedMatrix moFeff() const {return moFeff_; }
     SharedMatrix moFa() const {return moFa_; }
     SharedMatrix moFb() const {return moFb_; }
 
