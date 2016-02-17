@@ -2795,7 +2795,7 @@ void FISAPT::fexch()
     if (options_.get_bool("sSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
-        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", scale);
+        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 }
 void FISAPT::find()

@@ -16,6 +16,8 @@ class FISAPT {
 
 protected:
 
+    // sSAPT0 exchange-scaling
+    double sSAPT0_scale_;
     /// Global options object 
     Options& options_;
     /// Memory in doubles
@@ -175,8 +177,6 @@ protected:
     // => Global Data <= //
 
 
-    // sSAPT0 exchange-scaling
-    double sSAPT0_scale_;
     // Convergence tolerance
     double delta_;
     // Maximum allowed iterations
