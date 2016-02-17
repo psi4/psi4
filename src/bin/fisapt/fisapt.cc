@@ -2792,6 +2792,11 @@ void FISAPT::fexch()
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
     }
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
+        sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
+        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
+    }
 }
 void FISAPT::find()
 {
@@ -3060,6 +3065,11 @@ void FISAPT::find()
 
     // ==> A <- B Uncoupled <== //
 
+    double scale = 1.0;
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        scale = sSAPT0_scale_;
+    }
+
     fseek(WBarf,0L,SEEK_SET);
     for (int B = 0; B < nB + nb; B++) {
 
@@ -3080,7 +3090,7 @@ void FISAPT::find()
         // Zip up the Ind20 contributions
         for (int a = 0; a < na; a++) {
             double Jval = 2.0 * C_DDOT(nr,x2Ap[a],1,wBTp[a],1);
-            double Kval = 2.0 * C_DDOT(nr,x2Ap[a],1,uBTp[a],1);
+            double Kval = scale * 2.0 * C_DDOT(nr,x2Ap[a],1,uBTp[a],1);
             Ind20u_AB_termsp[a][B] = Jval;
             Ind20u_AB += Jval;
             ExchInd20u_AB_termsp[a][B] = Kval;
@@ -3113,7 +3123,7 @@ void FISAPT::find()
         // Zip up the Ind20 contributions
         for (int b = 0; b < nb; b++) {
             double Jval = 2.0 * C_DDOT(ns,x2Bp[b],1,wATp[b],1);
-            double Kval = 2.0 * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
+            double Kval = 2.0 * scale * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
             Ind20u_BA_termsp[A][b] = Jval;
             Ind20u_BA += Jval;
             ExchInd20u_BA_termsp[A][b] = Kval;
@@ -3759,6 +3769,11 @@ void FISAPT::fdisp()
     double** UBp = Uaocc_B->pointer();
 
     // ==> Master Loop <== //
+    
+    double scale = 1.0;
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        scale = sSAPT0_scale_;
+    }
 
     fseek(Aarf,0L,SEEK_SET);
     fseek(Bbrf,0L,SEEK_SET);
@@ -3847,8 +3862,8 @@ void FISAPT::fdisp()
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
-                        E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
-                        ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        E_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                        ExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
             }
@@ -3863,6 +3878,10 @@ void FISAPT::fdisp()
     for (int t = 0; t < nT; t++) {
         E_disp20->add(E_disp20_threads[t]);
         E_exch_disp20->add(E_exch_disp20_threads[t]);
+    }
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        E_exch_disp20->scale(sSAPT0_scale_);
     }
 
     for (int a = 0; a < na; a++) {
