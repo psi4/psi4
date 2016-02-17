@@ -174,6 +174,9 @@ protected:
 
     // => Global Data <= //
 
+
+    // sSAPT0 exchange-scaling
+    double sSAPT0_scale_;
     // Convergence tolerance
     double delta_;
     // Maximum allowed iterations
