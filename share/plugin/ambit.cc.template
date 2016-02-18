@@ -42,11 +42,6 @@ extern "C"
 int read_options(std::string name, Options &options)
 {
     if (name == "@PLUGIN@"|| options.read_globals()) {
-        /*- The amount of information printed
-            to the output file -*/
-        options.add_int("PRINT", 1);
-        /*- Whether to compute two-electron integrals -*/
-        options.add_bool("DO_TEI", true);
     }
 
     return true;
@@ -57,28 +52,34 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
 {
     using namespace ambit;
 
+    if (ref_wfn->nirrep() != 1) {
+        throw PSIEXCEPTION("\nThis plugin template requires C1 symmetry.\n");
+    }
+    
+    // Need the molecule to contruct the auxiliary basis set
     boost::shared_ptr<Molecule> molecule = ref_wfn->molecule();
+    
+    // Obtain basis set objects
+    //   1. Orbital basis set
+    boost::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
-    // Form basis object:
+    //   2. Auxiliary basis set
     // Create a basis set parser object.
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     // Construct a new basis set.
-    boost::shared_ptr<BasisSet> aoBasis = BasisSet::pyconstruct_orbital(molecule,
-                                             "BASIS", options.get_str("BASIS"));
     boost::shared_ptr<BasisSet> auxBasis= BasisSet::pyconstruct_auxiliary(molecule,
                                                  "DF_BASIS_MP2", options.get_str("DF_BASIS_MP2"),
                                                  "RIFIT", options.get_str("BASIS"));
+
+    //   3. "Zero" basis set.
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // The integral factory oversees the creation of integral objects
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis, aoBasis, aoBasis, aoBasis));
 
-    // N.B. This should be called after the basis has been built, because the geometry has not been
-    // fully initialized until this time.
     molecule->print();
+
     size_t nbf = aoBasis->nbf();
-    double nucrep = molecule->nuclear_repulsion_energy();
-    psi::outfile->Printf("\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // Form the one-electron integral objects from the integral factory
     boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
@@ -91,6 +92,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
     Tensor V = Tensor::build(CoreTensor, "V", { nbf, nbf });
 
     // Ambit provides helpers for computing and storing integrals.
+    // The OBI's are stored in shared_ptr's and Ambit expects a reference to OneBodyAOInt
     helpers::psi4::integrals(*sOBI.get(), &S);
     helpers::psi4::integrals(*tOBI.get(), &T);
     helpers::psi4::integrals(*vOBI.get(), &V);
@@ -122,6 +124,8 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
          Cocc = Tensor::build(CoreTensor, "C occ", { nbf, nocc });
          Cvir = Tensor::build(CoreTensor, "C vir", { nbf, nvir });
 
+         // Copy the data from the SharedMatrix to Tensor.
+         // Ambit expects a reference to the underlying Matrix object and not a shared_ptr.
          helpers::psi4::convert(*occ.get(), &Cocc);
          helpers::psi4::convert(*vir.get(), &Cvir);
 
