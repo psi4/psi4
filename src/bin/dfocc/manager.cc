@@ -3063,6 +3063,7 @@ void DFOCC::olccd_manager()
         // main if
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
+	   mo_optimized = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
                     outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
