@@ -46,6 +46,10 @@
 
 #include <psi4-def.h>
 
+#ifdef HAVE_AMBIT
+#include <ambit/tensor.h>
+#endif
+
 #define MAIN
 
 #include "psi4.h"
@@ -77,6 +81,10 @@ int main(int argc, char **argv)
     WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
             new LibParallel::ParallelEnvironment(argc, argv));
 
+    // Initialize external Ambit library
+#ifdef HAVE_AMBIT
+    ambit::initialize(argc, argv);
+#endif
 
     // Setup the environment
     Process::environment.initialize();   // grabs the environment from the global environ variable
@@ -136,6 +144,10 @@ int main(int argc, char **argv)
 
 
     Process::environment.legacy_wavefunction().reset();
+
+#ifdef HAVE_AMBIT
+    ambit::finalize();
+#endif
 
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;
