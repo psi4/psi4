@@ -78,7 +78,7 @@ if(ENABLE_PCMSOLVER)
   target_link_libraries(psi4 PCMSolver::PCMSolver)
 endif()
 if(ENABLE_AMBIT)
-    target_link_libraries(psi4 Ambit::Ambit)
+    target_link_libraries(psi4 ${PRE_LIBRARY_OPTION} Ambit::Ambit ${POST_LIBRARY_OPTION})
 endif()
 
 # standalone python module bin/psi4.so
