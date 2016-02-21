@@ -121,10 +121,10 @@ else if (reference_ == "UNRESTRICTED") {
     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE") {
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") {
         //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
@@ -231,9 +231,9 @@ else if (reference_ == "UNRESTRICTED") {
     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE") {
         //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
@@ -359,9 +359,9 @@ else if (reference_ == "UNRESTRICTED") {
     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE") {
         //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
@@ -492,9 +492,9 @@ else if (reference_ == "UNRESTRICTED") {
     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE") {
         //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
@@ -613,9 +613,9 @@ else if (reference_ == "UNRESTRICTED") {
     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE") {
         //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
