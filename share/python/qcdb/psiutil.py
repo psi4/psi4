@@ -33,7 +33,7 @@ import re
 import os
 import string
 from .vecutil import *
-from p4xcpt import *
+from .exceptions import *
 
 
 def _success(label):
