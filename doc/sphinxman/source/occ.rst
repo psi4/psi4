@@ -69,8 +69,8 @@ should be followed.
 
 Thus, there arise a few categories of method, each with corresponding input keywords:
 
-* Orbital-optimized MP and CC methods with conventional integrals (:ref:`OMP Methods <sec:occ_oo_mtds` OCC keywords)
-* Orbital-optimized MP and CC methods with DF and CD integrals (:ref:`OMP Methods <sec:occ_oo_mtds` DFOCC keywords)
+* Orbital-optimized MP and CC methods with conventional integrals (:ref:`OMP Methods <sec:occ_oo_mtds>` OCC keywords)
+* Orbital-optimized MP and CC methods with DF and CD integrals (:ref:`OMP Methods <sec:occ_oo_mtds>` DFOCC keywords)
 * Non-orbital-optimized MP and CC methods with conventional integrals (:ref:`MP/CC Methods <sec:occ_nonoo>` OCC keywords)
 * Non-orbital-optimized MP and CC methods with DF and CD integrals (:ref:`MP/CC Methods <sec:occ_nonoo>` DFOCC keywords)
 

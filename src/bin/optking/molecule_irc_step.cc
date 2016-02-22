@@ -103,19 +103,9 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   oprintf_out("@IRC ----------------------------------------------\n\n");
 
 //Printing Internal Coordinates for Each step
-  oprintf_out("@IRC --------------------------------------");
-  for(int i=0; i<(dim/blocks)*blocks; i++)
-  {
-    oprintf_out("-------------");
-  }
-  oprintf_out("\n");
-  oprintf_out("@IRC              ****     IRC Steps     ****\n");
-  oprintf_out("@IRC --------------------------------------");
-  for(int i=0; i<(dim/blocks)*blocks; i++)
-  {
-    oprintf_out("-------------");
-  }
-
+  oprintf_out("@IRC -----------------------------------------------------\n");
+  oprintf_out("@IRC              ****     IRC Steps     ****             \n");
+  oprintf_out("@IRC -----------------------------------------------------");
   for(int j=0; j < dim/blocks; j++)
   {
     oprintf_out("\n@IRC        |          Distance         |\n");

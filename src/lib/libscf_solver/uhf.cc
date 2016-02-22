@@ -404,7 +404,7 @@ int UHF::soscf_update(void)
             double** fp = IFock_a->pointer(h);
 
             for (size_t i=0, target=0; i<nalphapi_[h]; i++){
-                for (size_t a=nalphapi_[h]; a < nsopi_[h]; a++){
+                for (size_t a=nalphapi_[h]; a < nmopi_[h]; a++){
                     gp[target] = -4.0 * fp[i][a];
                     denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
                 }
@@ -416,7 +416,7 @@ int UHF::soscf_update(void)
             double** fp = IFock_b->pointer(h);
 
             for (size_t i=0, target=0; i<nbetapi_[h]; i++){
-                for (size_t a=nbetapi_[h]; a < nsopi_[h]; a++){
+                for (size_t a=nbetapi_[h]; a < nmopi_[h]; a++){
                     gp[target] = -4.0 * fp[i][a];
                     denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
                 }
