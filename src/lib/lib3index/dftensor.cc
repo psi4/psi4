@@ -192,10 +192,8 @@ SharedMatrix DFTensor::Qso()
         A->print();
     }
     // Build numpy and final matrix shape
-    int* shape = new int[3];
-    shape[0] = naux_; shape[1] = nso_; shape[2] = nso_;
-    A->set_numpy_dims(3);
-    A->set_numpy_shape(shape);
+    std::vector<int> nshape{naux_, nso_, nso_};
+    A->set_numpy_shape(nshape);
 
     return A;
 }
@@ -226,10 +224,8 @@ SharedMatrix DFTensor::Qoo()
         Aia->print();
     }
     // Build numpy and final matrix shape
-    int* shape = new int[3];
-    shape[0] = naux_; shape[1] = naocc_; shape[2] = naocc_;
-    Aia->set_numpy_dims(3);
-    Aia->set_numpy_shape(shape);
+    std::vector<int> nshape{naux_, naocc_, naocc_};
+    Aia->set_numpy_shape(nshape);
 
     return Aia;
 }
@@ -262,10 +258,9 @@ SharedMatrix DFTensor::Qov()
         Ami->print();
         Aia->print();
     }
-    int* shape = new int[3];
-    shape[0] = naux_; shape[1] = naocc_; shape[2] = navir_;
-    Aia->set_numpy_dims(3);
-    Aia->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{naux_, naocc_, navir_};
+    Aia->set_numpy_shape(nshape);
 
     return Aia;
 }
@@ -295,10 +290,9 @@ SharedMatrix DFTensor::Qvv()
         Ami->print();
         Aia->print();
     }
-    int* shape = new int[3];
-    shape[0] = naux_; shape[1] = navir_; shape[2] = navir_;
-    Aia->set_numpy_dims(3);
-    Aia->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{naux_, navir_, navir_};
+    Aia->set_numpy_shape(nshape);
 
     return Aia;
 }
@@ -328,10 +322,9 @@ SharedMatrix DFTensor::Qmo()
         Ami->print();
         Aia->print();
     }
-    int* shape = new int[3];
-    shape[0] = naux_; shape[1] = nmo_; shape[2] = nmo_;
-    Aia->set_numpy_dims(3);
-    Aia->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{naux_, nmo_, nmo_};
+    Aia->set_numpy_shape(nshape);
 
     return Aia;
 }
@@ -351,11 +344,9 @@ SharedMatrix DFTensor::Idfmo()
     C_DGEMM('T','N',nmo_ * nmo_, nmo_ * nmo_, naux_, 1.0, Amop[0], nmo_ * nmo_,
         Amop[0], nmo_ * nmo_, 0.0, Imop[0], nmo_ * nmo_);
 
-    int* shape = new int[4];
-    shape[0] = nmo_; shape[1] = nmo_;
-    shape[2] = nmo_; shape[3] = nmo_;
-    Imo->set_numpy_dims(4);
-    Imo->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{nmo_, nmo_, nmo_, nmo_};
+    Imo->set_numpy_shape(nshape);
 
     return Imo;
 }

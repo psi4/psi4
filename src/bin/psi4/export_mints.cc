@@ -104,14 +104,15 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = mat->numpy_dims();
-    if (numpy_dim){
-        int* numpy_shape = mat->numpy_shape();
+    std::vector<int> numpy_shape = mat->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
         rv["shape"] = boost::python::tuple(shape);
+        // rv["shape"] = numpy_shape;
     }
     else{
         int rows = mat->rowspi(irrep);
@@ -154,15 +155,14 @@ dict vector_array_interface(SharedVector vec, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = vec->numpy_dims();
-
-    if (numpy_dim){
-        int* numpy_shape = vec->numpy_shape();
+    std::vector<int> numpy_shape = vec->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
-        rv["shape"] = boost::python::make_tuple(shape);
+        rv["shape"] = boost::python::tuple(shape);
     }
     else {
         const int elements = vec->dim(irrep);
