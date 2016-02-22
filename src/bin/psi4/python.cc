@@ -1268,7 +1268,7 @@ BOOST_PYTHON_MODULE (psi4)
           new LibParallel::ParallelEnvironment(0, 0));
 
     // Setup the environment
-    Process::arguments.initialize(0, 0);
+    //Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
 
     // There is only one timer:
