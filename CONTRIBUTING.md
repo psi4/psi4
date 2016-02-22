@@ -17,10 +17,12 @@ team and for external contributors.
 
 ## Making Changes
 
-* Add some really awesome code to your local fork.  It's usually a good idea to make changes on a
+* Add some really awesome code to your local fork.  It's usually a [good
+  idea](http://blog.jasonmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/)
+  to make changes on a
   [branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/)
   with the branch name relating to the feature you are going to add.
-* When you are ready for other to examine and comment on your new feature,
+* When you are ready for others to examine and comment on your new feature,
   navigate to your fork of Psi4 on GitHub and open a [pull
   request](https://help.github.com/articles/using-pull-requests/)(PR). Note that
   after you launch a PR from one of your fork's branches, all
