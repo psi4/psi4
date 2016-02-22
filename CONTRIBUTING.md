@@ -31,7 +31,8 @@ team and for external contributors.
   mergability, compilation and test suite compliance; the results of these tests
   will be visible on the PR page.
 * If you're providing a new feature, you must add test cases and documentation.
-* When the code is ready to go, make sure you run the full test suite on your
+* When the code is ready to go, make sure you run the full
+  [test suite](https://github.com/psi4/psi4/wiki/4_Testing) on your
   local machine to check that nothing is broken.
 * When you see that all of the validation checks have passed on the PR
   page, check the "Ready to go" box, to let the Psi4 team know that the
