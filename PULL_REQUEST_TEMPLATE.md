@@ -1,17 +1,14 @@
-### Description
-
+## Description
 Provide a brief description of the PR's purpose here.
 
-### Todos
+## Todos
+Notable points that this PR has either accomplished or will accomplish.
+- [ ] Feature1
 
-If the PR provides new functionality, the following must be provided:-
+## Questions
+- [ ]  Question1
 
-* Tests
-* Documentation
+## Status
+- [ ]  Ready to go
 
-### Status
 
-[ ]  Ready to go
-
-Only when the checkbox above has been selected will this PR be considered for
-merging by a member of the @psi4/p4pub-rw group.
