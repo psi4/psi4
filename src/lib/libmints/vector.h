@@ -118,6 +118,11 @@ public:
         return vector_[h];
     }
 
+    const double* pointer(int h = 0) const
+    {
+        return vector_[h];
+    }
+
     /// Returns a single element value
     double get(int h, int m)
     {

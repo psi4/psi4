@@ -820,5 +820,5 @@ class Molecule(LibmintsMolecule):
         self.translate(coc)
 
 # Attach method to qcdb.Molecule class
-from interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
+from .interface_dftd3 import run_dftd3 as _dftd3_qcdb_yo
 Molecule.run_dftd3 = _dftd3_qcdb_yo

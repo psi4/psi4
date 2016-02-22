@@ -744,7 +744,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         }
         delete[] temp;
         delete[] SC;
-        return D;
+        return D2;
     } else {
         throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
     }

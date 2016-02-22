@@ -452,7 +452,7 @@ def select_cepa_0_(name, **kwargs):
             if module == 'OCC':
                 func = run_occ
             elif module in ['', 'FNOCC']:
-                func = run_fnocc
+                func = run_cepa
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc
@@ -1121,12 +1121,10 @@ def run_dfocc(name, **kwargs):
         raise ValidationError('Unidentified method %s' % (lowername))
 
     # conventional vs. optimized orbitals
-    if lowername in ['ugur-mp2', 'mp2', 'mp2.5', 'mp3',
-                     'lccd', 'ccd', 'ccsd', 'ccsd(t)', 'ccsd(at)',
-                     'ccdl', 'ccsdl']:
+    if lowername in ['mp2', 'mp2.5', 'mp3', 'cepa(0)',
+                     'ccd', 'ccsd', 'ccsd(t)', 'ccsd(at)']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif lowername in ['omp2', 'omp2.5', 'omp3',
-                     'olccd']:
+    elif lowername in ['omp2', 'omp2.5', 'omp3', 'ocepa(0)']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     psi4.set_local_option('DFOCC', 'DO_SCS', 'FALSE')

@@ -1107,7 +1107,7 @@ void Matrix::transpose_this()
             }
         }
         else {
-            throw NotImplementedException();
+            throw NOT_IMPLEMENTED_EXCEPTION();
         }
     }
 }
