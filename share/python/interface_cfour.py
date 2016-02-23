@@ -132,8 +132,12 @@ def run_cfour(name, **kwargs):
     os.chdir(cfour_tmpdir)
 
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH') + ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + ':' + psi4.psi_top_srcdir() + '/lib/basis'
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH') + \
+                ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + \
+                ':' + psi4.psi_top_srcdir() + '/share/basis'
+        }
 
     if 'path' in kwargs:
         lenv['PATH'] = kwargs['path'] + ':' + lenv['PATH']

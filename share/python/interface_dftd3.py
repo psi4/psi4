@@ -103,8 +103,10 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
         defmoved = True
 
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH')
+        }
 
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
