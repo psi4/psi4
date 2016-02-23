@@ -97,7 +97,7 @@ class NumberValue(CoordValue):
         return "%*.*f" % (precision + 5, precision, self.compute())
 
     def everything(self):
-        print('\nNumberValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n\n' % \
+        print('\nNumberValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n\n' %
             (self.PYfixed, self.computed, self.type(), self.value, self.variable_to_string(4)))
 
 
@@ -157,7 +157,7 @@ class VariableValue(CoordValue):
             return self.PYname
 
     def everything(self):
-        print('\nVariableValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n  Name = %s\n  Negated = %s\n  Map = %s\n\n' % \
+        print('\nVariableValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n  Name = %s\n  Negated = %s\n  Map = %s\n\n' %
             (self.PYfixed, self.computed, self.type(), self.compute(), self.variable_to_string(4), self.name(), self.negated(), self.geometryVariables))
 
 
@@ -350,7 +350,7 @@ class CoordEntry(object):
         return self.PYshells
 
     def everything(self):
-        print('\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n  Basissets = %s\n\n  Shells = %s\n\n' % \
+        print('\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n  Basissets = %s\n\n  Shells = %s\n\n' %
             (self.entry_number(), self.is_computed(), self.Z(), self.charge(),
             self.mass(), self.symbol(), self.label(), self.is_ghosted(),
             self.coordinates, self.PYbasissets, self.PYshells))
