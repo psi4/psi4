@@ -73,7 +73,6 @@ if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
 endif()
 
 # Include CMake modules as needed
-include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
