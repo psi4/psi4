@@ -268,6 +268,11 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
 
+    install(
+        DIRECTORY ${CCBD}/html
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/psi4
+        OPTIONAL)
+
     # * full, proper build with LaTeX
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         add_custom_target(sphinxpdf
