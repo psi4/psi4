@@ -85,7 +85,7 @@ endif()
 add_executable(psi4so EXCLUDE_FROM_ALL $<TARGET_OBJECTS:psi4_objlib> $<TARGET_OBJECTS:versioned_code_so>)
 set_property(TARGET psi4so PROPERTY LINK_FLAGS "-shared")
 set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4${CMAKE_EXECUTABLE_SUFFIX}.so")
-INSTALL(TARGETS psi4so RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(TARGETS psi4so RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin OPTIONAL)
 
 # standalone library src/bin/psi4/libpsi4.so
 #add_library(psi4so SHARED EXCLUDE_FROM_ALL $<TARGET_OBJECTS:psi4_objlib> $<TARGET_OBJECTS:versioned_code_so>)
