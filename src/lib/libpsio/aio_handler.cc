@@ -59,6 +59,9 @@ boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 }
 void AIOHandler::synchronize()
 {
+    // This join may be problematic in a multithreaded env.: while we wait for the
+    // thread to finish, other threads may add work to the queue. We'd probably need 
+    // a way to identify write jobs and check if they completed from external threads.
     boost::unique_lock<boost::mutex> lock(*locked_);
     lock.unlock();
     thread_->join();
@@ -92,8 +95,23 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   start_.push(start);
   end_.push(end);
 
+  //printf("Adding a write to the queue\n");
+
+  // Ensures we do not already have a thread running jobs.
+  //if (thread_ == NULL) {
+  //    fprintf(stderr,"Thread is null\n");
+  //} else if (not thread_->timed_join(boost::chrono::milliseconds(0)) ) {
+  //    fprintf(stderr,"Thread is not joinable now, thus busy\n");
+  //    return;
+  //} else {
+  //    if(job_.size() > 1) {
+  //      fprintf(stderr,"%d jobs in the queue! Should NOT create thread!!\n", job_.size());
+  //    }
+  //    fprintf(stderr, "Thread is joined, need new thread\n");
+  //}
   if (job_.size() > 1) return;
 
+  //fprintf(stderr,"Starting a thread\n");
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
@@ -202,7 +220,6 @@ void AIOHandler::call_aio()
       psio_address start = start_.front();
       psio_address* end = end_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       buffer_.pop();
@@ -225,7 +242,6 @@ void AIOHandler::call_aio()
       psio_address start = start_.front();
       psio_address* end = end_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       buffer_.pop();
@@ -233,9 +249,17 @@ void AIOHandler::call_aio()
       start_.pop();
       end_.pop();
 
+      //printf("Actually doing the psio_write from thread\n");
+      //printf("Unit is %d, key is %s, size is %d\n", unit, key, size);
       lock.unlock();
 
+      //printf("Printing number %d now\n", *((int *) buffer));
+      //std::stringstream ss;
+      //ss << thread_->get_id();
+      //fprintf(stderr,"Printing from thread %s\n", ss.str().c_str());
+      //fprintf(stderr,"Starting address is %lu, %lu\n",start.page, start.offset);
       psio_->write(unit,key,buffer,size,start,end);
+      //fprintf(stderr,"End address is %lu, %lu\n",end->page, end->offset);
     }
     else if (jobtype == 3) {
 
@@ -246,7 +270,6 @@ void AIOHandler::call_aio()
       char* buffer = buffer_.front();
       ULI size = size_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       buffer_.pop();
@@ -265,7 +288,6 @@ void AIOHandler::call_aio()
       char* buffer = buffer_.front();
       ULI size = size_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       buffer_.pop();
@@ -287,7 +309,6 @@ void AIOHandler::call_aio()
       ULI col_skip = col_skip_.front();
       psio_address start = start_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       matrix_.pop();
@@ -316,7 +337,6 @@ void AIOHandler::call_aio()
       ULI col_skip = col_skip_.front();
       psio_address start = start_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       matrix_.pop();
@@ -342,7 +362,6 @@ void AIOHandler::call_aio()
       ULI row_length = row_length_.front();
       ULI col_length = col_length_.front();
 
-      job_.pop();
       unit_.pop();
       key_.pop();
       row_length_.pop();
@@ -366,7 +385,11 @@ void AIOHandler::call_aio()
     }
 
     lock.lock();
+    // Only pop the job once the work is actually done and we are gonna leave the loop.
+    // This way, job_.size() == 0 indicates there is no active thread.
+    job_.pop(); 
   }
+  //printf("End of function call_aio\n");
 }
 
 } //Namespace psi
