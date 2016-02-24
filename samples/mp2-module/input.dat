@@ -1,0 +1,239 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+
+memory 256 mb
+
+molecule hf {
+H
+F 1 0.917
+}
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+molecule interloper {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set basis cc-pvdz
+set scf_type df
+set guess sad
+set freeze_core true
+set e_convergence 8
+set d_convergence 7
+
+# <<<  RHF CONV  >>>
+
+scftot =   -100.019400605629
+mp2corl =    -0.201612517228
+mp2tot =   -100.221013122857
+
+set reference rhf
+set mp2_type conv
+
+set qc_module occ
+ugur = energy('mp2', molecule=hf)
+clean_variables()
+clean()
+
+set qc_module fnocc
+eugene = energy('mp2', molecule=hf)
+clean_variables()
+clean()
+
+set qc_module detci
+david = energy('mp2', molecule=hf)
+clean_variables()
+clean()
+
+## <<<  RHF DF  >>>
+
+mp2corl =    -0.201610660387
+mp2tot =   -100.221011266016
+
+set reference rhf
+set mp2_type df
+
+set qc_module occ
+ugur = energy('mp2', molecule=hf)
+print_variables()
+clean_variables()
+clean()
+
+set qc_module dfmp2
+rob = energy('mp2', molecule=hf)
+clean_variables()
+clean()
+
+# <<<  RHF CD  >>>
+
+mp2corl =     -0.201609396752
+mp2tot =    -100.221010002381
+
+set reference rhf
+set mp2_type cd
+
+set qc_module occ
+ugur = energy('mp2', molecule=hf)
+clean_variables()
+clean()
+
+# <<<  UHF CONV  >>>
+
+scftot =    -25.945130559147
+mp2corl =    -0.058421122206
+mp2tot =    -26.003551681354
+
+set reference uhf
+set mp2_type conv
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  UHF DF  >>>
+
+mp2corl =    -0.058390006825
+mp2tot =    -26.003520565972
+
+
+set reference uhf
+set mp2_type df
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+set qc_module dfmp2
+david = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  UHF CD  >>>
+
+mp2corl =    -0.058409837177
+mp2tot =    -26.003540396324
+
+set reference uhf
+set mp2_type cd
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  ROHF CONV  >>>
+
+scftot =     -25.943606522029
+mp2corl =     -0.060939211739
+mp2tot =     -26.004545733768
+
+set reference rohf
+set mp2_type conv
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+set qc_module detci
+david = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  ROHF DF  >>>
+
+mp2corl =    -0.059372748391
+mp2tot =    -26.002979270420
+
+set reference rohf
+set mp2_type df
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+set qc_module dfmp2
+david = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  ROHF CD  >>>
+
+mp2corl =      -0.059393510962
+mp2tot =      -26.003000032991
+
+set reference rohf
+set mp2_type cd
+
+set qc_module occ
+ugur = energy('mp2', molecule=bh_h2p)
+clean_variables()
+clean()
+
+# <<<  RHF CONV gradient  >>>
+
+scftot =   -100.019400605629
+mp2corl =    -0.201612517228
+mp2tot =   -100.221013122857
+mp2totg = psi4.Matrix(2, 3)
+#mp2tot_vals = 
+#mp2totg.set(mp2tot_vals)
+
+set reference rhf
+set mp2_type conv
+
+# OCC
+
+# <<<  RHF DF gradient  >>>
+
+mp2corl =    -0.201610660387
+mp2tot =   -100.221011266016
+mp2tot_vals = [[   -0.00000000000000,    -0.00000000000000,     0.00314716684145],
+               [    0.00000000000000,     0.00000000000000,    -0.00314716684144]]
+mp2totg.set(mp2tot_vals)
+
+set reference rhf
+set mp2_type df
+
+set qc_module occ
+ugur = gradient('mp2', molecule=hf)
+print_variables()
+clean_variables()
+clean()
+
+set qc_module dfmp2
+rob = gradient('mp2', molecule=hf)
+clean_variables()
+clean()
+
+# <<<  RHF CD gradient  >>>
+
+# <<<  UHF CONV gradient  >>>
+
+# OCC
+
+# <<<  UHF DF gradient  >>>  
+
+# OCC
+
+# <<<  UHF CD gradient  >>>
+
+# <<<  ROHF CONV gradient  >>>
+
+# <<<  ROHF DF gradient  >>>
+
+# <<<  ROHF CD gradient  >>>
+

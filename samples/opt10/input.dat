@@ -1,7 +1,7 @@
-#! cc-pVTZ MP2 transition-state optimization with initial, computed Hessian.
-TS_ENERGY = -304.2124075916768       # TEST
+#! 6-31G MP2 transition-state optimization with initial, computed Hessian.
+TS_ENERGY = -303.30622629    # TEST
 
-memory 32 gb
+memory 1 gb
 
 molecule CP_TRANS_HNNH_TS {
  H   0.06253   -0.09777   -0.02044 
@@ -22,7 +22,7 @@ molecule CP_TRANS_HNNH_TS {
 }
 
 set {
- basis cc-pvtz
+ basis 6-31g
  full_hess_every 0
  opt_type ts
 }
