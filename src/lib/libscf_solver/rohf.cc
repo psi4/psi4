@@ -1008,18 +1008,79 @@ bool ROHF::stability_analysis()
     if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
-        // Build the Fock Matrix
-        SharedMatrix aMoF(new Matrix("Alpha MO basis fock matrix", nmopi_, nmopi_));
-        SharedMatrix bMoF(new Matrix("Beta MO basis fock matrix", nmopi_, nmopi_));
-        aMoF->transform(Fa_, Ca_);
-        bMoF->transform(Fb_, Ca_);
+        Dimension nvirpi = nmopi_ - nalphapi_;
+        Dimension zero = Dimension(nirrep_);
+        Dimension soccpi = nalphapi_ - doccpi_;
+        Dimension navir = nmopi_ - nalphapi_;
+        Dimension nbvir = nmopi_ - nbetapi_;
+
+        SharedMatrix FIJ(new Matrix("Alpha occupied MO basis Fock matrix", nalphapi_, nalphapi_));
+        SharedMatrix Fij(new Matrix("Beta occupied MO basis Fock matrix", nalphapi_, nalphapi_));
+        SharedMatrix FAB(new Matrix("Alpha virtual MO basis Fock matrix", nbvir, nbvir));
+        SharedMatrix Fab(new Matrix("Beta virtual MO basis Fock matrix", nbvir, nbvir));
+        SharedMatrix FIA(new Matrix("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir));
+        SharedMatrix Fia(new Matrix("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir));
+
+        View Vocc(Ca_, nsopi_, nalphapi_, zero, zero);
+        SharedMatrix Cocc = Vocc();
+        std::vector<SharedMatrix> virandsoc;
+        View Vvirt(Ca_, nsopi_, navir,  zero, nalphapi_);
+        View Vsocc(Ca_, nsopi_, soccpi, zero, doccpi_);
+        virandsoc.push_back(Vvirt());
+        virandsoc.push_back(Vsocc());
+        SharedMatrix Cvir = Matrix::horzcat(virandsoc);
+        FIJ->transform(Fa_, Cocc);
+        Fij->transform(Fb_, Cocc);
+
+        FIA->transform(Cocc, Fa_, Cvir);
+        Fia->transform(Cocc, Fb_, Cvir);
+
+        FAB->transform(Fa_, Cvir);
+        Fab->transform(Fb_, Cvir);
+
+        // Zero out alpha socc terms corresponding to vir indices
+        for (int h = 0; h < nirrep_; ++h){
+            for(int mo1 = navir[h]; mo1 < nbvir[h]; ++mo1){
+                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+                    FAB->set(h, mo1, mo2, 0.0);
+                }
+            }
+            for(int mo1 = 0; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+                    FIA->set(h, mo1, mo2, 0.0);
+                }
+            }
+        }
+        // Zero out beta socc terms corresponding to occ indices
+        for (int h = 0; h < nirrep_; ++h){
+            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = doccpi_[h]; mo2 < nalphapi_[h]; ++mo2){
+                    Fij->set(h, mo1, mo2, 0.0);
+                }
+            }
+            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = 0; mo2 < nbvir[h]; ++mo2){
+                    Fia->set(h, mo1, mo2, 0.0);
+                }
+            }
+        }
+
+        // Some indexing arrays to allow us to compare occ and vir spatial orbitals, below.
+        int occ_offsets[8];
+        occ_offsets[0] = 0;
+        for(int h = 1; h < nirrep_; ++h)
+            occ_offsets[h] = occ_offsets[h-1] + doccpi_[h-1];
+
+        int vir_offsets[8];
+        vir_offsets[0] = doccpi_[0] - navir[0];
+        for(int h = 1; h < nirrep_; ++h)
+            vir_offsets[h] = vir_offsets[h-1] + doccpi_[h] - navir[h];
 
         std::vector<boost::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted,
-                               IntegralTransform::DPDOnly,
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
@@ -1072,18 +1133,25 @@ bool ROHF::stability_analysis()
                     double val = Aaa.matrix[h][ia][jb];
                     // A_IA_JB += 0.5 delta_IJ F_AB - 0.5 delta_AB F_IJ
                     if((iabs == jabs) && (asym == bsym))
-                        val += 0.5 * aMoF->get(asym, arel + doccpi_[asym], brel + doccpi_[bsym]);
+                        val += 0.5 * FAB->get(asym, arel, brel);
                     if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * aMoF->get(isym, irel, jrel);
+                        val -= 0.5 * FIJ->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(arel < (soccpi_[asym]) || brel < (soccpi_[bsym]))
+                    if(arel >= nvirpi[asym] || brel >= nvirpi[bsym])
                         val = 0.0;
                     Aaa.matrix[h][ia][jb] = val;
                 }
             }
             global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
         }
+        //global_dpd_->buf4_sort(&Aaa, PSIF_LIBTRANS_DPD, qpsr, ID("[V,O]"), ID("[V,O]"), "tmp");
         global_dpd_->buf4_close(&Aaa);
+
+        //global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+        //              ID("[V,O]"), ID("[V,O]"), 0, "tmp");
+        //global_dpd_->buf4_print(&Aaa, "outfile", 1);
+        //global_dpd_->buf4_close(&Aaa);
+        //exit(1);
 
         global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
@@ -1106,12 +1174,13 @@ bool ROHF::stability_analysis()
                     int brel = babs - Abb.params->soff[bsym];
                     double val = Abb.matrix[h][ia][jb];
                     // A_ia_jb += 0.5 delta_ij F_ab - 0.5 delta_ab F_ij
-                    if((iabs == jabs) && (asym == bsym))
-                        val += 0.5 * bMoF->get(asym, arel + doccpi_[asym], brel + doccpi_[bsym]);
+                    if((iabs == jabs) && (asym == bsym)){
+                        val += 0.5 * Fab->get(asym, arel, brel);
+                    }
                     if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * bMoF->get(isym, irel, jrel);
+                        val -= 0.5 * Fij->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(irel >= (doccpi_[isym]) || jrel >= (doccpi_[jsym]))
+                    if(irel >= doccpi_[isym] || jrel >= doccpi_[jsym])
                         val = 0.0;
                     Abb.matrix[h][ia][jb] = val;
                 }
@@ -1119,6 +1188,7 @@ bool ROHF::stability_analysis()
             global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
         }
         global_dpd_->buf4_close(&Abb);
+
 
         global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
@@ -1140,11 +1210,12 @@ bool ROHF::stability_analysis()
                     int jrel = jabs - Aab.params->roff[jsym];
                     int brel = babs - Aab.params->soff[bsym];
                     // A_IA_jb += 0.5 delta_Ib F(beta)_jA
-                    // Don't forget to account for the 0-based numbering of b
-                    if((irel == (brel + doccpi_[bsym])) && (jsym == asym))
-                        Aab.matrix[h][ia][jb] += 0.5 * bMoF->get(jsym, jrel, arel + doccpi_[asym]);
+                    // The delta_Ib is actually comparing spatial orbitals, so we have to use
+                    // offsets to make the comparison properly.
+                    if( ((irel + occ_offsets[isym]) == (brel + vir_offsets[bsym])) && (jsym == asym))
+                        Aab.matrix[h][ia][jb] += 0.5 * Fia->get(jsym, jrel, arel);
                     // Zero out any socc-socc terms
-                    if(jrel >= (doccpi_[jsym]) || arel < (soccpi_[asym]))
+                    if(jrel >= doccpi_[jsym] || arel >= navir[asym])
                         Aab.matrix[h][ia][jb] = 0.0;
                 }
             }
@@ -1185,7 +1256,17 @@ bool ROHF::stability_analysis()
         std::vector<std::pair<double, int> >eval_sym;
         global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
+
+        // Allocate some space for the eigenvalues
+        int nsave = options_.get_int("SOLVER_N_ROOT");
+        std::vector<int> onevec(nirrep_, 1);
+        std::vector<int> dimvec(nirrep_, nsave);
+        Dimension ones(onevec);
+        Dimension evalsdim(dimvec);
+        SharedMatrix stabvals(new Matrix("Eigenvalues from ROHF stability calculation", evalsdim, ones));
+
         for(int h = 0; h < A.params->nirreps; ++h) {
+            double **pEvals = stabvals->pointer(h);
             int npairs = A.params->rowtot[h];
             if(npairs == 0) continue;
 
@@ -1199,11 +1280,14 @@ bool ROHF::stability_analysis()
                 int asym = Aab.params->qsym[aabs];
                 int irel = iabs - Aab.params->poff[isym];
                 int arel = aabs - Aab.params->qoff[asym];
-                if(arel >= soccpi_[asym] || irel < doccpi_[isym]){
+                if((arel >= nvirpi[asym]) && (irel >= doccpi_[isym])){
+                    U[ia][ia] = 0.0;
+                }else{
                     U[ia][ia] = 1.0;
                     rank++;
                 }
             }
+            if(rank == 0) continue;
             int lastcol = npairs - 1;
             for(int ia = 0; ia < npairs; ++ia){
                 if(U[ia][ia] == 0.0){
@@ -1214,7 +1298,6 @@ bool ROHF::stability_analysis()
                     }
                 }
             }
-            if(rank == 0) continue;
 
             global_dpd_->buf4_mat_irrep_init(&A, h);
             global_dpd_->buf4_mat_irrep_rd(&A, h);
@@ -1226,7 +1309,7 @@ bool ROHF::stability_analysis()
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs,
                     temp[0], npairs, 0.0, A.matrix[h][0], npairs);
 
-            double *evals = init_array(rank);
+            double *evals = new double[rank];
             double **evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
@@ -1234,10 +1317,15 @@ bool ROHF::stability_analysis()
             int mindim = rank < 15 ? rank : 15;
             for(int i = 0; i < mindim; i++)
                 eval_sym.push_back(std::make_pair(evals[i], h));
+            for(int i = 0; i < nsave; ++i)
+                pEvals[i][0] = evals[i];
 
             free_block(evecs);
             delete [] evals;
         }
+        global_dpd_->buf4_close(&A);
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
+
         outfile->Printf( "    Lowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
