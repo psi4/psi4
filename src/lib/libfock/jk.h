@@ -586,6 +586,9 @@ class PKJK : public JK {
     /// The pk file to use for storing the pk batches
     int pk_file_;
 
+    /// The number of threads to be used for integral computation
+    int nthreads_;
+
     /// The number of integrals in the P and K arrays
     size_t pk_size_;
     /// The number of totally symmetric pairs that contribute
@@ -611,6 +614,8 @@ class PKJK : public JK {
 
     /// Common initialization
     void common_init();
+    /// Integral computation
+    void integrals();
 
     /// Total number of SOs
     int nso_;

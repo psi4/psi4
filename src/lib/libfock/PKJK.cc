@@ -69,6 +69,10 @@ PKJK::~PKJK()
 void PKJK::common_init()
 {
     pk_file_ = PSIF_SO_PK;
+    nthreads_ = 1;
+#ifdef _OPENMP
+    nthreads_ = omp_get_max_threads();
+#endif
 }
 
 void PKJK::print_header() const
@@ -92,10 +96,12 @@ void PKJK::preiterations()
     psio_ = _default_psio_lib_;
 
     // Start by generating conventional integrals on disk
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
-    mints->integrals();
-    if(do_wK_)
-        mints->integrals_erf(omega_);
+    integrals();
+//    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+//    mints->integrals();
+//    if(do_wK_)
+//        mints->integrals_erf(omega_);
+//    mints.reset();
 
     nsopi_ = mints->sobasisset()->dimension();
     nso_ = nsopi_.sum();
