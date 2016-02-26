@@ -37,15 +37,15 @@ An illustrative example of using the SCF module is as follows::
     basis cc-pvdz
     guess sad
     reference uhf
-    scf_type pk
+    scf_type direct
     }
     
     energy('scf')
 
 This will run a UHF computation for triplet molecular oxygen (the ground state)
-using a PK algorithm for the Electron Repulsion Integrals (ERI) and starting
+using a Direct algorithm for the Electron Repulsion Integrals (ERI) and starting
 from a Superposition of Atomic Densities (SAD) guess. DF integrals are
-automatically used to converge the DF-SCF solution before the PK algorithm is
+automatically used to converge the DF-SCF solution before the Direct algorithm is
 activated.  After printing all manner of titles, geometries, sizings, and
 algorithm choices, the SCF finally reaches the iterations::
 
@@ -71,7 +71,7 @@ algorithm choices, the SCF finally reaches the iterations::
    @UHF iter  12:  -149.62730738624032   -8.69250e-10   7.06690e-07 DIIS
 
 The first set of iterations are from the DF portion of the computation, the
-second set use the exact (but much slower) PK algorithm. Within the DF portion
+second set uses the exact (but much slower) Direct algorithm. Within the DF portion
 of the computation, the zeroth-iteration uses a non-idempotent density matrix
 obtained from the SAD guess, so the energy is unphysically low. However, the
 first true iteration is quite close to the final DF energy, highlighting the
@@ -80,11 +80,10 @@ SCF convergence, with the DF phase reaching convergence in eight true
 iterations. When used together, SAD and DIIS are usually sufficient to converge
 the SCF for all but the most difficult systems. Additional convergence
 techniques are available for more difficult cases, and are detailed below. At
-this point, the code switches on the requested PK integrals technology, which
+this point, the code switches on the requested Direct integrals technology, which
 requires only four full iterations to reach convergence, starting from the DF
-guess. This hybrid DF/conventional procedure can significantly accelerate SCF
-computations requiring exact integrals, especially when used in concert with the
-integral-direct conventional algorithm.
+guess. This hybrid DF/Direct procedure can significantly accelerate SCF
+computations requiring exact integrals.
 
 After the iterations are completed, a number of one-electron properties are
 printed, and some bookkeeping is performed to set up possible correlated
@@ -537,8 +536,8 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
 
 Recently, we have added the automatic capability to use the extremely fast DF
-code for intermediate convergence of the orbitals, for |scf__scf_type| other
-than ``DF``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
+code for intermediate convergence of the orbitals, for |scf__scf_type| 
+``DIRECT``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
 auxiliary basis, unless the user specifies |scf__df_basis_scf| manually. For
 some atoms, cc-pVDZ-JKFIT is not defined, so this procedure will fail. In these
 cases, you will see an error message of the form::

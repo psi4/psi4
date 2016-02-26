@@ -1158,7 +1158,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
-    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
+    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech 
+        in a |scf__scf_type| ``DIRECT`` calculation -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
