@@ -8,11 +8,13 @@
 
 .. _`sec:cubeprop`:
 
-Generation of cube files
-========================
+:py:func:`~p4util.cubeprop` Generation of cube files
+====================================================
 
 .. codeauthor:: Robert M. Parrish and Francesco A. Evangelista
 .. sectionauthor:: Francesco A. Evangelista
+
+.. autofunction:: p4util.cubeprop(wfn)
 
 Introduction
 ------------
@@ -23,7 +25,6 @@ the electrostatic potential (ESP).  Cube files store the value of a scalar
 quantity on a regular Cartesian grid, and can be visualized with several
 visualization programs, some of which are free, like VMD
 (http://www.ks.uiuc.edu/Research/vmd/).
-
 
 An example utilization of the code is::
 
@@ -40,32 +41,33 @@ An example utilization of the code is::
    set cubeprop_tasks ['orbitals']
    set cubeprop_orbitals [5,6,-5,-6]
 
-   energy('scf')
-   cubeprop()
+   E, wfn = energy('scf', return_wfn=True)
+   cubeprop(wfn)
 
-In this example, the ``cubeprop()`` call after the ``energy('scf')`` command
-executes the cubeprop code.  The array ``CUBEPROP_TASKS`` specifies which
+In this example, the :py:func:`~p4util.cubeprop`
+call after the ``energy('scf')`` command
+executes the cubeprop code.  The array |globals__cubeprop_tasks| specifies which
 tasks should be executed.  In this case the task ``'orbitals'`` generates cube
-files for orbitals.  The ``CUBEPROP_ORBITALS`` option specifies that cube files
+files for orbitals.  The |globals__cubeprop_orbitals| option specifies that cube files
 should be generated only for alpha orbitals 5 (HOMO) and 6 (LUMO) and
 beta orbitals 5 (indicated as -5) and 6.
-If the option ``CUBEPROP_ORBITALS`` is not provided, then cube files are
+If the option |globals__cubeprop_orbitals| is not provided, then cube files are
 generated for all orbitals.
-After running, the above input will generate four files: `Psi_a_5.cube`,
-`Psi_a_6.cube`, `Psi_b_5.cube`, and `Psi_b_6.cube`.
+After running, the above input will generate four files: ``Psi_a_5.cube``,
+``Psi_a_6.cube``, ``Psi_b_5.cube``, and ``Psi_b_6.cube``.
 
-.. tip:: If your cube plots are too coarse, try to decrease the grid spacing via
-    the option ``CUBIC_GRID_SPACING``.  If the edges of your plot are cut then
-    increase the size of the grid via the option ``CUBIC_GRID_OVERAGE``.
+.. note:: If your cube plots are too coarse, try to decrease the grid spacing via
+    the option |globals__cubic_grid_spacing|.  If the edges of your plot are cut then
+    increase the size of the grid via the option |globals__cubic_grid_overage|.
 
 Cubeprop Tasks
 --------------
 
-The cubeprop utility can be probided a list of tasks to perform.
-Tasks are specified by the ``CUBEPROP_TASKS`` option, which is a list of strings
+The cubeprop utility can be provided a list of tasks to perform.
+Tasks are specified by the |globals__cubeprop_tasks| option, which is a list of strings
 that identify the tasks.  Several tasks are available. These include:
 
-ORBITALS [Default if  ``CUBEPROP_TASKS`` is not specified]
+ORBITALS [Default if  |globals__cubeprop_tasks| is not specified]
     Produces cube representations of the molecular orbitals
     :math:`\psi_q(\mathbf{r})`.  Orbitals are sorted according to increasing
     orbital energy ignoring symmetry.
@@ -86,40 +88,22 @@ ESP
 .. note:: The ``ESP`` task requires the user to specify a density-fitting basis
     via the |scf__df_basis_scf| keyword.
 
-.. warning:: It is important to specify the ``CUBEPROP_ORBITALS`` option when
+.. warning:: It is important to specify the |globals__cubeprop_orbitals| option when
    dealing with large molecules to avoid running out of disk space.
    For example, using the default grid spacing of
-   0.2 |AA|\ ngstroms, the size of a single cube file for a molecule like water
+   0.2 |Angstrom|, the size of a single cube file for a molecule like water
    is of the order of 1.4 MB.  For a molecule with 200 basis functions, the cube
    files for all the orbitals occupy more than half a GB.
 
-Cubeprop Options
-----------------
+Keywords
+--------
 
-CUBEPROP_FILEPATH
-    The directory in which to place the cube files.  The default is the
-    directory that contains the input file.
-
-CUBEPROP_ORBITALS
-    A list of the orbitals for which cube files are generated.  Alpha orbitals
-    are specified by positive integers, where the lowest orbital is 1.
-    Beta orbitals are indicated by prefixing the number with a minus sign.
-    Orbitals are ordered according to their energy.
-    Notice that if the ``CUBEPROP_ORBITALS`` list is empty then
-    cubeprop will produce cube files for all alpha and beta orbitals.
-
-CUBEPROP_BASIS_FUNCTIONS
-    A list of basis functions for which cube files are generated.  Basis
-    functions are numbered starting from 1.
-
-CUBIC_GRID_SPACING
-    A vector that specifies the grid spacing in the X, Y, and Z directions.
-    The default value is [0.2,0.2,0.2] |AA|\ ngstroms.
-
-CUBIC_GRID_OVERAGE
-    A vector that controls the spatial extent of the grid in the X, Y, and Z
-    directions.
-    The default value is [4.0,4.0,4.0] |AA|\ ngstroms.
+.. include:: autodir_options_c/globals__cubeprop_tasks.rst
+.. include:: autodir_options_c/globals__cubeprop_filepath.rst
+.. include:: autodir_options_c/globals__cubeprop_orbitals.rst
+.. include:: autodir_options_c/globals__cubeprop_basis_functions.rst
+.. include:: autodir_options_c/globals__cubic_grid_spacing.rst
+.. include:: autodir_options_c/globals__cubic_grid_overage.rst
 
 Orbital Visualization with VMD
 ==============================
@@ -133,13 +117,13 @@ Script Prerequisites
 --------------------
 
 1. VMD must be installed, and it can be downloaded for free at (http://www.ks.uiuc.edu/Research/vmd/). Additionally,
-   the script needs to know where to find the VMD executable, and this is defined as VMDPATH. VMDPATH must be defined as
+   the script needs to know where to find the VMD executable, and this is defined as :envvar:`VMDPATH`. VMDPATH must be defined as
    an environment variable.
 
 2. To generate images with multiple surfaces, ImageMagick must also be installed. ImageMagick is a free program which
    can be installed using homebrew/pip or from http://www.imagemagick.org/script/binary-releases.php .
 
-3. With ImageMagick installed, an environment variable called montage needs to be created which points to the montage executable.
+3. With ImageMagick installed, an environment variable called :envvar:`MONTAGE` needs to be created which points to the montage executable.
    This executable can be found in the /bin/ sub-directory wherever ImageMagick was installed.
 
 
@@ -187,7 +171,10 @@ Script Options
                        [<cubefile dir>]
                                                                     .
     vmd_cube is a script to render cube files with vmd. To generate cube files
-    with Psi4 add the command cubeprop() at the end of your input file.
+    with Psi4, add the command cubeprop(wfn) at the end of your input file, where
+    *wfn* is a Wavefunction object that may be retrieved from any calculation and
+    used following the pattern "ene, wave = energy('pbe', return_wfn=True)\n
+    cubeprop(wave)".
                                                                     .
     positional arguments:
       <cubefile dir>        The directory containing the cube files.
