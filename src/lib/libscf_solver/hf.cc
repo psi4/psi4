@@ -410,10 +410,10 @@ void HF::integrals()
                 jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
             else
                 jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+            Process::environment.set_legacy_molecule(other_legacy);
           #else
             throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
           #endif
-            Process::environment.set_legacy_molecule(other_legacy);
         } else {
             jk_ = JK::build_JK(basisset_, options_);
         }
