@@ -405,15 +405,15 @@ void HF::integrals()
           #ifdef HAVE_JK_FACTORY
             //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
             boost::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-            Process::environment.set_legacy_wavefunction(molecule_);
+            Process::environment.set_legacy_molecule(molecule_);
             if(options_.get_bool("SOSCF"))
                 jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
             else
                 jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
-            Process::environment.set_legacy_molecule(other_legacy);
           #else
             throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
           #endif
+            Process::environment.set_legacy_molecule(other_legacy);
         } else {
             jk_ = JK::build_JK(basisset_, options_);
         }
