@@ -45,8 +45,30 @@ def oeprop(wfn, *args, **kwargs):
         oe.add(prop)
     oe.compute()
 
-def cubeprop(wfn, *args, **kwargs):
+
+def cubeprop(wfn, **kwargs):
     """Evaluate properties on a grid and generate cube files.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Cube files for all orbitals
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> cubeprop(wfn)
+
+    >>> # [2] Cube files for density (alpha, beta, total, spin) and four orbitals 
+    >>> #     (two alpha, two beta)
+    >>> set cubeprop_tasks ['orbitals', 'density']
+    >>> set cubeprop_orbitals [5, 6, -5, -6]
+    >>> E, wfn = energy('scf', return_wfn=True)
+    >>> cubeprop(wfn)
 
     """
     # By default compute the orbitals
@@ -55,6 +77,7 @@ def cubeprop(wfn, *args, **kwargs):
 
     cp = psi4.CubeProperties(wfn)
     cp.compute_properties()
+
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""

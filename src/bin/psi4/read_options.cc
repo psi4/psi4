@@ -199,30 +199,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 
-
-  /*- Cube property data filepath -*/
+  /*- Directory to which to write cube files. Default is the input file
+  directory. -*/
   options.add_str_i("CUBEPROP_FILEPATH", ".");
+
   /*- Properties to compute. Valid tasks include:
-      DENSITY - Da, Db, Dt, Ds
-      ESP - Dt, ESP
-      ORBITALS - Psi_a_N, Psi_b_N
-      BASIS_FUNCTIONS - Phi_N
-      LOL - LOLa, LOLb
-      ELF - ELFa, ELFb
+      ``DENSITY`` - Da, Db, Dt, Ds
+      ``ESP`` - Dt, ESP
+      ``ORBITALS`` - Psi_a_N, Psi_b_N
+      ``BASIS_FUNCTIONS`` - Phi_N
+      ``LOL`` - LOLa, LOLb
+      ``ELF`` - ELFa, ELFb
   -*/
   options.add("CUBEPROP_TASKS", new ArrayType());
-  /*- List of desired orbital indices (1-based, + for alpha, - for beta). All orbitals computed if empty.-*/
+  /*- List of orbital indices for which cube files are generated (1-based,
+  $+$ for alpha, $-$ for beta). All orbitals computed if empty. -*/
   options.add("CUBEPROP_ORBITALS", new ArrayType());
-  /*- List of desired basis function indices (1-based). All basis functions computed if empty.-*/
+  /*- List of basis function indices for which cube files are generated
+  (1-based). All basis functions computed if empty.-*/
   options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
-
   /*- CubicScalarGrid basis cutoff. !expert -*/
   options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
   /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
   options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+  /*- Vector specifying CubicScalarGrid spatial extent in Bohr [O_X, O_Y, O_Z].
+  Defaults to 4.0 Bohr each. -*/
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
-  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+  /*- Vector specifying CubicScalarGrid grid spacing in Bohr [D_X, D_Y, D_Z].
+  Defaults to 0.2 Bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");

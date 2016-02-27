@@ -98,9 +98,9 @@ void CubicScalarGrid::build_grid()
 
     double L[3];
     if (options_["CUBIC_GRID_OVERAGE"].size() != 3) { 
-        L[0] = 2.0;
-        L[1] = 2.0;
-        L[2] = 2.0;
+        L[0] = 4.0;
+        L[1] = 4.0;
+        L[2] = 4.0;
     } else {
         L[0] = options_["CUBIC_GRID_OVERAGE"][0].to_double();
         L[1] = options_["CUBIC_GRID_OVERAGE"][1].to_double();
