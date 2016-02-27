@@ -37,7 +37,27 @@ def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0
     else:
         raise ValidationError('%s is not a valid property')
 
+
 def oeprop(wfn, *args, **kwargs):
+    """Evaluate one-electron properties.
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to compute properties
+
+    How to specify args, which are actually the most important
+
+    :type title: string
+    :param title: label prepended to all psivars computed
+
+    :examples:
+
+    >>> # [1] Moments with specific label
+    >>> E, wfn = energy('hf', return_wfn=True)
+    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
+
+    """
     oe = psi4.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])

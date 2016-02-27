@@ -26,6 +26,8 @@ X2C calculations require the use of special (alternatively fully uncontracted) b
 calculations.  Common choices include the Dunning Douglass--Kroll basis sets
 (cc-pVXZ-DK, cc-pCVXZ-DK, cc-pwCVXZ-DK) and Roos' ANO basis sets.
 
+.. note:: See also :ref:`sec:DKH` for another relativistic Hamiltonian.
+
 .. _`sec:ScalarRelativistic`:
 
 A First Example
@@ -94,6 +96,7 @@ of X2C should cite the following publication: [Verma:2015]_
 
 Theory
 ^^^^^^
+
 X2C is based on exact decoupling of 
 positive-energy ( :math:`h^{FW}_{\rm ++}`
 ) and negative-energy (:math:`h^{FW}_{\rm --}` )
@@ -133,3 +136,10 @@ depends on the modified overlap matrix
 Existing nonrelativistic electronic structure code can be extended to include scalar relativistic effects
 treated with the X2C method by replacing nonrelativistic kinetic and potential energy with the corresponding
 X2C operators :math:`T_{X2C}` and :math:`V_{X2C}`. It is important to note that fully uncontracted basis in needed for the construction of X2C Hamiltonian as Foldy-Wouthuysen (FW [FW:1950]_) transformation is obtained in kinetically balance basis.
+
+Keywords
+~~~~~~~~
+
+.. include:: autodir_options_c/globals__relativistic.rst
+.. include:: autodir_options_c/globals__rel_basis.rst
+

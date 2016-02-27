@@ -128,8 +128,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
-  /*- Either a set of 3 coordinates, or a string (see manual) describing the origin about which one-electron
-       properties are computed -*/
+  /*- Either :ref:`a set of 3 coordinates or a string <table:oe_origin>`
+  describing the origin about which one-electron properties are computed. -*/
   options.add("PROPERTIES_ORIGIN", new ArrayType());
 
   /*- PSI4 dies if energy does not converge. !expert -*/
@@ -814,7 +814,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether or not to perform exchange scaling for SAPT exchange components.
      * Default is false, i.e. no scaling. If set to true, performs scaling with
      * Exch10 / Exch10(S^2). If set to a value \alpha, performs scaling with
-     * (Exch10 / Exch10(S^2))^{\alpha}. 
+     * (Exch10 / Exch10(S^2))^{\alpha}.
      */
     options.add_str("EXCH_SCALE_ALPHA", "FALSE", "");
     /* For SAPT0 only, compute only first-order electrostatics and exchange.

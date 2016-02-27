@@ -1775,6 +1775,23 @@ def molden(filename, wfn):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
 
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Molden file for DFT calculation
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> molden(wfn)
+
     """
     mw = psi4.MoldenWriter(wfn)
     mw.write(filename)
