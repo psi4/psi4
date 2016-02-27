@@ -8,8 +8,8 @@
 
 .. _`sec:molden`:
 
-Interface to Molden 
-==========================================
+Interface to Molden, :py:func:`~driver.molden`
+==============================================
 
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: C. David Sherrill
@@ -30,4 +30,11 @@ Molden file ends in ".molden", and the prefix is determined by
 |globals__writer_file_label| (if set), or else by the name of the output
 file plus the name of the current molecule.
 
+.. autofunction:: driver.molden(wfn)
+
+Options
+~~~~~~~
+
+.. include:: autodir_options_c/scf__molden_write.rst
+.. include:: autodir_options_c/globals__writer_file_label.rst
 
