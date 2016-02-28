@@ -29,8 +29,8 @@ GTFockJK::GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
 
 }
 void GTFockJK::compute_JK() {
-   Impl_->SetP(D_);
-   Impl_->GetJ(J_);
-   Impl_->GetK(K_);
+   Impl_->SetP(D_ao_);
+   Impl_->GetJ(J_ao_);
+   Impl_->GetK(K_ao_);
 }
 }
