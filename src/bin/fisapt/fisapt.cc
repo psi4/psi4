@@ -10,7 +10,7 @@
 #include <boost/filesystem.hpp>
 
 #include "fisapt.h"
-#include "csg.h"
+#include <libcubeprop/csg.h>
 #include "local2.h"
 
 #ifdef _OPENMP
@@ -2222,7 +2222,7 @@ void FISAPT::plot()
     boost::filesystem::path dir(filepath);
     boost::filesystem::create_directory(dir);
 
-    boost::shared_ptr<fisapt::CubicScalarGrid> csg(new fisapt::CubicScalarGrid(primary_, options_));
+    boost::shared_ptr<CubicScalarGrid> csg(new CubicScalarGrid(primary_, options_));
     csg->set_filepath(filepath);
     csg->print_header();
 
