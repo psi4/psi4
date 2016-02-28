@@ -1150,6 +1150,10 @@ def optimize(name, **kwargs):
         if (n > 1) and (not isSowReap) and (not psi4.get_option('SCF', 'GUESS_PERSIST')):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
+        # Before computing gradient, save previous molecule and wavefunction if this is an IRC optimization
+        if (n > 1) and (psi4.get_option('OPTKING', 'OPT_TYPE') == 'IRC'):
+            old_thisenergy = psi4.get_variable('CURRENT ENERGY')
+
         # Compute the gradient
         G, wfn = gradient(name, return_wfn=True, molecule=moleculeclone, **kwargs)
         psi4.set_gradient(G)
@@ -1198,6 +1202,10 @@ def optimize(name, **kwargs):
         moleculeclone = psi4.get_legacy_molecule()
         moleculeclone.update_geometry()
         if optking_rval == psi4.PsiReturnType.EndLoop:
+            # if this is the end of an IRC run, set wfn, energy, and molecule to that
+            # of the last optimized IRC point
+            if psi4.get_option('OPTKING', 'OPT_TYPE') == 'IRC':
+                thisenergy    = old_thisenergy
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             moleculeclone.print_in_input_format()
