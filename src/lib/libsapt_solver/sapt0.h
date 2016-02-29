@@ -126,6 +126,9 @@ protected:
   bool no_response_;
   bool aio_cphf_;
   bool aio_dfints_;
+  bool do_e10_;
+  bool do_e20ind_;
+  bool do_e20disp_;
 
   int maxiter_;
   double e_conv_;

@@ -226,9 +226,7 @@ formalism for closed-shell references only.
     +-------------------------+------------------------------------------------------------+----------------------------------------------+
     | method                  | :math:`\Delta_{ij}`                                        |  :math:`\Delta_i`                            |
     +=========================+============================================================+==============================================+
-    | sdci                    | :math:`E_c`                                                |  :math:`E_c`                                 |
-    +-------------------------+------------------------------------------------------------+----------------------------------------------+
-    | dci                     | :math:`E_c`                                                |  NA                                          |
+    | cisd                    | :math:`E_c`                                                |  :math:`E_c`                                 |
     +-------------------------+------------------------------------------------------------+----------------------------------------------+
     | cepa(0)                 | 0                                                          |  0                                           |
     +-------------------------+------------------------------------------------------------+----------------------------------------------+
@@ -240,6 +238,9 @@ formalism for closed-shell references only.
     +-------------------------+------------------------------------------------------------+----------------------------------------------+
     | aqcc                    | :math:`[1-\frac{(N-3)(N-2)}{N(N-1)}]E_c`                   | :math:`[1-\frac{(N-3)(N-2)}{N(N-1)}]E_c`     |
     +-------------------------+------------------------------------------------------------+----------------------------------------------+
+
+.. comment    | dci                     | :math:`E_c`                                                |  NA                                          |
+.. comment    +-------------------------+------------------------------------------------------------+----------------------------------------------+
 
 The pair correlation energy, :math:`\epsilon_{ij}`, is simply a partial
 sum of the correlation energy.  In a spin-free formalism, the pair energy
@@ -284,11 +285,13 @@ For example, if the primary basis is aug-cc-pVDZ, the default
 
 Alternatively, the user can request that the DF-CCSD(T) procedure use a
 set of vectors defined by the Cholesky decomposition of the ERI tensor as
-the auxiliary basis.  This feature is enabled by specifying
-|fnocc__df_basis_cc| as "CHOLESKY".  CD methods can be enabled in the SCF
-procedure as well, by specifying the |scf__scf_type| as "CD".  The
+the auxiliary basis. This feature is enabled by specifying |globals__cc_type| ``CD``.
+CD methods can be enabled in the SCF
+procedure as well, by specifying the |scf__scf_type| as ``CD``.  The
 accuracy of the decomposition can be controlled through the keyword
 |fnocc__cholesky_tolerance|.
+
+.. comment This feature is enabled by specifying |fnocc__df_basis_cc| as "CHOLESKY".  
 
 The following input file sets up a DF-CCSD(T)
 computation using CD integrals ::
@@ -302,11 +305,11 @@ computation using CD integrals ::
     
     set {
         scf_type cd
-        df_basis_cc cholesky
+        cc_type cd
         basis aug-cc-pvdz
         freeze_core true
     }
-    energy('df-ccsd(t)')
+    energy('ccsd(t)')
 
 The resulting CCSD(T) correlation energy will be equivalent to that
 obtained from a conventional computation if |fnocc__cholesky_tolerance| is
@@ -331,75 +334,76 @@ The various methods supported by the FNOCC module in |Psifour| are detailed
 in Table :ref:`FNOCC Methods <table:fnocc_methods>`.  Note that these methods
 are implemented for closed-shell references only.  For open-shell references,
 the calls ``energy('mp2.5')``, ``energy('mp3')``, and ``energy('mp4')`` will
-default to the :ref:`DETCI <sec:ci>` implementations of these methods.
+default to implementations of these methods in other modules :ref:`Cross-module Redundancies <table:managedmethods>`.
 
     .. _`table:fnocc_methods`:
 
-    +-------------------------+-------------------------------------------------------------+
-    | name                    | calls method                                                |
-    +=========================+=============================================================+
-    | qcisd                   | quadratic configuration interaction singles doubles         |
-    +-------------------------+-------------------------------------------------------------+
-    | qcisd(t)                | qcisd with perturbative triples                             |
-    +-------------------------+-------------------------------------------------------------+
-    | mp2.5                   | average of second- and third-order perturbation theories    |
-    +-------------------------+-------------------------------------------------------------+
-    | mp3                     | third-order perturbation theory                             |
-    +-------------------------+-------------------------------------------------------------+
-    | mp4(sdq)                | fourth-order perturbation theory, minus triples contribution|
-    +-------------------------+-------------------------------------------------------------+
-    | mp4                     | full fourth-order perturbation theory                       |
-    +-------------------------+-------------------------------------------------------------+
-    | cepa(0)                 | coupled electron pair approximation, variant 0              |
-    +-------------------------+-------------------------------------------------------------+
-    | cepa(1)                 | coupled electron pair approximation, variant 1              |
-    +-------------------------+-------------------------------------------------------------+
-    | cepa(3)                 | coupled electron pair approximation, variant 3              |
-    +-------------------------+-------------------------------------------------------------+
-    | acpf                    | averaged coupled-pair functional                            |
-    +-------------------------+-------------------------------------------------------------+
-    | aqcc                    | averaged quadratic coupled-cluster                          |
-    +-------------------------+-------------------------------------------------------------+
-    | sdci                    | configuration interaction with single and double excitations|
-    +-------------------------+-------------------------------------------------------------+
-    | dci                     | configuration interaction with double excitations           |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-qcisd               | qcisd with frozen natural orbitals                          |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-qcisd(t)            | qcisd(t) with frozen natural orbitals                       |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-ccsd                | coupled cluster singles doubles with frozen natural orbitals|
-    +-------------------------+-------------------------------------------------------------+
-    | fno-ccsd(t)             | ccsd with perturbative triples and frozen natural orbitals  |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-mp3                 | mp3 with frozen natural orbitals                            |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-mp4(sdq)            | mp4(sdq) with frozen natural orbitals                       |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-mp4                 | mp4 with frozen natural orbitals                            |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-cepa(0)             | cepa(0) with frozen natural orbitals                        |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-cepa(1)             | cepa(1) with frozen natural orbitals                        |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-cepa(3)             | cepa(3) with frozen natural orbitals                        |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-acpf                | acpf with frozen natural orbitals                           |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-aqcc                | aqcc with frozen natural orbitals                           |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-sdci                | sdci with frozen natural orbitals                           |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-dci                 | dci with frozen natural orbitals                            |
-    +-------------------------+-------------------------------------------------------------+
-    | df-ccsd                 | ccsd with density fitting                                   |
-    +-------------------------+-------------------------------------------------------------+
-    | df-ccsd(t)              | ccsd(t) with density fitting                                |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-df-ccsd             | ccsd with density fitting and frozen natural orbitals       |
-    +-------------------------+-------------------------------------------------------------+
-    | fno-df-ccsd(t)          | ccsd(t) with density fitting and frozen natural orbitals    |
-    +-------------------------+-------------------------------------------------------------+
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | name                    | calls method                                                | type select                                   |
+    +=========================+=============================================================+===============================================+
+    | qcisd                   | quadratic configuration interaction singles doubles         | |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | qcisd(t)                | qcisd with perturbative triples                             | |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | mp2.5                   | average of second- and third-order perturbation theories    | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | mp3                     | third-order perturbation theory                             | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | mp4(sdq)                | fourth-order perturbation theory, minus triples contribution| |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | mp4                     | full fourth-order perturbation theory                       | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | cepa(0)                 | coupled electron pair approximation, variant 0              | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | cepa(1)                 | coupled electron pair approximation, variant 1              | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | cepa(3)                 | coupled electron pair approximation, variant 3              | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | acpf                    | averaged coupled-pair functional                            | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | aqcc                    | averaged quadratic coupled-cluster                          | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | cisd                    | configuration interaction with single and double excitations| |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-qcisd               | qcisd with frozen natural orbitals                          | |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-qcisd(t)            | qcisd(t) with frozen natural orbitals                       | |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-ccsd                | coupled cluster singles doubles with frozen natural orbitals| |globals__cc_type| ``CONV``, ``DF``, ``CD``   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-ccsd(t)             | ccsd with perturbative triples and frozen natural orbitals  | |globals__cc_type| ``CONV``, ``DF``, ``CD``   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-mp3                 | mp3 with frozen natural orbitals                            | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-mp4(sdq)            | mp4(sdq) with frozen natural orbitals                       | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-mp4                 | mp4 with frozen natural orbitals                            | |globals__mp_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-cepa(0)             | cepa(0) with frozen natural orbitals                        | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-cepa(1)             | cepa(1) with frozen natural orbitals                        | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-cepa(3)             | cepa(3) with frozen natural orbitals                        | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-acpf                | acpf with frozen natural orbitals                           | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-aqcc                | aqcc with frozen natural orbitals                           | |globals__cepa_type| ``CONV``                 |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+    | fno-cisd                | cisd with frozen natural orbitals                           | |globals__ci_type| ``CONV``                   |
+    +-------------------------+-------------------------------------------------------------+-----------------------------------------------+
+
+.. comment    | df-ccsd                 | ccsd with density fitting                                   |
+.. comment    +-------------------------+-------------------------------------------------------------+
+.. comment    | df-ccsd(t)              | ccsd(t) with density fitting                                |
+.. comment    +-------------------------+-------------------------------------------------------------+
+.. comment    | fno-df-ccsd             | ccsd with density fitting and frozen natural orbitals       |
+.. comment    +-------------------------+-------------------------------------------------------------+
+.. comment    | fno-df-ccsd(t)          | ccsd(t) with density fitting and frozen natural orbitals    |
+.. comment    +-------------------------+-------------------------------------------------------------+
+.. comment    | dci                     | configuration interaction with double excitations           |
+.. comment    +-------------------------+-------------------------------------------------------------+
+.. comment    | fno-dci                 | dci with frozen natural orbitals                            |
+.. comment    +-------------------------+-------------------------------------------------------------+
 
 .. index:: FNOCC; basic-keywords
 

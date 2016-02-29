@@ -24,6 +24,7 @@ convmat = [
     [0, 4, 5,  4, 4, 5],
     ]
 
+set qc_module detci
 for convcrit in convmat:
     if convcrit[0] != 0:
         set_global_option('E_CONVERGENCE', convcrit[0])

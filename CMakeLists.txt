@@ -47,6 +47,8 @@ CMAKE_DEPENDENT_OPTION(
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
                              "CMAKE_Fortran_COMPILER"                      OFF)
+option(ENABLE_AMBIT          "Enable Ambit interface"                      OFF)
+
 # Options for dashboard builds
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
 option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
@@ -71,7 +73,6 @@ if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
 endif()
 
 # Include CMake modules as needed
-include(ConfigVersion)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
@@ -244,6 +245,11 @@ if(ENABLE_PCMSOLVER)
   include(ConfigPCMSolver)
 endif()
 
+# Ambit
+if (ENABLE_AMBIT)
+   include(ConfigAmbit)
+endif()
+
 #If we have MPI we may want to also build JKFactory which makes J and K's
 #in distributed parallel
 set(BUILD_JK_FACTORY FALSE)
@@ -272,8 +278,8 @@ add_subdirectory(interfaces)
 # Recursively add source directories
 add_subdirectory(src)
 
-# Add the library directory, for install purposes
-add_subdirectory(lib)
+# Add the share directory (formerly lib), for install purposes
+add_subdirectory(share)
 
 # Handle creation of Makefile for plugins
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###

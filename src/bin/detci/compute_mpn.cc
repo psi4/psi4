@@ -222,11 +222,11 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   outfile->Printf("   CalcInfo_->enuc = %25.15f\n", CalcInfo_->enuc);
   outfile->Printf("   CalcInfo_->e1   = %25.15f\n\n", CalcInfo_->e1);
   if(Parameters_->zaptn) {
-    outfile->Printf("   n         Corr. Energy \t\t E(ZAPTn) \t\t"
-        "   n         Corr. Energy \t\t E(ZAPTn)\n\n");
+    outfile->Printf("   n         Corr. Energy                  E(ZAPTn)          "
+        "   n         Corr. Energy                  E(ZAPTn)\n\n");
     } else {
-    outfile->Printf("   n         Corr. Energy \t\t E(MPn) \t\t"
-        "   n         Corr. Energy \t\t E(MPn)\n\n");
+    outfile->Printf("   n         Corr. Energy                  E(MPn)            "
+        "   n         Corr. Energy                  E(MPn)\n\n");
     }
   outfile->Printf("   0  %25.15f %25.15f\n", 0.0000000000,
       CalcInfo_->e0+CalcInfo_->enuc);
@@ -353,7 +353,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        Cvec.wigner_E2k_formula(Hd, Sigma, Cvec2, alplist_, betlist_, buffer1,
           buffer2, k, mp2k_energy, wfn_overlap, cvec_coeff, cvec_norm, kvec_offset);
        Empn2 += mp2k_energy[2*k];
-       outfile->Printf("\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
+       outfile->Printf("      %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
 
        /*- strings so that variable-name psi variables get parsed in docs -*/
        /*- Process::environment.globals["ZAPTn TOTAL ENERGY"] -*/
@@ -375,8 +375,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        Empn2a = Empn2;
 
        Empn2 += mp2k_energy[2*k+1];
-       outfile->Printf("\t\t\t\t\t\t\t\t"
-               " %2d %25.15f %25.15f\n", 2*k+1, mp2k_energy[2*k+1], Empn2);
+       outfile->Printf("%62s %2d %25.15f %25.15f\n", "", 2*k+1, mp2k_energy[2*k+1], Empn2);
 
        s.str(std::string());
        s << label << (2*k+1) << " TOTAL ENERGY";

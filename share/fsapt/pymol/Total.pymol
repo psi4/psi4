@@ -1,0 +1,18 @@
+# Zero everything out
+cmd.reinitialize()
+
+# Load Monomer A
+cmd.load("Total.pdb","pdb")
+cmd.show("sticks", "all")
+cmd.label("all", "name")
+
+cmd.spectrum("b", "red_white_blue", selection = "all", minimum = -25.00, maximum = 25.00)
+
+# Visualization
+cmd.run("vis.pymol")
+
+# Orientation
+cmd.run("orient.pymol")
+
+# Raytraced png
+cmd.png("Total.png", width = 1200, height=1200, dpi = 300, ray=1)

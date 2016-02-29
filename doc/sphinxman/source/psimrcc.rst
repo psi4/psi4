@@ -146,15 +146,15 @@ The reference determinants :math:`\Phi_\mu` are specified in PSIMRCC
 via occupational numbers. PSIMRCC requires that four arrays be specified
 for this purpose.
 
-- Frozen doubly occupied orbitals (|psimrcc__frozen_docc|) are doubly
+- Frozen doubly occupied orbitals (|globals__frozen_docc|) are doubly
   occupied in each reference determinant and are not correlated in the
   MRCC procedure.
-- Doubly occupied orbitals (|psimrcc__restricted_docc|) are doubly
+- Doubly occupied orbitals (|globals__restricted_docc|) are doubly
   occupied in each reference determinant and are correlated in the MRCC
   procedure.
-- Active orbitals (|psimrcc__active|) are partially occupied in each
+- Active orbitals (|globals__active|) are partially occupied in each
   reference determinant.
-- Frozen virtual orbitals (|psimrcc__frozen_uocc|) are unoccupied in
+- Frozen virtual orbitals (|globals__frozen_uocc|) are unoccupied in
   all reference determinants and are excluded from the correlated wave
   function.
 

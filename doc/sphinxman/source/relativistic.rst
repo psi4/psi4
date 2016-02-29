@@ -77,12 +77,14 @@ By default, if the input file specifies only the ``basis`` keyword, then the X2C
 module will solve the modified Dirac equation in an uncontracted basis and then
 recontract the X2C Hamiltonian in the original basis.
 Alternatively, the user can use the ``rel_basis`` keyword to specify a different
-basis set to solve the modified Dirac equation.::
+basis set to solve the modified Dirac equation. ::
+
     set {
         basis cc-pvdz-dk
         rel_basis cc-pvtz-dk
         relativistic x2c
     }
+
 It is recommended that when employing the X2C relativistic Hamiltonian, that you use a fully
 decontracted basis set. This can be done simply in the input by adding "-decontract" to the 
 name of the primary basis you want to use for the calculation as detailed in 

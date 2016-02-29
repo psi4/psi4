@@ -13,6 +13,7 @@ molecule h2o {
 set globals {
   basis 6-31G**
   hd_avg hd_kave
+  qc_module detci
 }
 
 thisenergy = energy('cisd')

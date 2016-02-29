@@ -17,8 +17,9 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  mp_type df
 }
-energy('df-omp2.5')
+energy('omp2.5')
 
 
 

@@ -95,6 +95,6 @@ if(PCMSolver_FOUND)
       INTERFACE_INCLUDE_DIRECTORIES "${PCMSolver_INCLUDE_DIRS}")
   endif()
   include_directories(SYSTEM "${PCMSolver_INCLUDE_DIRS}")
-  configure_file(${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py.in
-    ${CMAKE_SOURCE_DIR}/lib/python/pcm_placeholder.py)
+  configure_file(${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py.in
+    ${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py)
 endif()

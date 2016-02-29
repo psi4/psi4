@@ -149,7 +149,7 @@ boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> /*molecu
     //    basis->shells_ = shells;
     //    basis->refresh();
 
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
     return basis;
 }
 
@@ -1224,7 +1224,7 @@ void BasisSet::refresh()
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int /*max_am*/)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 #if 0
     int max_centers = 4;
     int max_primitives = 10;

@@ -51,6 +51,16 @@ SAPT0::SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA,
   no_response_ = options_.get_bool("NO_RESPONSE");
   aio_cphf_ = options_.get_bool("AIO_CPHF");
   aio_dfints_ = options_.get_bool("AIO_DF_INTS");
+  do_e10_ = options_.get_bool("SAPT0_E10");
+  do_e20ind_ = options_.get_bool("SAPT0_E20IND");
+  do_e20disp_ = options_.get_bool("SAPT0_E20DISP");
+
+  // If no specific term is requested, it means that we do everything
+  if(!do_e10_ && !do_e20ind_ && !do_e20disp_) {
+      do_e10_ = true;
+      do_e20ind_ = true;
+      do_e20disp_ = true;
+  }
 
   wBAR_ = NULL;
   wABS_ = NULL;
@@ -69,7 +79,7 @@ double SAPT0::compute_energy()
 {
   check_memory();
 
-  if (elst_basis_)
+  if (elst_basis_ && do_e10_)
     first_order_terms();
 
   psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
@@ -86,33 +96,39 @@ double SAPT0::compute_energy()
     w_integrals();
   timer_off("W Integrals        ");
   if (!elst_basis_) {
-    timer_on("Elst10             ");
-      elst10();
-    timer_off("Elst10             ");
-    timer_on("Exch10             ");
-      exch10();
-    timer_off("Exch10             ");
-    timer_on("Exch10 S^2         ");
-      exch10_s2();
-    timer_off("Exch10 S^2         ");
+      if(do_e10_) {
+        timer_on("Elst10             ");
+          elst10();
+        timer_off("Elst10             ");
+        timer_on("Exch10             ");
+          exch10();
+        timer_off("Exch10             ");
+        timer_on("Exch10 S^2         ");
+          exch10_s2();
+        timer_off("Exch10 S^2         ");
+      }
   }
-  timer_on("Ind20              ");
-    if (debug_ || no_response_) ind20();
-    if (!no_response_) ind20r();
-  timer_off("Ind20              ");
-  timer_on("Exch-Ind20         ");
-    exch_ind20A_B();
-    exch_ind20B_A();
-  timer_off("Exch-Ind20         ");
-  if (debug_) disp20();
-  timer_on("Exch-Disp20 N^5    ");
-    psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
-    exch_disp20_n5();
-  timer_off("Exch-Disp20 N^5    ");
-  timer_on("Exch-Disp20 N^4    ");
-    exch_disp20_n4();
-    psio_->close(PSIF_SAPT_TEMP,0);
-  timer_off("Exch-Disp20 N^4    ");
+  if(do_e20ind_) {
+      timer_on("Ind20              ");
+        if (debug_ || no_response_) ind20();
+        if (!no_response_) ind20r();
+      timer_off("Ind20              ");
+      timer_on("Exch-Ind20         ");
+        exch_ind20A_B();
+        exch_ind20B_A();
+      timer_off("Exch-Ind20         ");
+  }
+  if(do_e20disp_) {
+      if (debug_) disp20();
+      timer_on("Exch-Disp20 N^5    ");
+        psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
+        exch_disp20_n5();
+      timer_off("Exch-Disp20 N^5    ");
+      timer_on("Exch-Disp20 N^4    ");
+        exch_disp20_n4();
+        psio_->close(PSIF_SAPT_TEMP,0);
+      timer_off("Exch-Disp20 N^4    ");
+  }
 
   print_results();
 
@@ -165,12 +181,17 @@ void SAPT0::print_results()
   double alpha = 3.0;
 
   double sapt_Xscal = ( e_exch10_ < scaling_tol ? 1.0 : e_exch10_ / e_exch10_s2_ );
+  if(exch_scale_alpha_ != 0.0) {
+      sapt_Xscal = pow(sapt_Xscal, exch_scale_alpha_);
+  }
   double sSAPT_Xscal = pow(sapt_Xscal,alpha);
 
-  // Now we compute everything once without scaling, and then with scaling.
+  // Now we compute everything once without scaling, and then with scaling
+  // if requested.
   std::vector<double> Xscal;
   Xscal.push_back(1.0);
-  Xscal.push_back(sapt_Xscal);
+  if(exch_scale_alpha_ != 0.0)
+      Xscal.push_back(sapt_Xscal);
 
   // The main loop, computes everything with all scaling factors in
   // the Xscal vector. Only exports variables once, for the scaling factor
@@ -183,9 +204,17 @@ void SAPT0::print_results()
     e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
                *scal_it * (e_exch_ind20_ + e_exch_disp20_);
     double e_sSAPT0 = 0.0;
-    if( *scal_it == sapt_Xscal) {
-      e_sSAPT0 = e_elst10_ + e_exch10_ + e_ind20_ + dHF2 + sapt_Xscal * e_exch_ind20_ +
-                 e_disp20_ + sSAPT_Xscal * e_exch_disp20_ + (sSAPT_Xscal - 1.0) * e_exch_ind20_;
+    double elst_sSAPT0 = 0.0;
+    double exch_sSAPT0 = 0.0;
+    double ind_sSAPT0 = 0.0;
+    double disp_sSAPT0 = 0.0;
+    // sSAPT0 energy is now computed in the unscaled part for clarity
+    if( scal_it == Xscal.begin()) {
+      elst_sSAPT0 = e_elst10_;
+      exch_sSAPT0 = e_exch10_;
+      ind_sSAPT0 = e_ind20_ + sSAPT_Xscal * e_exch_ind20_ + dHF2;
+      disp_sSAPT0 = e_disp20_ + sSAPT_Xscal * e_exch_disp20_;
+      e_sSAPT0 = elst_sSAPT0 + exch_sSAPT0 + ind_sSAPT0 + disp_sSAPT0;
     }
 
     double tot_elst = e_elst10_;
@@ -194,10 +223,11 @@ void SAPT0::print_results()
     double tot_disp = e_disp20_ + *scal_it * e_exch_disp20_;
   
     if(scal_it == Xscal.begin()) {
-        outfile->Printf("\n    SAPT Results ==> NO EXCHANGE SCALING APPLIED <==  \n");
+        outfile->Printf("\n    SAPT Results \n");
     } else {
         outfile->Printf("\n    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== \n");
-        outfile->Printf("\n    Scaling factor: %12.6f  \n", *scal_it);
+        outfile->Printf("\n    Scaling factor (Exch10/Exch10(S^2))^{Alpha} = %12.6f\n", *scal_it);
+        outfile->Printf("    with Alpha = %12.6f \n", exch_scale_alpha_);
     }
     std::string scaled = (scal_it != Xscal.begin() ? "scal." : "     ");
     outfile->Printf("  --------------------------------------------------------------------------\n");
@@ -238,8 +268,17 @@ void SAPT0::print_results()
       eHF_*1000.0,eHF_*pc_hartree2kcalmol);
     outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
       scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-    if(*scal_it == sapt_Xscal && (scal_it != Xscal.begin()) ) {
-          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n",
+    if(scal_it == Xscal.begin())  {
+          outfile->Printf("\n  Special recipe for scaled SAPT0 (see Manual):\n");
+          outfile->Printf("    Electrostatics sSAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
+            elst_sSAPT0*1000.0,elst_sSAPT0*pc_hartree2kcalmol);
+          outfile->Printf("    Exchange sSAPT0         %16.8lf mH %16.8lf kcal mol^-1\n",
+            exch_sSAPT0*1000.0,exch_sSAPT0*pc_hartree2kcalmol);
+          outfile->Printf("    Induction sSAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+            ind_sSAPT0*1000.0,ind_sSAPT0*pc_hartree2kcalmol);
+          outfile->Printf("    Dispersion sSAPT0       %16.8lf mH %16.8lf kcal mol^-1\n",
+            disp_sSAPT0*1000.0,disp_sSAPT0*pc_hartree2kcalmol);
+          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n\n",
           e_sSAPT0*1000.0,e_sSAPT0*pc_hartree2kcalmol);
     }
     outfile->Printf("  --------------------------------------------------------------------------\n");

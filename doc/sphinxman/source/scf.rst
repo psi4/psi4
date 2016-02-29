@@ -37,15 +37,15 @@ An illustrative example of using the SCF module is as follows::
     basis cc-pvdz
     guess sad
     reference uhf
-    scf_type pk
+    scf_type direct
     }
     
     energy('scf')
 
 This will run a UHF computation for triplet molecular oxygen (the ground state)
-using a PK algorithm for the Electron Repulsion Integrals (ERI) and starting
+using a Direct algorithm for the Electron Repulsion Integrals (ERI) and starting
 from a Superposition of Atomic Densities (SAD) guess. DF integrals are
-automatically used to converge the DF-SCF solution before the PK algorithm is
+automatically used to converge the DF-SCF solution before the Direct algorithm is
 activated.  After printing all manner of titles, geometries, sizings, and
 algorithm choices, the SCF finally reaches the iterations::
 
@@ -71,7 +71,7 @@ algorithm choices, the SCF finally reaches the iterations::
    @UHF iter  12:  -149.62730738624032   -8.69250e-10   7.06690e-07 DIIS
 
 The first set of iterations are from the DF portion of the computation, the
-second set use the exact (but much slower) PK algorithm. Within the DF portion
+second set uses the exact (but much slower) Direct algorithm. Within the DF portion
 of the computation, the zeroth-iteration uses a non-idempotent density matrix
 obtained from the SAD guess, so the energy is unphysically low. However, the
 first true iteration is quite close to the final DF energy, highlighting the
@@ -80,11 +80,10 @@ SCF convergence, with the DF phase reaching convergence in eight true
 iterations. When used together, SAD and DIIS are usually sufficient to converge
 the SCF for all but the most difficult systems. Additional convergence
 techniques are available for more difficult cases, and are detailed below. At
-this point, the code switches on the requested PK integrals technology, which
+this point, the code switches on the requested Direct integrals technology, which
 requires only four full iterations to reach convergence, starting from the DF
-guess. This hybrid DF/conventional procedure can significantly accelerate SCF
-computations requiring exact integrals, especially when used in concert with the
-integral-direct conventional algorithm.
+guess. This hybrid DF/Direct procedure can significantly accelerate SCF
+computations requiring exact integrals.
 
 After the iterations are completed, a number of one-electron properties are
 printed, and some bookkeeping is performed to set up possible correlated
@@ -537,8 +536,8 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
 
 Recently, we have added the automatic capability to use the extremely fast DF
-code for intermediate convergence of the orbitals, for |scf__scf_type| other
-than ``DF``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
+code for intermediate convergence of the orbitals, for |scf__scf_type| 
+``DIRECT``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
 auxiliary basis, unless the user specifies |scf__df_basis_scf| manually. For
 some atoms, cc-pVDZ-JKFIT is not defined, so this procedure will fail. In these
 cases, you will see an error message of the form::
@@ -549,6 +548,45 @@ cases, you will see an error message of the form::
 This failure can be fixed by either setting |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or by setting |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
+
+Second-order Convergence
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Second-order convergence takes into account both the gradient and Hessian to
+take a full Newton step with respect to the orbital parameters. This results in
+quadratic convergence with respect to density for SCF methods. For cases where
+normal acceleration methods either fail or take many iterations to converge,
+second-order can reduce the total time to solution.
+
+Solving second-order (SO) methods exactly would require an inversion of the
+orbital Hessian (an expensive :math:`\mathbb{N}^6` operation); however, these
+equations are normally solved iteratively where each iteration costs the same
+as a normal Fock build (:math:`\mathbb{N}^4`). The overall SOSCF operation is
+thus broken down into micro- and macroiterations where the microiterations
+refer to solving the SOSCF equations and macroiterations are the construction
+of a new Fock matrix based on the orbitals from a SOSCF step.
+
+SOSCF requires that all elements of the gradient to be less than one before the
+method is valid. To this end, pre-SOSCF SCF iterations use normal
+gradient-based extrapolation procedures (e.g., DIIS) until the gradient
+conditions are met. Note that while the total number of macroiterations will be
+less for SOSCF than gradient-based convergence acceleration the cost of solving
+the microiterations typically results in the overall cost being greater for
+SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
+it is difficult to locate a stable minimum.
+
+SOSCF is only available for RHF, ROHF, and UHF reference. To turn on simply set
+the option |scf__soscf| to ``true``. Additional options to modify the number of
+microiterations taken are as follows:
+
+    |scf__soscf_r_start|: when to start SOSCF based on the current density RMS
+
+    |scf__soscf_max_iter|: the maximum number of SOSCF microiterations per macroiteration
+
+    |scf__soscf_conv|: the relative convergence tolerance of the SOSCF microiterations
+
+    |scf__soscf_print|: option to print the microiterations or not
+
 
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~

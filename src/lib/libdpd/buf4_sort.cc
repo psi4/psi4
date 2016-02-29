@@ -1974,7 +1974,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                     string pq, string rs, const char *label)
 {
-  buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
+  return buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
 }
 
 }

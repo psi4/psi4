@@ -197,7 +197,7 @@ void OverlapOrthog::compute_canonical_orthog()
 
 void OverlapOrthog::compute_gs_orthog()
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void OverlapOrthog::compute_orthog_trans()

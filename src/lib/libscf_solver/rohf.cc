@@ -61,7 +61,7 @@ void ROHF::common_init()
 {
     Fa_      = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
     Fb_      = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
-    Feff_    = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
     Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
@@ -75,8 +75,8 @@ void ROHF::common_init()
     Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
     Dt_old_  = SharedMatrix(factory_->create_matrix("D alpha old"));
     Dt_      = SharedMatrix(factory_->create_matrix("D beta old"));
-    moFa_    = SharedMatrix(factory_->create_matrix("MO Basis alpha Fock Matrix"));
-    moFb_    = SharedMatrix(factory_->create_matrix("MO Basis beta Fock Matrix"));
+    moFa_    = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
+    moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
@@ -228,28 +228,28 @@ void ROHF::finalize()
     //
     // --EGH
     //
-    // Let's build the MO Lagrangian in Feff_
+    // Let's build the MO Lagrangian in moFeff_
     // ...I'm assuming these bitches are square
-    Feff_->zero();
+    moFeff_->zero();
     moFa_->transform(Fa_, Ca_);
     moFb_->transform(Fb_, Ca_);
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Feff_->rowdim(h); ++m) {
+        for (int m=0; m<moFeff_->rowdim(h); ++m) {
             double tval;
             for (int i=0; i<doccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
                 tval += moFb_->get(h, m, i);
-                Feff_->set(h, m, i, tval);
+                moFeff_->set(h, m, i, tval);
             }
             for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
                 tval = moFa_->get(h, m, i);
-                Feff_->set(h, m, i, tval);
+                moFeff_->set(h, m, i, tval);
             }
         }
     }
-    Lagrangian_->back_transform(Feff_, Ca_);
+    Lagrangian_->back_transform(moFeff_, Ca_);
 
-    Feff_.reset();
+    moFeff_.reset();
     Ka_.reset();
     Kb_.reset();
     Ga_.reset();
@@ -279,7 +279,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
     Dimension noccpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-    View vMOgradient(Feff_, noccpi, virpi, dim_zero, doccpi_);
+    View vMOgradient(moFeff_, noccpi, virpi, dim_zero, doccpi_);
     SharedMatrix MOgradient = vMOgradient();
 
     // Zero out act-act part
@@ -294,10 +294,11 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     }
 
     // Grab inact-act and act-vir orbs
-    View vCia(Ct_, nsopi_, noccpi, dim_zero, dim_zero);
+    // Ct_ is actuall (nmo x nmo)
+    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
     SharedMatrix Cia = vCia();
 
-    View vCav(Ct_, nsopi_, virpi, dim_zero, doccpi_);
+    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
     SharedMatrix Cav = vCav();
 
     // Back transform MOgradient
@@ -377,36 +378,36 @@ void ROHF::form_F()
      *  open    | 2(Fc-Fo)     Fc      2Fo
      *  virtual |    Fc       2Fo       Fc
      */
-    Feff_->copy(moFa_);
-    Feff_->add(moFb_);
-    Feff_->scale(0.5);
+    moFeff_->copy(moFa_);
+    moFeff_->add(moFb_);
+    moFeff_->scale(0.5);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i) {
             // Set the open/closed portion
             for (int j = 0; j < doccpi_[h]; ++j) {
                 double val = moFb_->get(h, i, j);
-                Feff_->set(h, i, j, val);
-                Feff_->set(h, j, i, val);
+                moFeff_->set(h, i, j, val);
+                moFeff_->set(h, j, i, val);
             }
             // Set the open/virtual portion
             for (int j = doccpi_[h] + soccpi_[h]; j < nmopi_[h]; ++j) {
                 double val = moFa_->get(h, i, j);
-                Feff_->set(h, i, j, val);
-                Feff_->set(h, j, i, val);
+                moFeff_->set(h, i, j, val);
+                moFeff_->set(h, j, i, val);
             }
         }
     }
 
-    // Form the orthogonalized SO basis Feff matrix, for use in DIIS
-    soFeff_->copy(Feff_);
-    soFeff_->back_transform(Ct_);
+    // Form the orthogonalized SO basis moFeff matrix, for use in DIIS
+    diag_F_temp_->gemm(false, false, 1.0, Ct_, moFeff_, 0.0);
+    soFeff_->gemm(false, true, 1.0, diag_F_temp_, Ct_, 0.0);
 
     if (debug_) {
         Fa_->print();
         Fb_->print();
         moFa_->print();
         moFb_->print();
-        Feff_->print();
+        moFeff_->print();
         soFeff_->print();
     }
 }
@@ -425,15 +426,29 @@ void ROHF::form_C()
         Ct_->eivprint(epsilon_a_);
     }
 }
-
+void ROHF::prepare_canonical_orthogonalization()
+{
+    // Some matrix size changes if we canonical orthogonalization
+    Ct_->init(nirrep_, nmopi_, nmopi_);
+    moFa_->init(nirrep_, nmopi_, nmopi_);
+    moFb_->init(nirrep_, nmopi_, nmopi_);
+    moFeff_->init(nirrep_, nmopi_, nmopi_);
+    soFeff_->init(nirrep_, nmopi_, nmopi_); // This is in the "Orthogonalized SO" basis
+}
 void ROHF::form_initial_C()
 {
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use Fa to generate the first C, where Fa was set by guess()
     // to either H or the GWH Hamiltonian.
-    Fa_->transform(X_);
-    Fa_->diagonalize(Ct_, epsilon_a_);
-    find_occupation();
+
+    //Form F' = X'FX for canonical orthogonalization
+    diag_temp_->gemm(true, false, 1.0, X_, Fa_, 0.0);
+    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+
+    //Form C' = eig(F')
+    diag_F_temp_->diagonalize(Ct_, epsilon_a_);
+
+    //Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
     if (print_ > 3)
@@ -482,7 +497,7 @@ double ROHF::compute_initial_E()
 
 double ROHF::compute_E()
 {
-    double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);;
+    double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);
     double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
 
     energies_["Nuclear"] = nuclearrep_;
@@ -803,7 +818,7 @@ int ROHF::soscf_update()
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
 
-    View vMOgradient(Feff_, occpi, virpi, dim_zero, doccpi_);
+    View vMOgradient(moFeff_, occpi, virpi, dim_zero, doccpi_);
     SharedMatrix Gradient = vMOgradient();
     Gradient->scale(-4.0);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, occpi, virpi));
@@ -813,7 +828,7 @@ int ROHF::soscf_update()
 
         double** preconp = Precon->pointer(h);
         double** gradientp = Gradient->pointer(h);
-        double** feffp = Feff_->pointer(h);
+        double** feffp = moFeff_->pointer(h);
 
         // Precon
         for (size_t i=0; i < occpi[h]; i++){
@@ -993,18 +1008,79 @@ bool ROHF::stability_analysis()
     if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
-        // Build the Fock Matrix
-        SharedMatrix aMoF(new Matrix("Alpha MO basis fock matrix", nmopi_, nmopi_));
-        SharedMatrix bMoF(new Matrix("Beta MO basis fock matrix", nmopi_, nmopi_));
-        aMoF->transform(Fa_, Ca_);
-        bMoF->transform(Fb_, Ca_);
+        Dimension nvirpi = nmopi_ - nalphapi_;
+        Dimension zero = Dimension(nirrep_);
+        Dimension soccpi = nalphapi_ - doccpi_;
+        Dimension navir = nmopi_ - nalphapi_;
+        Dimension nbvir = nmopi_ - nbetapi_;
+
+        SharedMatrix FIJ(new Matrix("Alpha occupied MO basis Fock matrix", nalphapi_, nalphapi_));
+        SharedMatrix Fij(new Matrix("Beta occupied MO basis Fock matrix", nalphapi_, nalphapi_));
+        SharedMatrix FAB(new Matrix("Alpha virtual MO basis Fock matrix", nbvir, nbvir));
+        SharedMatrix Fab(new Matrix("Beta virtual MO basis Fock matrix", nbvir, nbvir));
+        SharedMatrix FIA(new Matrix("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir));
+        SharedMatrix Fia(new Matrix("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir));
+
+        View Vocc(Ca_, nsopi_, nalphapi_, zero, zero);
+        SharedMatrix Cocc = Vocc();
+        std::vector<SharedMatrix> virandsoc;
+        View Vvirt(Ca_, nsopi_, navir,  zero, nalphapi_);
+        View Vsocc(Ca_, nsopi_, soccpi, zero, doccpi_);
+        virandsoc.push_back(Vvirt());
+        virandsoc.push_back(Vsocc());
+        SharedMatrix Cvir = Matrix::horzcat(virandsoc);
+        FIJ->transform(Fa_, Cocc);
+        Fij->transform(Fb_, Cocc);
+
+        FIA->transform(Cocc, Fa_, Cvir);
+        Fia->transform(Cocc, Fb_, Cvir);
+
+        FAB->transform(Fa_, Cvir);
+        Fab->transform(Fb_, Cvir);
+
+        // Zero out alpha socc terms corresponding to vir indices
+        for (int h = 0; h < nirrep_; ++h){
+            for(int mo1 = navir[h]; mo1 < nbvir[h]; ++mo1){
+                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+                    FAB->set(h, mo1, mo2, 0.0);
+                }
+            }
+            for(int mo1 = 0; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = navir[h]; mo2 < nbvir[h]; ++mo2){
+                    FIA->set(h, mo1, mo2, 0.0);
+                }
+            }
+        }
+        // Zero out beta socc terms corresponding to occ indices
+        for (int h = 0; h < nirrep_; ++h){
+            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = doccpi_[h]; mo2 < nalphapi_[h]; ++mo2){
+                    Fij->set(h, mo1, mo2, 0.0);
+                }
+            }
+            for(int mo1 = doccpi_[h]; mo1 < nalphapi_[h]; ++mo1){
+                for(int mo2 = 0; mo2 < nbvir[h]; ++mo2){
+                    Fia->set(h, mo1, mo2, 0.0);
+                }
+            }
+        }
+
+        // Some indexing arrays to allow us to compare occ and vir spatial orbitals, below.
+        int occ_offsets[8];
+        occ_offsets[0] = 0;
+        for(int h = 1; h < nirrep_; ++h)
+            occ_offsets[h] = occ_offsets[h-1] + doccpi_[h-1];
+
+        int vir_offsets[8];
+        vir_offsets[0] = doccpi_[0] - navir[0];
+        for(int h = 1; h < nirrep_; ++h)
+            vir_offsets[h] = vir_offsets[h-1] + doccpi_[h] - navir[h];
 
         std::vector<boost::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)
-        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted,
-                               IntegralTransform::DPDOnly,
+        IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
@@ -1057,18 +1133,25 @@ bool ROHF::stability_analysis()
                     double val = Aaa.matrix[h][ia][jb];
                     // A_IA_JB += 0.5 delta_IJ F_AB - 0.5 delta_AB F_IJ
                     if((iabs == jabs) && (asym == bsym))
-                        val += 0.5 * aMoF->get(asym, arel + doccpi_[asym], brel + doccpi_[bsym]);
+                        val += 0.5 * FAB->get(asym, arel, brel);
                     if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * aMoF->get(isym, irel, jrel);
+                        val -= 0.5 * FIJ->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(arel < (soccpi_[asym]) || brel < (soccpi_[bsym]))
+                    if(arel >= nvirpi[asym] || brel >= nvirpi[bsym])
                         val = 0.0;
                     Aaa.matrix[h][ia][jb] = val;
                 }
             }
             global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
         }
+        //global_dpd_->buf4_sort(&Aaa, PSIF_LIBTRANS_DPD, qpsr, ID("[V,O]"), ID("[V,O]"), "tmp");
         global_dpd_->buf4_close(&Aaa);
+
+        //global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+        //              ID("[V,O]"), ID("[V,O]"), 0, "tmp");
+        //global_dpd_->buf4_print(&Aaa, "outfile", 1);
+        //global_dpd_->buf4_close(&Aaa);
+        //exit(1);
 
         global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
@@ -1091,12 +1174,13 @@ bool ROHF::stability_analysis()
                     int brel = babs - Abb.params->soff[bsym];
                     double val = Abb.matrix[h][ia][jb];
                     // A_ia_jb += 0.5 delta_ij F_ab - 0.5 delta_ab F_ij
-                    if((iabs == jabs) && (asym == bsym))
-                        val += 0.5 * bMoF->get(asym, arel + doccpi_[asym], brel + doccpi_[bsym]);
+                    if((iabs == jabs) && (asym == bsym)){
+                        val += 0.5 * Fab->get(asym, arel, brel);
+                    }
                     if((aabs == babs) && (isym == jsym))
-                        val -= 0.5 * bMoF->get(isym, irel, jrel);
+                        val -= 0.5 * Fij->get(isym, irel, jrel);
                     // Zero out any socc-socc terms
-                    if(irel >= (doccpi_[isym]) || jrel >= (doccpi_[jsym]))
+                    if(irel >= doccpi_[isym] || jrel >= doccpi_[jsym])
                         val = 0.0;
                     Abb.matrix[h][ia][jb] = val;
                 }
@@ -1104,6 +1188,7 @@ bool ROHF::stability_analysis()
             global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
         }
         global_dpd_->buf4_close(&Abb);
+
 
         global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
@@ -1125,11 +1210,12 @@ bool ROHF::stability_analysis()
                     int jrel = jabs - Aab.params->roff[jsym];
                     int brel = babs - Aab.params->soff[bsym];
                     // A_IA_jb += 0.5 delta_Ib F(beta)_jA
-                    // Don't forget to account for the 0-based numbering of b
-                    if((irel == (brel + doccpi_[bsym])) && (jsym == asym))
-                        Aab.matrix[h][ia][jb] += 0.5 * bMoF->get(jsym, jrel, arel + doccpi_[asym]);
+                    // The delta_Ib is actually comparing spatial orbitals, so we have to use
+                    // offsets to make the comparison properly.
+                    if( ((irel + occ_offsets[isym]) == (brel + vir_offsets[bsym])) && (jsym == asym))
+                        Aab.matrix[h][ia][jb] += 0.5 * Fia->get(jsym, jrel, arel);
                     // Zero out any socc-socc terms
-                    if(jrel >= (doccpi_[jsym]) || arel < (soccpi_[asym]))
+                    if(jrel >= doccpi_[jsym] || arel >= navir[asym])
                         Aab.matrix[h][ia][jb] = 0.0;
                 }
             }
@@ -1170,7 +1256,17 @@ bool ROHF::stability_analysis()
         std::vector<std::pair<double, int> >eval_sym;
         global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
+
+        // Allocate some space for the eigenvalues
+        int nsave = options_.get_int("SOLVER_N_ROOT");
+        std::vector<int> onevec(nirrep_, 1);
+        std::vector<int> dimvec(nirrep_, nsave);
+        Dimension ones(onevec);
+        Dimension evalsdim(dimvec);
+        SharedMatrix stabvals(new Matrix("Eigenvalues from ROHF stability calculation", evalsdim, ones));
+
         for(int h = 0; h < A.params->nirreps; ++h) {
+            double **pEvals = stabvals->pointer(h);
             int npairs = A.params->rowtot[h];
             if(npairs == 0) continue;
 
@@ -1184,11 +1280,14 @@ bool ROHF::stability_analysis()
                 int asym = Aab.params->qsym[aabs];
                 int irel = iabs - Aab.params->poff[isym];
                 int arel = aabs - Aab.params->qoff[asym];
-                if(arel >= soccpi_[asym] || irel < doccpi_[isym]){
+                if((arel >= nvirpi[asym]) && (irel >= doccpi_[isym])){
+                    U[ia][ia] = 0.0;
+                }else{
                     U[ia][ia] = 1.0;
                     rank++;
                 }
             }
+            if(rank == 0) continue;
             int lastcol = npairs - 1;
             for(int ia = 0; ia < npairs; ++ia){
                 if(U[ia][ia] == 0.0){
@@ -1199,7 +1298,6 @@ bool ROHF::stability_analysis()
                     }
                 }
             }
-            if(rank == 0) continue;
 
             global_dpd_->buf4_mat_irrep_init(&A, h);
             global_dpd_->buf4_mat_irrep_rd(&A, h);
@@ -1211,7 +1309,7 @@ bool ROHF::stability_analysis()
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs,
                     temp[0], npairs, 0.0, A.matrix[h][0], npairs);
 
-            double *evals = init_array(rank);
+            double *evals = new double[rank];
             double **evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
@@ -1219,10 +1317,15 @@ bool ROHF::stability_analysis()
             int mindim = rank < 15 ? rank : 15;
             for(int i = 0; i < mindim; i++)
                 eval_sym.push_back(std::make_pair(evals[i], h));
+            for(int i = 0; i < nsave; ++i)
+                pEvals[i][0] = evals[i];
 
             free_block(evecs);
             delete [] evals;
         }
+        global_dpd_->buf4_close(&A);
+        Process::environment.arrays["SCF STABILITY EIGENVALUES"] = stabvals;
+
         outfile->Printf( "    Lowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);

@@ -1,5 +1,8 @@
 # The configure script
-configure
+conf
+configure*
+do-configure*
+build.sh
 
 # configure scratch location
 autom4te.cache
@@ -19,7 +22,6 @@ CMakeLists.txt.user
 
 # Hidden files (swap)
 .*
-*.out
 
 # Compiled Python files. Regenerated automatically
 *.pyc
@@ -37,10 +39,9 @@ _coverage_html
 # Files resulting from running PSI4
 ijk.dat
 output.dat
+*.out
 *.32
 *.clean
-#*.dat
-*.timer.dat
 *timer.dat
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
@@ -48,17 +49,17 @@ tests/*/PEDRA.OUT
 tests/*/cavity.npz
 tests/*/cavity.off
 tests/*/pcmsolver.inp
-lib/python/pcm_placeholder.py
+tests/*/*.xyz
 tests/*/*.grad
 tests/*/*.hess
+tests/*/*.cube
 
+# Automatically generated files
+share/python/pcm_placeholder.py
+plugins/skeleton/input.dat
 
 # Compilation directories that people use
-objdir
 obj*
-obj
-objdir_clang_debug
-objdir_gcc_debug
 build
 debug
 debug_latest
@@ -66,7 +67,6 @@ debug_latest
 # Other random files people have added.
 svn_source
 psi4.xcodeproj
-do-configure*
 update_debug_latest.sh
 
 #Files created by Global Arrays when it is built
