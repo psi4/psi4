@@ -545,20 +545,6 @@ void CIWavefunction::get_parameters(Options &options)
   }
   if (Parameters_->nthreads < 1) Parameters_->nthreads = 1;
 
-  Parameters_->export_ci_vector = options["VECS_WRITE"].to_integer();
-
-  Parameters_->num_export = 0;
-  if (Parameters_->export_ci_vector) {
-    Parameters_->num_export = 1;
-    if (options["NUM_VECS_WRITE"].has_changed())
-      Parameters_->num_export = options.get_int("NUM_VECS_WRITE");
-    if (Parameters_->num_export > Parameters_->num_roots) {
-      outfile->Printf( "Warning: can't export %d roots if %d requested\n",
-              Parameters_->num_export, Parameters_->num_roots);
-      Parameters_->num_export = Parameters_->num_roots;
-    }
-  }
-
   Parameters_->sf_restrict = options["SF_RESTRICT"].to_integer();
   Parameters_->print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
 
@@ -981,8 +967,6 @@ void CIWavefunction::print_parameters(void)
            Parameters_->perturbation_parameter, Parameters_->root);
    outfile->Printf( "   NUM THREADS   =   %6d\n",
            Parameters_->nthreads);
-   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE = %6d\n",
-           Parameters_->export_ci_vector ? "yes":"no", Parameters_->num_export);
    outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters_->filter_guess ?  "yes":"no",
            Parameters_->sf_restrict ? "yes":"no");

@@ -1239,105 +1239,6 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
   } /* end iteration */
   Parameters_->diag_iters_taken = iter;
 
-   /* Dump the vector to a PSIO file
-      Added by Edward valeev (August 2002) */
-   if (Parameters_->export_ci_vector && Parameters_->icore==1) {
-     StringSet alphastrings, betastrings;
-     SlaterDetSet dets;
-     //SlaterDetVector vec;
-     short int *drc_occ;
-     unsigned char *newocc;
-     int irrep, gr, l, n;
-
-     if (CalcInfo_->num_drc_orbs > 0) {
-       drc_occ = (short int *) malloc(CalcInfo_->num_drc_orbs*sizeof(short int));
-       for (int l=0; l<CalcInfo_->num_drc_orbs; l++) {
-         drc_occ[l] = CalcInfo_->order[l]; /* put it in Pitzer order */
-       }
-     }
-
-     newocc = (unsigned char *) malloc(((AlphaG_->num_el > BetaG_->num_el) ?
-       AlphaG_->num_el : BetaG_->num_el)*sizeof(unsigned char));
-
-     stringset_init(&alphastrings,AlphaG_->num_str,AlphaG_->num_el,
-                    CalcInfo_->num_drc_orbs, drc_occ);
-     int list_gr = 0;
-     int offset = 0;
-     for(irrep=0; irrep<AlphaG_->nirreps; irrep++) {
-       for(gr=0; gr<AlphaG_->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = AlphaG_->sg[irrep][gr].num_strings;
-         for(l=0; l<nlists_per_gr; l++) {
-           /* convert occs to Pitzer order */
-           for (n=0; n<AlphaG_->num_el; n++) {
-             newocc[n] = (unsigned char)
-               CalcInfo_->order[alplist[list_gr][l].occs[n] +
-               CalcInfo_->num_drc_orbs];
-           }
-       stringset_add(&alphastrings,l+offset,newocc);
-         }
-     offset += nlists_per_gr;
-       }
-     }
-
-     stringset_init(&betastrings,BetaG_->num_str,BetaG_->num_el,
-                    CalcInfo_->num_drc_orbs, drc_occ);
-     list_gr = 0;
-     offset = 0;
-     for(irrep=0; irrep<BetaG_->nirreps; irrep++) {
-       for(gr=0; gr<BetaG_->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = BetaG_->sg[irrep][gr].num_strings;
-         for(l=0; l<nlists_per_gr; l++) {
-           /* convert occs to Pitzer order */
-           for (n=0; n<BetaG_->num_el; n++) {
-             newocc[n] = (unsigned char)
-               CalcInfo_->order[betlist[list_gr][l].occs[n] +
-               CalcInfo_->num_drc_orbs];
-           }
-       stringset_add(&betastrings,l+offset,newocc);
-         }
-     offset += nlists_per_gr;
-       }
-     }
-     free(newocc);
-     if (CalcInfo_->num_drc_orbs > 0)
-       free(drc_occ);
-
-     int ii;
-     int size = CIblks_->vectlen;
-     int Iarel, Ialist, Ibrel, Iblist;
-     slaterdetset_init(&dets,size,&alphastrings,&betastrings);
-     for (ii=0; ii<size; ii++) {
-       Dvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-       int irrep = Ialist/AlphaG_->subgr_per_irrep;
-       int gr = Ialist%AlphaG_->subgr_per_irrep;
-       int Ia = Iarel + AlphaG_->list_offset[Ialist];
-       irrep = Iblist/BetaG_->subgr_per_irrep;
-       gr = Iblist%BetaG_->subgr_per_irrep;
-       int Ib = Ibrel + BetaG_->list_offset[Iblist];
-       slaterdetset_add(&dets, ii, Ia, Ib);
-     }
-
-     // Don't init, don't need the memory allocated
-     // slaterdetvector_init(&vec, &dets);
-
-     Dvec.buf_lock(buffer1);
-     for (ii=0; ii<Parameters_->num_export; ii++) {
-       zero_arr(buffer1, size);
-       Dvec.read(ii,0);
-       // slaterdetvector_set(&vec, buffer1);
-       // slaterdetvector_write(PSIF_CIVECT,"CI vector",&vec);
-       slaterdetset_write(PSIF_CIVECT,"CI vector",&dets);
-       slaterdetset_write_vect(PSIF_CIVECT,"CI vector",buffer1,size,ii);
-     }
-
-     Dvec.buf_unlock();
-     slaterdetset_delete_full(&dets);
-   }
-   else if (Parameters_->export_ci_vector && Parameters_->icore != 1) {
-     outfile->Printf( "\nWarning: requested CI vector export, unavailable " \
-       "for icore = %d\n", Parameters_->icore);
-   }
-
    /* PT correction */
    /*
    if (Parameters_->calc_pt_corr) {
@@ -1364,14 +1265,6 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    free_matrix(tmpmat, maxnvect);  free(Lvec);
    free(buffer1);
    free(buffer2);
-
-
-   //CIvect D(Parameters_->icore, maxnvect, 1,
-   //            Parameters_->d_filenum, CIblks_, CalcInfo_, Parameters_,
-   //            H0block_, true);
-   //D.init_io_files(true);
-   //D.read(0,0);
-   //D.print("outfile");
 }
 
 }} // namespace psi::detci

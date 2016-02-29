@@ -599,15 +599,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
 
-    /*- Do store converged vector(s) at the end of
-    the run?  The vector(s) is(are) stored in a transparent format such that
-    other programs can use it easily. The format is specified in
-    :source:`src/lib/libqt/slaterdset.h` . -*/
-    options.add_bool("VECS_WRITE", false);
-
-    /*- Number of vectors to export -*/
-    options.add_int("NUM_VECS_WRITE", 1);
-
     /*- Do compute the diagonal elements of the Hamiltonian matrix
     on-the-fly? Otherwise, a diagonal element vector is written
     to a separate file on disk. !expert -*/

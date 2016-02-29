@@ -344,22 +344,5 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //      }
 //}
 
-/*
-** WRITE_ENERGY
-**
-** This routine writes out the energies to an ASCII file
-*/
-//void write_energy(int nroots, double *evals, double offset)
-//{
-//
-//  int i;
-//  boost::shared_ptr<OutFile> printer(new OutFile("detci_energies.dat",APPEND));
-//  //ffile(&efile,"detci_energies.dat",1);
-//  for (i=0; i<nroots; i++) {
-//    printer->Printf("%8.6lf ", evals[i]+offset);
-//  }
-//  printer->Printf("\n");
-//}
-
 }} // namespace psi::detci
 
