@@ -64,7 +64,8 @@ void CCEnergyWavefunction::get_params(Options &options)
   else if(junk == "ROHF" &&
     (params_.wfn == "MP2" || params_.wfn == "CCSD_T" || params_.wfn == "CCSD_AT" ||
     params_.wfn == "CC3" || params_.wfn == "EOM_CC3" ||
-    params_.wfn == "CC2" || params_.wfn == "EOM_CC2")) {
+    params_.wfn == "CC2" || params_.wfn == "EOM_CC2" ||
+    params_.wfn == "BCCD" || params_.wfn == "BCCD_T")) {
     params_.ref = 2;
     params_.semicanonical = 1;
   }
