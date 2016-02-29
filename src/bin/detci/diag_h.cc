@@ -75,7 +75,6 @@ void CIWavefunction::diag_h()
    if ((BIGINT) Parameters_->nprint > size) Parameters_->nprint = (int) size;
    nucrep = CalcInfo_->enuc;
    edrc = CalcInfo_->edrc;
-   // tmp_ras_array = init_array(1024);
 
    if (Parameters_->bendazzoli)
       outfile->Printf( "\nBendazzoli algorithm selected for sigma3\n");
@@ -200,96 +199,6 @@ void CIWavefunction::diag_h()
          free(mi_coeff);
          }
 
-      //if (Parameters_->write_energy) write_energy(nroots, evals, nucrep);
-
-      /* Dump the vector to a PSIO file
-         Added by Edward valeev (June 2002) */
-      if (Parameters_->export_ci_vector) {
-        StringSet alphastrings, betastrings;
-        SlaterDetSet dets;
-        SlaterDetVector vec;
-        short int *drc_occ;
-        unsigned char *newocc;
-
-        if (CalcInfo_->num_drc_orbs > 0) {
-          drc_occ = (short int *)
-            malloc(CalcInfo_->num_drc_orbs*sizeof(short int));
-          for (int l=0; l<CalcInfo_->num_drc_orbs; l++) {
-            drc_occ[l] = CalcInfo_->order[l]; /* put it in Pitzer order */
-          }
-        }
-
-        newocc = (unsigned char *)
-          malloc(((AlphaG_->num_el > BetaG_->num_el) ?
-            AlphaG_->num_el : BetaG_->num_el)*sizeof(unsigned char));
-
-        stringset_init(&alphastrings,AlphaG_->num_str,AlphaG_->num_el,
-                       CalcInfo_->num_drc_orbs, drc_occ);
-        int list_gr = 0;
-        int offset = 0;
-        for(int irrep=0; irrep<AlphaG_->nirreps; irrep++) {
-          for(int gr=0; gr<AlphaG_->subgr_per_irrep; gr++,list_gr++) {
-            int nlists_per_gr = AlphaG_->sg[irrep][gr].num_strings;
-            for(int l=0; l<nlists_per_gr; l++) {
-              /* convert occs to Pitzer order */
-              for (int n=0; n<AlphaG_->num_el; n++) {
-                newocc[n] = (unsigned char)
-                  CalcInfo_->order[alplist_[list_gr][l].occs[n] +
-                                CalcInfo_->num_drc_orbs];
-              }
-              stringset_add(&alphastrings,l+offset,newocc);
-            }
-            offset += nlists_per_gr;
-          }
-        }
-
-        stringset_init(&betastrings,BetaG_->num_str,BetaG_->num_el,
-                       CalcInfo_->num_drc_orbs, drc_occ);
-        list_gr = 0;
-        offset = 0;
-        for(int irrep=0; irrep<BetaG_->nirreps; irrep++) {
-          for(int gr=0; gr<BetaG_->subgr_per_irrep; gr++,list_gr++) {
-            int nlists_per_gr = BetaG_->sg[irrep][gr].num_strings;
-            for(int l=0; l<nlists_per_gr; l++) {
-              /* convert occs to Pitzer order */
-              for (int n=0; n<BetaG_->num_el; n++) {
-                newocc[n] = (unsigned char)
-                  CalcInfo_->order[betlist_[list_gr][l].occs[n] +
-                                CalcInfo_->num_drc_orbs];
-              }
-              stringset_add(&betastrings,l+offset,newocc);
-            }
-            offset += nlists_per_gr;
-          }
-        }
-        free(newocc);
-        if (CalcInfo_->num_drc_orbs > 0)
-          free(drc_occ);
-
-        int Iarel, Ialist, Ibrel, Iblist;
-        // the slaterdetset code below will fail if size > int
-        // but that should be ok b/c we won't be running RSP in that case...
-        slaterdetset_init(&dets,size,&alphastrings,&betastrings);
-        for (int ii=0; ii<size; ii++) {
-          Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-          int irrep = Ialist/AlphaG_->subgr_per_irrep;
-          int gr = Ialist%AlphaG_->subgr_per_irrep;
-          int Ia = Iarel + AlphaG_->list_offset[Ialist];
-          irrep = Iblist/BetaG_->subgr_per_irrep;
-          gr = Iblist%BetaG_->subgr_per_irrep;
-          int Ib = Ibrel + BetaG_->list_offset[Iblist];
-          slaterdetset_add(&dets, ii, Ia, Ib);
-        }
-
-        slaterdetvector_init(&vec, &dets);
-        slaterdetvector_set(&vec, evecs[0]);
-        slaterdetvector_write(PSIF_CIVECT,"CI vector",&vec);
-
-        slaterdetvector_delete(&vec);
-        slaterdetset_delete(&dets);
-        stringset_delete(&alphastrings);
-        stringset_delete(&betastrings);
-      }
     } /* end RSP section */
 
    /* RSP test of Davidson/Liu (SEM) diagonalization routine */
@@ -490,8 +399,6 @@ void CIWavefunction::diag_h()
          free_matrix(evecs, Parameters_->num_roots);
          }
 
-      //if (Parameters_->write_energy) write_energy(nroots, evals, nucrep);
-
       } /* end Test of Davidson/Liu section */
 
 
@@ -652,8 +559,6 @@ void CIWavefunction::diag_h()
          H0block_free();
          }
 
-      //if (Parameters_->write_energy) write_energy(nroots, evals, nucrep+edrc);
-
       } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 
    /* write the CI energy to PSIF_CHKPT: later fix this to loop over roots */
@@ -663,8 +568,6 @@ void CIWavefunction::diag_h()
    Process::environment.globals["CURRENT CORRELATION ENERGY"] = tval - CalcInfo_->escf;
    Process::environment.globals["CURRENT REFERENCE ENERGY"] = CalcInfo_->escf;
    Process::environment.globals["CI TOTAL ENERGY"] = tval;
-   // eref seems wrong for open shells so replace it with escf below
-   // until I fix it ---CDS 11/5/11
    Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo_->escf;
 
    if (Parameters_->fci) {
@@ -685,8 +588,6 @@ void CIWavefunction::diag_h()
        Process::environment.globals["CISDTQ CORRELATION ENERGY"] = tval - CalcInfo_->escf;
      }
      else {
-       /*- Process::environment.globals["CIn TOTAL ENERGY"] -*/
-       /*- Process::environment.globals["CIn CORRELATION ENERGY"] -*/
        std::stringstream s;
        s << "CI" << Parameters_->ex_lvl << " TOTAL ENERGY";
        Process::environment.globals[s.str()] = tval;
@@ -700,15 +601,11 @@ void CIWavefunction::diag_h()
      sprintf(e_label,"Root %2d energy",i);
      tval = evals[i]+edrc+nucrep;
 
-     /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
-     /*- Process::environment.globals["CI ROOT n CORRELATION ENERGY"] -*/
      std::stringstream s;
      s << "CI ROOT " << (i+1) << " TOTAL ENERGY";
      Process::environment.globals[s.str()] = tval;
      s.str(std::string());
      s << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
-     // eref seems wrong for open shells so replace it with escf below
-     // until I fix it ---CDS 11/5/11
      Process::environment.globals[s.str()] = tval - CalcInfo_->escf;
    }
 
@@ -718,8 +615,6 @@ void CIWavefunction::diag_h()
        tval += Parameters_->average_weights[i] *
                (edrc+nucrep+evals[Parameters_->average_states[i]]);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
-     // eref seems wrong for open shells so replace it with escf below
-     // until I fix it ---CDS 11/5/11
      Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
        tval - CalcInfo_->escf;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] =
@@ -742,11 +637,7 @@ void CIWavefunction::diag_h()
       Process::environment.globals["CI TOTAL ENERGY"];
    }
 
-   // form_opdm();
-   // form_tpdm();
-}
-
-
+} // end CIWave::diag_h
 
 }} // namespace psi::detci
 

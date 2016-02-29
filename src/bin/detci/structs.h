@@ -377,7 +377,6 @@ struct params {
    std::string ref;    /* reference type (RHF, ROHF); ROHF with MULTP=1
                           is an open-shell singlet */
    int multp;        /* multiplicity (2S+1) */
-   int write_energy; /* flag to write energies to detci_energies.dat */
    int filter_ints;  /* true (1) if some integrals in tei file to be ignored */
    int ex_lvl;       /* excitation level */
    int val_ex_lvl;   /* valence excitation level, used for RAS's */
@@ -526,9 +525,6 @@ struct params {
                               command line or the DETCASMAN driver? */
    double special_conv;    /* special convergence value */
    int nthreads;           /* number of threads to use in sigma routines */
-   int export_ci_vector;   /* 1 if export the CI vector with string info,
-                              useful for BODC */
-   int num_export;         /* number of vectors to export */
    int sf_restrict;        /* 1 if restrict CI space (CI blocks) to
                               do only determinants (or their
                               spin-complements) in RASCI versions of
