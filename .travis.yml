@@ -2,30 +2,30 @@ language: cpp
 sudo: false
 matrix:
   include:
-  - os: linux
-    compiler: clang
-    addons:
-      apt:
-        sources:
-        - llvm-toolchain-precise
-        - ubuntu-toolchain-r-test
-        - boost-latest
-        - george-edison55-precise-backports
-        packages:
-        - cmake
-        - cmake-data
-        - liblapack-dev
-        - clang-3.8
-        - libboost-filesystem1.55-dev
-        - libboost-chrono1.55-dev
-        - libboost-system1.55-dev
-        - libboost-timer1.55-dev
-        - libboost-python1.55-dev
-        - libboost-regex1.55-dev
-        - libboost-serialization1.55-dev
-        - libboost-thread1.55-dev
-        - gfortran
-    env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
+#  - os: linux
+#    compiler: clang
+#    addons:
+#      apt:
+#        sources:
+#        - llvm-toolchain-precise
+#        - ubuntu-toolchain-r-test
+#        - boost-latest
+#        - george-edison55-precise-backports
+#        packages:
+#        - cmake
+#        - cmake-data
+#        - liblapack-dev
+#        - clang-3.8
+#        - libboost-filesystem1.55-dev
+#        - libboost-chrono1.55-dev
+#        - libboost-system1.55-dev
+#        - libboost-timer1.55-dev
+#        - libboost-python1.55-dev
+#        - libboost-regex1.55-dev
+#        - libboost-serialization1.55-dev
+#        - libboost-thread1.55-dev
+#        - gfortran
+#    env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
 # No release version for 3.8 because of a bug in that version of the compiler
 
   - os: linux
@@ -42,6 +42,7 @@ matrix:
         - cmake-data
         - liblapack-dev
         - clang-3.5
+        - libhdf5-serial-dev
         - libboost-filesystem1.55-dev
         - libboost-chrono1.55-dev
         - libboost-system1.55-dev
@@ -52,38 +53,39 @@ matrix:
         - libboost-thread1.55-dev
         - gfortran
     env: CXX_COMPILER='clang++-3.5' C_COMPILER='clang-3.5' Fortran_COMPILER='gfortran' BUILD_TYPE='release' BOOSTSTR=' ' BOOSTBUILD=''
-  - os: linux
-    compiler: clang
-    addons: *1
-    env: CXX_COMPILER='clang++-3.5' C_COMPILER='clang-3.5' Fortran_COMPILER='gfortran' BUILD_TYPE='debug' BOOSTSTR=' ' BOOSTBUILD=''
-  - os: linux
-    compiler: clang
-    addons: &2
-      apt:
-        sources:
-        - llvm-toolchain-precise-3.6
-        - ubuntu-toolchain-r-test
-        - boost-latest
-        - george-edison55-precise-backports
-        packages:
-        - cmake
-        - cmake-data
-        - liblapack-dev
-        - clang-3.6
-        - libboost-filesystem1.55-dev
-        - libboost-chrono1.55-dev
-        - libboost-system1.55-dev
-        - libboost-timer1.55-dev
-        - libboost-python1.55-dev
-        - libboost-regex1.55-dev
-        - libboost-serialization1.55-dev
-        - libboost-thread1.55-dev
-        - gfortran
-    env: CXX_COMPILER='clang++-3.6' C_COMPILER='clang-3.6' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
-  - os: linux
-    compiler: clang
-    addons: *2
-    env: CXX_COMPILER='clang++-3.6' C_COMPILER='clang-3.6' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
+#  - os: linux
+#    compiler: clang
+#    addons: *1
+#    env: CXX_COMPILER='clang++-3.5' C_COMPILER='clang-3.5' Fortran_COMPILER='gfortran' BUILD_TYPE='debug' BOOSTSTR=' ' BOOSTBUILD=''
+
+#  - os: linux
+#    compiler: clang
+#    addons: &2
+#      apt:
+#        sources:
+#        - llvm-toolchain-precise-3.6
+#        - ubuntu-toolchain-r-test
+#        - boost-latest
+#        - george-edison55-precise-backports
+#        packages:
+#        - cmake
+#        - cmake-data
+#        - liblapack-dev
+#        - clang-3.6
+#        - libboost-filesystem1.55-dev
+#        - libboost-chrono1.55-dev
+#        - libboost-system1.55-dev
+#        - libboost-timer1.55-dev
+#        - libboost-python1.55-dev
+#        - libboost-regex1.55-dev
+#        - libboost-serialization1.55-dev
+#        - libboost-thread1.55-dev
+#        - gfortran
+#    env: CXX_COMPILER='clang++-3.6' C_COMPILER='clang-3.6' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
+#  - os: linux
+#    compiler: clang
+#    addons: *2
+#    env: CXX_COMPILER='clang++-3.6' C_COMPILER='clang-3.6' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
   - os: linux
     compiler: clang
     addons: &3
@@ -98,6 +100,7 @@ matrix:
         - cmake-data
         - liblapack-dev
         - clang-3.7
+        - libhdf5-serial-dev
         - libboost-filesystem1.55-dev
         - libboost-chrono1.55-dev
         - libboost-system1.55-dev
@@ -108,31 +111,31 @@ matrix:
         - libboost-thread1.55-dev
         - gfortran
     env: CXX_COMPILER='clang++-3.7' C_COMPILER='clang-3.7' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
-  - os: linux
-    compiler: clang
-    addons: *3
-    env: CXX_COMPILER='clang++-3.7' C_COMPILER='clang-3.7' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
+#  - os: linux
+#    compiler: clang
+#    addons: *3
+#    env: CXX_COMPILER='clang++-3.7' C_COMPILER='clang-3.7' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
 
+#  - os: linux
+#    compiler: gcc
+#    addons: &6
+#      apt:
+#        sources:
+#        - ubuntu-toolchain-r-test
+#        - george-edison55-precise-backports
+#        packages:
+#        - cmake
+#        - cmake-data
+#        - liblapack-dev
+#        - g++-4.7
+#        - gcc-4.7
+#        - gfortran-4.7
+#    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
+#  - os: linux
+#    compiler: gcc
+#    addons: *6
+#    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
 
-  - os: linux
-    compiler: gcc
-    addons: &6
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        - george-edison55-precise-backports
-        packages:
-        - cmake
-        - cmake-data
-        - liblapack-dev
-        - g++-4.7
-        - gcc-4.7
-        - gfortran-4.7
-    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
-  - os: linux
-    compiler: gcc
-    addons: *6
-    env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.7" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: &7
@@ -144,33 +147,34 @@ matrix:
         - cmake
         - cmake-data
         - liblapack-dev
+        - libhdf5-serial-dev
         - g++-4.8
         - gcc-4.8
         - gfortran-4.8
     env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8" OMP_NUM_THREADS=2
-  - os: linux
-    compiler: gcc
-    addons: *7
-    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8" OMP_NUM_THREADS=2
-  - os: linux
-    compiler: gcc
-    addons: &8
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        - george-edison55-precise-backports
-        packages:
-        - cmake
-        - cmake-data
-        - liblapack-dev
-        - g++-4.9
-        - gcc-4.9
-        - gfortran-4.9
-    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
-  - os: linux
-    compiler: gcc
-    addons: *8
-    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
+#  - os: linux
+#    compiler: gcc
+#    addons: *7
+#    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.8" OMP_NUM_THREADS=2
+#  - os: linux
+#    compiler: gcc
+#    addons: &8
+#      apt:
+#        sources:
+#        - ubuntu-toolchain-r-test
+#        - george-edison55-precise-backports
+#        packages:
+#        - cmake
+#        - cmake-data
+#        - liblapack-dev
+#        - g++-4.9
+#        - gcc-4.9
+#        - gfortran-4.9
+#    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
+#  - os: linux
+#    compiler: gcc
+#    addons: *8
+#    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='debug' BOOSTSTR="--boost-incdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0 --boost-libdir=${TRAVIS_BUILD_DIR}/boost_build/boost_1_57_0/stage/lib" BOOSTBUILD=".scripts/build_boost.sh 4.9" OMP_NUM_THREADS=2
   - os: linux
     compiler: gcc
     addons: &9
@@ -181,6 +185,7 @@ matrix:
         packages:
         - cmake
         - cmake-data
+        - libhdf5-serial-dev
         - liblapack-dev
         - g++-5
         - gcc-5
@@ -237,9 +242,12 @@ before_script:
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
 - export FC=${Fortran_COMPILER}
+- ${CXX_COMPILER} --version
+- ${Fortran_COMPILER} --version
+- ${C_COMPILER} --version
 - ${BOOSTBUILD}
 - python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} ${BOOSTSTR} --max-am-eri=4 --chemps2=off objdir
 - cd objdir
 - ../.scripts/travis_build.sh
 script:
-- ../.scripts/travis_run.sh
+- python ../.scripts/travis_run.py

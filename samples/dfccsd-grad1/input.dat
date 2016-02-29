@@ -19,8 +19,10 @@ set {
   guess sad
   scf_type df
   freeze_core true
+  cc_type df
 }
-gradient('df-ccsd')
+
+grad = gradient('ccsd')
 
 
 

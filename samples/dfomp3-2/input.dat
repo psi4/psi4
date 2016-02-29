@@ -18,8 +18,9 @@ set {
   guess gwh
   freeze_core true
   reference uhf
+  mp_type df
 }
-energy('df-omp3')
+energy('omp3')
 
 
 

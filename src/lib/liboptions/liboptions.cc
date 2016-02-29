@@ -75,7 +75,7 @@ void DataType::to_upper(std::string& str)
 
 void DataType::add_choices(std::string str)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 std::string DataType::type() const
@@ -90,62 +90,62 @@ bool DataType::is_array() const
 
 unsigned int DataType::size() const
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(DataType *)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, DataType*)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(bool)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(int)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(double)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, bool)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, std::string)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, int)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, double)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 void DataType::add(std::string, std::string, std::string)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 bool DataType::exists(std::string)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 std::string DataType::to_string() const
@@ -200,12 +200,12 @@ void DataType::reset()
 
 Data& DataType::operator[](std::string)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 Data& DataType::operator[](unsigned int)
 {
-    throw NotImplementedException();
+    throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
 // BooleanDataType

@@ -273,22 +273,22 @@ attempted optimizations will inevitably fail to converge to the desired minima.
 For difficult cases, the following suggestions are made.
 
 * As for any optimizer, computing the Hessian and limiting the step size will
-successfully converge a higher percentage of cases.  The default settings have
-been chosen because they perform efficiently for common, representative test sets.
-More restrictive, cautious steps are sometimes necessary.
+  successfully converge a higher percentage of cases.  The default settings have
+  been chosen because they perform efficiently for common, representative test sets.
+  More restrictive, cautious steps are sometimes necessary.
 
 * |optking__dynamic_level| allows optking to change the method of optimization
-toward algorithms that, while often less efficient, may help to converge difficult
-cases.  If this is initially set to 1, then optking, as poor steps are detected,
-will increase the level through several forms of more robust and cautious algorithms.
-The changes will reduce the trust radius, allow backward steps (partial line
-searching), add cartesian coordinates, switch to cartesian coordinates, and take
-steepest-descent steps.
+  toward algorithms that, while often less efficient, may help to converge difficult
+  cases.  If this is initially set to 1, then optking, as poor steps are detected,
+  will increase the level through several forms of more robust and cautious algorithms.
+  The changes will reduce the trust radius, allow backward steps (partial line
+  searching), add cartesian coordinates, switch to cartesian coordinates, and take
+  steepest-descent steps.
 
 * The developers have found the |optking__opt_coordinates| set to "BOTH" which
-includes both the redundant internal coordinate set, as well as cartesian coordinates,
-works well for systems with long 'arms' or floppy portions of a molecule poorly
-described by local internals.
+  includes both the redundant internal coordinate set, as well as cartesian coordinates,
+  works well for systems with long 'arms' or floppy portions of a molecule poorly
+  described by local internals.
 
 Direct manipulation of the optmization coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

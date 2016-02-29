@@ -287,18 +287,15 @@ int psi_start(int argc, char *argv[])
             return(PSI_RETURN_FAILURE);
         }
     }
-#endif
-
-#if defined(MAKE_PYTHON_MODULE)
-        outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+    if(ofname == "stdout"){
+        outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+    }
+    else{
+       outfile=boost::shared_ptr<PsiOutStream>
+          (new OutFile(ofname,(append?APPEND:TRUNCATE)));
+    }
 #else
-        if(ofname == "stdout"){
-            outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
-        }
-        else{
-           outfile=boost::shared_ptr<PsiOutStream>
-              (new OutFile(ofname,(append?APPEND:TRUNCATE)));
-        }
+    outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
 #endif
 
     //if(debug)

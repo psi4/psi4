@@ -16,7 +16,8 @@ set {
   df_basis_cc cc-pvdz-ri
   scf_type df
   guess sad
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 

@@ -15,6 +15,7 @@ set {
   reference uhf
   guess gwh
 }
-gradient('cepa0')
+
+grad = gradient('cepa(0)')
 
 

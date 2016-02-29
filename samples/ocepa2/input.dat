@@ -15,5 +15,5 @@ set global {
   dft_functional b3lyp 
   e_convergence 8
 }
-energy('ocepa')
+energy('ocepa(0)')
 

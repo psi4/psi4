@@ -14,7 +14,8 @@ set {
   basis cc-pvdz
   reference uhf
   guess gwh
+  mp2_type conv
 }
-gradient('conv-omp2')
+grad = gradient('omp2')
 
 

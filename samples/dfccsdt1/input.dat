@@ -17,8 +17,11 @@ set {
   scf_type df
   guess sad
   freeze_core true
+  cc_type df
+  qc_module occ
 }
-energy('ri-ccsd(t)')
+
+energy('ccsd(t)')
 
 
 

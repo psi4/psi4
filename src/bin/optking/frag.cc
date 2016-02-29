@@ -734,8 +734,12 @@ void FRAG::fix_bend_axes(void) {
   for (ULI i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == bend_type) {
       a_bend = static_cast<BEND*>(coords.simples[i]);
-      a_bend->compute_axes(geom);
-      a_bend->fix_axes();
+      // If value is small, then don't fix so that value and Bmatrix
+      // element are correct for displacements through zero.
+      if (a_bend->value(geom) > Opt_params.small_bend_fix_threshold) {
+        a_bend->compute_axes(geom);
+        a_bend->fix_axes();
+      }
     }
 }
 

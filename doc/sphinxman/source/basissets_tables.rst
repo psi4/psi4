@@ -27,7 +27,7 @@ approximations. JKFIT sets are appropriate for fitting :math:`(oo|`\ -type produ
 such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
 RI sets are appropriate for fitting :math:`(ov|`\ -type products, such as encountered in
 MP2 and most SAPT terms.  Citations for basis sets can be found in their
-definition files at :source:`lib/basis` in the source.  For basis set availability by
+definition files at :source:`share/basis` in the source.  For basis set availability by
 element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 

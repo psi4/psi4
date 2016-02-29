@@ -156,9 +156,9 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
       outfile->Printf( "      * CCSD(aT) total energy          = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
 
-      Process::environment.globals["A-(T) CORRECTION ENERGY"] = ET;
-      Process::environment.globals["A-CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
-      Process::environment.globals["A-CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+      Process::environment.globals["(AT) CORRECTION ENERGY"] = ET;
+      Process::environment.globals["CCSD(AT) CORRELATION ENERGY"] = ET + moinfo.ecc;
+      Process::environment.globals["CCSD(AT) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
     }
 
     /* Compute triples contributions to the gradient */

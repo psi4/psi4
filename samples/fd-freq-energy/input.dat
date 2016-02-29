@@ -21,7 +21,7 @@ set globals {
 set globals { points 3 }
 set findif {print 3}
 
-frequencies('scf',dertype=0)
+scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 
 
 

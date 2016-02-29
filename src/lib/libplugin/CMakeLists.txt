@@ -26,7 +26,7 @@ endif ()
 # Build static library
 add_library(plugin STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-#add_dependencies(plugin )
+add_dependencies(plugin mints)
 set_property(GLOBAL APPEND PROPERTY LIBLIST plugin)
 if (BUILD_CUSTOM_BOOST)
     add_dependencies(plugin custom_boost)

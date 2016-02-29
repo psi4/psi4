@@ -37,4 +37,4 @@ set psimrcc {
   wfn_sym         B1g                    # Select the B1g state
 }
 
-frequencies('psimrcc', dertype=0)
+mrcc_e, mrcc_wfn = frequencies('psimrcc', dertype=0, return_wfn=True)
