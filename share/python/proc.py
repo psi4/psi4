@@ -1837,10 +1837,24 @@ def run_bccd(name, **kwargs):
         psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
+    elif (name.lower() == 'bccd(t)'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCSORT', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
+    else:
+        raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
+
+
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    # Needed for (T).
+    if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF'):
+        ref_wfn.semicanonicalize()
 
     if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
         mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
@@ -1856,41 +1870,23 @@ def run_bccd(name, **kwargs):
         else:
             psi4.transqt2(ref_wfn)
             psi4.ccsort()
+
         ref_wfn = psi4.ccenergy(ref_wfn)
-        psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
+        psi4.print_out('Brueckner convergence check: %s\n' % bool(psi4.get_variable('BRUECKNER CONVERGED')))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):
             break
 
-        # This is quite arbitrary, blame DGAS
-        if bcc_iter_cnt > 10:
-            raise ValidationError("Stopped at 50th BCCSD iteration, something is going wrong!")
+        if bcc_iter_cnt >= psi4.get_option('CCENERGY', 'BCCD_MAXITER'):
+            psi4.print_out("\n\nWarning! BCCD did not converge within the maximum number of iterations.")
+            psi4.print_out("You can increase the number of BCCD iterations by changing BCCD_MAXITER.\n\n")
             break
         bcc_iter_cnt += 1
 
+    if (name.lower() == 'bccd(t)'):
+        psi4.cctriples(ref_wfn)
+
     optstash.restore()
     return ref_wfn
-
-
-def run_bccd_t(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a Brueckner CCD(T) calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
-        ['CCSORT', 'WFN'],
-        ['CCENERGY', 'WFN'],
-        ['CCTRIPLES', 'WFN'])
-
-    psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCSORT', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
-    bccd_wfn = run_bccd(name, **kwargs)
-    psi4.cctriples(bccd_wfn)
-
-    optstash.restore()
-    return bccd_wfn
 
 
 def run_scf_property(name, **kwargs):
