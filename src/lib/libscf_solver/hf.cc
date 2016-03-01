@@ -405,7 +405,7 @@ void HF::integrals()
           #ifdef HAVE_JK_FACTORY
             //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
             boost::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-            Process::environment.set_legacy_wavefunction(molecule_);
+            Process::environment.set_legacy_molecule(molecule_);
             if(options_.get_bool("SOSCF"))
                 jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
             else
@@ -419,12 +419,19 @@ void HF::integrals()
         }
     }
     catch(const BasisSetNotFound& e) {
-        if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
+        if (options_.get_str("SCF_TYPE") == "DF") {
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             outfile->Printf( "%s\n", e.what());
             outfile->Printf( "   Turning off DF and switching to PK method.\n");
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_str("SCF", "SCF_TYPE", "PK");
+            options_.set_bool("SCF", "DF_SCF_GUESS", false);
+            jk_ = JK::build_JK(basisset_, options_);
+        } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
+            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            outfile->Printf( "%s\n", e.what());
+            outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
+            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
             jk_ = JK::build_JK(basisset_, options_);
         }
@@ -1711,7 +1718,7 @@ void HF::initialize()
 
     // Andy trick 2.0
     old_scf_type_ = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD" || old_scf_type_ == "PK" || old_scf_type_ == "OUT_OF_CORE")) {
+    if (options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT") ) {
          outfile->Printf( "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets
@@ -1966,7 +1973,7 @@ void HF::iterations()
         if (frac_enabled_ && !frac_performed_) converged_ = false;
 
         // If a DF Guess environment, reset the JK object, and keep running
-        if (converged_ && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type_ == "DF" || old_scf_type_ == "CD")) {
+        if (converged_ && options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
             outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
             converged_ = false;
             if(initialized_diis_manager_)
