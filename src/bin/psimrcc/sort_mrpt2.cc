@@ -39,9 +39,9 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-void CCSort::build_integrals_mrpt2()
+void CCSort::build_integrals_mrpt2(IntegralTransform *ints)
 {
-  trans->read_integrals_mrpt2();
+  trans->read_integrals_mrpt2(ints);
   frozen_core_energy_mrpt2();
   allocate_and_sort_integrals_mrpt2();
   trans->free_memory();
