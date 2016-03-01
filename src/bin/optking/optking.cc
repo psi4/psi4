@@ -360,7 +360,7 @@ OptReturnType optking(void) {
           oprintf_out("\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
-          double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+          double *x = p_irc_data->g_x();
           mol1->set_geom_array(x);
           oprintf_out("\tFinal (previous) structure:\n");
           mol1->print_geom_out();  // write geometry -> output file
