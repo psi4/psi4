@@ -62,8 +62,8 @@ inline int64_t i_offset64(int64_t i)
  *  \param mol Molecule to form mapping matrix from.
  *  \returns Integer matrix of dimension natoms X nirreps.
  */
-int **compute_atom_map(const boost::shared_ptr<Molecule> &mol, double tol = 0.5);
-int **compute_atom_map(const Molecule* mol, double tol = 0.5);
+int **compute_atom_map(const boost::shared_ptr<Molecule> &mol, double tol = 0.1);
+int **compute_atom_map(const Molecule* mol, double tol = 0.1);
 /// @}
 
 /*! @{

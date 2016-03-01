@@ -58,7 +58,8 @@ void get_params(Options & options)
   else if((reference == "ROHF") and
      ((params.wfn == "MP2") or (params.wfn == "CCSD_T") or (params.wfn == "CCSD_AT") or
      (params.wfn == "CC3") or (params.wfn == "EOM_CC3") or
-     (params.wfn == "CC2") or (params.wfn == "EOM_CC2"))) {
+     (params.wfn == "CC2") or (params.wfn == "EOM_CC2") or
+     (params.wfn == "BCCD") or (params.wfn == "BCCD_T"))) {
       params.ref = 2;
       params.semicanonical = 1;
     }
