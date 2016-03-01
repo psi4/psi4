@@ -206,7 +206,6 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only)
       }
   }
 
-
   // => Compute DF ints <= //
   dferi_->clear();
   dferi_->set_C(AO_C);
@@ -564,9 +563,6 @@ void CIWavefunction::tf_onel_ints()
        Parameters_->ras34_max == 0)
       nbf = Parameters_->ras3_lvl;
 
-   // /* allocate space for the new array */
-   // CalcInfo_->tf_onel_ints = init_array(ntri) ;
-
    /* fill up the new array */
    for (i=0,ij=0; i<nbf; i++)
       for (j=0; j<=i; j++) {
@@ -582,12 +578,6 @@ void CIWavefunction::tf_onel_ints()
 
          CalcInfo_->tf_onel_ints[ij++] = tval ;
          }
-   /* print if necessary */
-   // if (printflag) {
-   //    outfile->Printf( "\nh' matrix\n") ;
-   //    print_array(CalcInfo_->tf_onel_ints, nbf, "outfile") ;
-   //    outfile->Printf( "\n") ;
-   //    }
 }
 
 
