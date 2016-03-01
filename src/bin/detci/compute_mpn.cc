@@ -81,12 +81,12 @@ void CIWavefunction::compute_mpn()
         totfzc += CalcInfo_->dropped_docc[h1];
 
     for(h1 = 0,offset = 0; h1 < CalcInfo_->nirreps; h1++) {
-        if(h1>0) offset += CalcInfo_->orbs_per_irr[h1-1];
+        if(h1>0) offset += nmopi_[h1-1];
         docc = CalcInfo_->docc[h1];
         socc = CalcInfo_->socc[h1];
         for(x = offset+docc; x<offset+docc+socc; x++){
             for(h2 = 0,offset2 = 0; h2 < CalcInfo_->nirreps; h2++) {
-                if(h2>0) offset2 += CalcInfo_->orbs_per_irr[h2-1];
+                if(h2>0) offset2 += nmopi_[h2-1];
                 docc2 = CalcInfo_->docc[h2];
                 socc2 = CalcInfo_->socc[h2];
                 for(y=offset2+docc2;y<offset2+docc2+socc2;y++) {

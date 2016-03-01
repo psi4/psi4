@@ -37,6 +37,7 @@
 #define _psi_src_bin_detci_structs_h
 
 #include <string>
+#include <libmints/dimension.h>
 
 namespace psi { namespace detci {
 
@@ -272,30 +273,30 @@ struct calcinfo {
    int nmo;              /* number of molecular orbitals */
    int nmotri;           /* num elements in lwr diag matrix nmo big */
    int nirreps;          /* number of irreducible representations in pt grp */
-   int *docc;            /* number of doubly occupied orbitals per irrep */
-   int *socc;            /* number of singly occupied orbitals per irrep */
-   int *ci_orbs;         /* number of act orbitals per irrep */
-   int *dropped_docc;    /* number of core orbitals per irrep constrained to
-                            be doubly occupied and dropped from explicit
-                            consideration in the CI computation;
-                            sum of frozen_docc and rstr_docc - CDS 4/15 */
-   int *frozen_docc;     /* number of frozen doubly occupied orbs per irrep;
-                            these are not explicitly present in the CI
-                            and these orbitals are not allowed to optimize
-                            in an MCSCF - CDS 4/15 */
-   int *rstr_docc;       /* number of restricted doubly occupied orbs per
-                            irrep; these are not explicitly present in the
-                            CI and these orbitals are allowed to optimize
-                            in an MCSCF - CDS 4/15 */
-   int *dropped_uocc;     /* number of unoccupied orbitals per irrep
-                            constrained to be unoccupied and dropped from
-                            explicit consideratin in the CI computation;
-                            sum of frozen_uocc and rstr_uocc - CDS 4/15 */
-   int *frozen_uocc;     /* number of frozen unoccupied orbitals per irrep;
-                            these are not explicitly present in the CI
-                            and these orbitals are not allowed to optimize
-                            in an MCSCF */
-   int *rstr_uocc;       /* number of restricted unoccpied orbitals per irrep;
+   Dimension docc;            /* number of doubly occupied orbitals per irrep */
+   Dimension socc;            /* number of singly occupied orbitals per irrep */
+   Dimension ci_orbs;         /* number of act orbitals per irrep */
+   Dimension dropped_docc;    /* number of core orbitals per irrep constrained to
+                       be doubly occupied and dropped from explicit
+                       consideration in the CI computation;
+                       sum of frozen_docc and rstr_docc - CDS 4/15 */
+   Dimension frozen_docc;     /* number of frozen doubly occupied orbs per irrep;
+                       these are not explicitly present in the CI
+                       and these orbitals are not allowed to optimize
+                       in an MCSCF - CDS 4/15 */
+   Dimension rstr_docc;       /* number of restricted doubly occupied orbs per
+                       irrep; these are not explicitly present in the
+                       CI and these orbitals are allowed to optimize
+                       in an MCSCF - CDS 4/15 */
+   Dimension dropped_uocc;     /* number of unoccupied orbitals per irrep
+                       constrained to be unoccupied and dropped from
+                       explicit consideratin in the CI computation;
+                       sum of frozen_uocc and rstr_uocc - CDS 4/15 */
+   Dimension frozen_uocc;     /* number of frozen unoccupied orbitals per irrep;
+                       these are not explicitly present in the CI
+                       and these orbitals are not allowed to optimize
+                       in an MCSCF */
+   Dimension rstr_uocc;       /* number of restricted unoccpied orbitals per irrep;
                             these are not explicitly present in the CI
                             and these orbitals are allowed to optimize in
                             an MCSCF */
@@ -315,10 +316,10 @@ struct calcinfo {
    int *orbs_per_irr;    /* (molecular) orbitals per irrep */
    int *so_per_irr;      /* symmetry orbitals per irrep */
    int *orbsym;          /* irrep for each orbital */
-   int *reorder;         /* map Pitzer-ordered orbitals to our ordering */
-   int *act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
-   int *order;           /* map our ordering back to Pitzer ordering */
-   int *act_order;       /* map our ordering back to Pitzer ordering for active only*/
+   std::vector<int> reorder;         /* map Pitzer-ordered orbitals to our ordering */
+   std::vector<int> order;           /* map our ordering back to Pitzer ordering */
+   std::vector<int> act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
+   std::vector<int> act_order;       /* map our ordering back to Pitzer ordering for active only*/
    double *scfeigval;    /* SCF eigenvalues */
    double *scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
    double *scfeigvalb;    /* in SOCC space */
@@ -328,7 +329,6 @@ struct calcinfo {
    double maxKlist;      /* maximum K integral in entire integral list */
    double **gmat;        /* onel ints in RAS g matrix form */
    double *twoel_ints;   /* two-electron integrals */
-   double **fock;        /* fock matrix */
    int num_fzc_orbs;     /* number of frozen core orbitals */
    int num_rsc_orbs;     /* number of restricted core orbitals */
    int num_drc_orbs;     /* number of dropped core orbitals
@@ -377,7 +377,6 @@ struct params {
    std::string ref;    /* reference type (RHF, ROHF); ROHF with MULTP=1
                           is an open-shell singlet */
    int multp;        /* multiplicity (2S+1) */
-   int filter_ints;  /* true (1) if some integrals in tei file to be ignored */
    int ex_lvl;       /* excitation level */
    int val_ex_lvl;   /* valence excitation level, used for RAS's */
    int cc_val_ex_lvl;/* NOT analogous to val_ex_lvl ... this controls how
