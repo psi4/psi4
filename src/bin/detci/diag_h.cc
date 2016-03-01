@@ -216,7 +216,7 @@ void CIWavefunction::diag_h() {
 
         if (Parameters_->print_lvl > 4 && Parameters_->hd_otf == FALSE) {
             outfile->Printf("\nDiagonal elements of the Hamiltonian\n");
-            Hd.print("outfile");
+            Hd.print();
         }
 
         if (H0block_->size) {
@@ -462,7 +462,7 @@ void CIWavefunction::diag_h() {
         Parameters_->neg_only = 0; /* MLL 7-2-97 */
         if (Parameters_->print_lvl > 4) {
             outfile->Printf("\nDiagonal elements of the Hamiltonian\n");
-            Hd.print("outfile");
+            Hd.print();
         }
 
         if (H0block_->size) {

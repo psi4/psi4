@@ -1136,57 +1136,54 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
       }
 }
 
-void CIvect::print(std::string out)
-{
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
-   int block, buf, irrep;
+void CIvect::print() {
+    int block, buf, irrep;
 
-   if (cur_vect_ < 0 || cur_buf_ < 0) {
-      printf("(CIvect::print): Warning...printing unlocked vector\n");
-      printer->Printf( "[Can't print unlocked vector]\n");
-      }
+    if (cur_vect_ < 0 || cur_buf_ < 0) {
+        outfile->Printf("[Can't print unlocked vector]\n");
+    }
 
-   if (vectlen_ > 100000) {
-      printer->Printf( "Not printing long (>100000) vector...\n");
-      return;
-      }
+    if (vectlen_ > 100000) {
+        outfile->Printf("Not printing long (>100000) vector...\n");
+        return;
+    }
 
-   if (icore_ == 0) {
-      for (buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         block = buf2blk_[buf];
-         printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-            Ia_code_[block], Ib_code_[block]);
-         print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
-         }
-      }
+    if (icore_ == 0) {
+        for (buf = 0; buf < buf_per_vect_; buf++) {
+            read(cur_vect_, buf);
+            block = buf2blk_[buf];
+            outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                            Ia_code_[block], Ib_code_[block]);
+            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], "outfile");
+        }
+    }
 
-   else if (icore_ == 1) {
-      for (block=0; block<num_blocks_; block++) {
-         printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-            Ia_code_[block], Ib_code_[block]);
-         print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
-         }
-      }
+    else if (icore_ == 1) {
+        for (block = 0; block < num_blocks_; block++) {
+            outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                            Ia_code_[block], Ib_code_[block]);
+            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], "outfile");
+        }
+    }
 
-   else if (icore_ == 2) {
-      for (buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         irrep = buf2blk_[buf];
-         for (block=first_ablk_[irrep]; block<=last_ablk_[irrep]; block++) {
-            printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-               Ia_code_[block], Ib_code_[block]);
-            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
+    else if (icore_ == 2) {
+        for (buf = 0; buf < buf_per_vect_; buf++) {
+            read(cur_vect_, buf);
+            irrep = buf2blk_[buf];
+            for (block = first_ablk_[irrep]; block <= last_ablk_[irrep];
+                 block++) {
+                outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                                Ia_code_[block], Ib_code_[block]);
+                print_mat(blocks_[block], Ia_size_[block], Ib_size_[block],
+                          "outfile");
             }
-         }
-      }
+        }
+    }
 
-   else {
-      printer->Printf( "(CIvect::print): unrecognized icore option\n");
-      }
+    else {
+        outfile->Printf("(CIvect::print): unrecognized icore option\n");
+    }
 }
-
 
 void CIvect::init_vals(int ivect, int nvals, int *alplist, int *alpidx,
       int *betlist, int *betidx, int *blknums, double *value)
@@ -2190,7 +2187,7 @@ void CIvect::zero(void)
 ** Returns: none
 */
 void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
-             double *buf1, int printflag, std::string out)
+             double *buf1, int printflag)
 {
    int buf, ivect, root;
    double tval;
@@ -2206,7 +2203,7 @@ void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
          write(nr, buf);
          if (printflag) {
             outfile->Printf( "\nSigma renormalized matrix\n");
-            print_buf("outfile");
+            print_buf();
             }
          } /* loop over buffers */
 }
@@ -2234,7 +2231,7 @@ void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
 */
 void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
       double *norm_arr, CIvect &C, CIvect &S, double *buf1, double *buf2,
-      int *root_converged, int printflag, std::string out, double *E_est)
+      int *root_converged, int printflag, double *E_est)
 {
    int buf, ivect, root, tmproot, converged=0, i;
    double tval;
@@ -2290,7 +2287,7 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
 
          if (printflag) {
             outfile->Printf( "\nfirst D matrix\n");
-            print_buf("outfile");
+            print_buf();
             }
          } /* loop over buffers */
 
@@ -2691,7 +2688,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
 **
 ** Returns: none
 */
-void CIvect::print_buf(std::string out)
+void CIvect::print_buf()
 {
    int blk;
    int irrep;

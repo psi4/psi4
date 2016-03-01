@@ -286,10 +286,8 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //}
 
 
-//void eivout_t(double **a, double *b, int m, int n, std::string out)
+//void eivout_t(double **a, double *b, int m, int n)
 //   {
-//   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-//         boost::shared_ptr<OutFile>(new OutFile(out)));
 //      int ii,jj,kk,nn,ll;
 //      int i,j,k;
 //
@@ -301,21 +299,21 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //      nn=n;
 //      if (nn > kk) nn=kk;
 //      ll = 2*(nn-ii+1)+1;
-//      printer->Printf("\n");
-//      for (i=ii; i <= nn; i++) printer->Printf("       %5d",i);
-//      printer->Printf("\n");
+//      outfile->Printf("\n");
+//      for (i=ii; i <= nn; i++) outfile->Printf("       %5d",i);
+//      outfile->Printf("\n");
 //      for (i=0; i < m; i++) {
-//         printer->Printf("\n%5d",i+1);
+//         outfile->Printf("\n%5d",i+1);
 //         for (j=ii-1; j < nn; j++) {
-//            printer->Printf("%12.7f",a[j][i]);
+//            outfile->Printf("%12.7f",a[j][i]);
 //            }
 //         }
-//      printer->Printf("\n");
-//      printer->Printf("\n     ");
+//      outfile->Printf("\n");
+//      outfile->Printf("\n     ");
 //      for (j=ii-1; j < nn; j++) {
-//         printer->Printf("%12.7f",b[j]);
+//         outfile->Printf("%12.7f",b[j]);
 //         }
-//      printer->Printf("\n");
+//      outfile->Printf("\n");
 //      if (n <= kk) {
 //         return;
 //         }

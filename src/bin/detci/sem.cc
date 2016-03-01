@@ -279,13 +279,13 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          Sigma.read(i, 0);
          if (print_lvl > 4) {
             outfile->Printf( "Sigma[%d] =\n", i);
-            Sigma.print("outfile");
+            Sigma.print();
             }
          for (j=0; j<=i; j++) {
             Cvec.read(j, 0);
             if (print_lvl > 4) {
                outfile->Printf( "C[%d] =\n", j);
-               Cvec.print("outfile");
+               Cvec.print();
                }
             G[j][i] = G[i][j] = Cvec * Sigma;
             }
@@ -578,7 +578,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          Cvec.read(i, 0);
          if (print_lvl > 3) {
             outfile->Printf( "b[%d] =\n", i);
-            Cvec.print("outfile");
+            Cvec.print();
             }
 
          sigma(Cvec, Sigma, oei, tei, i);
@@ -594,7 +594,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
          if (print_lvl > 3) { /* and this as well */
             outfile->Printf( "H * b[%d] = \n", i);
-            Sigma.print("outfile");
+            Sigma.print();
             }
 
          for (j=0; j<L; j++) {
@@ -636,14 +636,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           Sigma.read(i, 0);
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
-            Sigma.print("outfile");
+            Sigma.print();
 
           }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
-               Sigma2.print("outfile");
+               Sigma2.print();
 
              }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
@@ -696,14 +696,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           Sigma.read(i, 0);
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
-            Sigma.print("outfile");
+            Sigma.print();
 
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
-               Sigma2.print("outfile");
+               Sigma2.print();
 
                }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
@@ -1004,7 +1004,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           /* form the d part of the correction vector */
           Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec,
                      Sigma, buffer1, buffer2, root_converged, (print_lvl > 4),
-                     "outfile", E_est);
+                     E_est);
           }
         else if (Parameters_->update == UPDATE_OLSEN) {
           /* Compute x and y values for E_est */
@@ -1036,7 +1036,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              */
              }
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
-          buffer1,buffer2,root_converged,(print_lvl > 4),"outfile",E_est);
+          buffer1,buffer2,root_converged,(print_lvl > 4),E_est);
          }
         else {
           throw PsiException("UPDATE option not recognized.  Choose DAVIDSON or OLSEN",__FILE__,__LINE__);
@@ -1172,7 +1172,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
          if (print_lvl > 4) {
             outfile->Printf( "\nsecond d matrix root %d\n", k);
-            Dvec.print("outfile");
+            Dvec.print();
             }
 
          Hd.buf_unlock();

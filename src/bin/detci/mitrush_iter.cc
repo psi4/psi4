@@ -217,7 +217,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    if (print_lvl > 4) {
       outfile->Printf( "\nC(0) vector = \n");
-      Cvec.print("outfile");
+      Cvec.print();
       }
 
    Sigma.buf_lock(buffer2);
@@ -229,7 +229,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    if (print_lvl > 4) {
       outfile->Printf( "\nSigma vector\n");
-      Sigma.print("outfile");
+      Sigma.print();
       
       }
 
@@ -330,7 +330,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
      */ 
       if (print_lvl > 4) {
          outfile->Printf( "\nC(%2d) vector (symm'd norm'd)\n", iter) ;
-         Cvec.print("outfile");
+         Cvec.print();
          
          }
 
@@ -342,7 +342,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Cvec.read(curr,0);
       if (print_lvl > 4) {
          outfile->Printf("\nC(%2d) vector (symm'd norm'd) second time\n",iter);
-         Cvec.print("outfile");
+         Cvec.print();
          
          }
 
@@ -350,7 +350,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
          Sigma.read(curr,0);
          outfile->Printf( "\n curr = %d\n", curr);
          outfile->Printf( "\nSigma(%2d) vector\n", iter);
-         Sigma.print("outfile");
+         Sigma.print();
          
          }
 

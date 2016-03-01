@@ -134,6 +134,7 @@ void CIWavefunction::get_mo_info()
   {
     throw PsiException("Error in ras_set3(). Aborting.",__FILE__,__LINE__);
   }
+
   // We're done with the core_guess array now
   free(core_guess);
 

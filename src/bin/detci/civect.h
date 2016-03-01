@@ -163,7 +163,7 @@ class CIvect {
              int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
              int cdperirr, int maxvect, int nunits, int funit, int *fablk,
              int *lablk, int **dc);
-    void print(std::string OutFileRMR);
+    void print();
     double operator*(CIvect &b);
     void setarray(const double *a, BIGINT len);
     void max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
@@ -197,10 +197,10 @@ class CIvect {
                      double *ovlpmax);
     void dcalc(int nr, int L, double **alpha, double *lambda, double *norm_arr,
                CIvect &C, CIvect &S, double *buf1, double *buf2,
-               int *root_converged, int printflag, std::string OutFileRMR,
+               int *root_converged, int printflag,
                double *E_est);
     void sigma_renorm(int nr, int L, double renorm_C, CIvect &S, double *buf1,
-                      int printflag, std::string OutFileRMR);
+                      int printflag);
     double dcalc2(int rootnum, double lambda, CIvect &Hd, int precon,
                   struct stringwr **alplist, struct stringwr **betlist);
     double dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
@@ -218,7 +218,7 @@ class CIvect {
                             double *buf2, int k, double *mp2k_energy,
                             double **wfn_overlap, double **bvec_overlap,
                             double *bvec_norm, int kvec_offset);
-    void print_buf(std::string OutFileRMR);
+    void print_buf();
     void civ_xeay(double a, CIvect &Y, int xvect, int yvect);
     void civ_xpeay(double a, CIvect &Y, int xvect, int yvect);
     void transp_block(int iblock, double **tmparr);
