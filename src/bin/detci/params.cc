@@ -359,6 +359,11 @@ void CIWavefunction::get_parameters(Options &options)
       Parameters_->diag_method = METHOD_RSPTEST_OF_SEM;
   }
 
+  if ((Parameters_->diag_method == METHOD_RSP) & (Parameters_->icore != 1)){
+    outfile->Printf("RSP only works with icore = 1, switching.");
+    Parameters_->icore = 1;
+  }
+
   Parameters_->precon = PRECON_DAVIDSON;
   if (options["PRECONDITIONER"].has_changed()) {
     std::string line1 = options.get_str("PRECONDITIONER");
