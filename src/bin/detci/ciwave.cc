@@ -527,19 +527,20 @@ SharedCIVector CIWavefunction::Hd_vector(int hd_type)
 SharedMatrix CIWavefunction::hamiltonian(size_t hsize)
 {
     BIGINT size = (hsize) ? (BIGINT)hsize : CIblks_->vectlen;
-    double h_size_gb = (double)(8 * size * size) / 1E9;
-    if (h_size_gb > 1){
-        outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size_gb);
+    double h_size = (double)(8 * size * size);
+    if (h_size > (Process::environment.get_memory() * 0.8)){
+        outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size / 1E9);
         throw PSIEXCEPTION("CIWave::hamiltonian: Size is too large for explicit hamiltonian build");
     }
 
-    SharedMatrix H(new Matrix("CI Hamiltonian", (int)size, (int)size));
+    SharedMatrix H(new Matrix("CI Hamiltonian", (size_t)size, (size_t)size));
     double** Hp = H->pointer();
 
     CIvect Cvec(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
+
     SlaterDeterminant I, J;
     int Iarel, Ialist, Ibrel, Iblist;
-    for (int ii=0; ii<size; ii++) {
+    for (size_t ii=0; ii<size; ii++) {
         Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
         I.set(CalcInfo_->num_alp_expl,
              alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
@@ -547,7 +548,7 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize)
         Hp[ii][ii] = matrix_element(&I, &I) + CalcInfo_->edrc;
 
         /* introduce symmetry or other restrictions here */
-        for (int jj=0; jj<ii; jj++) {
+        for (size_t jj=0; jj<ii; jj++) {
             Cvec.det2strings(jj, &Ialist, &Iarel, &Iblist, &Ibrel);
             J.set(CalcInfo_->num_alp_expl,
                alplist_[Ialist][Iarel].occs, CalcInfo_->num_bet_expl,
@@ -555,6 +556,43 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize)
             Hp[ii][jj] = Hp[jj][ii] = matrix_element(&I, &J);
         }
     }
+    /* construct and print one block at a time for debugging */
+    /*
+    int ii2, jj2, blk, blk2, det1, det2;
+    double **Hpart;
+
+    for (blk = 0; blk < CIblks_->num_blocks; blk++) {
+      for (blk2 = 0; blk2 < CIblks_->num_blocks; blk2++) {
+        Hpart = init_matrix(CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],
+                            CIblks_->Ia_size[blk2]*CIblks_->Ib_size[blk2]);
+        for (ii=0,det1=0; ii<CIblks_->Ia_size[blk]; ii++) {
+          for (jj=0; jj<CIblks_->Ib_size[blk]; jj++, det1++) {
+            I.set(CalcInfo_->num_alp_expl,alplist[CIblks_->Ia_code[blk]][ii].occs,
+                 CalcInfo_->num_bet_expl,betlist[CIblks_->Ib_code[blk]][jj].occs);
+            for (ii2=0,det2=0; ii2<CIblks_->Ia_size[blk2]; ii2++) {
+              for (jj2=0; jj2<CIblks_->Ib_size[blk2]; jj2++,det2++) {
+                J.set(CalcInfo_->num_alp_expl,
+                      alplist[CIblks_->Ia_code[blk2]][ii2].occs,
+                      CalcInfo_->num_bet_expl,
+                      betlist[CIblks_->Ib_code[blk2]][jj2].occs);
+                Hpart[det1][det2] = matrix_element(&I,&J);
+              }
+            }
+          }
+        }
+        if (Parameters_->print_lvl > 4 && size < 200) {
+          outfile->Printf( "\nBlock %d %d of ", blk, blk2);
+          outfile->Printf( "Hamiltonian matrix:\n");
+          print_mat(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],
+                           CIblks_->Ia_size[blk2]*CIblks_->Ib_size[blk2],
+                    outfile);
+        }
+        free_matrix(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk]);
+      }
+    }
+    */
+    /* end block-at-a-time stuff */
+
     return H;
 }
 

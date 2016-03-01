@@ -231,6 +231,7 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
   std::vector<std::vector<SharedMatrix> > opdm_list;
 
+  // Alloc trans_tmp arrays if needed
   if ((Ivec->icore_==2 && Ivec->Ms0_ && CalcInfo_->ref_sym != 0) ||
       (Ivec->icore_==0 && Ivec->Ms0_)) {
     for (i=0, maxrows=0, maxcols=0; i<Ivec->num_blocks_; i++) {
