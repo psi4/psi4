@@ -195,11 +195,6 @@ void CIWavefunction::diag_h() {
                             Parameters_->neg_only);
         }
 
-        /* MLL added this line 5-21-98 */
-        /*
-          if (Parameters_->hd_otf) rclose(Parameters_->hd_filenum,4);
-        */
-
         H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
         if (Parameters_->hd_ave) {
             H0block_spin_cpl_chk();
@@ -489,9 +484,6 @@ void CIWavefunction::diag_h() {
                 outfile->Printf(
                     "\nFind the roots by the Simultaneous Expansion Method ");
                 outfile->Printf("(Block Davidson Method)\n");
-                // outfile->Printf( "Energy convergence = %3g\n", conv_e);
-                // outfile->Printf( "RMS CI vector convergence = %3g\n\n",
-                // conv_rms);
             }
 
             evals = init_array(nroots);
@@ -512,9 +504,6 @@ void CIWavefunction::diag_h() {
                     outfile->Printf(
                         "\nFind the roots with Olsen's single vector "
                         "algorithm\n");
-                // outfile->Printf( "Energy convergence = %3g\n", conv_e);
-                // outfile->Printf( "RMS CI vector convergence = %3g\n",
-                // conv_rms);
             }
 
             evals = init_array(nroots);
