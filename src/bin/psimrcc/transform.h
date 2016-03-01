@@ -25,7 +25,11 @@
 
 #include <map>
 
-namespace psi{ namespace psimrcc{
+namespace psi{
+
+class IntegralTransform;
+
+namespace psimrcc{
 
 class CCIndex;
 
@@ -41,7 +45,7 @@ public:
   void presort_integrals();
   void read_oei_from_transqt() {read_oei_mo_integrals();}
   void read_integrals_from_transqt() {read_mo_integrals();}
-  void read_integrals_mrpt2();
+  void read_integrals_mrpt2(IntegralTransform *ints);
   int  read_tei_mo_integrals_block(int first_irrep);
   void free_tei_mo_integrals_block(int first_irrep, int last_irrep);
   void free_memory();
@@ -69,7 +73,7 @@ private:
   void read_oei_mo_integrals_mrpt2();
   void read_tei_so_integrals();
   void read_tei_mo_integrals();
-  void read_tei_mo_integrals_mrpt2();
+  void read_tei_mo_integrals_mrpt2(IntegralTransform *ints);
 
   void transform_oei_so_integrals();
   void transform_tei_so_integrals();
