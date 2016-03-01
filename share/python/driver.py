@@ -98,7 +98,7 @@ procedures = {
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
             'bccd'          : run_bccd,
-            'bccd(t)'       : run_bccd_t,
+            'bccd(t)'       : run_bccd,
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,

@@ -84,7 +84,7 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn, Options &options)
     junk = options.get_str("REFERENCE");
     /* if no reference is given, assume rhf */
     if(junk == "RHF") params.ref = 0;
-    else if(junk == "ROHF" && params.wfn == "CCSD_T") {
+    else if(junk == "ROHF" && (params.wfn == "CCSD_T" || params.wfn == "BCCD_T")) {
         params.ref = 2;
         params.semicanonical = 1;
     }

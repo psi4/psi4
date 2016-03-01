@@ -83,7 +83,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   else if(options.get_str("REFERENCE") =="ROHF" &&
           (options.get_str("WFN")=="MP2" || options.get_str("WFN")=="CCSD_T" || options.get_str("WFN")=="CCSD_AT" ||
            options.get_str("WFN")=="CC3" || options.get_str("WFN")=="EOM_CC3" ||
-           options.get_str("WFN")=="CC2" || options.get_str("WFN")=="EOM_CC2")) {
+           options.get_str("WFN")=="CC2" || options.get_str("WFN")=="EOM_CC2" ||
+           options.get_str("WFN")=="BCCD" || options.get_str("WFN")=="BCCD_T")) {
     reference = 2;
     semicanonical = true;
   }
@@ -97,7 +98,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   // Allow user to force semicanonical
   if(options["SEMICANONICAL"].has_changed()) {
    semicanonical = options.get_bool("SEMICANONICAL");
-   reference = 2;
+   if (semicanonical) reference = 2;
   }
 
   int nirreps = ref->nirrep();
