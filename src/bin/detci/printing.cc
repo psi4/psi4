@@ -51,7 +51,7 @@ namespace psi { namespace detci {
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo);
+void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr);
 //void print_config(int nbf, int num_alp_el, int num_bet_el,
 //   struct stringwr *stralp, struct stringwr *strbet,
 //   int num_drc_orbs, char *outstring);
@@ -138,7 +138,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {
 
-      orb2lbl(j+num_drc_orbs, olabel, CalcInfo_); /* get label for orbital j */
+      orb2lbl(j+num_drc_orbs, olabel, CalcInfo_, nmopi_); /* get label for orbital j */
 
       for (k=0,afound=0; k<num_alp_el; k++) {
          if ((stralp->occs)[k] > j) break;
@@ -191,7 +191,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
 **    Allow it to handle more complex spaces...don't assume QT orbital order.
 **    It was getting labels all mixed up for RAS's.
 */
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
+void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr)
 {
 
    int ir, i, j, pitzer_orb, rel_orb;
@@ -204,16 +204,16 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
       }
 
    for (ir=0,j=0; ir<Cinfo->nirreps; ir++) {
-      if (Cinfo->orbs_per_irr[ir] == 0) continue;
-      if (j + Cinfo->orbs_per_irr[ir] > pitzer_orb) break;
-      else j += Cinfo->orbs_per_irr[ir];
+      if (orbs_per_irr[ir] == 0) continue;
+      if (j + orbs_per_irr[ir] > pitzer_orb) break;
+      else j += orbs_per_irr[ir];
       }
    rel_orb = pitzer_orb - j;
 
    if (rel_orb < 0) {
       outfile->Printf( "(orb2lbl): rel_orb < 0\n");
       }
-   else if (rel_orb > Cinfo->orbs_per_irr[ir]) {
+   else if (rel_orb > orbs_per_irr[ir]) {
       outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
 
