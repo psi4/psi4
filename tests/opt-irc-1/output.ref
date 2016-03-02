@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.814 Driver
+                              Psi4 0.4.121 Driver
 
-                          Git: Rev {master} 892335a dirty
+                          Git: Rev {master} 57e8ec2 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Feb 15 23:09:45 2016
+    Psi4 started on: Sun Feb 28 12:32:56 2016
 
-    Process ID:  20452
+    Process ID:  23003
     PSI4DATADIR: /home/avcopan/Documents/code/github/psi4/share
     Memory level set to 256.000 MB
 
@@ -56,7 +56,7 @@ h2o2.reset_point_group('c2')
 
 energy = optimize('scf')
 
-compare_values(energy, -150.8199862, 5, "Energy of last IRC point")
+compare_values(energy, -150.8200278868627, 5, "Energy of last IRC point")
 --------------------------------------------------------------------------
 hessian() will perform frequency computation by finite difference of analytic gradients.
 
@@ -93,7 +93,7 @@ hessian() will perform frequency computation by finite difference of analytic gr
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:45 2016
+*** at Sun Feb 28 12:32:56 2016
 
 
          ---------------------------------------------------------
@@ -283,18 +283,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:46 2016
+*** tstop() called on knut at Sun Feb 28 12:32:56 2016
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:46 2016
+*** at Sun Feb 28 12:32:56 2016
 
 
          ------------------------------------------------------------
@@ -359,22 +359,22 @@ Total time:
        4       -0.000000000000     0.000442261246     0.000517629795
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:47 2016
+*** tstop() called on knut at Sun Feb 28 12:32:57 2016
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.55 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.95 seconds =       0.02 minutes
-	system time =       1.13 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:47 2016
+*** at Sun Feb 28 12:32:57 2016
 
 
          ---------------------------------------------------------
@@ -564,18 +564,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:47 2016
+*** tstop() called on knut at Sun Feb 28 12:32:57 2016
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.40 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.40 seconds =       0.02 minutes
-	system time =       1.83 seconds =       0.03 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.10 seconds =       0.02 minutes
+	system time =       1.80 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:47 2016
+*** at Sun Feb 28 12:32:57 2016
 
 
          ------------------------------------------------------------
@@ -640,22 +640,22 @@ Total time:
        4        0.000000000000    -0.000444140456    -0.000521771552
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:48 2016
+*** tstop() called on knut at Sun Feb 28 12:32:57 2016
 Module time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.79 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       2.47 seconds =       0.04 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.57 seconds =       0.03 minutes
+	system time =       2.59 seconds =       0.04 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:48 2016
+*** at Sun Feb 28 12:32:57 2016
 
 
          ---------------------------------------------------------
@@ -845,18 +845,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:48 2016
+*** tstop() called on knut at Sun Feb 28 12:32:58 2016
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.37 seconds =       0.04 minutes
-	system time =       3.04 seconds =       0.05 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.93 seconds =       0.03 minutes
+	system time =       3.17 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:48 2016
+*** at Sun Feb 28 12:32:58 2016
 
 
          ------------------------------------------------------------
@@ -921,22 +921,22 @@ Total time:
        4        0.000000000000    -0.000531245042    -0.002116197420
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:49 2016
+*** tstop() called on knut at Sun Feb 28 12:32:58 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.85 seconds =       0.05 minutes
-	system time =       3.50 seconds =       0.06 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.39 seconds =       0.04 minutes
+	system time =       4.04 seconds =       0.07 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:49 2016
+*** at Sun Feb 28 12:32:58 2016
 
 
          ---------------------------------------------------------
@@ -1126,18 +1126,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:49 2016
+*** tstop() called on knut at Sun Feb 28 12:32:58 2016
 Module time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.34 seconds =       0.01 minutes
+	user time   =       0.30 seconds =       0.00 minutes
+	system time =       0.44 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.28 seconds =       0.05 minutes
-	system time =       3.96 seconds =       0.07 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.77 seconds =       0.05 minutes
+	system time =       4.65 seconds =       0.08 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:49 2016
+*** at Sun Feb 28 12:32:58 2016
 
 
          ------------------------------------------------------------
@@ -1202,22 +1202,22 @@ Total time:
        4        0.000000000000     0.000540583664     0.002137527154
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:50 2016
+*** tstop() called on knut at Sun Feb 28 12:32:58 2016
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.81 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.74 seconds =       0.06 minutes
-	system time =       4.68 seconds =       0.08 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       5.46 seconds =       0.09 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:50 2016
+*** at Sun Feb 28 12:32:59 2016
 
 
          ---------------------------------------------------------
@@ -1407,18 +1407,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:50 2016
+*** tstop() called on knut at Sun Feb 28 12:32:59 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.41 seconds =       0.01 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.39 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.19 seconds =       0.07 minutes
-	system time =       5.14 seconds =       0.09 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.71 seconds =       0.06 minutes
+	system time =       6.02 seconds =       0.10 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:50 2016
+*** at Sun Feb 28 12:32:59 2016
 
 
          ------------------------------------------------------------
@@ -1483,22 +1483,22 @@ Total time:
        4        0.000000000000    -0.000056080158    -0.000174577317
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:51 2016
+*** tstop() called on knut at Sun Feb 28 12:32:59 2016
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.86 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.69 seconds =       0.08 minutes
-	system time =       5.73 seconds =       0.10 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.18 seconds =       0.07 minutes
+	system time =       6.88 seconds =       0.11 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:51 2016
+*** at Sun Feb 28 12:32:59 2016
 
 
          ---------------------------------------------------------
@@ -1688,18 +1688,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:51 2016
+*** tstop() called on knut at Sun Feb 28 12:32:59 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.41 seconds =       0.01 minutes
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.42 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.20 seconds =       0.09 minutes
-	system time =       6.27 seconds =       0.10 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.57 seconds =       0.08 minutes
+	system time =       7.48 seconds =       0.12 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:51 2016
+*** at Sun Feb 28 12:32:59 2016
 
 
          ------------------------------------------------------------
@@ -1764,22 +1764,22 @@ Total time:
        4        0.000000000000     0.000055206416     0.000170418589
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:52 2016
+*** tstop() called on knut at Sun Feb 28 12:33:00 2016
 Module time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.51 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.76 seconds =       0.10 minutes
-	system time =       6.78 seconds =       0.11 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.05 seconds =       0.08 minutes
+	system time =       8.31 seconds =       0.14 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:52 2016
+*** at Sun Feb 28 12:33:00 2016
 
 
          ---------------------------------------------------------
@@ -1963,18 +1963,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:53 2016
+*** tstop() called on knut at Sun Feb 28 12:33:00 2016
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.74 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.19 seconds =       0.10 minutes
-	system time =       7.61 seconds =       0.13 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       5.47 seconds =       0.09 minutes
+	system time =       8.88 seconds =       0.15 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:53 2016
+*** at Sun Feb 28 12:33:00 2016
 
 
          ------------------------------------------------------------
@@ -2039,22 +2039,22 @@ Total time:
        4       -0.000053766491    -0.000000999523    -0.000004337517
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:53 2016
+*** tstop() called on knut at Sun Feb 28 12:33:00 2016
 Module time:
 	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.66 seconds =       0.11 minutes
-	system time =       8.15 seconds =       0.14 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       5.94 seconds =       0.10 minutes
+	system time =       9.71 seconds =       0.16 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:53 2016
+*** at Sun Feb 28 12:33:00 2016
 
 
          ---------------------------------------------------------
@@ -2243,18 +2243,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:54 2016
+*** tstop() called on knut at Sun Feb 28 12:33:01 2016
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.42 seconds =       0.01 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.43 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.13 seconds =       0.12 minutes
-	system time =       8.72 seconds =       0.15 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       6.35 seconds =       0.11 minutes
+	system time =      10.30 seconds =       0.17 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:54 2016
+*** at Sun Feb 28 12:33:01 2016
 
 
          ------------------------------------------------------------
@@ -2319,22 +2319,22 @@ Total time:
        4       -0.000000000000    -0.000487593329    -0.000577663125
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:54 2016
+*** tstop() called on knut at Sun Feb 28 12:33:01 2016
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.67 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.85 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.60 seconds =       0.13 minutes
-	system time =       9.39 seconds =       0.16 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       6.81 seconds =       0.11 minutes
+	system time =      11.15 seconds =       0.19 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:54 2016
+*** at Sun Feb 28 12:33:01 2016
 
 
          ---------------------------------------------------------
@@ -2523,18 +2523,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:55 2016
+*** tstop() called on knut at Sun Feb 28 12:33:01 2016
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.05 seconds =       0.13 minutes
-	system time =       9.97 seconds =       0.17 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       7.24 seconds =       0.12 minutes
+	system time =      11.72 seconds =       0.20 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:55 2016
+*** at Sun Feb 28 12:33:01 2016
 
 
          ------------------------------------------------------------
@@ -2599,22 +2599,22 @@ Total time:
        4       -0.000000000000     0.000523320306     0.002085261184
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:55 2016
+*** tstop() called on knut at Sun Feb 28 12:33:02 2016
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.54 seconds =       0.14 minutes
-	system time =      10.64 seconds =       0.18 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       7.71 seconds =       0.13 minutes
+	system time =      12.55 seconds =       0.21 minutes
+	total time  =          6 seconds =       0.10 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 10 of 10   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:56 2016
+*** at Sun Feb 28 12:33:02 2016
 
 
          ---------------------------------------------------------
@@ -2804,18 +2804,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:56 2016
+*** tstop() called on knut at Sun Feb 28 12:33:02 2016
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.40 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.95 seconds =       0.15 minutes
-	system time =      11.26 seconds =       0.19 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       8.12 seconds =       0.14 minutes
+	system time =      13.12 seconds =       0.22 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:56 2016
+*** at Sun Feb 28 12:33:02 2016
 
 
          ------------------------------------------------------------
@@ -2880,15 +2880,15 @@ Total time:
        4       -0.000000000000    -0.000000420302    -0.000002139333
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:57 2016
+*** tstop() called on knut at Sun Feb 28 12:33:02 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.73 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.48 seconds =       0.16 minutes
-	system time =      12.00 seconds =       0.20 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       8.57 seconds =       0.14 minutes
+	system time =      14.00 seconds =       0.23 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 -------------------------------------------------------------
 
@@ -3028,7 +3028,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:57 2016
+*** at Sun Feb 28 12:33:02 2016
 
 
          ---------------------------------------------------------
@@ -3212,18 +3212,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:57 2016
+*** tstop() called on knut at Sun Feb 28 12:33:02 2016
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.67 seconds =       0.01 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.39 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.91 seconds =       0.17 minutes
-	system time =      12.83 seconds =       0.21 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       9.00 seconds =       0.15 minutes
+	system time =      14.59 seconds =       0.24 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:57 2016
+*** at Sun Feb 28 12:33:02 2016
 
 
          ------------------------------------------------------------
@@ -3288,15 +3288,15 @@ Total time:
        4        0.000000000000    -0.000000446678    -0.000002218386
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:58 2016
+*** tstop() called on knut at Sun Feb 28 12:33:03 2016
 Module time:
 	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      10.37 seconds =       0.17 minutes
-	system time =      13.40 seconds =       0.22 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       9.47 seconds =       0.16 minutes
+	system time =      15.43 seconds =       0.26 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -3410,7 +3410,7 @@ IRC data object created
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:58 2016
+*** at Sun Feb 28 12:33:03 2016
 
 
          ---------------------------------------------------------
@@ -3592,18 +3592,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:09:58 2016
+*** tstop() called on knut at Sun Feb 28 12:33:03 2016
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.70 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.63 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      10.91 seconds =       0.18 minutes
-	system time =      14.22 seconds =       0.24 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       9.93 seconds =       0.17 minutes
+	system time =      16.24 seconds =       0.27 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:58 2016
+*** at Sun Feb 28 12:33:03 2016
 
 
          ------------------------------------------------------------
@@ -3668,15 +3668,15 @@ Total time:
        4        0.002072258988     0.000710287713    -0.000353444511
 
 
-*** tstop() called on knut at Mon Feb 15 23:09:59 2016
+*** tstop() called on knut at Sun Feb 28 12:33:03 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.73 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      11.45 seconds =       0.19 minutes
-	system time =      14.95 seconds =       0.25 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      10.39 seconds =       0.17 minutes
+	system time =      17.09 seconds =       0.28 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -3766,7 +3766,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:09:59 2016
+*** at Sun Feb 28 12:33:04 2016
 
 
          ---------------------------------------------------------
@@ -3947,18 +3947,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:00 2016
+*** tstop() called on knut at Sun Feb 28 12:33:04 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      11.99 seconds =       0.20 minutes
-	system time =      15.46 seconds =       0.26 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      10.81 seconds =       0.18 minutes
+	system time =      17.84 seconds =       0.30 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:00 2016
+*** at Sun Feb 28 12:33:04 2016
 
 
          ------------------------------------------------------------
@@ -4023,15 +4023,15 @@ Total time:
        4        0.002109167201    -0.000060245314    -0.000035619243
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:00 2016
+*** tstop() called on knut at Sun Feb 28 12:33:04 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.41 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.88 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      12.51 seconds =       0.21 minutes
-	system time =      15.87 seconds =       0.26 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      11.26 seconds =       0.19 minutes
+	system time =      18.73 seconds =       0.31 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -4120,7 +4120,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:00 2016
+*** at Sun Feb 28 12:33:04 2016
 
 
          ---------------------------------------------------------
@@ -4300,18 +4300,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:01 2016
+*** tstop() called on knut at Sun Feb 28 12:33:04 2016
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.42 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.47 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.03 seconds =       0.22 minutes
-	system time =      16.38 seconds =       0.27 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      11.75 seconds =       0.20 minutes
+	system time =      19.37 seconds =       0.32 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:01 2016
+*** at Sun Feb 28 12:33:04 2016
 
 
          ------------------------------------------------------------
@@ -4376,15 +4376,15 @@ Total time:
        4        0.002096818750     0.000137449611    -0.000203076106
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:01 2016
+*** tstop() called on knut at Sun Feb 28 12:33:05 2016
 Module time:
 	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.63 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.53 seconds =       0.23 minutes
-	system time =      17.02 seconds =       0.28 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      12.25 seconds =       0.20 minutes
+	system time =      20.17 seconds =       0.34 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -4473,7 +4473,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:01 2016
+*** at Sun Feb 28 12:33:05 2016
 
 
          ---------------------------------------------------------
@@ -4651,18 +4651,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:02 2016
+*** tstop() called on knut at Sun Feb 28 12:33:05 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.05 seconds =       0.23 minutes
-	system time =      17.60 seconds =       0.29 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      12.69 seconds =       0.21 minutes
+	system time =      20.85 seconds =       0.35 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:02 2016
+*** at Sun Feb 28 12:33:05 2016
 
 
          ------------------------------------------------------------
@@ -4727,15 +4727,15 @@ Total time:
        4        0.002096815902     0.000140657159    -0.000194731026
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:02 2016
+*** tstop() called on knut at Sun Feb 28 12:33:05 2016
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.55 seconds =       0.01 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.51 seconds =       0.24 minutes
-	system time =      18.15 seconds =       0.30 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      13.21 seconds =       0.22 minutes
+	system time =      21.65 seconds =       0.36 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -4872,7 +4872,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:03 2016
+*** at Sun Feb 28 12:33:06 2016
 
 
          ---------------------------------------------------------
@@ -5055,18 +5055,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:03 2016
+*** tstop() called on knut at Sun Feb 28 12:33:06 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.59 seconds =       0.01 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      15.01 seconds =       0.25 minutes
-	system time =      18.85 seconds =       0.31 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =      13.65 seconds =       0.23 minutes
+	system time =      22.43 seconds =       0.37 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:03 2016
+*** at Sun Feb 28 12:33:06 2016
 
 
          ------------------------------------------------------------
@@ -5131,15 +5131,15 @@ Total time:
        4        0.003887527854     0.000582493950    -0.000707277718
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:04 2016
+*** tstop() called on knut at Sun Feb 28 12:33:06 2016
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.56 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      15.53 seconds =       0.26 minutes
-	system time =      19.41 seconds =       0.32 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =      14.15 seconds =       0.24 minutes
+	system time =      23.23 seconds =       0.39 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -5229,7 +5229,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:04 2016
+*** at Sun Feb 28 12:33:06 2016
 
 
          ---------------------------------------------------------
@@ -5409,18 +5409,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:04 2016
+*** tstop() called on knut at Sun Feb 28 12:33:06 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.49 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.02 seconds =       0.27 minutes
-	system time =      20.12 seconds =       0.34 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =      14.63 seconds =       0.24 minutes
+	system time =      23.90 seconds =       0.40 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:04 2016
+*** at Sun Feb 28 12:33:06 2016
 
 
          ------------------------------------------------------------
@@ -5485,15 +5485,15 @@ Total time:
        4        0.003904042403     0.000307889027    -0.000674090448
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:05 2016
+*** tstop() called on knut at Sun Feb 28 12:33:07 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.69 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.81 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      16.59 seconds =       0.28 minutes
-	system time =      20.81 seconds =       0.35 minutes
-	total time  =         20 seconds =       0.33 minutes
+	user time   =      15.11 seconds =       0.25 minutes
+	system time =      24.71 seconds =       0.41 minutes
+	total time  =         11 seconds =       0.18 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -5582,7 +5582,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:05 2016
+*** at Sun Feb 28 12:33:07 2016
 
 
          ---------------------------------------------------------
@@ -5760,18 +5760,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:05 2016
+*** tstop() called on knut at Sun Feb 28 12:33:07 2016
 Module time:
-	user time   =       0.31 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.55 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.98 seconds =       0.28 minutes
-	system time =      21.40 seconds =       0.36 minutes
-	total time  =         20 seconds =       0.33 minutes
+	user time   =      15.61 seconds =       0.26 minutes
+	system time =      25.45 seconds =       0.42 minutes
+	total time  =         11 seconds =       0.18 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:05 2016
+*** at Sun Feb 28 12:33:07 2016
 
 
          ------------------------------------------------------------
@@ -5836,15 +5836,15 @@ Total time:
        4        0.003905535765     0.000308455925    -0.000668486760
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:06 2016
+*** tstop() called on knut at Sun Feb 28 12:33:07 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.77 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      17.51 seconds =       0.29 minutes
-	system time =      22.17 seconds =       0.37 minutes
-	total time  =         21 seconds =       0.35 minutes
+	user time   =      16.17 seconds =       0.27 minutes
+	system time =      26.23 seconds =       0.44 minutes
+	total time  =         11 seconds =       0.18 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -5981,7 +5981,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:06 2016
+*** at Sun Feb 28 12:33:07 2016
 
 
          ---------------------------------------------------------
@@ -6164,18 +6164,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:07 2016
+*** tstop() called on knut at Sun Feb 28 12:33:08 2016
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.47 seconds =       0.01 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.62 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      18.02 seconds =       0.30 minutes
-	system time =      22.73 seconds =       0.38 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      16.67 seconds =       0.28 minutes
+	system time =      27.03 seconds =       0.45 minutes
+	total time  =         12 seconds =       0.20 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:07 2016
+*** at Sun Feb 28 12:33:08 2016
 
 
          ------------------------------------------------------------
@@ -6240,15 +6240,15 @@ Total time:
        4        0.005121230330     0.001035268519    -0.001502311647
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:07 2016
+*** tstop() called on knut at Sun Feb 28 12:33:08 2016
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.61 seconds =       0.01 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      18.51 seconds =       0.31 minutes
-	system time =      23.34 seconds =       0.39 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      17.19 seconds =       0.29 minutes
+	system time =      27.86 seconds =       0.46 minutes
+	total time  =         12 seconds =       0.20 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -6338,7 +6338,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:07 2016
+*** at Sun Feb 28 12:33:08 2016
 
 
          ---------------------------------------------------------
@@ -6518,18 +6518,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:08 2016
+*** tstop() called on knut at Sun Feb 28 12:33:08 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      19.02 seconds =       0.32 minutes
-	system time =      23.96 seconds =       0.40 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =      17.69 seconds =       0.29 minutes
+	system time =      28.63 seconds =       0.48 minutes
+	total time  =         12 seconds =       0.20 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:08 2016
+*** at Sun Feb 28 12:33:08 2016
 
 
          ------------------------------------------------------------
@@ -6594,15 +6594,15 @@ Total time:
        4        0.005185526940     0.000622109615    -0.001361374877
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:08 2016
+*** tstop() called on knut at Sun Feb 28 12:33:09 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.63 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.54 seconds =       0.33 minutes
-	system time =      24.60 seconds =       0.41 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =      18.20 seconds =       0.30 minutes
+	system time =      29.47 seconds =       0.49 minutes
+	total time  =         13 seconds =       0.22 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -6691,7 +6691,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:09 2016
+*** at Sun Feb 28 12:33:09 2016
 
 
          ---------------------------------------------------------
@@ -6869,18 +6869,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:09 2016
+*** tstop() called on knut at Sun Feb 28 12:33:09 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.03 seconds =       0.33 minutes
-	system time =      25.26 seconds =       0.42 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =      18.69 seconds =       0.31 minutes
+	system time =      30.20 seconds =       0.50 minutes
+	total time  =         13 seconds =       0.22 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:09 2016
+*** at Sun Feb 28 12:33:09 2016
 
 
          ------------------------------------------------------------
@@ -6945,15 +6945,15 @@ Total time:
        4        0.005186353559     0.000619778141    -0.001361575047
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:10 2016
+*** tstop() called on knut at Sun Feb 28 12:33:10 2016
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.86 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.48 seconds =       0.34 minutes
-	system time =      25.70 seconds =       0.43 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      19.18 seconds =       0.32 minutes
+	system time =      31.07 seconds =       0.52 minutes
+	total time  =         14 seconds =       0.23 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -7090,7 +7090,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:10 2016
+*** at Sun Feb 28 12:33:10 2016
 
 
          ---------------------------------------------------------
@@ -7273,18 +7273,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:10 2016
+*** tstop() called on knut at Sun Feb 28 12:33:10 2016
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.54 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.56 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      21.00 seconds =       0.35 minutes
-	system time =      26.34 seconds =       0.44 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      19.73 seconds =       0.33 minutes
+	system time =      31.83 seconds =       0.53 minutes
+	total time  =         14 seconds =       0.23 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:10 2016
+*** at Sun Feb 28 12:33:10 2016
 
 
          ------------------------------------------------------------
@@ -7349,15 +7349,15 @@ Total time:
        4        0.005733222008     0.001290329616    -0.002225256662
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:11 2016
+*** tstop() called on knut at Sun Feb 28 12:33:10 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.88 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      21.52 seconds =       0.36 minutes
-	system time =      26.93 seconds =       0.45 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      20.20 seconds =       0.34 minutes
+	system time =      32.71 seconds =       0.55 minutes
+	total time  =         14 seconds =       0.23 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -7447,7 +7447,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:11 2016
+*** at Sun Feb 28 12:33:10 2016
 
 
          ---------------------------------------------------------
@@ -7628,18 +7628,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:11 2016
+*** tstop() called on knut at Sun Feb 28 12:33:11 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.70 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      22.03 seconds =       0.37 minutes
-	system time =      27.72 seconds =       0.46 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      20.70 seconds =       0.34 minutes
+	system time =      33.48 seconds =       0.56 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:11 2016
+*** at Sun Feb 28 12:33:11 2016
 
 
          ------------------------------------------------------------
@@ -7704,15 +7704,15 @@ Total time:
        4        0.005821447851     0.000906298276    -0.002087786995
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:12 2016
+*** tstop() called on knut at Sun Feb 28 12:33:11 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.66 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      22.60 seconds =       0.38 minutes
-	system time =      28.39 seconds =       0.47 minutes
-	total time  =         27 seconds =       0.45 minutes
+	user time   =      21.19 seconds =       0.35 minutes
+	system time =      34.33 seconds =       0.57 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -7801,7 +7801,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:12 2016
+*** at Sun Feb 28 12:33:11 2016
 
 
          ---------------------------------------------------------
@@ -7979,18 +7979,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:13 2016
+*** tstop() called on knut at Sun Feb 28 12:33:11 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.48 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      23.15 seconds =       0.39 minutes
-	system time =      29.00 seconds =       0.48 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =      21.67 seconds =       0.36 minutes
+	system time =      35.08 seconds =       0.58 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:13 2016
+*** at Sun Feb 28 12:33:11 2016
 
 
          ------------------------------------------------------------
@@ -8055,15 +8055,15 @@ Total time:
        4        0.005822939975     0.000905707068    -0.002084419883
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:13 2016
+*** tstop() called on knut at Sun Feb 28 12:33:12 2016
 Module time:
 	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.81 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      23.65 seconds =       0.39 minutes
-	system time =      29.58 seconds =       0.49 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =      22.17 seconds =       0.37 minutes
+	system time =      35.90 seconds =       0.60 minutes
+	total time  =         16 seconds =       0.27 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -8200,7 +8200,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:14 2016
+*** at Sun Feb 28 12:33:12 2016
 
 
          ---------------------------------------------------------
@@ -8383,18 +8383,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:14 2016
+*** tstop() called on knut at Sun Feb 28 12:33:12 2016
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      24.25 seconds =       0.40 minutes
-	system time =      30.15 seconds =       0.50 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      22.71 seconds =       0.38 minutes
+	system time =      36.67 seconds =       0.61 minutes
+	total time  =         16 seconds =       0.27 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:14 2016
+*** at Sun Feb 28 12:33:12 2016
 
 
          ------------------------------------------------------------
@@ -8459,15 +8459,15 @@ Total time:
        4        0.005656255637     0.001515305896    -0.002889148603
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:15 2016
+*** tstop() called on knut at Sun Feb 28 12:33:12 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.86 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      24.79 seconds =       0.41 minutes
-	system time =      30.73 seconds =       0.51 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =      23.18 seconds =       0.39 minutes
+	system time =      37.54 seconds =       0.63 minutes
+	total time  =         16 seconds =       0.27 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -8557,7 +8557,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:15 2016
+*** at Sun Feb 28 12:33:12 2016
 
 
          ---------------------------------------------------------
@@ -8738,18 +8738,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:15 2016
+*** tstop() called on knut at Sun Feb 28 12:33:13 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      25.27 seconds =       0.42 minutes
-	system time =      31.27 seconds =       0.52 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =      23.72 seconds =       0.40 minutes
+	system time =      38.29 seconds =       0.64 minutes
+	total time  =         17 seconds =       0.28 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:15 2016
+*** at Sun Feb 28 12:33:13 2016
 
 
          ------------------------------------------------------------
@@ -8814,15 +8814,15 @@ Total time:
        4        0.005799716497     0.001135093340    -0.002693122722
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:16 2016
+*** tstop() called on knut at Sun Feb 28 12:33:13 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.53 seconds =       0.01 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      25.79 seconds =       0.43 minutes
-	system time =      31.89 seconds =       0.53 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      24.25 seconds =       0.40 minutes
+	system time =      39.09 seconds =       0.65 minutes
+	total time  =         17 seconds =       0.28 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -8911,7 +8911,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:16 2016
+*** at Sun Feb 28 12:33:13 2016
 
 
          ---------------------------------------------------------
@@ -9089,18 +9089,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:16 2016
+*** tstop() called on knut at Sun Feb 28 12:33:13 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.42 seconds =       0.01 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.53 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      26.29 seconds =       0.44 minutes
-	system time =      32.52 seconds =       0.54 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      24.76 seconds =       0.41 minutes
+	system time =      39.82 seconds =       0.66 minutes
+	total time  =         17 seconds =       0.28 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:16 2016
+*** at Sun Feb 28 12:33:13 2016
 
 
          ------------------------------------------------------------
@@ -9165,15 +9165,15 @@ Total time:
        4        0.005800071167     0.001134998626    -0.002692216408
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:17 2016
+*** tstop() called on knut at Sun Feb 28 12:33:14 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.51 seconds =       0.01 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      26.83 seconds =       0.45 minutes
-	system time =      33.04 seconds =       0.55 minutes
-	total time  =         32 seconds =       0.53 minutes
+	user time   =      25.27 seconds =       0.42 minutes
+	system time =      40.65 seconds =       0.68 minutes
+	total time  =         18 seconds =       0.30 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -9310,7 +9310,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:17 2016
+*** at Sun Feb 28 12:33:14 2016
 
 
          ---------------------------------------------------------
@@ -9493,18 +9493,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:18 2016
+*** tstop() called on knut at Sun Feb 28 12:33:14 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.65 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      27.35 seconds =       0.46 minutes
-	system time =      33.87 seconds =       0.56 minutes
-	total time  =         33 seconds =       0.55 minutes
+	user time   =      25.77 seconds =       0.43 minutes
+	system time =      41.51 seconds =       0.69 minutes
+	total time  =         18 seconds =       0.30 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:18 2016
+*** at Sun Feb 28 12:33:14 2016
 
 
          ------------------------------------------------------------
@@ -9569,15 +9569,15 @@ Total time:
        4        0.005034088423     0.001644158286    -0.003236048251
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:18 2016
+*** tstop() called on knut at Sun Feb 28 12:33:14 2016
 Module time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.59 seconds =       0.01 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      27.91 seconds =       0.47 minutes
-	system time =      34.46 seconds =       0.57 minutes
-	total time  =         33 seconds =       0.55 minutes
+	user time   =      26.28 seconds =       0.44 minutes
+	system time =      42.33 seconds =       0.71 minutes
+	total time  =         18 seconds =       0.30 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -9667,7 +9667,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:18 2016
+*** at Sun Feb 28 12:33:15 2016
 
 
          ---------------------------------------------------------
@@ -9848,18 +9848,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:19 2016
+*** tstop() called on knut at Sun Feb 28 12:33:15 2016
 Module time:
 	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.41 seconds =       0.47 minutes
-	system time =      35.06 seconds =       0.58 minutes
-	total time  =         34 seconds =       0.57 minutes
+	user time   =      26.78 seconds =       0.45 minutes
+	system time =      43.12 seconds =       0.72 minutes
+	total time  =         19 seconds =       0.32 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:19 2016
+*** at Sun Feb 28 12:33:15 2016
 
 
          ------------------------------------------------------------
@@ -9924,15 +9924,15 @@ Total time:
        4        0.005216287843     0.001251189957    -0.003045068297
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:19 2016
+*** tstop() called on knut at Sun Feb 28 12:33:15 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.61 seconds =       0.01 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.95 seconds =       0.48 minutes
-	system time =      35.68 seconds =       0.59 minutes
-	total time  =         34 seconds =       0.57 minutes
+	user time   =      27.27 seconds =       0.45 minutes
+	system time =      43.96 seconds =       0.73 minutes
+	total time  =         19 seconds =       0.32 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -10021,7 +10021,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:20 2016
+*** at Sun Feb 28 12:33:15 2016
 
 
          ---------------------------------------------------------
@@ -10199,18 +10199,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:20 2016
+*** tstop() called on knut at Sun Feb 28 12:33:15 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      29.43 seconds =       0.49 minutes
-	system time =      36.29 seconds =       0.60 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =      27.79 seconds =       0.46 minutes
+	system time =      44.69 seconds =       0.74 minutes
+	total time  =         19 seconds =       0.32 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:20 2016
+*** at Sun Feb 28 12:33:15 2016
 
 
          ------------------------------------------------------------
@@ -10275,15 +10275,15 @@ Total time:
        4        0.005217140289     0.001253766637    -0.003041906521
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:21 2016
+*** tstop() called on knut at Sun Feb 28 12:33:16 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.60 seconds =       0.01 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.85 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      29.97 seconds =       0.50 minutes
-	system time =      36.90 seconds =       0.61 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      28.26 seconds =       0.47 minutes
+	system time =      45.54 seconds =       0.76 minutes
+	total time  =         20 seconds =       0.33 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -10420,7 +10420,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:21 2016
+*** at Sun Feb 28 12:33:16 2016
 
 
          ---------------------------------------------------------
@@ -10603,18 +10603,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:21 2016
+*** tstop() called on knut at Sun Feb 28 12:33:16 2016
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.64 seconds =       0.01 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      30.54 seconds =       0.51 minutes
-	system time =      37.72 seconds =       0.63 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      28.78 seconds =       0.48 minutes
+	system time =      46.34 seconds =       0.77 minutes
+	total time  =         20 seconds =       0.33 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:21 2016
+*** at Sun Feb 28 12:33:16 2016
 
 
          ------------------------------------------------------------
@@ -10679,15 +10679,15 @@ Total time:
        4        0.004010531398     0.001613952212    -0.003268053096
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:22 2016
+*** tstop() called on knut at Sun Feb 28 12:33:17 2016
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.67 seconds =       0.01 minutes
+	user time   =       0.53 seconds =       0.01 minutes
+	system time =       0.79 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      31.03 seconds =       0.52 minutes
-	system time =      38.39 seconds =       0.64 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      29.31 seconds =       0.49 minutes
+	system time =      47.14 seconds =       0.79 minutes
+	total time  =         21 seconds =       0.35 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -10777,7 +10777,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:22 2016
+*** at Sun Feb 28 12:33:17 2016
 
 
          ---------------------------------------------------------
@@ -10958,18 +10958,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:23 2016
+*** tstop() called on knut at Sun Feb 28 12:33:17 2016
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.70 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      31.53 seconds =       0.53 minutes
-	system time =      39.24 seconds =       0.65 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      29.80 seconds =       0.50 minutes
+	system time =      47.94 seconds =       0.80 minutes
+	total time  =         21 seconds =       0.35 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:23 2016
+*** at Sun Feb 28 12:33:17 2016
 
 
          ------------------------------------------------------------
@@ -11034,15 +11034,15 @@ Total time:
        4        0.004245205668     0.001225657770    -0.003059549044
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:23 2016
+*** tstop() called on knut at Sun Feb 28 12:33:17 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.47 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.85 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      32.06 seconds =       0.53 minutes
-	system time =      39.71 seconds =       0.66 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      30.28 seconds =       0.50 minutes
+	system time =      48.80 seconds =       0.81 minutes
+	total time  =         21 seconds =       0.35 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -11131,7 +11131,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:23 2016
+*** at Sun Feb 28 12:33:17 2016
 
 
          ---------------------------------------------------------
@@ -11309,18 +11309,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:24 2016
+*** tstop() called on knut at Sun Feb 28 12:33:18 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      32.57 seconds =       0.54 minutes
-	system time =      40.31 seconds =       0.67 minutes
-	total time  =         39 seconds =       0.65 minutes
+	user time   =      30.79 seconds =       0.51 minutes
+	system time =      49.55 seconds =       0.83 minutes
+	total time  =         22 seconds =       0.37 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:24 2016
+*** at Sun Feb 28 12:33:18 2016
 
 
          ------------------------------------------------------------
@@ -11385,15 +11385,15 @@ Total time:
        4        0.004245324764     0.001229289845    -0.003057102709
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:24 2016
+*** tstop() called on knut at Sun Feb 28 12:33:18 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.56 seconds =       0.01 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.88 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      33.10 seconds =       0.55 minutes
-	system time =      40.88 seconds =       0.68 minutes
-	total time  =         39 seconds =       0.65 minutes
+	user time   =      31.26 seconds =       0.52 minutes
+	system time =      50.43 seconds =       0.84 minutes
+	total time  =         22 seconds =       0.37 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -11530,7 +11530,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:24 2016
+*** at Sun Feb 28 12:33:18 2016
 
 
          ---------------------------------------------------------
@@ -11713,18 +11713,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:25 2016
+*** tstop() called on knut at Sun Feb 28 12:33:18 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.63 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      33.63 seconds =       0.56 minutes
-	system time =      41.68 seconds =       0.69 minutes
-	total time  =         40 seconds =       0.67 minutes
+	user time   =      31.74 seconds =       0.53 minutes
+	system time =      51.27 seconds =       0.85 minutes
+	total time  =         22 seconds =       0.37 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:25 2016
+*** at Sun Feb 28 12:33:18 2016
 
 
          ------------------------------------------------------------
@@ -11789,15 +11789,15 @@ Total time:
        4        0.002834508827     0.001449679539    -0.002906719996
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:26 2016
+*** tstop() called on knut at Sun Feb 28 12:33:19 2016
 Module time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.68 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.85 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      34.18 seconds =       0.57 minutes
-	system time =      42.36 seconds =       0.71 minutes
-	total time  =         41 seconds =       0.68 minutes
+	user time   =      32.23 seconds =       0.54 minutes
+	system time =      52.12 seconds =       0.87 minutes
+	total time  =         23 seconds =       0.38 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -11887,7 +11887,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:26 2016
+*** at Sun Feb 28 12:33:19 2016
 
 
          ---------------------------------------------------------
@@ -12068,18 +12068,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:26 2016
+*** tstop() called on knut at Sun Feb 28 12:33:19 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.50 seconds =       0.01 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      34.69 seconds =       0.58 minutes
-	system time =      42.96 seconds =       0.72 minutes
-	total time  =         41 seconds =       0.68 minutes
+	user time   =      32.75 seconds =       0.55 minutes
+	system time =      52.93 seconds =       0.88 minutes
+	total time  =         23 seconds =       0.38 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:26 2016
+*** at Sun Feb 28 12:33:19 2016
 
 
          ------------------------------------------------------------
@@ -12144,15 +12144,15 @@ Total time:
        4        0.003094728314     0.001055220227    -0.002726608075
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:27 2016
+*** tstop() called on knut at Sun Feb 28 12:33:19 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      35.17 seconds =       0.59 minutes
-	system time =      43.57 seconds =       0.73 minutes
-	total time  =         42 seconds =       0.70 minutes
+	user time   =      33.26 seconds =       0.55 minutes
+	system time =      53.77 seconds =       0.90 minutes
+	total time  =         23 seconds =       0.38 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -12241,7 +12241,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:27 2016
+*** at Sun Feb 28 12:33:19 2016
 
 
          ---------------------------------------------------------
@@ -12419,18 +12419,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:28 2016
+*** tstop() called on knut at Sun Feb 28 12:33:20 2016
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.48 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.47 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      35.64 seconds =       0.59 minutes
-	system time =      44.19 seconds =       0.74 minutes
-	total time  =         43 seconds =       0.72 minutes
+	user time   =      33.73 seconds =       0.56 minutes
+	system time =      54.41 seconds =       0.91 minutes
+	total time  =         24 seconds =       0.40 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:28 2016
+*** at Sun Feb 28 12:33:20 2016
 
 
          ------------------------------------------------------------
@@ -12495,15 +12495,15 @@ Total time:
        4        0.003095509835     0.001061124957    -0.002722668902
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:28 2016
+*** tstop() called on knut at Sun Feb 28 12:33:20 2016
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.70 seconds =       0.01 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      36.08 seconds =       0.60 minutes
-	system time =      44.90 seconds =       0.75 minutes
-	total time  =         43 seconds =       0.72 minutes
+	user time   =      34.24 seconds =       0.57 minutes
+	system time =      55.21 seconds =       0.92 minutes
+	total time  =         24 seconds =       0.40 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -12640,7 +12640,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:28 2016
+*** at Sun Feb 28 12:33:20 2016
 
 
          ---------------------------------------------------------
@@ -12823,18 +12823,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:29 2016
+*** tstop() called on knut at Sun Feb 28 12:33:20 2016
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.68 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      36.68 seconds =       0.61 minutes
-	system time =      45.73 seconds =       0.76 minutes
-	total time  =         44 seconds =       0.73 minutes
+	user time   =      34.68 seconds =       0.58 minutes
+	system time =      55.97 seconds =       0.93 minutes
+	total time  =         24 seconds =       0.40 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:29 2016
+*** at Sun Feb 28 12:33:20 2016
 
 
          ------------------------------------------------------------
@@ -12899,15 +12899,15 @@ Total time:
        4        0.001689656218     0.001155123358    -0.002256135403
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:30 2016
+*** tstop() called on knut at Sun Feb 28 12:33:21 2016
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.58 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      37.21 seconds =       0.62 minutes
-	system time =      46.31 seconds =       0.77 minutes
-	total time  =         45 seconds =       0.75 minutes
+	user time   =      35.15 seconds =       0.59 minutes
+	system time =      56.81 seconds =       0.95 minutes
+	total time  =         25 seconds =       0.42 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -12997,7 +12997,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:30 2016
+*** at Sun Feb 28 12:33:21 2016
 
 
          ---------------------------------------------------------
@@ -13178,18 +13178,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:30 2016
+*** tstop() called on knut at Sun Feb 28 12:33:21 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.47 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.49 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      37.73 seconds =       0.63 minutes
-	system time =      46.95 seconds =       0.78 minutes
-	total time  =         45 seconds =       0.75 minutes
+	user time   =      35.61 seconds =       0.59 minutes
+	system time =      57.50 seconds =       0.96 minutes
+	total time  =         25 seconds =       0.42 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:30 2016
+*** at Sun Feb 28 12:33:21 2016
 
 
          ------------------------------------------------------------
@@ -13254,15 +13254,15 @@ Total time:
        4        0.001966885585     0.000773607065    -0.002102311564
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:31 2016
+*** tstop() called on knut at Sun Feb 28 12:33:21 2016
 Module time:
 	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      38.22 seconds =       0.64 minutes
-	system time =      47.54 seconds =       0.79 minutes
-	total time  =         46 seconds =       0.77 minutes
+	user time   =      36.11 seconds =       0.60 minutes
+	system time =      58.30 seconds =       0.97 minutes
+	total time  =         25 seconds =       0.42 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -13351,7 +13351,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:31 2016
+*** at Sun Feb 28 12:33:21 2016
 
 
          ---------------------------------------------------------
@@ -13529,18 +13529,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:31 2016
+*** tstop() called on knut at Sun Feb 28 12:33:22 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.75 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.69 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      38.71 seconds =       0.65 minutes
-	system time =      48.46 seconds =       0.81 minutes
-	total time  =         46 seconds =       0.77 minutes
+	user time   =      36.56 seconds =       0.61 minutes
+	system time =      59.25 seconds =       0.99 minutes
+	total time  =         26 seconds =       0.43 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:31 2016
+*** at Sun Feb 28 12:33:22 2016
 
 
          ------------------------------------------------------------
@@ -13605,15 +13605,15 @@ Total time:
        4        0.001966814656     0.000780277530    -0.002099427689
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:32 2016
+*** tstop() called on knut at Sun Feb 28 12:33:22 2016
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.69 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.92 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      39.22 seconds =       0.65 minutes
-	system time =      49.16 seconds =       0.82 minutes
-	total time  =         47 seconds =       0.78 minutes
+	user time   =      37.11 seconds =       0.62 minutes
+	system time =      60.17 seconds =       1.00 minutes
+	total time  =         26 seconds =       0.43 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -13750,7 +13750,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:32 2016
+*** at Sun Feb 28 12:33:22 2016
 
 
          ---------------------------------------------------------
@@ -13933,18 +13933,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:33 2016
+*** tstop() called on knut at Sun Feb 28 12:33:23 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.51 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      39.72 seconds =       0.66 minutes
-	system time =      49.77 seconds =       0.83 minutes
-	total time  =         48 seconds =       0.80 minutes
+	user time   =      37.60 seconds =       0.63 minutes
+	system time =      60.88 seconds =       1.01 minutes
+	total time  =         27 seconds =       0.45 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:33 2016
+*** at Sun Feb 28 12:33:23 2016
 
 
          ------------------------------------------------------------
@@ -14009,15 +14009,15 @@ Total time:
        4        0.000742076645     0.000803982625    -0.001416821634
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:33 2016
+*** tstop() called on knut at Sun Feb 28 12:33:23 2016
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.85 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      40.17 seconds =       0.67 minutes
-	system time =      50.26 seconds =       0.84 minutes
-	total time  =         48 seconds =       0.80 minutes
+	user time   =      38.07 seconds =       0.63 minutes
+	system time =      61.73 seconds =       1.03 minutes
+	total time  =         27 seconds =       0.45 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -14107,7 +14107,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:33 2016
+*** at Sun Feb 28 12:33:23 2016
 
 
          ---------------------------------------------------------
@@ -14288,18 +14288,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:34 2016
+*** tstop() called on knut at Sun Feb 28 12:33:23 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.51 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      40.76 seconds =       0.68 minutes
-	system time =      50.92 seconds =       0.85 minutes
-	total time  =         49 seconds =       0.82 minutes
+	user time   =      38.52 seconds =       0.64 minutes
+	system time =      62.43 seconds =       1.04 minutes
+	total time  =         27 seconds =       0.45 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:34 2016
+*** at Sun Feb 28 12:33:23 2016
 
 
          ------------------------------------------------------------
@@ -14364,15 +14364,15 @@ Total time:
        4        0.001010073834     0.000443006821    -0.001303014535
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:34 2016
+*** tstop() called on knut at Sun Feb 28 12:33:24 2016
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      41.26 seconds =       0.69 minutes
-	system time =      51.53 seconds =       0.86 minutes
-	total time  =         49 seconds =       0.82 minutes
+	user time   =      39.04 seconds =       0.65 minutes
+	system time =      63.26 seconds =       1.05 minutes
+	total time  =         28 seconds =       0.47 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -14461,7 +14461,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:35 2016
+*** at Sun Feb 28 12:33:24 2016
 
 
          ---------------------------------------------------------
@@ -14639,18 +14639,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:35 2016
+*** tstop() called on knut at Sun Feb 28 12:33:24 2016
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.61 seconds =       0.01 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.47 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      41.73 seconds =       0.70 minutes
-	system time =      52.28 seconds =       0.87 minutes
-	total time  =         50 seconds =       0.83 minutes
+	user time   =      39.47 seconds =       0.66 minutes
+	system time =      63.93 seconds =       1.07 minutes
+	total time  =         28 seconds =       0.47 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:35 2016
+*** at Sun Feb 28 12:33:24 2016
 
 
          ------------------------------------------------------------
@@ -14715,15 +14715,15 @@ Total time:
        4        0.001009093725     0.000450262534    -0.001301119951
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:36 2016
+*** tstop() called on knut at Sun Feb 28 12:33:24 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      42.30 seconds =       0.70 minutes
-	system time =      53.06 seconds =       0.88 minutes
-	total time  =         51 seconds =       0.85 minutes
+	user time   =      39.95 seconds =       0.67 minutes
+	system time =      64.78 seconds =       1.08 minutes
+	total time  =         28 seconds =       0.47 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -14860,7 +14860,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:36 2016
+*** at Sun Feb 28 12:33:24 2016
 
 
          ---------------------------------------------------------
@@ -15043,18 +15043,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:36 2016
+*** tstop() called on knut at Sun Feb 28 12:33:24 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.51 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      42.81 seconds =       0.71 minutes
-	system time =      53.78 seconds =       0.90 minutes
-	total time  =         51 seconds =       0.85 minutes
+	user time   =      40.44 seconds =       0.67 minutes
+	system time =      65.49 seconds =       1.09 minutes
+	total time  =         28 seconds =       0.47 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:36 2016
+*** at Sun Feb 28 12:33:24 2016
 
 
          ------------------------------------------------------------
@@ -15119,15 +15119,15 @@ Total time:
        4        0.000047206640     0.000468534718    -0.000553221959
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:37 2016
+*** tstop() called on knut at Sun Feb 28 12:33:25 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.83 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      43.23 seconds =       0.72 minutes
-	system time =      54.32 seconds =       0.91 minutes
-	total time  =         52 seconds =       0.87 minutes
+	user time   =      40.91 seconds =       0.68 minutes
+	system time =      66.32 seconds =       1.11 minutes
+	total time  =         29 seconds =       0.48 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -15217,7 +15217,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:37 2016
+*** at Sun Feb 28 12:33:25 2016
 
 
          ---------------------------------------------------------
@@ -15398,18 +15398,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:37 2016
+*** tstop() called on knut at Sun Feb 28 12:33:25 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.42 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.49 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      43.73 seconds =       0.73 minutes
-	system time =      54.86 seconds =       0.91 minutes
-	total time  =         52 seconds =       0.87 minutes
+	user time   =      41.39 seconds =       0.69 minutes
+	system time =      67.00 seconds =       1.12 minutes
+	total time  =         29 seconds =       0.48 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:37 2016
+*** at Sun Feb 28 12:33:25 2016
 
 
          ------------------------------------------------------------
@@ -15474,15 +15474,15 @@ Total time:
        4        0.000302030651     0.000139535519    -0.000466352385
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:38 2016
+*** tstop() called on knut at Sun Feb 28 12:33:25 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      44.27 seconds =       0.74 minutes
-	system time =      55.58 seconds =       0.93 minutes
-	total time  =         53 seconds =       0.88 minutes
+	user time   =      41.88 seconds =       0.70 minutes
+	system time =      67.83 seconds =       1.13 minutes
+	total time  =         29 seconds =       0.48 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -15571,7 +15571,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:38 2016
+*** at Sun Feb 28 12:33:26 2016
 
 
          ---------------------------------------------------------
@@ -15749,18 +15749,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:39 2016
+*** tstop() called on knut at Sun Feb 28 12:33:26 2016
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.53 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      44.80 seconds =       0.75 minutes
-	system time =      56.21 seconds =       0.94 minutes
-	total time  =         54 seconds =       0.90 minutes
+	user time   =      42.33 seconds =       0.71 minutes
+	system time =      68.51 seconds =       1.14 minutes
+	total time  =         30 seconds =       0.50 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:39 2016
+*** at Sun Feb 28 12:33:26 2016
 
 
          ------------------------------------------------------------
@@ -15825,15 +15825,15 @@ Total time:
        4        0.000299341789     0.000145833938    -0.000466154339
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:39 2016
+*** tstop() called on knut at Sun Feb 28 12:33:26 2016
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.71 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.86 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      45.31 seconds =       0.76 minutes
-	system time =      56.92 seconds =       0.95 minutes
-	total time  =         54 seconds =       0.90 minutes
+	user time   =      42.79 seconds =       0.71 minutes
+	system time =      69.37 seconds =       1.16 minutes
+	total time  =         30 seconds =       0.50 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -15970,7 +15970,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:39 2016
+*** at Sun Feb 28 12:33:26 2016
 
 
          ---------------------------------------------------------
@@ -16153,18 +16153,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:40 2016
+*** tstop() called on knut at Sun Feb 28 12:33:26 2016
 Module time:
-	user time   =       0.40 seconds =       0.01 minutes
+	user time   =       0.33 seconds =       0.01 minutes
 	system time =       0.54 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      45.82 seconds =       0.76 minutes
-	system time =      57.64 seconds =       0.96 minutes
-	total time  =         55 seconds =       0.92 minutes
+	user time   =      43.25 seconds =       0.72 minutes
+	system time =      70.09 seconds =       1.17 minutes
+	total time  =         30 seconds =       0.50 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:40 2016
+*** at Sun Feb 28 12:33:26 2016
 
 
          ------------------------------------------------------------
@@ -16229,15 +16229,15 @@ Total time:
        4       -0.000378319462     0.000232556142     0.000219572699
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:40 2016
+*** tstop() called on knut at Sun Feb 28 12:33:27 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.54 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.81 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      46.31 seconds =       0.77 minutes
-	system time =      58.18 seconds =       0.97 minutes
-	total time  =         55 seconds =       0.92 minutes
+	user time   =      43.75 seconds =       0.73 minutes
+	system time =      70.91 seconds =       1.18 minutes
+	total time  =         31 seconds =       0.52 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -16327,7 +16327,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:40 2016
+*** at Sun Feb 28 12:33:27 2016
 
 
          ---------------------------------------------------------
@@ -16507,18 +16507,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:41 2016
+*** tstop() called on knut at Sun Feb 28 12:33:27 2016
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      46.89 seconds =       0.78 minutes
-	system time =      58.83 seconds =       0.98 minutes
-	total time  =         56 seconds =       0.93 minutes
+	user time   =      44.25 seconds =       0.74 minutes
+	system time =      71.68 seconds =       1.19 minutes
+	total time  =         31 seconds =       0.52 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:41 2016
+*** at Sun Feb 28 12:33:27 2016
 
 
          ------------------------------------------------------------
@@ -16583,15 +16583,15 @@ Total time:
        4       -0.000145164915    -0.000083384392     0.000280044527
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:41 2016
+*** tstop() called on knut at Sun Feb 28 12:33:27 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.85 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.88 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      47.37 seconds =       0.79 minutes
-	system time =      59.69 seconds =       0.99 minutes
-	total time  =         56 seconds =       0.93 minutes
+	user time   =      44.71 seconds =       0.75 minutes
+	system time =      72.57 seconds =       1.21 minutes
+	total time  =         31 seconds =       0.52 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -16680,7 +16680,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:41 2016
+*** at Sun Feb 28 12:33:28 2016
 
 
          ---------------------------------------------------------
@@ -16858,18 +16858,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:42 2016
+*** tstop() called on knut at Sun Feb 28 12:33:28 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.65 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      47.95 seconds =       0.80 minutes
-	system time =      60.54 seconds =       1.01 minutes
-	total time  =         57 seconds =       0.95 minutes
+	user time   =      45.25 seconds =       0.75 minutes
+	system time =      73.32 seconds =       1.22 minutes
+	total time  =         32 seconds =       0.53 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:42 2016
+*** at Sun Feb 28 12:33:28 2016
 
 
          ------------------------------------------------------------
@@ -16934,15 +16934,15 @@ Total time:
        4       -0.000148041110    -0.000076951658     0.000280179664
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:42 2016
+*** tstop() called on knut at Sun Feb 28 12:33:28 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
 	system time =       0.85 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      48.47 seconds =       0.81 minutes
-	system time =      61.40 seconds =       1.02 minutes
-	total time  =         57 seconds =       0.95 minutes
+	user time   =      45.73 seconds =       0.76 minutes
+	system time =      74.17 seconds =       1.24 minutes
+	total time  =         32 seconds =       0.53 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -17079,7 +17079,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:42 2016
+*** at Sun Feb 28 12:33:28 2016
 
 
          ---------------------------------------------------------
@@ -17262,18 +17262,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:42 2016
+*** tstop() called on knut at Sun Feb 28 12:33:29 2016
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      48.94 seconds =       0.82 minutes
-	system time =      62.12 seconds =       1.04 minutes
-	total time  =         57 seconds =       0.95 minutes
+	user time   =      46.25 seconds =       0.77 minutes
+	system time =      74.98 seconds =       1.25 minutes
+	total time  =         33 seconds =       0.55 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:42 2016
+*** at Sun Feb 28 12:33:29 2016
 
 
          ------------------------------------------------------------
@@ -17338,15 +17338,15 @@ Total time:
        4       -0.000129751090     0.000696222851    -0.000619954991
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:43 2016
+*** tstop() called on knut at Sun Feb 28 12:33:29 2016
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
+	user time   =       0.51 seconds =       0.01 minutes
 	system time =       0.82 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      49.45 seconds =       0.82 minutes
-	system time =      62.94 seconds =       1.05 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =      46.76 seconds =       0.78 minutes
+	system time =      75.80 seconds =       1.26 minutes
+	total time  =         33 seconds =       0.55 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -17436,7 +17436,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:43 2016
+*** at Sun Feb 28 12:33:29 2016
 
 
          ---------------------------------------------------------
@@ -17619,18 +17619,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:43 2016
+*** tstop() called on knut at Sun Feb 28 12:33:29 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.51 seconds =       0.01 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      49.94 seconds =       0.83 minutes
-	system time =      63.64 seconds =       1.06 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =      47.27 seconds =       0.79 minutes
+	system time =      76.61 seconds =       1.28 minutes
+	total time  =         33 seconds =       0.55 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:43 2016
+*** at Sun Feb 28 12:33:29 2016
 
 
          ------------------------------------------------------------
@@ -17695,15 +17695,15 @@ Total time:
        4       -0.000552847988     0.000449558325     0.000165535649
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:43 2016
+*** tstop() called on knut at Sun Feb 28 12:33:30 2016
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.86 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      50.40 seconds =       0.84 minutes
-	system time =      64.50 seconds =       1.07 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =      47.82 seconds =       0.80 minutes
+	system time =      77.39 seconds =       1.29 minutes
+	total time  =         34 seconds =       0.57 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -17792,7 +17792,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:43 2016
+*** at Sun Feb 28 12:33:30 2016
 
 
          ---------------------------------------------------------
@@ -17973,18 +17973,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:44 2016
+*** tstop() called on knut at Sun Feb 28 12:33:30 2016
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      50.87 seconds =       0.85 minutes
-	system time =      65.19 seconds =       1.09 minutes
-	total time  =         59 seconds =       0.98 minutes
+	user time   =      48.33 seconds =       0.81 minutes
+	system time =      78.16 seconds =       1.30 minutes
+	total time  =         34 seconds =       0.57 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:44 2016
+*** at Sun Feb 28 12:33:30 2016
 
 
          ------------------------------------------------------------
@@ -18049,15 +18049,15 @@ Total time:
        4       -0.000143461848    -0.000083994861     0.000280712965
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:44 2016
+*** tstop() called on knut at Sun Feb 28 12:33:30 2016
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.83 seconds =       0.01 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      51.35 seconds =       0.86 minutes
-	system time =      66.02 seconds =       1.10 minutes
-	total time  =         59 seconds =       0.98 minutes
+	user time   =      48.84 seconds =       0.81 minutes
+	system time =      78.96 seconds =       1.32 minutes
+	total time  =         34 seconds =       0.57 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -18146,7 +18146,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:44 2016
+*** at Sun Feb 28 12:33:30 2016
 
 
          ---------------------------------------------------------
@@ -18323,18 +18323,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:44 2016
+*** tstop() called on knut at Sun Feb 28 12:33:31 2016
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
+	user time   =       0.30 seconds =       0.01 minutes
 	system time =       0.49 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      51.77 seconds =       0.86 minutes
-	system time =      66.71 seconds =       1.11 minutes
-	total time  =         59 seconds =       0.98 minutes
+	user time   =      49.25 seconds =       0.82 minutes
+	system time =      79.65 seconds =       1.33 minutes
+	total time  =         35 seconds =       0.58 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:44 2016
+*** at Sun Feb 28 12:33:31 2016
 
 
          ------------------------------------------------------------
@@ -18399,15 +18399,15 @@ Total time:
        4       -0.000143249739    -0.000083906340     0.000281331809
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:45 2016
+*** tstop() called on knut at Sun Feb 28 12:33:31 2016
 Module time:
 	user time   =       0.47 seconds =       0.01 minutes
 	system time =       0.83 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      52.24 seconds =       0.87 minutes
-	system time =      67.54 seconds =       1.13 minutes
-	total time  =         60 seconds =       1.00 minutes
+	user time   =      49.73 seconds =       0.83 minutes
+	system time =      80.48 seconds =       1.34 minutes
+	total time  =         35 seconds =       0.58 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -18544,7 +18544,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:45 2016
+*** at Sun Feb 28 12:33:31 2016
 
 
          ---------------------------------------------------------
@@ -18727,18 +18727,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on knut at Mon Feb 15 23:10:45 2016
+*** tstop() called on knut at Sun Feb 28 12:33:31 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.51 seconds =       0.01 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.55 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      52.72 seconds =       0.88 minutes
-	system time =      68.26 seconds =       1.14 minutes
-	total time  =         60 seconds =       1.00 minutes
+	user time   =      50.19 seconds =       0.84 minutes
+	system time =      81.23 seconds =       1.35 minutes
+	total time  =         35 seconds =       0.58 minutes
 
 *** tstart() called on knut
-*** at Mon Feb 15 23:10:45 2016
+*** at Sun Feb 28 12:33:31 2016
 
 
          ------------------------------------------------------------
@@ -18803,15 +18803,15 @@ Total time:
        4       -0.000333454497     0.000952623415    -0.000694803884
 
 
-*** tstop() called on knut at Mon Feb 15 23:10:45 2016
+*** tstop() called on knut at Sun Feb 28 12:33:32 2016
 Module time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.75 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      53.27 seconds =       0.89 minutes
-	system time =      69.02 seconds =       1.15 minutes
-	total time  =         60 seconds =       1.00 minutes
+	user time   =      50.66 seconds =       0.84 minutes
+	system time =      82.07 seconds =       1.37 minutes
+	total time  =         36 seconds =       0.60 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -18879,10 +18879,10 @@ Total time:
 	Final energy is   -150.8199862812834
 	Final (previous) structure:
 	Cartesian Geometry (in Angstrom)
-	    H     0.2512889519   1.1444357202  -0.5105613620
-	    O    -0.3186848359   0.6175787654   0.0321700074
-	    O     0.3186848359  -0.6175787654   0.0321700074
-	    H    -0.2512889519  -1.1444357202  -0.5105613620
+	    H     0.2653648724   1.1701438419  -0.4499671628
+	    O    -0.3314020407   0.6119905089   0.0283520532
+	    O     0.3314020407  -0.6119905089   0.0283520532
+	    H    -0.2653648724  -1.1701438419  -0.4499671628
 	Saving final (previous) structure.
 @IRC ----------------------------------------------
 @IRC            ****      IRC Report      ****
@@ -18947,21 +18947,21 @@ Total time:
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
-	 R(1,2)           =         1.789767	       0.947104
-	 R(2,3)           =         2.626552	       1.389912
-	 R(3,4)           =         1.789767	       0.947104
-	 B(1,2,3)         =         1.790946	     102.613630
-	 B(2,3,4)         =         1.790946	     102.613630
-	 D(1,2,3,4)       =        -1.886363	    -108.080654
+	 R(1,2)           =         1.789218	       0.946813
+	 R(2,3)           =         2.630346	       1.391919
+	 R(3,4)           =         1.789218	       0.946813
+	 B(1,2,3)         =         1.790818	     102.606296
+	 B(2,3,4)         =         1.790818	     102.606296
+	 D(1,2,3,4)       =        -2.053346	    -117.648071
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
-	 R(1,2)           =         1.789767	       0.947104
-	 R(2,3)           =         2.626552	       1.389912
-	 R(3,4)           =         1.789767	       0.947104
-	 B(1,2,3)         =         1.790946	     102.613630
-	 B(2,3,4)         =         1.790946	     102.613630
-	 D(1,2,3,4)       =        -1.886363	    -108.080654
+	 R(1,2)           =         1.789218	       0.946813
+	 R(2,3)           =         2.630346	       1.391919
+	 R(3,4)           =         1.789218	       0.946813
+	 B(1,2,3)         =         1.790818	     102.606296
+	 B(2,3,4)         =         1.790818	     102.606296
+	 D(1,2,3,4)       =        -2.053346	    -117.648071
 
 			--------------------------
 			 OPTKING Finished Execution 
@@ -18973,10 +18973,10 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    H            0.251288951936     1.144435720153    -0.510561361995
-    O           -0.318684835929     0.617578765423     0.032170007360
-    O            0.318684835929    -0.617578765423     0.032170007360
-    H           -0.251288951936    -1.144435720153    -0.510561361995
+    H            0.265364872435     1.170143841871    -0.449967192138
+    O           -0.331402040668     0.611990508883     0.028352023792
+    O            0.331402040668    -0.611990508883     0.028352023792
+    H           -0.265364872435    -1.170143841871    -0.449967192138
 
 	Cleaning optimization helper files.
 	Energy of last IRC point..........................................PASSED
