@@ -94,8 +94,8 @@ void CIWavefunction::compute_mpn()
                     j = CalcInfo_->reorder[y] - totfzc;
                     ij = INDEX2(i,j);
                     ijij = ioff[ij] + ij;
-                    CalcInfo_->scfeigvala[i+totfzc] -= 0.5*CalcInfo_->twoel_ints[ijij];
-                    CalcInfo_->scfeigvalb[i+totfzc] += 0.5*CalcInfo_->twoel_ints[ijij];
+                    CalcInfo_->scfeigvala[i+totfzc] -= 0.5*CalcInfo_->twoel_ints->pointer()[ijij];
+                    CalcInfo_->scfeigvalb[i+totfzc] += 0.5*CalcInfo_->twoel_ints->pointer()[ijij];
                 }
             }
         }
@@ -154,8 +154,8 @@ void CIWavefunction::compute_mpn()
 
    /* prepare the H0 block */
 
-   Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
-          CalcInfo_->twoel_ints, CalcInfo_->e0_drc, CalcInfo_->num_alp_expl,
+   Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
+          CalcInfo_->twoel_ints->pointer(), CalcInfo_->e0_drc, CalcInfo_->num_alp_expl,
           CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
 
    H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
@@ -174,11 +174,11 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   int kvec_offset; /* offset if c_0 is not stored on disk */
 
 
-  CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+  CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, 1,
            Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
-  CIvect Sigma(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
+  CIvect Sigma(Parameters_->icore, 1, 1,
             Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
-  CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+  CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, 1,
             Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
 
 
@@ -213,9 +213,9 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   wfn_overlap[0][0] = 1.0;
 
   /* oei = CalcInfo_->tf_onel_ints; */
-  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-  else oei = CalcInfo_->gmat[0];
-  tei = CalcInfo_->twoel_ints;
+  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+  else oei = CalcInfo_->gmat->pointer()[0];
+  tei = CalcInfo_->twoel_ints->pointer();
 
   outfile->Printf("   CalcInfo_->escf = %25.15f\n", CalcInfo_->escf);
   outfile->Printf("   CalcInfo_->e0   = %25.15f\n", CalcInfo_->e0);

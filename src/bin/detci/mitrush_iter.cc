@@ -97,9 +97,9 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    CIvect Cvec;
    CIvect Sigma;
 
-   Cvec.set(Parameters_->icore, maxnvect, Parameters_->num_c_tmp_units,
+   Cvec.set(Parameters_->icore, maxnvect, 1,
             Parameters_->s_filenum, CIblks_);  
-   Sigma.set(Parameters_->icore, maxnvect, Parameters_->num_s_tmp_units,
+   Sigma.set(Parameters_->icore, maxnvect, 1,
              Parameters_->s_filenum, CIblks_);  
 
    // Open I/O files but not with OPEN_OLD
@@ -128,9 +128,9 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    num_alp_str = CalcInfo_->num_alp_str;
    num_bet_str = CalcInfo_->num_bet_str;
-   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-   else oei = CalcInfo_->gmat[0];
-   tei = CalcInfo_->twoel_ints;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+   else oei = CalcInfo_->gmat->pointer()[0];
+   tei = CalcInfo_->twoel_ints->pointer();
 
    /* small arrays to hold most important config information */
 
@@ -561,8 +561,8 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
       S.buf_unlock();
       Hd.buf_lock(buffer2);
       if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
-      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
-           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints->pointer(),
+           CalcInfo_->twoel_ints->pointer(), CalcInfo_->edrc, CalcInfo_->num_alp_expl,
            CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       /* Check norm of residual vector i.e. before preconditioning */
       dot_arr(buffer1, buffer1, C.buf_size_[buf], &rnormtmp);
@@ -653,8 +653,8 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
       if (Parameters_->diag_method==METHOD_DAVIDSON_LIU_SEM)
         C.h0block_gather_vec(CI_VEC);
       if (Parameters_->hd_otf == FALSE) Hd.read(0,buf);
-      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints,
-           CalcInfo_->twoel_ints, CalcInfo_->edrc, CalcInfo_->num_alp_expl,
+      else Hd.diag_mat_els_otf(alplist, betlist, CalcInfo_->onel_ints->pointer(),
+           CalcInfo_->twoel_ints->pointer(), CalcInfo_->edrc, CalcInfo_->num_alp_expl,
            CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       tx = buf_xy1(buffer1, buffer2, E, Hd.buf_size_[buf]);
       /* buffer2 = Hd * Ci */

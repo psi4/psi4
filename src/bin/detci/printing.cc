@@ -52,9 +52,6 @@ namespace psi { namespace detci {
 #define MIN_COEFF 1.0E-13
 
 void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr);
-//void print_config(int nbf, int num_alp_el, int num_bet_el,
-//   struct stringwr *stralp, struct stringwr *strbet,
-//   int num_drc_orbs, char *outstring);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 

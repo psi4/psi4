@@ -60,29 +60,21 @@ namespace detci {
 ** options = Options object used to parse user input
 */
 void CIWavefunction::get_mo_info() {
-    int i, j, k, tmp, cnt, irrep, errcod, errbad;
-    int size;
-    double *eig_unsrt;
-    int parsed_ras1 = 0, parsed_ras2 = 0, do_ras4;
 
-    CalcInfo_->maxKlist = 0.0;
     CalcInfo_->sigma_initialized = 0;
 
     // Initial guess will overwrite some of this later.
-    CalcInfo_->nirreps = reference_wavefunction_->nirrep();
-    CalcInfo_->nso = reference_wavefunction_->nso();
-    CalcInfo_->nmo = reference_wavefunction_->nmo();
+    CalcInfo_->nirreps = nirrep();
+    CalcInfo_->nso = nso();
+    CalcInfo_->nmo = nmo();
 
     // DGAS: David does this make sense?
-    CalcInfo_->iopen = !reference_wavefunction_->same_a_b_orbs();
-    CalcInfo_->labels = reference_wavefunction_->molecule()->irrep_labels();
-    CalcInfo_->orbs_per_irr = reference_wavefunction_->nmopi();
-    CalcInfo_->so_per_irr = reference_wavefunction_->nsopi();
-    CalcInfo_->docc = reference_wavefunction_->doccpi();
-    CalcInfo_->socc = reference_wavefunction_->soccpi();
-    CalcInfo_->enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
-    CalcInfo_->escf = reference_wavefunction_->reference_energy();
-    eig_unsrt = reference_wavefunction_->epsilon_a()->to_block_vector();
+    CalcInfo_->iopen = !same_a_b_orbs();
+    CalcInfo_->labels = molecule()->irrep_labels();
+    CalcInfo_->docc = doccpi();
+    CalcInfo_->socc = soccpi();
+    CalcInfo_->enuc = molecule()->nuclear_repulsion_energy();
+    CalcInfo_->escf = reference_energy();
     CalcInfo_->edrc = 0.0;
 
     if (CalcInfo_->iopen && Parameters_->opentype == PARM_OPENTYPE_NONE) {
@@ -113,7 +105,7 @@ void CIWavefunction::get_mo_info() {
 
     // This routine sets all orbital subspace arrays properly given
     // some minimal starting information and an Options object
-    if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, CalcInfo_->orbs_per_irr,
+    if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, nmopi_,
                   CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
                   CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc,
                   CalcInfo_->rstr_uocc, CalcInfo_->ras_opi,
@@ -131,45 +123,34 @@ void CIWavefunction::get_mo_info() {
     // construct the "ordering" array, which maps the other direction
     // i.e., from a CI orbital to a Pitzer orbital
     CalcInfo_->order.resize(CalcInfo_->nmo);
-    for (i = 0; i < CalcInfo_->nmo; i++) {
-        j = CalcInfo_->reorder[i];
-        CalcInfo_->order[j] = i;
-    }
-
-    if (Parameters_->print_lvl > 4) {
-        outfile->Printf("\nReordering array = \n");
-        for (i = 0; i < CalcInfo_->nmo; i++) {
-            outfile->Printf("%3d ", CalcInfo_->reorder[i]);
-        }
-        outfile->Printf("\n");
+    for (int i = 0; i < CalcInfo_->nmo; i++) {
+        CalcInfo_->order[CalcInfo_->reorder[i]] = i;
     }
 
     CalcInfo_->nmotri = (CalcInfo_->nmo * (CalcInfo_->nmo + 1)) / 2;
 
     /* transform orbsym vector to new MO order */
     CalcInfo_->orbsym = init_int_array(CalcInfo_->nmo);
-    CalcInfo_->scfeigval = init_array(CalcInfo_->nmo);
+    CalcInfo_->scfeigval.resize(CalcInfo_->nmo);
     if (Parameters_->zaptn) {
-        CalcInfo_->scfeigvala = init_array(CalcInfo_->nmo);
-        CalcInfo_->scfeigvalb = init_array(CalcInfo_->nmo);
+        CalcInfo_->scfeigvala.resize(CalcInfo_->nmo);
+        CalcInfo_->scfeigvalb.resize(CalcInfo_->nmo);
     }
 
-    for (i = 0, cnt = 0; i < CalcInfo_->nirreps; i++) {
-        for (j = 0; j < CalcInfo_->orbs_per_irr[i]; j++, cnt++) {
-            k = CalcInfo_->reorder[cnt];
-            CalcInfo_->orbsym[k] = i;
+    for (int i = 0, cnt = 0; i < CalcInfo_->nirreps; i++) {
+        for (int j = 0; j < nmopi_[i]; j++, cnt++) {
+            CalcInfo_->orbsym[CalcInfo_->reorder[cnt]] = i;
         }
     }
 
-    for (i = 0; i < CalcInfo_->nmo; i++) {
-        j = CalcInfo_->reorder[i];
-        CalcInfo_->scfeigval[j] = eig_unsrt[i];
+    for (int i = 0; i < CalcInfo_->nmo; i++) {
+        int j = CalcInfo_->reorder[i];
+        CalcInfo_->scfeigval[j] = epsilon_a()->get(i);
         if (Parameters_->zaptn) {
-            CalcInfo_->scfeigvala[j] = eig_unsrt[i];
-            CalcInfo_->scfeigvalb[j] = eig_unsrt[i];
+            CalcInfo_->scfeigvala[j] = epsilon_a()->get(i);
+            CalcInfo_->scfeigvalb[j] = epsilon_a()->get(i);
         }
     }
-    free(eig_unsrt);
 
     // calculate number of electrons
     CalcInfo_->num_alp = CalcInfo_->num_bet = CalcInfo_->spab = 0;
@@ -188,10 +169,10 @@ void CIWavefunction::get_mo_info() {
                 __FILE__, __LINE__);
         }
         CalcInfo_->spab /= 2;
-        tmp = 0;
-        for (i = 0; i < CalcInfo_->nirreps; i++) {
-            j = CalcInfo_->socc[i];
-            k = 0;
+        int tmp = 0;
+        for (int i = 0; i < CalcInfo_->nirreps; i++) {
+            int j = CalcInfo_->socc[i];
+            int k = 0;
             while (k < j) {
                 if (tmp < CalcInfo_->spab) {
                     CalcInfo_->num_alp++;
@@ -245,13 +226,11 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->npop = CalcInfo_->nmo - CalcInfo_->num_drv_orbs;
 
     // construct the CalcInfo_->ras_orbs array
-    cnt = 0;
-    for (i = 0; i < 4; i++) {
-        CalcInfo_->ras_orbs[i] =
-            init_int_matrix(CalcInfo_->nirreps, CalcInfo_->num_ci_orbs);
-        for (irrep = 0; irrep < CalcInfo_->nirreps; irrep++) {
+    for (int i = 0, cnt = 0; i < 4; i++) {
+        CalcInfo_->ras_orbs[i] = init_int_matrix(CalcInfo_->nirreps, CalcInfo_->num_ci_orbs);
+        for (int irrep = 0; irrep < CalcInfo_->nirreps; irrep++) {
             CalcInfo_->ci_orbs[irrep] += CalcInfo_->ras_opi[i][irrep];
-            for (j = 0; j < CalcInfo_->ras_opi[i][irrep]; j++) {
+            for (int j = 0; j < CalcInfo_->ras_opi[i][irrep]; j++) {
                 CalcInfo_->ras_orbs[i][irrep][j] = cnt++;
             }
         }
@@ -263,8 +242,7 @@ void CIWavefunction::get_mo_info() {
     for (int h = 0, target = 0, pos = 0; h < nirrep_; h++) {
         target += CalcInfo_->dropped_docc[h];
         for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++) {
-            CalcInfo_->act_reorder[pos++] =
-                CalcInfo_->reorder[target++] - CalcInfo_->num_drc_orbs;
+            CalcInfo_->act_reorder[pos++] = CalcInfo_->reorder[target++] - CalcInfo_->num_drc_orbs;
         }
         target += CalcInfo_->dropped_uocc[h];
     }
@@ -274,11 +252,10 @@ void CIWavefunction::get_mo_info() {
 
     // Build arrays for integrals
     int ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
-    CalcInfo_->onel_ints = (double *)init_array(ncitri);
-    CalcInfo_->twoel_ints = (double *)init_array(ncitri * (ncitri + 1) / 2);
-    CalcInfo_->maxK = (double *)init_array(CalcInfo_->num_ci_orbs);
-    CalcInfo_->gmat = init_matrix(CalcInfo_->num_ci_orbs, CalcInfo_->num_ci_orbs);
-    CalcInfo_->tf_onel_ints = init_array(ncitri);
+    CalcInfo_->onel_ints = SharedVector(new Vector("CI One Electron Ints", ncitri));
+    CalcInfo_->twoel_ints = SharedVector(new Vector("CI Two Electron Ints", ncitri * (ncitri + 1) / 2));
+    CalcInfo_->gmat = SharedMatrix(new Matrix("CI RAS Gmat", CalcInfo_->num_ci_orbs, CalcInfo_->num_ci_orbs));
+    CalcInfo_->tf_onel_ints = SharedVector(new Vector("CI TF One Electron Ints", ncitri));
 
 }  // end get_mo_info()
 }}  // namespace psi::detci

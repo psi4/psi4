@@ -37,7 +37,8 @@
 #define _psi_src_bin_detci_structs_h
 
 #include <string>
-#include <libmints/dimension.h>
+// #include <libmints/dimension.h>
+#include <libmints/mints.h>
 
 namespace psi { namespace detci {
 
@@ -313,22 +314,18 @@ struct calcinfo {
    int num_alp_expl;     /* number of alpha electrons explicitly treated */
    int num_bet_expl;     /* number of beta electrons explicitly treated */
    char **labels;        /* labels for irreps */
-   int *orbs_per_irr;    /* (molecular) orbitals per irrep */
-   int *so_per_irr;      /* symmetry orbitals per irrep */
    int *orbsym;          /* irrep for each orbital */
    std::vector<int> reorder;         /* map Pitzer-ordered orbitals to our ordering */
    std::vector<int> order;           /* map our ordering back to Pitzer ordering */
    std::vector<int> act_reorder;     /* map Pitzer-ordered orbitals to our ordering for active only*/
    std::vector<int> act_order;       /* map our ordering back to Pitzer ordering for active only*/
-   double *scfeigval;    /* SCF eigenvalues */
-   double *scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
-   double *scfeigvalb;    /* in SOCC space */
-   double *onel_ints;    /* one-electron integrals */
-   double *tf_onel_ints; /* transformed (avg) one-electron integrals */
-   double *maxK;         /* maximum K integral - ave diag elements */
-   double maxKlist;      /* maximum K integral in entire integral list */
-   double **gmat;        /* onel ints in RAS g matrix form */
-   double *twoel_ints;   /* two-electron integrals */
+   std::vector<double> scfeigval;    /* SCF eigenvalues */
+   std::vector<double> scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
+   std::vector<double> scfeigvalb;    /* in SOCC space */
+   SharedVector onel_ints;    /* one-electron integrals */
+   SharedVector tf_onel_ints; /* transformed (avg) one-electron integrals */
+   SharedMatrix gmat;        /* onel ints in RAS g matrix form, not symmetry packed */
+   SharedVector twoel_ints;   /* two-electron integrals */
    int num_fzc_orbs;     /* number of frozen core orbitals */
    int num_rsc_orbs;     /* number of restricted core orbitals */
    int num_drc_orbs;     /* number of dropped core orbitals
@@ -357,10 +354,6 @@ struct calcinfo {
    int ref_bet_rel;      /* relative index of reference beta string */
    int ref_sym;          /* symmetry (irrep) of reference determinant */
    int spab;             /* socc per alpha or beta, for singlet states */
-   unsigned int *asymst; /* starting (abs) addresses of alp str for ea irrep */
-   unsigned int *asymnum;/* number of alpha strings per irrep */
-   unsigned int *bsymst; /* starting (abs) addresses of bet str for ea irrep */
-   unsigned int *bsymnum;/* number of beta strings per irrep */
    int **ras_opi;        /* num orbs per irr per ras space ras_opi[ras][irr] */
    int **ras_orbs[4];    /* ras_orbs[ras][irr][cnt] gives an orbital number */
    int sigma_initialized; /* has sigma_init been called yet? */
@@ -391,8 +384,6 @@ struct params {
    double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
    double energy_convergence;  /* convergence on CI energy */
-   int oei_file;     /* file number for one-electron integrals */
-   int tei_file;     /* file number for two-electron integrals */
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
    int fci;          /* do a FULL ci calc?  (affects sigma1-2 subroutines) */
    int fci_strings;  /* do a FULL ci calc?  (affects string storage) */
@@ -485,38 +476,19 @@ struct params {
    int lse;                /* 1(0) if lst sqr ext is TRUE or FALSE */
    double lse_tolerance;   /* energy converged to tol to perform lse */
    int neg_only;           /* 1(0) if get -(+) values of diag elements */
-   int first_tmp_unit;     /* first number for the tmp files */
    int hd_filenum;  /* first tmp file for H diagonal */
-   int num_hd_tmp_units;   /* the number of such files */
    int c_filenum;   /* first tmp file for CI coeffs */
-   int num_c_tmp_units;    /* the number of such files */
    int s_filenum;   /* first tmp file for sigma coeffs */
-   int num_s_tmp_units;    /* the number of such files */
    int d_filenum;   /* first tmp file for D correction vectors */
-   int num_d_tmp_units;    /* the number of such files */
    int num_init_vecs;      /* number of initial vectors for Davidson method */
    int restart;            /* restart flag, 0 or 1 */
    int bendazzoli;         /* use bendazzoli algorithm */
    int opdm;               /* call the opdm subroutine? */
-   int opdm_write;         /* write the opdm? */
-   int opdm_print;         /* print the opdm? */
-   int opdm_file;          /* file number for opdm */
    int opdm_diag;          /* get ci natural orbitals? */
    int opdm_ave;           /* average the opdm over several states */
-   int opdm_orbsfile;      /* file number to write various orbitals */
-   int opdm_orbs_root;     /* write ci natural orbs of this root to checkpt */
-   int **opdm_idxmat;      /* matrix of index values for the various
-                              roots and irreps of opdm in opdmfile */
-   int **orbs_idxmat;      /* matrix of index values for various
-                              roots and irreps of orbitals in orbsfile */
    int transdens;          /* compute transition densities? */
    int dipmom;             /* compute dipole moment or transition dip mom?  */
-   int tdm_write;          /* write the transition density matrix/matrices? */
-   int tdm_print;          /* print the transition density matrix/matrices? */
    int tpdm;               /* call the tpdm subroutine? */
-   int tpdm_write;         /* write the tpdm? */
-   int tpdm_print;         /* print the tpdm? */
-   int tpdm_file;          /* file number for tpdm */
    int root;               /* which root to optimize (write opdm/tpdm for) */
    double perturbation_parameter; /* z in H = H0 + z * H1 */
    int z_scale_H;          /* 1(0) if pert. scaling used */
@@ -530,8 +502,7 @@ struct params {
                               Krylov's SF CI */
    int print_sigma_overlap;/* Print sigma overlap matrix?  Test for Arteum */
    int filter_guess;       /* 1 if we want to filter out some of our guess
-                              vectors by checking the phase of a pair of
-			      determinants */
+                              vectors by checking the phase of a pair of determinants */
    int filter_guess_sign;  /* the desired phase between dets 1 and 2 */
    int filter_guess_Ia;    /* absolute alpha string addr for determinant 1 */
    int filter_guess_Ib;    /* absolute beta string addr for determinant 1 */
@@ -585,13 +556,6 @@ struct params {
    int diis_freq;          /* how many iters to go before a diis step       */
    int diis_min_vecs;      /* how many vectors required before do diis?     */
    int diis_max_vecs;      /* how many vectors maximum to hold?             */
-   int cc_macro_on;        /* add restrictions to macroconfigurations       */
-   int *cc_macro_parsed;   /* did the user specify a macro for this ex_lvl? */
-   int **cc_macro;         /* specify T vector macroconfigurations
-                              each ex_lvl has different specifications
-                              cc_macro[ex_lvl][0] = max I holes
-                                              [1] = max IV particles
-                                              [2] = max (I h + IV p)        */
    int cc_variational;     /* variational energy expression?                */
 
 };
@@ -604,61 +568,61 @@ struct params {
 ** beta) and determines the CI vector block number.
 */
 struct ci_blks {
-   BIGINT vectlen;            /* total number of elements in the CI vector */
-   int num_blocks;            /* number of blocks in the CI vector */
-   int Ia_code[CI_BLK_MAX];   /* gives the block's alpha string code */
-   int Ib_code[CI_BLK_MAX];   /* gives the block's beta string code */
-   int Ia_size[CI_BLK_MAX];   /* num of alp strings in the block */
-   int Ib_size[CI_BLK_MAX];   /* num of bet strings in the block */
-   BIGINT offset[CI_BLK_MAX];  /* offset for absolute numbering */
-   int **decode;              /* gives the block number for a given pair
-                                  of alpha and beta codes */
-   int num_alp_codes;         /* number of alpha codes in decode matrix */
-   int num_bet_codes;         /* number of beta codes in decode matrix */
-   int *first_iablk;          /* first blocknum for a given Ia irrep */
-   int *last_iablk;           /* last blocknum for a given Ia irrep */
-   int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
-   int nirreps;               /* number of molecular irreps */
-   int Ms0;                   /* 1 if Ms=0, 0 otherwise */
+    BIGINT vectlen;            /* total number of elements in the CI vector */
+    int num_blocks;            /* number of blocks in the CI vector */
+    int Ia_code[CI_BLK_MAX];   /* gives the block's alpha string code */
+    int Ib_code[CI_BLK_MAX];   /* gives the block's beta string code */
+    int Ia_size[CI_BLK_MAX];   /* num of alp strings in the block */
+    int Ib_size[CI_BLK_MAX];   /* num of bet strings in the block */
+    BIGINT offset[CI_BLK_MAX];  /* offset for absolute numbering */
+    int **decode;              /* gives the block number for a given pair
+                                   of alpha and beta codes */
+    int num_alp_codes;         /* number of alpha codes in decode matrix */
+    int num_bet_codes;         /* number of beta codes in decode matrix */
+    int *first_iablk;          /* first blocknum for a given Ia irrep */
+    int *last_iablk;           /* last blocknum for a given Ia irrep */
+    int subgr_per_irrep;       /* possible number of Olsen subgraphs per irrep */
+    int nirreps;               /* number of molecular irreps */
+    int Ms0;                   /* 1 if Ms=0, 0 otherwise */
 };
 
 /*
 ** Struct to keep track of variable required in a sigma calculation
 */
 struct sigma_data {
-   double *F;
-   int **Jij[2];
-   int **Joij[2];
-   int **Jridx[2];
-   int *Jcnt[2];
-   signed char **Jsgn[2];
-   unsigned char **Toccs;
-   double **transp_tmp;
-   double **cprime;
-   double  **sprime;
-   double *V, *Sgn;
-   int *L, *R;
-   int max_dim;
+    double *F;
+    int **Jij[2];
+    int **Joij[2];
+    int **Jridx[2];
+    int *Jcnt[2];
+    signed char **Jsgn[2];
+    unsigned char **Toccs;
+    double **transp_tmp;
+    double **cprime;
+    double **sprime;
+    double *V, *Sgn;
+    int *L, *R;
+    int max_dim;
 };
 
 /*
 ** Structs for MCSCF variables
 */
 struct mcscf_params {
-  double rms_grad_convergence; /* convergence on RMS of orbital grad           */
-  double energy_convergence;   /* convergence on CI energy                     */
-  int max_iter;                /* maximum number of casscf iterations          */
-  std::string mcscf_type;      /* Is this df?                                  */
-  std::string algorithm;       /* What convergence algorithm do we use?        */
-  double max_rot;              /* Maximum value in the rotation matrix         */
+    double rms_grad_convergence; /* convergence on RMS of orbital grad           */
+    double energy_convergence;   /* convergence on CI energy                     */
+    int max_iter;                /* maximum number of casscf iterations          */
+    std::string mcscf_type;      /* Is this df?                                  */
+    std::string algorithm;       /* What convergence algorithm do we use?        */
+    double max_rot;              /* Maximum value in the rotation matrix         */
 
-  bool orbital_so;             /* Do we do second-order orbital orbital?       */
-  double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
-  double so_start_e;           /* energy convergence threshold for one-step    */
+    bool orbital_so;             /* Do we do second-order orbital orbital?       */
+    double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
+    double so_start_e;           /* energy convergence threshold for one-step    */
 
-  int diis_start;              /* Start DIIS at this iteration                 */
-  int diis_freq;               /* Do DIIS every n steps                        */
-  int diis_max_vecs;           /* Maximum number of DIIS vectors               */
+    int diis_start;              /* Start DIIS at this iteration                 */
+    int diis_freq;               /* Do DIIS every n steps                        */
+    int diis_max_vecs;           /* Maximum number of DIIS vectors               */
 };
 
 }} // namespace psi::detci
