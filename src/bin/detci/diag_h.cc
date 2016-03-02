@@ -182,8 +182,8 @@ void CIWavefunction::diag_h() {
 
         /* get the diagonal elements of H into an array Hd */
 
-        Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
-                        CalcInfo_->twoel_ints, edrc, CalcInfo_->num_alp_expl,
+        Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
+                        CalcInfo_->twoel_ints->pointer(), edrc, CalcInfo_->num_alp_expl,
                         CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs,
                         Parameters_->hd_ave);
 
@@ -365,7 +365,7 @@ void CIWavefunction::diag_h() {
         /* prepare the H0 block */
         H0block_init(size);
 
-        CIvect Hd(Parameters_->icore, 1, Parameters_->num_hd_tmp_units,
+        CIvect Hd(Parameters_->icore, 1, 1,
                   Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_,
                   H0block_);
 
@@ -379,8 +379,8 @@ void CIWavefunction::diag_h() {
             if (Parameters_->print_lvl > 1) {
                 outfile->Printf("\nForming diagonal elements of H\n");
             }
-            Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
-                            CalcInfo_->twoel_ints, edrc,
+            Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
+                            CalcInfo_->twoel_ints->pointer(), edrc,
                             CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl,
                             CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
         } else {

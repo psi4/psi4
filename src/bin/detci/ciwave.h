@@ -225,7 +225,6 @@ private:
 
     // General setup
     void title();
-    void init_ioff();
     void form_strings();
     void set_ciblks();
 
@@ -276,7 +275,6 @@ private:
     struct H_zero_block *H0block_;
     int **s1_contrib_, **s2_contrib_, **s3_contrib_;
     int ***OV_;
-    int *ioff_;
     unsigned char ***Occs_;
 
     /// => H0block functions <= //
@@ -371,7 +369,6 @@ private:
                                                 std::vector<std::tuple<int, int> > states_vec);
     SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt=false);
     void opdm_properties(void);
-
     void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
@@ -388,8 +385,6 @@ private:
 
     std::vector<SharedMatrix> tpdm(SharedCIVector Ivec, SharedCIVector Jvec,
                                    std::vector<std::tuple<int, int, double> > states_vec);
-
-    // std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
     void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
             int nbf, int nalplists, int nbetlists,
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,

@@ -147,9 +147,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    /* get some of the stuff from CalcInfo for easier access */
    num_alp_str = CalcInfo_->num_alp_str;
    num_bet_str = CalcInfo_->num_bet_str;
-   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-   else oei = CalcInfo_->gmat[0];
-   tei = CalcInfo_->twoel_ints;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+   else oei = CalcInfo_->gmat->pointer()[0];
+   tei = CalcInfo_->twoel_ints->pointer();
 
    lastroot = init_array(nroots);
    dvecnorm = init_array(nroots);

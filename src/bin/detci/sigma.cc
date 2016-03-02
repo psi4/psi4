@@ -307,9 +307,9 @@ void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec, int sve
 {
   C->cur_vect_ = cvec;
   double* oei;
-  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-  else oei = CalcInfo_->gmat[0];
-  sigma(*(C.get()), *(S.get()), oei, CalcInfo_->twoel_ints, svec);
+  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+  else oei = CalcInfo_->gmat->pointer()[0];
+  sigma(*(C.get()), *(S.get()), oei, CalcInfo_->twoel_ints->pointer(), svec);
 
 }
 

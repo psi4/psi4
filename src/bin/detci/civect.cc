@@ -2325,12 +2325,12 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
       if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
       else if (CI_Params_->hd_otf == TRUE) {
         if (CI_Params_->mpn)
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         else
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
 
@@ -2385,8 +2385,8 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
 
      for (buf=0; buf<buf_per_vect_; buf++) {
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         read(k-1, buf);
         norm = calc_mpn_vec(buffer_, (mp_energy[1]-CI_CalcInfo_->edrc),
@@ -2420,8 +2420,8 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
         S.buf_unlock();
 
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         norm = calc_mpn_vec(buffer_, CI_CalcInfo_->e0, Hd.buffer_, buf_size_[buf],
                 -1.0, 1.0, DIV);
@@ -2535,8 +2535,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       E2kp1 += tval;
       S.buf_unlock();
       Hd.buf_lock(buf2);
-      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-           CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+           CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
            CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
       xexy(Hd.buffer_, buffer_, buf_size_[buf]);
       dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
@@ -3390,8 +3390,8 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
       /* outfile->Printf(" i = %d\n", i);
       outfile->Printf("In scale_sigma\n"); */
       Hd.buf_lock(buf1);
-      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-         CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+         CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
          CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, ORB_ENER);
       C.buf_lock(buf2);
       C.read(i, buf);
@@ -3454,8 +3454,8 @@ double CIvect::dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
       Hd.buf_lock(buf2);
       if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
       else if (CI_Params_->hd_otf == TRUE) {
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
       xpey(buf2, buf1, buf_size_[buf]); /* Hd -2*r_I*c_I + c_I*c_I */
