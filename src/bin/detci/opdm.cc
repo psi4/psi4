@@ -206,36 +206,35 @@ std::vector<SharedMatrix> CIWavefunction::opdm(SharedCIVector Ivec,
 std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec, SharedCIVector Jvec,
                                                             std::vector<std::tuple<int, int> > states_vec)
 {
-  timer_on("CIWave: opdm");
-
-  int i, maxrows, maxcols;
-  unsigned long bufsz;
-  double **transp_tmp = NULL;
-  double **transp_tmp2 = NULL;
-  // double *buffer1, *buffer2;
+  double **transp_tmp = nullptr;
+  double **transp_tmp2 = nullptr;
   int Iblock, Iblock2, Ibuf, Iac, Ibc, Inas, Inbs, Iairr;
   int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
   int do_Jblock, do_Jblock2;
+
+  timer_on("CIWave: opdm");
+  if (!CalcInfo_->sigma_initialized) sigma_init(*(Ivec).get(), *(Jvec).get());
 
   std::vector<std::vector<SharedMatrix> > opdm_list;
 
   // Alloc trans_tmp arrays if needed
   if ((Ivec->icore_ == 2 && Ivec->Ms0_ && CalcInfo_->ref_sym != 0) ||
       (Ivec->icore_ == 0 && Ivec->Ms0_)) {
-    for (i = 0, maxrows = 0, maxcols = 0; i < Ivec->num_blocks_; i++) {
+    int maxrows = 0, maxcols = 0;
+    for (int i = 0; i < Ivec->num_blocks_; i++) {
       if (Ivec->Ia_size_[i] > maxrows) maxrows = Ivec->Ia_size_[i];
       if (Ivec->Ib_size_[i] > maxcols) maxcols = Ivec->Ib_size_[i];
     }
     if (maxcols > maxrows) maxrows = maxcols;
     transp_tmp = (double **)malloc(maxrows * sizeof(double *));
     transp_tmp2 = (double **)malloc(maxrows * sizeof(double *));
-    if (transp_tmp == NULL || transp_tmp2 == NULL) {
+    if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
       printf("(opdm): Trouble with malloc'ing transp_tmp\n");
     }
-    bufsz = Ivec->get_max_blk_size();
+    unsigned long bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
-    if (transp_tmp[0] == NULL || transp_tmp2[0] == NULL) {
+    if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
       printf("(opdm): Trouble with malloc'ing transp_tmp[0]\n");
     }
   }
@@ -489,8 +488,8 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
 
   } /* end loop over states_vec */
 
-  if (transp_tmp != NULL) free_block(transp_tmp);
-  if (transp_tmp2 != NULL) free_block(transp_tmp2);
+  if (transp_tmp != nullptr) free_block(transp_tmp);
+  if (transp_tmp2 != nullptr) free_block(transp_tmp2);
 
   scratch_a.reset();
   scratch_b.reset();

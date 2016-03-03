@@ -390,11 +390,11 @@ void CIWavefunction::read_dpd_ci_ints() {
     // IntegralTransform does not properly order one electron integrals for
     // whatever reason
     double* onel_ints = CalcInfo_->onel_ints->pointer();
-    for (int i = 0, ij = 0; i < CalcInfo_->num_ci_orbs; i++) {
-        for (int j = 0; j <= i; j++) {
-            int si = i + CalcInfo_->num_drc_orbs;
-            int sj = j + CalcInfo_->num_drc_orbs;
-            int order_idx = INDEX(CalcInfo_->order[si], CalcInfo_->order[sj]);
+    for (size_t i = 0, ij = 0; i < CalcInfo_->num_ci_orbs; i++) {
+        for (size_t j = 0; j <= i; j++) {
+            size_t si = i + CalcInfo_->num_drc_orbs;
+            size_t sj = j + CalcInfo_->num_drc_orbs;
+            size_t order_idx = INDEX(CalcInfo_->order[si], CalcInfo_->order[sj]);
             onel_ints[ij++] = tmp_onel_ints[order_idx];
         }
     }
@@ -411,36 +411,35 @@ void CIWavefunction::read_dpd_ci_ints() {
                            ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
                            ints_->DPD_ID("[X>=X]+"), 0, "MO Ints (XX|XX)");
 
-    // Read everything into memory
-    for (int h = 0; h < CalcInfo_->nirreps; h++) {
+    // Read everything size_to memory
+    for (size_t h = 0; h < CalcInfo_->nirreps; h++) {
         global_dpd_->buf4_mat_irrep_init(&I, h);
         global_dpd_->buf4_mat_irrep_rd(&I, h);
     }
 
     double* twoel_intsp = CalcInfo_->twoel_ints->pointer();
-    for (int p = 0; p < CalcInfo_->num_ci_orbs; p++) {
-        int p_sym = I.params->psym[p];
+    for (size_t p = 0; p < CalcInfo_->num_ci_orbs; p++) {
+        size_t p_sym = I.params->psym[p];
 
-        for (int q = 0; q <= p; q++) {
-            int q_sym = I.params->qsym[q];
-            int pq = I.params->rowidx[p][q];
-            int pq_sym = p_sym ^ q_sym;
-            int r_pq =
-                INDEX(CalcInfo_->act_reorder[p], CalcInfo_->act_reorder[q]);
+        for (size_t q = 0; q <= p; q++) {
+            size_t q_sym = I.params->qsym[q];
+            size_t pq = I.params->rowidx[p][q];
+            size_t pq_sym = p_sym ^ q_sym;
+            size_t r_pq = INDEX(CalcInfo_->act_reorder[p], CalcInfo_->act_reorder[q]);
 
-            for (int r = 0; r <= p; r++) {
-                int r_sym = I.params->rsym[r];
-                int smax = (p == r) ? q + 1 : r + 1;
+            for (size_t r = 0; r <= p; r++) {
+                size_t r_sym = I.params->rsym[r];
+                size_t smax = (p == r) ? q + 1 : r + 1;
 
-                for (int s = 0; s < smax; s++) {
-                    int s_sym = I.params->ssym[s];
-                    int rs_sym = r_sym ^ s_sym;
+                for (size_t s = 0; s < smax; s++) {
+                    size_t s_sym = I.params->ssym[s];
+                    size_t rs_sym = r_sym ^ s_sym;
                     if (pq_sym != rs_sym) continue;
-                    int rs = I.params->colidx[r][s];
+                    size_t rs = I.params->colidx[r][s];
 
                     double value = I.matrix[pq_sym][pq][rs];
-                    int r_rs = INDEX(CalcInfo_->act_reorder[r], CalcInfo_->act_reorder[s]);
-                    int r_pqrs = INDEX(r_pq, r_rs);
+                    size_t r_rs = INDEX(CalcInfo_->act_reorder[r], CalcInfo_->act_reorder[s]);
+                    size_t r_pqrs = INDEX(r_pq, r_rs);
 
                     twoel_intsp[r_pqrs] = value;
                 }
@@ -449,7 +448,7 @@ void CIWavefunction::read_dpd_ci_ints() {
     }
 
     // Close everything out
-    for (int h = 0; h < CalcInfo_->nirreps; h++) {
+    for (size_t h = 0; h < CalcInfo_->nirreps; h++) {
         global_dpd_->buf4_mat_irrep_close(&I, h);
     }
 
@@ -460,10 +459,10 @@ void CIWavefunction::read_dpd_ci_ints() {
 double CIWavefunction::get_onel(int i, int j) {
     double value;
     if (i > j) {
-        int ij = ioff[i] + j;
+        size_t ij = ioff[i] + j;
         value = CalcInfo_->onel_ints->get(ij);
     } else {
-        int ij = ioff[j] + i;
+        size_t ij = ioff[j] + i;
         value = CalcInfo_->onel_ints->get(ij);
     }
     return value;
