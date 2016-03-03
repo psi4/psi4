@@ -509,7 +509,7 @@ void CIWavefunction::get_parameters(Options &options)
 
   if (Parameters_->cc) Parameters_->ex_lvl = Parameters_->cc_ex_lvl + 2;
 
-  Parameters_->ex_allow = (int *)malloc(Parameters_->ex_lvl*sizeof(int));
+  Parameters_->ex_allow.resize(Parameters_->ex_lvl);
   if (options["EX_ALLOW"].has_changed()) {
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
@@ -517,7 +517,7 @@ void CIWavefunction::get_parameters(Options &options)
       str += boost::lexical_cast<std::string>( Parameters_->ex_lvl) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
-    options.fill_int_array("EX_ALLOW", Parameters_->ex_allow);
+    options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());
   }
   else {
     for (i=0;i<Parameters_->ex_lvl;i++) {
@@ -592,8 +592,8 @@ void CIWavefunction::get_parameters(Options &options)
       throw PsiException(str,__FILE__,__LINE__);
     }
 
-    Parameters_->average_states = init_int_array(i);
-    Parameters_->average_weights = init_array(i);
+    Parameters_->average_states.resize(i);
+    Parameters_->average_weights.resize(i);
     Parameters_->average_num = i;
     for (i=0;i<Parameters_->average_num;i++) {
       Parameters_->average_states[i] = options["AVG_STATES"][i].to_integer();
@@ -629,8 +629,8 @@ void CIWavefunction::get_parameters(Options &options)
 
   else {
     Parameters_->average_num = 1;
-    Parameters_->average_states = init_int_array(1);
-    Parameters_->average_weights = init_array(1);
+    Parameters_->average_states.resize(1);
+    Parameters_->average_weights.resize(1);
     Parameters_->average_states[0] = Parameters_->root;
     Parameters_->average_weights[0] = 1.0;
   } /* end state-average parsing */
@@ -640,13 +640,13 @@ void CIWavefunction::get_parameters(Options &options)
   if (options["FOLLOW_VECTOR"].has_changed()) {
     i = options["FOLLOW_VECTOR"].size();
     Parameters_->follow_vec_num = i;
-    Parameters_->follow_vec_coef   = init_array(i);
-    Parameters_->follow_vec_Ia     = init_int_array(i);
-    Parameters_->follow_vec_Ib     = init_int_array(i);
-    Parameters_->follow_vec_Iac    = init_int_array(i);
-    Parameters_->follow_vec_Ibc    = init_int_array(i);
-    Parameters_->follow_vec_Iaridx = init_int_array(i);
-    Parameters_->follow_vec_Ibridx = init_int_array(i);
+    Parameters_->follow_vec_coef.resize(i);
+    Parameters_->follow_vec_Ia.resize(i);
+    Parameters_->follow_vec_Ib.resize(i);
+    Parameters_->follow_vec_Iac.resize(i);
+    Parameters_->follow_vec_Ibc.resize(i);
+    Parameters_->follow_vec_Iaridx.resize(i);
+    Parameters_->follow_vec_Ibridx.resize(i);
 
     /* now parse each piece */
     for (i=0; i<Parameters_->follow_vec_num; i++) {
@@ -951,8 +951,8 @@ void CIWavefunction::set_ras_parameters(void)
    {
      Parameters_->val_ex_lvl = 0;
      Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-     free(Parameters_->ex_allow);
-     Parameters_->ex_allow = init_int_array(Parameters_->ex_lvl);
+     Parameters_->ex_allow.clear();
+     Parameters_->ex_allow.resize(Parameters_->ex_lvl);
      for (i=0; i<Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
 
      if (Parameters_->print_lvl>2) {

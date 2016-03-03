@@ -413,26 +413,36 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
 void CIWavefunction::cleanup(void) {
-    sigma_free();
 
     // Free Bendazzoli OV arrays
     // if (Parameters_->bendazzoli) free(OV);
+
+    // DGAS main areas to track size of
+    // Free strings and graphs
+
+    // Free objects built in common_init
+    sigma_free();
+    delete SigmaData_;
+
+    free_int_matrix(CIblks_->decode);
+    free(CIblks_->first_iablk);
+    free(CIblks_->last_iablk);
+    delete CIblks_;
+
+    delete Parameters_;
+    delete H0block_;
 
     // CalcInfo free
     CalcInfo_->onel_ints.reset();
     CalcInfo_->twoel_ints.reset();
     CalcInfo_->gmat.reset();
     CalcInfo_->tf_onel_ints.reset();
-
-    // DGAS main areas to track size of
-    // Free strings and graphs
-    // delete SigmaData_;
-
+    free_int_matrix(CalcInfo_->ras_opi);
+    for (int i = 0, cnt = 0; i < 4; i++) {
+        free_int_matrix(CalcInfo_->ras_orbs[i]);
+    };
+    delete CalcInfo_;
     delete MCSCF_Parameters_;
-    // delete CIblks_;
-    // delete CalcInfo_;
-    // delete Parameters_;
-    // delete H0block_;
 
     // Cleanup up MCSCF integral objects
     if (Parameters_->mcscf) {

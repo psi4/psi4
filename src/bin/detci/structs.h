@@ -526,19 +526,19 @@ struct params {
    int filter_zero_det_Iaridx;/* relative alpha string for zero det */
    int filter_zero_det_Ibridx;/* relative beta string for zero det */
    int follow_vec_num;     /* num components in user-specified vec to follow */
-   double *follow_vec_coef;/* array of coefficients for vec to follow */
-   int *follow_vec_Ia;     /* array of absolute alpha strings for vector */
-   int *follow_vec_Ib;     /* array of absolute beta  strings for vector */
-   int *follow_vec_Iac;    /* array of alpha string lists for vector */
-   int *follow_vec_Ibc;    /* array of beta  string lists for vector */
-   int *follow_vec_Iaridx; /* array of alpha relative idx for vector */
-   int *follow_vec_Ibridx; /* array of beta  relative idx for vector */
-   int *ex_allow;          /* Determine nonstandard excitation types, such
+   std::vector<double> follow_vec_coef;/* array of coefficients for vec to follow */
+   std::vector<int> follow_vec_Ia;     /* array of absolute alpha strings for vector */
+   std::vector<int> follow_vec_Ib;     /* array of absolute beta  strings for vector */
+   std::vector<int> follow_vec_Iac;    /* array of alpha string lists for vector */
+   std::vector<int> follow_vec_Ibc;    /* array of beta  string lists for vector */
+   std::vector<int> follow_vec_Iaridx; /* array of alpha relative idx for vector */
+   std::vector<int> follow_vec_Ibridx; /* array of beta  relative idx for vector */
+   std::vector<int> ex_allow;          /* Determine nonstandard excitation types, such
                               as CID, CIST, CIDTQ, etc. Array is length
                               ex_lvl and each element is 1 or 0.  1 means
                               that excitation level is allowed. */
-   int *average_states;    /* which states to average in a SA calc */
-   double *average_weights;/* the weights for each state in a SA calc */
+   std::vector<int> average_states;    /* which states to average in a SA calc */
+   std::vector<double> average_weights;/* the weights for each state in a SA calc */
    int average_num;        /* length of the above two arrays */
    int cc;                 /* do coupled-cluster */
    int cc_ex_lvl;          /* coupled-cluster excitation level */

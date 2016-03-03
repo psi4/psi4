@@ -188,10 +188,10 @@ void CIWavefunction::form_strings(void)
                  &Parameters_->filter_zero_det_Ibc, BetaG_);
    }
    for (i=0; i<Parameters_->follow_vec_num; i++) {
-     str_abs2rel(Parameters_->follow_vec_Ia[i], Parameters_->follow_vec_Iaridx+i,
-       Parameters_->follow_vec_Iac+i, AlphaG_);
-     str_abs2rel(Parameters_->follow_vec_Ib[i], Parameters_->follow_vec_Ibridx+i,
-       Parameters_->follow_vec_Ibc+i, BetaG_);
+     str_abs2rel(Parameters_->follow_vec_Ia[i], &Parameters_->follow_vec_Iaridx[i],
+       &Parameters_->follow_vec_Iac[i], AlphaG_);
+     str_abs2rel(Parameters_->follow_vec_Ib[i], &Parameters_->follow_vec_Ibridx[i],
+       &Parameters_->follow_vec_Ibc[i], BetaG_);
    }
 
 }
