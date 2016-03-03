@@ -56,9 +56,9 @@ void CIWavefunction::form_opdm(void) {
         int j = 0;
         for (int i = 0; i < Parameters_->num_roots; i++) {
             overlap = Ivec.compute_follow_overlap(
-                i, Parameters_->follow_vec_num, Parameters_->follow_vec_coef,
-                Parameters_->follow_vec_Iac, Parameters_->follow_vec_Iaridx,
-                Parameters_->follow_vec_Ibc, Parameters_->follow_vec_Ibridx);
+                i, Parameters_->follow_vec_num, Parameters_->follow_vec_coef.data(),
+                Parameters_->follow_vec_Iac.data(), Parameters_->follow_vec_Iaridx.data(),
+                Parameters_->follow_vec_Ibc.data(), Parameters_->follow_vec_Ibridx.data());
 
             if (overlap > max_overlap) {
                 max_overlap = overlap;
