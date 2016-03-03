@@ -996,8 +996,12 @@ void export_mints()
 
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
-                                            boost::shared_ptr<psi::detci::CIvect>, int, int) =
-                                            &detci::CIWavefunction::sigma;
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                    &detci::CIWavefunction::sigma;
+    void (detci::CIWavefunction::*py_ci_int_sigma)(boost::shared_ptr<psi::detci::CIvect>,
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int,
+                                    SharedVector, SharedVector) =
+                                    &detci::CIWavefunction::sigma;
 
     typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
                                           boost::shared_ptr<psi::detci::CIvect>,
@@ -1023,7 +1027,8 @@ void export_mints()
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
-        .def("sigma", py_ci_sigma, "docstring");
+        .def("sigma", py_ci_sigma, "docstring")
+        .def("sigma", py_ci_int_sigma, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;
