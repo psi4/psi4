@@ -511,7 +511,32 @@ SharedMatrix SCFGrad::compute_gradient()
         }
     }
 
-    gradients["Total"] = total;
+    // Symmetrize the gradient
+    SharedMatrix symm_total(total->clone());
+    symm_total->zero();
+
+    CharacterTable ct = molecule_->point_group()->char_table();
+
+    // Obtain atom mapping of atom * symm op to atom
+    int **atom_map = compute_atom_map(molecule_);
+
+    // Symmetrize the gradients to remove any noise
+    for (int atom=0; atom<molecule_->natom(); ++atom) {
+        for (int g=0; g<ct.order(); ++g) {
+
+            int Gatom = atom_map[atom][g];
+
+            SymmetryOperation so = ct.symm_operation(g);
+
+            symm_total->add(atom, 0, so(0, 0) * total->get(Gatom, 0) / ct.order());
+            symm_total->add(atom, 1, so(1, 1) * total->get(Gatom, 1) / ct.order());
+            symm_total->add(atom, 2, so(2, 2) * total->get(Gatom, 2) / ct.order());
+        }
+    }
+    // Delete the atom map.
+    delete_atom_map(atom_map, molecule_);
+
+    gradients["Total"] = symm_total;
     gradients["Total"]->set_name("Total Gradient");
 
     // => Final Printing <= //
@@ -524,6 +549,7 @@ SharedMatrix SCFGrad::compute_gradient()
     } else {
         gradients["Total"]->print_atom_vector();
     }
+
 
     return gradients["Total"];
 }
