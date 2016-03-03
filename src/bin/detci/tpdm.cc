@@ -85,16 +85,14 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec,
 */
 std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVector Jvec,
                                                std::vector<std::tuple<int, int, double> > states_vec) {
-  unsigned long bufsz;
-  double **transp_tmp = NULL;
-  double **transp_tmp2 = NULL;
-  double value;
+  double **transp_tmp = nullptr;
+  double **transp_tmp2 = nullptr;
   int Iblock, Iblock2, Ibuf, Iac, Ibc, Inas, Inbs, Iairr;
   int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
   int do_Jblock, do_Jblock2;
-  char opdm_key[80];
 
   timer_on("CIWave: tpdm");
+  if (!CalcInfo_->sigma_initialized) sigma_init(*(Ivec).get(), *(Jvec).get());
 
   int nact = CalcInfo_->num_ci_orbs;
   int nact2 = nact * nact;
@@ -118,13 +116,13 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
     if (maxcols > maxrows) maxrows = maxcols;
     transp_tmp = (double **)malloc(maxrows * sizeof(double *));
     transp_tmp2 = (double **)malloc(maxrows * sizeof(double *));
-    if (transp_tmp == NULL || transp_tmp2 == NULL) {
+    if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
       printf("(tpdm): Trouble with malloc'ing transp_tmp\n");
     }
-    bufsz = Ivec->get_max_blk_size();
+    unsigned long bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
-    if (transp_tmp[0] == NULL || transp_tmp2[0] == NULL) {
+    if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
       printf("(tpdm): Trouble with malloc'ing transp_tmp[0]\n");
     }
   }
@@ -426,8 +424,8 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
 
   // Ivec->buf_unlock();
   // Jvec->buf_unlock();
-  if (transp_tmp != NULL) free_block(transp_tmp);
-  if (transp_tmp2 != NULL) free_block(transp_tmp2);
+  if (transp_tmp != nullptr) free_block(transp_tmp);
+  if (transp_tmp2 != nullptr) free_block(transp_tmp2);
 
   std::vector<SharedMatrix> ret_list;
   ret_list.push_back(tpdm_aam);

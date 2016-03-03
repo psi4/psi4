@@ -421,7 +421,7 @@ void CIWavefunction::cleanup(void) {
     // Free strings and graphs
 
     // Free objects built in common_init
-    sigma_free();
+    if (CalcInfo_->sigma_initialized) sigma_free();
     delete SigmaData_;
 
     free_int_matrix(CIblks_->decode);

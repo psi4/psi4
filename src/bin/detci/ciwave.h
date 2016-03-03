@@ -183,9 +183,12 @@ public:
      * @param S    Output vector
      * @param cvec Which vector number to use for the C vec
      * @param svec Which vector number to use for the S vec
+     * @param oei  One-electron integrals to use
+     * @param tei  Two-electron integrals to use
      */
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
-
+    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec,
+               SharedVector oei, SharedVector tei);
 
     // Compute functions
     void compute_mcscf();
