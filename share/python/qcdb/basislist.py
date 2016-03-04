@@ -20,14 +20,14 @@
 #@END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
 r"""Module to define a class :py:class:`~BasisFamily` that associates
 fitting basis sets to an orbital basis and to provide functions to
 query appropriate fitting bases for any orbital basis distributed
 with Psi4.
 
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 
 
