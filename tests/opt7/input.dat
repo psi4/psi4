@@ -11,7 +11,7 @@ HOOH_120_dihedral = -150.78664695                      # TEST
 set globals {
   diis false
   basis cc-pvdz
-  max_disp_g_convergence 0.0010
+  g_convergence gau_tight
 }
 
 # Constrained minimization with O-H bonds fixed to reach equilibrium at 0.950 Angstroms.
