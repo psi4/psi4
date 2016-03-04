@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Mar  4 16:50:38 2016
+    Psi4 started on: Fri Mar  4 18:10:17 2016
 
-    Process ID:  16188
+    Process ID:    434
     PSI4DATADIR: ../../../share/
     Memory level set to 256.000 MB
 
@@ -63,9 +63,9 @@ refs2['dash']['blyp-d3mzero'] = -0.00186831  #TEST
 refs2['dash']['bp86-d3mbj'] = -0.00433628  #TEST
 refs2['dash']['bp86-d3mzero'] = -0.00097330  #TEST
 refs2['dash']['pbe0-d3mbj'] = -0.00247043  #TEST
-refs2['dash']['pbe0-d3mzero'] = -0.00464499  #TEST
-refs2['dash']['pbe-d3mbj'] = -0.00281366  #TEST
-refs2['dash']['pbe-d3mzero'] = -0.00809474  #TEST
+refs2['dash']['pbe0-d3mzero'] = -0.00460830  #-0.00464499  #TEST
+refs2['dash']['pbe-d3mbj'] = -0.00281366  #-0.00810989  # -0.00281366  #TEST
+refs2['dash']['pbe-d3mzero'] = -0.00810989  #-0.00281366  #-0.00809474  #TEST
 refs2['dash']['wpbe-d3mbj'] = -0.00318894  #TEST
 refs2['dash']['wpbe-d3mzero'] = -0.00070448  #TEST
 refs2['dft'] = {}  #TEST
@@ -241,7 +241,7 @@ if hasD3M:
 
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:38 2016
+*** at Fri Mar  4 18:10:17 2016
 
 
          ---------------------------------------------------------
@@ -478,14 +478,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:41 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:20 2016
 Module time:
-	user time   =       2.16 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       2.16 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 	Ethene dimer -D2 (calling dftd3 -old).............................PASSED
 	Ethene dimer -D2 (calling dftd3 -old).............................PASSED
@@ -494,7 +494,7 @@ Total time:
 
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:41 2016
+*** at Fri Mar  4 18:10:20 2016
 
 
          ---------------------------------------------------------
@@ -722,14 +722,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:42 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:21 2016
 Module time:
-	user time   =       0.89 seconds =       0.01 minutes
+	user time   =       0.82 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.17 seconds =       0.05 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       3.09 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 	Ethene -D3 (calling dftd3 -zero)..................................PASSED
 	Ethene -D3 (calling dftd3 -zero)..................................PASSED
@@ -738,7 +738,7 @@ Total time:
 
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:42 2016
+*** at Fri Mar  4 18:10:21 2016
 
 
          ---------------------------------------------------------
@@ -977,14 +977,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:44 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:23 2016
 Module time:
-	user time   =       2.12 seconds =       0.04 minutes
+	user time   =       2.05 seconds =       0.03 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       5.43 seconds =       0.09 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       5.28 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
 	Ethene -D3(BJ) (calling dftd3 -bj)................................PASSED
 	Ethene -D3(BJ) (calling dftd3 -bj)................................PASSED
@@ -993,7 +993,7 @@ Total time:
 
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:45 2016
+*** at Fri Mar  4 18:10:23 2016
 
 
          ---------------------------------------------------------
@@ -1221,15 +1221,15 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:46 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:24 2016
 Module time:
-	user time   =       0.88 seconds =       0.01 minutes
+	user time   =       0.86 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.43 seconds =       0.11 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       6.26 seconds =       0.10 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 	Ethene -D3M (calling dftd3 -zerom)................................PASSED
 	Ethene -D3M (calling dftd3 -zerom)................................PASSED
     There are an even number of electrons - assuming singlet.
@@ -1237,7 +1237,7 @@ Total time:
 
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:46 2016
+*** at Fri Mar  4 18:10:25 2016
 
 
          ---------------------------------------------------------
@@ -1476,14 +1476,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:48 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:27 2016
 Module time:
-	user time   =       2.10 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       8.73 seconds =       0.15 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       8.60 seconds =       0.14 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =         10 seconds =       0.17 minutes
 	Ethene -D3M(BJ) (calling dftd3 -bjm)..............................PASSED
 	Ethene -D3M(BJ) (calling dftd3 -bjm)..............................PASSED
@@ -1504,7 +1504,7 @@ Total time:
 	monoB(CP) d3mbj...................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:48 2016
+*** at Fri Mar  4 18:10:27 2016
 
 
          ---------------------------------------------------------
@@ -1731,19 +1731,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:49 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:28 2016
 Module time:
-	user time   =       0.67 seconds =       0.01 minutes
+	user time   =       0.58 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       9.59 seconds =       0.16 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       9.31 seconds =       0.16 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =         11 seconds =       0.18 minutes
 	blyp-d3mbj........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:49 2016
+*** at Fri Mar  4 18:10:28 2016
 
 
          ---------------------------------------------------------
@@ -1970,19 +1970,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:50 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:29 2016
 Module time:
-	user time   =       0.75 seconds =       0.01 minutes
+	user time   =       0.76 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      10.43 seconds =       0.17 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =      10.19 seconds =       0.17 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =         12 seconds =       0.20 minutes
 	blyp-d3m..........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:50 2016
+*** at Fri Mar  4 18:10:29 2016
 
 
          ---------------------------------------------------------
@@ -2210,19 +2210,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:51 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:30 2016
 Module time:
 	user time   =       0.89 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      11.40 seconds =       0.19 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =      11.21 seconds =       0.19 minutes
+	system time =       0.24 seconds =       0.00 minutes
 	total time  =         13 seconds =       0.22 minutes
 	b3lyp-d3mbj.......................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:51 2016
+*** at Fri Mar  4 18:10:30 2016
 
 
          ---------------------------------------------------------
@@ -2450,19 +2450,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:53 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:31 2016
 Module time:
-	user time   =       0.93 seconds =       0.02 minutes
+	user time   =       0.86 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      12.44 seconds =       0.21 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      12.16 seconds =       0.20 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =         14 seconds =       0.23 minutes
 	b3lyp-d3m.........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:53 2016
+*** at Fri Mar  4 18:10:32 2016
 
 
          ---------------------------------------------------------
@@ -2689,29 +2689,29 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:54 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:32 2016
 Module time:
-	user time   =       0.67 seconds =       0.01 minutes
+	user time   =       0.63 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.22 seconds =       0.22 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      12.88 seconds =       0.21 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:54 2016
+*** at Fri Mar  4 18:10:32 2016
 
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:54 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:32 2016
 Module time:
 	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.34 seconds =       0.22 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      13.00 seconds =       0.22 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
@@ -2768,7 +2768,7 @@ Total time:
 	b2plyp-d3mbj......................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:54 2016
+*** at Fri Mar  4 18:10:33 2016
 
 
          ---------------------------------------------------------
@@ -2995,28 +2995,28 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:55 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:33 2016
 Module time:
-	user time   =       0.71 seconds =       0.01 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =      14.25 seconds =       0.24 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
-
-*** tstart() called on ds4
-*** at Fri Mar  4 16:50:55 2016
-
-
-*** tstop() called on ds4 at Fri Mar  4 16:50:55 2016
-Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.36 seconds =       0.24 minutes
-	system time =       0.28 seconds =       0.00 minutes
+	user time   =      13.88 seconds =       0.23 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =         16 seconds =       0.27 minutes
+
+*** tstart() called on ds4
+*** at Fri Mar  4 18:10:33 2016
+
+
+*** tstop() called on ds4 at Fri Mar  4 18:10:34 2016
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =      13.98 seconds =       0.23 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =         17 seconds =       0.28 minutes
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -3050,7 +3050,7 @@ Total time:
 	 Singles Energy            =      -0.0000000000020946 [H]
 	 Same-Spin Energy          =      -0.0201191512290696 [H]
 	 Opposite-Spin Energy      =      -0.1359390496197801 [H]
-	 Correlation Energy        =      -0.1560582008509444 [H]
+	 Correlation Energy        =      -0.1560582008509443 [H]
 	 Total Energy              =     -77.5908412744780236 [H]
 	----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================= 
@@ -3058,8 +3058,8 @@ Total time:
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
 	 SCS Same-Spin Energy      =      -0.0067063837430232 [H]
-	 SCS Opposite-Spin Energy  =      -0.1631268595437362 [H]
-	 SCS Correlation Energy    =      -0.1698332432888540 [H]
+	 SCS Opposite-Spin Energy  =      -0.1631268595437361 [H]
+	 SCS Correlation Energy    =      -0.1698332432888539 [H]
 	 SCS Total Energy          =     -77.6046163169159229 [H]
 	----------------------------------------------------------
 
@@ -3074,7 +3074,7 @@ Total time:
 	b2plyp-d3m........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:55 2016
+*** at Fri Mar  4 18:10:34 2016
 
 
          ---------------------------------------------------------
@@ -3299,19 +3299,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:56 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:35 2016
 Module time:
-	user time   =       0.74 seconds =       0.01 minutes
+	user time   =       0.75 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.26 seconds =       0.25 minutes
-	system time =       0.30 seconds =       0.01 minutes
+	user time   =      14.92 seconds =       0.25 minutes
+	system time =       0.32 seconds =       0.01 minutes
 	total time  =         18 seconds =       0.30 minutes
 	bp86-d3mbj........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:56 2016
+*** at Fri Mar  4 18:10:35 2016
 
 
          ---------------------------------------------------------
@@ -3536,19 +3536,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:57 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:36 2016
 Module time:
-	user time   =       0.73 seconds =       0.01 minutes
+	user time   =       0.71 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      16.09 seconds =       0.27 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =      15.74 seconds =       0.26 minutes
+	system time =       0.34 seconds =       0.01 minutes
 	total time  =         19 seconds =       0.32 minutes
 	bp86-d3m..........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:57 2016
+*** at Fri Mar  4 18:10:36 2016
 
 
          ---------------------------------------------------------
@@ -3773,19 +3773,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:58 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:37 2016
 Module time:
-	user time   =       0.98 seconds =       0.02 minutes
+	user time   =       0.99 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      17.19 seconds =       0.29 minutes
-	system time =       0.34 seconds =       0.01 minutes
+	user time   =      16.84 seconds =       0.28 minutes
+	system time =       0.36 seconds =       0.01 minutes
 	total time  =         20 seconds =       0.33 minutes
 	pbe-d3mbj.........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:58 2016
+*** at Fri Mar  4 18:10:37 2016
 
 
          ---------------------------------------------------------
@@ -3880,7 +3880,7 @@ Total time:
     Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104
 
     S6  =   1.000000E+00
-    S8  =  -1.800000E-05
+    S8  =   0.000000E+00
     SR6 =   2.340218E+00
     B   =   1.294340E-01
 
@@ -3944,13 +3944,13 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   1:   -71.80491214742693   -7.18049e+01   1.83340e-01 
-   @DF-RKS iter   2:   -75.93534723697077   -4.13044e+00   1.53020e-01 DIIS
-   @DF-RKS iter   3:   -77.50515829870596   -1.56981e+00   1.52346e-02 DIIS
-   @DF-RKS iter   4:   -77.51593547234958   -1.07772e-02   5.35273e-03 DIIS
-   @DF-RKS iter   5:   -77.51728474654367   -1.34927e-03   1.30750e-03 DIIS
-   @DF-RKS iter   6:   -77.51737246022950   -8.77137e-05   3.64245e-05 DIIS
-   @DF-RKS iter   7:   -77.51737252642884   -6.61993e-08   4.70916e-07 DIIS
+   @DF-RKS iter   1:   -71.80492729742693   -7.18049e+01   1.83340e-01 
+   @DF-RKS iter   2:   -75.93536238697077   -4.13044e+00   1.53020e-01 DIIS
+   @DF-RKS iter   3:   -77.50517344870596   -1.56981e+00   1.52346e-02 DIIS
+   @DF-RKS iter   4:   -77.51595062234958   -1.07772e-02   5.35273e-03 DIIS
+   @DF-RKS iter   5:   -77.51729989654366   -1.34927e-03   1.30750e-03 DIIS
+   @DF-RKS iter   6:   -77.51738761022949   -8.77137e-05   3.64245e-05 DIIS
+   @DF-RKS iter   7:   -77.51738767642884   -6.61993e-08   4.70916e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -3974,7 +3974,7 @@ Total time:
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -77.51737252642884
+  @DF-RKS Final Energy:   -77.51738767642884
 
    => Energetics <=
 
@@ -3982,10 +3982,10 @@ Total time:
     One-Electron Energy =                -169.6482042574996854
     Two-Electron Energy =                  70.9892465196491855
     DFT Exchange-Correlation Energy =     -12.2105896300705421
-    Empirical Dispersion Energy =          -0.0080947400000000
+    Empirical Dispersion Energy =          -0.0081098900000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -77.5173725264288294
+    Total Energy =                        -77.5173876764288252
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -4010,19 +4010,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:50:59 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:38 2016
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
+	user time   =       0.90 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      18.22 seconds =       0.30 minutes
-	system time =       0.36 seconds =       0.01 minutes
+	user time   =      17.81 seconds =       0.30 minutes
+	system time =       0.38 seconds =       0.01 minutes
 	total time  =         21 seconds =       0.35 minutes
 	pbe-d3m...........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:50:59 2016
+*** at Fri Mar  4 18:10:38 2016
 
 
          ---------------------------------------------------------
@@ -4248,19 +4248,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:00 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:39 2016
 Module time:
-	user time   =       0.90 seconds =       0.02 minutes
+	user time   =       0.97 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.21 seconds =       0.32 minutes
-	system time =       0.38 seconds =       0.01 minutes
+	user time   =      18.89 seconds =       0.31 minutes
+	system time =       0.40 seconds =       0.01 minutes
 	total time  =         22 seconds =       0.37 minutes
 	pbe0-d3mbj........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:51:01 2016
+*** at Fri Mar  4 18:10:39 2016
 
 
          ---------------------------------------------------------
@@ -4356,7 +4356,7 @@ Total time:
     Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104
 
     S6  =   1.000000E+00
-    S8  =   8.100000E-05
+    S8  =   0.000000E+00
     SR6 =   2.077949E+00
     B   =   1.167550E-01
 
@@ -4420,13 +4420,13 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   1:   -71.76715674266111   -7.17672e+01   1.84986e-01 
-   @DF-RKS iter   2:   -76.53216186760828   -4.76501e+00   1.28642e-01 DIIS
-   @DF-RKS iter   3:   -77.52346660432373   -9.91305e-01   1.37885e-02 DIIS
-   @DF-RKS iter   4:   -77.53257499266667   -9.10839e-03   2.82859e-03 DIIS
-   @DF-RKS iter   5:   -77.53297676334391   -4.01771e-04   3.99161e-04 DIIS
-   @DF-RKS iter   6:   -77.53298495696183   -8.19362e-06   9.60880e-06 DIIS
-   @DF-RKS iter   7:   -77.53298496197895   -5.01713e-09   9.02856e-07 DIIS
+   @DF-RKS iter   1:   -71.76712005266111   -7.17671e+01   1.84986e-01 
+   @DF-RKS iter   2:   -76.53212517760828   -4.76501e+00   1.28642e-01 DIIS
+   @DF-RKS iter   3:   -77.52342991432373   -9.91305e-01   1.37885e-02 DIIS
+   @DF-RKS iter   4:   -77.53253830266667   -9.10839e-03   2.82859e-03 DIIS
+   @DF-RKS iter   5:   -77.53294007334391   -4.01771e-04   3.99161e-04 DIIS
+   @DF-RKS iter   6:   -77.53294826696182   -8.19362e-06   9.60880e-06 DIIS
+   @DF-RKS iter   7:   -77.53294827197895   -5.01713e-09   9.02856e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -4450,7 +4450,7 @@ Total time:
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -77.53298496197895
+  @DF-RKS Final Energy:   -77.53294827197895
 
    => Energetics <=
 
@@ -4458,10 +4458,10 @@ Total time:
     One-Electron Energy =                -169.6441768923948530
     Two-Electron Energy =                  68.0437022985608735
     DFT Exchange-Correlation Energy =      -9.2881349596371763
-    Empirical Dispersion Energy =          -0.0046449900000000
+    Empirical Dispersion Energy =          -0.0046083000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -77.5329849619789400
+    Total Energy =                        -77.5329482719789382
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -4486,19 +4486,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:02 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:40 2016
 Module time:
-	user time   =       0.93 seconds =       0.02 minutes
+	user time   =       0.92 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.25 seconds =       0.34 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =      19.91 seconds =       0.33 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =         23 seconds =       0.38 minutes
 	pbe0-d3m..........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:51:02 2016
+*** at Fri Mar  4 18:10:41 2016
 
 
          ---------------------------------------------------------
@@ -4723,19 +4723,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:03 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:42 2016
 Module time:
-	user time   =       1.03 seconds =       0.02 minutes
+	user time   =       1.02 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      21.40 seconds =       0.36 minutes
-	system time =       0.42 seconds =       0.01 minutes
+	user time   =      21.02 seconds =       0.35 minutes
+	system time =       0.44 seconds =       0.01 minutes
 	total time  =         25 seconds =       0.42 minutes
 	b97-d3mbj.........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:51:03 2016
+*** at Fri Mar  4 18:10:42 2016
 
 
          ---------------------------------------------------------
@@ -4960,19 +4960,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:04 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:43 2016
 Module time:
-	user time   =       1.07 seconds =       0.02 minutes
+	user time   =       1.06 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      22.59 seconds =       0.38 minutes
-	system time =       0.44 seconds =       0.01 minutes
+	user time   =      22.20 seconds =       0.37 minutes
+	system time =       0.46 seconds =       0.01 minutes
 	total time  =         26 seconds =       0.43 minutes
 	b97-d3m...........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:51:04 2016
+*** at Fri Mar  4 18:10:43 2016
 
 
          ---------------------------------------------------------
@@ -5200,19 +5200,19 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:06 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:44 2016
 Module time:
-	user time   =       1.11 seconds =       0.02 minutes
+	user time   =       1.14 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      23.81 seconds =       0.40 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =      23.46 seconds =       0.39 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =         27 seconds =       0.45 minutes
 	wpbe-d3mbj........................................................PASSED
 
 *** tstart() called on ds4
-*** at Fri Mar  4 16:51:06 2016
+*** at Fri Mar  4 18:10:45 2016
 
 
          ---------------------------------------------------------
@@ -5440,14 +5440,14 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Fri Mar  4 16:51:07 2016
+*** tstop() called on ds4 at Fri Mar  4 18:10:46 2016
 Module time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      25.09 seconds =       0.42 minutes
-	system time =       0.48 seconds =       0.01 minutes
+	user time   =      24.67 seconds =       0.41 minutes
+	system time =       0.50 seconds =       0.01 minutes
 	total time  =         29 seconds =       0.48 minutes
 	wpbe-d3m..........................................................PASSED
 
