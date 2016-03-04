@@ -108,8 +108,9 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
         defmoved = True
 
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + ':' + os.environ.get('PATH')
+        }
 
     # Find out if running from Psi4 for scratch details and such
     try:
@@ -128,7 +129,6 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
         dftd3_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
             '.dftd3.' + str(random.randint(0, 99999))
     else:
-        #dftd3_tmpdir = 'dftd3_' + str(random.randint(0, 99999))
         dftd3_tmpdir = os.environ['HOME'] + os.sep + 'dftd3_' + str(random.randint(0, 99999))
     if os.path.exists(dftd3_tmpdir) is False:
         os.mkdir(dftd3_tmpdir)
@@ -171,8 +171,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
         command.append('-grad')
     try:
         dashout = subprocess.Popen(command, stdout=subprocess.PIPE, env=lenv)
-    except OSError:
-        raise ValidationError('Program dftd3 not found in path.')
+    except OSError as e:
+        raise ValidationError('Program dftd3 not found in path. %s' % e)
     out, err = dashout.communicate()
 
     # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
@@ -239,7 +239,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     try:
         shutil.rmtree(dftd3_tmpdir)
     except OSError as e:
-        ValidationError('Unable to remove dftd3 temporary directory %s' % e, file=sys.stderr)
+        ValidationError('Unable to remove dftd3 temporary directory %s' % e)
     os.chdir(current_directory)
 
     # return -D & d(-D)/dx
