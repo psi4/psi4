@@ -36,9 +36,9 @@ refs2['dash']['blyp-d3mzero'] = -0.00186831  #TEST
 refs2['dash']['bp86-d3mbj'] = -0.00433628  #TEST
 refs2['dash']['bp86-d3mzero'] = -0.00097330  #TEST
 refs2['dash']['pbe0-d3mbj'] = -0.00247043  #TEST
-refs2['dash']['pbe0-d3mzero'] = -0.00464499  #TEST
+refs2['dash']['pbe0-d3mzero'] = -0.00460830  #-0.00464499  #TEST
 refs2['dash']['pbe-d3mbj'] = -0.00281366  #TEST
-refs2['dash']['pbe-d3mzero'] = -0.00809474  #TEST
+refs2['dash']['pbe-d3mzero'] = -0.00810989  #-0.00809474  #TEST
 refs2['dash']['wpbe-d3mbj'] = -0.00318894  #TEST
 refs2['dash']['wpbe-d3mzero'] = -0.00070448  #TEST
 refs2['dft'] = {}  #TEST
@@ -100,6 +100,10 @@ try:
 except Dftd3Error as e:
     print_stdout("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
     hasD3M = False
+
+hasD3M = False  # temporary until fctl released into superfunctionals list
+# why have the hasD3M switch, you ask? why not just try catch throughout to
+#   accomodate old and new dftd3 exe? the answer is we can't catch from c-side.
 
 # <<<  Part 2  >>>
 
