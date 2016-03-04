@@ -2985,7 +2985,8 @@ def run_mrcc(name, **kwargs):
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
-                ':' + os.environ.get('PATH')
+                ':' + os.environ.get('PATH'),
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
