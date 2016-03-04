@@ -1779,13 +1779,24 @@ def frequency(name, **kwargs):
         return psi4.get_variable('CURRENT ENERGY')
 
 
-def molden(filename, wfn):
+def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
 
     """
+    try:
+        occa = wfn.occupation_a()
+        occb = wfn.occupation_a()
+    except:
+        psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
+                       "Writing zero's for occupation numbers")
+        occa = psi4.Vector(wfn.nmopi())
+        occb = psi4.Vector(wfn.nmopi())
+
+    # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
-    mw.write(filename)
+    mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+
 
 
 def parse_cotton_irreps(irrep, point_group):
