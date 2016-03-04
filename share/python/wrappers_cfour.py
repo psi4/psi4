@@ -56,7 +56,8 @@ def run_cfour_module(xmod):
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
                 ':' + os.environ.get('PATH') + \
                 ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + \
-                ':' + psi4.psi_top_srcdir() + '/share/basis'
+                ':' + psi4.psi_top_srcdir() + '/share/basis',
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
     # Call executable xcfour, directing cfour output to the psi4 output file

@@ -122,7 +122,9 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
-        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + ':' + os.environ.get('PATH')
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH'),
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
     # Find out if running from Psi4 for scratch details and such
