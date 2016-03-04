@@ -597,6 +597,15 @@ def energy(name, **kwargs):
 
     optstash.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
+
+        # TODO place this with the associated call, very awkward to call this in other areas at the moment
+        if name.lower() in ['EFP', 'MRCC', 'DMRG', 'PSIMRCC']:
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
+        elif 'sapt' in name.lower():
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
+
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
