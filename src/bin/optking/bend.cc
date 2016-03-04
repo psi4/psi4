@@ -67,8 +67,10 @@ BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(ben
 
 void BEND::compute_axes(GeomType geom) const {
   double u[3], v[3], w2[3], tv1[3], tv2[3];
-  tv1[0] =  1; tv1[1] = -1; tv1[2] = 1; // arbitrary search vectors
-  tv2[0] = -1; tv2[1] =  1; tv2[2] = 1;
+  //tv1[0] =  1; tv1[1] = -1; tv1[2] = 1; // arbitrary search vectors
+  //tv2[0] = -1; tv2[1] =  1; tv2[2] = 1;
+  tv1[0] = 1; tv1[1] = 0; tv1[2] = 0; // more likely not to create 2 bends
+  tv2[0] = 0; tv2[1] = 0; tv2[2] = 1; // that both break a symmetry plane
   v3d_normalize(tv1);
   v3d_normalize(tv2);
 
