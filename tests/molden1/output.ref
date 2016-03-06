@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Mar  4 18:53:47 2016
+    Psi4 started on: Sun Mar  6 10:16:36 2016
 
-    Process ID:  41845
+    Process ID:  50595
     PSI4DATADIR: /Users/daniel/Gits/dgas_psi4public/share/
     Memory level set to 256.000 MB
 
@@ -33,7 +33,7 @@
 memory 250 mb
 
 mtol = 4
-molden_ref = """
+molden_scf_ref = """
   1       0.040766825969
   2      -1.573350418124
   3       0.000000000000
@@ -49,6 +49,22 @@ molden_ref = """
  13      -0.496728664242
 """.splitlines()[::-1]
 
+molden_cas_ref = """
+  1       0.030040925914
+  2      -1.541467584185
+  3       0.000000000000
+  4       0.000000000000
+  5      -0.195712854455
+  6       2.696150580356
+  7       0.000000000000
+  8       0.000000000000
+  9       1.152403227380
+ 10      -0.680255596694
+ 11      -0.570649283584
+ 12      -0.680255596694
+ 13      -0.570649283584
+""".splitlines()[::-1]
+
 molecule h2o {
     O
     H 1 1.0
@@ -57,20 +73,36 @@ molecule h2o {
 
 set globals {
     basis     6-31G
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2]
 }
-scf_scf, scf_wfn = energy('scf', return_wfn=True)
+scf_e, scf_wfn = energy('scf', return_wfn=True)
 molden(scf_wfn, 'scf_orbitals.molden')
 
-molden_file = open('scf_orbitals.molden', 'r').readlines()[::-1]
+molden_file = open('scf_orbitals.molden.ref', 'r').readlines()[::-1]
 
-for line in range(len(molden_ref) - 1):
-    r1, r2 = molden_ref[line].split()
+for line in range(len(molden_scf_ref) - 1):
+    r1, r2 = molden_scf_ref[line].split()
     m1, m2 = molden_file[line].split()
 
     r2 = round(float(r2), mtol)
     m2 = round(float(m2), mtol)
    
-    compare_values(r2, m2, 4, ("Value of line %d in Molden ouput" % (len(molden_file) - line)))
+    compare_values(r2, m2, 4, ("Value of line %d in SCF Molden ouput" % (len(molden_file) - line)))
+
+cas_e, cas_wfn = energy('casscf', ref_wfn=scf_wfn, return_wfn=True)
+molden(cas_wfn, 'cas_orbitals.molden')
+
+molden_file = open('cas_orbitals.molden.ref', 'r').readlines()[::-1]
+
+for line in range(len(molden_scf_ref) - 1):
+    r1, r2 = molden_cas_ref[line].split()
+    m1, m2 = molden_file[line].split()
+
+    r2 = round(float(r2), mtol)
+    m2 = round(float(m2), mtol)
+   
+    compare_values(r2, m2, 4, ("Value of line %d in CAS Molden ouput" % (len(molden_file) - line)))
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.
@@ -78,8 +110,8 @@ for line in range(len(molden_ref) - 1):
     Specify the multiplicity in the molecule input block.
 
 
-*** tstart() called on ds23.sherrill.chemistry.gatech.edu
-*** at Fri Mar  4 18:53:47 2016
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Sun Mar  6 10:16:36 2016
 
 
          ---------------------------------------------------------
@@ -189,14 +221,14 @@ for line in range(len(molden_ref) - 1):
     DOCC [     3,    0,    1,    1 ]
 
    @DF-RHF iter   2:   -71.85507755236299   -2.33135e+00   2.74239e-01 DIIS
-   @DF-RHF iter   3:   -75.92561080423114   -4.07053e+00   3.84602e-02 DIIS
+   @DF-RHF iter   3:   -75.92561080423116   -4.07053e+00   3.84602e-02 DIIS
    @DF-RHF iter   4:   -75.96606425332966   -4.04534e-02   9.65344e-03 DIIS
    @DF-RHF iter   5:   -75.96949036275282   -3.42611e-03   1.29449e-03 DIIS
    @DF-RHF iter   6:   -75.96966156921283   -1.71206e-04   6.58030e-04 DIIS
-   @DF-RHF iter   7:   -75.96968438992722   -2.28207e-05   1.06835e-04 DIIS
-   @DF-RHF iter   8:   -75.96968516255495   -7.72628e-07   3.96830e-05 DIIS
-   @DF-RHF iter   9:   -75.96968520692235   -4.43674e-08   2.17300e-06 DIIS
-   @DF-RHF iter  10:   -75.96968520714820   -2.25853e-10   8.42964e-07 DIIS
+   @DF-RHF iter   7:   -75.96968438992724   -2.28207e-05   1.06835e-04 DIIS
+   @DF-RHF iter   8:   -75.96968516255490   -7.72628e-07   3.96830e-05 DIIS
+   @DF-RHF iter   9:   -75.96968520692232   -4.43674e-08   2.17300e-06 DIIS
+   @DF-RHF iter  10:   -75.96968520714822   -2.25896e-10   8.42964e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -220,18 +252,18 @@ for line in range(len(molden_ref) - 1):
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -75.96968520714820
+  @DF-RHF Final Energy:   -75.96968520714822
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201300833595
-    One-Electron Energy =                -122.2608998060074441
-    Two-Electron Energy =                  37.4501944687758623
+    One-Electron Energy =                -122.2608998060074867
+    Two-Electron Energy =                  37.4501944687758908
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.9696852071482169
+    Total Energy =                        -75.9696852071482311
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -256,7 +288,7 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds23.sherrill.chemistry.gatech.edu at Fri Mar  4 18:53:47 2016
+*** tstop() called on Daniels-MacBook-Pro.local at Sun Mar  6 10:16:36 2016
 Module time:
 	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
@@ -265,18 +297,158 @@ Total time:
 	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
-	Value of line 4770 in Molden ouput................................PASSED
-	Value of line 4769 in Molden ouput................................PASSED
-	Value of line 4768 in Molden ouput................................PASSED
-	Value of line 4767 in Molden ouput................................PASSED
-	Value of line 4766 in Molden ouput................................PASSED
-	Value of line 4765 in Molden ouput................................PASSED
-	Value of line 4764 in Molden ouput................................PASSED
-	Value of line 4763 in Molden ouput................................PASSED
-	Value of line 4762 in Molden ouput................................PASSED
-	Value of line 4761 in Molden ouput................................PASSED
-	Value of line 4760 in Molden ouput................................PASSED
-	Value of line 4759 in Molden ouput................................PASSED
-	Value of line 4758 in Molden ouput................................PASSED
+	Value of line 4770 in SCF Molden ouput............................PASSED
+	Value of line 4769 in SCF Molden ouput............................PASSED
+	Value of line 4768 in SCF Molden ouput............................PASSED
+	Value of line 4767 in SCF Molden ouput............................PASSED
+	Value of line 4766 in SCF Molden ouput............................PASSED
+	Value of line 4765 in SCF Molden ouput............................PASSED
+	Value of line 4764 in SCF Molden ouput............................PASSED
+	Value of line 4763 in SCF Molden ouput............................PASSED
+	Value of line 4762 in SCF Molden ouput............................PASSED
+	Value of line 4761 in SCF Molden ouput............................PASSED
+	Value of line 4760 in SCF Molden ouput............................PASSED
+	Value of line 4759 in SCF Molden ouput............................PASSED
+	Value of line 4758 in SCF Molden ouput............................PASSED
+
+         ---------------------------------------------------------
+                                 D E T C I  
+
+                             C. David Sherrill
+                             Matt L. Leininger
+                               18 June 1999
+         ---------------------------------------------------------
+
+
+DETCI PARAMETERS: 
+   EX LEVEL      =        8      H0 BLOCKSIZE =      400
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   MAXITER       =       12      NUM PRINT    =       20
+   NUM ROOTS     =        1      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   R CONV        = 1.00e-07      MIXED        =      yes
+   E CONV        = 1.00e-06      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   REPL OTF      =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
+   S             =   0.0000      Ms0          =      yes
+   MAX NUM VECS  =       13
+   RESTART       =       no
+   GUESS VECTOR  =   D FILE      OPENTYPE     =     NONE
+   REF SYM       =     auto
+   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   ZAPTN         =       no      MPN WIGNER   =       no
+   PERT Z        =   1.0000      FOLLOW ROOT  =        0
+   NUM THREADS   =        1
+   VECS WRITE    =       no      NUM VECS WRITE =      0
+   FILTER GUESS  =       no      SF RESTRICT  =       no
+   OPDM          =      yes      TRANS DENSITY=       no
+
+   FILES         =  50 51 52 53
+
+   EX ALLOW      =  1  1  1  1  1  1  1  1 
+   STATE AVERAGE =  1(1.00) 
+
+ORBITALS:
+   NMO          =       13
+   FROZEN CORE  =        1      RESTR CORE   =        0
+   FROZEN VIRT  =        0      RESTR VIRT   =        6
+   DROPPED CORE =        1      DROPPED VIRT =        6
+   EXPLICIT CORE=        0      ORBS IN CI   =        6
+   NUM ALP      =        5      NUM BET      =        5
+   NUM ALP EXPL =        4      NUM BET EXPL =        4
+   IOPEN        =       no
+
+   DOCC            =   3   0   1   1 
+   SOCC            =   0   0   0   0 
+
+   FROZEN DOCC     =   1   0   0   0 
+   RESTRICTED DOCC =   0   0   0   0 
+   ACTIVE          =   3   0   1   2 
+   RESTRICTED UOCC =   3   0   1   2 
+   FROZEN UOCC     =   0   0   0   0 
+         ---------------------------------------------------------
+
+
+   ==> Setting up CI strings <==
+
+   There are 15 alpha and 15 beta strings
+   The CI space requires 65 (6.50E+01) determinants and 4 blocks
+
+
+   ==> Setting up MCSCF integrals <==
+
+
+   ==> Starting MCSCF iterations <==
+
+                        Total Energy        Delta E      RMS Grad   NCI
+
+   @MCSCF Iter   1:  -75.98581978655973   -1.6135e-02   1.5446e-02   1   Initial CI
+   @MCSCF Iter   2:  -76.02451074843312   -3.8691e-02   1.6322e-02   9   APPROX
+   @MCSCF Iter   3:  -76.03124096573436   -6.7302e-03   5.7403e-03   8   APPROX
+   @MCSCF Iter   4:  -76.03191753674075   -6.7657e-04   2.1644e-03   7   APPROX
+   @MCSCF Iter   5:  -76.03199554468424   -7.8008e-05   1.0083e-03   7   APPROX, DIIS
+   @MCSCF Iter   6:  -76.03200924967663   -1.3705e-05   3.1190e-04   7   APPROX, DIIS
+   @MCSCF Iter   7:  -76.03200990392321   -6.5425e-07   5.2488e-05   6   APPROX, DIIS
+   @MCSCF Iter   8:  -76.03200992252107   -1.8598e-08   1.2522e-05   6   APPROX, DIIS
+
+       MCSCF has converged!
+
+   @MCSCF Final Energy:   -76.032009922521070
+
+
+   => Energetics <=
+
+   SCF energy =              -75.969685207148217
+   Total CI energy =         -76.032009922521070
+
+
+   CI Root  1 energy =       -76.032009922521070
+
+
+The 20 most important determinants
+
+    1    0.984906  (    3,    3)  2A1X  3A1X  1B1X  1B2X  
+    2   -0.088737  (    6,    6)  2A1X  3A1X  1B1X  2B2X  
+    3    0.055305  (    4,    6)  2A1X  3A1B  4A1A  1B1X  1B2A  2B2B  
+    4    0.055305  (    6,    4)  2A1X  3A1A  4A1B  1B1X  1B2B  2B2A  
+    5   -0.053796  (    4,    4)  2A1X  4A1X  1B1X  1B2X  
+    6   -0.034724  (   10,   10)  2A1X  1B1X  1B2X  2B2X  
+    7   -0.033096  (    9,    9)  2A1X  3A1X  4A1X  1B1X  
+    8   -0.032507  (    5,    5)  3A1X  4A1X  1B1X  1B2X  
+    9    0.032279  (    5,    6)  2A1B  3A1X  4A1A  1B1X  1B2A  2B2B  
+   10    0.032279  (    6,    5)  2A1A  3A1X  4A1B  1B1X  1B2B  2B2A  
+   11   -0.031664  (    4,    5)  2A1A  3A1B  4A1X  1B1X  1B2X  
+   12   -0.031664  (    5,    4)  2A1B  3A1A  4A1X  1B1X  1B2X  
+   13   -0.030280  (    9,   10)  2A1X  3A1A  4A1A  1B1X  1B2B  2B2B  
+   14   -0.030280  (   10,    9)  2A1X  3A1B  4A1B  1B1X  1B2A  2B2A  
+   15    0.025026  (    3,    7)  2A1X  3A1A  4A1B  1B1X  1B2A  2B2B  
+   16    0.025026  (    7,    3)  2A1X  3A1B  4A1A  1B1X  1B2B  2B2A  
+   17   -0.021069  (    9,   11)  2A1A  3A1X  4A1A  1B1X  1B2B  2B2B  
+   18   -0.021069  (   11,    9)  2A1B  3A1X  4A1B  1B1X  1B2A  2B2A  
+   19   -0.017211  (   11,   11)  3A1X  1B1X  1B2X  2B2X  
+   20   -0.015318  (   13,   13)  2A1X  3A1X  4A1X  1B2X  
+
+
+
+!Molden warning: This wavefunction does not have occupation numbers.
+Writing zero's for occupation numbers	Value of line 265 in CAS Molden ouput.............................PASSED
+	Value of line 264 in CAS Molden ouput.............................PASSED
+	Value of line 263 in CAS Molden ouput.............................PASSED
+	Value of line 262 in CAS Molden ouput.............................PASSED
+	Value of line 261 in CAS Molden ouput.............................PASSED
+	Value of line 260 in CAS Molden ouput.............................PASSED
+	Value of line 259 in CAS Molden ouput.............................PASSED
+	Value of line 258 in CAS Molden ouput.............................PASSED
+	Value of line 257 in CAS Molden ouput.............................PASSED
+	Value of line 256 in CAS Molden ouput.............................PASSED
+	Value of line 255 in CAS Molden ouput.............................PASSED
+	Value of line 254 in CAS Molden ouput.............................PASSED
+	Value of line 253 in CAS Molden ouput.............................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!
