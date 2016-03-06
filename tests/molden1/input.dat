@@ -6,7 +6,7 @@
 memory 250 mb
 
 mtol = 4
-molden_ref = """
+molden_scf_ref = """
   1       0.040766825969
   2      -1.573350418124
   3       0.000000000000
@@ -22,6 +22,22 @@ molden_ref = """
  13      -0.496728664242
 """.splitlines()[::-1]
 
+molden_cas_ref = """
+  1       0.030040925914
+  2      -1.541467584185
+  3       0.000000000000
+  4       0.000000000000
+  5      -0.195712854455
+  6       2.696150580356
+  7       0.000000000000
+  8       0.000000000000
+  9       1.152403227380
+ 10      -0.680255596694
+ 11      -0.570649283584
+ 12      -0.680255596694
+ 13      -0.570649283584
+""".splitlines()[::-1]
+
 molecule h2o {
     O
     H 1 1.0
@@ -30,17 +46,33 @@ molecule h2o {
 
 set globals {
     basis     6-31G
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2]
 }
-scf_scf, scf_wfn = energy('scf', return_wfn=True)
+scf_e, scf_wfn = energy('scf', return_wfn=True)
 molden(scf_wfn, 'scf_orbitals.molden')
 
 molden_file = open('scf_orbitals.molden', 'r').readlines()[::-1]
 
-for line in range(len(molden_ref) - 1):
-    r1, r2 = molden_ref[line].split()
+for line in range(len(molden_scf_ref) - 1):
+    r1, r2 = molden_scf_ref[line].split()
     m1, m2 = molden_file[line].split()
 
     r2 = round(float(r2), mtol)
     m2 = round(float(m2), mtol)
    
-    compare_values(r2, m2, 4, ("Value of line %d in Molden ouput" % (len(molden_file) - line)))
+    compare_values(r2, m2, 4, ("Value of line %d in SCF Molden ouput" % (len(molden_file) - line)))
+
+cas_e, cas_wfn = energy('casscf', ref_wfn=scf_wfn, return_wfn=True)
+molden(cas_wfn, 'cas_orbitals.molden')
+
+molden_file = open('cas_orbitals.molden', 'r').readlines()[::-1]
+
+for line in range(len(molden_scf_ref) - 1):
+    r1, r2 = molden_cas_ref[line].split()
+    m1, m2 = molden_file[line].split()
+
+    r2 = round(float(r2), mtol)
+    m2 = round(float(m2), mtol)
+   
+    compare_values(r2, m2, 4, ("Value of line %d in CAS Molden ouput" % (len(molden_file) - line)))
