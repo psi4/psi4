@@ -4,6 +4,7 @@ arguments.
 
 """
 from __future__ import absolute_import
+from __future__ import print_function
 import os
 #import matplotlib
 #matplotlib.use('Agg')
@@ -31,7 +32,7 @@ def expand_saveas(saveas, def_filename, def_path=os.path.abspath(os.curdir), def
 
     abspathfile = os.path.join(os.path.abspath(pth), fil)
     if relpath:
-        return abspathfile.split(os.path.commonprefix([abspathfile, os.getcwd()]) + os.sep)[1]
+        return os.path.relpath(abspathfile, os.getcwd())
     else:
         return abspathfile
 
@@ -80,7 +81,7 @@ def segment_color(argcolor, saptcolor):
     return clr
 
 
-def bars(data, title='', saveas=None, relpath=False, graphicsformat=['pdf']):
+def bars(data, title='', saveas=None, relpath=False, graphicsformat=['pdf'], view=True):
     """Generates a 'gray-bars' diagram between model chemistries with error
     statistics in list *data*, which is supplied as part of the dictionary
     for each participating bar/modelchem, along with *mc* keys in argument
@@ -129,11 +130,13 @@ def bars(data, title='', saveas=None, relpath=False, graphicsformat=['pdf']):
         savefile = pltfile + '.' + ext.lower()
         plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight')
         files_saved[ext.lower()] = savefile
-    plt.show()
+    if view:
+        plt.show()
+    plt.close()
     return files_saved
 
 
-def flat(data, color=None, title='', xlimit=4.0, mae=None, mape=None, view=True,
+def flat(data, color=None, title='', xlimit=4.0, xlines=[0.0, 0.3, 1.0], mae=None, mape=None, view=True,
     saveas=None, relpath=False, graphicsformat=['pdf']):
     """Generates a slat diagram between model chemistries with errors in
     single-item list *data*, which is supplied as part of the dictionary
@@ -156,22 +159,21 @@ def flat(data, color=None, title='', xlimit=4.0, mae=None, mape=None, view=True,
     plt.ylim([-1 * Nweft - 1, 0])
     plt.yticks([])
     plt.xticks([])
-    fig.patch.set_visible(False)
-    ax.patch.set_visible(False)
+#    fig.patch.set_visible(False)
+#    ax.patch.set_visible(False)
     ax.axis('off')
 
-    plt.axvline(-1.0, color='grey', linewidth=4)
-    plt.axvline(-0.3, color='grey', linewidth=4)
-    plt.axvline(0.0, color='grey', linewidth=4)
-    plt.axvline(0.3, color='grey', linewidth=4)
-    plt.axvline(1.0, color='grey', linewidth=4)
+    for xl in xlines:
+        plt.axvline(xl, color='grey', linewidth=4)
+        if xl != 0.0:
+            plt.axvline(-1 * xl, color='grey', linewidth=4)
 
     # plot reaction errors and threads
     for rxn in data:
         xvals = rxn['data']
         clr = segment_color(color, rxn['color'] if 'color' in rxn else None)
 
-        ax.plot(xvals, positions, '|', color=clr, markersize=13.0)
+        ax.plot(xvals, positions, '|', color=clr, markersize=13.0, mew=4)
 
     # plot trimmings
     if mae is not None:
@@ -185,11 +187,12 @@ def flat(data, color=None, title='', xlimit=4.0, mae=None, mape=None, view=True,
     files_saved = {}
     for ext in graphicsformat:
         savefile = pltfile + '.' + ext.lower()
-        plt.savefig(savefile, transparent=True, format=ext)  # , bbox_inches='tight')
+        plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight',
+                   frameon=False, pad_inches=0.0)
         files_saved[ext.lower()] = savefile
-    plt.show()
-    if not view:
-        plt.close()
+    if view:
+        plt.show()
+    plt.close()  # give this a try
     return files_saved
 
 
@@ -255,8 +258,89 @@ def flat(data, color=None, title='', xlimit=4.0, mae=None, mape=None, view=True,
 #    plt.savefig('scratch/' + pltfile + '_trimd' + '.eps', transparent=True, format='EPS')
 
 
+def valerr(data, color=None, title='', xtitle='', view=True,
+    saveas=None, relpath=False, graphicsformat=['pdf']):
+    """
+
+    """
+    import hashlib
+    from itertools import cycle
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(4, 6))
+    ax1 = fig.add_subplot(211)
+    plt.axhline(0.0, axes=ax1, color='black')
+    ax1.set_ylabel('Reaction Energy')
+    plt.title(title)
+
+    ax2 = plt.subplot(212, sharex=ax1)
+    plt.axhline(0.0, axes=ax2, color='#cccc00')
+    ax2.set_ylabel('Energy Error')
+    ax2.set_xlabel(xtitle)
+
+    xmin = 500.0
+    xmax = -500.0
+    vmin = 1.0
+    vmax = -1.0
+    emin = 1.0
+    emax = -1.0
+    linecycler = cycle(['-', '--', '-.', ':'])
+    # plot reaction errors and threads
+    for trace, tracedata in data.iteritems():
+        vaxis = []
+        vmcdata = []
+        verror = []
+        for rxn in tracedata:
+            clr = segment_color(color, rxn['color'] if 'color' in rxn else None)
+            xmin = min(xmin, rxn['axis'])
+            xmax = max(xmax, rxn['axis'])
+
+            ax1.plot(rxn['axis'], rxn['mcdata'], '^', color=clr, markersize=6.0, mew=0, zorder=10)
+            vmcdata.append(rxn['mcdata'])
+            vaxis.append(rxn['axis'])
+            vmin = min(0, vmin, rxn['mcdata'])
+            vmax = max(0, vmax, rxn['mcdata'])
+
+            if rxn['bmdata'] is not None:
+                ax1.plot(rxn['axis'], rxn['bmdata'], 'o', color='black', markersize=6.0, zorder=1)
+                vmin = min(0, vmin, rxn['bmdata'])
+                vmax = max(0, vmax, rxn['bmdata'])
+
+            if rxn['error'][0] is not None:
+                ax2.plot(rxn['axis'], rxn['error'][0], 's', color=clr, mew=0, zorder=8)
+                emin = min(0, emin, rxn['error'][0])
+                emax = max(0, emax, rxn['error'][0])
+            verror.append(rxn['error'][0])
+
+        ls = next(linecycler)
+        ax1.plot(vaxis, vmcdata, ls, color='grey', label=trace, zorder=3)
+        ax2.plot(vaxis, verror, ls, color='grey', label=trace, zorder=4)
+
+    xbuf = max(0.05, abs(0.02 * xmax))
+    vbuf = max(0.1, abs(0.02 * vmax))
+    ebuf = max(0.01, abs(0.02 * emax))
+    plt.xlim([xmin - xbuf, xmax + xbuf])
+    ax1.set_ylim([vmin - vbuf, vmax + vbuf])
+    plt.legend(fontsize='x-small', frameon=False)
+    ax2.set_ylim([emin - ebuf, emax + ebuf])
+
+    # save and show
+    pltuid = title + '_' + hashlib.sha1(title).hexdigest()
+    pltfile = expand_saveas(saveas, pltuid, def_prefix='valerr_', relpath=relpath)
+    files_saved = {}
+    for ext in graphicsformat:
+        savefile = pltfile + '.' + ext.lower()
+        plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight')
+        files_saved[ext.lower()] = savefile
+    if view:
+        plt.show()
+    plt.close()  # give this a try
+    return files_saved
+
+
 def disthist(data, title='', xtitle='', xmin=None, xmax=None,
-    me=None, stde=None, saveas=None, relpath=False, graphicsformat=['pdf']):
+    me=None, stde=None, view=True,
+    saveas=None, relpath=False, graphicsformat=['pdf']):
     """Saves a plot with name *saveas* with a histogram representation
     of the reaction errors in *data*. Also plots a gaussian distribution
     with mean *me* and standard deviation *stde*. Plot has x-range
@@ -273,8 +357,9 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
 
     me = me if me is not None else np.mean(data)
     stde = stde if stde is not None else np.std(data, ddof=1)
-    xmin = xmin if xmin is not None else me - 4.0 * stde
-    xmax = xmax if xmax is not None else me + 4.0 * stde
+    evenerr = max(abs(me - 4.0 * stde), abs(me + 4.0 * stde))
+    xmin = xmin if xmin is not None else -1 * evenerr
+    xmax = xmax if xmax is not None else evenerr
 
     dx = (xmax - xmin) / 40.
     nx = int(round((xmax - xmin) / dx)) + 1
@@ -285,16 +370,14 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
         pdfx.append(ix)
         pdfy.append(gaussianpdf(me, pow(stde, 2), ix))
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax1 = plt.subplots(figsize=(16, 6))
     plt.axvline(0.0, color='#cccc00')
-    ax1 = fig.add_subplot(111)
     ax1.set_xlim(xmin, xmax)
-    ax1.hist(data, bins=30, range=(xmin, xmax), color='#224477', alpha=0.7)
+    ax1.hist(data, bins=30, range=(xmin, xmax), color='#2d4065', alpha=0.7)
     ax1.set_xlabel(xtitle)
     ax1.set_ylabel('Count')
 
     ax2 = ax1.twinx()
-    ax2.set_xlim(xmin, xmax)
     ax2.fill(pdfx, pdfy, color='k', alpha=0.2)
     ax2.set_ylabel('Probability Density')
 
@@ -308,7 +391,9 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
         savefile = pltfile + '.' + ext.lower()
         plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight')
         files_saved[ext.lower()] = savefile
-    plt.show()
+    if view:
+        plt.show()
+    plt.close()
     return files_saved
 
 
@@ -398,7 +483,8 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
 
 
 def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
-    mousetext=None, mouselink=None, mouseimag=None, mousetitle=None,
+    mousetext=None, mouselink=None, mouseimag=None, mousetitle=None, mousediv=None,
+    labeled=True, view=True,
     saveas=None, relpath=False, graphicsformat=['pdf']):
     """Generates a tiered slat diagram between model chemistries with
     errors (or simply values) in list *data*, which is supplied as part of the
@@ -416,6 +502,7 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
     import random
     import hashlib
     import matplotlib.pyplot as plt
+    import numpy as np  # only needed for missing data with mouseiness
 
     # initialize tiers/wefts
     Nweft = len(labels)
@@ -432,20 +519,30 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
 
     # initialize plot
     fht = Nweft * 0.8
-    fig, ax = plt.subplots(figsize=(12, fht))
+    #fig, ax = plt.subplots(figsize=(12, fht))
+    fig, ax = plt.subplots(figsize=(11, fht))
     plt.subplots_adjust(left=0.01, right=0.99, hspace=0.3)
     plt.xlim([-xlimit, xlimit])
     plt.ylim([-1 * Nweft - 1, 0])
     plt.yticks([])
+    ax.set_frame_on(False)
+    if labeled:
+        ax.set_xticks([-0.5 * xlimit, -0.25 * xlimit, 0.0, 0.25 * xlimit, 0.5 * xlimit])
+    else:
+        ax.set_xticks([])
+    for tick in ax.xaxis.get_major_ticks():
+        tick.tick1line.set_markersize(0)
+        tick.tick2line.set_markersize(0)
 
     # label plot and tiers
-    ax.text(-0.9 * xlimit, -0.25, title,
-        verticalalignment='bottom', horizontalalignment='left',
-        family='Times New Roman', weight='bold', fontsize=12)
-    for weft in labels:
-        ax.text(-0.9 * xlimit, -(1.2 + labels.index(weft)), weft,
+    if labeled:
+        ax.text(-0.9 * xlimit, -0.25, title,
             verticalalignment='bottom', horizontalalignment='left',
-            family='Times New Roman', weight='bold', fontsize=18)
+            family='Times New Roman', weight='bold', fontsize=12)
+        for weft in labels:
+            ax.text(-0.9 * xlimit, -(1.2 + labels.index(weft)), weft,
+                verticalalignment='bottom', horizontalalignment='left',
+                family='Times New Roman', weight='bold', fontsize=18)
 
     # plot reaction errors and threads
     for rxn in data:
@@ -461,48 +558,56 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
             thread.extend([xvals[weft], xvals[weft + 1], None])
 
         # plotting
-        ax.plot(slat, posnS, color=clr, linewidth=1.0, solid_capstyle='round')
+        if Nweft == 1:
+            ax.plot(slat, posnS, '|', color=clr, markersize=20.0, mew=1.5, solid_capstyle='round')
+        else:
+            ax.plot(slat, posnS, color=clr, linewidth=1.0, solid_capstyle='round')
         ax.plot(thread, posnT, color=clr, linewidth=0.5, solid_capstyle='round', alpha=0.3)
 
         # converting into screen coordinates for image map
-        xyscreen = ax.transData.transform(zip(xvals, positions))
+        npxvals = [np.nan if val is None else val for val in xvals]
+        xyscreen = ax.transData.transform(zip(npxvals, positions))
         xscreen, yscreen = zip(*xyscreen)
         posnM.extend(zip([rxn['db']] * Nweft, [rxn['sys']] * Nweft,
-            xvals, xscreen, yscreen))
+            npxvals, [rxn['show']] * Nweft, xscreen, yscreen))
 
         # labeling
         if not(mousetext or mouselink or mouseimag):
-            try:
-                toplblposn = next(item for item in xvals if item is not None)
-                botlblposn = next(item for item in reversed(xvals) if item is not None)
-            except StopIteration:
-                pass
-            else:
-                ax.text(toplblposn, -0.75 + 0.6 * random.random(), rxn['sys'],
-                    verticalalignment='bottom', horizontalalignment='center',
-                    family='Times New Roman', fontsize=8)
-                ax.text(botlblposn, -1 * Nweft - 0.75 + 0.6 * random.random(), rxn['sys'],
-                    verticalalignment='bottom', horizontalalignment='center',
-                    family='Times New Roman', fontsize=8)
+            if labeled and len(data) < 200:
+                try:
+                    toplblposn = next(item for item in xvals if item is not None)
+                    botlblposn = next(item for item in reversed(xvals) if item is not None)
+                except StopIteration:
+                    pass
+                else:
+                    ax.text(toplblposn, -0.75 + 0.6 * random.random(), rxn['sys'],
+                        verticalalignment='bottom', horizontalalignment='center',
+                        family='Times New Roman', fontsize=8)
+                    ax.text(botlblposn, -1 * Nweft - 0.75 + 0.6 * random.random(), rxn['sys'],
+                        verticalalignment='bottom', horizontalalignment='center',
+                        family='Times New Roman', fontsize=8)
 
     # plot trimmings
     if mae is not None:
         ax.plot([-x for x in mae], positions, 's', color='black')
-    if mape is not None:  # equivalent to MAE for a 10 kcal/mol IE
-        ax.plot([0.025 * x for x in mape], positions, 'o', color='black')
-    plt.axvline(0, color='black')
+    if labeled:
+        if mape is not None:  # equivalent to MAE for a 10 kcal/mol IE
+            ax.plot([0.025 * x for x in mape], positions, 'o', color='black')
+        plt.axvline(0, color='#cccc00')
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title + repr(labels) + repr(xlimit)).hexdigest()
+    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1(title + repr(labels) + repr(xlimit)).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='thread_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
         savefile = pltfile + '.' + ext.lower()
         plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight')
         files_saved[ext.lower()] = savefile
-    plt.show()
+    if view:
+        plt.show()
 
     if not (mousetext or mouselink or mouseimag):
+        plt.close()
         return files_saved, None
     else:
         dpi = 80
@@ -510,7 +615,7 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
         img_height = fig.get_figheight() * dpi
 
         htmlcode = """<SCRIPT>\n"""
-        htmlcode += """function mouseshow(db, rxn, val) {\n"""
+        htmlcode += """function mouseshow(db, rxn, val, show) {\n"""
         if mousetext or mouselink:
             htmlcode += """   var cid = document.getElementById("cid");\n"""
             if mousetext:
@@ -523,11 +628,21 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
         htmlcode += """}\n"""
         htmlcode += """</SCRIPT>\n"""
 
-        htmlcode += """%s <BR>""" % (mousetitle)
-        htmlcode += """Mouseover:<BR><a id="cid"></a><br>\n"""
-        htmlcode += """<IMG SRC="%s" ismap usemap="#points" WIDTH="%d" HEIGHT="%d">\n""" % \
-            (pltfile + '.png', img_width, img_height)
-        htmlcode += """<IMG ID="cmpd_img" WIDTH="%d" HEIGHT="%d">\n""" % (200, 160)
+        if mousediv:
+            htmlcode += """%s\n""" % (mousediv[0])
+        if mousetitle:
+            htmlcode += """%s <BR>""" % (mousetitle)
+        htmlcode += """<h4>Mouseover</h4><a id="cid"></a><br>\n"""
+        if mouseimag:
+            htmlcode += """<div class="text-center">"""
+            htmlcode += """<IMG ID="cmpd_img" WIDTH="%d" HEIGHT="%d">\n""" % (200, 160)
+            htmlcode += """</div>"""
+        if mousediv:
+            htmlcode += """%s\n""" % (mousediv[1])
+        #htmlcode += """<IMG SRC="%s" ismap usemap="#points" WIDTH="%d" HEIGHT="%d">\n""" % \
+        #    (pltfile + '.png', img_width, img_height)
+        htmlcode += """<IMG SRC="%s" ismap usemap="#points" WIDTH="%d">\n""" % \
+            (pltfile + '.png', img_width)
         htmlcode += """<MAP name="points">\n"""
 
         # generating html image map code
@@ -536,23 +651,119 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
         posnM.sort(key=lambda tup: tup[2])
         posnM.sort(key=lambda tup: tup[3])
         last = (0, 0)
-        for dbse, rxn, val, x, y in posnM:
-            if val is None:
+        for dbse, rxn, val, show, x, y in posnM:
+            if val is None or val is np.nan:
                 continue
 
             now = (int(x), int(y))
             if now == last:
                 htmlcode += """<!-- map overlap! %s-%s %+.2f skipped -->\n""" % (dbse, rxn, val)
             else:
-                htmlcode += """<AREA shape="rect" coords="%d,%d,%d,%d" onmouseover="javascript:mouseshow('%s', '%s', '%+.2f');">\n""" % \
+                htmlcode += """<AREA shape="rect" coords="%d,%d,%d,%d" onmouseover="javascript:mouseshow('%s', '%s', '%+.2f', '%s');">\n""" % \
                     (x - 2, img_height - y - 20,
                     x + 2, img_height - y + 20,
-                    dbse, rxn, val)
+                    dbse, rxn, val, show)
                 last = now
 
         htmlcode += """</MAP>\n"""
 
+        plt.close()
         return files_saved, htmlcode
+
+
+def ternary(sapt, title='', labeled=True, view=True,
+            saveas=None, relpath=False, graphicsformat=['pdf']):
+    """Takes array of arrays *sapt* in form [elst, indc, disp] and builds formatted
+    two-triangle ternary diagrams. Either fully-readable or dotsonly depending
+    on *labeled*. Saves in formats *graphicsformat*.
+
+    """
+    import hashlib
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    from matplotlib.path import Path
+    import matplotlib.patches as patches
+
+    # initialize plot
+    fig, ax = plt.subplots(figsize=(6, 3.6))
+    plt.xlim([-0.75, 1.25])
+    plt.ylim([-0.18, 1.02])
+    plt.xticks([])
+    plt.yticks([])
+    ax.set_aspect('equal')
+
+    if labeled:
+        # form and color ternary triangles
+        codes = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+        pathPos = Path([(0., 0.), (1., 0.), (0.5, 0.866), (0., 0.)], codes)
+        pathNeg = Path([(0., 0.), (-0.5, 0.866), (0.5, 0.866), (0., 0.)], codes)
+        ax.add_patch(patches.PathPatch(pathPos, facecolor='white', lw=2))
+        ax.add_patch(patches.PathPatch(pathNeg, facecolor='#fff5ee', lw=2))
+
+        # form and color HB/MX/DD dividing lines
+        ax.plot([0.667, 0.5], [0., 0.866], color='#eeb4b4', lw=0.5)
+        ax.plot([-0.333, 0.5], [0.577, 0.866], color='#eeb4b4', lw=0.5)
+        ax.plot([0.333, 0.5], [0., 0.866], color='#7ec0ee', lw=0.5)
+        ax.plot([-0.167, 0.5], [0.289, 0.866], color='#7ec0ee', lw=0.5)
+
+        # label corners
+        ax.text(1.0, -0.15, u'Elst (\u2212)',
+            verticalalignment='bottom', horizontalalignment='center',
+            family='Times New Roman', weight='bold', fontsize=18)
+        ax.text(0.5, 0.9, u'Ind (\u2212)',
+            verticalalignment='bottom', horizontalalignment='center',
+            family='Times New Roman', weight='bold', fontsize=18)
+        ax.text(0.0, -0.15, u'Disp (\u2212)',
+            verticalalignment='bottom', horizontalalignment='center',
+            family='Times New Roman', weight='bold', fontsize=18)
+        ax.text(-0.5, 0.9, u'Elst (+)',
+            verticalalignment='bottom', horizontalalignment='center',
+            family='Times New Roman', weight='bold', fontsize=18)
+
+    xvals = []
+    yvals = []
+    cvals = []
+    for sys in sapt:
+        [elst, indc, disp] = sys
+
+        # calc ternary posn and color
+        Ftop = abs(indc) / (abs(elst) + abs(indc) + abs(disp))
+        Fright = abs(elst) / (abs(elst) + abs(indc) + abs(disp))
+        xdot = 0.5 * Ftop + Fright
+        ydot = 0.866 * Ftop
+        cdot = 0.5 + (xdot - 0.5) / (1. - Ftop)
+        if elst > 0.:
+            xdot = 0.5 * (Ftop - Fright)
+            ydot = 0.866 * (Ftop + Fright)
+        #print elst, indc, disp, '', xdot, ydot, cdot
+
+        xvals.append(xdot)
+        yvals.append(ydot)
+        cvals.append(cdot)
+
+    sc = ax.scatter(xvals, yvals, c=cvals, s=15, marker="o", \
+        cmap=mpl.cm.jet, edgecolor='none', vmin=0, vmax=1, zorder=10)
+
+    # remove figure outline
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+
+    # save and show
+    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1(title + repr(sapt)).hexdigest()
+    pltfile = expand_saveas(saveas, pltuid, def_prefix='tern_', relpath=relpath)
+    files_saved = {}
+    for ext in graphicsformat:
+        savefile = pltfile + '.' + ext.lower()
+        plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight',
+                    frameon=False, dpi=450, edgecolor='none', pad_inches=0.0)
+        files_saved[ext.lower()] = savefile
+    if view:
+        plt.show()
+    plt.close()
+    return files_saved
 
 
 #def thread_mouseover_web(pltfile, dbid, dbname, xmin, xmax, mcdats, labels, titles):
@@ -662,6 +873,9 @@ def composition_tile(db, aa1, aa2):
            (bfdbname.group(2) == aa1 and bfdbname.group(1) == aa2):
             tiles.append(val)
 
+    if not tiles:
+        # fill in background when no data. only sensible for neutral center colormaps
+        tiles = [0]
     dim = int(np.ceil(np.sqrt(len(tiles))))
     pad = dim * dim - len(tiles)
     tiles += [0] * pad
@@ -669,13 +883,15 @@ def composition_tile(db, aa1, aa2):
     return np.reshape(np.array(tiles), (dim, dim))
 
 
-def iowa(mcdat, mclbl, title='', xlimit=2.0):
+def iowa(mcdat, mclbl, title='', xtitle='', xlimit=2.0, view=True,
+    saveas=None, relpath=False, graphicsformat=['pdf']):
     """Saves a plot with (extensionless) name *pltfile* with an Iowa
     representation of the modelchems errors in *mcdat* for BBI/SSI-style
     *labels*.
 
     """
     import numpy as np
+    import hashlib
     import matplotlib
     import matplotlib.pyplot as plt
 
@@ -686,16 +902,18 @@ def iowa(mcdat, mclbl, title='', xlimit=2.0):
     # handle for frame, overall axis
     fig, axt = plt.subplots(figsize=(6, 6))
 
+    #axt.set_xticks([])  # for quick nolabel, whiteback
+    #axt.set_yticks([])  # for quick nolabel, whiteback
     axt.set_xticks(np.arange(len(aa)) + 0.3, minor=False)
     axt.set_yticks(np.arange(len(aa)) + 0.3, minor=False)
     axt.invert_yaxis()
-    axt.xaxis.tick_top()
-    axt.set_xticklabels(aa, minor=False, rotation=60, size='small')
-    axt.set_yticklabels(aa, minor=False, size='small')
+    axt.xaxis.tick_top()  # comment for quick nolabel, whiteback
+    axt.set_xticklabels(aa, minor=False, rotation=60, size='small')  # comment for quick nolabel, whiteback
+    axt.set_yticklabels(aa, minor=False, size='small')  # comment for quick nolabel, whiteback
     axt.xaxis.set_tick_params(width=0, length=0)
     axt.yaxis.set_tick_params(width=0, length=0)
     #axt.set_title('%s' % (title), fontsize=16, verticalalignment='bottom')
-    axt.text(10.0, -1.5, title, horizontalalignment='center', fontsize=16)
+    #axt.text(10.0, -1.5, title, horizontalalignment='center', fontsize=16)
 
     # nill spacing between 20x20 heatmaps
     plt.subplots_adjust(hspace=0.001, wspace=0.001)
@@ -712,20 +930,88 @@ def iowa(mcdat, mclbl, title='', xlimit=2.0):
             ax.set_yticks([])
             index += 1
 
-    title = '_'.join(title.split())
-    plt.savefig('iowa_' + title + '.pdf', bbox_inches='tight', transparent=True, format='PDF')
-    plt.show()
-    #plt.savefig(os.environ['HOME'] + os.sep + 'iowa_' + title + '.pdf', bbox_inches='tight', transparent=True, format='PDF')
+    #plt.title(title)
+    axt.axvline(x=4.8, linewidth=5, color='k')
+    axt.axvline(x=8.75, linewidth=5, color='k')
+    axt.axvline(x=11.6, linewidth=5, color='k')
+    axt.axhline(y=4.8, linewidth=5, color='k')
+    axt.axhline(y=8.75, linewidth=5, color='k')
+    axt.axhline(y=11.6, linewidth=5, color='k')
+    axt.set_zorder(100)
+
+    # save and show
+    pltuid = title + '_' + hashlib.sha1(title + str(xlimit)).hexdigest()
+    pltfile = expand_saveas(saveas, pltuid, def_prefix='iowa_', relpath=relpath)
+    files_saved = {}
+    for ext in graphicsformat:
+        savefile = pltfile + '.' + ext.lower()
+        plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight')
+        #plt.savefig(savefile, transparent=False, format=ext, bbox_inches='tight')  # for quick nolabel, whiteback
+        files_saved[ext.lower()] = savefile
+    if view:
+        plt.show()
+    plt.close()
+    return files_saved
+
+
+def liliowa(mcdat, title='', xlimit=2.0, view=True,
+    saveas=None, relpath=False, graphicsformat=['pdf']):
+    """Saves a plot with a heatmap representation of *mcdat*.
+
+    """
+    import numpy as np
+    import hashlib
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    # handle for frame, overall axis
+    fig, axt = plt.subplots(figsize=(1, 1))
+
+    axt.set_xticks([])
+    axt.set_yticks([])
+    axt.invert_yaxis()
+    axt.xaxis.set_tick_params(width=0, length=0)
+    axt.yaxis.set_tick_params(width=0, length=0)
+    axt.set_aspect('equal')
+
+    # remove figure outline
+    axt.spines['top'].set_visible(False)
+    axt.spines['right'].set_visible(False)
+    axt.spines['bottom'].set_visible(False)
+    axt.spines['left'].set_visible(False)
+
+    tiles = mcdat
+    dim = int(np.ceil(np.sqrt(len(tiles))))
+    pad = dim * dim - len(tiles)
+    tiles += [0] * pad
+    cb = np.reshape(np.array(tiles), (dim, dim))
+
+    heatmap = axt.pcolor(cb, vmin=-xlimit, vmax=xlimit, cmap=plt.cm.PRGn)
+
+    # save and show
+    pltuid = title + '_' + hashlib.sha1(title + str(xlimit)).hexdigest()
+    pltfile = expand_saveas(saveas, pltuid, def_prefix='liliowa_', relpath=relpath)
+    files_saved = {}
+    for ext in graphicsformat:
+        savefile = pltfile + '.' + ext.lower()
+        plt.savefig(savefile, transparent=True, format=ext, bbox_inches='tight',
+                   frameon=False, pad_inches=0.0)
+        files_saved[ext.lower()] = savefile
+    if view:
+        plt.show()
+    plt.close()
+    return files_saved
 
 
 if __name__ == "__main__":
 
     merge_dats = [
-    {'db':'HSG', 'sys':'1', 'data':[0.3508, 0.1234, 0.0364, 0.0731, 0.0388]},
-    {'db':'HSG', 'sys':'3', 'data':[0.2036, -0.0736, -0.1650, -0.1380, -0.1806]},
-    {'db':'S22', 'sys':'14', 'data':[None, -3.2144, None, None, None]},
-    {'db':'S22', 'sys':'15', 'data':[-1.5090, -2.5263, -2.9452, -2.8633, -3.1059]},
-    {'db':'S22', 'sys':'22', 'data':[0.3046, -0.2632, -0.5070, -0.4925, -0.6359]}]
+    {'show':'a', 'db':'HSG', 'sys':'1', 'data':[0.3508, 0.1234, 0.0364, 0.0731, 0.0388]},
+    {'show':'b', 'db':'HSG', 'sys':'3', 'data':[0.2036, -0.0736, -0.1650, -0.1380, -0.1806]},
+    #{'show':'', 'db':'S22', 'sys':'14', 'data':[np.nan, -3.2144, np.nan, np.nan, np.nan]},
+    {'show':'c', 'db':'S22', 'sys':'14', 'data':[None, -3.2144, None, None, None]},
+    {'show':'d', 'db':'S22', 'sys':'15', 'data':[-1.5090, -2.5263, -2.9452, -2.8633, -3.1059]},
+    {'show':'e', 'db':'S22', 'sys':'22', 'data':[0.3046, -0.2632, -0.5070, -0.4925, -0.6359]}]
 
     threads(merge_dats, labels=['d', 't', 'dt', 'q', 'tq'], color='sapt',
         title='MP2-CPa[]z', mae=[0.25, 0.5, 0.5, 0.3, 1.0], mape=[20.1, 25, 15, 5.5, 3.6])
@@ -755,4 +1041,15 @@ if __name__ == "__main__":
         '011ILE-014PHE-1', '027GLU-031LEU-1', '038PHE-041ILE-1', '199LEU-202GLU-1']
     iowa(lin_dats, lin_labs, title='ttl', xlimit=0.5)
 
+    figs = [0.22, 0.41, 0.14, 0.08, 0.47,
+            0, 0.38, 0.22, 0.10, 0.20,
+            0, 0, 0.13, 0.07, 0.25,
+            0, 0, 0, 0.06, 0.22,
+            0, 0, 0, 0, 0.69]
+    liliowa(figs, saveas='SSI-default-MP2-CP-aqz', xlimit=1.0)
+
     disthist(lin_dats)
+
+    valerrdata = [{'color': 0.14255710779686612, 'db': 'NBC1', 'sys': 'BzBz_S-3.6', 'error': [0.027999999999999803], 'mcdata': -1.231, 'bmdata': -1.259, 'axis': 3.6}, {'color': 0.08862098445220466, 'db': 'NBC1', 'sys': 'BzBz_S-3.7', 'error': [0.02300000000000013], 'mcdata': -1.535, 'bmdata': -1.558, 'axis': 3.7}, {'color': 0.246634626511043, 'db': 'NBC1', 'sys': 'BzBz_S-3.4', 'error': [0.04200000000000001], 'mcdata': 0.189, 'bmdata': 0.147, 'axis': 3.4}, {'color': 0.19526236766857613, 'db': 'NBC1', 'sys': 'BzBz_S-3.5', 'error': [0.03500000000000003], 'mcdata': -0.689, 'bmdata': -0.724, 'axis': 3.5}, {'color': 0.3443039102164425, 'db': 'NBC1', 'sys': 'BzBz_S-3.2', 'error': [0.05999999999999961], 'mcdata': 3.522, 'bmdata': 3.462, 'axis': 3.2}, {'color': 0.29638827303466814, 'db': 'NBC1', 'sys': 'BzBz_S-3.3', 'error': [0.050999999999999934], 'mcdata': 1.535, 'bmdata': 1.484, 'axis': 3.3}, {'color': 0.42859228971962615, 'db': 'NBC1', 'sys': 'BzBz_S-6.0', 'error': [0.0020000000000000018], 'mcdata': -0.099, 'bmdata': -0.101, 'axis': 6.0}, {'color': 0.30970751839224836, 'db': 'NBC1', 'sys': 'BzBz_S-5.0', 'error': [0.0040000000000000036], 'mcdata': -0.542, 'bmdata': -0.546, 'axis': 5.0}, {'color': 0.3750832778147902, 'db': 'NBC1', 'sys': 'BzBz_S-5.5', 'error': [0.0030000000000000027], 'mcdata': -0.248, 'bmdata': -0.251, 'axis': 5.5}, {'color': 0.0335358832178858, 'db': 'NBC1', 'sys': 'BzBz_S-3.8', 'error': [0.019000000000000128], 'mcdata': -1.674, 'bmdata': -1.693, 'axis': 3.8}, {'color': 0.021704594689389095, 'db': 'NBC1', 'sys': 'BzBz_S-3.9', 'error': [0.016000000000000014], 'mcdata': -1.701, 'bmdata': -1.717, 'axis': 3.9}, {'color': 0.22096255119953187, 'db': 'NBC1', 'sys': 'BzBz_S-4.5', 'error': [0.008000000000000007], 'mcdata': -1.058, 'bmdata': -1.066, 'axis': 4.5}, {'color': 0.10884135031532088, 'db': 'NBC1', 'sys': 'BzBz_S-4.1', 'error': [0.01200000000000001], 'mcdata': -1.565, 'bmdata': -1.577, 'axis': 4.1}, {'color': 0.06911476296747143, 'db': 'NBC1', 'sys': 'BzBz_S-4.0', 'error': [0.014000000000000012], 'mcdata': -1.655, 'bmdata': -1.669, 'axis': 4.0}, {'color': 0.14275218373289067, 'db': 'NBC1', 'sys': 'BzBz_S-4.2', 'error': [0.01100000000000012], 'mcdata': -1.448, 'bmdata': -1.459, 'axis': 4.2}, {'color': 0.4740372133275638, 'db': 'NBC1', 'sys': 'BzBz_S-6.5', 'error': [0.0010000000000000009], 'mcdata': -0.028, 'bmdata': -0.029, 'axis': 6.5}, {'color': 0.6672504378283713, 'db': 'NBC1', 'sys': 'BzBz_S-10.0', 'error': [0.0], 'mcdata': 0.018, 'bmdata': 0.018, 'axis': 10.0}]
+    valerr({'cat': valerrdata},
+        color='sapt', xtitle='Rang', title='aggh', graphicsformat=['png'])
