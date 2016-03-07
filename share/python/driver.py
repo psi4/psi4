@@ -554,7 +554,6 @@ def energy(name, **kwargs):
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
 
 # Before invoking the procedure, we rename any file that should be read.
@@ -635,6 +634,12 @@ def gradient(name, **kwargs):
     # 1. set the default to that of the provided name
     if lowername in procedures['gradient']:
         dertype = 1
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy
@@ -1373,6 +1378,12 @@ def hessian(name, **kwargs):
     elif lowername in procedures['gradient']:
         dertype = 1
         func = gradient
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy

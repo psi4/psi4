@@ -109,7 +109,10 @@ def select_mp2(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp2', name, 'MP2_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp2_gradient(name, **kwargs):
@@ -143,7 +146,10 @@ def select_mp2_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp2(name, **kwargs):
@@ -171,7 +177,10 @@ def select_omp2(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp2', name, 'MP2_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp2_gradient(name, **kwargs):
@@ -196,7 +205,10 @@ def select_omp2_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp3(name, **kwargs):
@@ -242,7 +254,10 @@ def select_mp3(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp3', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp3_gradient(name, **kwargs):
@@ -274,7 +289,10 @@ def select_mp3_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp3(name, **kwargs):
@@ -302,7 +320,10 @@ def select_omp3(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp3', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp3_gradient(name, **kwargs):
@@ -327,7 +348,10 @@ def select_omp3_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp2p5(name, **kwargs):
@@ -355,7 +379,10 @@ def select_mp2p5(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp2p5', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp2p5_gradient(name, **kwargs):
@@ -380,7 +407,10 @@ def select_mp2p5_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp2p5(name, **kwargs):
@@ -408,7 +438,10 @@ def select_omp2p5(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp2p5', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_omp2p5_gradient(name, **kwargs):
@@ -433,7 +466,10 @@ def select_omp2p5_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_omp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_cepa_0_(name, **kwargs):
@@ -473,7 +509,10 @@ def select_cepa_0_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_cepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_cepa_0__gradient(name, **kwargs):
@@ -498,7 +537,10 @@ def select_cepa_0__gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_cepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ocepa_0_(name, **kwargs):
@@ -526,7 +568,10 @@ def select_ocepa_0_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ocepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ocepa_0__gradient(name, **kwargs):
@@ -551,7 +596,10 @@ def select_ocepa_0__gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ocepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_fnoccsd(name, **kwargs):
@@ -579,7 +627,10 @@ def select_fnoccsd(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ccsd(name, **kwargs):
@@ -625,7 +676,10 @@ def select_ccsd(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ccsd_gradient(name, **kwargs):
@@ -658,7 +712,10 @@ def select_ccsd_gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_fnoccsd_t_(name, **kwargs):
@@ -686,7 +743,10 @@ def select_fnoccsd_t_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ccsd_t_(name, **kwargs):
@@ -724,7 +784,10 @@ def select_ccsd_t_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ccsd_t__gradient(name, **kwargs):
@@ -746,7 +809,10 @@ def select_ccsd_t__gradient(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd_t__gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_ccsd_at_(name, **kwargs):
@@ -774,7 +840,10 @@ def select_ccsd_at_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd_at_', name, 'CC_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_cisd(name, **kwargs):
@@ -802,7 +871,10 @@ def select_cisd(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_cisd', name, 'CI_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def select_mp4(name, **kwargs):
@@ -834,7 +906,10 @@ def select_mp4(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_mp4', name, 'MP_TYPE', mtd_type, reference, module])
 
-    return func(name, **kwargs)
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
 
 
 def scf_helper(name, **kwargs):
@@ -850,7 +925,6 @@ def scf_helper(name, **kwargs):
         ['BASIS'],
         ['QMEFP'],
         ['DF_BASIS_SCF'],
-        #['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
         ['SCF', 'SCF_TYPE']  # Hack: scope gets changed internally with the Andy trick
@@ -868,7 +942,7 @@ def scf_helper(name, **kwargs):
     if 'ref_wfn' in kwargs:
         raise ValidationError("It is not possible to pass scf_helper a reference wavefunction")
 
-    # Second-order SCF requires non-symmetrix density matrix support
+    # Second-order SCF requires non-symmetric density matrix support
     if (
         psi4.get_option('SCF', 'SOSCF') and
         (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
@@ -1076,11 +1150,13 @@ def run_dfocc(name, **kwargs):
     lowername = name.lower()
 
     optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'ORB_OPT'],
         ['DFOCC', 'DO_SCS'],
         ['DFOCC', 'DO_SOS'],
+        ['DFOCC', 'READ_SCF_3INDEX'],
         ['DFOCC', 'CHOLESKY'],
         ['DFOCC', 'CC_LAMBDA'])
 
@@ -1088,8 +1164,18 @@ def run_dfocc(name, **kwargs):
         type_val = psi4.get_global_option(mtd_type)
         if type_val == 'DF':
             psi4.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
+            # Alter default algorithm
+            if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+                psi4.set_global_option('SCF_TYPE', 'DF')
+                psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
         elif type_val == 'CD':
             psi4.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
+            # Alter default algorithm
+            if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+                psi4.set_global_option('SCF_TYPE', 'CD')
+                psi4.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
+            if psi4.get_option('SCF', 'SCF_TYPE') != 'CD':
+                psi4.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
             raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
 
@@ -1160,12 +1246,21 @@ def run_dfocc_gradient(name, **kwargs):
     lowername = name.lower()
 
     optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
         ['REFERENCE'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'ORB_OPT'],
         ['DFOCC', 'CC_LAMBDA'],
         ['GLOBALS', 'DERTYPE'])
+
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_global_option('SCF_TYPE', 'DF')
+        psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    if psi4.get_option('SCF', 'SCF_TYPE') != 'DF':
+        raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
 
     if lowername in ['mp2', 'omp2']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
@@ -1672,13 +1767,14 @@ def run_dfmp2_gradient(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
-        ['SCF_TYPE'])
+        ['SCF_TYPE'])  # yes, this really must be global, not local to SCF
 
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_global_option('SCF_TYPE', 'DF')
+        psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
+    if psi4.get_option('SCF', 'SCF_TYPE') != 'DF':
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -2066,6 +2162,7 @@ def run_dfmp2_property(name, **kwargs):
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
+        psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
@@ -2506,6 +2603,7 @@ def run_dfmp2(name, **kwargs):
     # Alter default algorithm
     if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
         psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+        psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -3162,9 +3260,17 @@ def run_fnodfcc(name, **kwargs):
         type_val = psi4.get_global_option(mtd_type)
         if type_val == 'CD':
             psi4.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
+            # Alter default algorithm
+            if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+                psi4.set_global_option('SCF_TYPE', 'CD')
+                psi4.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
         elif type_val == 'DF':
             if psi4.get_option('FNOCC', 'DF_BASIS_CC') == 'CHOLESKY':
                 psi4.set_local_option('FNOCC', 'DF_BASIS_CC', '')
+            # Alter default algorithm
+            if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+                psi4.set_global_option('SCF_TYPE', 'DF')
+                psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
         else:
             raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
 
@@ -3184,12 +3290,7 @@ def run_fnodfcc(name, **kwargs):
         psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
         set_cholesky_from('CC_TYPE')
 
-    # set scf-type to df unless the user wants something else
-    if psi4.has_option_changed('SCF', 'SCF_TYPE') == False:
-        psi4.set_global_option('SCF_TYPE', 'DF')
-
-    scf_type = psi4.get_option('SCF', 'SCF_TYPE')
-    if scf_type not in ['CD', 'DF']:
+    if psi4.get_option('SCF', 'SCF_TYPE') not in ['CD', 'DF']:
         raise ValidationError("""Invalid scf_type for DFCC.""")
 
     # save DF or CD ints generated by SCF for use in CC
