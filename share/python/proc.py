@@ -826,6 +826,10 @@ def select_mp4(name, **kwargs):
         if mtd_type == 'CONV':
             if module == 'DETCI':  # no default for this case
                 func = run_detci
+            elif module in ['']:
+                psi4.print_out("""\nThis method is available inefficiently as a """
+                               """byproduct of a CISDT computation.\n  Add "set """
+                               """qc_module detci" to input to access this route.\n""")
 
     if func is None:
         raise ManagedMethodError(['select_mp4', name, 'MP_TYPE', mtd_type, reference, module])
