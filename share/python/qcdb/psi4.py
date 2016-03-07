@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 #
 #@BEGIN LICENSE
 #
@@ -21,7 +19,8 @@ from __future__ import print_function
 #
 #@END LICENSE
 #
-
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import math
 from collections import defaultdict
@@ -31,6 +30,7 @@ from . import qcformat
 #import molpro_basissets
 from . import options
 from .pdict import PreservingDict
+from .psivarrosetta import useme2psivar
 
 
 def harvest_output(outtext):
@@ -42,6 +42,40 @@ def harvest_output(outtext):
     psivar_grad = None
 
     NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+
+    # Process SAPT
+    mobj = re.search(
+        r'^\s+' + r'SAPT Results' + r'\s*' + 
+        r'^\s*(?:-+)\s*' +
+        r'^\s+' + r'Electrostatics' +
+        r'(?:.*?)' +
+        r'^\s+' + r'Exchange' + 
+        r'(?:.*?)' +
+        r'^\s+' + r'Induction' + 
+        r'(?:.*?)' +
+        r'^\s+' + r'Dispersion' + 
+        r'(?:.*?)' +
+        r'^\s+' + r'Total' +
+        r'(?:.*?)' + 
+        r'^(?:\s*?)$',
+        outtext, re.MULTILINE | re.DOTALL)
+    if mobj:
+        print('matched sapt')
+        for pv in mobj.group(0).split('\n'):
+            submobj = re.search(r'^\s+' + r'(.+?)' + r'\s+' + 
+                NUMBER + r'\s+' + r'mH' + r'\s+' +
+                NUMBER + r'\s+' + r'kcal mol\^-1' + r'\s*$', pv)
+            if submobj:
+                try:
+                    key = ''.join(submobj.group(1).split())
+                    useme = useme2psivar[key]
+                except KeyError:
+                    #print '%30s' % (''),
+                    pass
+                else:
+                    #print '%30s' % (useme),
+                    psivar['%s' % (useme)] = submobj.group(2)
+                #print '*', submobj.group(1), submobj.group(2), submobj.group(3)
 
     # Process PsiVariables
     mobj = re.search(r'^(?:  Variable Map:)\s*' +
@@ -70,7 +104,7 @@ class Infile(qcformat.InputFormat2):
     def __init__(self, mem, mol, mtd, der, opt):
         qcformat.InputFormat2.__init__(self, mem, mol, mtd, der, opt)
 
-        print(self.method, self.molecule.nactive_fragments())
+        #print self.method, self.molecule.nactive_fragments()
         if 'sapt' in self.method and self.molecule.nactive_fragments() != 2:
             raise FragmentCountError("""Requested molecule has %d, not 2, fragments.""" % (self.molecule.nactive_fragments()))
 
@@ -233,12 +267,45 @@ def muster_modelchem(name, dertype):
         options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
         text += """b3lyp-d3')\n\n"""
 
+    elif lowername == 'dfdf-b2plyp-d3':
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['DFMP2']['MP2_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """b2plyp-d3')\n\n"""
+
+    elif lowername == 'df-wpbe':
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """wpbe')\n\n"""
+
     elif lowername == 'ccsd-polarizability':
         options['GLOBALS']['FREEZE_CORE']['value'] = True
         text = """property('ccsd', properties=['polarizability'])\n\n"""
 
+    elif lowername == 'mrccsdt(q)':
+        options['SCF']['SCF_TYPE']['value'] = 'pk'
+        options['GLOBALS']['FREEZE_CORE']['value'] = True
+        options['GLOBALS']['NAT_ORBS']['value'] = True  # needed by mrcc but not recognized by mrcc
+        options['FNOCC']['OCC_TOLERANCE']['value'] = 6
+        text += """mrccsdt(q)')\n\n"""
+
+    elif lowername == 'c4-ccsdt(q)':
+        options['CFOUR']['CFOUR_SCF_CONV']['value'] = 11
+        options['CFOUR']['CFOUR_CC_CONV']['value'] = 10
+        options['CFOUR']['CFOUR_FROZEN_CORE']['value'] = True
+        text += """c4-ccsdt(q)')\n\n"""
+
+    elif lowername == 'df-m05-2x':
+        options['SCF']['SCF_TYPE']['value'] = 'df'
+        options['SCF']['DFT_SPHERICAL_POINTS']['value'] = 302
+        options['SCF']['DFT_RADIAL_POINTS']['value'] = 100
+        text += """m05-2x')\n\n"""
+
     else:
-        raise ValidationError("""Requested Cfour computational methods %d is not available.""" % (lowername))
+        raise ValidationError("""Requested Psi4 computational methods %d is not available.""" % (lowername))
 
 #    # Set clobbering
 #    if 'CFOUR_DERIV_LEVEL' in options['CFOUR']:
@@ -263,7 +330,12 @@ procedures = {
         'sapt2+'        : muster_modelchem,
         'sapt2+(3)'     : muster_modelchem,
         'sapt2+3(ccd)'  : muster_modelchem,
-        'ccsd-polarizability'  : muster_modelchem,
+        'mrccsdt(q)'    : muster_modelchem,
+        'c4-ccsdt(q)'   : muster_modelchem,
+        'ccsd-polarizability' : muster_modelchem,
+        'dfdf-b2plyp-d3': muster_modelchem,
+        'df-wpbe'       : muster_modelchem,
+        'df-m05-2x'     : muster_modelchem,
     }
 }
 
