@@ -90,16 +90,15 @@ int read_options(std::string name, Options& options)
 }
 
 extern "C"
-PsiReturnType @plugin@(Options& options)
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
 
     // Note that if this function was integrated into Psi4 we would not be using P::e.wavefunction
     // Instead everything would be explicitly passed
-    SharedWavefunction wfn(new @Plugin@(Process::environment.wavefunction(), options));
+    SharedWavefunction wfn(new @Plugin@(ref_wfn, options));
     wfn->compute_energy();
 
-    Process::environment.set_wavefunction(wfn);
-    return Success;
+    return wfn;
 }
 
 }} // End namespaces
