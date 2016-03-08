@@ -250,6 +250,10 @@ def select_mp3(name, **kwargs):
         if mtd_type == 'CONV':
             if module == 'DETCI':  # no default for this case
                 func = run_detci
+            elif module in ['']:
+                psi4.print_out("""\nThis method is available inefficiently as a """
+                               """byproduct of a CISD computation.\n  Add "set """
+                               """qc_module detci" to input to access this route.\n""")
 
     if func is None:
         raise ManagedMethodError(['select_mp3', name, 'MP_TYPE', mtd_type, reference, module])
@@ -472,13 +476,13 @@ def select_omp2p5_gradient(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_cepa_0_(name, **kwargs):
-    """Function selecting the algorithm for a CEPA(0) energy call
+def select_lccd(name, **kwargs):
+    """Function selecting the algorithm for a LCCD energy call
     and directing to specified or best-performance default modules.
 
     """
     reference = psi4.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
     module = psi4.get_global_option('QC_MODULE')
     # Considering only [df]occ/fnocc
 
@@ -507,7 +511,7 @@ def select_cepa_0_(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_cepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_lccd', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -515,13 +519,13 @@ def select_cepa_0_(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_cepa_0__gradient(name, **kwargs):
-    """Function selecting the algorithm for a CEPA(0) gradient call
+def select_lccd_gradient(name, **kwargs):
+    """Function selecting the algorithm for a LCCD gradient call
     and directing to specified or best-performance default modules.
 
     """
     reference = psi4.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
     module = psi4.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
@@ -535,7 +539,7 @@ def select_cepa_0__gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_cepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_lccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -543,13 +547,13 @@ def select_cepa_0__gradient(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_ocepa_0_(name, **kwargs):
-    """Function selecting the algorithm for an OCEPA(0) energy call
+def select_olccd(name, **kwargs):
+    """Function selecting the algorithm for an OLCCD energy call
     and directing to specified or best-performance default modules.
 
     """
     reference = psi4.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
     module = psi4.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
@@ -566,7 +570,7 @@ def select_ocepa_0_(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_ocepa_0_', name, 'CEPA_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_olccd', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -574,13 +578,13 @@ def select_ocepa_0_(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_ocepa_0__gradient(name, **kwargs):
-    """Function selecting the algorithm for an OCEPA(0) gradient call
+def select_olccd_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OLCCD gradient call
     and directing to specified or best-performance default modules.
 
     """
     reference = psi4.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4.get_global_option('CEPA_TYPE')
+    mtd_type = psi4.get_global_option('CC_TYPE')
     module = psi4.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
@@ -594,7 +598,7 @@ def select_ocepa_0__gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_ocepa_0__gradient', name, 'CEPA_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_olccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1188,9 +1192,9 @@ def run_dfocc(name, **kwargs):
     elif lowername in ['mp3', 'omp3']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
         set_cholesky_from('MP_TYPE')
-    elif lowername in ['cepa(0)', 'ocepa(0)']:
+    elif lowername in ['lccd', 'olccd']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        set_cholesky_from('CEPA_TYPE')
+        set_cholesky_from('CC_TYPE')
 
     elif lowername == 'ccd':
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
@@ -1211,10 +1215,10 @@ def run_dfocc(name, **kwargs):
         raise ValidationError('Unidentified method %s' % (lowername))
 
     # conventional vs. optimized orbitals
-    if lowername in ['mp2', 'mp2.5', 'mp3', 'cepa(0)',
+    if lowername in ['mp2', 'mp2.5', 'mp3', 'lccd',
                      'ccd', 'ccsd', 'ccsd(t)', 'ccsd(at)']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif lowername in ['omp2', 'omp2.5', 'omp3', 'ocepa(0)']:
+    elif lowername in ['omp2', 'omp2.5', 'omp3', 'olccd']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     psi4.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
@@ -1268,7 +1272,7 @@ def run_dfocc_gradient(name, **kwargs):
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
     elif lowername in ['mp3', 'omp3']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-    elif lowername in ['cepa(0)', 'ocepa(0)']:
+    elif lowername in ['lccd', 'olccd']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
     elif lowername in ['ccd']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
@@ -1279,9 +1283,9 @@ def run_dfocc_gradient(name, **kwargs):
     else:
         raise ValidationError('Unidentified method %s' % (lowername))
 
-    if lowername in ['mp2', 'mp2.5', 'mp3', 'cepa(0)', 'ccd', 'ccsd']:
+    if lowername in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif lowername in ['omp2', 'omp2.5', 'omp3', 'ocepa(0)']:
+    elif lowername in ['omp2', 'omp2.5', 'omp3', 'olccd']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     psi4.set_global_option('DERTYPE', 'FIRST')
@@ -1488,12 +1492,12 @@ def run_occ(name, **kwargs):
         psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
         psi4.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
-    elif lowername == 'cepa(0)':
+    elif lowername == 'lccd':
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         psi4.set_local_option('OCC', 'DO_SCS', 'FALSE')
         psi4.set_local_option('OCC', 'DO_SOS', 'FALSE')
-    elif lowername == 'ocepa(0)':
+    elif lowername == 'olccd':
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         psi4.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         psi4.set_local_option('OCC', 'DO_SCS', 'FALSE')
@@ -1554,10 +1558,10 @@ def run_occ_gradient(name, **kwargs):
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         psi4.set_local_option('OCC', 'ORB_OPT', 'TRUE')
 
-    elif lowername == 'cepa(0)':  # cepa0
+    elif lowername == 'lccd':
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    elif lowername == 'ocepa(0)':  # ocepa
+    elif lowername == 'olccd':
         psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         psi4.set_local_option('OCC', 'ORB_OPT', 'TRUE')
     else:
@@ -3470,8 +3474,12 @@ def run_cepa(name, **kwargs):
     psi4.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
     # what type of cepa?
-    if lowername in ['cepa(0)', 'fno-cepa(0)']:
+    if lowername in ['lccd', 'fno-lccd']:
         cepa_level = 'cepa(0)'
+        psi4.set_local_option('FNOCC', 'CEPA_NO_SINGLES', True)
+    elif lowername in ['cepa(0)', 'fno-cepa(0)', 'lccsd', 'fno-lccsd']:
+        cepa_level = 'cepa(0)'
+        psi4.set_local_option('FNOCC', 'CEPA_NO_SINGLES', False)
     elif lowername in ['cepa(1)', 'fno-cepa(1)']:
         cepa_level = 'cepa(1)'
     elif lowername in ['cepa(3)', 'fno-cepa(3)']:
@@ -3487,7 +3495,7 @@ def run_cepa(name, **kwargs):
 
     psi4.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
 
-    if lowername in ['fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
+    if lowername in ['fno-lccd', 'fno-lccsd', 'fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
                      'fno-acpf', 'fno-aqcc', 'fno-cisd']:
         psi4.set_local_option('FNOCC', 'NAT_ORBS', True)
 

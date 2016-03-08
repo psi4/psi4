@@ -100,14 +100,18 @@ def return_energy_components():
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'mp3corl': 'MP3 CORRELATION ENERGY',
                           'omp3corl': 'OMP3 CORRELATION ENERGY'}
-    VARH['ocepa'] = {
+    VARH['olccd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                         'ocepacorl': 'OCEPA(0) CORRELATION ENERGY'}
-    VARH['cepa0'] = {
+                         'olccdcorl': 'OLCCD CORRELATION ENERGY'}
+    VARH['lccd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                         'cepa0corl': 'CEPA(0) CORRELATION ENERGY'}
+                          'lccdcorl': 'LCCD CORRELATION ENERGY'}
+    VARH['lccsd'] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'lccsdcorl': 'LCCSD CORRELATION ENERGY'}
     VARH['cepa(0)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
@@ -1766,8 +1770,9 @@ def complete_basis_set(name, **kwargs):
            * omp2
            * omp2.5
            * omp3
-           * ocepa
-           * cepa0
+           * olccd
+           * lccd
+           * lccsd
            * cepa(0)
            * cepa(1)
            * cepa(3)

@@ -167,11 +167,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP_TYPE", "CONV", "DF CONV CD");
-  /*- Algorithm to use for CEPA computation (e.g., CEPA(3) or ACPF or OCEPA(0)).
-  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
-  options.add_str("CEPA_TYPE", "CONV", "DF CONV CD");
   // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files, while CONV results in no approximations being made.
-  /*- Algorithm to use for CC computation (e.g., CCD, CCSD, CCSD(T)).
+  /*- Algorithm to use for CC or CEPA computation (e.g., CCD, CCSD(T), CEPA(3), ACPF).
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CC_TYPE", "CONV", "DF CONV CD");
   /*- Algorithm to use for CI computation (e.g., CID or CISD).
