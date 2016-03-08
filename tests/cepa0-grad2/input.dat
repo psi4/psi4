@@ -21,7 +21,7 @@ set {
   guess gwh
 }
 
-grad = gradient('cepa(0)')
+grad = gradient('lccd')
 
 compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
