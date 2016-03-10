@@ -63,20 +63,19 @@ public:
 };
 
 extern "C"
-PsiReturnType @plugin@(Options &options)
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
 
     // Get active molecule
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    // Create a basis set parser object.
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    // Construct a new basis set.
-    boost::shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
+    boost::shared_ptr<Molecule> molecule = ref_wfn->molecule();
+    // Grab basis object:
+    boost::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
     // The integral factory oversees the creation of integral objects
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
+            (aoBasis, aoBasis, aoBasis, aoBasis));
 
     // N.B. This should be called after the basis has been built, because
     // the geometry has not been
@@ -149,7 +148,7 @@ PsiReturnType @plugin@(Options &options)
         }
     }
 
-    return Success;
+    return ref_wfn;
 }
 
 }} // End namespaces
