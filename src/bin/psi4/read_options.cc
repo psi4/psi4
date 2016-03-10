@@ -222,11 +222,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
   /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
   options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  /*- Vector specifying CubicScalarGrid spatial extent in Bohr [O_X, O_Y, O_Z].
-  Defaults to 4.0 Bohr each. -*/
+  /*- CubicScalarGrid spatial extent in bohr [O_X, O_Y, O_Z]. Defaults to 4.0 bohr each. -*/
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
-  /*- Vector specifying CubicScalarGrid grid spacing in Bohr [D_X, D_Y, D_Z].
-  Defaults to 0.2 Bohr each. -*/
+  /*- CubicScalarGrid grid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
@@ -976,10 +974,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       // => CubicScalarGrid options <= //
 
-      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
-      options.add("CUBIC_GRID_SPACING", new ArrayType());
-      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+      /*- CubicScalarGrid spatial extent in bohr [O_X, O_Y, O_Z]. Defaults to 4.0 bohr each. -*/
       options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+      /*- CubicScalarGrid grid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+      options.add("CUBIC_GRID_SPACING", new ArrayType());
       /*- CubicScalarGrid basis cutoff. !expert -*/
       options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
       /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
