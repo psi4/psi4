@@ -6,8 +6,8 @@
 
 .. _`sec:energy()`:
 
-Energy
-======
+:py:func:`~driver.energy` Single-Point Energy
+=============================================
 
-.. autofunction:: driver.energy(name [, bypass_scf, molecule])
+.. autofunction:: driver.energy(name [, molecule, return_wfn, restart_file])
 

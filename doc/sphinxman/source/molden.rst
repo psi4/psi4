@@ -30,7 +30,7 @@ Molden file ends in ".molden", and the prefix is determined by
 |globals__writer_file_label| (if set), or else by the name of the output
 file plus the name of the current molecule.
 
-.. autofunction:: driver.molden(wfn)
+.. autofunction:: driver.molden(wfn, filename)
 
 Options
 ~~~~~~~
