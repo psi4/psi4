@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 #
 #@BEGIN LICENSE
 #
@@ -20,13 +19,279 @@ from __future__ import absolute_import
 #
 #@END LICENSE
 #
-
+from __future__ import absolute_import
+from __future__ import print_function
+import re
 import math
+from decimal import Decimal
 from collections import defaultdict
 from .exceptions import *
+from .pdict import PreservingDict
 from . import qcformat
 from . import molpro_basissets
 from . import options
+
+
+def harvest_output(outtext):
+    """Function to read MRCC output file *outtext* and parse important
+    quantum chemical information from it in
+
+    """
+    psivar = PreservingDict()
+    psivar_coord = None
+    psivar_grad = None
+
+    NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+
+
+    # <<< Process NRE >>>
+    mobj = re.search(
+        r'^\s*' + r'(?:NUCLEAR REPULSION ENERGY)' + r'\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched nrc')
+        psivar['NUCLEAR REPULSION ENERGY'] = mobj.group(1)
+
+    # <<< Process SCF >>>
+
+    #mobj = re.search(
+    #    r'^\s*' + r'(?:Energy of reference determinant (?:\[au\]|/au/):)' + r'\s+' + NUMBER + r'\s*$',
+    #    outtext, re.MULTILINE)
+    #if mobj:
+    #    print('matched scf')
+    #    psivar['SCF TOTAL ENERGY'] = mobj.group(1)
+
+    # <<< Process MP2 >>>
+
+    mobj = re.search(
+        r'^\s*' + r'Reference energy[:]?\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'MP2 singlet pair energy[:]?\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'MP2 triplet pair energy[:]?\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'MP2 correlation energy[:]?\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched mp2')
+        psivar['HF TOTAL ENERGY'] = mobj.group(1)
+        psivar['MP2 CORRELATION ENERGY'] = mobj.group(4)
+        psivar['MP2 TOTAL ENERGY'] = Decimal(mobj.group(1)) + Decimal(mobj.group(4))
+        psivar['MP2 SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(3)) * \
+            Decimal(2) / Decimal(3)
+        psivar['MP2 OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(4)) - \
+            psivar['MP2 SAME-SPIN CORRELATION ENERGY']
+
+    # <<< Process SAPT-like >>>
+
+    mobj = re.search(
+        #r'^\s+' + r'E1pol\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E1exch\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E1exch\(S2\)\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E2ind\(unc\)\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E2ind\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E2ind-exch\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E2disp\(unc\)\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+#        r'^\s+' + r'E2disp\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r'\)\s+' + NUMBER + r'\s+' + NUMBER + '\s*',
+        r'^\s+' + r'E2disp\s+' + NUMBER + r'.*$',
+        #r'^\s+' + r'E2disp-exch\(unc\)\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        #r'^\s+' + r'E2disp-exc\s+' + NUMBER + r'\s+\(\s*' + NUMBER + r')\s+' + NUMBER + r'\s+' + NUMBER + '\s*'
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched sapt-like')
+        psivar['MP2C DISP20 ENERGY'] = Decimal(mobj.group(1)) / Decimal(1000)
+
+    # <<< Process SCF-F12 >>>
+
+    mobj = re.search(
+        r'^\s+' + r'CABS-singles contribution of\s+' + NUMBER + r'\s+patched into reference energy.\s*' +
+        r'^\s+' + r'New reference energy\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched scff12')
+        psivar['SCF TOTAL ENERGY'] = Decimal(mobj.group(2)) - Decimal(mobj.group(1))
+        psivar['HF-CABS TOTAL ENERGY'] = mobj.group(2)
+
+    # <<< Process MP2-F12 >>>
+
+# DF-MP2-F12 correlation energies:
+# --------------------------------
+# Approx.                                    Singlet             Triplet             Ecorr            Total Energy
+# DF-MP2                                -0.261035854033     -0.140514056591     -0.401549910624   -112.843952380305
+# DF-MP2-F12/3*C(DX,FIX)                -0.367224875485     -0.163178266500     -0.530403141984   -112.972805611666
+# DF-MP2-F12/3*C(FIX)                   -0.358294348708     -0.164988061549     -0.523282410258   -112.965684879939
+# DF-MP2-F12/3C(FIX)                    -0.357375628783     -0.165176490386     -0.522552119169   -112.964954588851
+#
+# DF-MP2-F12 correlation energies:
+# ================================
+# Approx.                                    Singlet             Triplet             Ecorr            Total Energy
+# DF-MP2                                -0.357960885582     -0.185676627667     -0.543637513249   -132.841755020796
+# DF-MP2-F12/3*C(DX,FIX)                -0.381816069559     -0.188149510095     -0.569965579654   -132.868083087202
+# DF-MP2-F12/3*C(FIX)                   -0.379285470419     -0.187468208608     -0.566753679027   -132.864871186575
+# DF-MP2-F12/3C(FIX)                    -0.379246010149     -0.187531433611     -0.566777443760   -132.864894951307
+
+    mobj = re.search(
+        r'^\s*' + r'DF-MP2-F12 correlation energies:\s*' +
+        r'^\s*(?:[=-]+)\s*' +
+        r'^\s+' + r'Approx.\s+Singlet\s+Triplet\s+Ecorr\s+Total Energy\s*' + 
+        r'^\s+' + r'DF-MP2\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*' + 
+        r'^\s+' + r'DF-MP2-F12/3\*C\(DX,FIX\)\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*' +
+        r'^\s+' + r'DF-MP2-F12/3\*C\(FIX\)\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*' +
+        r'^\s+' + r'DF-MP2-F12/3C\(FIX\)\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched mp2f12')
+        psivar['MP2 CORRELATION ENERGY'] = mobj.group(3)
+        psivar['MP2 SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(2)) * \
+            Decimal(2) / Decimal(3)
+        psivar['MP2 OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(3)) - \
+            psivar['MP2 SAME-SPIN CORRELATION ENERGY']
+        psivar['MP2 TOTAL ENERGY'] = mobj.group(4)
+        psivar['MP2-F12 CORRELATION ENERGY'] = mobj.group(15)
+        psivar['MP2-F12 SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(14)) * \
+            Decimal(2) / Decimal(3)
+        psivar['MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(15)) - \
+            psivar['MP2-F12 SAME-SPIN CORRELATION ENERGY']
+        psivar['MP2-F12 TOTAL ENERGY'] = mobj.group(16)
+
+    # <<< Process CC >>>
+
+    mobj = re.search(
+        r'^\s*' + r'CCSD triplet pair energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'CCSD correlation energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched ccsd(t)')
+        psivar['CCSD CORRELATION ENERGY'] = mobj.group(2)
+        psivar['CCSD SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(1)) * \
+            Decimal(2) / Decimal(3)
+        psivar['CCSD OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(2)) - \
+            psivar['CCSD SAME-SPIN CORRELATION ENERGY']
+        psivar['CCSD TOTAL ENERGY'] = Decimal(mobj.group(2)) + psivar['HF TOTAL ENERGY']
+        psivar['(T) CORRECTION ENERGY'] = mobj.group(3)
+        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(2)) + Decimal(mobj.group(3))
+        psivar['CCSD(T) TOTAL ENERGY'] = psivar['CCSD(T) CORRELATION ENERGY'] + psivar['HF TOTAL ENERGY']
+
+    # <<< Process CC-F12 >>>
+
+    mobj = re.search(
+        r'^\s*' + r'CCSD-F12a triplet pair energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'CCSD-F12a correlation energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched ccsd(t)-f12a')
+        psivar['CCSD-F12A CORRELATION ENERGY'] = mobj.group(2)
+        psivar['CCSD-F12A SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(1)) * \
+            Decimal(2) / Decimal(3)
+        psivar['CCSD-F12A OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(2)) - \
+            psivar['CCSD-F12A SAME-SPIN CORRELATION ENERGY']
+        psivar['CCSD-F12A TOTAL ENERGY'] = Decimal(mobj.group(2)) + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T)-F12AB CORRECTION ENERGY'] = mobj.group(3)
+        psivar['CCSD(T)-F12A CORRELATION ENERGY'] = Decimal(mobj.group(2)) + Decimal(mobj.group(3))
+        psivar['CCSD(T)-F12A TOTAL ENERGY'] = psivar['CCSD(T)-F12A CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T*)-F12AB CORRECTION ENERGY'] = Decimal(mobj.group(3)) * \
+            psivar['MP2-F12 CORRELATION ENERGY'] / psivar['MP2 CORRELATION ENERGY']
+        psivar['CCSD(T*)-F12A CORRELATION ENERGY'] = Decimal(mobj.group(2)) + psivar['(T*)-F12AB CORRECTION ENERGY']
+        psivar['CCSD(T*)-F12A TOTAL ENERGY'] = psivar['CCSD(T*)-F12A CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+
+    mobj = re.search(
+        r'^\s*' + r'CCSD-F12b triplet pair energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'CCSD-F12b correlation energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched ccsd(t)-f12b')
+        psivar['CCSD-F12B CORRELATION ENERGY'] = mobj.group(2)
+        psivar['CCSD-F12B SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(1)) * \
+            Decimal(2) / Decimal(3)
+        psivar['CCSD-F12B OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(2)) - \
+            psivar['CCSD-F12B SAME-SPIN CORRELATION ENERGY']
+        psivar['CCSD-F12B TOTAL ENERGY'] = Decimal(mobj.group(2)) + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T)-F12AB CORRECTION ENERGY'] = mobj.group(3)
+        psivar['CCSD(T)-F12B CORRELATION ENERGY'] = Decimal(mobj.group(2)) + Decimal(mobj.group(3))
+        psivar['CCSD(T)-F12B TOTAL ENERGY'] = psivar['CCSD(T)-F12B CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T*)-F12AB CORRECTION ENERGY'] = Decimal(mobj.group(3)) * \
+            psivar['MP2-F12 CORRELATION ENERGY'] / psivar['MP2 CORRELATION ENERGY']
+        psivar['CCSD(T*)-F12B CORRELATION ENERGY'] = Decimal(mobj.group(2)) + psivar['(T*)-F12AB CORRECTION ENERGY']
+        psivar['CCSD(T*)-F12B TOTAL ENERGY'] = psivar['CCSD(T*)-F12B CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+
+    mobj = re.search(
+        r'^\s*' + r'CCSD-F12c triplet pair energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'CCSD-F12c correlation energy\s+' + NUMBER + '\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        outtext, re.MULTILINE)
+    if mobj:
+        #print('matched ccsd(t)-f12c')
+        psivar['CCSD-F12C CORRELATION ENERGY'] = mobj.group(2)
+        psivar['CCSD-F12C SAME-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(1)) * \
+            Decimal(2) / Decimal(3)
+        psivar['CCSD-F12C OPPOSITE-SPIN CORRELATION ENERGY'] = Decimal(mobj.group(2)) - \
+            psivar['CCSD-F12C SAME-SPIN CORRELATION ENERGY']
+        psivar['CCSD-F12C TOTAL ENERGY'] = Decimal(mobj.group(2)) + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T)-F12C CORRECTION ENERGY'] = mobj.group(3)
+        psivar['CCSD(T)-F12C CORRELATION ENERGY'] = Decimal(mobj.group(2)) + Decimal(mobj.group(3))
+        psivar['CCSD(T)-F12C TOTAL ENERGY'] = psivar['CCSD(T)-F12C CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+        psivar['(T*)-F12C CORRECTION ENERGY'] = Decimal(mobj.group(3)) * \
+            psivar['MP2-F12 CORRELATION ENERGY'] / psivar['MP2 CORRELATION ENERGY']
+        psivar['CCSD(T*)-F12C CORRELATION ENERGY'] = Decimal(mobj.group(2)) + psivar['(T*)-F12C CORRECTION ENERGY']
+        psivar['CCSD(T*)-F12C TOTAL ENERGY'] = psivar['CCSD(T*)-F12C CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
+
+    # Process Completion
+    mobj = re.search(
+        r'^\s*' + r'Variable memory released' + r'\s+$',
+        outtext, re.MULTILINE)
+    if mobj:
+        psivar['SUCCESS'] = True
+
+    # Process CURRENT energies (TODO: needs better way)
+    if 'HF TOTAL ENERGY' in psivar:
+        psivar['CURRENT REFERENCE ENERGY'] = psivar['HF TOTAL ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['HF TOTAL ENERGY']
+
+    if 'HF-CABS TOTAL ENERGY' in psivar:
+        psivar['CURRENT REFERENCE ENERGY'] = psivar['HF-CABS TOTAL ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['HF-CABS TOTAL ENERGY']
+
+    if 'MP2 TOTAL ENERGY' in psivar and 'MP2 CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['MP2 CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['MP2 TOTAL ENERGY']
+
+    if 'MP2-F12 TOTAL ENERGY' in psivar and 'MP2-F12 CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['MP2-F12 CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['MP2-F12 TOTAL ENERGY']
+
+    if 'CCSD TOTAL ENERGY' in psivar and 'CCSD CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD TOTAL ENERGY']
+
+    if 'CCSD-F12A TOTAL ENERGY' in psivar and 'CCSD-F12A CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD-F12A CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD-F12A TOTAL ENERGY']
+
+    if 'CCSD-F12B TOTAL ENERGY' in psivar and 'CCSD-F12B CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD-F12B CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD-F12B TOTAL ENERGY']
+
+    if 'CCSD-F12C TOTAL ENERGY' in psivar and 'CCSD-F12C CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD-F12C CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD-F12C TOTAL ENERGY']
+
+    if 'CCSD(T) TOTAL ENERGY' in psivar and 'CCSD(T) CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD(T) CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD(T) TOTAL ENERGY']
+
+    if 'CCSD(T)-F12A TOTAL ENERGY' in psivar and 'CCSD(T)-F12A CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD(T)-F12A CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD(T)-F12A TOTAL ENERGY']
+
+    if 'CCSD(T)-F12B TOTAL ENERGY' in psivar and 'CCSD(T)-F12B CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD(T)-F12B CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD(T)-F12B TOTAL ENERGY']
+
+    if 'CCSD(T)-F12C TOTAL ENERGY' in psivar and 'CCSD(T)-F12C CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSD(T)-F12C CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSD(T)-F12C TOTAL ENERGY']
+
+    return psivar, psivar_coord, psivar_grad
 
 
 class Infile(qcformat.InputFormat2):
@@ -50,11 +315,21 @@ class Infile(qcformat.InputFormat2):
     
         options['BASIS']['ORBITAL']['value'] = self.basis
     
+        # this f12 basis setting may be totally messed up
         if self.method in ['ccsd(t)-f12-optri']:
             if self.basis == 'cc-pvdz-f12':
                 options['BASIS']['JKFIT']['value'] = 'aug-cc-pvtz/jkfit'
                 options['BASIS']['JKFITC']['value'] = self.basis + '/optri'
                 options['BASIS']['MP2FIT']['value'] = 'aug-cc-pvtz/mp2fit'
+        elif self.method in ['ccsd(t)-f12-cabsfit']:
+            if self.unaugbasis and self.auxbasis:
+                #options['BASIS']['JKFIT']['value'] = self.auxbasis + '/jkfit'
+                #options['BASIS']['JKFITB']['value'] = self.unaugbasis + '/jkfit'
+                #options['BASIS']['MP2FIT']['value'] = self.auxbasis + '/mp2fit'
+                #options['BASIS']['DFLHF']['value'] = self.auxbasis + '/jkfit'
+                options['BASIS']['JKFITC']['value'] = 'aug-cc-pv5z/mp2fit'
+            else:
+                raise ValidationError("""Auxiliary basis not predictable from orbital basis '%s'""" % (self.basis))
         elif ('df-' in self.method) or ('f12' in self.method) or (self.method in ['mp2c', 'dft-sapt', 'dft-sapt-pbe0acalda']):
             if self.unaugbasis and self.auxbasis:
                 options['BASIS']['JKFIT']['value'] = self.auxbasis + '/jkfit'
@@ -227,10 +502,20 @@ def muster_modelchem(name, dertype, mol):
         proc.append('ccsd(t)-f12')
         options['CCSD(T)-F12']['OPTIONS']['value'] = ',df_basis=mp2fit,df_basis_exch=jkfitb,ri_basis=jkfitb'
 
+    elif lowername == 'ccsd(t)-f12c':
+        proc.append('rhf')
+        proc.append('ccsd(t)-f12c')
+        options['CCSD(T)-F12C']['OPTIONS']['value'] = ',df_basis=mp2fit,df_basis_exch=jkfitb,ri_basis=jkfitb'
+
     elif lowername == 'ccsd(t)-f12-optri':
         proc.append('rhf')
         proc.append('ccsd(t)-f12')
         options['CCSD(T)-F12']['OPTIONS']['value'] = ',df_basis=mp2fit,df_basis_exch=jkfit,ri_basis=jkfitc'
+
+    elif lowername == 'ccsd(t)-f12-cabsfit':
+        proc.append('rhf')
+        proc.append('ccsd(t)-f12')
+        options['CCSD(T)-F12']['OPTIONS']['value'] = ',df_basis=jkfitc,df_basis_exch=jkfitc,ri_basis=jkfitc'
 
     elif lowername == 'mp2c':
         proc.append('gdirect')
@@ -271,7 +556,9 @@ procedures = {
     'energy': {
         'mp2c'           : muster_modelchem,
         'ccsd(t)-f12'    : muster_modelchem,
+        'ccsd(t)-f12c'   : muster_modelchem,
         'ccsd(t)-f12-optri' : muster_modelchem,
+        'ccsd(t)-f12-cabsfit' : muster_modelchem,
         #'sapt0'         : muster_modelchem,
         #'sapt2+'        : muster_modelchem,
         #'sapt2+(3)'     : muster_modelchem,

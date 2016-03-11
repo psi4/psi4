@@ -19,7 +19,6 @@
 #
 #@END LICENSE
 #
-
 from __future__ import absolute_import
 from __future__ import print_function
 import math
@@ -92,6 +91,29 @@ def prepare_options_for_cfour(options):
     return text
 
 
+def prepare_options_for_orca(options):
+    """Function to take the full snapshot of the liboptions object
+    encoded in dictionary *options*, find the options directable toward
+    Orca (options['ORCA']['ORCA_**']) that aren't default, then write
+    an ORCA deck with those options.
+
+    """
+    text = ''
+
+    for opt, val in options['ORCA'].items():
+        if opt.startswith('ORCA_'):
+            if val['has_changed']:
+                if not text:
+                    text += """! """
+                text +="""%s """ % (val['value'])
+                #text += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
+    if text:
+        #text = text[:-1] + ')\n\n'
+        text += '\n'
+
+    return text
+
+
 def prepare_options_for_psi4(options):
     """Function to take the full snapshot of the liboptions object
     encoded in dictionary *options*, find the options directable toward
@@ -113,6 +135,28 @@ def prepare_options_for_psi4(options):
                 text += """set %s %s %s\n""" % (mod.lower(), opt.lower(), val['value'])
     if text:
         text += '\n'
+
+    return text
+
+
+def prepare_options_for_qchem(options):
+    """Function to take the full snapshot of the liboptions object
+    encoded in dictionary *options*, find the options directable toward
+    Q-Chem (options['QCHEM']['QCHEM_**']) that aren't default, then write
+    a Q-Chem deck with those options.
+
+    """
+    text = ''
+
+    for opt, val in options['QCHEM'].items():
+        if opt.startswith('QCHEM_'):
+            if val['has_changed']:
+                if not text:
+                    text += """$rem\n"""
+                text += """%-20s %s\n""" % (opt[6:], val['value'])
+                #text += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
+    if text:
+        text += """$end\n\n"""
 
     return text
 

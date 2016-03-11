@@ -52,8 +52,13 @@ from p4xcpt import *
 
 def run_cfour_module(xmod):
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH') + ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + ':' + psi4.psi_top_srcdir() + '/lib/basis'
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH') + \
+                ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + \
+                ':' + psi4.psi_top_srcdir() + '/share/basis',
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
+        }
 
     # Call executable xcfour, directing cfour output to the psi4 output file
     try:
