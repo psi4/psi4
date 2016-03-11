@@ -98,7 +98,7 @@ procedures = {
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
             'bccd'          : run_bccd,
-            'bccd(t)'       : run_bccd_t,
+            'bccd(t)'       : run_bccd,
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
@@ -555,6 +555,15 @@ def energy(name, **kwargs):
 
     optstash.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
+
+        # TODO place this with the associated call, very awkward to call this in other areas at the moment
+        if name.lower() in ['EFP', 'MRCC', 'DMRG', 'PSIMRCC']:
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
+        elif 'sapt' in name.lower():
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
+
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
@@ -1108,6 +1117,10 @@ def optimize(name, **kwargs):
         if (n > 1) and (not isSowReap) and (not psi4.get_option('SCF', 'GUESS_PERSIST')):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
+        # Before computing gradient, save previous molecule and wavefunction if this is an IRC optimization
+        if (n > 1) and (psi4.get_option('OPTKING', 'OPT_TYPE') == 'IRC'):
+            old_thisenergy = psi4.get_variable('CURRENT ENERGY')
+
         # Compute the gradient
         G, wfn = gradient(name, return_wfn=True, molecule=moleculeclone, **kwargs)
         psi4.set_gradient(G)
@@ -1156,6 +1169,10 @@ def optimize(name, **kwargs):
         moleculeclone = psi4.get_legacy_molecule()
         moleculeclone.update_geometry()
         if optking_rval == psi4.PsiReturnType.EndLoop:
+            # if this is the end of an IRC run, set wfn, energy, and molecule to that
+            # of the last optimized IRC point
+            if psi4.get_option('OPTKING', 'OPT_TYPE') == 'IRC':
+                thisenergy    = old_thisenergy
             print('Optimizer: Optimization complete!')
             psi4.print_out('\n    Final optimized geometry and variables:\n')
             moleculeclone.print_in_input_format()
@@ -1729,7 +1746,7 @@ def frequency(name, **kwargs):
         return psi4.get_variable('CURRENT ENERGY')
 
 
-def molden(filename, wfn):
+def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
 
@@ -1751,8 +1768,19 @@ def molden(filename, wfn):
     >>> molden(wfn, 'mycalc.molden')
 
     """
+    try:
+        occa = wfn.occupation_a()
+        occb = wfn.occupation_a()
+    except AttributeError:
+        psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
+                       "Writing zero's for occupation numbers")
+        occa = psi4.Vector(wfn.nmopi())
+        occb = psi4.Vector(wfn.nmopi())
+
+    # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
-    mw.write(filename)
+    mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+
 
 
 def parse_cotton_irreps(irrep, point_group):

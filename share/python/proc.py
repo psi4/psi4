@@ -1837,10 +1837,24 @@ def run_bccd(name, **kwargs):
         psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
         psi4.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
+    elif (name.lower() == 'bccd(t)'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCSORT', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCTRANSORT', 'WFN', 'BCCD_T')
+        psi4.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
+    else:
+        raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
+
+
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    # Needed for (T).
+    if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF'):
+        ref_wfn.semicanonicalize()
 
     if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
         mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
@@ -1856,41 +1870,23 @@ def run_bccd(name, **kwargs):
         else:
             psi4.transqt2(ref_wfn)
             psi4.ccsort()
+
         ref_wfn = psi4.ccenergy(ref_wfn)
-        psi4.print_out('Brueckner convergence check: %d\n' % psi4.get_variable('BRUECKNER CONVERGED'))
+        psi4.print_out('Brueckner convergence check: %s\n' % bool(psi4.get_variable('BRUECKNER CONVERGED')))
         if (psi4.get_variable('BRUECKNER CONVERGED') == True):
             break
 
-        # This is quite arbitrary, blame DGAS
-        if bcc_iter_cnt > 10:
-            raise ValidationError("Stopped at 50th BCCSD iteration, something is going wrong!")
+        if bcc_iter_cnt >= psi4.get_option('CCENERGY', 'BCCD_MAXITER'):
+            psi4.print_out("\n\nWarning! BCCD did not converge within the maximum number of iterations.")
+            psi4.print_out("You can increase the number of BCCD iterations by changing BCCD_MAXITER.\n\n")
             break
         bcc_iter_cnt += 1
 
+    if (name.lower() == 'bccd(t)'):
+        psi4.cctriples(ref_wfn)
+
     optstash.restore()
     return ref_wfn
-
-
-def run_bccd_t(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a Brueckner CCD(T) calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['TRANSQT2', 'WFN'],
-        ['CCSORT', 'WFN'],
-        ['CCENERGY', 'WFN'],
-        ['CCTRIPLES', 'WFN'])
-
-    psi4.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCSORT', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
-    psi4.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
-    bccd_wfn = run_bccd(name, **kwargs)
-    psi4.cctriples(bccd_wfn)
-
-    optstash.restore()
-    return bccd_wfn
 
 
 def run_scf_property(name, **kwargs):
@@ -2548,7 +2544,6 @@ def run_dmrgscf(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG incomplete wavefunction is only SCF')
     return dmrg_wfn
 
 
@@ -2576,7 +2571,6 @@ def run_dmrgci(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG incomplete wavefunction is only SCF') 
     return dmrg_wfn
 
 
@@ -2588,7 +2582,6 @@ def run_psimrcc(name, **kwargs):
     mcscf_wfn = run_mcscf(name, **kwargs)
     psimrcc_e = psi4.psimrcc(mcscf_wfn)
 
-    print('PSIMRCC incomplete wavefunction is only MCSCF') 
     return mcscf_wfn
 
 
@@ -2604,7 +2597,6 @@ def run_psimrcc_scf(name, **kwargs):
 
     psimrcc_e = psi4.psimrcc(ref_wfn)
 
-    print('PSIMRCC incomplete wavefunction is only SCF') 
     return ref_wfn
 
 
@@ -2748,7 +2740,7 @@ def run_sapt(name, **kwargs):
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
-    print('SAPT incomplete wavefunction is only dimer SCF') 
+
     #return e_sapt
     return dimer_wfn
 
@@ -2905,8 +2897,6 @@ def run_sapt_ct(name, **kwargs):
     psi4.set_variable('SAPT CT ENERGY', CT)
 
     optstash.restore()
-    #return e_sapt
-    print('SAPT incomplete wavefunction is only dimer SCF') 
     return dimer_wfn
 
 
@@ -2950,7 +2940,6 @@ def run_fisapt(name, **kwargs):
     fisapt_wfn = psi4.fisapt(ref_wfn)
 
     optstash.restore()
-    print('FISAPT incomplete wavefunction is only dimer SCF') 
     return fisapt_wfn
 
 
@@ -2987,8 +2976,11 @@ def run_mrcc(name, **kwargs):
     current_directory = os.getcwd()
 
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH'),
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
+        }
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
     psi_io = psi4.IOManager.shared_object()
@@ -3125,7 +3117,6 @@ def run_mrcc(name, **kwargs):
     psi4.print_out('\n')
     psi4.print_out(iface_contents)
 
-    print('MRCC incomplete wavefunction is only SCF')  # TODO
     return ref_wfn
 
 
@@ -3495,6 +3486,5 @@ def run_efp(name, **kwargs):
 
     efp.print_out()
     returnvalue = efp.compute()
-    print('EFP incomplete wavefunction is only ') 
     return returnvalue
 

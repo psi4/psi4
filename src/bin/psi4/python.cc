@@ -1714,7 +1714,7 @@ void Python::run(FILE *input)
 
             //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred Py-side" << endl << "Traceback:" << endl;
+            whole << endl << "An error has occurred. Traceback:" << endl;
 
             PyObject *pExcType , *pExcValue , *pExcTraceback;
             PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);

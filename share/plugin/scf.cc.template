@@ -25,7 +25,7 @@
 #include <psi4-dec.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
-#include <scf.h>
+#include "scf.h"
 
 namespace psi{ namespace @plugin@ {
 
@@ -48,7 +48,7 @@ int read_options(std::string name, Options &options)
 }
 
 extern "C"
-PsiReturnType @plugin@(Options &options)
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
 {
 
     // Start with some demos of the matrix toolkit (no symmetry in this case)
@@ -122,10 +122,10 @@ PsiReturnType @plugin@(Options &options)
     }
 
     // Build an SCF object, and tell it to compute its energy
-    SCF scf(options);
-    scf.compute_energy();
+    SharedWavefunction scfwfn = boost::shared_ptr<Wavefunction>(new SCF(ref_wfn, options));
+    scfwfn->compute_energy();
 
-    return Success;
+    return scfwfn;
 }
 
 }} // End Namespaces

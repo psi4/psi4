@@ -346,9 +346,9 @@ class LibmintsMolecule(object):
             return self.atoms[atom].mass()
 
         if math.fabs(self.atoms[atom].Z() - int(self.atoms[atom].Z())) > 0.0:
-            print("WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n")
+            print("""WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n""")
             # TODO outfile
-        return z2masses[int(self.atoms[atom].Z())]
+        return z2mass[int(self.atoms[atom].Z())]
 
     def symbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (0-indexed)
@@ -489,9 +489,7 @@ class LibmintsMolecule(object):
     def activate_all_fragments(self):
         """Sets all fragments in the molecule to be active."""
         self.lock_frame = False
-        print('it lives', 'activate all')
         for fr in range(self.nfragments()):
-            print('reviving', fr)
             self.fragment_types[fr] = 'Real'
 
     def set_active_fragment(self, fr):
@@ -513,9 +511,7 @@ class LibmintsMolecule(object):
     def set_ghost_fragments(self, ghosts):
         """Tags the fragments in array *ghosts* as composed of ghost atoms."""
         self.lock_frame = False
-        print('doomed', ghosts)
         for fr in ghosts:
-            print('killing', fr - 1)
             self.fragment_types[fr - 1] = 'Ghost'
 
     def deactivate_all_fragments(self):
@@ -657,7 +653,6 @@ class LibmintsMolecule(object):
             elif atom.match(line.split()[0].strip()):
                 glines.append(line)
             else:
-                print(line.split()[0].strip())
                 raise ValidationError('Molecule::create_molecule_from_string: Unidentifiable line in geometry specification: %s' % (line))
 
         # catch last default fragment cgmp
@@ -698,9 +693,7 @@ class LibmintsMolecule(object):
                     raise ValidationError('Molecule::create_molecule_from_string: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                 zVal = el2z[atomSym]
-
-                atomMass = el2masses[atomSym] if atomm.group('mass') is None else float(atomm.group('mass'))
-
+                atomMass = el2mass[atomSym] if atomm.group('mass') is None else float(atomm.group('mass'))
                 charge = float(zVal)
                 if ghostAtom:
                     zVal = 0
@@ -810,6 +803,20 @@ class LibmintsMolecule(object):
         self.fragment_types.append('Real')
         self.set_has_zmatrix(zmatrix)
 
+    def init_with_checkpoint(self, chkpt):
+        """ **NYI** Pull information from the *chkpt* object passed
+        (method name in libmints is init_with_chkpt)
+
+        """
+        raise FeatureNotImplemented('Molecule::init_with_checkpoint')  # FINAL
+
+    def init_with_io(self, psio):
+        """ **NYI** Pull information from a chkpt object created from psio
+        (method name in libmints is init_with_psio)
+
+        """
+        raise FeatureNotImplemented('Molecule::init_with_io')  # FINAL
+
     @classmethod
     def init_with_xyz(cls, xyzfilename):
         """Pull information from an XYZ file. No fragment or chg/mult info detected.
@@ -864,7 +871,7 @@ class LibmintsMolecule(object):
                         raise ValidationError('Molecule::init_with_xyz: Illegal atom symbol in geometry specification: %s' % (atomSym))
 
                     # Add it to the molecule.
-                    instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2masses[fileAtom])
+                    instance.add_atom(el2z[fileAtom], fileX, fileY, fileZ, fileAtom, el2mass[fileAtom])
 
                 else:
                     raise ValidationError("Molecule::init_with_xyz: Malformed atom information line %d." % (i + 3))
@@ -1202,7 +1209,7 @@ class LibmintsMolecule(object):
         """
         self.__dict__['lock_frame'] = False
         self.__dict__['geometry_variables'][vstr.upper()] = val
-        print("Setting geometry variable %s to %f" % (vstr.upper(), val))
+        print("""Setting geometry variable %s to %f""" % (vstr.upper(), val))
         try:
             self.update_geometry()
         except IncompleteAtomError:
@@ -2021,6 +2028,13 @@ class LibmintsMolecule(object):
         outfile.write(self.save_string_xyz(save_ghosts))
         outfile.close()
 
+    def save_to_checkpoint(self, chkpt, prefix=""):
+        """ **NYI** Save information to checkpoint file
+        (method name in libmints is save_to_chkpt)
+
+        """
+        raise FeatureNotImplemented('Molecule::save_to_checkpoint')  # FINAL
+
     # <<< Methods for Symmetry >>>
 
     def has_symmetry_element(self, op, tol=DEFAULT_SYM_TOL):
@@ -2191,8 +2205,8 @@ class LibmintsMolecule(object):
             if verbose > 2:
                 print("""  Geometry to analyze - principal axis on z-axis:""")
                 for at in range(self.natom()):
-                    print("%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2]))
-                print("\n")
+                    print("""%20.15lf %20.15lf %20.15lf""" % (geom[at][0], geom[at][1], geom[at][2]))
+                print('\n')
 
             # Determine order Cn and Sn of principal axis.
             Cn_z = matrix_3d_rotation_Cn(geom, z_axis, False, tol)
@@ -2241,7 +2255,7 @@ class LibmintsMolecule(object):
             if abs(phi) > 1.0e-14:
                 test_mat = matrix_3d_rotation(geom, z_axis, phi, False)
                 if verbose > 2:
-                    print("  Rotating by %8.3e to get atom %d in yz-plane ..." % (phi, pivot_atom_i + 1))
+                    print("""  Rotating by %8.3e to get atom %d in yz-plane ...""" % (phi, pivot_atom_i + 1))
                 geom = [row[:] for row in test_mat]
 
             # Check for sigma_v (yz plane).
@@ -2261,8 +2275,8 @@ class LibmintsMolecule(object):
 
                 print("""  geom to analyze - one atom in yz plane:""")
                 for at in range(self.natom()):
-                    print("%20.15lf %20.15lf %20.15lf" % (geom[at][0], geom[at][1], geom[at][2]))
-                print("\n")
+                    print("""%20.15lf %20.15lf %20.15lf""" % (geom[at][0], geom[at][1], geom[at][2]))
+                print('\n')
 
             # Check for perpendicular C2's.
             # Loop through pairs of atoms to find c2 axis candidates.
@@ -2878,7 +2892,7 @@ class LibmintsMolecule(object):
             self.nequiv = 0
             self.PYatom_to_unique = 0
             self.equiv = 0
-            print("No atoms detected, returning\n")
+            print("""No atoms detected, returning\n""")
             return
 
         self.nequiv = []
@@ -3265,10 +3279,10 @@ def compute_atom_map(mol):
 
             atom_map[i][g] = mol.atom_at_position(np, 0.05)
             if atom_map[i][g] < 0:
-                print("  Molecule:\n")
+                print("""  Molecule:\n""")
                 mol.print_out()
-                print("  attempted to find atom at\n")
-                print("    %lf %lf %lf\n" % (np[0], np[1], np[2]))
+                print("""  attempted to find atom at\n""")
+                print("""    %lf %lf %lf\n""" % (np[0], np[1], np[2]))
                 raise ValidationError("ERROR: Symmetry operation %d did not map atom %d to another atom:\n" % (g, i + 1))
 
     return atom_map

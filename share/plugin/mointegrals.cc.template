@@ -47,8 +47,8 @@ read_options(std::string name, Options &options)
 }
 
 
-extern "C" PsiReturnType
-@plugin@(Options &options)
+extern "C"
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
     /*
      * This plugin shows a simple way of obtaining MO basis integrals, directly from a DPD buffer.  It is also
@@ -59,18 +59,17 @@ extern "C" PsiReturnType
     // Grab the global (default) PSIO object, for file I/O
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
 
-    // Now we want the reference (SCF) wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    if(!wfn) throw PSIEXCEPTION("SCF has not been run yet!");
+    // Have the reference (SCF) wavefunction, ref_wfn
+    if(!ref_wfn) throw PSIEXCEPTION("SCF has not been run yet!");
 
     // Quickly check that there are no open shell orbitals here...
-    int nirrep  = wfn->nirrep();
+    int nirrep  = ref_wfn->nirrep();
 
     // For now, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
     // LibTrans object, check out the plugin_mp2 example in the test suite.
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted);
+    IntegralTransform ints(ref_wfn, spaces, IntegralTransform::Restricted);
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
@@ -115,7 +114,7 @@ extern "C" PsiReturnType
     global_dpd_->buf4_close(&K);
     psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    return Success;
+    return ref_wfn;
 }
 
 }} // End Namespaces

@@ -1,5 +1,5 @@
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import division
 import os
 import re
@@ -15,11 +15,13 @@ except ImportError:
 from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
+from .periodictable import *
 from .libmintsgshell import GaussianShell
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis
 if sys.version_info >= (3,0):
     basestring = str
+
 
 class BasisSet(object):
     """Basis set container class
@@ -47,7 +49,6 @@ class BasisSet(object):
         self.shells = None
         # Molecule object.
         self.molecule = None
-
         # Shell information
         self.atom_basis_shell = None
 
@@ -197,6 +198,7 @@ class BasisSet(object):
         uoriginal_coefs = []
         uerd_coefs = []
         self.n_uprimitive = 0
+
         for symbolfirst, symbolsecond in shell_map.items():
             label = symbolfirst
             basis_map = symbolsecond
@@ -493,7 +495,7 @@ class BasisSet(object):
 
         #for label, basis_map in combined_atom_basis_shell.items():
         #    # sort the shells by angular momentum
-        #    combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: shell.am())
+        #    combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: she
 
         # Molecule and parser prepped, call the constructor
         mol.set_basis_all_atoms(name, "CABS")
@@ -555,6 +557,7 @@ class BasisSet(object):
             aux = target
 
         #print 'BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly #, mol
+
         # Create (if necessary) and update qcdb.Molecule
         if isinstance(mol, basestring):
             mol = Molecule(mol)
@@ -602,6 +605,7 @@ class BasisSet(object):
         text += msg
 
         if returnBasisSet:
+            #print text
             return bs
         else:
             bsdict = {}
@@ -638,6 +642,7 @@ class BasisSet(object):
                    'JKFIT': 'def2-qzvpp-jkfit',
                    'RIFIT': 'def2-qzvpp-ri',
                    'F12': 'def2-qzvpp-f12'}
+
         if deffit is not None:
             if deffit not in univdef.keys():
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
@@ -683,10 +688,11 @@ class BasisSet(object):
                 #   or symbol (N) (in that order; don't want to restrict use of atom
                 #   labels to basis set spec), look everywhere (don't just look
                 #   in library)
-		if(requested_basname.endswith("DECONTRACT")):
-                	seek['basis'] = [requested_basname[:-11]]
-		else:
-			seek['basis'] = [requested_basname]
+                if(requested_basname.endswith("DECONTRACT")):  # Good gracious, TODO
+                            seek['basis'] = [requested_basname[:-11]]
+                else:
+                    seek['basis'] = [requested_basname]
+                #seek['basis'] = [requested_basname]
                 seek['entry'] = [symbol] if symbol == label else [label, symbol]
                 seek['path'] = basisPath
                 seek['strings'] = '' if basstrings is None else list(basstrings.keys())
@@ -787,8 +793,9 @@ class BasisSet(object):
         """Sets the name of this basis set"""
         self.name = name
 
-    def atom_shell_map(self):
-        return self.atom_shell_map
+# JET added but I think should fail
+#+    def atom_shell_map(self):
+#+        return self.atom_shell_map
 
     def nprimitive(self):
         """Number of primitives.
@@ -1082,6 +1089,38 @@ class BasisSet(object):
 
         return basstrings
 
+    def print_detail_gamess(self, out=None, numbersonly=False):
+        """Prints a detailed PSI3-style summary of the basis (per-atom)
+        *  @param out The file stream to use for printing. Defaults to outfile.
+
+        """
+        text = ''
+        if not numbersonly:
+            text += self.print_summary(out=None)
+            text += """  ==> AO Basis Functions <==\n"""
+            text += '\n'
+            text += """    [ %s ]\n""" % (self.name)
+        text += """    spherical\n""" if self.has_puream() else """    cartesian\n"""
+        text += """    ****\n"""
+
+        for uA in range(self.molecule.nunique()):
+            A = self.molecule.unique(uA)
+            if not numbersonly:
+                text += """%s\n""" % (z2element[self.molecule.Z(A)])
+            first_shell = self.center_to_shell[A]
+            n_shell = self.center_to_nshell[A]
+
+            for Q in range(n_shell):
+                text += self.shells[Q + first_shell].pyprint_gamess(outfile=None)
+            #text += """    ****\n"""
+        text += """\n"""
+
+        if out is None:
+            return text
+        else:
+            with open(out, mode='w') as handle:
+                handle.write(text)
+
     def print_detail_cfour(self, out=None):
         """Returns a string in CFOUR-style of the basis (per-atom)
         *  Format from http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
@@ -1185,6 +1224,7 @@ class BasisSet(object):
         """
         # Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
         basisname = name
+
         # First make it lower case
         basisname = basisname.lower()
 

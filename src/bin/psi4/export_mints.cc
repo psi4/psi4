@@ -319,6 +319,7 @@ void export_mints()
 
     class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
+            def(init<const Dimension&>()).
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -428,6 +429,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
             def("array_interfaces", make_matix_array_interfaces, "docstring").
             add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
@@ -913,6 +915,8 @@ void export_mints()
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
+            def("occupation_a", &scf::HF::occupation_a, "docstring").
+            def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);

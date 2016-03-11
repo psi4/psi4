@@ -2,6 +2,7 @@
 
 """
 from __future__ import absolute_import
+from __future__ import print_function
 import math
 
 #MAX_IOFF = 30000
@@ -54,7 +55,7 @@ import math
 
 
 def df(n):
-    """Gives the double factorial of *i*"""
+    """Gives the double factorial of *n*"""
     return 1.0 if n <= 0 else 1.0 * n * df(n - 2)
 
 
@@ -314,6 +315,18 @@ class ShellInfo(object):
         text = """    %c %3d 1.00\n""" % (self.AMCHAR(), self.nprimitive())
         for K in range(self.nprimitive()):
             text += """               %20.8f %20.8f\n""" % (self.PYexp[K], self.PYoriginal_coef[K])
+
+        if outfile is None:
+            return text
+        else:
+            with open(outfile, mode='w') as handle:
+                handle.write(text)
+
+    def pyprint_gamess(self, outfile=None):
+        """Print out the shell in Gamess format"""
+        text = """%c %3d\n""" % (self.AMCHAR(), self.nprimitive())
+        for K in range(self.nprimitive()):
+            text += """%3d %15.8f %15.8f\n""" % (K + 1, self.PYexp[K], self.PYoriginal_coef[K])
 
         if outfile is None:
             return text

@@ -1160,7 +1160,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
-    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
+    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech 
+        in a |scf__scf_type| ``DIRECT`` calculation -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
@@ -2195,6 +2196,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CC_SS_SCALE",1.13);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_int("BCCD_MAXITER", 50);
   }
   if(name == "DFMP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
