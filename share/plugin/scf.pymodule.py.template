@@ -46,11 +46,26 @@ def run_@plugin@(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    #psi4.set_global_option('BASIS', 'sto-3g')
     psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
-    returnvalue = psi4.plugin('@plugin@.so')
-    psi4.set_variable('CURRENT ENERGY', returnvalue)
 
+    # Build a new blank wavefunction to pass into scf
+    @plugin@_molecule = kwargs.get('molecule', psi4.get_active_molecule())
+
+    if @plugin@_molecule.schoenflies_symbol() != 'c1':
+        psi4.print_out("This SCF code must be run in c1 symmetry, switching")
+        @plugin@_molecule = @plugin@_molecule.clone()
+        @plugin@_molecule.reset_point_group('c1')
+        @plugin@_molecule.update_geometry()        
+
+    new_wfn = psi4.new_wavefunction(@plugin@_molecule, psi4.get_global_option('BASIS'))
+
+    @plugin@_wfn = psi4.plugin('@plugin@.so', new_wfn)
+    psi4.set_variable('CURRENT ENERGY', @plugin@_wfn.energy())
+
+    if kwargs.get('ref_wfn', False):
+        return (@plugin@_wfn, @plugin@_wfn.energy())
+    else:
+        return @plugin@_wfn.energy()
 
 # Integration with driver routines
 procedures['energy']['@plugin@'] = run_@plugin@

@@ -1,19 +1,39 @@
-from __future__ import print_function
 from __future__ import absolute_import
-from __future__ import division
+from __future__ import print_function
+import re
+import sys
 import itertools
 try:
     from collections import OrderedDict
 except ImportError:
     from .oldpymodules import OrderedDict
-from qcdb.modelchems import Method, BasisSet, Error, methods, bases, errors
+from .modelchems import Method, BasisSet, Error, methods, bases, errors
+
+try:
+    dict.iteritems
+except AttributeError:
+    # Python 3
+    def itervalues(d):
+        return iter(d.values())
+    def iteritems(d):
+        return iter(d.items())
+else:
+    # Python 2
+    def itervalues(d):
+        return d.itervalues()
+    def iteritems(d):
+        return d.iteritems()
 
 mc_archive = {'mtd': methods, 'bas': bases, 'err': errors}
+fancy_mc_archive = {}
+for tier in [methods, bases, errors]:
+    for k, v in iteritems(tier):
+        fancy_mc_archive[k] = v.latex
 
 
 # define helper functions for formatting table cells
 def val(kw):
-    return r"""%s""" % (kw['matelem'])
+    return r"""%s%s""" % (kw['matelem'], kw['footnote'])
 
 
 def graphics(kw):
@@ -21,19 +41,58 @@ def graphics(kw):
     return r"""\includegraphics[width=6.67cm,height=3.5mm]{%s%s.pdf}""" % (kw['plotpath'], mc)
 
 
+def flat(kw):
+    if kw['matelem'].strip():
+        dbssmc = '-'.join([kw[bit] for bit in ['dbse', 'sset', 'mtd', 'opt', 'bas']])
+        return r"""\includegraphics[width=6.67cm,height=3.5mm]{%sflat_%s.pdf}""" % (kw['plotpath'], dbssmc)
+    else:
+        return ''
+
+
+def liliowa(kw):
+    if kw['matelem'].strip():
+        dbssmc = '-'.join([kw[bit] for bit in ['dbse', 'sset', 'mtd', 'opt', 'bas']])
+        return r"""\includegraphics[height=3.5mm]{%sliliowa_%s.pdf}""" % (kw['plotpath'], dbssmc)
+    else:
+        return ''
+
+
 def lmtdbas(kw):
-    return """%-20s""" % (methods[kw['mtd']].latex + '/' + bases[kw['bas']].latex)
+    return """%-25s""" % (methods[kw['mtd']].latex + '/' + bases[kw['bas']].latex)
 
 
 def label(kw):
-    return """ %-20s""" % (mc_archive[kw['target']][kw[kw['target']]].latex)
+    kwt = kw['target']
+    return """ %-25s""" % (mc_archive[kwt][kw[kwt]].latex if kwt in mc_archive else kw[kwt])
+
+
+def label2(kw):
+    """This and fancy_mc_archive are experimental alternative for
+    summoning up col/row headers. Safe so long as mtd/bas/opt have
+    orthogonal keys.
+
+    """
+    try:
+        return fancy_mc_archive[kw]
+    except KeyError as e:
+        print("""Consider adding {} to modelchems.py""".format(e))
+        return kw
+
+
+def count(kw):
+    return r"""%6d""" % (kw['count'])
+
+
+def empty(kw):
+    return ''
 
 
 def table_generic(dbse, serrors,
     mtd, bas, columnplan, rowplan=['bas', 'mtd'],
     opt=['CP'], err=['mae'], sset=['default'],
-    landscape=False, standalone=True, subjoin=True,
-    plotpath='', theme='', filename=None):
+    landscape=False, standalone=True, subjoin=True, suppressblanks=False,
+    footnotes=[], title='', indextitle='',
+    plotpath='', theme=''):
     """
     Arrays *mtd* and *bas* contain the keys to the qcdb.Method and
     qcdb.BasisSet objects that span all those that the table may
@@ -41,17 +100,19 @@ def table_generic(dbse, serrors,
     should be in the desired order.
 
     """
-    def table_header(kw, abbr, head1, head0, head2):  # TODO caption, label
+    def table_header(kw, abbr, head1, head0, head2):
         """Form table header"""
+        ref = r"""tbl:qcdb-%s-%s""" % (theme, '-'.join([kw[bit] for bit in tag]))
+        fancy_kw = {k: (mc_archive[k][v].latex if k in mc_archive else v) for k, v in iteritems(kw)}
         text.append('')
         text.append(r"""\begingroup""")
         text.append(r"""\squeezetable""")
         text.append(r"""\begin{%s}[h!tp]""" % ('sidewaystable' if landscape else 'table'))
         text.append(r"""\renewcommand{\baselinestretch}{1}""")
-    #    text += r"""\\caption{$errorhash{$error} of the interaction energy for databases and their subsets with basis set $basishash{$basis}.""" + '\n'
-    #    text += r"""\\label{tbl:qc-merge4dbse-".$error."-".$basis."-r".$round."}}""" + '\n'
-        text.append(r"""\caption{""")
-        text.append(r"""\label{tbl:qcdb-%s-%s}}""" % (theme, '-'.join([kw[bit] for bit in tag])))
+        text.append(r"""\caption{%s""" % (title.format(**fancy_kw).replace('_', '\\_')))
+        text.append(r"""\label{%s}}""" % (ref))
+        indices.append(r"""\scriptsize \ref{%s} & \scriptsize %s \\ """ % \
+            (ref, indextitle.format(**fancy_kw)))
         text.append(r"""\begin{ruledtabular}""")
         text.append(r"""\begin{tabular}{%s}""" % (abbr))
         text.append(head1)
@@ -61,9 +122,51 @@ def table_generic(dbse, serrors,
 
     def table_footer():
         """Form table footer"""
+
+        # search-and-replace footnotes
+        fnmatch = re.compile(r"""(?P<cellpre>.*)""" + r"""(\\footnotemark)\{(?P<fntext>.*)\}""" + r"""(?P<cellpost>.*)""")
+        otfcounter = len(footnotes) + 1
+        lines2replace = {}
+        otffootnotes = OrderedDict()
+        for idx, line in enumerate(text):
+            newcells = []
+            changed = False
+            for cell in line.split('&'):
+                res = fnmatch.match(cell)
+                if res:
+                    if res.group('fntext') in otffootnotes:
+                        localcounter = otffootnotes[res.group('fntext')]
+                    else:
+                        localcounter = otfcounter
+                        if localcounter == 52:  # fn symbols run out at "zz"
+                            otffootnotes['Missing some reactions'] = localcounter
+                        else:
+                            otfcounter += 1
+                            otffootnotes[res.group('fntext')] = localcounter
+                    newcells.append(res.group('cellpre') + r"""\footnotemark[""" + str(localcounter) + ']' + res.group('cellpost'))
+                    changed = True
+                else:
+                    newcells.append(cell)
+            if changed:
+                lines2replace[idx] = '&'.join(newcells)
+        for idx, line in iteritems(lines2replace):
+            text[idx] = line
+
+        # search-and-suppress "blank" lines
+        if suppressblanks:
+            for idx, line in enumerate(text):
+                if line.strip().endswith('\\'):
+                    innards = ''.join(line.rstrip(""" \\""").split('&')[1:])
+                    if innards.isspace():
+                        text[idx] = '%' + text[idx]
+
+        # finish out table
         text.append(r"""\end{tabular}""")
         text.append(r"""\end{ruledtabular}""")
-        text.append(r"""\footnotetext[1]{Errors with respect to Gold Standard (see Sec. II D for plot details). Guide lines are at 0, 0.3, and 1.0 kcal/mol overbound ($-$) and underbound ($+$).}""")
+        for idx, fn in enumerate(footnotes):
+            text.append(r"""\footnotetext[%d]{%s}""" % (idx + 1, fn))
+        for fn, idx in iteritems(otffootnotes):
+            text.append(r"""\footnotetext[%d]{%s}""" % (idx, fn))
         text.append(r"""\end{%s}""" % ('sidewaystable' if landscape else 'table'))
         text.append(r"""\endgroup""")
         text.append(r"""\clearpage""")
@@ -72,8 +175,26 @@ def table_generic(dbse, serrors,
     def matelem(dict_row, dict_col):
         """Return merge of index dictionaries *dict_row* and *dict_col* (precedence) with error string from serrors appended at key 'matelem'."""
         kw = dict(dict_row, **dict_col)
-        kw['matelem'] = serrors['-'.join([kw[bit] for bit in ['mtd', 'opt', 'bas']])][kw['sset']][kw['dbse']][kw['err']]
+        errpiece = serrors['-'.join([kw[bit] for bit in ['mtd', 'opt', 'bas']])][kw['sset']][kw['dbse']]
+        kw['matelem'] = errpiece[kw['err']]
+        if 'tgtcnt' in errpiece:
+            kw['count'] = errpiece['tgtcnt']
+        if 'misscnt' in errpiece and errpiece['misscnt'] != 0 and 'tgtcnt' in errpiece:
+            kw['footnote'] = r"""\footnotemark{Missing %d of %d reactions.}""" % (errpiece['misscnt'], errpiece['tgtcnt'])
+        else:
+            kw['footnote'] = ''
         return kw
+
+    # avoid misunderstandings
+    keysincolumnplan = set(sum([col[-1].keys() for col in columnplan], []))
+    for key in ['dbse', 'sset', 'mtd', 'opt', 'bas', 'err']:
+        if len(locals()[key]) > 1:
+            if key not in rowplan and key not in keysincolumnplan:
+                print("""Warning: non-first values in argument '{0}' won't """
+                      """get used. Add '{0}' to rowplan to iterate over """
+                      """the values or add to columnplan to access"""
+                      """different values.""".format(key))
+                sys.exit()
 
     # form LaTeX reference tag
     tag = []
@@ -100,24 +221,20 @@ def table_generic(dbse, serrors,
 
     abbr = ''.join([col[0] for col in columnplan])
     h1 = [(k, len(list(g))) for k, g in itertools.groupby([col[1] for col in columnplan])]
-    head1 = ' & '.join([r"""\multicolumn{%d}{c}{\textbf{%s}}""" % (repeat, label) for (label, repeat) in h1]) + r""" \\"""
+    head1 = ' & '.join([r"""\multicolumn{%d}{c}{\textbf{%s}}""" % (repeat, label) for (label, repeat) in h1]) + r""" \\ """
     h2 = [(k, len(list(g))) for k, g in itertools.groupby([col[2] for col in columnplan])]
-    head2 = ' & '.join([r"""\multicolumn{%d}{c}{\textbf{%s}}""" % (repeat, label) for (label, repeat) in h2]) + r""" \\"""
+    head2 = ' & '.join([r"""\multicolumn{%d}{c}{\textbf{%s}}""" % (repeat, label) for (label, repeat) in h2]) + r""" \\ """
 
     # form table body
     text = []
+    indices = []
     nH = len(rowplan)
     hline = r"""\hline"""
     kw = {'plotpath': plotpath, 'sset': sset[0], 'dbse': dbse[0], 'err': err[0],
           'mtd': mtd[0], 'opt': opt[0], 'bas': bas[0]}
 
     if standalone:
-        text.append(r"""""")
-        text.append(r"""\documentclass[aip,jcp,preprint,superscriptaddress,floatfix]{revtex4-1}""")
-        text.append(r"""\usepackage{bm}""")
-        text.append(r"""\usepackage{dcolumn}""")
-        text.append(r"""\usepackage{rotating}""")
-        text.append(r"""\begin{document}""")
+        text += begin_latex_document()
 
     if nH == 1:
         subjoin = True
@@ -136,34 +253,64 @@ def table_generic(dbse, serrors,
                 table_header(kw, abbr, head1, head0, head2)
             if text[-1] != hline:
                 text.append(hline)
-            text.append(r"""\textbf{%s} \\""" % (mc_archive[rowplan[0]][hier0].latex))
+            #text.append(r"""\textbf{%s} \\ """ % (mc_archive[rowplan[0]][hier0].latex))
+            text.append(r"""\textbf{%s} \\ """ % (label2(hier0)))
 
             for hier1 in locals()[rowplan[1]]:
                 kw[rowplan[1]] = hier1
                 kw['target'] = rowplan[1]
                 if nH > 2:
-                    text.append(r"""\enspace\textbf{%s} \\""" % (mc_archive[rowplan[1]][hier1].latex))
+                    #text.append(r"""\enspace\textbf{%s} \\ """ % (mc_archive[rowplan[1]][hier1].latex))
+                    text.append(r"""\enspace\textbf{%s} \\ """ % (label2(hier1)))
 
                     for hier2 in locals()[rowplan[2]]:
                         kw[rowplan[2]] = hier2
                         kw['target'] = rowplan[2]
 
-                        text.append(r"""\enspace\enspace""" + ' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\""")
+                        text.append(r"""\enspace\enspace""" + ' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\ """)
                 else:
-                    text.append(r"""\enspace""" + ' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\""")
+                    text.append(r"""\enspace""" + ' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\ """)
             if not subjoin:
                 table_footer()
         else:
-            text.append(' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\""")
+            text.append(' & '.join([col[3](matelem(kw, col[4])) for col in columnplan]) + r""" \\ """)
 
     if subjoin:
         table_footer()
 
     if standalone:
-        text.append(r"""\end{document}""")
+        text += end_latex_document()
 
-    text = '\n'.join(text)
-    print(text)
+    return text, indices
+
+
+def begin_latex_document():
+    """Returns array of lines at start of LaTeX file that
+    enable it to be compiled as its own document (standalone).
+
+    """
+    text = []
+    text.append('')
+    text.append(r"""\documentclass[aip,jcp,preprint,superscriptaddress,floatfix]{revtex4-1}""")
+    text.append(r"""\usepackage{bm}""")
+    text.append(r"""\usepackage{dcolumn}""")
+    text.append(r"""\usepackage{rotating}""")
+    text.append(r"""\usepackage{longtable}""")
+    text.append(r"""\usepackage[table]{xcolor}""")
+    text.append(r"""\begin{document}""")
+    text.append('')
+    return text
+
+
+def end_latex_document():
+    """Returns array of lines at end of LaTeX file that
+    enable it to be compiled as its own document (standalone).
+
+    """
+    text = []
+    text.append('')
+    text.append(r"""\end{document}""")
+    return text
 
 
 if __name__ == "__main__":
@@ -177,7 +324,11 @@ if __name__ == "__main__":
        ['d', r'S22', 'MX/DD', val, {'sset': 'mxdd', 'dbse': 'S22'}],
        ['d', r'S22', 'TT', val, {'sset': 'default', 'dbse': 'S22'}],
        ['d', r'Overall', 'HB', val, {'sset': 'hb', 'dbse': 'DB4'}],
-       ['d', r'Overall', 'MX/DD', val, {'sset': 'mxdd', 'dbse': 'DB4'}],
+       ['d', r'Overall', 'MX/DD', val, {'sset': 'mxdd', 'dbse': 'DB4', 'err': 'mape'}],
        ['d', r'Overall', 'TT', val, {'sset': 'default', 'dbse': 'DB4'}]]
 
-    table_generic(columnplan=columnplan, dbse=['DB4'], serrors=serrors, mtd=['MP2', 'CCSD'], bas=['adz', 'atz'], theme='test', subjoin=False)
+    tbl, ind = table_generic(columnplan=columnplan, dbse=['DB4'], serrors=serrors,
+                  mtd=['MP2', 'CCSD'], bas=['adz', 'atz'],
+                  opt=['CP'], err=['mae', 'mape'],
+                  theme='test', subjoin=False)
+    print('\n'.join(tbl))

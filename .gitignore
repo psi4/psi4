@@ -43,6 +43,7 @@ output.dat
 *.32
 *.clean
 *timer.dat
+*.molden
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
 tests/*/PEDRA.OUT
