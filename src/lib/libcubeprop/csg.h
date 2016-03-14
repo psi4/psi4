@@ -90,7 +90,7 @@ protected:
 public:
     // => Constructors <= //
 
-    CubicScalarGrid(boost::shared_ptr<BasisSet> primary);
+    CubicScalarGrid(boost::shared_ptr<BasisSet> primary, Options& options);
     virtual ~CubicScalarGrid(); 
 
     // => High-Level Setup Routines <= //
@@ -148,7 +148,7 @@ public:
     /// Add a density-type property to the scalar field
     void add_density(double* v, boost::shared_ptr<Matrix> D);
     /// Add an ESP-type property to the scalar field (total density matrix, must set DF_BASIS_SCF option)
-    void add_esp(double* v, boost::shared_ptr<Matrix> D);
+    void add_esp(double* v, boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights = std::vector<double>());
     /// Add a basis function property for desired indices to the scalar fields in v (rows are basis functions)
     void add_basis_functions(double** v, const std::vector<int>& indices);
     /// Add orbital property for desired indices to the scalar fields in v (rows are orbitals)
@@ -163,7 +163,7 @@ public:
     /// Compute a density-type property and drop a file corresponding to name and type
     void compute_density(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute an ESP-type property and drop a file corresponding to name and type
-    void compute_esp(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    void compute_esp(boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights, const std::string& name, const std::string& type = "CUBE");
     /// Compute a set of basis function-type properties and drop files corresponding to name, index, and type
     void compute_basis_functions(const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
     /// Compute a set of orbital-type properties and drop files corresponding to name, index, symmetry label, and type

@@ -308,6 +308,7 @@ rst_epilog = """
 .. |Angstrom| replace:: |AA|\ ngstr\ |o_dots|\ m
 .. |--| unicode:: U+02013 .. en dash
    :trim:
+.. |w--w| unicode:: U+02013 .. en dash
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 .. |w---w| unicode:: U+02014 .. em dash

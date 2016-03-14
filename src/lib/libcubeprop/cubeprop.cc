@@ -86,7 +86,7 @@ CubeProperties::~CubeProperties()
 }
 void CubeProperties::common_init()
 {
-    grid_ = boost::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_));
+    grid_ = boost::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_, options_));
     grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
 }
 void CubeProperties::print_header()
@@ -196,10 +196,10 @@ void CubeProperties::compute_density(boost::shared_ptr<Matrix> D, const std::str
 {
     grid_->compute_density(D, key);
 }
-void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt)
+void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt, const std::vector<double>& w)
 {
     grid_->compute_density(Dt, "Dt");
-    grid_->compute_esp(Dt, "ESP");
+    grid_->compute_esp(Dt, w, "ESP");
 }
 void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key)
 {
