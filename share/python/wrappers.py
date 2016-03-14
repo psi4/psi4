@@ -1159,6 +1159,7 @@ def database(name, db_name, **kwargs):
         ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
         libraryPath
     sys.path = [sys.path[0]] + dbPath.split(':') + sys.path[1:]
+    # TODO this should be modernized a la interface_cfour
 
     # Define path and load module for requested database
     database = p4util.import_ignorecase(db_name)

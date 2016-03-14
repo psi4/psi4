@@ -2650,7 +2650,6 @@ def run_dmrgscf(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG incomplete wavefunction is only SCF')
     return dmrg_wfn
 
 
@@ -2678,7 +2677,6 @@ def run_dmrgci(name, **kwargs):
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
 
-    print('DMRG incomplete wavefunction is only SCF') 
     return dmrg_wfn
 
 
@@ -2690,7 +2688,6 @@ def run_psimrcc(name, **kwargs):
     mcscf_wfn = run_mcscf(name, **kwargs)
     psimrcc_e = psi4.psimrcc(mcscf_wfn)
 
-    print('PSIMRCC incomplete wavefunction is only MCSCF') 
     return mcscf_wfn
 
 
@@ -2706,7 +2703,6 @@ def run_psimrcc_scf(name, **kwargs):
 
     psimrcc_e = psi4.psimrcc(ref_wfn)
 
-    print('PSIMRCC incomplete wavefunction is only SCF') 
     return ref_wfn
 
 
@@ -2850,7 +2846,7 @@ def run_sapt(name, **kwargs):
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
-    print('SAPT incomplete wavefunction is only dimer SCF') 
+
     #return e_sapt
     return dimer_wfn
 
@@ -3007,8 +3003,6 @@ def run_sapt_ct(name, **kwargs):
     psi4.set_variable('SAPT CT ENERGY', CT)
 
     optstash.restore()
-    #return e_sapt
-    print('SAPT incomplete wavefunction is only dimer SCF') 
     return dimer_wfn
 
 
@@ -3052,7 +3046,6 @@ def run_fisapt(name, **kwargs):
     fisapt_wfn = psi4.fisapt(ref_wfn)
 
     optstash.restore()
-    print('FISAPT incomplete wavefunction is only dimer SCF') 
     return fisapt_wfn
 
 
@@ -3089,8 +3082,11 @@ def run_mrcc(name, **kwargs):
     current_directory = os.getcwd()
 
     # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+    lenv = {
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+                ':' + os.environ.get('PATH'),
+        'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
+        }
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
     psi_io = psi4.IOManager.shared_object()
@@ -3227,7 +3223,6 @@ def run_mrcc(name, **kwargs):
     psi4.print_out('\n')
     psi4.print_out(iface_contents)
 
-    print('MRCC incomplete wavefunction is only SCF')  # TODO
     return ref_wfn
 
 
@@ -3604,6 +3599,5 @@ def run_efp(name, **kwargs):
 
     efp.print_out()
     returnvalue = efp.compute()
-    print('EFP incomplete wavefunction is only ') 
     return returnvalue
 
