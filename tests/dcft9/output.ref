@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.2.260 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} e753844 
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Jul 24 00:16:01 2015
+    Psi4 started on: Mon Mar 14 15:24:31 2016
 
-    Process ID:   7066
-    PSI4DATADIR: /Users/xiaowang/Programs/psi4/lib
+    Process ID:  11629
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -87,8 +87,8 @@ clean()
 
   Memory set to 250.000 MiB by Python script.
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:01 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:32 2016
 
 
          ---------------------------------------------------------
@@ -105,17 +105,17 @@ clean()
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O         -0.031788188689    -0.057762343755     0.000000000000
-           H         -0.415040188689     0.819260656245     0.000000000000
-           H          0.919541811311     0.097469656245     0.000000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -0.031788188689    -0.057762343755     0.000000000000    15.994914619560
+           H         -0.415040188689     0.819260656245     0.000000000000     1.007825032070
+           H          0.919541811311     0.097469656245     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
   Rotational constants: A =     27.13720  B =     14.53088  C =      9.46354 [cm^-1]
   Rotational constants: A = 813552.74647  B = 435624.91870  C = 283709.72274 [MHz]
-  Nuclear repulsion =    9.163830145965930
+  Nuclear repulsion =    9.163830145965933
 
   Charge       = 0
   Multiplicity = 1
@@ -154,97 +154,7 @@ clean()
     Total      24      24       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               178
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 116
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     5,    0 ]
-    SOCC [     0,    0 ]
-
-   @DF-UHF iter   1:   -68.87702573876568   -6.88770e+01   1.63294e-01 
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-    SOCC [     0,    0 ]
-
-   @DF-UHF iter   2:   -69.94360595190378   -1.06658e+00   1.33704e-01 DIIS
-   @DF-UHF iter   3:   -75.73875544067789   -5.79515e+00   4.58039e-02 DIIS
-   @DF-UHF iter   4:   -76.00163995587769   -2.62885e-01   1.24136e-02 DIIS
-   @DF-UHF iter   5:   -76.02629426944578   -2.46543e-02   1.11781e-03 DIIS
-   @DF-UHF iter   6:   -76.02653944418937   -2.45175e-04   4.97186e-04 DIIS
-   @DF-UHF iter   7:   -76.02658039220266   -4.09480e-05   6.96756e-05 DIIS
-   @DF-UHF iter   8:   -76.02658201972024   -1.62752e-06   2.34339e-05 DIIS
-   @DF-UHF iter   9:   -76.02658210980957   -9.00893e-08   1.35740e-06 DIIS
-   @DF-UHF iter  10:   -76.02658211056242   -7.52848e-10   4.86831e-07 DIIS
-   @DF-UHF iter  11:   -76.02658211061166   -4.92406e-11   8.62694e-08 DIIS
-   @DF-UHF iter  12:   -76.02658211061303   -1.37845e-12   6.71545e-09 DIIS
-   @DF-UHF iter  13:   -76.02658211061309   -5.68434e-14   7.48856e-10 DIIS
-   @DF-UHF iter  14:   -76.02658211061318   -8.52651e-14   1.45470e-10 DIIS
-   @DF-UHF iter  15:   -76.02658211061306    1.13687e-13   2.09123e-11 DIIS
-   @DF-UHF iter  16:   -76.02658211061303    2.84217e-14   4.23361e-12 DIIS
-   @DF-UHF iter  17:   -76.02658211061308   -4.26326e-14   1.32012e-12 DIIS
-   @DF-UHF iter  18:   -76.02658211061306    1.42109e-14   1.88347e-13 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:              12
-      Number of SO shells:              12
-      Number of primitives:             32
-      Number of atomic orbitals:        25
-      Number of basis functions:        24
-
-      Number of irreps:                  2
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  18    6 ]
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 22762 non-zero two-electron integrals.
-        Stored in file 33.
 
 	Batch   1 pq = [       0,     192] index = [             0,18528]
   ==> DiskJK: Disk-Based J/K Matrices <==
@@ -255,23 +165,48 @@ clean()
     Memory (MB):               178
     Schwarz Cutoff:          1E-12
 
-   @UHF iter  19:   -76.02660308313024   -2.09725e-05   8.81726e-06 DIIS
-   @UHF iter  20:   -76.02660309550556   -1.23753e-08   1.42180e-06 DIIS
-   @UHF iter  21:   -76.02660309588961   -3.84048e-10   2.80329e-07 DIIS
-   @UHF iter  22:   -76.02660309590364   -1.40261e-11   8.21249e-08 DIIS
-   @UHF iter  23:   -76.02660309590485   -1.20792e-12   3.29126e-08 DIIS
-   @UHF iter  24:   -76.02660309590506   -2.13163e-13   3.03463e-09 DIIS
-   @UHF iter  25:   -76.02660309590507   -1.42109e-14   5.33338e-10 DIIS
-   @UHF iter  26:   -76.02660309590502    5.68434e-14   5.97868e-11 DIIS
-   @UHF iter  27:   -76.02660309590502    0.00000e+00   1.40002e-11 DIIS
-   @UHF iter  28:   -76.02660309590497    4.26326e-14   2.83730e-12 DIIS
-   @UHF iter  29:   -76.02660309590500   -2.84217e-14   3.05568e-13 DIIS
+  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     5,    0 ]
+    SOCC [     0,    0 ]
+
+   @UHF iter   1:   -68.87711065944805   -6.88771e+01   1.63289e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+   @UHF iter   2:   -69.94310680897694   -1.06600e+00   1.33708e-01 DIIS
+   @UHF iter   3:   -75.73879631250649   -5.79569e+00   4.58008e-02 DIIS
+   @UHF iter   4:   -76.00166968848322   -2.62873e-01   1.24118e-02 DIIS
+   @UHF iter   5:   -76.02631566768429   -2.46460e-02   1.11817e-03 DIIS
+   @UHF iter   6:   -76.02656048863409   -2.44821e-04   4.97065e-04 DIIS
+   @UHF iter   7:   -76.02660138340670   -4.08948e-05   6.95551e-05 DIIS
+   @UHF iter   8:   -76.02660300512727   -1.62172e-06   2.34201e-05 DIIS
+   @UHF iter   9:   -76.02660309510360   -8.99763e-08   1.35554e-06 DIIS
+   @UHF iter  10:   -76.02660309585443   -7.50831e-10   4.86368e-07 DIIS
+   @UHF iter  11:   -76.02660309590358   -4.91553e-11   8.62283e-08 DIIS
+   @UHF iter  12:   -76.02660309590496   -1.37845e-12   6.69017e-09 DIIS
+   @UHF iter  13:   -76.02660309590499   -2.84217e-14   7.46260e-10 DIIS
+   @UHF iter  14:   -76.02660309590487    1.13687e-13   1.44920e-10 DIIS
+   @UHF iter  15:   -76.02660309590495   -7.10543e-14   2.07937e-11 DIIS
+   @UHF iter  16:   -76.02660309590499   -4.26326e-14   4.22908e-12 DIIS
+   @UHF iter  17:   -76.02660309590492    7.10543e-14   1.31705e-12 DIIS
+   @UHF iter  18:   -76.02660309590490    1.42109e-14   1.87225e-13 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:  -1.776356839E-15
+   @Spin Contamination Metric:  -7.993605777E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:               -1.776356839E-15
+   @S^2 Observed:               -7.993605777E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -315,18 +250,18 @@ clean()
 
   Energy converged.
 
-  @UHF Final Energy:   -76.02660309590500
+  @UHF Final Energy:   -76.02660309590490
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -123.0952382024143787
-    Two-Electron Energy =                  37.9048049605434372
+    Nuclear Repulsion Energy =              9.1638301459659335
+    One-Electron Energy =                -123.0952382024149188
+    Two-Electron Energy =                  37.9048049605440767
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0266030959050170
+    Total Energy =                        -76.0266030959049033
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -351,70 +286,79 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:02 2015
-Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+  UHF NO Occupations:
+  HONO-2 :    2 Ap 2.0000000
+  HONO-1 :    3 Ap 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap 0.0000000
+  LUNO+2 :    7 Ap 0.0000000
+  LUNO+3 :    2App 0.0000000
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:02 2015
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:32 2016
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:32 2016
 
 
 
 	***********************************************************************************
 	*                        Density Cumulant Functional Theory                       *
-	*                     by Alexander Sokolov and Andy Simmonett                     *
-	*                           and Xiao Wang (RHF-ODC-12)                            *
+	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
 	***********************************************************************************
 
 
-	Transforming two-electron integrals...
+	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -76.026603095905003
-	 Alpha - Alpha MP2 energy         =   -0.025780401833508
-	 Alpha - Beta  MP2 energy         =   -0.152645207423787
-	 Beta  - Beta  MP2 energy         =   -0.025780401833508
-	 Total MP2 correlation energy     =   -0.204206011090803
-	*Total MP2 energy                 =  -76.230809106995792
+	*Total Hartree-Fock energy        =  -76.026603095904903
+	 Alpha - Alpha MP2 energy         =   -0.025780401833505
+	 Alpha - Beta  MP2 energy         =   -0.152645207423765
+	 Beta  - Beta  MP2 energy         =   -0.025780401833505
+	 Total MP2 correlation energy     =   -0.204206011090776
+	*Total MP2 energy                 =  -76.230809106995679
 
 	DCFT Functional:    		 ODC-12
+	DCFT Type:          		 CONV
 	Algorithm:          		 SIMULTANEOUS
 	AO-Basis Integrals: 		 DISK
 
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        3.011e-02         1.480e-03     -1.780e-02    -76.248604545737592      *
-	* 2        6.664e-03         4.205e-04     -8.607e-04    -76.249465219419506      *
-	* 3        1.443e-03         1.596e-04      5.927e-03    -76.243538642218027      *
-	* 4        5.212e-04         6.664e-05      1.132e-03    -76.242406426788790  S   *
-	* 5        2.343e-04         2.915e-05      4.720e-04    -76.241934456103849  S   *
-	* 6        9.878e-05         1.316e-05      1.749e-04    -76.241759507019097  S   *
-	* 7        6.653e-05         6.042e-06      7.064e-05    -76.241688868393439  S/E *
-	* 8        3.370e-06         3.522e-07      5.477e-05    -76.241634102283669  S/E *
-	* 9        3.639e-07         4.638e-08     -2.729e-06    -76.241636831049419  S/E *
-	* 10       5.558e-08         1.058e-08      3.160e-07    -76.241636515071818  S/E *
-	* 11       1.636e-08         2.091e-09     -4.237e-08    -76.241636557437857  S/E *
-	* 12       4.339e-09         5.995e-10      1.334e-08    -76.241636544092913  S/E *
-	* 13       8.497e-10         1.138e-10     -3.843e-09    -76.241636547936096  S/E *
-	* 14       2.640e-10         2.707e-11     -2.492e-10    -76.241636548185312  S/E *
-	* 15       1.127e-10         1.021e-11      5.944e-11    -76.241636548125868  S/E *
-	* 16       2.739e-11         3.011e-12      1.768e-11    -76.241636548108190  S/E *
-	* 17       9.783e-12         5.367e-13     -1.386e-11    -76.241636548122045  S/E *
-	* 18       2.960e-12         1.501e-13     -1.194e-12    -76.241636548123239  S/E *
-	* 19       5.290e-13         3.316e-14     -1.009e-12    -76.241636548124248  S/E *
-	* 20       1.124e-13         1.174e-14      1.279e-13    -76.241636548124120  S/E *
+	* 1        3.011e-02         1.480e-03     -1.780e-02    -76.248604545737521      *
+	* 2        6.664e-03         4.205e-04     -8.607e-04    -76.249465219419406      *
+	* 3        1.443e-03         1.596e-04      5.927e-03    -76.243538642217928      *
+	* 4        5.212e-04         6.664e-05      1.132e-03    -76.242406426788733  S   *
+	* 5        2.343e-04         2.915e-05      4.720e-04    -76.241934456103834  S   *
+	* 6        9.878e-05         1.316e-05      1.749e-04    -76.241759507019054  S   *
+	* 7        6.653e-05         6.042e-06      7.064e-05    -76.241688868393325  S/E *
+	* 8        3.370e-06         3.522e-07      5.477e-05    -76.241634102283612  S/E *
+	* 9        3.639e-07         4.638e-08     -2.729e-06    -76.241636831049348  S/E *
+	* 10       5.558e-08         1.058e-08      3.160e-07    -76.241636515071690  S/E *
+	* 11       1.636e-08         2.091e-09     -4.237e-08    -76.241636557437744  S/E *
+	* 12       4.339e-09         5.995e-10      1.334e-08    -76.241636544092856  S/E *
+	* 13       8.497e-10         1.138e-10     -3.843e-09    -76.241636547935983  S/E *
+	* 14       2.640e-10         2.707e-11     -2.493e-10    -76.241636548185284  S/E *
+	* 15       1.127e-10         1.021e-11      5.947e-11    -76.241636548125811  S/E *
+	* 16       2.739e-11         3.011e-12      1.771e-11    -76.241636548108104  S/E *
+	* 17       9.784e-12         5.367e-13     -1.386e-11    -76.241636548121960  S/E *
+	* 18       2.962e-12         1.501e-13     -1.222e-12    -76.241636548123182  S/E *
+	* 19       5.277e-13         3.313e-14     -1.009e-12    -76.241636548124191  S/E *
 	*=================================================================================*
 
-	*ODC-12 SCF Energy                                 =  -75.795053067927526
-	*ODC-12 Lambda Energy                              =   -0.446583480196593
-	*ODC-12 Total Energy                               =  -76.241636548124120
+	*   ODC-12 SCF Energy                                 =     -75.795053067927611
+	*   ODC-12 Lambda Energy                              =      -0.446583480196573
+	*   ODC-12 Total Energy                               =     -76.241636548124191
 
 	Orbital occupations:
 		Alpha occupied orbitals
@@ -458,18 +402,21 @@ Properties computed using the ODC-12 density matrix
      X:     0.9331      Y:     1.7071      Z:     0.0000     Total:     1.9455
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:17 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:33 2016
 Module time:
-	user time   =       3.00 seconds =       0.05 minutes
-	system time =       1.91 seconds =       0.03 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.77 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.48 seconds =       0.06 minutes
-	system time =       1.94 seconds =       0.03 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+	UHF Energy........................................................PASSED
+	UHF-MP2 Energy....................................................PASSED
+	UHF-ODC-12 Total Energy (simultaneous, ao_basis=disk).............PASSED
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:17 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:33 2016
 
 
          ---------------------------------------------------------
@@ -486,17 +433,17 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O         -0.031788188689    -0.057762343755     0.000000000000
-           H         -0.415040188689     0.819260656245     0.000000000000
-           H          0.919541811311     0.097469656245     0.000000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -0.031788188689    -0.057762343755     0.000000000000    15.994914619560
+           H         -0.415040188689     0.819260656245     0.000000000000     1.007825032070
+           H          0.919541811311     0.097469656245     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
   Rotational constants: A =     27.13720  B =     14.53088  C =      9.46354 [cm^-1]
   Rotational constants: A = 813552.74647  B = 435624.91870  C = 283709.72274 [MHz]
-  Nuclear repulsion =    9.163830145965930
+  Nuclear repulsion =    9.163830145965933
 
   Charge       = 0
   Multiplicity = 1
@@ -535,95 +482,7 @@ Total time:
     Total      24      24       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               178
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 116
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     5,    0 ]
-
-   @DF-RHF iter   1:   -68.87702573876567   -6.88770e+01   1.63294e-01 
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-
-   @DF-RHF iter   2:   -69.94360595190376   -1.06658e+00   1.33704e-01 DIIS
-   @DF-RHF iter   3:   -75.73875544067789   -5.79515e+00   4.58039e-02 DIIS
-   @DF-RHF iter   4:   -76.00163995587772   -2.62885e-01   1.24136e-02 DIIS
-   @DF-RHF iter   5:   -76.02629426944577   -2.46543e-02   1.11781e-03 DIIS
-   @DF-RHF iter   6:   -76.02653944418932   -2.45175e-04   4.97186e-04 DIIS
-   @DF-RHF iter   7:   -76.02658039220266   -4.09480e-05   6.96756e-05 DIIS
-   @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
-   @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
-   @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
-   @DF-RHF iter  11:   -76.02658211061171   -4.93259e-11   8.62694e-08 DIIS
-   @DF-RHF iter  12:   -76.02658211061306   -1.35003e-12   6.71545e-09 DIIS
-   @DF-RHF iter  13:   -76.02658211061308   -1.42109e-14   7.48856e-10 DIIS
-   @DF-RHF iter  14:   -76.02658211061315   -7.10543e-14   1.45470e-10 DIIS
-   @DF-RHF iter  15:   -76.02658211061303    1.13687e-13   2.09121e-11 DIIS
-   @DF-RHF iter  16:   -76.02658211061305   -1.42109e-14   4.23357e-12 DIIS
-   @DF-RHF iter  17:   -76.02658211061309   -4.26326e-14   1.32011e-12 DIIS
-   @DF-RHF iter  18:   -76.02658211061303    5.68434e-14   1.86035e-13 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:              12
-      Number of SO shells:              12
-      Number of primitives:             32
-      Number of atomic orbitals:        25
-      Number of basis functions:        24
-
-      Number of irreps:                  2
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  18    6 ]
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 22762 non-zero two-electron integrals.
-        Stored in file 33.
 
 	Batch   1 pq = [       0,     192] index = [             0,18528]
   ==> DiskJK: Disk-Based J/K Matrices <==
@@ -634,17 +493,40 @@ Total time:
     Memory (MB):               178
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  19:   -76.02660308313024   -2.09725e-05   8.81726e-06 DIIS
-   @RHF iter  20:   -76.02660309550555   -1.23753e-08   1.42180e-06 DIIS
-   @RHF iter  21:   -76.02660309588960   -3.84048e-10   2.80329e-07 DIIS
-   @RHF iter  22:   -76.02660309590362   -1.40261e-11   8.21249e-08 DIIS
-   @RHF iter  23:   -76.02660309590483   -1.20792e-12   3.29126e-08 DIIS
-   @RHF iter  24:   -76.02660309590500   -1.70530e-13   3.03463e-09 DIIS
-   @RHF iter  25:   -76.02660309590503   -2.84217e-14   5.33337e-10 DIIS
-   @RHF iter  26:   -76.02660309590505   -1.42109e-14   5.97866e-11 DIIS
-   @RHF iter  27:   -76.02660309590502    2.84217e-14   1.40000e-11 DIIS
-   @RHF iter  28:   -76.02660309590497    4.26326e-14   2.83728e-12 DIIS
-   @RHF iter  29:   -76.02660309590500   -2.84217e-14   3.05985e-13 DIIS
+  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     5,    0 ]
+
+   @RHF iter   1:   -68.87711065944808   -6.88771e+01   1.63289e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+   @RHF iter   2:   -69.94310680897713   -1.06600e+00   1.33708e-01 DIIS
+   @RHF iter   3:   -75.73879631250666   -5.79569e+00   4.58008e-02 DIIS
+   @RHF iter   4:   -76.00166968848335   -2.62873e-01   1.24118e-02 DIIS
+   @RHF iter   5:   -76.02631566768440   -2.46460e-02   1.11817e-03 DIIS
+   @RHF iter   6:   -76.02656048863422   -2.44821e-04   4.97065e-04 DIIS
+   @RHF iter   7:   -76.02660138340676   -4.08948e-05   6.95551e-05 DIIS
+   @RHF iter   8:   -76.02660300512743   -1.62172e-06   2.34201e-05 DIIS
+   @RHF iter   9:   -76.02660309510370   -8.99763e-08   1.35554e-06 DIIS
+   @RHF iter  10:   -76.02660309585454   -7.50845e-10   4.86368e-07 DIIS
+   @RHF iter  11:   -76.02660309590374   -4.91980e-11   8.62283e-08 DIIS
+   @RHF iter  12:   -76.02660309590503   -1.29319e-12   6.69017e-09 DIIS
+   @RHF iter  13:   -76.02660309590510   -7.10543e-14   7.46260e-10 DIIS
+   @RHF iter  14:   -76.02660309590505    5.68434e-14   1.44920e-10 DIIS
+   @RHF iter  15:   -76.02660309590509   -4.26326e-14   2.07939e-11 DIIS
+   @RHF iter  16:   -76.02660309590510   -1.42109e-14   4.22915e-12 DIIS
+   @RHF iter  17:   -76.02660309590513   -2.84217e-14   1.31702e-12 DIIS
+   @RHF iter  18:   -76.02660309590506    7.10543e-14   1.85093e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -672,18 +554,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02660309590500
+  @RHF Final Energy:   -76.02660309590506
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -123.0952382024144072
-    Two-Electron Energy =                  37.9048049605434727
+    Nuclear Repulsion Energy =              9.1638301459659335
+    One-Electron Energy =                -123.0952382024149756
+    Two-Electron Energy =                  37.9048049605439559
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0266030959050028
+    Total Energy =                        -76.0266030959050880
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -708,67 +590,64 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:17 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:33 2016
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.94 seconds =       0.07 minutes
-	system time =       1.98 seconds =       0.03 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       1.04 seconds =       0.02 minutes
+	system time =       0.80 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:17 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:33 2016
 
 
 
 	***********************************************************************************
 	*                        Density Cumulant Functional Theory                       *
-	*                     by Alexander Sokolov and Andy Simmonett                     *
-	*                           and Xiao Wang (RHF-ODC-12)                            *
+	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
 	***********************************************************************************
 
 
-	Transforming two-electron integrals for RHF reference ...
+	Transforming two-electron integrals (transformation type: restricted)...
 	Computing MP2 amplitude guess...
 
-
-	This is a closed-shell molecule so the spin adapted code is used!
-	*Total Hartree-Fock energy        =  -76.026603095905003
-	 Total MP2 correlation energy     =   -0.204206011090802
-	*Total MP2 energy                 =  -76.230809106995807
+	*Total Hartree-Fock energy        =  -76.026603095905060
+	 Total MP2 correlation energy     =   -0.204206011090773
+	*Total MP2 energy                 =  -76.230809106995835
 
 	DCFT Functional:    		 ODC-12
+	DCFT Type:          		 CONV
 	Algorithm:          		 SIMULTANEOUS
 	AO-Basis Integrals: 		 DISK
 
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737663      *
-	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659706      *
-	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328539      *
-	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527492  S   *
-	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626356  S   *
-	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653669  S   *
-	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310132  S/E *
-	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367762  S/E *
-	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147808  S/E *
-	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395611  S/E *
-	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166440  S/E *
-	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243963  S/E *
-	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373805  S/E *
-	* 14       2.357e-10         2.549e-11      1.235e-10    -76.241636548250256  S/E *
-	* 15       6.658e-11         6.232e-12      1.038e-10    -76.241636548146431  S/E *
-	* 16       9.459e-12         1.429e-12      1.964e-11    -76.241636548126792  S/E *
-	* 17       6.767e-13         2.434e-13      2.913e-12    -76.241636548123878  S/E *
-	* 18       3.308e-13         7.730e-14     -2.416e-13    -76.241636548124120  S/E *
+	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737678      *
+	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659749      *
+	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328653      *
+	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527506  S   *
+	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626428  S   *
+	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653754  S   *
+	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310245  S/E *
+	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367833  S/E *
+	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147907  S/E *
+	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395682  S/E *
+	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166511  S/E *
+	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545244035  S/E *
+	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373862  S/E *
+	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250298  S/E *
+	* 15       6.658e-11         6.232e-12      1.039e-10    -76.241636548146431  S/E *
+	* 16       9.459e-12         1.429e-12      1.961e-11    -76.241636548126820  S/E *
+	* 17       6.752e-13         2.434e-13      2.913e-12    -76.241636548123907  S/E *
 	*=================================================================================*
 
-	*ODC-12 SCF Energy                                 =  -75.795053067927370
-	*ODC-12 Lambda Energy                              =   -0.446583480196750
-	*ODC-12 Total Energy                               =  -76.241636548124120
+	*   ODC-12 SCF Energy                                 =     -75.795053067927441
+	*   ODC-12 Lambda Energy                              =      -0.446583480196463
+	*   ODC-12 Total Energy                               =     -76.241636548123907
 
 	Orbital occupations:
 		Doubly occupied orbitals
@@ -783,18 +662,21 @@ Total time:
 		  16Ap       0.0018    17Ap       0.0016    18Ap       0.0006  
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:24 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:34 2016
 Module time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.90 seconds =       0.08 minutes
-	system time =       2.59 seconds =       0.04 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       1.05 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
+	RHF Energy........................................................PASSED
+	RHF-MP2 Energy....................................................PASSED
+	RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk).............PASSED
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:24 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:34 2016
 
 
          ---------------------------------------------------------
@@ -811,17 +693,17 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O         -0.031788188689    -0.057762343755     0.000000000000
-           H         -0.415040188689     0.819260656245     0.000000000000
-           H          0.919541811311     0.097469656245     0.000000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -0.031788188689    -0.057762343755     0.000000000000    15.994914619560
+           H         -0.415040188689     0.819260656245     0.000000000000     1.007825032070
+           H          0.919541811311     0.097469656245     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
   Rotational constants: A =     27.13720  B =     14.53088  C =      9.46354 [cm^-1]
   Rotational constants: A = 813552.74647  B = 435624.91870  C = 283709.72274 [MHz]
-  Nuclear repulsion =    9.163830145965930
+  Nuclear repulsion =    9.163830145965932
 
   Charge       = 0
   Multiplicity = 1
@@ -860,95 +742,7 @@ Total time:
     Total      24      24       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               178
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 116
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     5,    0 ]
-
-   @DF-RHF iter   1:   -68.87702573876567   -6.88770e+01   1.63294e-01 
-    Occupation by irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-
-   @DF-RHF iter   2:   -69.94360595190376   -1.06658e+00   1.33704e-01 DIIS
-   @DF-RHF iter   3:   -75.73875544067789   -5.79515e+00   4.58039e-02 DIIS
-   @DF-RHF iter   4:   -76.00163995587772   -2.62885e-01   1.24136e-02 DIIS
-   @DF-RHF iter   5:   -76.02629426944577   -2.46543e-02   1.11781e-03 DIIS
-   @DF-RHF iter   6:   -76.02653944418932   -2.45175e-04   4.97186e-04 DIIS
-   @DF-RHF iter   7:   -76.02658039220266   -4.09480e-05   6.96756e-05 DIIS
-   @DF-RHF iter   8:   -76.02658201972025   -1.62752e-06   2.34339e-05 DIIS
-   @DF-RHF iter   9:   -76.02658210980954   -9.00893e-08   1.35740e-06 DIIS
-   @DF-RHF iter  10:   -76.02658211056239   -7.52848e-10   4.86831e-07 DIIS
-   @DF-RHF iter  11:   -76.02658211061168   -4.92975e-11   8.62694e-08 DIIS
-   @DF-RHF iter  12:   -76.02658211061305   -1.36424e-12   6.71545e-09 DIIS
-   @DF-RHF iter  13:   -76.02658211061306   -1.42109e-14   7.48856e-10 DIIS
-   @DF-RHF iter  14:   -76.02658211061315   -8.52651e-14   1.45470e-10 DIIS
-   @DF-RHF iter  15:   -76.02658211061306    8.52651e-14   2.09121e-11 DIIS
-   @DF-RHF iter  16:   -76.02658211061305    1.42109e-14   4.23360e-12 DIIS
-   @DF-RHF iter  17:   -76.02658211061303    1.42109e-14   1.32017e-12 DIIS
-   @DF-RHF iter  18:   -76.02658211061309   -5.68434e-14   1.86142e-13 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:              12
-      Number of SO shells:              12
-      Number of primitives:             32
-      Number of atomic orbitals:        25
-      Number of basis functions:        24
-
-      Number of irreps:                  2
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  18    6 ]
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 22762 non-zero two-electron integrals.
-        Stored in file 33.
 
 	Batch   1 pq = [       0,     192] index = [             0,18528]
   ==> DiskJK: Disk-Based J/K Matrices <==
@@ -959,17 +753,40 @@ Total time:
     Memory (MB):               178
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  19:   -76.02660308313021   -2.09725e-05   8.81726e-06 DIIS
-   @RHF iter  20:   -76.02660309550562   -1.23754e-08   1.42180e-06 DIIS
-   @RHF iter  21:   -76.02660309588963   -3.84006e-10   2.80329e-07 DIIS
-   @RHF iter  22:   -76.02660309590361   -1.39835e-11   8.21249e-08 DIIS
-   @RHF iter  23:   -76.02660309590489   -1.27898e-12   3.29126e-08 DIIS
-   @RHF iter  24:   -76.02660309590500   -1.13687e-13   3.03463e-09 DIIS
-   @RHF iter  25:   -76.02660309590506   -5.68434e-14   5.33337e-10 DIIS
-   @RHF iter  26:   -76.02660309590505    1.42109e-14   5.97868e-11 DIIS
-   @RHF iter  27:   -76.02660309590503    1.42109e-14   1.40003e-11 DIIS
-   @RHF iter  28:   -76.02660309590500    2.84217e-14   2.83698e-12 DIIS
-   @RHF iter  29:   -76.02660309590507   -7.10543e-14   3.05764e-13 DIIS
+  Minimum eigenvalue in the overlap matrix is 3.4387299179E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     5,    0 ]
+
+   @RHF iter   1:   -68.87711065944796   -6.88771e+01   1.63289e-01 
+    Occupation by irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+   @RHF iter   2:   -69.94310680897681   -1.06600e+00   1.33708e-01 DIIS
+   @RHF iter   3:   -75.73879631250642   -5.79569e+00   4.58008e-02 DIIS
+   @RHF iter   4:   -76.00166968848312   -2.62873e-01   1.24118e-02 DIIS
+   @RHF iter   5:   -76.02631566768417   -2.46460e-02   1.11817e-03 DIIS
+   @RHF iter   6:   -76.02656048863396   -2.44821e-04   4.97065e-04 DIIS
+   @RHF iter   7:   -76.02660138340654   -4.08948e-05   6.95551e-05 DIIS
+   @RHF iter   8:   -76.02660300512719   -1.62172e-06   2.34201e-05 DIIS
+   @RHF iter   9:   -76.02660309510351   -8.99763e-08   1.35554e-06 DIIS
+   @RHF iter  10:   -76.02660309585430   -7.50788e-10   4.86368e-07 DIIS
+   @RHF iter  11:   -76.02660309590350   -4.91980e-11   8.62283e-08 DIIS
+   @RHF iter  12:   -76.02660309590482   -1.32161e-12   6.69017e-09 DIIS
+   @RHF iter  13:   -76.02660309590483   -1.42109e-14   7.46260e-10 DIIS
+   @RHF iter  14:   -76.02660309590482    1.42109e-14   1.44920e-10 DIIS
+   @RHF iter  15:   -76.02660309590483   -1.42109e-14   2.07939e-11 DIIS
+   @RHF iter  16:   -76.02660309590483    0.00000e+00   4.22931e-12 DIIS
+   @RHF iter  17:   -76.02660309590486   -2.84217e-14   1.31703e-12 DIIS
+   @RHF iter  18:   -76.02660309590482    4.26326e-14   1.85132e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -997,18 +814,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02660309590507
+  @RHF Final Energy:   -76.02660309590482
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -123.0952382024145209
-    Two-Electron Energy =                  37.9048049605435153
+    Nuclear Repulsion Energy =              9.1638301459659317
+    One-Electron Energy =                -123.0952382024147198
+    Two-Electron Energy =                  37.9048049605439488
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0266030959050738
+    Total Energy =                        -76.0266030959048464
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -1033,67 +850,64 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:25 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:34 2016
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.36 seconds =       0.09 minutes
-	system time =       2.61 seconds =       0.04 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       1.06 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on s172-20-49-h3.paws.uga.edu
-*** at Fri Jul 24 00:16:25 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:24:34 2016
 
 
 
 	***********************************************************************************
 	*                        Density Cumulant Functional Theory                       *
-	*                     by Alexander Sokolov and Andy Simmonett                     *
-	*                           and Xiao Wang (RHF-ODC-12)                            *
+	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
 	***********************************************************************************
 
 
-	Transforming two-electron integrals for RHF reference ...
+	Transforming two-electron integrals (transformation type: restricted)...
 	Computing MP2 amplitude guess...
 
-
-	This is a closed-shell molecule so the spin adapted code is used!
-	*Total Hartree-Fock energy        =  -76.026603095905074
-	 Total MP2 correlation energy     =   -0.204206011090802
-	*Total MP2 energy                 =  -76.230809106995878
+	*Total Hartree-Fock energy        =  -76.026603095904818
+	 Total MP2 correlation energy     =   -0.204206011090773
+	*Total MP2 energy                 =  -76.230809106995594
 
 	DCFT Functional:    		 ODC-12
+	DCFT Type:          		 CONV
 	Algorithm:          		 SIMULTANEOUS
 	AO-Basis Integrals: 		 NONE
 
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737635      *
-	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659706      *
-	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328554      *
-	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527464  S   *
-	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626328  S   *
-	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653641  S   *
-	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645310117  S/E *
-	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367762  S/E *
-	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147822  S/E *
-	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395597  S/E *
-	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166426  S/E *
-	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243949  S/E *
-	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373833  S/E *
-	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250256  S/E *
-	* 15       6.659e-11         6.232e-12      1.039e-10    -76.241636548146403  S/E *
-	* 16       9.458e-12         1.429e-12      1.963e-11    -76.241636548126777  S/E *
-	* 17       6.754e-13         2.434e-13      2.899e-12    -76.241636548123878  S/E *
-	* 18       3.291e-13         7.728e-14     -2.416e-13    -76.241636548124120  S/E *
+	* 1        2.943e-02         1.501e-03     -1.780e-02    -76.248604545737464      *
+	* 2        7.607e-03         4.698e-04     -8.274e-04    -76.249431960659535      *
+	* 3        1.268e-03         1.699e-04      5.872e-03    -76.243560214328440      *
+	* 4        5.897e-04         7.089e-05      1.155e-03    -76.242405104527279  S   *
+	* 5        2.384e-04         3.072e-05      4.685e-04    -76.241936599626200  S   *
+	* 6        1.317e-04         1.383e-05      1.760e-04    -76.241760629653513  S   *
+	* 7        6.172e-05         6.314e-06      7.098e-05    -76.241689645309989  S/E *
+	* 8        4.146e-06         3.117e-07      5.420e-05    -76.241635441367592  S/E *
+	* 9        6.485e-07         4.645e-08     -1.341e-06    -76.241636782147665  S/E *
+	* 10       1.117e-07         9.842e-09      2.398e-07    -76.241636542395469  S/E *
+	* 11       1.845e-08         1.868e-09     -9.771e-09    -76.241636552166298  S/E *
+	* 12       5.285e-09         5.380e-10      6.922e-09    -76.241636545243836  S/E *
+	* 13       6.683e-10         1.070e-10     -3.130e-09    -76.241636548373663  S/E *
+	* 14       2.357e-10         2.549e-11      1.236e-10    -76.241636548250085  S/E *
+	* 15       6.659e-11         6.232e-12      1.039e-10    -76.241636548146204  S/E *
+	* 16       9.461e-12         1.429e-12      1.958e-11    -76.241636548126621  S/E *
+	* 17       6.735e-13         2.434e-13      2.927e-12    -76.241636548123694  S/E *
 	*=================================================================================*
 
-	*ODC-12 SCF Energy                                 =  -75.795053067927370
-	*ODC-12 Lambda Energy                              =   -0.446583480196750
-	*ODC-12 Total Energy                               =  -76.241636548124120
+	*   ODC-12 SCF Energy                                 =     -75.795053067927228
+	*   ODC-12 Lambda Energy                              =      -0.446583480196465
+	*   ODC-12 Total Energy                               =     -76.241636548123694
 
 	Orbital occupations:
 		Doubly occupied orbitals
@@ -1108,14 +922,17 @@ Total time:
 		  16Ap       0.0018    17Ap       0.0016    18Ap       0.0006  
 
 
-*** tstop() called on s172-20-49-h3.paws.uga.edu at Fri Jul 24 00:16:32 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:35 2016
 Module time:
-	user time   =       0.95 seconds =       0.02 minutes
-	system time =       0.71 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.32 seconds =       0.11 minutes
-	system time =       3.32 seconds =       0.06 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       1.35 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
+	RHF Energy........................................................PASSED
+	RHF-MP2 Energy....................................................PASSED
+	RHF-ODC-12 Total Energy (simultaneous, ao_basis=none).............PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

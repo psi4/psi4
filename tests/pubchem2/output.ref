@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} d4441b4809b7047d6534f4b70e1a3b16a14fb961
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  10170
-    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/objdir/../lib
+
+    Psi4 started on: Mon Mar 14 15:33:52 2016
+
+    Process ID:  13776
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -65,8 +68,9 @@ molecule pubchem2 {
     pubchem:608116
 }
 pubchem2.update_geometry()
-compare_values(nre, pubchem2.nuclear_repulsion_energy(), 4, 'nre')
+compare_values(nre, pubchem2.nuclear_repulsion_energy(), 4, 'nre')  #TEST
 
 --------------------------------------------------------------------------
+	nre...............................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

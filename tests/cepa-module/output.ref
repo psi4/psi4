@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.141 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {drivpatch} 16ccace dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tue Mar  8 01:41:27 2016
+    Psi4 started on: Mon Mar 14 15:26:06 2016
 
-    Process ID:  26155
-    PSI4DATADIR: ../../share/
+    Process ID:  12161
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -199,8 +199,8 @@ set mp2_type cd
     Specify the multiplicity in the molecule input block.
 
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:27 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
 
          ---------------------------------------------------------
@@ -370,18 +370,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:27 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:06 2016
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:27 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
 
  ============================================================================== 
@@ -459,22 +459,22 @@ Total time:
 	============================================================================== 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:28 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:06 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.23 seconds =       0.00 minutes
+	user time   =       0.30 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 	lccd rhf conv fc: occ.............................................PASSED
 	lccd rhf conv fc: occ.............................................PASSED
 	lccd rhf conv fc: occ.............................................PASSED
 	lccd rhf conv fc: occ.............................................PASSED
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:28 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
 
          ---------------------------------------------------------
@@ -644,18 +644,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:28 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:06 2016
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:28 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
         ==> Transform all two-electron integrals <==
 
@@ -668,18 +668,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:28 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:06 2016
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.47 seconds =       0.01 minutes
+	user time   =       0.58 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:28 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
 
         **********************************************************
@@ -709,18 +709,18 @@ Total time:
         Sort (AB|CD) 2/2....done.
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:28 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:06 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.59 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:28 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:06 2016
 
 
 
@@ -769,10 +769,10 @@ Total time:
       1   1 1   -0.2045207275   -0.0029082099    0.0189199061        0
       2   2 1   -0.2076036489   -0.0030829214    0.0069865522        0
       3   3 1   -0.2079243403   -0.0003206914    0.0014946176        0
-      4   4 1   -0.2079418815   -0.0000175412    0.0003183445        0
+      4   4 1   -0.2079418815   -0.0000175412    0.0003183445        1
       5   5 1   -0.2079425537   -0.0000006722    0.0000468458        0
       6   6 1   -0.2079425670   -0.0000000134    0.0000091887        0
-      7   7 1   -0.2079425676   -0.0000000005    0.0000012732        1
+      7   7 1   -0.2079425676   -0.0000000005    0.0000012732        0
       8   8 1   -0.2079425676   -0.0000000000    0.0000001850        0
       9   8 2   -0.2079425676   -0.0000000000    0.0000000387        0
 
@@ -796,30 +796,30 @@ Total time:
         CEPA(0) correlation energy:             -0.207942567565
       * CEPA(0) total energy:                 -100.227343173195
 
-  Total time for CEPA(0) iterations:       0.02 s (user)
-                                        0.02 s (system)
+  Total time for CEPA(0) iterations:       0.04 s (user)
+                                        0.04 s (system)
                                            1 s (total)
 
   Time per iteration:                   0.00 s (user)
                                         0.00 s (system)
                                         0.11 s (total)
 
-*** tstop() called on psinet at Tue Mar  8 01:41:29 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	lccd rhf conv fc: fnocc...........................................PASSED
 	lccd rhf conv fc: fnocc...........................................PASSED
 	lccd rhf conv fc: fnocc...........................................PASSED
 	lccd rhf conv fc: fnocc...........................................PASSED
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:29 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
          ---------------------------------------------------------
@@ -989,18 +989,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:29 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:29 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
         ==> Transform all two-electron integrals <==
 
@@ -1013,18 +1013,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:29 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =      -0.00 seconds =      -0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:29 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
         **********************************************************
@@ -1054,18 +1054,18 @@ Total time:
         Sort (AB|CD) 2/2....done.
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:29 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.75 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.95 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:29 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
 
@@ -1117,7 +1117,7 @@ Total time:
       4   4 1   -0.2087728103   -0.0000527534    0.0006594773        0
       5   5 1   -0.2087752218   -0.0000024115    0.0002207172        0
       6   6 1   -0.2087754565   -0.0000002347    0.0000651947        0
-      7   7 1   -0.2087754813   -0.0000000248    0.0000129169        1
+      7   7 1   -0.2087754813   -0.0000000248    0.0000129169        0
       8   8 1   -0.2087754822   -0.0000000009    0.0000023932        0
       9   8 2   -0.2087754823   -0.0000000000    0.0000004115        0
      10   8 3   -0.2087754823   -0.0000000000    0.0000000718        0
@@ -1142,30 +1142,30 @@ Total time:
         CEPA(0) correlation energy:             -0.208775482271
       * CEPA(0) total energy:                 -100.228176087901
 
-  Total time for CEPA(0) iterations:       0.03 s (user)
+  Total time for CEPA(0) iterations:       0.02 s (user)
                                         0.03 s (system)
-                                           1 s (total)
+                                           0 s (total)
 
   Time per iteration:                   0.00 s (user)
                                         0.00 s (system)
-                                        0.10 s (total)
+                                        0.00 s (total)
 
-*** tstop() called on psinet at Tue Mar  8 01:41:30 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.78 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	lccsd rhf conv fc: fnocc..........................................PASSED
 	lccsd rhf conv fc: fnocc..........................................PASSED
 	lccsd rhf conv fc: fnocc..........................................PASSED
 	lccsd rhf conv fc: fnocc..........................................PASSED
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:30 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
          ---------------------------------------------------------
@@ -1335,18 +1335,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:30 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.00 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:30 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
         ==> Transform all two-electron integrals <==
 
@@ -1359,18 +1359,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:30 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
 	user time   =       0.00 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.02 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.25 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:30 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
         **********************************************************
@@ -1400,18 +1400,18 @@ Total time:
         Sort (AB|CD) 2/2....done.
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:30 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.00 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.03 seconds =       0.02 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.25 seconds =       0.02 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:30 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
 
@@ -1461,7 +1461,7 @@ Total time:
       2   2 1   -0.2082966725   -0.0037759450    0.0086886646        0
       3   3 1   -0.2087200569   -0.0004233844    0.0029501503        0
       4   4 1   -0.2087728103   -0.0000527534    0.0006594773        0
-      5   5 1   -0.2087752218   -0.0000024115    0.0002207172        1
+      5   5 1   -0.2087752218   -0.0000024115    0.0002207172        0
       6   6 1   -0.2087754565   -0.0000002347    0.0000651947        0
       7   7 1   -0.2087754813   -0.0000000248    0.0000129169        0
       8   8 1   -0.2087754822   -0.0000000009    0.0000023932        0
@@ -1488,31 +1488,31 @@ Total time:
         CEPA(0) correlation energy:             -0.208775482271
       * CEPA(0) total energy:                 -100.228176087901
 
-  Total time for CEPA(0) iterations:       0.01 s (user)
-                                        0.04 s (system)
-                                           1 s (total)
+  Total time for CEPA(0) iterations:       0.02 s (user)
+                                        0.03 s (system)
+                                           0 s (total)
 
   Time per iteration:                   0.00 s (user)
                                         0.00 s (system)
-                                        0.10 s (total)
+                                        0.00 s (total)
 
-*** tstop() called on psinet at Tue Mar  8 01:41:31 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:07 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.04 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.27 seconds =       0.02 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	cepa(0) rhf conv fc: fnocc........................................PASSED
 	cepa(0) rhf conv fc: fnocc........................................PASSED
 	cepa(0) rhf conv fc: fnocc........................................PASSED
 	cepa(0) rhf conv fc: fnocc........................................PASSED
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:31 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:07 2016
 
 
          ---------------------------------------------------------
@@ -1679,18 +1679,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:31 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:08 2016
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.26 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.53 seconds =       0.03 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:31 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:08 2016
 
 
 
@@ -1866,23 +1866,23 @@ Total time:
 	======================================================================= 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:31 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:08 2016
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.33 seconds =       0.02 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	lccd rhf df fc: occ...............................................PASSED
 	lccd rhf df fc: occ...............................................PASSED
 	lccd rhf df fc: occ...............................................PASSED
 	lccd rhf df fc: occ...............................................PASSED
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:31 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:08 2016
 
 
          ---------------------------------------------------------
@@ -2049,18 +2049,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Tue Mar  8 01:41:32 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:08 2016
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.55 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.87 seconds =       0.03 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:32 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:08 2016
 
 
 
@@ -2237,22 +2237,22 @@ Total time:
 	======================================================================= 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:32 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:08 2016
 Module time:
 	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.62 seconds =       0.03 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	lccd rhf cd fc: occ...............................................PASSED
 	lccd rhf cd fc: occ...............................................PASSED
 	lccd rhf cd fc: occ...............................................PASSED
 	lccd rhf cd fc: occ...............................................PASSED
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:32 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:08 2016
 
 
          ---------------------------------------------------------
@@ -2462,18 +2462,18 @@ Properties computed using the SCF density matrix
   LUNO+3 :    8 A1 0.0000000
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:32 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:08 2016
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.89 seconds =       0.03 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.25 seconds =       0.04 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:32 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:08 2016
 
 
  ============================================================================== 
@@ -2556,23 +2556,23 @@ Total time:
 	============================================================================== 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:33 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:09 2016
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       2.34 seconds =       0.04 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 	lccd uhf conv fc: occ.............................................PASSED
 	lccd uhf conv fc: occ.............................................PASSED
 	lccd uhf conv fc: occ.............................................PASSED
 	lccd uhf conv fc: occ.............................................PASSED
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:33 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:09 2016
 
 
          ---------------------------------------------------------
@@ -2782,18 +2782,18 @@ Properties computed using the SCF density matrix
   LUNO+3 :    8  A 0.0000000
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:33 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:09 2016
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.23 seconds =       0.04 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       2.64 seconds =       0.04 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:33 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:09 2016
 
 
 
@@ -2986,23 +2986,23 @@ Total time:
 	======================================================================= 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:36 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:09 2016
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.55 seconds =       0.04 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       2.97 seconds =       0.05 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 	lccd uhf df fc: occ...............................................PASSED
 	lccd uhf df fc: occ...............................................PASSED
 	lccd uhf df fc: occ...............................................PASSED
 	lccd uhf df fc: occ...............................................PASSED
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:36 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:09 2016
 
 
          ---------------------------------------------------------
@@ -3212,18 +3212,18 @@ Properties computed using the SCF density matrix
   LUNO+3 :    8  A 0.0000000
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:36 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:10 2016
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.82 seconds =       0.05 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       3.28 seconds =       0.05 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 
-*** tstart() called on psinet
-*** at Tue Mar  8 01:41:36 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:26:10 2016
 
 
 
@@ -3414,15 +3414,15 @@ Total time:
 	======================================================================= 
 
 
-*** tstop() called on psinet at Tue Mar  8 01:41:39 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:10 2016
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.17 seconds =       0.05 minutes
-	system time =       0.50 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       3.64 seconds =       0.06 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 	lccd uhf cd fc: occ...............................................PASSED
 	lccd uhf cd fc: occ...............................................PASSED
 	lccd uhf cd fc: occ...............................................PASSED
