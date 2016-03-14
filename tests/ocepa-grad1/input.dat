@@ -21,7 +21,7 @@ set {
   basis cc-pvdz
 }
 
-grad = gradient('ocepa(0)')
+grad = gradient('olccd')
 
 compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
