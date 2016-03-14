@@ -62,7 +62,7 @@ procedures = {
             'scs-omp3-vdw'  : run_occ,
             'sos-omp3'      : run_occ,
             'sos-pi-omp3'   : run_occ,
-            'ocepa(0)'      : select_ocepa_0_,
+            'olccd'         : select_olccd,
             'omp2.5'        : select_omp2p5,
             'dfocc'         : run_dfocc,
             'qchf'          : run_qchf,
@@ -133,13 +133,17 @@ procedures = {
             'fno-mp3'       : run_fnocc,
             'fno-mp4(sdq)'  : run_fnocc,
             'fno-mp4'       : run_fnocc,
+            'fno-lccd'      : run_cepa,
+            'fno-lccsd'     : run_cepa,
             'fno-cepa(0)'   : run_cepa,
             'fno-cepa(1)'   : run_cepa,
             'fno-cepa(3)'   : run_cepa,
             'fno-acpf'      : run_cepa,
             'fno-aqcc'      : run_cepa,
             'fno-cisd'      : run_cepa,
-            'cepa(0)'       : select_cepa_0_,
+            'lccd'          : select_lccd,
+            'lccsd'         : run_cepa,
+            'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
             'acpf'          : run_cepa,
@@ -149,7 +153,7 @@ procedures = {
             'dmrgci'        : run_dmrgci,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # Aliases are discouraged. If you must add an alias to this list (e.g.,
-            #    lccd/cepa(0)), please search the whole driver to find uses of
+            #    lccsd/cepa(0)), please search the whole driver to find uses of
             #    name in return values and psi variables and extend the logic to
             #    encompass the new alias.
         },
@@ -165,8 +169,8 @@ procedures = {
             'mp3'           : select_mp3_gradient,
             'mp2.5'         : select_mp2p5_gradient,
             'omp2.5'        : select_omp2p5_gradient,
-            'cepa(0)'       : select_cepa_0__gradient,
-            'ocepa(0)'      : select_ocepa_0__gradient,
+            'lccd'          : select_lccd_gradient,
+            'olccd'         : select_olccd_gradient,
             'ccd'           : run_dfocc_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
@@ -554,7 +558,6 @@ def energy(name, **kwargs):
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
 
 # Before invoking the procedure, we rename any file that should be read.
@@ -644,6 +647,12 @@ def gradient(name, **kwargs):
     # 1. set the default to that of the provided name
     if lowername in procedures['gradient']:
         dertype = 1
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy
@@ -1382,6 +1391,12 @@ def hessian(name, **kwargs):
     elif lowername in procedures['gradient']:
         dertype = 1
         func = gradient
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy
