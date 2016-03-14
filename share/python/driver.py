@@ -224,7 +224,9 @@ for ssuper in cfour_gradient_list():
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
-    :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
+    :returns: *float* |w--w| Total electronic energy in Hartrees. SAPT & EFP return interaction energy.
+
+    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -235,32 +237,28 @@ def energy(name, **kwargs):
        * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
        * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
-    .. comment In this table immediately below, place methods that should only be called by
-    .. comment developers at present. This table won't show up in the manual.
-    .. comment
-    .. comment    .. _`table:energy_devel`:
-    .. comment
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | name                    | calls method                                                                          |
-    .. comment    +=========================+=======================================================================================+
-    .. comment    | mp2c                    | coupled MP2 (MP2C)                                                                    |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | mp2-drpa                | random phase approximation?                                                           |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cis                     | CI singles (CIS)                                                                      |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tdhf                    | time-dependent HF (TDHF)                                                              |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | efp                     | efp-only optimizations under development                                              |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    :type name: string
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the system.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element (after *float* energy) of a tuple.
+
+    :type restart_file: string
+    :param restart_file: ``['file.1, file.32]`` || ``./file`` || etc.
+
+        Binary data files to be renamed for calculation restart.
+
 
     .. _`table:energy_gen`:
 
@@ -442,51 +440,11 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-
     .. include:: autodoc_dft_energy.rst
 
     .. include:: mrcc_table_energy.rst
 
     .. include:: cfour_table_energy.rst
-
-    :type name: string
-    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the system.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    .. comment :type cast_up: :ref:`boolean <op_py_boolean>` or string
-    .. comment :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
-
-    .. comment     Indicates whether, to accelerate convergence for the scf portion of
-    .. comment     the *name* calculation, a preliminary scf should be performed with a
-    .. comment     small basis set (3-21G if a basis name is not supplied as keyword
-    .. comment     value) followed by projection into the full target basis.
-
-    .. comment .. deprecated:: Sept-2012
-    .. comment    Use option |scf__basis_guess| instead.
-
-    .. comment :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
-    .. comment :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
-
-    .. comment     Indicates whether, when *cast_up* is active, to run the preliminary
-    .. comment     scf in density-fitted mode or what fitting basis to employ (when
-    .. comment     available for all elements, cc-pVDZ-RI is the default).
-
-    .. comment .. deprecated:: Sept-2012
-    .. comment    Use option |scf__df_basis_guess| instead.
-
-    :type bypass_scf: :ref:`boolean <op_py_boolean>`
-    :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
-
-        Indicates whether, for *name* values built atop of scf calculations,
-        the scf step is skipped. Suitable when special steps are taken to get
-        the scf to converge in an explicit preceeding scf step.
 
     :examples:
 
@@ -500,7 +458,7 @@ def energy(name, **kwargs):
     >>> energy('sapt0-ct')
 
     >>> # [3] Arbitrary-order MPn calculation
-    >>> energy('mp4')
+    >>> energy('mp7')
 
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
     >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
@@ -1806,6 +1764,23 @@ def frequency(name, **kwargs):
 def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Molden file for DFT calculation
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> molden(wfn, 'mycalc.molden')
 
     """
     try:

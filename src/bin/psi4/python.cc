@@ -81,7 +81,6 @@ void export_psio();
 void export_mints();
 void export_functional();
 void export_oeprop();
-void export_cubefile();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -1319,9 +1318,6 @@ BOOST_PYTHON_MODULE (psi4)
 
     // OEProp/GridProp
     export_oeprop();
-
-    // CubeFile
-    export_cubefile();
 
     // EFP
     export_efp();

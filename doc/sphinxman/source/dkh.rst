@@ -10,7 +10,7 @@ Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: Justin M. Turney
 
-*Module:* :ref:`Keywords <apdx:dkh>`, :source:`DKH <src/lib/libmints>`
+*Module:*  :source:`DKH <src/lib/libmints>`
 
 .. _`sec:dkhinput`:
 
@@ -34,6 +34,12 @@ Minimal input for DKH single-point computation looks like this::
 By default a 2nd-order DKH calculation is performed. To change the default
 order use the |globals__dkh_order| option. The version of the code found in
 |Psifour| is capable of up to 4th-order DKH calculations.
+
+Keywords
+~~~~~~~~
+
+.. include:: autodir_options_c/globals__relativistic.rst
+.. include:: autodir_options_c/globals__dkh_order.rst
 
 Reference
 ~~~~~~~~~
