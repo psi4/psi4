@@ -44,6 +44,14 @@ output.dat
 *.clean
 *timer.dat
 *.molden
+
+# Special test cases
+tests/*/iter.dat
+tests/*/*.in
+tests/*/*.rst
+tests/*/*/*.h5
+tests/*/*/*.intco
+tests/*/*.txt
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
 tests/*/PEDRA.OUT
