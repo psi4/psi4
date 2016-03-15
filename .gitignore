@@ -51,7 +51,7 @@ tests/*/*.in
 tests/*/*.rst
 tests/*/*/*.h5
 tests/*/*/*.intco
-tests/*/*.txt
+tests/docs*/*.txt
 tests/*/@pcmsolver.inp
 tests/*/PCM_matrix
 tests/*/PEDRA.OUT
