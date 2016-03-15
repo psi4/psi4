@@ -70,7 +70,7 @@ namespace psi { namespace detci {
 void CIWavefunction::transform_ci_integrals()
 {
 
-  outfile->Printf("\n   ==> Transforming CI integrals <==\n");
+  outfile->Printf("\n   ==> Transforming CI integrals <==\n\n");
   // Grab orbitals
   SharedMatrix Cdrc = get_orbitals("DRC");
   SharedMatrix Cact = get_orbitals("ACT");
