@@ -716,10 +716,7 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_1_0(moleculeclone)
@@ -1106,10 +1103,7 @@ def optimize(name, **kwargs):
     molecule.update_geometry()
 
     # Shifting the geometry so need to copy the active molecule
-    molname = molecule.name()
-    moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-    moleculeclone.set_name(molname)
-    moleculeclone.update_geometry()
+    moleculeclone = molecule.clone()
 
     initial_sym = moleculeclone.schoenflies_symbol()
     while n <= psi4.get_option('OPTKING', 'GEOM_MAXITER'):
@@ -1473,10 +1467,7 @@ def hessian(name, **kwargs):
         func = procedures['gradient'][lowername]
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         if kwargs.get('mode') == 'sow':
             raise ValidationError("""Frequency execution mode 'sow' not yet """
@@ -1551,10 +1542,7 @@ def hessian(name, **kwargs):
                 psi4.set_global_option('E_CONVERGENCE', 10)
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_0(moleculeclone, irrep)
