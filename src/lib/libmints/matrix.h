@@ -523,6 +523,12 @@ public:
      */
     double **to_block_matrix() const;
     /**
+     * Returns a copy of the current matrix.
+     *
+     * @returns the SharedMatrix
+     */
+    SharedMatrix to_block_sharedmatrix() const;
+    /**
      * Returns a copy of the current matrix in lower triangle form.
      *
      * @returns the matrix

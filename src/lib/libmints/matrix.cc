@@ -791,6 +791,18 @@ double **Matrix::to_block_matrix() const
     delete[] col_offset;
     return temp;
 }
+SharedMatrix Matrix::to_block_sharedmatrix() const
+{
+    int sizer=0, sizec=0;
+    for (int h=0; h<nirrep_; ++h) {
+        sizer += rowspi_[h];
+        sizec += colspi_[h^symmetry_];
+    }
+   SharedMatrix ret(new Matrix(name_ + " Block Copy", sizer, sizec));
+   ret->set(to_block_matrix());
+   return ret;
+
+}
 
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const
 {
