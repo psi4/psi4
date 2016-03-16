@@ -799,7 +799,9 @@ SharedMatrix Matrix::to_block_sharedmatrix() const
         sizec += colspi_[h^symmetry_];
     }
    SharedMatrix ret(new Matrix(name_ + " Block Copy", sizer, sizec));
-   ret->set(to_block_matrix());
+   double **temp = to_block_matrix();
+   ret->set(temp);
+   free_block(temp);
    return ret;
 
 }
