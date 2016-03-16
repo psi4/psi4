@@ -1147,6 +1147,10 @@ def optimize(name, **kwargs):
                 if(psi4.me() == 0):
                     shutil.copy(restartfile, p4util.get_psifile(1))
 
+        opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
+        if opt_func.__name__ == 'complete_basis_set':
+            psi4.IOManager.shared_object().set_specific_retention(1, True)
+
         if full_hess_every > -1:
             psi4.set_global_option('HESSIAN_WRITE', True)
 
@@ -1195,6 +1199,9 @@ def optimize(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
                 fmaster.close()
+
+            if opt_func.__name__ == 'complete_basis_set':
+                psi4.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
 
