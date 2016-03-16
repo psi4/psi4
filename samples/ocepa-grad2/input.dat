@@ -16,6 +16,6 @@ set {
   guess gwh
 }
 
-grad = gradient('ocepa(0)')
+grad = gradient('olccd')
 
 
