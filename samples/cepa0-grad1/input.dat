@@ -15,6 +15,6 @@ set {
   basis cc-pvdz
 }
 
-grad = gradient('cepa(0)')
+grad = gradient('lccd')
 
 

@@ -1,5 +1,5 @@
 #! This checks that all energy methods can run with
-#! a minimal input and set symmetry.
+#! a minimal input and set symmetry. !nosample
 
 
 molecule water {
