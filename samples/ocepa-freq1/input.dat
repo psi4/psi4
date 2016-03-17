@@ -17,4 +17,4 @@ set {
 }
 
 
-cepa_e, cepa_wfn = frequencies('ocepa(0)', dertype=0, return_wfn=True)
+cepa_e, cepa_wfn = frequencies('olccd', dertype=0, return_wfn=True)
