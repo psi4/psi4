@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
 #
 #@BEGIN LICENSE
 #
@@ -22,6 +20,8 @@ from __future__ import absolute_import
 #@END LICENSE
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 import struct
 
 

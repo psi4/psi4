@@ -45,14 +45,13 @@ int read_options(std::string name, Options &options)
 }
 
 extern "C"
-PsiReturnType @plugin@(Options &options)
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 {
     // Grab options from the options object
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
 
-    // Obtain the Wavefunction from globals that we set python-side
-    SharedWavefunction ref_wfn = Process::environment.wavefunction();
+    // Have the Wavefunction from python-side
 
     // Molecule is a member of the wavefunction option
     // Lets print out some molecule information here
@@ -98,7 +97,7 @@ PsiReturnType @plugin@(Options &options)
 
     }
 
-    return Success;
+    return ref_wfn;
 }
 
 }} // End Namespaces

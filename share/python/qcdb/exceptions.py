@@ -113,3 +113,13 @@ class BasisSetNotDefined(QcdbException):
         QcdbException.__init__(self, msg)
         self.msg = msg
         print('\nQcdbException BasisSetNotDefined: %s\n\n' % (msg))
+
+
+class Dftd3Error(QcdbException):
+    """
+
+    """
+    def __init__(self, msg):
+        QcdbException.__init__(self, msg)
+        self.msg = msg
+        print('\nDftd3Error: %s\n\n' % (msg))

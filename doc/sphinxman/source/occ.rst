@@ -5,13 +5,13 @@
    single: Orbital-Optimized Methods, OMP2
    single: Orbital-Optimized Methods, OMP3
    single: Orbital-Optimized Methods, OMP2.5
-   single: Orbital-Optimized Methods, OCEPA
+   single: Orbital-Optimized Methods, OLCCD
 
 .. index::
    pair: Orbital-Optimized Methods; theory
    pair: OMP2; theory
    pair: OMP3; theory
-   pair: OCEPA; theory
+   pair: OLCCD; theory
 
 .. _`sec:occ_oo`:
 
@@ -127,7 +127,7 @@ Now, let us define a variational energy functional (Lagrangian) as a function of
    &+ \langle 0| \{\hat{\Lambda}_{2}^{(2)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
    \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle  
     
-* OCEPA
+* OLCCD
 
 .. math::
    \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle 
@@ -173,9 +173,9 @@ Publications resulting from the use of the orbital-optimized code should cite th
 
 * **OMP2.5** [Bozkaya:2011:omp3]_
 
-* **OCEPA** [Bozkaya:2013:ocepa]_
+* **OLCCD** [Bozkaya:2013:ocepa]_
 
-* **CEPA0** [Bozkaya:2013:ocepa]_
+* **LCCD** [Bozkaya:2013:ocepa]_
 
 
 Convergence Problems
@@ -191,7 +191,7 @@ course users can use any DFT functional available in Psi4.
 Methods
 ~~~~~~~
 
-The orbital-optimized MPn and OCEPA methods currently supported in
+The orbital-optimized MPn and OLCCD methods currently supported in
 |Psifour| are outlined in Table :ref:`Orbital-Optimzed OCC/DFOCC
 Methods <table:occ_oo_calls>`. The following methods are available
 and can be controlled through OCC (conventional integrals ``CONV``)
@@ -201,7 +201,7 @@ through 'type select' values; see rightmost Table column.
 
 .. _`table:occ_oo_calls`:
 
-.. table:: Orbital-Optimized MP and CEPA capabilities of OCC/DFOCC modules
+.. table:: Orbital-Optimized MP and LCCD capabilities of OCC/DFOCC modules
 
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | name                    | calls method                                                 |  Energy              | Gradient             | type select               |
@@ -224,11 +224,11 @@ through 'type select' values; see rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized MP2.5                  | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp_type| CD     | 
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | ocepa(0)                | Orbital-Optimized CEPA                                       | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cepa_type| CONV |
+    | olccd                   | Orbital-Optimized Linear CCD                                 | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized LCCD                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cepa_type| DF   |
+    |                         | Density-Fitted Orbital-Optimized LCCD                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cepa_type| CD   |
+    |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 
 .. _`table:occ_scsoo_calls`:
@@ -267,7 +267,7 @@ through 'type select' values; see rightmost Table column.
 .. index:: OMP2; setting keywords
 .. index:: OMP3; setting keywords
 .. index:: OMP2.5; setting keywords
-.. index:: OCEPA; setting keywords
+.. index:: OLCCD; setting keywords
 
 Basic OCC Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -363,11 +363,11 @@ preference to the default module, issue ``set qc_module occ``.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed MP2.5                                    | RHF/UHF              | ---                  | |globals__mp_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | cepa(0)                 | CEPA(0) (identical to Linearized CCD)                        | RHF/UHF              | RHF/UHF              | |globals__cepa_type| CONV |
+    | lccd                    | Linearized CCD                                               | RHF/UHF              | RHF/UHF              | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted LCCD                                          | RHF/UHF              | RHF/UHF              | |globals__cepa_type| DF   |
+    |                         | Density-Fitted LCCD                                          | RHF/UHF              | RHF/UHF              | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed LCCD                                     | RHF/UHF              | ---                  | |globals__cepa_type| CD   |
+    |                         | Cholesky-Decomposed LCCD                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | ccd                     | CCD                                                          | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+

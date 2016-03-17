@@ -3,6 +3,7 @@
 # Francesco Evangelista
 # Emory University
 
+from __future__ import print_function
 import argparse
 import sys
 import re
@@ -14,7 +15,10 @@ from os import listdir, environ
 from os.path import isfile, join
 
 vmd_cube_help = """vmd_cube is a script to render cube files with vmd.
-To generate cube files with Psi4 add the command cubeprop() at the end of your input file."""
+To generate cube files with Psi4, add the command cubeprop(wfn) at the end
+of your input file, where *wfn* is a Wavefunction object that may be
+retrieved from any calculation and used following the pattern "ene, wave =
+energy('pbe', return_wfn=True)\\n cubeprop(wave)"."""
 
 vmd_exe = ""
 
@@ -140,7 +144,7 @@ def find_vmd(options):
         vmdpath = multigsub({" " : r"\ "},vmdpath)
         options["VMDPATH"][0] = vmdpath
     else:
-        print "Please set the VMDPATH environmental variable to the path of VMD."
+        print("Please set the VMDPATH environmental variable to the path of VMD.")
         exit(1)
 
 
@@ -212,9 +216,9 @@ def read_options(options):
     options["FONTSIZE"][0] = str(args.fontsize)
     options["IMAGESIZE"][0] = str(args.imagesize)
 
-    print "Parameters:"
+    print("Parameters:")
     for k,v in options.iteritems():
-        print "  %-20s %s" % (v[1],v[0])
+        print("  %-20s %s" % (v[1],v[0]))
 
 
 def find_cubes(options):

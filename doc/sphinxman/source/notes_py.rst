@@ -9,11 +9,11 @@ Notes on Options
 .. note:: The Python options referred to in the :ref:`sec:psithonFunc` section below
    are placed as arguments to a Python
    function (like ``energy()``), not in ``set`` blocks or commands.
-.. comment and indexed in :ref:`apdx:options_py` 
+.. comment and indexed in :ref:`apdx:options_py`
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The one exception is documented for the *subset* option in the :py:func:`~wrappers.database` 
+   The one exception is documented for the *subset* option in the :py:func:`~wrappers.database`
    function, where case structure must match the database file.
 
 .. _`op_py_bool`:
@@ -38,7 +38,9 @@ Notes on Options
 .. _`op_py_molecule`:
 
 .. note:: The molecule to be acted upon by the current function; the default is the
-   nearest preceeding molecule declared in a ``molecule name {...}`` block. Note
-   that the value of this keyword (``name`` in the example) is a Python object and
-   so is not wrapped in quotes like a string.
+   "active" molecule, which is the nearest preceeding molecule declared in a
+   ``molecule mymol {...}`` block or in an ``activate(mymol)`` statement. Note
+   that the value of this keyword (``mymol`` in the example) is a Python object
+   and so is not wrapped in quotes like a string. Technically, this is a
+   :ref:`Molecule<sec:psimod_Molecule>` object.
 

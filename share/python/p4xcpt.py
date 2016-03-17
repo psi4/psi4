@@ -73,3 +73,13 @@ class ManagedMethodError(PsiException):
         self.msg = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
 
+
+class Dftd3Error(PsiException):
+    """
+
+    """
+    def __init__(self, msg):
+        PsiException.__init__(self, msg)
+        self.msg = msg
+        print('\nDftd3Error: %s\n\n' % (msg))
+

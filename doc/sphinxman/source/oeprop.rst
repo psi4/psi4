@@ -8,14 +8,18 @@
 
 .. _`sec:oeprop`:
 
-Evaluation of One-Electron Properties
-=====================================
+:py:func:`~p4util.oeprop` Evaluation of One-Electron Properties
+===============================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
+.. autofunction:: p4util.oeprop(wfn, \*args[, title])
+
 |PSIfour| is capable of computing a number of one-electron properties
 summarized in the table below. 
+
+.. _`table:oe_features`:
 
 .. table:: Current one-electron property capabilities of |PSIfour|
 
@@ -85,6 +89,8 @@ Basic Keywords
 Multipole moments may be computed at any origin, which is controlled by the
 global |globals__properties_origin| keyword.  The keyword takes an array with
 the following possible values:
+
+.. _`table:oe_origin`:
 
 .. table:: Allowed origin specifications
 
