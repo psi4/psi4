@@ -1442,11 +1442,12 @@ def hessian(name, **kwargs):
             psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Select certain irreps
-    if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep'], molecule.schoenflies_symbol())
-        irrep -= 1  # A1 irrep is externally 1, internally 0
+    irrep = kwargs.get('irrep', -1)
+    if irrep == -1:
+        pass  # do all irreps
     else:
-        irrep = -1  # do all irreps
+        irrep = parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
+        irrep -= 1  # A1 irrep is externally 1, internally 0
 
     # Does an analytic procedure exist for the requested method?
     if dertype == 2:
@@ -1476,11 +1477,6 @@ def hessian(name, **kwargs):
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
 
-        if kwargs.get('mode') == 'sow':
-            raise ValidationError("""Frequency execution mode 'sow' not yet """
-                                  """implemented for finite difference of """
-                                  """analytic gradient calculation.""")
-
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_1(moleculeclone, irrep)
         moleculeclone.reinterpret_coordentry(False)
@@ -1491,26 +1487,108 @@ def hessian(name, **kwargs):
 
         ndisp = len(displacements)
         print(""" %d displacements needed.""" % ndisp)
-
         gradients = []
+        energies = []
+
+        # S/R: Write instructions for sow/reap procedure to output file and reap input file
+        if freq_mode == 'sow':
+            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
+            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
+            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
+            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
+            instructionsO += """#    to continue.\n#\n"""
+            instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
+            instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
+            psi4.print_out(instructionsO)
+
+            instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
+            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
+            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
+            instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
+            for rgt in range(ndisp):
+                pre = 'FREQ-' + str(rgt + 1)
+                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
+            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
+            instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
+            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
+            instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
+
+            with open('FREQ-master.in', 'wb') as fmaster:
+                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
+                fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
+                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+                fmaster.write(instructionsM.encode('utf-8'))
+            psi4.print_out(instructionsM)
+
         for n, displacement in enumerate(displacements):
+            rfile = 'FREQ-%s' % (n + 1)
 
-            # print progress to file and screen
-            psi4.print_out('\n')
-            p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
-            print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
-            sys.stdout.flush()
+            # Build string of title banner
+            banners = ''
+            banners += """psi4.print_out('\\n')\n"""
+            banners += """p4util.banner(' Hessian Computation: Gradient Displacement %d ')\n""" % (n + 1)
+            banners += """psi4.print_out('\\n')\n\n"""
 
-            # Load in displacement into the active molecule (xyz coordinates only)
-            moleculeclone.set_geometry(displacement)
+            if freq_mode == 'continuous':
 
-            # Perform the gradient calculation
-            wfn = func(lowername, molecule=moleculeclone, **kwargs)
-            G = wfn.gradient()
-            gradients.append(G)
+                # print progress to file and screen
+                psi4.print_out('\n')
+                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
+                print(""" %d""" % (n + 1), end=('\n' if (n + 1 == ndisp) else ''))
+                sys.stdout.flush()
 
-            # clean may be necessary when changing irreps of displacements
-            psi4.clean()
+                # Load in displacement into the active molecule (xyz coordinates only)
+                moleculeclone.set_geometry(displacement)
+
+                # Perform the gradient calculation
+                wfn = func(lowername, molecule=moleculeclone, **kwargs)
+                gradients.append(wfn.gradient())
+                energies.append(psi4.get_variable('CURRENT ENERGY'))
+
+                # clean may be necessary when changing irreps of displacements
+                psi4.clean()
+
+            # S/R: Write each displaced geometry to an input file
+            elif freq_mode == 'sow':
+                moleculeclone.set_geometry(displacement)
+
+                # S/R: Prepare molecule, options, kwargs, function call and energy save
+                #      forcexyz in molecule writer S/R enforcement of !reinterpret_coordentry above
+                with open('%s.in' % (rfile), 'wb') as freagent:
+                    freagent.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
+                    freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
+                    freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
+                    p4util.format_kwargs_for_input(freagent, **kwargs)
+                    freagent.write("""wfn = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                    freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
+                    freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write("""yields electronic energy %20.12f\\n' % (get_variable('CURRENT ENERGY')))\n\n""")
+
+            # S/R: Read energy from each displaced geometry output file and save in energies array
+            elif freq_mode == 'reap':
+                exec(banners)
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
+                pygrad = p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True, label='electronic gradient')
+                p4mat = psi4.Matrix(moleculeclone.natom(), 3)
+                p4mat.set(pygrad)
+                p4mat.print_out()
+                gradients.append(p4mat)
+                energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
+
+        # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
+        if freq_mode == 'sow':
+            optstash.restore()
+            if return_wfn:
+                return (None, None)
+            else:
+                return None
+        elif freq_mode == 'reap':
+            wfn = psi4.new_wavefunction(molecule, psi4.get_global_option('BASIS'))
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
@@ -1518,10 +1596,12 @@ def hessian(name, **kwargs):
         wfn.set_hessian(H)
         wfn.set_frequencies(psi4.get_frequencies())
 
-        psi4.set_parent_symmetry('')
+        # The last item in the list is the reference energy, return it
+        psi4.set_variable('CURRENT ENERGY', energies[-1])
 
+        psi4.set_parent_symmetry('')
         optstash.restore()
-        # TODO: set current energy to un-displaced energy
+
         if return_wfn:
             return (wfn.hessian(), wfn)
         else:
@@ -1677,14 +1757,12 @@ def frequency(name, **kwargs):
 
     :aliases: frequencies(), freq()
 
-    :returns: (*float*) Total electronic energy in Hartrees.
+    :returns: *float* |w--w| Total electronic energy in Hartrees.
+
+    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     .. note:: Analytic hessians are not available. Frequencies will proceed through
         finite differences according to availability of gradients or energies.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Implement sow/reap mode for finite difference of gradients. Presently only for findif of energies.
 
     .. _`table:freq_gen`:
 
@@ -1693,6 +1771,18 @@ def frequency(name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element (after *float* energy) of a tuple.
+        Arrays of frequencies and the Hessian can be accessed through the wavefunction.
 
     :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
@@ -1705,10 +1795,11 @@ def frequency(name, **kwargs):
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
 
         For a finite difference of energies or gradients frequency, indicates
-        whether the calculations required to complet the frequency are to be run
+        whether the calculations required to complete the frequency are to be run
         in one file (``'continuous'``) or are to be farmed out in an
         embarrassingly parallel fashion (``'sow'``/``'reap'``)/ For the latter,
         run an initial job with ``'sow'`` and follow instructions in its output file.
+        For maximum flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
 
     :type irrep: int or string
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
@@ -1718,18 +1809,16 @@ def frequency(name, **kwargs):
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
     :examples:
 
     >>> # [1] Frequency calculation for all modes through highest available derivatives
     >>> frequency('ccsd')
 
     >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
-    >>> frequencies('scf', dertype=1, irrep=4)
+    >>> #     printing lowest mode frequency to screen and Hessian to output
+    >>> E, wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
+    >>> print wfn.frequencies().get(0, 0)
+    >>> wfn.hessian().print_out()
 
     """
     lowername = name.lower()
@@ -1790,8 +1879,6 @@ def molden(wfn, filename):
     # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
     mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
-
-
 
 def parse_cotton_irreps(irrep, point_group):
     r"""Function to return validated Cotton ordering index for molecular
