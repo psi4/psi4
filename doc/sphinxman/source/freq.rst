@@ -3,8 +3,8 @@
 
 .. _`sec:freq()`:
 
-Frequency
-=========
+Harmonic Vibrational Analysis :py:func:`~driver.frequency`
+==========================================================
 
-.. autofunction:: driver.frequency(name [, func, mode, dertype, irrep, molecule])
+.. autofunction:: driver.frequency(name [, molecule, return_wfn, mode, dertype, irrep])
 

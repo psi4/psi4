@@ -14,7 +14,7 @@ logfile = sys.argv[2]
 psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
 psidatadir = top_srcdir + '/share'
-sowreap=sys.argv[5]
+sowreap = sys.argv[5]
 if len(sys.argv) in [7, 8]:
     outfile = sys.argv[6]
 else:
@@ -68,7 +68,8 @@ def backtick(exelist):
 pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
 if sowreap == 'true':
     try:
-        retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' % (top_srcdir),infile, outfile, logfile, psi, psidatadir])
+        retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' %
+                  (top_srcdir), infile, outfile, logfile, psi, psidatadir])
     except OSError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:
@@ -80,10 +81,6 @@ if sowreap == 'true':
         time.sleep(0.1)
 else:
     reapexitcode = None
-
-
-
-
 
 # additionally invoke autotest script comparing output.dat to output.ref
 if psiautotest == 'true':
@@ -103,6 +100,6 @@ else:
     plexitcode = None
 
 # combine, print, and return (0/1) testing status
-exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0) and reapexitcode is None or reapexitcode == 0 ) else 1
-print('Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); sowreap (',reapexitcode,'); overall (', exitcode, ')')
+exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0) and (reapexitcode is None or reapexitcode == 0)) else 1
+print('Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); sowreap (', reapexitcode, '); overall (', exitcode, ')')
 sys.exit(exitcode)
