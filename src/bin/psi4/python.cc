@@ -81,7 +81,6 @@ void export_psio();
 void export_mints();
 void export_functional();
 void export_oeprop();
-void export_cubefile();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -1320,9 +1319,6 @@ BOOST_PYTHON_MODULE (psi4)
     // OEProp/GridProp
     export_oeprop();
 
-    // CubeFile
-    export_cubefile();
-
     // EFP
     export_efp();
 
@@ -1718,7 +1714,7 @@ void Python::run(FILE *input)
 
             //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred Py-side" << endl << "Traceback:" << endl;
+            whole << endl << "An error has occurred. Traceback:" << endl;
 
             PyObject *pExcType , *pExcValue , *pExcTraceback;
             PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);

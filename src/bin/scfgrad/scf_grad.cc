@@ -511,6 +511,9 @@ SharedMatrix SCFGrad::compute_gradient()
         }
     }
 
+    // Symmetrize
+    total->symmetrize_gradient(molecule_);
+
     gradients["Total"] = total;
     gradients["Total"]->set_name("Total Gradient");
 
@@ -524,6 +527,7 @@ SharedMatrix SCFGrad::compute_gradient()
     } else {
         gradients["Total"]->print_atom_vector();
     }
+
 
     return gradients["Total"];
 }

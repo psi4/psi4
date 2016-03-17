@@ -1,3 +1,40 @@
+from __future__ import absolute_import
+from __future__ import print_function
+try:
+    from collections import OrderedDict
+except ImportError:
+    from .oldpymodules import OrderedDict
+
+# thinking now that QCEssential should have one doi and dictionary of
+# citations. that way the doi contains the record of the definition of the
+# QCEssential but several publications (each with their own doi-s) can be
+# associated with the Essential (e.g., original theoretical definition,
+# current implementation, expanded atom range, reparameterization)
+
+# links to GitHub Psi4 files accepted as doi for the present
+
+class Citation(object):
+    """Class to hold reference to a single published scientific work
+
+    """
+    def __init__(self, doi, fullname=None, dsdbid=None, comment=None):
+        """
+
+        """
+        self.doi = doi.lower()
+        self.fullname = fullname
+        self.dsdbid = dsdbid
+        self.comment = comment
+
+    def __str__(self):
+        text = ''
+        text += """  ==> Citation <==\n\n"""
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  PDF database id:      %s\n""" % (self.dsdbid)
+        text += """  Formal Name:          %s\n""" % (self.fullname)
+        text += """  Comment:              %s\n""" % (self.comment)
+        text += """\n"""
+        return text
 
 
 class QCEssential(object):
@@ -6,7 +43,7 @@ class QCEssential(object):
     shorthand and indexed representation of same.
 
     """
-    def __init__(self, name, fullname=None, latex=None, citation=None, pdfdatabase=None, comment=None):
+    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None, comment=None):
         """
 
         """
@@ -16,28 +53,61 @@ class QCEssential(object):
             self.latex = fullname
         else:
             self.latex = latex
-        self.citation = citation
-        self.dsdbid = pdfdatabase
+        # OrderedDict of roles as keys and qcdb.Citation as values
+        if citations is None:
+            self.citations = OrderedDict()
+        else:
+            self.citations = citations
+        self.doi = doi
         self.comment = comment
 
     def __str__(self):
         text = ''
-        text += """  ==> %s BasisSet <==\n\n""" % (self.name)
+        text += """  ==> %s QCEssential <==\n\n""" % (self.name)
         text += """  Formal name:          %s\n""" % (self.fullname)
         text += """  LaTeX representation: %s\n""" % (self.latex)
-        text += """  PDF database id:      %s\n""" % (self.dsdbid)
-        text += """  Literature citation:  %s\n""" % (self.citation)
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  Literature citations:\n"""
+        for rol, cit in self.citations.iteritems():
+            text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
         return text
 
 
+class Publication(QCEssential):
+    """Specialization of :pyclass:`QCEssential` for computational chemistry 
+    publications, presumably containing many quantum chemistry results.
+
+    """
+    def __init__(self, name, fullname=None, latex=None, dsdbid=None, doi=None, comment=None, owner=None):
+        primary = Citation(doi=doi, fullname=fullname, dsdbid=dsdbid)
+        cits = OrderedDict()
+        cits['primary'] = primary
+        QCEssential.__init__(self, name=name, fullname=primary.fullname, latex=latex, citations=cits, doi=primary.doi, comment=comment)
+        self.name = name.lower()
+        self.owner = owner.upper()
+
+    def __str__(self):
+        text = ''
+        text += """  ==> %s Publication <==\n\n""" % (self.name)
+        text += """  Formal name:          %s\n""" % (self.fullname)
+        text += """  LaTeX representation: %s\n""" % (self.latex)
+        text += """  Owner:                %s\n""" % (self.owner)
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  Literature citations:\n"""
+        for rol, cit in self.citations.iteritems():
+            text += """    %-17s   %s\n""" % (rol, cit.doi)
+        text += """  Comment:              %s\n""" % (self.comment)
+        text += """\n"""
+        return text
+
 class BasisSet(QCEssential):
     """Specialization of :pyclass:`QCEssential` for basis sets.
 
     """
-    def __init__(self, name, fullname=None, latex=None, citation=None, pdfdatabase=None, comment=None, zeta=None, build=None):
-        QCEssential.__init__(self, name, fullname, latex, citation, pdfdatabase, comment)
+    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None, comment=None, zeta=None, build=None):
+        QCEssential.__init__(self, name, fullname, latex, citations, doi, comment)
         self.name = name.lower()
         self.zeta = zeta
         self.build = [[self.name]] if build is None else build
@@ -49,8 +119,10 @@ class BasisSet(QCEssential):
         text += """  LaTeX representation: %s\n""" % (self.latex)
         text += """  Zeta:                 %s\n""" % (self.zeta)
         text += """  CBS build:            %s\n""" % (self.build)
-        text += """  PDF database id:      %s\n""" % (self.dsdbid)
-        text += """  Literature citation:  %s\n""" % (self.citation)
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  Literature citations:\n"""
+        for rol, cit in self.citations.iteritems():
+            text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
         return text
@@ -60,8 +132,8 @@ class Method(QCEssential):
     """Specialization of :pyclass:`QCEssential` for quantum chemical methods.
 
     """
-    def __init__(self, name, fullname=None, latex=None, citation=None, pdfdatabase=None, comment=None):
-        QCEssential.__init__(self, name, fullname, latex, citation, pdfdatabase, comment)
+    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None, comment=None):
+        QCEssential.__init__(self, name, fullname, latex, citations, doi, comment)
         self.name = name.upper()
 
     def __str__(self):
@@ -69,8 +141,10 @@ class Method(QCEssential):
         text += """  ==> %s Method <==\n\n""" % (self.name)
         text += """  Formal name:          %s\n""" % (self.fullname)
         text += """  LaTeX representation: %s\n""" % (self.latex)
-        text += """  PDF database id:      %s\n""" % (self.dsdbid)
-        text += """  Literature citation:  %s\n""" % (self.citation)
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  Literature citations:\n"""
+        for rol, cit in self.citations.iteritems():
+            text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
         return text
@@ -80,8 +154,8 @@ class Error(QCEssential):
     """Specialization of :pyclass:`QCEssential` for measures of error.
 
     """
-    def __init__(self, name, fullname=None, latex=None, citation=None, pdfdatabase=None, comment=None):
-        QCEssential.__init__(self, name, fullname, latex, citation, pdfdatabase, comment)
+    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None,  comment=None):
+        QCEssential.__init__(self, name, fullname, latex, citations, doi, comment)
         self.name = name.lower()
 
     def __str__(self):
@@ -89,11 +163,65 @@ class Error(QCEssential):
         text += """  ==> %s Error Measure <==\n\n""" % (self.name)
         text += """  Formal name:          %s\n""" % (self.fullname)
         text += """  LaTeX representation: %s\n""" % (self.latex)
-        text += """  PDF database id:      %s\n""" % (self.dsdbid)
-        text += """  Literature citation:  %s\n""" % (self.citation)
+        text += """  DOI:                  %s\n""" % (self.doi)
+        text += """  Literature citations:\n"""
+        for rol, cit in self.citations.iteritems():
+            text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
         return text
+
+
+#class Option(QCEssential):
+#    """Specialization of :pyclass:`QCEssential` for computation variation.
+#
+#    """
+#    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None,  comment=None):
+#        QCEssential.__init__(self, name, fullname, latex, citations, doi, comment)
+#        self.name = name #.lower()
+#
+#    def __str__(self):
+#        text = ''
+#        text += """  ==> %s Computation Mode <==\n\n""" % (self.name)
+#        text += """  Formal name:          %s\n""" % (self.fullname)
+#        text += """  LaTeX representation: %s\n""" % (self.latex)
+#        text += """  DOI:                  %s\n""" % (self.doi)
+#        text += """  Literature citations:\n"""
+#        for rol, cit in self.citations.iteritems():
+#            text += """    %17s: %s\n""" (rol, cit.doi)
+#        text += """  Comment:              %s\n""" % (self.comment)
+#        text += """\n"""
+#        return text
+
+
+_tlist = [
+    Publication('dhdft', doi='', dsdbid='', owner='CAC',
+        fullname=""),
+    Publication('dft', doi='10.1063/1.3545971', dsdbid='Burns:2011:084107', owner='LAB',
+        fullname="""Density-Functional Approaches to Noncovalent Interactions: A Comparison of Dispersion Corrections (DFT-D), Exchange-Hole Dipole Moment (XDM) Theory, and Specialized Functions. L. A. Burns, A. Vazquez-Mayagoitia, B. G. Sumpter, and C. D. Sherrill, J. Chem. Phys. 134(8), 084107/1-25 (2011)"""),
+    Publication('saptone', doi='10.1063/1.4867135', dsdbid='Parker:2014:094106', owner='LAB',
+        fullname="""Levels of Symmetry Adapted Perturbation Theory (SAPT). I. Efficiency and Performance for Interaction Energies. T. M. Parker, L. A. Burns, R. M. Parrish, A. G. Ryno, and C. D. Sherrill, J. Chem. Phys. 140(9), 094106/1-16 (2014)"""),
+    Publication('pt2', doi='10.1063/1.4903765', dsdbid='Burns:2014:234111', owner='LAB',
+        fullname="""Appointing Silver and Bronze Standards for Noncovalent Interactions: A Comparison of Spin-Component-Scaled (SCS), Explicitly Correlated (F12), and Specialized Wavefunction Approaches. L. A. Burns, M. S. Marshall, and C. D. Sherrill, J. Chem. Phys. 141(23), 234111/1-21 (2014)"""),
+    Publication('s22b', doi='10.1063/1.3659142', dsdbid='Marshall:2011:194102', owner='LAB',
+        fullname="""Basis Set Convergence of the Coupled-Cluster Correction, delta_MP2^CCSD(T): Best Practices for Benchmarking Noncovalent Interactions and the Attendant Revision of the S22, NBC10, HBC6, and HSG Databases. M. S. Marshall, L. A. Burns, and C. D. Sherrill, J. Chem. Phys. 135(19), 194102/1-10 (2011)"""),
+    Publication('dilabio', doi='10.1021/ct400149j', dsdbid='Burns:2014:49', owner='LAB',
+        fullname="""Comparing Counterpoise-Corrected, Uncorrected, and Averaged Binding Energies for Benchmarking Noncovalent Interactions. L. A. Burns, M. S. Marshall, and C. D. Sherrill, J. Chem. Theory Comput. 10(1), 49-57 (2014)"""),
+    Publication('achc', doi='10.1021/acs.jctc.5b00588', dsdbid='', owner='TMP',
+        fullname="""Assessment of Empirical Models versus High-Accuracy Ab Initio Methods for Nucleobase Stacking: Evaluating the Importance of Charge Penetration"""),
+    Publication('pt2uncp', doi='', dsdbid='', owner='LAB', fullname=''),
+    Publication('dfit', doi='', dsdbid='', owner='DGAS', fullname=''),
+    Publication('merz3', doi='', dsdbid='', owner='LAB', fullname=''),
+    Publication('bfdbmm', doi='', dsdbid='', owner='LAB', fullname=''),
+    Publication('saptmisc', doi='', dsdbid='', owner='', fullname=''),
+    Publication('bfdbdft', doi='', dsdbid='', owner='', fullname=''),
+    Publication('silver', doi='', dsdbid='', owner='', fullname=''),
+    Publication('anon', doi='', dsdbid='', owner='', fullname=''),
+    Publication('f12dilabio', doi='', dsdbid='', owner='', fullname=''),
+]
+pubs = {}
+for item in _tlist:
+    pubs[item.name] = item
 
 
 _tlist = [
@@ -182,11 +310,21 @@ _tlist = [
         build=[None, None, ['aqz', 'atqz', 'atz']]),
     BasisSet('aq5zatz',    fullname='[aQ5Z; D:aTZ]', latex="""[aQ5Z; $\delta$:aTZ]""",
         build=[None, None, ['a5z', 'aq5z', 'atz']]),
+    BasisSet('aq5zhatz',   fullname='[aQ5Z; D:haTZ]', latex="""[aQ5Z; $\delta$:haTZ]""",
+        build=[None, None, ['a5z', 'aq5z', 'hatz']]),
+    BasisSet('haq5zatz',   fullname='[haQ5Z; D:aTZ]', latex="""[haQ5Z; $\delta$:aTZ]""",
+        build=[None, None, ['ha5z', 'haq5z', 'atz']]),
+    BasisSet('aq5zaqz',    fullname='[aQ5Z; D:aQZ]', latex="""[aQ5Z; $\delta$:aQZ]""",
+        build=[None, None, ['a5z', 'aq5z', 'aqz']]),
+    BasisSet('tqz631gs025',fullname='[TQZ; D:631G*(0.25)', latex="""[TQZ; $\delta$:631gs025]""",
+        build=[None, None, ['qz', 'tqz', '631gs025']]),
     BasisSet('dzf12',      fullname='cc-pVDZ-F12'),
     BasisSet('tzf12',      fullname='cc-pVTZ-F12'),
     BasisSet('qzf12',      fullname='cc-pVQZ-F12'),
+    BasisSet('5zf12',      fullname='cc-pV5Z-F12'),
     BasisSet('dtzf12',     fullname='cc-pVDTZ-F12', build=[['dtzf12'], ['tzf12', 'dtzf12']]),
     BasisSet('tqzf12',     fullname='cc-pVTQZ-F12', build=[['tqzf12'], ['qzf12', 'tqzf12']]),
+    BasisSet('q5zf12',     fullname='cc-pVQ5Z-F12', build=[['q5zf12'], ['5zf12', 'q5zf12']]),
     BasisSet('hill1_adtz', build=[['hillcc_adtz'], ['atz', 'hillcc_adtz']]),  # TODO should have None or non-xtpl first element?
     BasisSet('hill1_atqz', build=[['hillcc_atqz'], ['aqz', 'hillcc_atqz']]),
     BasisSet('hill1_aq5z', build=[['hillcc_aq5z'], ['a5z', 'hillcc_aq5z']]),
@@ -202,6 +340,9 @@ _tlist = [
     BasisSet('631pgs',     fullname='6-31+G(d)'),
     BasisSet('6311pg_3df_2p_', fullname='6-311+G(3df,2p)'),
     BasisSet('6311ppg_3df_2p_', fullname='6-311++G(3df,2p)'),
+    BasisSet('631gs025',     fullname='6-31G*(0.25)'),
+    BasisSet('def2qzvp',   fullname='def2-QZVP'),
+    BasisSet('na',         fullname='no applicable basis'),
 ]
 bases = {}
 for item in _tlist:
@@ -212,7 +353,7 @@ for item in _tlist:
 # latex can contain escape codes for LaTeX
 _tlist = [
     Method('SAPT0',           fullname='SAPT0'),
-    Method('SAPT0S',          fullname='sSAPT0', latex="""\\textit{s}SAPT0"""),
+    Method('SAPT0S',          fullname='sSAPT0', latex=r"""$\textit{s}$SAPT0"""),  #latex="""\\textit{s}SAPT0"""),
     Method('SAPTSCS',         fullname='SCS-SAPT0'),
     Method('SAPTDFT',         fullname='DFT-SAPT'),
     Method('SAPT2',           fullname='SAPT2'),
@@ -258,6 +399,7 @@ _tlist = [
     Method('SCMICCSDAF12',    fullname='SCS(MI)-CCSD-F12a'),
     Method('SCMICCSDBF12',    fullname='SCS(MI)-CCSD-F12b'),
     Method('SCMICCSDCF12',    fullname='SCS(MI)-CCSD-F12c'),
+    Method('CCSDTABAVGF12',   fullname='AVG-CCSD(T**)-F12'),
     Method('CCSDTAF12',       fullname='CCSD(T**)-F12a'),
     Method('CCSDTBF12',       fullname='CCSD(T**)-F12b'),
     Method('CCSDTCF12',       fullname='CCSD(T**)-F12c'),
@@ -269,16 +411,22 @@ _tlist = [
     Method('B97',             fullname='B97'),
     Method('B97D2',           fullname='B97-D2'),
     Method('B97D3',           fullname='B97-D3'),
-    Method('B97D3BJ',         fullname='B97-D3bj'),
+    Method('B97D3BJ',         fullname='B97-D3(BJ)'),
+    Method('B97D3M',          fullname='B97-D3M'),
+    Method('B97D3MBJ',        fullname='B97-D3M(BJ)'),
     Method('B3LYP',           fullname='B3LYP'),
     Method('B3LYPD2',         fullname='B3LYP-D2'),
     Method('B3LYPD3',         fullname='B3LYP-D3'),
-    Method('B3LYPD3',         fullname='B3LYP-D3'),
+    Method('B3LYPD3BJ',       fullname='B3LYP-D3(BJ)'),
     Method('B3LYPXDM',        fullname='B3LYP-XDM'),
+    Method('B3LYPD3M',        fullname='B3LYP-D3M'),
+    Method('B3LYPD3MBJ',      fullname='B3LYP-D3M(BJ)'),
     Method('B2PLYP',          fullname='B2PLYP'),
     Method('B2PLYPD2',        fullname='B2PLYP-D2'),
     Method('B2PLYPD3',        fullname='B2PLYP-D3'),
-    Method('B2PLYPD3BJ',      fullname='B2PLYP-D3bj'),
+    Method('B2PLYPD3BJ',      fullname='B2PLYP-D3(BJ)'),
+    Method('B2PLYPD3M',       fullname='B2PLYP-D3M'),
+    Method('B2PLYPD3MBJ',     fullname='B2PLYP-D3M(BJ)'),
     Method('M052X',           fullname='M05-2X'),
     Method('M052XD3',         fullname='M05-2X-D3'),
     Method('M062X',           fullname='M06-2X'),
@@ -289,20 +437,34 @@ _tlist = [
     Method('M11L',            fullname='M11L'),
     Method('XYG3',            fullname='XYG3'),
     Method('DLDFD',           fullname='dlDF+D'),
-    Method('DSDPBEP86',       fullname='DSD-PBEP86'),
+    Method('DSDPBEP86',       fullname='DSD-PBEP86'),  # this a real thing?
+    Method('DSDPBEP86D2OPT',  fullname='DSD-PBEP86-D2opt'),  # email version of DSD
+    Method('DSDPBEP86D2',     fullname='DSD-PBEP86-D2'),
+    Method('DSDPBEP86D3',     fullname='DSD-PBEP86-D3'),
+    Method('DSDPBEP86D3BJ',   fullname='DSD-PBEP86-D3(BJ)'),
     Method('VV10',            fullname='VV10'),
     Method('LCVV10',          fullname='LC-VV10'),
     Method('WB97XD',          fullname='wB97X-D', latex="""$\omega$B97X-D"""),
     Method('WB97X2',          fullname='wB97X-2', latex="""$\omega$B97X-2"""),
+    Method('WB97XV',          fullname='wB97X-V', latex="""$\omega$B97X-V"""),
     Method('PBE',             fullname='PBE'),
     Method('PBED2',           fullname='PBE-D2'),
     Method('PBED3',           fullname='PBE-D3'),
-    Method('PBED3BJ',         fullname='PBE-D3bj'),
+    Method('PBED3BJ',         fullname='PBE-D3(BJ)'),
+    Method('PBED3M',          fullname='PBE-D3M'),
+    Method('PBED3MBJ',        fullname='PBE-D3M(BJ)'),
     Method('PBE0',            fullname='PBE0'),
     Method('PBE0D2',          fullname='PBE0-D2'),
     Method('PBE0D3',          fullname='PBE0-D3'),
-    Method('PBE0D3BJ',        fullname='PBE0-D3BJ'),
+    Method('PBE0D3BJ',        fullname='PBE0-D3(BJ)'),
+    Method('PBE0D3M',         fullname='PBE0-D3M'),
+    Method('PBE0D3MBJ',       fullname='PBE0-D3M(BJ)'),
     Method('PBE02',           fullname='PBE0-2'),
+    Method('WPBE',            fullname='wPBE', latex="""$\omega$PBE"""),
+    Method('WPBED3',          fullname='wPBE-D3', latex="""$\omega$PBE-D3"""),
+    Method('WPBED3BJ',        fullname='wPBE-D3(BJ)', latex="""$\omega$PBE-D3(BJ)"""),
+    Method('WPBED3M',         fullname='wPBE-D3M', latex="""$\omega$PBE-D3M"""),
+    Method('WPBED3MBJ',       fullname='wPBE-D3M(BJ)', latex="""$\omega$PBE-D3M(BJ)"""),
     Method('CCSDTNSAF12',     fullname='CCSD(T)-F12a'),
     Method('CCSDTNSBF12',     fullname='CCSD(T)-F12b'),
     Method('CCSDTNSCF12',     fullname='CCSD(T)-F12c'),
@@ -311,7 +473,15 @@ _tlist = [
     Method('BP86',            fullname='BP86'),
     Method('BP86D2',          fullname='BP86-D2'),
     Method('BP86D3',          fullname='BP86-D3'),
-    Method('BP86D3BJ',        fullname='BP86-D3bj'),
+    Method('BP86D3BJ',        fullname='BP86-D3(BJ)'),
+    Method('BP86D3M',         fullname='BP86-D3M'),
+    Method('BP86D3MBJ',       fullname='BP86-D3M(BJ)'),
+    Method('BLYP',            fullname='BLYP'),
+    Method('BLYPD2',          fullname='BLYP-D2'),
+    Method('BLYPD3',          fullname='BLYP-D3'),
+    Method('BLYPD3BJ',        fullname='BLYP-D3(BJ)'),
+    Method('BLYPD3M',         fullname='BLYP-D3M'),
+    Method('BLYPD3MBJ',       fullname='BLYP-D3M(BJ)'),
     Method('CCSDTQ',          fullname='CCSDT(Q)'),
     Method('CCSDFULLT',       fullname='CCSDT'),
     Method('CCSDTSAF12',      fullname='CCSD(T*)-F12a'),
@@ -321,6 +491,19 @@ _tlist = [
     Method('DWCCSDTSF12',     fullname='DW-CCSD(T*)-F12'),
     Method('DELTQ',           fullname='d(TQ)', latex="""$\delta$(TQ)"""),  # TODO kill this once non-IE impl in reap-DB
     Method('DEL2T',           fullname='d(T)', latex="""$\delta$(T)"""),  # TODO kill this once non-IE impl in reap-DB
+    Method('AM1',             fullname='AM1'),
+    Method('GAFF',            fullname='GAFF'),
+    Method('PM6DH2',          fullname='PM6-DH2'),
+    Method('CHARMM',          fullname='CHARMM'),
+    Method('PM3',             fullname='PM3'),
+    Method('PM6',             fullname='PM6'),
+    Method('PDDG',            fullname='PDDG'),
+    Method('FF03',            fullname='FF03'),
+    Method('FF03A',           fullname='FF03A'),
+    Method('FF99SB',          fullname='FF99SB'),
+    Method('FF99SBA',         fullname='FF99SBA'),
+    Method('AM1FS1',          fullname='AM1FS1'),
+    Method('EFP',             fullname='EFP'),
     ]
 
 methods = {}
@@ -328,25 +511,37 @@ for item in _tlist:
     methods[item.name] = item
 
 _tlist = [
+    Error('pexe',            fullname='pexE'),
+    Error('nexe',            fullname='nexE'),
     Error('maxe',            fullname='maxE'),
     Error('mine',            fullname='minE'),
     Error('me',              fullname='ME'),
     Error('mae',             fullname='MAE'),
     Error('rmse',            fullname='rmsE'),
     Error('stde',            fullname='stdE'),
+    Error('pexpe',           fullname='pexPE'),
+    Error('nexpe',           fullname='nexPE'),
     Error('maxpe',           fullname='maxPE'),
     Error('minpe',           fullname='minPE'),
     Error('mpe',             fullname='MPE'),
-    Error('mape',            fullname='MAPE', latex="""MA\%E"""),
+    Error('mape',            fullname='MAPE', latex=r"""MA$\%$E"""),  #latex="""MA\%E"""),
     Error('rmspe',           fullname='rmsPE'),
     Error('stdpe',           fullname='stdPE'),
+    Error('pexpbe',          fullname='pexPBE'),
+    Error('nexpbe',          fullname='nexPBE'),
     Error('maxpbe',          fullname='maxPBE'),
     Error('minpbe',          fullname='minPBE'),
     Error('mpbe',            fullname='MPBE'),
-    Error('mapbe',           fullname='MAPBE', latex="""MA\%BE"""),
+    Error('mapbe',           fullname='MAPBE', latex=r"""MA$\%$BE"""),  #latex="""MA\%BE"""),
     Error('rmspbe',          fullname='rmsPBE'),
     Error('stdpbe',          fullname='stdPBE'),
 ]
 errors = {}
 for item in _tlist:
     errors[item.name] = item
+
+#_tlist = [
+#    Option('CP',             fullname='CP'),
+#    Option('unCP',           fullname='unCP'),
+#]
+#options = {item.name: item for item in _tlist}

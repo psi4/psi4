@@ -1025,16 +1025,16 @@ void OCCWave::ocepa_manager()
 	
 	
 	// Set the global variables with the energies
-	Process::environment.globals["OCEPA(0) TOTAL ENERGY"] = EcepaL;
-	Process::environment.globals["SCS-OCEPA(0) TOTAL ENERGY"] =  Escscepa;
-	Process::environment.globals["SOS-OCEPA(0) TOTAL ENERGY"] =  Esoscepa;
+	Process::environment.globals["OLCCD TOTAL ENERGY"] = EcepaL;
+	Process::environment.globals["SCS-OLCCD TOTAL ENERGY"] =  Escscepa;
+	Process::environment.globals["SOS-OLCCD TOTAL ENERGY"] =  Esoscepa;
 	Process::environment.globals["CURRENT ENERGY"] = EcepaL;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = EcepaL-Escf;
 
-	Process::environment.globals["OCEPA(0) CORRELATION ENERGY"] = EcepaL - Escf;
-	Process::environment.globals["SCS-OCEPA(0) CORRELATION ENERGY"] =  Escscepa - Escf;
-	Process::environment.globals["SOS-OCEPA(0) CORRELATION ENERGY"] =  Esoscepa - Escf;
+	Process::environment.globals["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
+	Process::environment.globals["SCS-OLCCD CORRELATION ENERGY"] =  Escscepa - Escf;
+	Process::environment.globals["SOS-OLCCD CORRELATION ENERGY"] =  Esoscepa - Escf;
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -1139,7 +1139,8 @@ void OCCWave::cepa_manager()
 	
 	
 	// Set the global variables with the energies
-	Process::environment.globals["CEPA(0) TOTAL ENERGY"] = Ecepa;
+	Process::environment.globals["LCCD TOTAL ENERGY"] = Ecepa;
+	Process::environment.globals["LCCD CORRELATION ENERGY"] = Ecorr;
 	Process::environment.globals["CURRENT ENERGY"] = Ecepa;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Ecorr;

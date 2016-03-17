@@ -27,17 +27,27 @@ import os
 import math
 from p4xcpt import *
 
-def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0, prop='density',**kwargs):
-    cube = psi4.CubeFile()
-    cube.set_filename(filename)
-    cube.set_npts(nptsx, nptsy, nptsz)
-    cube.set_buffer(buffer_size)
-    if prop.upper() == 'DENSITY':
-        cube.process_density();
-    else:
-        raise ValidationError('%s is not a valid property')
 
 def oeprop(wfn, *args, **kwargs):
+    """Evaluate one-electron properties.
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to compute properties
+
+    How to specify args, which are actually the most important
+
+    :type title: string
+    :param title: label prepended to all psivars computed
+
+    :examples:
+
+    >>> # [1] Moments with specific label
+    >>> E, wfn = energy('hf', return_wfn=True)
+    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
+
+    """
     oe = psi4.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
@@ -45,8 +55,30 @@ def oeprop(wfn, *args, **kwargs):
         oe.add(prop)
     oe.compute()
 
-def cubeprop(wfn, *args, **kwargs):
+
+def cubeprop(wfn, **kwargs):
     """Evaluate properties on a grid and generate cube files.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Cube files for all orbitals
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> cubeprop(wfn)
+
+    >>> # [2] Cube files for density (alpha, beta, total, spin) and four orbitals 
+    >>> #     (two alpha, two beta)
+    >>> set cubeprop_tasks ['orbitals', 'density']
+    >>> set cubeprop_orbitals [5, 6, -5, -6]
+    >>> E, wfn = energy('scf', return_wfn=True)
+    >>> cubeprop(wfn)
 
     """
     # By default compute the orbitals
@@ -55,6 +87,7 @@ def cubeprop(wfn, *args, **kwargs):
 
     cp = psi4.CubeProperties(wfn)
     cp.compute_properties()
+
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""

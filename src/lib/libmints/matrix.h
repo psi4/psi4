@@ -650,9 +650,10 @@ public:
     }
 
     /**
-     * Symmetrizes the matrix using information from the given Molecule.
+     * Symmetrizes the a gradient like matrix (N, 3) using information
+     * from the given Molecule.
      */
-    void symmetrize(boost::shared_ptr<Molecule> mol);
+    void symmetrize_gradient(boost::shared_ptr<Molecule> mol);
 
     /// Set this to identity
     void identity();

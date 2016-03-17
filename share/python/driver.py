@@ -62,7 +62,7 @@ procedures = {
             'scs-omp3-vdw'  : run_occ,
             'sos-omp3'      : run_occ,
             'sos-pi-omp3'   : run_occ,
-            'ocepa(0)'      : select_ocepa_0_,
+            'olccd'         : select_olccd,
             'omp2.5'        : select_omp2p5,
             'dfocc'         : run_dfocc,
             'qchf'          : run_qchf,
@@ -133,13 +133,17 @@ procedures = {
             'fno-mp3'       : run_fnocc,
             'fno-mp4(sdq)'  : run_fnocc,
             'fno-mp4'       : run_fnocc,
+            'fno-lccd'      : run_cepa,
+            'fno-lccsd'     : run_cepa,
             'fno-cepa(0)'   : run_cepa,
             'fno-cepa(1)'   : run_cepa,
             'fno-cepa(3)'   : run_cepa,
             'fno-acpf'      : run_cepa,
             'fno-aqcc'      : run_cepa,
             'fno-cisd'      : run_cepa,
-            'cepa(0)'       : select_cepa_0_,
+            'lccd'          : select_lccd,
+            'lccsd'         : run_cepa,
+            'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
             'acpf'          : run_cepa,
@@ -149,7 +153,7 @@ procedures = {
             'dmrgci'        : run_dmrgci,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # Aliases are discouraged. If you must add an alias to this list (e.g.,
-            #    lccd/cepa(0)), please search the whole driver to find uses of
+            #    lccsd/cepa(0)), please search the whole driver to find uses of
             #    name in return values and psi variables and extend the logic to
             #    encompass the new alias.
         },
@@ -165,8 +169,8 @@ procedures = {
             'mp3'           : select_mp3_gradient,
             'mp2.5'         : select_mp2p5_gradient,
             'omp2.5'        : select_omp2p5_gradient,
-            'cepa(0)'       : select_cepa_0__gradient,
-            'ocepa(0)'      : select_ocepa_0__gradient,
+            'lccd'          : select_lccd_gradient,
+            'olccd'         : select_olccd_gradient,
             'ccd'           : run_dfocc_gradient,
             'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
@@ -220,7 +224,9 @@ for ssuper in cfour_gradient_list():
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
-    :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
+    :returns: *float* |w--w| Total electronic energy in Hartrees. SAPT & EFP return interaction energy.
+
+    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -231,32 +237,28 @@ def energy(name, **kwargs):
        * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
        * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
-    .. comment In this table immediately below, place methods that should only be called by
-    .. comment developers at present. This table won't show up in the manual.
-    .. comment
-    .. comment    .. _`table:energy_devel`:
-    .. comment
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | name                    | calls method                                                                          |
-    .. comment    +=========================+=======================================================================================+
-    .. comment    | mp2c                    | coupled MP2 (MP2C)                                                                    |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | mp2-drpa                | random phase approximation?                                                           |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | cis                     | CI singles (CIS)                                                                      |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tdhf                    | time-dependent HF (TDHF)                                                              |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
-    .. comment    | efp                     | efp-only optimizations under development                                              |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    :type name: string
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the system.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element (after *float* energy) of a tuple.
+
+    :type restart_file: string
+    :param restart_file: ``['file.1, file.32]`` || ``./file`` || etc.
+
+        Binary data files to be renamed for calculation restart.
+
 
     .. _`table:energy_gen`:
 
@@ -438,51 +440,11 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-
     .. include:: autodoc_dft_energy.rst
 
     .. include:: mrcc_table_energy.rst
 
     .. include:: cfour_table_energy.rst
-
-    :type name: string
-    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the system.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    .. comment :type cast_up: :ref:`boolean <op_py_boolean>` or string
-    .. comment :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
-
-    .. comment     Indicates whether, to accelerate convergence for the scf portion of
-    .. comment     the *name* calculation, a preliminary scf should be performed with a
-    .. comment     small basis set (3-21G if a basis name is not supplied as keyword
-    .. comment     value) followed by projection into the full target basis.
-
-    .. comment .. deprecated:: Sept-2012
-    .. comment    Use option |scf__basis_guess| instead.
-
-    .. comment :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
-    .. comment :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
-
-    .. comment     Indicates whether, when *cast_up* is active, to run the preliminary
-    .. comment     scf in density-fitted mode or what fitting basis to employ (when
-    .. comment     available for all elements, cc-pVDZ-RI is the default).
-
-    .. comment .. deprecated:: Sept-2012
-    .. comment    Use option |scf__df_basis_guess| instead.
-
-    :type bypass_scf: :ref:`boolean <op_py_boolean>`
-    :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
-
-        Indicates whether, for *name* values built atop of scf calculations,
-        the scf step is skipped. Suitable when special steps are taken to get
-        the scf to converge in an explicit preceeding scf step.
 
     :examples:
 
@@ -496,7 +458,7 @@ def energy(name, **kwargs):
     >>> energy('sapt0-ct')
 
     >>> # [3] Arbitrary-order MPn calculation
-    >>> energy('mp4')
+    >>> energy('mp7')
 
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
     >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
@@ -554,7 +516,6 @@ def energy(name, **kwargs):
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            #if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
 
 # Before invoking the procedure, we rename any file that should be read.
@@ -597,6 +558,15 @@ def energy(name, **kwargs):
 
     optstash.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
+
+        # TODO place this with the associated call, very awkward to call this in other areas at the moment
+        if name.lower() in ['EFP', 'MRCC', 'DMRG', 'PSIMRCC']:
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
+        elif 'sapt' in name.lower():
+            psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            psi4.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
+
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
     else:
         return psi4.get_variable('CURRENT ENERGY')
@@ -635,6 +605,12 @@ def gradient(name, **kwargs):
     # 1. set the default to that of the provided name
     if lowername in procedures['gradient']:
         dertype = 1
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy
@@ -740,10 +716,7 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_1_0(moleculeclone)
@@ -1130,10 +1103,7 @@ def optimize(name, **kwargs):
     molecule.update_geometry()
 
     # Shifting the geometry so need to copy the active molecule
-    molname = molecule.name()
-    moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-    moleculeclone.set_name(molname)
-    moleculeclone.update_geometry()
+    moleculeclone = molecule.clone()
 
     initial_sym = moleculeclone.schoenflies_symbol()
     while n <= psi4.get_option('OPTKING', 'GEOM_MAXITER'):
@@ -1373,6 +1343,12 @@ def hessian(name, **kwargs):
     elif lowername in procedures['gradient']:
         dertype = 1
         func = gradient
+        if procedures['gradient'][lowername].__name__.startswith('select_'):
+            try:
+                procedures['gradient'][lowername](lowername, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                func = energy
     elif lowername in procedures['energy']:
         dertype = 0
         func = energy
@@ -1491,10 +1467,7 @@ def hessian(name, **kwargs):
         func = procedures['gradient'][lowername]
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         if kwargs.get('mode') == 'sow':
             raise ValidationError("""Frequency execution mode 'sow' not yet """
@@ -1569,10 +1542,7 @@ def hessian(name, **kwargs):
                 psi4.set_global_option('E_CONVERGENCE', 10)
 
         # Shifting the geometry so need to copy the active molecule
-        molname = molecule.name()
-        moleculeclone = psi4.Molecule.create_molecule_from_string(molecule.create_psi4_string_from_molecule())
-        moleculeclone.set_name(molname)
-        moleculeclone.update_geometry()
+        moleculeclone = molecule.clone()
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_0(moleculeclone, irrep)
@@ -1779,13 +1749,41 @@ def frequency(name, **kwargs):
         return psi4.get_variable('CURRENT ENERGY')
 
 
-def molden(filename, wfn):
+def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
 
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Molden file for DFT calculation
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> molden(wfn, 'mycalc.molden')
+
     """
+    try:
+        occa = wfn.occupation_a()
+        occb = wfn.occupation_a()
+    except AttributeError:
+        psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
+                       "Writing zero's for occupation numbers")
+        occa = psi4.Vector(wfn.nmopi())
+        occb = psi4.Vector(wfn.nmopi())
+
+    # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
-    mw.write(filename)
+    mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+
 
 
 def parse_cotton_irreps(irrep, point_group):
