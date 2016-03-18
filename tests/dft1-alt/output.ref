@@ -16,9 +16,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Mar 18 13:20:31 2016
+    Psi4 started on: Fri Mar 18 13:21:47 2016
 
-    Process ID:  30909
+    Process ID:  30940
     PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
@@ -33,18 +33,22 @@ E11 = -74.9493412744 #TEST
 E12 = -75.3196957567 #TEST
 E13 = -75.3185459160 #TEST
 E14 = -75.3128178610 #TEST
+E15 = -75.3001991205 #TEST
 E21 = -74.9493412744 #TEST
 E22 = -75.3196957567 #TEST
 E23 = -75.3185459160 #TEST
 E24 = -75.3128178610 #TEST
+E25 = -75.3001991205 #TEST
 E31 = -74.6448669477 #TEST
 E32 = -74.9677634492 #TEST
 E33 = -74.9709217377 #TEST
 E34 = -74.9632650037 #TEST
+E35 = -74.9466251949 #TEST
 E41 = -74.4108252721 #TEST
 E42 = -74.8155846044 #TEST
 E43 = -74.8011166756 #TEST
 E44 = -74.7977834552 #TEST
+E45 = -74.7965494105 #TEST
 
 molecule h2o {
 0 1
@@ -61,45 +65,41 @@ guess core
 scf_type direct
 dft_spherical_points 302
 dft_radial_points 99
-reference rks
 }
 
-set dft_functional b88_x
-V11 = energy('scf')
-compare_values(E11,V11, 3, "RKS  0 1   B88 Energy") #TEST
+V11 = energy('b88_x')
+compare_values(E11,V11, 3, "RKS  0 1    B88 Energy") #TEST
 
-set dft_functional b3lyp
-V12 = energy('scf')
-compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
+V15 = energy('b97-d')
+compare_values(E15,V15, 3, "RKS  0 1 B97-D2 Energy") #TEST
 
-set dft_functional wB97
-set dft_omega 0.4
-V13 = energy('scf')
-compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
+V12 = energy('b3lyp')
+compare_values(E12,V12, 3, "RKS  0 1  B3LYP Energy") #TEST
 
-set dft_functional wB97X 
+V13 = energy('wB97')  # default omega is 0.4
+compare_values(E13,V13, 3, "RKS  0 1   wB97 Energy") #TEST
+
 set dft_omega 0.3
-V14 = energy('scf')
-compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
+V14 = energy('wB97X')
+compare_values(E14,V14, 3, "RKS  0 1  wB97X Energy") #TEST
 
-set reference uks
-set dft_functional b88_x
-V21 = energy('scf')
-compare_values(E21,V21, 3, "UKS  0 1   B88 Energy") #TEST
+set reference uhf
+V21 = energy('b88_x')
+compare_values(E21,V21, 3, "UKS  0 1    B88 Energy") #TEST
 
-set dft_functional b3lyp
-V22 = energy('scf')
-compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
+V25 = energy('b97-d')
+compare_values(E25,V25, 3, "UKS  0 1 B97-D2 Energy") #TEST
 
-set dft_functional wB97
+V22 = energy('b3lyp')
+compare_values(E22,V22, 3, "UKS  0 1  B3LYP Energy") #TEST
+
 set dft_omega 0.4
-V23 = energy('scf')
-compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
+V23 = energy('wB97')
+compare_values(E23,V23, 3, "UKS  0 1   wB97 Energy") #TEST
 
-set dft_functional wB97X 
 set dft_omega 0.3
-V24 = energy('scf')
-compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
+V24 = energy('wB97X')
+compare_values(E24,V24, 3, "UKS  0 1  wB97X Energy") #TEST
 
 molecule h2op {
 1 2
@@ -110,23 +110,22 @@ H 1 1.0 2 104.5
 
 set basis sto-3g
 # Must be reset in each new molecule
-set dft_functional b88_x
-V31 = energy('scf')
-compare_values(E31,V31, 3, "UKS  1 2   B88 Energy") #TEST
+V31 = energy('B88_X')
+compare_values(E31,V31, 3, "UKS  1 2    B88 Energy") #TEST
 
-set dft_functional b3lyp
-V32 = energy('scf')
-compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
+V35 = energy('B97-D')
+compare_values(E35,V35, 3, "UKS  1 2 B97-D2 Energy") #TEST
 
-set dft_functional wB97
+V32 = energy('B3LYP')
+compare_values(E32,V32, 3, "UKS  1 2  B3LYP Energy") #TEST
+
 set dft_omega 0.4
-V33 = energy('scf')
-compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
+V33 = energy('wB97')
+compare_values(E33,V33, 3, "UKS  1 2   wB97 Energy") #TEST
 
-set dft_functional wB97X 
 set dft_omega 0.3
-V34 = energy('scf')
-compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
+V34 = energy('wB97X')
+compare_values(E34,V34, 3, "UKS  1 2  wB97X Energy") #TEST
 
 molecule h2om {
 -1 2
@@ -136,23 +135,23 @@ H 1 1.0 2 104.5
 }
 
 set basis sto-3g
-set dft_functional b88_x
-V41 = energy('scf')
-compare_values(E41,V41, 3, "UKS -1 2   B88 Energy") #TEST
+V41 = energy('b88_x')
+compare_values(E41,V41, 3, "UKS -1 2    B88 Energy") #TEST
 
-set dft_functional b3lyp
-V42 = energy('scf')
-compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
+V45 = energy('b97-d')
+print_variables()
+compare_values(E45,V45, 3, "UKS  1 2 B97-D2 Energy") #TEST
 
-set dft_functional wB97
+V42 = energy('b3lyp')
+compare_values(E42,V42, 3, "UKS -1 2  B3LYP Energy") #TEST
+
 set dft_omega 0.4
-V43 = energy('scf')
-compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
+V43 = energy('wB97')
+compare_values(E43,V43, 3, "UKS -1 2   wB97 Energy") #TEST
 
-set dft_functional wB97X 
 set dft_omega 0.3
-V44 = energy('scf')
-compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
+V44 = energy('wB97X')
+compare_values(E44,V44, 3, "UKS -1 2  wB97X Energy") #TEST
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.
@@ -166,7 +165,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:32 2016
+*** at Fri Mar 18 13:21:47 2016
 
 
          ---------------------------------------------------------
@@ -448,16 +447,16 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:33 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:48 2016
 Module time:
-	user time   =       0.88 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.88 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-	RKS  0 1   B88 Energy.............................................PASSED
+	RKS  0 1    B88 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -468,7 +467,329 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:33 2016
+*** at Fri Mar 18 13:21:48 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => B97-D Composite Functional <= 
+
+    B97-D Pure-GGA Exchange-Correlation Functional
+
+    S. Grimme, J. Comput. Chem., 27, 1787-1799, 2006
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-D_X
+
+   => Correlation Functionals <=
+
+    1.0000 B97-D_C
+
+   => B97-D_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => B97-D_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6  =   1.250000E+00
+    A6  =   2.000000E+01
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             99
+    Spherical Points =            302
+    Total Points     =          86165
+    Total Blocks     =             87
+    Max Points       =           4867
+    Max Functions    =              7
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry O          line   234 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = 
+    Total number of shells = 30
+    Number of primitives   = 30
+    Number of AO           = 96
+    Number of SO           = 84
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     7s 5p 4d 2f // 7s 5p 4d 2f 
+       2     H     3s 2p 1d // 3s 2p 1d 
+       3     H     3s 2p 1d // 3s 2p 1d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   1:   -73.57182107691280   -7.35718e+01   2.08366e-01 
+   @DF-RKS iter   2:   -74.42607690472805   -8.54256e-01   2.02319e-01 DIIS
+   @DF-RKS iter   3:   -75.30045085757406   -8.74374e-01   7.55348e-03 DIIS
+   @DF-RKS iter   4:   -75.30130950690655   -8.58649e-04   2.52844e-03 DIIS
+   @DF-RKS iter   5:   -75.30139396202672   -8.44551e-05   8.13230e-04 DIIS
+   @DF-RKS iter   6:   -75.30140334619675   -9.38417e-06   1.15660e-04 DIIS
+   @DF-RKS iter   7:   -75.30140353928064   -1.93084e-07   6.93022e-06 DIIS
+   @DF-RKS iter   8:   -75.30140353997574   -6.95096e-10   3.47798e-10 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @RKS iter   9:   -75.30019911810777    1.20442e-03   3.72798e-05 DIIS
+   @RKS iter  10:   -75.30019912039255   -2.28478e-09   7.51934e-06 DIIS
+   @RKS iter  11:   -75.30019912039346   -9.09495e-13   7.64977e-06 DIIS
+   @RKS iter  12:   -75.30019912122836   -8.34902e-10   5.95202e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -18.470080     2A1    -0.833864     1B2    -0.379983  
+       3A1    -0.176922     1B1    -0.074584  
+
+    Virtual:                                                              
+
+       4A1     0.267296     2B2     0.370838  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -75.30019912122836
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -121.6667931968627840
+    Two-Electron Energy =                  46.9660610734825639
+    DFT Exchange-Correlation Energy =      -9.4008665552710102
+    Empirical Dispersion Energy =          -0.0000659725491935
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -75.3001991212283599
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3977
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.6214     Total:     0.6214
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.5794     Total:     1.5794
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -6.1373     YY:    -4.3738     ZZ:    -5.2204
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8935     YY:     0.8701     ZZ:     0.0234
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16585  4.16585  0.00000 -0.33171
+       2     H     0.41707  0.41707  0.00000  0.16585
+       3     H     0.41707  0.41707  0.00000  0.16585
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:51 2016
+Module time:
+	user time   =       2.58 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       3.49 seconds =       0.06 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+	RKS  0 1 B97-D2 Energy............................................PASSED
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:21:51 2016
 
 
          ---------------------------------------------------------
@@ -777,16 +1098,16 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:34 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:52 2016
 Module time:
 	user time   =       1.62 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.53 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	RKS  0 1 B3LYP Energy.............................................PASSED
+	user time   =       5.15 seconds =       0.09 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+	RKS  0 1  B3LYP Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -797,7 +1118,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:34 2016
+*** at Fri Mar 18 13:21:52 2016
 
 
          ---------------------------------------------------------
@@ -1090,16 +1411,16 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:37 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:55 2016
 Module time:
-	user time   =       2.55 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.54 seconds =       0.04 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       5.10 seconds =       0.08 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
-	RKS  0 1  wB97 Energy.............................................PASSED
+	user time   =       7.72 seconds =       0.13 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+	RKS  0 1   wB97 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -1110,7 +1431,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:37 2016
+*** at Fri Mar 18 13:21:55 2016
 
 
          ---------------------------------------------------------
@@ -1404,16 +1725,16 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:39 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:57 2016
 Module time:
-	user time   =       2.54 seconds =       0.04 minutes
+	user time   =       2.52 seconds =       0.04 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       7.67 seconds =       0.13 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
-	RKS  0 1 wB97X Energy.............................................PASSED
+	user time   =      10.28 seconds =       0.17 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+	RKS  0 1  wB97X Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -1424,7 +1745,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:39 2016
+*** at Fri Mar 18 13:21:58 2016
 
 
          ---------------------------------------------------------
@@ -1730,16 +2051,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    2 B2 -0.0000000
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:40 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:58 2016
 Module time:
-	user time   =       0.97 seconds =       0.02 minutes
+	user time   =       0.98 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.66 seconds =       0.14 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
-	UKS  0 1   B88 Energy.............................................PASSED
+	user time   =      11.30 seconds =       0.19 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+	UKS  0 1    B88 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -1750,7 +2071,353 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:40 2016
+*** at Fri Mar 18 13:21:59 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => B97-D Composite Functional <= 
+
+    B97-D Pure-GGA Exchange-Correlation Functional
+
+    S. Grimme, J. Comput. Chem., 27, 1787-1799, 2006
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-D_X
+
+   => Correlation Functionals <=
+
+    1.0000 B97-D_C
+
+   => B97-D_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => B97-D_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6  =   1.250000E+00
+    A6  =   2.000000E+01
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             99
+    Spherical Points =            302
+    Total Points     =          86165
+    Total Blocks     =             87
+    Max Points       =           4867
+    Max Functions    =              7
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry O          line   234 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = 
+    Total number of shells = 30
+    Number of primitives   = 30
+    Number of AO           = 96
+    Number of SO           = 84
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     7s 5p 4d 2f // 7s 5p 4d 2f 
+       2     H     3s 2p 1d // 3s 2p 1d 
+       3     H     3s 2p 1d // 3s 2p 1d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UKS iter   1:   -73.57182107691277   -7.35718e+01   2.08366e-01 
+   @DF-UKS iter   2:   -74.42607690472805   -8.54256e-01   2.02319e-01 DIIS
+   @DF-UKS iter   3:   -75.30045085757405   -8.74374e-01   7.55348e-03 DIIS
+   @DF-UKS iter   4:   -75.30130950690653   -8.58649e-04   2.52844e-03 DIIS
+   @DF-UKS iter   5:   -75.30139396202671   -8.44551e-05   8.13230e-04 DIIS
+   @DF-UKS iter   6:   -75.30140334619674   -9.38417e-06   1.15660e-04 DIIS
+   @DF-UKS iter   7:   -75.30140353928054   -1.93084e-07   6.93022e-06 DIIS
+   @DF-UKS iter   8:   -75.30140353997567   -6.95124e-10   3.47762e-10 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @UKS iter   9:   -75.30019911810780    1.20442e-03   3.72798e-05 DIIS
+   @UKS iter  10:   -75.30019912039251   -2.28471e-09   7.51934e-06 DIIS
+   @UKS iter  11:   -75.30019912039342   -9.09495e-13   7.64977e-06 DIIS
+   @UKS iter  12:   -75.30019912122837   -8.34959e-10   5.95202e-08 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:  -1.776356839E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:               -1.776356839E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A1   -18.470080     2A1    -0.833864     1B2    -0.379983  
+       3A1    -0.176922     1B1    -0.074584  
+
+    Alpha Virtual:                                                        
+
+       4A1     0.267296     2B2     0.370838  
+
+    Beta Occupied:                                                        
+
+       1A1   -18.470080     2A1    -0.833864     1B2    -0.379983  
+       3A1    -0.176922     1B1    -0.074584  
+
+    Beta Virtual:                                                         
+
+       4A1     0.267296     2B2     0.370838  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+    SOCC [     0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -75.30019912122837
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -121.6667931968628125
+    Two-Electron Energy =                  46.9660610734825781
+    DFT Exchange-Correlation Energy =      -9.4008665552710120
+    Empirical Dispersion Energy =          -0.0000659725491935
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -75.3001991212283741
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3977
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.6214     Total:     0.6214
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.5794     Total:     1.5794
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -6.1373     YY:    -4.3738     ZZ:    -5.2204
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8935     YY:     0.8701     ZZ:     0.0234
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16585  4.16585  0.00000 -0.33171
+       2     H     0.41707  0.41707  0.00000  0.16585
+       3     H     0.41707  0.41707  0.00000  0.16585
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+
+  Saving occupied orbitals to File 180.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 2.0000000
+  HONO-1 :    1 B1 2.0000000
+  HONO-0 :    1 B2 2.0000000
+  LUNO+0 :    4 A1 0.0000000
+  LUNO+1 :    2 B2 0.0000000
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:01 2016
+Module time:
+	user time   =       2.78 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =      14.11 seconds =       0.24 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         14 seconds =       0.23 minutes
+	UKS  0 1 B97-D2 Energy............................................PASSED
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:22:01 2016
 
 
          ---------------------------------------------------------
@@ -2083,16 +2750,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    2 B2 -0.0000000
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:42 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:03 2016
 Module time:
-	user time   =       1.79 seconds =       0.03 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       1.82 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      10.47 seconds =       0.17 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
-	UKS  0 1 B3LYP Energy.............................................PASSED
+	user time   =      15.97 seconds =       0.27 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
+	UKS  0 1  B3LYP Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -2103,7 +2770,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:42 2016
+*** at Fri Mar 18 13:22:03 2016
 
 
          ---------------------------------------------------------
@@ -2420,16 +3087,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    4 A1 0.0000000
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:45 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:06 2016
 Module time:
-	user time   =       2.71 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.73 seconds =       0.05 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      13.21 seconds =       0.22 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =         13 seconds =       0.22 minutes
-	UKS  0 1  wB97 Energy.............................................PASSED
+	user time   =      18.73 seconds =       0.31 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         19 seconds =       0.32 minutes
+	UKS  0 1   wB97 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -2440,7 +3107,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:45 2016
+*** at Fri Mar 18 13:22:06 2016
 
 
          ---------------------------------------------------------
@@ -2758,16 +3425,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    4 A1 -0.0000000
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:48 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:09 2016
 Module time:
-	user time   =       2.69 seconds =       0.04 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       2.71 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      15.93 seconds =       0.27 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
-	UKS  0 1 wB97X Energy.............................................PASSED
+	user time   =      21.47 seconds =       0.36 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         22 seconds =       0.37 minutes
+	UKS  0 1  wB97X Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -2778,7 +3445,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:48 2016
+*** at Fri Mar 18 13:22:09 2016
 
 
          ---------------------------------------------------------
@@ -3084,16 +3751,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    2 B2 0.0006709
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:49 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:10 2016
 Module time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      16.92 seconds =       0.28 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
-	UKS  1 2   B88 Energy.............................................PASSED
+	user time   =      22.48 seconds =       0.37 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         23 seconds =       0.38 minutes
+	UKS  1 2    B88 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -3104,7 +3771,352 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:49 2016
+*** at Fri Mar 18 13:22:10 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => B97-D Composite Functional <= 
+
+    B97-D Pure-GGA Exchange-Correlation Functional
+
+    S. Grimme, J. Comput. Chem., 27, 1787-1799, 2006
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-D_X
+
+   => Correlation Functionals <=
+
+    1.0000 B97-D_C
+
+   => B97-D_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => B97-D_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6  =   1.250000E+00
+    A6  =   2.000000E+01
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             99
+    Spherical Points =            302
+    Total Points     =          86165
+    Total Blocks     =             87
+    Max Points       =           4867
+    Max Functions    =              7
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       4       4       1
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry O          line   234 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = 
+    Total number of shells = 30
+    Number of primitives   = 30
+    Number of AO           = 96
+    Number of SO           = 84
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     7s 5p 4d 2f // 7s 5p 4d 2f 
+       2     H     3s 2p 1d // 3s 2p 1d 
+       3     H     3s 2p 1d // 3s 2p 1d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UKS iter   1:   -73.78353846247580   -7.37835e+01   1.92231e-01 
+   @DF-UKS iter   2:   -74.38598729256641   -6.02449e-01   1.90864e-01 DIIS
+   @DF-UKS iter   3:   -74.94709758857445   -5.61110e-01   6.14625e-03 DIIS
+   @DF-UKS iter   4:   -74.94780029525855   -7.02707e-04   3.61416e-04 DIIS
+   @DF-UKS iter   5:   -74.94780516438274   -4.86912e-06   7.07597e-05 DIIS
+   @DF-UKS iter   6:   -74.94780534047607   -1.76093e-07   6.86936e-06 DIIS
+   @DF-UKS iter   7:   -74.94780534123404   -7.57979e-10   5.27746e-07 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @UKS iter   8:   -74.94662519289524    1.18015e-03   3.65533e-05 DIIS
+   @UKS iter   9:   -74.94662519525471   -2.35947e-09   5.42296e-06 DIIS
+   @UKS iter  10:   -74.94662519539530   -1.40588e-10   4.48687e-06 DIIS
+   @UKS iter  11:   -74.94662519568453   -2.89234e-10   2.68920e-08 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.882581569E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.528825816E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A1   -19.244891     2A1    -1.454622     1B2    -0.931920  
+       1B1    -0.777517     3A1    -0.763873  
+
+    Alpha Virtual:                                                        
+
+       4A1    -0.231908     2B2    -0.147396  
+
+    Beta Occupied:                                                        
+
+       1A1   -19.239522     2A1    -1.384666     1B2    -0.904387  
+       3A1    -0.724000  
+
+    Beta Virtual:                                                         
+
+       1B1    -0.612696     4A1    -0.210663     2B2    -0.130298  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    0,    1 ]
+    SOCC [     0,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.94662519568453
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -115.7988673192225519
+    Two-Electron Energy =                  40.8783501724579565
+    DFT Exchange-Correlation Energy =      -8.8275076063428024
+    Empirical Dispersion Energy =          -0.0000659725491935
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -74.9466251956845326
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0155
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0346     Total:     1.0346
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.6297     Total:     2.6297
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.7137     YY:    -2.2929     ZZ:    -3.9178
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0722     YY:     1.3486     ZZ:    -0.2764
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.47488  3.38871  1.08617  0.13640
+       2     H     0.26256  0.30564 -0.04308  0.43180
+       3     H     0.26256  0.30564 -0.04308  0.43180
+
+   Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
+
+
+  Saving occupied orbitals to File 180.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 1.9992895
+  HONO-1 :    1 B2 1.9992687
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    2 B2 0.0007313
+  LUNO+1 :    4 A1 0.0007105
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:12 2016
+Module time:
+	user time   =       2.58 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =      25.10 seconds =       0.42 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =         25 seconds =       0.42 minutes
+	UKS  1 2 B97-D2 Energy............................................PASSED
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:22:12 2016
 
 
          ---------------------------------------------------------
@@ -3436,16 +4448,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    2 B2 0.0004640
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:51 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:14 2016
 Module time:
-	user time   =       1.65 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.67 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      18.60 seconds =       0.31 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         19 seconds =       0.32 minutes
-	UKS  1 2 B3LYP Energy.............................................PASSED
+	user time   =      26.80 seconds =       0.45 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =         27 seconds =       0.45 minutes
+	UKS  1 2  B3LYP Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -3456,7 +4468,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:51 2016
+*** at Fri Mar 18 13:22:14 2016
 
 
          ---------------------------------------------------------
@@ -3774,16 +4786,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    4 A1 0.0006449
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:54 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:17 2016
 Module time:
-	user time   =       2.99 seconds =       0.05 minutes
+	user time   =       2.97 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      21.64 seconds =       0.36 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
-	UKS  1 2  wB97 Energy.............................................PASSED
+	user time   =      29.81 seconds =       0.50 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =         30 seconds =       0.50 minutes
+	UKS  1 2   wB97 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -3794,7 +4806,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:54 2016
+*** at Fri Mar 18 13:22:17 2016
 
 
          ---------------------------------------------------------
@@ -4113,16 +5125,16 @@ Properties computed using the SCF density matrix
   LUNO+1 :    2 B2 0.0005929
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:57 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:20 2016
 Module time:
 	user time   =       2.95 seconds =       0.05 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      24.62 seconds =       0.41 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         25 seconds =       0.42 minutes
-	UKS  1 2 wB97X Energy.............................................PASSED
+	user time   =      32.80 seconds =       0.55 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         33 seconds =       0.55 minutes
+	UKS  1 2  wB97X Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -4133,7 +5145,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:57 2016
+*** at Fri Mar 18 13:22:20 2016
 
 
          ---------------------------------------------------------
@@ -4442,16 +5454,16 @@ Properties computed using the SCF density matrix
   LUNO+0 :    2 B2 0.0004704
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:58 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:21 2016
 Module time:
 	user time   =       0.91 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      25.55 seconds =       0.43 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =         26 seconds =       0.43 minutes
-	UKS -1 2   B88 Energy.............................................PASSED
+	user time   =      33.75 seconds =       0.56 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         34 seconds =       0.57 minutes
+	UKS -1 2    B88 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -4462,7 +5474,385 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:58 2016
+*** at Fri Mar 18 13:22:21 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = -1
+  Multiplicity = 2
+  Electrons    = 11
+  Nalpha       = 6
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => B97-D Composite Functional <= 
+
+    B97-D Pure-GGA Exchange-Correlation Functional
+
+    S. Grimme, J. Comput. Chem., 27, 1787-1799, 2006
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-D_X
+
+   => Correlation Functionals <=
+
+    1.0000 B97-D_C
+
+   => B97-D_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => B97-D_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6  =   1.250000E+00
+    A6  =   2.000000E+01
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             99
+    Spherical Points =            302
+    Total Points     =          86165
+    Total Blocks     =             87
+    Max Points       =           4867
+    Max Functions    =              7
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       6       5       5       1
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: 
+    atoms 1   entry O          line   234 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz-ri.gbs
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = 
+    Total number of shells = 30
+    Number of primitives   = 30
+    Number of AO           = 96
+    Number of SO           = 84
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     7s 5p 4d 2f // 7s 5p 4d 2f 
+       2     H     3s 2p 1d // 3s 2p 1d 
+       3     H     3s 2p 1d // 3s 2p 1d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+    SOCC [     1,    0,    0,    0 ]
+
+   @DF-UKS iter   1:   -73.30718116557688   -7.33072e+01   1.81378e-01 
+   @DF-UKS iter   2:   -74.45215096038216   -1.14497e+00   1.27168e-01 DIIS
+   @DF-UKS iter   3:   -74.79677904786317   -3.44628e-01   5.13324e-03 DIIS
+   @DF-UKS iter   4:   -74.79768918951004   -9.10142e-04   1.48655e-03 DIIS
+   @DF-UKS iter   5:   -74.79774909789774   -5.99084e-05   3.27270e-04 DIIS
+   @DF-UKS iter   6:   -74.79775087885803   -1.78096e-06   1.43552e-05 DIIS
+   @DF-UKS iter   7:   -74.79775088228433   -3.42631e-09   7.78833e-07 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @UKS iter   8:   -74.79654940836960    1.20147e-03   2.13859e-05 DIIS
+   @UKS iter   9:   -74.79654941033891   -1.96931e-09   3.64123e-06 DIIS
+   @UKS iter  10:   -74.79654941041484   -7.59286e-11   2.91081e-06 DIIS
+   @UKS iter  11:   -74.79654941055061   -1.35771e-10   2.54628e-08 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.068028751E-04
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.501068029E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A1   -17.801028     2A1    -0.311983     1B2     0.119005  
+       3A1     0.286805     1B1     0.426595     4A1     0.748598  
+
+    Alpha Virtual:                                                        
+
+       2B2     0.853314  
+
+    Beta Occupied:                                                        
+
+       1A1   -17.791983     2A1    -0.273018     1B2     0.147226  
+       3A1     0.315825     1B1     0.452208  
+
+    Beta Virtual:                                                         
+
+       4A1     0.829758     2B2     0.891838  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+    SOCC [     1,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.79654941055061
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -126.4297198304748804
+    Two-Electron Energy =                  52.8380334466284154
+    DFT Exchange-Correlation Energy =     -10.0062625841270201
+    Empirical Dispersion Energy =          -0.0000659725491935
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -74.7965494105506110
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -1.3832
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3641     Total:     0.3641
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.9254     Total:     0.9254
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -6.9715     YY:    -8.3179     ZZ:    -7.7086
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.6945     YY:    -0.6519     ZZ:    -0.0427
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.48989  4.01143  0.47846 -0.50132
+       2     H     0.75505  0.49428  0.26077 -0.24934
+       3     H     0.75505  0.49428  0.26077 -0.24934
+
+   Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
+
+
+  Saving occupied orbitals to File 180.
+
+  UHF NO Occupations:
+  HONO-2 :    1 B1 2.0000000
+  HONO-1 :    1 B2 1.9999466
+  HONO-0 :    4 A1 1.0000000
+  LUNO+0 :    2 B2 0.0000534
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:24 2016
+Module time:
+	user time   =       2.58 seconds =       0.04 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =      36.37 seconds =       0.61 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         37 seconds =       0.62 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT DIPOLE X"             =>       0.000000000000
+  "CURRENT DIPOLE Y"             =>       0.000000000000
+  "CURRENT DIPOLE Z"             =>      -0.925432135171
+  "CURRENT ENERGY"               =>     -74.796549410551
+  "CURRENT REFERENCE ENERGY"     =>     -74.796549410551
+  "DFT FUNCTIONAL TOTAL ENERGY"  =>     -74.796483438001
+  "DFT TOTAL ENERGY"             =>     -74.796549410551
+  "DFT XC ENERGY"                =>     -10.006262584127
+  "DISPERSION CORRECTION ENERGY" =>      -0.000065972549
+  "NUCLEAR REPULSION ENERGY"     =>       8.801465529972
+  "ONE-ELECTRON ENERGY"          =>    -126.429719830475
+  "SCF DIPOLE X"                 =>       0.000000000000
+  "SCF DIPOLE Y"                 =>       0.000000000000
+  "SCF DIPOLE Z"                 =>      -0.925432135171
+  "SCF ITERATION ENERGY"         =>     -74.796549410551
+  "SCF QUADRUPOLE XX"            =>      -6.971463010485
+  "SCF QUADRUPOLE XY"            =>       0.000000000000
+  "SCF QUADRUPOLE XZ"            =>       0.000000000000
+  "SCF QUADRUPOLE YY"            =>      -8.317880816859
+  "SCF QUADRUPOLE YZ"            =>       0.000000000000
+  "SCF QUADRUPOLE ZZ"            =>      -7.708647250617
+  "SCF TOTAL ENERGY"             =>     -74.796549410551
+  "TWO-ELECTRON ENERGY"          =>      52.838033446628
+
+
+	UKS  1 2 B97-D2 Energy............................................PASSED
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: STO-3G
+    atoms 1   entry O          line    80 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+    atoms 2-3 entry H          line    18 file /home/dsmith/Gits/dgas_psi/share/basis/sto-3g.gbs
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:22:24 2016
 
 
          ---------------------------------------------------------
@@ -4798,16 +6188,16 @@ Properties computed using the SCF density matrix
   LUNO+0 :    2 B2 0.0007565
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:20:59 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:25 2016
 Module time:
-	user time   =       1.77 seconds =       0.03 minutes
+	user time   =       1.67 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      27.35 seconds =       0.46 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =         27 seconds =       0.45 minutes
-	UKS -1 2 B3LYP Energy.............................................PASSED
+	user time   =      38.07 seconds =       0.63 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         38 seconds =       0.63 minutes
+	UKS -1 2  B3LYP Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -4818,7 +6208,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:20:59 2016
+*** at Fri Mar 18 13:22:25 2016
 
 
          ---------------------------------------------------------
@@ -5140,16 +6530,16 @@ Properties computed using the SCF density matrix
   LUNO+0 :    2 B2 0.0004854
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:02 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:28 2016
 Module time:
-	user time   =       3.02 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.97 seconds =       0.05 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      30.43 seconds =       0.51 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =         30 seconds =       0.50 minutes
-	UKS -1 2  wB97 Energy.............................................PASSED
+	user time   =      41.08 seconds =       0.68 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         41 seconds =       0.68 minutes
+	UKS -1 2   wB97 Energy............................................PASSED
    => Loading Basis Set <=
 
     Role: BASIS
@@ -5160,7 +6550,7 @@ Total time:
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Fri Mar 18 13:21:02 2016
+*** at Fri Mar 18 13:22:28 2016
 
 
          ---------------------------------------------------------
@@ -5483,15 +6873,15 @@ Properties computed using the SCF density matrix
   LUNO+0 :    2 B2 0.0005670
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:21:05 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:22:31 2016
 Module time:
-	user time   =       2.95 seconds =       0.05 minutes
+	user time   =       2.96 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      33.41 seconds =       0.56 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =         33 seconds =       0.55 minutes
-	UKS -1 2 wB97X Energy.............................................PASSED
+	user time   =      44.08 seconds =       0.73 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =         44 seconds =       0.73 minutes
+	UKS -1 2  wB97X Energy............................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!
