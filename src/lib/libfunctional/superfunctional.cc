@@ -41,8 +41,8 @@ void SuperFunctional::common_init()
     max_points_ = 0;
     deriv_ = 0;
     name_ = "";
-    description_ = "";
-    citation_ = "";
+    description_ = "    ";
+    citation_ = "    ";
     x_omega_ = 0.0;
     c_omega_ = 0.0;
     x_alpha_ = 0.0;

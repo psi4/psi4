@@ -38,8 +38,8 @@ void Functional::common_init()
     gga_ = false;
     meta_ = false;
     name_ = "";
-    description_ = "";
-    citation_ = "";
+    description_ = "    ";
+    citation_ = "    ";
     alpha_ = 1.0;
     omega_ = 0.0;
     
@@ -62,7 +62,7 @@ void Functional::print(std::string out, int level) const
     
     printer->Printf( "%s", citation_.c_str());
     printer->Printf( "\n");
-    
+
     printer->Printf( "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
     printer->Printf( "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
     printer->Printf( "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
