@@ -201,7 +201,6 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->a2_ = p3;
         return disp;
     } else {
-        printf("cant find %s", boost::to_upper_copy(name).c_str());
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
     }
 }
