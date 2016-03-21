@@ -57,7 +57,7 @@ void print_version(std::string)
   printer->Printf( "\n");
   printer->Printf( "                         Additional Contributions by\n");
   printer->Printf( "    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,\n");
-  printer->Printf( "    R. M. Richard, J. Gonthier, H. R. McAlexander, M. Saitow, and\n");
+  printer->Printf( "    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and\n");
   printer->Printf( "    B. P. Pritchard\n");
   printer->Printf( "    -----------------------------------------------------------------------\n\n");
   printer->Printf("\n");
