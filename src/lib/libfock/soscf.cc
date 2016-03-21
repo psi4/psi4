@@ -940,22 +940,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
         dUact = Uact;
     }
     else{
-        dUact = SharedMatrix(new Matrix("Dense Uact", nact_, nmo_));
-        double** dUactp = dUact->pointer();
-        int offset_act = 0;
-        int offset_nmo = 0;
-        for (int h=0; h<nirrep_; h++){
-            if (!nactpi_[h]){
-                offset_nmo += nmopi_[h];
-                continue;
-            }
-            double** Uactp = Uact->pointer(h);
-            for (int a=0; a<nactpi_[h]; a++) {
-                C_DCOPY(nmopi_[h], Uactp[a], 1, dUactp[offset_act+a]+offset_nmo, 1);
-            }
-            offset_act += nactpi_[h];
-            offset_nmo += nmopi_[h];
-        }
+        dUact = Uact->to_block_sharedmatrix();
     }
 
     int nQ = dferi_->size_Q();
@@ -1093,7 +1078,7 @@ DiskSOMCSCF::~DiskSOMCSCF()
 }
 void DiskSOMCSCF::transform(bool approx_only)
 {
-    throw PSIEXCEPTION("DiskSOMCSCF::transoform is not supported for Disk integrals.");
+    throw PSIEXCEPTION("DiskSOMCSCF::transform is not supported for Disk integrals.");
 }
 void DiskSOMCSCF::set_act_MO()
 {

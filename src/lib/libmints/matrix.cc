@@ -800,7 +800,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const
     }
    SharedMatrix ret(new Matrix(name_ + " Block Copy", sizer, sizec));
    double **temp = to_block_matrix();
-   ret->set(temp);
+   ret->set(temp, 0);
    free_block(temp);
    return ret;
 

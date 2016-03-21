@@ -433,10 +433,6 @@ void CIWavefunction::cleanup(void) {
     delete H0block_;
 
     // CalcInfo free
-    CalcInfo_->onel_ints.reset();
-    CalcInfo_->twoel_ints.reset();
-    CalcInfo_->gmat.reset();
-    CalcInfo_->tf_onel_ints.reset();
     free_int_matrix(CalcInfo_->ras_opi);
     for (int i = 0, cnt = 0; i < 4; i++) {
         free_int_matrix(CalcInfo_->ras_orbs[i]);
@@ -444,17 +440,6 @@ void CIWavefunction::cleanup(void) {
     delete CalcInfo_;
     delete MCSCF_Parameters_;
 
-    // Cleanup up MCSCF integral objects
-    if (Parameters_->mcscf) {
-        jk_.reset();
-        if (MCSCF_Parameters_->mcscf_type == "DF") {
-            dferi_.reset();
-        } else {
-            rot_space_.reset();
-            act_space_.reset();
-            ints_.reset();
-        }
-    }
 }
 
 /*
