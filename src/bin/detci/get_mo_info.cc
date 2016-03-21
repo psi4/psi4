@@ -252,6 +252,7 @@ void CIWavefunction::get_mo_info() {
 
     // Build arrays for integrals
     int ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
+    CalcInfo_->so_onel_ints = SharedMatrix(new Matrix("SO CI One Electron Ints", nso_, nso_));
     CalcInfo_->onel_ints = SharedVector(new Vector("CI One Electron Ints", ncitri));
     CalcInfo_->twoel_ints = SharedVector(new Vector("CI Two Electron Ints", ncitri * (ncitri + 1) / 2));
     CalcInfo_->gmat = SharedMatrix(new Matrix("CI RAS Gmat", CalcInfo_->num_ci_orbs, CalcInfo_->num_ci_orbs));

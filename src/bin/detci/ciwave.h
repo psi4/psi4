@@ -110,6 +110,31 @@ public:
      */
     void transform_mcscf_integrals(bool approx_only);
 
+    /**
+     * Rotates the integrals for MCSCF computations, places the integrals in CI order.
+     * @param K         Rotation matrix (active x N)
+     * @param onel_out  one-electron output vector
+     * @param twoel_out two-electron output vector
+     */
+    void rotate_mcscf_integrals(SharedMatrix K, SharedVector onel_out,
+                                SharedVector twoel_out);
+
+    /**
+     * Takes a pitzer order act x act Matrix and converts it into a ci-ordered vector that
+     * CI sigma vectors use.
+     * @param src  Source Matrix - can have irreps
+     * @param dest Destination Vector - should be of size, ncitri = (nact * (nact + 1)) / 2
+     */
+    void pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest);
+
+    /**
+     * Takes a pitzer order act^2 x act^2 Matrix and converts it into a ci-ordered vector that
+     * CI sigma vectors use.
+     * @param src  Source Matrix - Cannot have irreps
+     * @param dest Destination Vector - should be of size, (ncitri * (nctri + 1)) / 2
+     */
+    void pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector dest);
+
     /**!
      * Obtains the OPDM <Iroot| Epq |Jroot> from the ciwave object. If Jroot is
      * negative then Iroot == Jroot, if both roots are -1 then the "special" CI
@@ -260,12 +285,12 @@ private:
     void setup_mcscf_ints();
     void transform_mcscf_ints(bool approx_only = false);
     void read_dpd_ci_ints();
+    void rotate_mcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
 
     /// DF integral functions
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints(bool approx_only = false);
-
-
+    void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;

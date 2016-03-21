@@ -322,10 +322,11 @@ struct calcinfo {
    std::vector<double> scfeigval;    /* SCF eigenvalues */
    std::vector<double> scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
    std::vector<double> scfeigvalb;    /* in SOCC space */
-   SharedVector onel_ints;    /* one-electron integrals */
-   SharedVector tf_onel_ints; /* transformed (avg) one-electron integrals */
-   SharedMatrix gmat;        /* onel ints in RAS g matrix form, not symmetry packed */
-   SharedVector twoel_ints;   /* two-electron integrals */
+   SharedMatrix so_onel_ints; /* Pitzer-order one-electron integrals */
+   SharedVector onel_ints;    /* CI-order one-electron integrals */
+   SharedVector tf_onel_ints; /* CI-order transformed (avg) one-electron integrals */
+   SharedMatrix gmat;         /* CI-order onel ints in RAS g matrix form, not symmetry packed */
+   SharedVector twoel_ints;   /* CI-order two-electron integrals */
    int num_fzc_orbs;     /* number of frozen core orbitals */
    int num_rsc_orbs;     /* number of restricted core orbitals */
    int num_drc_orbs;     /* number of dropped core orbitals
