@@ -32,7 +32,7 @@ option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
    if(NOT CMAKE_Fortran_COMPILER)
       message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
    endif()
@@ -46,6 +46,9 @@ CMAKE_DEPENDENT_OPTION(
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_GDMA           "Enable use of Stone's GDMA multipole code"   ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 option(ENABLE_AMBIT          "Enable Ambit interface"                      OFF)
 
@@ -61,7 +64,7 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
    include(FortranEnabler)
    enable_language(Fortran)
    # add_definitions(-DHAVE_FORTRAN)  # unused
@@ -206,6 +209,11 @@ endif()
 if(ENABLE_DKH)
    message(STATUS "DKH in LibMints ENABLED")
    add_definitions(-DHAVE_DKH)
+endif()
+
+if(ENABLE_GDMA)
+   message(STATUS "GDMA is ENABLED")
+   add_definitions(-DHAVE_GDMA)
 endif()
 
 # Libint configuration
