@@ -334,12 +334,17 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
     sq_rsp(dim, dim, H_irr[h], evals, 3, evects, 1e-14);
 
     // Bu^1/2 * evects -> normal mode
+    for (int i=0; i<dim; ++i)
+      for (int a=0; a<Natom; ++a)
+        for (int xyz=0; xyz<3; ++xyz)
+          B_irr[i][3*a+xyz] /= sqrt(mol->mass(a));
+
     double **normal_irr = block_matrix(3*Natom, dim);
     C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B_irr[0], 3*Natom, evects[0],
       dim, 0, normal_irr[0], dim);
 
     if (print_lvl >= 2) {
-      outfile->Printf("\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h]);
       eivout(normal_irr, evals, 3*Natom, dim, "outfile");
     }
 
