@@ -941,6 +941,10 @@ void export_mints()
     class_<BoysLocalizer, boost::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
     class_<PMLocalizer, boost::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
 
+    class_<FCHKWriter, boost::shared_ptr<FCHKWriter> >("FCHKWriter", "docstring", no_init).
+            def(init<boost::shared_ptr<Wavefunction> >()).
+            def("write", &FCHKWriter::write, "docstring");
+
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write, "docstring");

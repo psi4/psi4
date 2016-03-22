@@ -1761,6 +1761,57 @@ def frequency(name, **kwargs):
         return psi4.get_variable('CURRENT ENERGY')
 
 
+def gdma(wfn, datafile=""):
+    """Function to write wavefunction information in *wfn* to *filename* in
+    molden format.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type datafile: string
+    :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
+                     analyses.  If this option is used, the File keyword must be set to read
+                     a filename.fchk, where filename is provided by the WRITER_FILE_LABEL keyword.
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
+
+    :examples:
+
+    >>> # [1] DMA analysis from MP2 wavefunction.  N.B. gradient must be requested to generate MP2 density.
+    >>> grad, wfn = gradient('mp2', return_wfn=True)
+    >>> gdma(wfn)
+
+    """
+
+    # Start by writing a G* checkpoint file, for the GDMA code to read in
+    fw = psi4.FCHKWriter(wfn)
+    molname = wfn.molecule().name()
+    prefix = psi4.get_writer_file_prefix(molname)
+    fchkfile = prefix + '.fchk'
+    fw.write(fchkfile)
+
+    if datafile:
+        commands = datafile
+    else:
+        commands = 'psi4_dma_datafile.dma'
+        with open(commands, 'w') as f:
+            f.write("File test.fchk\n")
+            f.write("Angstrom\n")
+            f.write("Multipoles\n")
+            f.write("  Limit 4\n")
+            f.write("    Punch H2O.punch\n")
+            f.write("    Start\n")
+            f.write("    Finish\n")
+    psi4.run_gdma(wfn, commands)
+
+    os.remove(fchkfile)
+    if not datafile:
+        os.remove(commands)
+
+
 def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
