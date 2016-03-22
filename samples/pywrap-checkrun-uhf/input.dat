@@ -30,8 +30,8 @@ Earray = [
   'MP3',
   'MP2.5',
   'OMP2.5',
-  'CEPA(0)',
-  'OCEPA(0)',
+  'LCCD',
+  'OLCCD',
   'BP86',
 ]
 random.shuffle(Earray)
@@ -91,8 +91,8 @@ Earray = [
 #  'FCI',
   'DCFT',
   'MP2.5',
-  'OCEPA(0)',
-  'CEPA(0)',
+  'OLCCD',
+  'LCCD',
   'BP86',
   'B2PLYP-D',
 ]
