@@ -496,7 +496,9 @@ do
     do i=1,nshell
       call geti(katom(i))
     end do
-    write(outfile,"(a,20i3)") "shell to atom", katom(1:nshell)
+    if (verbose) then
+      write(outfile,"(a,120i3)") "shell to atom", katom(1:nshell)
+    endif
   case("Primitive exponents")
     call read_line(eof)
     do i=1,nprim
