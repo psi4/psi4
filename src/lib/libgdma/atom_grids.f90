@@ -61,6 +61,7 @@ INTEGER, SAVE :: n_r=80, n_a=590, k_mu=3, m_r=2
 !  Bragg-Slater radii from Slater, JCP (1964) 41, 3199. Inert gases
 !  added with same radius as preceding halogen. Hydrogen radius is
 !  twice the Slater value. These values are in Angstrom.
+INTEGER :: outfile
 REAL(dp) :: slater_radius(0:54) = (/ 0.65d0, 0.50d0, 0.50d0,           &
     1.45d0, 1.05d0, 0.85d0, 0.70d0, 0.65d0, 0.60d0, 0.50d0, 0.50d0,    &
     1.80d0, 1.50d0, 1.25d0, 1.10d0, 1.00d0, 1.00d0, 1.00d0, 1.00d0,    &
@@ -222,7 +223,7 @@ INTEGER :: sleg(16)=(/0,1,3,6,10,15,21,28,36,45,55,66,78,91,105,120/)
 
 CONTAINS
 
-SUBROUTINE make_grid(ns, zs, c, radius)
+SUBROUTINE make_grid(ns, zs, c, radius, of)
 IMPLICIT NONE
 
 !  ns is the number of DMA sites. c(:,k) specifies the position of site
@@ -231,22 +232,24 @@ IMPLICIT NONE
 !  true, in which case it controls the Becke partitioning of space between
 !  sites. The atomic number controls the scale of the radial grid.
 
-INTEGER, INTENT(IN) :: ns, zs(:)
+INTEGER, INTENT(IN) :: ns, zs(:), of
 REAL(dp), INTENT(IN) :: c(:,:), radius(:)
 
 INTEGER :: a, b, g, i, m, ma, mb, n, p, q, ok
 REAL(dp), ALLOCATABLE :: rr(:,:), aa(:,:), s(:,:), pp(:)
 REAL(dp) :: chi, u, mu_ab, nu_ab, weight, f
 
+outfile = of
+
 !  Arrays used for Becke weighting
 allocate (gr(ns), rr(ns,ns), aa(ns,ns), s(ns,ns), pp(ns), stat=ok)
 if (ok > 0) then
-  print "(a)", "Make_grid: Allocation failed"
+  write(outfile, "(a)") "Make_grid: Allocation failed"
   stop
 else
   ! print "(a)", "Make_grid: Allocation done"
 end if
-print "(a,i0,a)", "Using ", n_r, "-point Euler-MacLaurin radial quadrature"
+write(outfile, "(a,i0,a)") "Using ", n_r, "-point Euler-MacLaurin radial quadrature"
 
 !  Angular grid
 call angular_grid(n_a)
@@ -257,7 +260,7 @@ if (allocated(grid)) then
 end if
 allocate(grid(4,ng),stat=ok)
 if (ok>0) then
-  print "(a,i0,a)", "Main grid allocation failed: ", 32*ng, " bytes needed"
+  write(outfile, "(a,i0,a)") "Main grid allocation failed: ", 32*ng, " bytes needed"
   stop
 else
   ! print "(a,i0,a)", "Main grid allocation done: ", ng, " points"
@@ -283,7 +286,7 @@ do n=1,ns
 end do
 start(ns+1)=g+1
 if (g>ng) then
-  print "(a,i0,a)", "Not enough grid points allocated -- ", g, " needed"
+  write(outfile, "(a,i0,a)") "Not enough grid points allocated -- ", g, " needed"
   stop
 end if
 ng=g
@@ -312,7 +315,7 @@ if (ns > 1) then
     end do
   end do
 
-  print "(a,i0)", "Becke smoothing parameter = ", k_mu
+  write(outfile, "(a,i0)") "Becke smoothing parameter = ", k_mu
   a=0
   do g=1,ng
     if (g .ge. start(a+1)) a=a+1
@@ -340,8 +343,8 @@ if (ns > 1) then
     grid(4,g)=grid(4,g)*weight
     if (debug) then
       if (grid(1,g)**2+grid(2,g)**2<1d-6) then
-        print "(i1, 3f12.5, 2f16.5)", a, grid(:,g), weight
-        print "(3f20.8)", (s(i,:), i=1,ns), pp
+        write(outfile,"(i1, 3f12.5, 2f16.5)") a, grid(:,g), weight
+        write(outfile,"(3f20.8)") (s(i,:), i=1,ns), pp
       end if
     end if
   end do
@@ -376,7 +379,7 @@ REAL(dp) :: f
 if (.not. allocated(w_r)) then
   allocate (w_r(n_r), r(n_r), stat=ok)
   if (ok>0) then
-    print "(a)", "Radial_grid: allocation failed"
+    write(outfile, "(a)") "Radial_grid: allocation failed"
   else
     ! print "(a)", "Radial_grid: allocation done"
   end if
@@ -407,7 +410,7 @@ INTEGER :: n
 
 if (Lebedev) then
   call Lbdv(n)
-  print "(a,i0,a)", "Using ", n, "-point Lebedev quadrature"
+  write(outfile, "(a,i0,a)") "Using ", n, "-point Lebedev quadrature"
 else
   call gauss(n)
 end if
@@ -429,17 +432,17 @@ n=2*m*m
 
 k=sleg(m)
 if (k .eq. 0) then
-  print "(a,i0,a)", "No points or weights for ",                       &
+  write(outfile, "(a,i0,a)") "No points or weights for ",                       &
       m, "-point Gauss-Legendre quadrature"
   stop
 else
-  print "(a,i0,a)", "Using ", m, "-point Gauss-Legendre quadrature in theta"
-  print "(a,i0,a)", "and ", 2*m, "-point uniform quadrature in phi"
+  write(outfile, "(a,i0,a)") "Using ", m, "-point Gauss-Legendre quadrature in theta"
+  write(outfile, "(a,i0,a)") "and ", 2*m, "-point uniform quadrature in phi"
 end if
 
 allocate (x(n), y(n), z(n), w(n), stat=ok)
 if (ok>0) then
-  print "(a)", "Allocation failed"
+  write(outfile, "(a)") "Allocation failed"
   stop
 end if
 
@@ -548,7 +551,7 @@ end if
 ! end select
 allocate (x(n), y(n), z(n), w(n), stat=ok)
 if (ok>0) then
-  print "(a)", "Allocation failed"
+  write(outfile, "(a)") "Allocation failed"
   stop
 end if
 select case(n)
@@ -690,7 +693,7 @@ REAL(dp) :: c
 !       goto (1,2,3,4,5,6) code
 select case(code)
 case default
-  print "(a,i0)", 'Gen_Oh: Invalid Code ', code
+  write(outfile, "(a,i0)") 'Gen_Oh: Invalid Code ', code
   stop
 case(1)
   a=1.0d0

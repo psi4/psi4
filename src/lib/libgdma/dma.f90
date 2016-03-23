@@ -773,7 +773,7 @@ if (bigexp > 0d0) then
   write(outfile,"(a,a,f0.5)") "Standard DMA for products of primitives",  &
       " with exponent greater than ", bigexp
   general=.true.
-  call make_grid(ns, zs, xs, radius)
+  call make_grid(ns, zs, xs, radius, outfile)
   if (allocated(rho)) then
     deallocate(rho)
   end if
