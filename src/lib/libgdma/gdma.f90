@@ -67,7 +67,8 @@ do
    i = i + 1
 end do
 nchars = i - 1  ! Exclude null character from Fortran string
-allocate(character(len=nchars) :: outfilename)
+!allocate(character(len=nchars) :: outfilename)
+outfilename = (repeat(' ', nchars))
 outfilename = transfer(c_outfilename(1:nchars), outfilename)
 i = 1
 do
@@ -75,7 +76,8 @@ do
    i = i + 1
 end do
 nchars = i - 1  ! Exclude null character from Fortran string
-allocate(character(len=nchars) :: datfilename)
+!allocate(character(len=nchars) :: datfilename)
+datfilename = (repeat(' ', nchars))
 datfilename = transfer(c_datfilename(1:nchars), datfilename)
 
 !
