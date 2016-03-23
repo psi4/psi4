@@ -25,10 +25,10 @@ FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
 
 *Module:* :ref:`Keywords <apdx:fnocc>`, :ref:`PSI Variables <apdx:fnocc_psivar>`, :source:`FNOCC <src/bin/fnocc>`
 
-.. warning:: There is a known bug concerning the i7-5930 series combined with the Intel 15 compilers and MKL 15.0.2.  When
+.. warning:: There is a known bug concerning the i7-5930 series combined with the Intel 15 compilers and MKL 10.0.2.  When
    |PsiFour| is compiled under these conditions, parallel runs of the FNOCC code have experienced non-sensical CCSD 
    correlation energies (often several hartrees lower than the starting guess).  At the moment, the only confirmed solutions
-   are running serially, using a different BLAS implementation, or upgrading to Intel 16 and MKL 16.0.2.
+   are running serially, using a different BLAS implementation, or upgrading to Intel 16.0.2 and MKL 11.3.2.
 
 Frozen natural orbitals (FNO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
