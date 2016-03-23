@@ -22,7 +22,7 @@
 
 #include <boost/python.hpp>
 #include <libmints/mints.h>
-#include <libparallel/Parallel.h>
+#include <libparallel/parallel.h>
 #include <libparallel/ParallelPrinter.h>
 #include "psi4-dec.h"
 #include <iostream>

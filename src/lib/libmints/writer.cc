@@ -799,10 +799,6 @@ void FCHKWriter::write(const std::string &filename)
     if(gradient)
         write_matrix("Cartesian Gradient", gradient);
 
-
-    fclose(chk_);
-
-
     fclose(chk_);
     chk_ = 0;
 }
