@@ -898,6 +898,7 @@ void export_mints()
             def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
+            def("name", &Wavefunction::name, return_value_policy<copy_const_reference>(), "The level of theory this wavefunction corresponds to.").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").

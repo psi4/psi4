@@ -1883,18 +1883,26 @@ def gdma(wfn, datafile=""):
     if datafile:
         commands = datafile
     else:
+        densname = wfn.name()
+        if densname == "DFT":
+            densname = "SCF"
         commands = 'psi4_dma_datafile.dma'
+        radii = psi4.get_option('GDMA', 'GDMA_RADIUS')
         with open(commands, 'w') as f:
-            f.write("File test.fchk\n")
+            f.write("File test.fchk Density %s\n" % densname)
             f.write("Angstrom\n")
+            f.write("%s\n" % psi4.get_option('GDMA', 'GDMA_MULTIPOLE_UNITS'))
             f.write("Multipoles\n")
-            f.write("  Limit 4\n")
-            f.write("    Punch H2O.punch\n")
-            f.write("    Start\n")
-            f.write("    Finish\n")
+            f.write("Switch %f\n" % psi4.get_option('GDMA', 'GDMA_SWITCH'))
+            if radii:
+                f.write("Radius %s\n" % " ".join([str(r) for r in radii]))
+            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT') )
+            f.write("Start\n")
+            f.write("Finish\n")
     psi4.run_gdma(wfn, commands)
 
     os.remove(fchkfile)
+    # If we generated the DMA control file, we should clean up here
     if not datafile:
         os.remove(commands)
 
