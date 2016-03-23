@@ -1580,7 +1580,7 @@ void OEProp::compute_mulliken_charges()
 }
 void OEProp::compute_lowdin_charges()
 {
-    outfile->Printf( "\n\n  Lowdin Charges [a.u.]:\n\n");
+    outfile->Printf( "\n\n  Lowdin Charges: (a.u.)\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
     boost::shared_ptr<double[]> apcs(new double[mol->natom()]);
