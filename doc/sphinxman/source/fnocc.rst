@@ -450,6 +450,4 @@ Advanced FNOCC Keywords
 .. include:: /autodir_options_c/fnocc__dfcc.rst
 .. include:: /autodir_options_c/fnocc__cepa_level.rst
 
-FNOCC Disclaimer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There is a known bug concerning the i7-5930 series combined with the Intel 15 compilers and MKL 15.0.2.  When |PsiFour] is compiled under these conditions, parallel runs of the FNOCC code have experienced non-sensical CCSD correlation energies (often several hartrees lower than the starting guess).  At the moment, the only confirmed solutions are running serially, using a different BLAS implementation, or upgrading to Intel 16 and MKL 16.0.2.
+.. warning:: There is a known bug concerning the i7-5930 series combined with the Intel 15 compilers and MKL 15.0.2.  When |PsiFour| is compiled under these conditions, parallel runs of the FNOCC code have experienced non-sensical CCSD correlation energies (often several hartrees lower than the starting guess).  At the moment, the only confirmed solutions are running serially, using a different BLAS implementation, or upgrading to Intel 16 and MKL 16.0.2.
