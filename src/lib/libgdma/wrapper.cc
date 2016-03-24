@@ -32,6 +32,10 @@ using namespace std;
 
 extern "C" {
   void run_gdma(const char* outfilename, const char*datfilename);
+  int get_nsites();
+  int get_order(int site);
+  double get_dma_value(int site, int addr);
+  double get_tot_value(int addr);
 };
 
 namespace psi { namespace gdma {
@@ -48,6 +52,36 @@ SharedWavefunction gdma(SharedWavefunction ref_wfn, Options & options, const std
        outfile=boost::shared_ptr<PsiOutStream>
           (new OutFile(outfile_name,(APPEND)));
     }
+    int nsites = get_nsites();
+    int maxorder = 0;
+    for(int site = 1; site <= nsites; ++site){
+        int site_order = get_order(site);
+        maxorder = maxorder > site_order ? maxorder : site_order;
+    }
+    int nvals = (maxorder+1)*(maxorder+1);
+    SharedMatrix dmavals(new Matrix("Spherical Harmonic DMA for each site", nsites, nvals));
+    for(int site = 1; site <= nsites; ++site){
+        int site_order = get_order(site);
+        int site_nvals = (site_order+1)*(site_order+1);
+        for(int n = 1; n <= site_nvals; ++n){
+            double val = get_dma_value(site, n);
+            dmavals->set(site-1, n-1, val);
+        }
+    }
+    SharedMatrix totvals(new Matrix("Total multipoles, translated to the origin", 1, nvals));
+    for(int n = 1; n <= nvals; ++n){
+        double val = get_tot_value(n);
+        totvals->set(0, n-1, val);
+    }
+
+    Process::environment.arrays["DMA DISTRIBUTED MULTIPOLES"] = dmavals;
+    Process::environment.arrays["DMA TOTAL MULTIPOLES"] = totvals;
+    outfile->Printf("\n  DMA results are available in the Python driver through the\n"
+                    "\t  get_array_variable('DMA DISTRIBUTED MULTIPOLES')\n"
+                    "  and\n"
+                    "\t  get_array_variable('DMA TOTAL MULTIPOLES')\n"
+                    "  commands.\n\n");
+
     return ref_wfn;
 }
 

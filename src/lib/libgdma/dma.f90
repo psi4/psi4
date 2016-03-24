@@ -19,7 +19,7 @@ MODULE DMA
 !  the Free Software Foundation, Inc., 51 Franklin Street,
 !  Fifth Floor, Boston, MA 02110-1301, USA.
 
-
+use iso_c_binding
 USE atom_grids, ONLY : grid, ng, make_grid, Lebedev,                   &
     n_a, n_r, k_mu, start
 IMPLICIT NONE
@@ -74,7 +74,7 @@ DATA IZ(36:56) /0,0,5,0,1,0,1,4,4,0,2,0,2,3,3,1,1,3,1,2,2/
 INTEGER, ALLOCATABLE :: limit(:)
 REAL(dp), ALLOCATABLE :: xs(:,:), radius(:), q(:,:)
 REAL(dp) :: rt(0:20), binom(0:20,0:20), rtbinom(0:20,0:20),         &
-    d(56,56)
+    d(56,56), qt(0:121)
 
 LOGICAL:: slice, linear, planar, general
 INTEGER :: ns, lmax, perp, mindc, maxdc
@@ -324,7 +324,26 @@ DATA W(191:210) /                                          &
     4.39934099227335D-10, 2.22939364553444D-13/
 
 CONTAINS
+!-------------------------------------------------------------
+! Some getter functions to access the DMA information from C
+INTEGER(C_INT) FUNCTION get_nsites() BIND(c, name='get_nsites')
+    get_nsites = ns
+END FUNCTION get_nsites
 
+INTEGER(C_INT) FUNCTION get_order(site) BIND(c, name='get_order')
+    INTEGER(C_INT), VALUE, INTENT(IN) :: site
+    get_order = limit(site)
+END FUNCTION get_order
+
+REAL(C_DOUBLE) FUNCTION get_dma_value(site, addr) BIND(c, name='get_dma_value')
+    INTEGER(C_INT), VALUE, INTENT(IN) :: site, addr
+    get_dma_value = q(addr,site)
+END FUNCTION get_dma_value
+
+REAL(C_DOUBLE) FUNCTION get_tot_value(addr) BIND(c, name='get_tot_value')
+    INTEGER(C_INT), VALUE, INTENT(IN) :: addr
+    get_tot_value = qt(addr)
+END FUNCTION get_tot_value
 !-----------------------------------------------------------------   DMA
 
 SUBROUTINE dma_main(w,kp,infile,outfile)
@@ -366,7 +385,7 @@ LOGICAL :: check
 
 INTEGER :: iw=6, kr=0, kw=0, nerror=0, itol, zs(MAXS)
 INTEGER :: i, j, k, l, m, ok
-REAL(dp) :: r, ox=0d0, oy=0d0, oz=0d0, qt(0:121)
+REAL(dp) :: r, ox=0d0, oy=0d0, oz=0d0
 
 !  Directive syntax:
 !   MULTIPOLES

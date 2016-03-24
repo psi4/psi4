@@ -1131,8 +1131,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("GDMA_LIMIT", 2);
     /*- The radii to be used, overriding the defaults.  Specified as an array
         [ n1, r1, n2, r2, ... ] where n1,n2,n3... are atom type strings and
-        r1,r2,r3 are radii in Angstrom -*/
+        r1,r2,r3 are radii in Angstrom. -*/
     options.add("GDMA_RADIUS", new ArrayType());
+    /*- The origin (in Angstrom, expressed as an [x, y, z] array) about which the total multipoles
+        will be computed during DMA.  Useful for determining single site expansions at an arbitrary point. -*/
+    options.add("GDMA_ORIGIN", new ArrayType());
     /*- Whether to print DMA results in atomic units or SI. -*/
     options.add_str("GDMA_MULTIPOLE_UNITS", "AU SI", "AU");
     /*- The value to switch between the older standard DMA and the new grid-based approach.

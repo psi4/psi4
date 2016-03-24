@@ -1888,11 +1888,17 @@ def gdma(wfn, datafile=""):
             densname = "SCF"
         commands = 'psi4_dma_datafile.dma'
         radii = psi4.get_option('GDMA', 'GDMA_RADIUS')
+        origin = psi4.get_option('GDMA', 'GDMA_ORIGIN')
         with open(commands, 'w') as f:
-            f.write("File test.fchk Density %s\n" % densname)
+            f.write("File %s Density %s\n" % (fchkfile, densname))
             f.write("Angstrom\n")
             f.write("%s\n" % psi4.get_option('GDMA', 'GDMA_MULTIPOLE_UNITS'))
             f.write("Multipoles\n")
+            if origin:
+                try:
+                    f.write("Origin %f %f %f\n" % (float(origin[0]), float(origin[1]), float(origin[2])))
+                except:
+                    raise ValidationError("The GDMA origin array should contain three entries: x, y, and z.")
             f.write("Switch %f\n" % psi4.get_option('GDMA', 'GDMA_SWITCH'))
             if radii:
                 f.write("Radius %s\n" % " ".join([str(r) for r in radii]))
