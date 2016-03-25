@@ -256,7 +256,6 @@ YoshBase::YoshBase(unsigned bra_indices, long maxcor, long maxcord,
    bra_indices_ = bra_indices;
    if (nbuckets_ > max_buckets) {
       outfile->Printf( "YoshBase: maximum number of buckets exceeded\n") ;
-      outfile->Printf( "YoshBase: maximum number of buckets exceeded\n") ;
       outfile->Printf( "   wanted %d buckets\n", nbuckets_) ;
       tstop() ;
       exit(PSI_RETURN_FAILURE) ;

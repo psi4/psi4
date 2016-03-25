@@ -31,6 +31,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <libmints/typedefs.h>
+#include "writers.h"
 
 
 namespace psi {
@@ -594,6 +595,9 @@ class PKJK : public JK {
     /// The number of totally symmetric pairs that contribute
     size_t pk_pairs_;
 
+    /// Class handling the PK integrals
+    PK_integrals PKmanager_;
+
     /// The index of the first pair in each batch
     std::vector<size_t> batch_pq_min_;
     /// The index of the last pair in each batch
@@ -614,6 +618,8 @@ class PKJK : public JK {
 
     /// Common initialization
     void common_init();
+    /// Reordered integral computation
+    void integrals_reorder();
     /// Integral computation
     void integrals();
 
