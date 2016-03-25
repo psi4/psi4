@@ -98,7 +98,7 @@ public:
     int& last_buffer()               {return lastbuf_[whichbuf_]; }
     int& buffer_count()              {return inbuf_[whichbuf_]; }
     int& index()                     {return idx_; }
-    bool set_keep_flag(bool flag)    {keep_ = flag; }
+    void set_keep_flag(bool flag)    {keep_ = flag; }
 
     Label get_p();
     Label get_q();
@@ -142,6 +142,116 @@ public:
     size_t count() const {return count_; }
 };
 
+/**
+* ijklBasisIterator: Iterator that goes through all two-electron integral
+* indices, in increasing order of canonical index ijkl.
+* Used to determine what goes in which bucket for PK.
+* Will be extended to include sieving.
+**/
+
+class ijklBasisIterator {
+private:
+    int nbas_;
+    int i_, j_, k_, l_;
+    bool done_;
+public:
+    // Constructor
+    ijklBasisIterator(int nbas) : nbas_(nbas), done_(false) {}
+
+    // Iterator functions
+    void first();
+    void next();
+    bool is_done() { return done_; }
+
+    // Accessor functions
+    int i() { return i_; }
+    int j() { return j_; }
+    int k() { return k_; }
+    int l() { return l_; }
+};
+
+/** PK_integrals: Class that handles integrals for PK supermatrices in general.
+ * It is used by the PKJK object to compute the number and size of buckets,
+ * to load integrals in these buckets, and then to retrieve them for contraction
+ * with density matrices.
+ * This is adding a level of abstraction so that implementing sieving later may be
+ * easier.
+ * Should also make it easier to test different parallelization schemes for integral writing.
+**/
+
+class PK_integrals {
+private:
+    int nbf_;  // Number of basis functions
+    int max_batches_;  // Max number of buckets
+    size_t memory_;
+    boost::shared_ptr<BasisSet> primary_;
+
+    // Buffers: hold integrals temporarily during their computation, before
+    // storage on disk
+
+    int nbuffers_;  // Number of buffers
+    size_t buffer_size_;  // Size of each buffer
+    double* J_buf_[2];       // Storage for J integrals
+    double* K_buf_[2];       // Storage for K integrals
+    int bufidx_;             // Which buffer are we filling?
+    size_t offset_;          // Offset to write integrals to buffer
+    unsigned short int buf_;  // Which one of the buffer pair is in use?
+    std::vector<short int> buf_P; // Vector of P shell quartet indices for the current task
+    std::vector<short int> buf_Q; // Vector of Q shell quartet indices for the current task
+    std::vector<short int> buf_R; // Vector of R shell quartet indices for the current task
+    std::vector<short int> buf_S; // Vector of S shell quartet indices for the current task
+    void fill_values(double val, int i, int j, int k, int l);
+
+
+    // Batches: A batch of PK-ordered integrals, normally as large as memory
+    // allows, for contraction with density matrices
+    /// The index of the first pair in each batch
+    std::vector<size_t> batch_pq_min_;
+    /// The index of the last pair in each batch
+    std::vector<size_t> batch_pq_max_;
+    /// The index of the first integral in each batch
+    std::vector<size_t> batch_index_min_;
+    /// The index of the last integral in each batch
+    std::vector<size_t> batch_index_max_;
+
+    int itap_J_;    // File number for J supermatrix
+    int itap_K_;    // File number for K supermatrix
+    size_t pk_pairs_;     // Dimension of pq pairs
+    size_t pk_size_;      // Total dimension of supermatrix PK
+    boost::shared_ptr<AIOHandler> AIO_;  /* AIO handler for all asynchronous operations */
+    boost::shared_ptr<PSIO> psio_;       /* PSIO instance for opening/closing files */
+
+
+public:
+    // Constructor
+    PK_integrals(boost::shared_ptr<BasisSet> primary, int max_batches_, size_t memory);
+
+    // Sizing the buckets
+    void batch_sizing();
+    // Printing the buckets
+    void print_batches();
+    // Initialize and allocate buffers
+    void allocate_buffers();
+    // We fill each buffer using parallel threads, then write it when
+    // all threads have joined. We then loop over the next buffer and restart parallel
+    // threads. How many of such macroloops do we need ?
+    int buf_ntasks() { return nbuffers_; }
+    // Function that returns the number of quartets to compute in a given task, i.e.
+    // the number of quartets to get all necessary integrals for a given ordered PK buffer
+    // In addition, in the current implementation, the function allocates and stores the P,Q,
+    // R, S indices of the shell in vectors.
+    size_t task_quartets();
+    // Sort computed integrals from IntegralFactory buffer to our PK buffers
+    void integrals_buffering(double* buffer, int P, int Q, int R, int S);
+    // Write the buffers of ordered integrals to disk
+    void write();
+
+    // Accessor functions
+    short int P(size_t idx) { return buf_P[idx]; }
+    short int Q(size_t idx) { return buf_Q[idx]; }
+    short int R(size_t idx) { return buf_R[idx]; }
+    short int S(size_t idx) { return buf_S[idx]; }
+};
 }
 
 #endif

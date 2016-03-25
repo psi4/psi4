@@ -93,10 +93,23 @@ void PKJK::print_header() const
 
 void PKJK::preiterations()
 {
+    // We need to access the option object to just get a few values
+
+    Options& options = Process::environment.options;
     psio_ = _default_psio_lib_;
 
+    string algo = options.get_str("PK_ALGO");
+
+
+    if (algo == "REORDER") {
+    // We compute the integrals so that we can directly write the
+    // PK file to disk. Also, do everything in the AO basis
+    // like the modern JK algos, for adding sieving later
+      integrals_reorder();
+    } else {
     // Start by generating conventional integrals on disk
-    integrals();
+      integrals();
+    }
 //    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
 //    mints->integrals();
 //    if(do_wK_)
@@ -163,9 +176,6 @@ void PKJK::preiterations()
     }
     delete [] orb_offset;
 
-    // We need to access the option object to just get a few values
-
-    Options& options = Process::environment.options;
     /* Now we create the Yoshimine buffers for sorting. The PK supermatrix
      containing integrals (ij|kl) has all indices ij on the rows and indices
      kl on the columns. We need both the supermatrix for building the Coulomb
@@ -177,8 +187,6 @@ void PKJK::preiterations()
      to use two Yoshimine buffers. They should each be initialized with half of the
      available memory, because they will be used simultaneously for the pre-sorting.
      */
-
-    string algo = options.get_str("PK_ALGO");
 
     // Use a Yoshimine sorting, with objects adapted from TRANSQT implementation
     // of Yoshimine.
