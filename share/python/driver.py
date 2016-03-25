@@ -1848,6 +1848,71 @@ def frequency(name, **kwargs):
         return psi4.get_variable('CURRENT ENERGY')
 
 
+def gdma(wfn, datafile=""):
+    """Function to write wavefunction information in *wfn* to *filename* in
+    molden format.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type datafile: string
+    :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
+                     analyses.  If this option is used, the File keyword must be set to read
+                     a filename.fchk, where filename is provided by the WRITER_FILE_LABEL keyword.
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
+
+    :examples:
+
+    >>> # [1] DMA analysis from MP2 wavefunction.  N.B. gradient must be requested to generate MP2 density.
+    >>> grad, wfn = gradient('mp2', return_wfn=True)
+    >>> gdma(wfn)
+
+    """
+
+    # Start by writing a G* checkpoint file, for the GDMA code to read in
+    fw = psi4.FCHKWriter(wfn)
+    molname = wfn.molecule().name()
+    prefix = psi4.get_writer_file_prefix(molname)
+    fchkfile = prefix + '.fchk'
+    fw.write(fchkfile)
+
+    if datafile:
+        commands = datafile
+    else:
+        densname = wfn.name()
+        if densname == "DFT":
+            densname = "SCF"
+        commands = 'psi4_dma_datafile.dma'
+        radii = psi4.get_option('GDMA', 'GDMA_RADIUS')
+        origin = psi4.get_option('GDMA', 'GDMA_ORIGIN')
+        with open(commands, 'w') as f:
+            f.write("File %s Density %s\n" % (fchkfile, densname))
+            f.write("Angstrom\n")
+            f.write("%s\n" % psi4.get_option('GDMA', 'GDMA_MULTIPOLE_UNITS'))
+            f.write("Multipoles\n")
+            if origin:
+                try:
+                    f.write("Origin %f %f %f\n" % (float(origin[0]), float(origin[1]), float(origin[2])))
+                except:
+                    raise ValidationError("The GDMA origin array should contain three entries: x, y, and z.")
+            f.write("Switch %f\n" % psi4.get_option('GDMA', 'GDMA_SWITCH'))
+            if radii:
+                f.write("Radius %s\n" % " ".join([str(r) for r in radii]))
+            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT') )
+            f.write("Start\n")
+            f.write("Finish\n")
+    psi4.run_gdma(wfn, commands)
+
+    os.remove(fchkfile)
+    # If we generated the DMA control file, we should clean up here
+    if not datafile:
+        os.remove(commands)
+
+
 def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
