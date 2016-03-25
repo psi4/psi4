@@ -18,6 +18,8 @@ platform capabilities, *etc*.
    cfour
    dftd3
    dkh
+   fchk
+   gdma
    libefp
    pcmsolver
    molden

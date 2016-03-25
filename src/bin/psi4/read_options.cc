@@ -1123,7 +1123,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "GDMA"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs distributed multipole analysis (DMA), using
-    Anthony Stone's GDMA program. See the GDMA manual for more details. -*/
+    Anthony Stone's GDMA program. See :ref:`GDMA <sec:gdma>` for more details. -*/
 
     /*- The order of multipole expansion on each site.  Currently limited to the same
         order for all sites; for more advanced usage a user-provided GDMA data file
