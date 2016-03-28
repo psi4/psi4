@@ -750,10 +750,15 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.cc:
-        args.cc = 'gcc'
-    if not args.cxx:
-        args.cxx = 'g++'
+    if not args.cc and os.environ['CC']:
+        args.cc = os.environ['CC']
+
+    if not args.cxx and os.environ['CXX']:
+        args.cxx = os.environ['CXX']
+
+    if not args.fc and os.environ['FC']:
+        argc.fc = os.environ['FC']
+
 
 
 configure_ubuntu = configure_default_compilers
