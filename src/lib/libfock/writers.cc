@@ -298,7 +298,8 @@ void ijklBasisIterator::next() {
 }
 
 
-PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, int max_batches, size_t memory) {
+PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
+                           int max_batches, size_t memory) {
     primary_ = primary;
     nbf_ = primary_->nbf();
     max_batches = max_buckets;
@@ -317,6 +318,14 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, int max_batches,
     K_buf_[1] = NULL;
 
     nbuffers_ = 0;
+
+    psio_ = psio;
+    AIO_ = boost::shared_ptr<AIOHandler>(new AIOHandler(psio_));
+
+    label_J_[0] = NULL;
+    label_J_[1] = NULL;
+    label_K_[0] = NULL;
+    label_K_[1] = NULL;
 }
 
 void PK_integrals::batch_sizing() {
@@ -414,6 +423,12 @@ void PK_integrals::allocate_buffers() {
     bufidx_ = 0;
     offset_ = 0;
     buf_ = 0;
+
+    // We allocate space to store the entries labels here
+    label_J_[0] = new char[100];
+    label_J_[1] = new char[100];
+    label_K_[0] = new char[100];
+    label_K_[1] = new char[100];
 }
 
 size_t PK_integrals::task_quartets() {
@@ -563,8 +578,74 @@ void PK_integrals::fill_values(double val, int i, int j, int k, int l) {
     }
 }
 
-void PK_integrals::write() {
+void PK_integrals::open_files() {
+    psio_->open(itap_J_, PSIO_OPEN_NEW);
+    psio_->open(itap_K_, PSIO_OPEN_NEW);
+}
 
+void PK_integrals::write() {
+    // Compute initial ijkl index for current buffer
+    size_t ijkl0 = buffer_size_ * bufidx_;
+    size_t ijkl_end = ijl0 + buffer_size_ - 1;
+
+    std::vector<int> target_batches;  // Vector of batch number to which we want to write
+    char* label = new char[100];
+
+    for (int i = 0; i < batch_index_min_.size(); ++i) {
+        if (ijkl0 >= batch_index_min_[i] && ijkl0 < batch_index_max_[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+        if (ijkl_end >= batch_index_min_[i] && ijkl_end < batch_index_max_[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+        if (ijkl0 < batch_index_min_[i] && ijkl_end >= batch_index_max_[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+    }
+
+    // Now that all buffers are full, and before we write integrals, we need
+    // to divide diagonal elements by 2.
+
+    for (size_t pq = 0; pq < pk_pairs_; ++pq) {
+        size_t pqpq = INDEX2(pq, pq);
+        if (pqpq >= ijkl0 && pqpq <= ijkl_end) {
+            J_buf_[buf_][pqpq - offset_] *= 0.5;
+            K_buf_[buf_][pqpq - offset_] *= 0.5;
+        }
+    }
+
+    // And now we write to the files in the appropriate entries
+    for (int i = 0; i < target_batches.size(); ++i) {
+        sprintf(label_J_[buf_],"J Block (Batch %d)", i);
+        size_t start = max(ijkl0, batch_index_min_[i]);
+        size_t stop = min(ijkl_end + 1, batch_index_max_[i]);
+        psio_address adr = psio_get_address(PSIO_ZERO, start - batch_index_min_[i]);
+        size_t nints = stop - start;
+        AIO_->write(itap_J_, label_J_[buf_], (char *)(J_buf_[buf_]),
+                    nints * sizeof(double), adr, &dummy);
+        sprintf(label_K_[buf_],"K Block (Batch %d)",i);
+        AIO_->write(itap_K_, label_K_[buf_], (char *)(K_buf_[buf_]),
+                    nints * sizeof(double), adr, &K_adr_);
+    }
+
+    // Update the buffer being written into
+    buf_ = buf_ == 0 ? 1 : 0;
+    // Make sure the buffer in which we are going to write is set to zero
+    ::memset((void *) J_buf_[buf_], '\0', buffer_size_ * sizeof(double));
+    ::memset((void *) K_buf_[buf_], '\0', buffer_size_ * sizeof(double));
+    // Update the offset for integral storage
+    offset_ += buffer_size_;
+    // And we are now writing to the next set of buffers
+    ++bufidx_;
+
+}
+
+void PK_integrals::close_files() {
+    psio_->close(itap_J_, 1);
+    psio_->close(itap_K_, 1);
 }
 
 }

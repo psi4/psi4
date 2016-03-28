@@ -87,6 +87,7 @@ void PKJK::integrals_reorder() {
     // as integrals may be stored at random places in the buffer. We also need
     // to pre-stripe the PK file in this case.
 
+    PKmanager_.open_files();
     size_t task_size = 0;
     for (int buf = 0; buf < PKmanager_.buf_ntasks(); ++ buf) {
         // Here we need a vector of tasks to distribute over threads
@@ -103,7 +104,6 @@ void PKJK::integrals_reorder() {
             short int R = PKmanager_.R(task);
             short int S = PKmanager_.S(task);
             tb[thread]->compute_shell(P,Q,R,S);
-            double* buffer = tb[thread]->buffer();
             PKmanager_.integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
         }
 
@@ -111,6 +111,7 @@ void PKJK::integrals_reorder() {
         // to disk
         PKmanager_.write();
     }
+    PKmanager_.close_files();
 }
 
 

@@ -213,6 +213,13 @@ private:
     std::vector<size_t> batch_index_min_;
     /// The index of the last integral in each batch
     std::vector<size_t> batch_index_max_;
+    // This address stores the return value of write statements that we are
+    // never going to use.
+    psio_address dummy_;
+    // The labels, need to be stored because we pass a pointer to them
+    // to the AIOHandler
+    char* label_J_[2];
+    char* label_K_[2];
 
     int itap_J_;    // File number for J supermatrix
     int itap_K_;    // File number for K supermatrix
@@ -224,7 +231,8 @@ private:
 
 public:
     // Constructor
-    PK_integrals(boost::shared_ptr<BasisSet> primary, int max_batches_, size_t memory);
+    PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
+                 int max_batches_, size_t memory);
 
     // Sizing the buckets
     void batch_sizing();
@@ -245,6 +253,10 @@ public:
     void integrals_buffering(double* buffer, int P, int Q, int R, int S);
     // Write the buffers of ordered integrals to disk
     void write();
+    // We want to open the PK files for writing
+    void open_files();
+    // And then we want to close the files
+    void close_files();
 
     // Accessor functions
     short int P(size_t idx) { return buf_P[idx]; }
