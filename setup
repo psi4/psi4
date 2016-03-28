@@ -750,14 +750,14 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.cc and os.environ['CC']:
+    if not args.cc and 'CC' in os.environ:
         args.cc = os.environ['CC']
 
-    if not args.cxx and os.environ['CXX']:
+    if not args.cxx and 'CXX' in os.environ:
         args.cxx = os.environ['CXX']
 
-    if not args.fc and os.environ['FC']:
-        argc.fc = os.environ['FC']
+    if not args.fc and 'FC' in os.environ:
+        args.fc = os.environ['FC']
 
 
 
