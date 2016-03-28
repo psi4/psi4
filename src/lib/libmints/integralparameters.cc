@@ -32,6 +32,7 @@ CorrelationFactor::CorrelationFactor(unsigned int nparam)
 }
 
 CorrelationFactor::CorrelationFactor(boost::shared_ptr<Vector> coeff, boost::shared_ptr<Vector> exponent)
+    : IntegralParameters(coeff->dim())
 {
     set_params(coeff, exponent);
 }
