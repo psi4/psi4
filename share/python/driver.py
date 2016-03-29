@@ -1852,15 +1852,14 @@ def gdma(wfn, datafile=""):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.
 
-    .. versionadded:: 0.5
-       *wfn* parameter passed explicitly
+    .. versionadded:: 0.6
 
     :returns: None
 
     :type datafile: string
     :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
                      analyses.  If this option is used, the File keyword must be set to read
-                     a filename.fchk, where filename is provided by the WRITER_FILE_LABEL keyword.
+                     a filename.fchk, where filename is provided by |globals__writer_file_label| .
 
     :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
     :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
