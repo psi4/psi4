@@ -8,8 +8,8 @@
 
 .. _`sec:gdma`:
 
-Interface to GDMA Distributed Multipole Analysis, :py:func:`~driver.gdma`
-=========================================================================
+Interface to GDMA Distributed Multipole Analysis by A. J. Stone, :py:func:`~driver.gdma`
+========================================================================================
 
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -22,8 +22,8 @@ executable, and generates the appropriate input files automatically.  The
 program takes as input a data file, and a Gaussian formatted checkpoint (see
 Section :ref:`FCHK <sec:fchk>`) file.  The simplest usage of the GDMA code is
 demonstrated below, along with a listing of the options supported; these
-options correspond to the options described in the GDMA manual, provided in the
-doc/external subdirectory of the |PSIfour| source code.
+options correspond to the options described in the 
+:download:`GDMA manual <gdma-2.2.06.pdf>`.
 
 If more advanced usage is desired, which is not is permitted by the options
 listed below, the user may provide their own data file containing keywords to
@@ -44,8 +44,8 @@ information.
 
 After running, two matrices of results can be accessed::
 
-    dma_results = get_variable('DMA DISTRIBUTED MULTIPOLES')
-    tot_results = get_variable('DMA TOTAL MULTIPOLES')
+    dma_results = get_array_variable('DMA DISTRIBUTED MULTIPOLES')
+    tot_results = get_array_variable('DMA TOTAL MULTIPOLES')
 
 The first contains distributed multipoles, in units given by
 |gdma__gdma_multipole_units|, with the row index corresponding to the site and
