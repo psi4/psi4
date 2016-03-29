@@ -192,8 +192,8 @@ struct OPT_PARAMS {
   double IRC_step_size;
   bool keep_intcos; // don't delete intco.dat
 
-  // for coordinates with user-specified equilibrium values - this is the force constant
-  //double fixed_coord_force_constant;
+  // for coordinates with user-specified equilibrium values - this is the starting force constant
+  double fixed_coord_force_constant;
 
   // If a static line search is being done (which currently just outputs N geometries)
   // these control the min and the max of the largest internal coordinate displacement.
