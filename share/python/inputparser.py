@@ -72,14 +72,19 @@ def process_word_quotes(matchobj):
         return "\"%s\"" % (val)
 
 
-def quotify(string):
+def quotify(string, isbasis=False):
     """Function to wrap anything that looks like a string in quotes
-    and to remove leading dollar signs from python variables.
+    and to remove leading dollar signs from python variables. When *basis*
+    is True, allows commas, since basis sets may have commas and are assured to
+    not involve arrays.
 
     """
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
+    if isbasis:
+        wordre = re.compile(r'(([$]?)([-+()*.,\w\"\'/\\]+))')
+    else:
+        wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
@@ -91,7 +96,8 @@ def process_option(spaces, module, key, value, line):
     """
     module = module.upper()
     key = key.upper()
-    value = quotify(value.strip())
+    isbasis = True if 'BASIS' in key else False
+    value = quotify(value.strip(), isbasis=isbasis)
 
     if module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace():
         # If it's really a global, we need slightly different syntax
