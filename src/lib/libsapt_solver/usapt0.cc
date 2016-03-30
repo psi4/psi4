@@ -183,12 +183,6 @@ double USAPT0::compute_energy()
         throw PSIEXCEPTION("USAPT: Unrecognized type");
     }
 
-    Process::environment.globals["SAPT ENERGY"] = energies_["SAPT"];
-    Process::environment.globals["SAPT ELST ENERGY"] = energies_["Electrostatics"];
-    Process::environment.globals["SAPT EXCH ENERGY"] = energies_["Exchange"];
-    Process::environment.globals["SAPT IND ENERGY"] = energies_["Induction"];
-    Process::environment.globals["SAPT DISP ENERGY"] = energies_["Dispersion"];
-
     return 0.0;
 }
 void USAPT0::print_header() const
@@ -324,6 +318,31 @@ void USAPT0::print_trailer()
 
     outfile->Printf( "    Oh all the money that e'er I had, I spent it in good company.\n");
     outfile->Printf( "\n");
+
+    Process::environment.globals["SAPT ELST ENERGY"] = energies_["Electrostatics"];
+    Process::environment.globals["SAPT ELST10,R ENERGY"] = energies_["Elst10,r"];
+
+    Process::environment.globals["SAPT EXCH ENERGY"] = energies_["Exchange"];
+    Process::environment.globals["SAPT EXCH10 ENERGY"] = energies_["Exch10"];
+    Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = energies_["Exch10(S^2)"];
+
+    Process::environment.globals["SAPT IND ENERGY"] = energies_["Induction"];
+    Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
+    Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
+    Process::environment.globals["SAPT HF TOTAL ENERGY"] = energies_["HF"];
+    // Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
+
+    Process::environment.globals["SAPT DISP ENERGY"] = energies_["Dispersion"];
+    Process::environment.globals["SAPT DISP20 ENERGY"] = energies_["Disp20"];
+    Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = energies_["Exch-Disp20"];
+    //Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
+    //Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
+    //Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
+    //Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
+
+    Process::environment.globals["SAPT SAPT0 ENERGY"] = energies_["SAPT"];
+    Process::environment.globals["SAPT ENERGY"] = energies_["SAPT"];
+    Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 void USAPT0::fock_terms()
