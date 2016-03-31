@@ -201,6 +201,9 @@ private:
     std::vector<short int> buf_R; // Vector of R shell quartet indices for the current task
     std::vector<short int> buf_S; // Vector of S shell quartet indices for the current task
     void fill_values(double val, int i, int j, int k, int l);
+    // Values of the AIOHandler job IDs
+    unsigned long int jobid_J_[2];
+    unsigned long int jobid_K_[2];
 
 
     // Batches: A batch of PK-ordered integrals, normally as large as memory

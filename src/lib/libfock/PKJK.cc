@@ -98,18 +98,23 @@ void PKJK::preiterations()
     Options& options = Process::environment.options;
     psio_ = _default_psio_lib_;
 
-    string algo = options.get_str("PK_ALGO");
+    algo_ = options.get_str("PK_ALGO");
 
 
-    if (algo == "REORDER") {
+    if (algo_ == "REORDER") {
     // We compute the integrals so that we can directly write the
     // PK file to disk. Also, do everything in the AO basis
     // like the modern JK algos, for adding sieving later
       integrals_reorder();
-    } else {
-    // Start by generating conventional integrals on disk
-      integrals();
+    // PK files are written at this point. We are done.
+      return;
     }
+    // ==> Section below only executed if algo != REORDER <==
+    // #########################################################
+
+
+    // Start by generating conventional integrals on disk
+    integrals();
 //    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
 //    mints->integrals();
 //    if(do_wK_)
@@ -253,14 +258,14 @@ void PKJK::preiterations()
     //Now, what we are doing depends on the selected algorithm and the
     //number of buckets needed.
 
-    if(algo == "DIRECT") {
+    if(algo_ == "DIRECT") {
         if(nbatches != 1) {
             // lol direct cannot work with 2 batches lol
             throw PSIEXCEPTION("Direct ? With 2 batches ? lol\n");
         } else {
             throw PSIEXCEPTION("Not implemented yet.\n");
         }
-    } else if (algo == "NEW") {
+    } else if (algo_ == "NEW") {
        // Proceed with Yoshimine sorting.
 
     // Initiate buckets: allocate array memory and open temporary files.
@@ -310,7 +315,7 @@ void PKJK::preiterations()
     YBuffK.done();
 
     } // End of condition for Yoshimine sorting, algo NEW
-    else if(algo == "JET") {
+    else if(algo_ == "JET") {
         // Here we go for the old algorithm
 
     // We can dismiss the Yoshimine buckets
@@ -452,6 +457,9 @@ void PKJK::preiterations()
     psio_->close(pk_file_, 1);
 
     } // End of algo conditional.
+    // #########################################################
+    // ==> End of section executed only for algo != REORDER <==
+
     /*
      * For omega, we only need exchange and it's done separately from conventional terms, so we can
      * use fewer batches in principle.  For now we just use the batching scheme that's already been
@@ -550,6 +558,16 @@ void PKJK::preiterations()
 
 void PKJK::compute_JK()
 {
+    if (algo_ == "REORDER") {
+        // We are using AO integrals and two files, one for J and one for K
+        // For now we are not handling asymmetric density matrices
+        PKmanager_->open_files();
+
+    }
+
+    int nirreps = Process::environment.wavefunction()->nirrep();
+    int *sopi   = Process::environment.wavefunction()->nsopi();
+
 //    bool file_was_open = psio_->open_check(pk_file_);
 //    if(!file_was_open);
         psio_->open(pk_file_, PSIO_OPEN_OLD);

@@ -36,6 +36,8 @@ class AIOHandler {
 private:
     /// What is the job type?
     std::queue<unsigned int> job_;
+    /// Unique job ID to check for job completion
+    std::deque<unsigned long int> jobID_;
     /// Unit number argument
     std::queue<unsigned int> unit_;
     /// Entry Key (80-char) argument
@@ -62,6 +64,10 @@ private:
     boost::shared_ptr<boost::thread> thread_;
     /// Lock variable
     boost::mutex *locked_;
+    /// Latest unique job ID
+    unsigned long int uniqueID_;
+    /// condition variable to wait for a specific job to finish
+    boost::condition_variable condition_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
     AIOHandler(boost::shared_ptr<PSIO> psio);
@@ -72,15 +78,15 @@ public:
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking
-    void read(unsigned int unit, const char *key, char *buffer, ULI size,
+    unsigned long int read(unsigned int unit, const char *key, char *buffer, ULI size,
               psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
-    void write(unsigned int unit, const char *key, char *buffer, ULI size,
+    unsigned long int write(unsigned int unit, const char *key, char *buffer, ULI size,
                psio_address start, psio_address *end);
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
-    void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    unsigned long int read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
-    void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    unsigned long int write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     /// Asynchronous read for reading discontinuous disk space
     /// into a continuous chunk of memory, i.e.
     ///
@@ -97,20 +103,24 @@ public:
     ///
     /// These functions are not necessary for psio, but for aio they are.
     ///
-    void read_discont(unsigned int unit, const char *key, double **matrix,
+    unsigned long read_discont(unsigned int unit, const char *key, double **matrix,
       ULI row_length, ULI col_length, ULI col_skip, psio_address start);
     /// Same as read_discont, but for writing
-    void write_discont(unsigned int unit, const char *key, double **matrix,
+    unsigned long write_discont(unsigned int unit, const char *key, double **matrix,
       ULI row_length, ULI col_length, ULI col_skip, psio_address start);
 
     /// Zero disk
     /// Fills a double precision disk entry with zeros
     /// Total fill size is rows*cols*sizeof(double)
     /// Buffer memory of cols*sizeof(double) is used
-    void zero_disk(unsigned int unit, const char* key, ULI rows, ULI cols);
+    unsigned long zero_disk(unsigned int unit, const char* key, ULI rows, ULI cols);
 
     /// Generic function bound to thread internally
     void call_aio();
+
+    /// Function that checks if a job has been completed using the JobID.
+    /// The function only returns when the job is completed.
+    void wait_for_job(unsigned long int jobid);
 };
 
 }
