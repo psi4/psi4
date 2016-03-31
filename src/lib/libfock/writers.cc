@@ -429,6 +429,10 @@ void PK_integrals::allocate_buffers() {
     label_J_[1] = new char[100];
     label_K_[0] = new char[100];
     label_K_[1] = new char[100];
+    jobid_J_[0] = 0;
+    jobid_J_[1] = 0;
+    jobid_K_[0] = 0;
+    jobid_K_[1] = 0;
 }
 
 size_t PK_integrals::task_quartets() {
@@ -583,6 +587,8 @@ void PK_integrals::open_files() {
     psio_->open(itap_K_, PSIO_OPEN_NEW);
 }
 
+// This function is not designed thread-safe and is supposed to execute outside parallel
+// environment for now.
 void PK_integrals::write() {
     // Compute initial ijkl index for current buffer
     size_t ijkl0 = buffer_size_ * bufidx_;
@@ -624,15 +630,18 @@ void PK_integrals::write() {
         size_t stop = min(ijkl_end + 1, batch_index_max_[i]);
         psio_address adr = psio_get_address(PSIO_ZERO, start - batch_index_min_[i]);
         size_t nints = stop - start;
-        AIO_->write(itap_J_, label_J_[buf_], (char *)(J_buf_[buf_]),
+        jobid_J_[buf_] = AIO_->write(itap_J_, label_J_[buf_], (char *)(J_buf_[buf_]),
                     nints * sizeof(double), adr, &dummy);
         sprintf(label_K_[buf_],"K Block (Batch %d)",i);
-        AIO_->write(itap_K_, label_K_[buf_], (char *)(K_buf_[buf_]),
+        jobid_K_[buf_] = AIO_->write(itap_K_, label_K_[buf_], (char *)(K_buf_[buf_]),
                     nints * sizeof(double), adr, &K_adr_);
     }
 
     // Update the buffer being written into
     buf_ = buf_ == 0 ? 1 : 0;
+    // Make sure the buffer has been written to disk and we can erase it
+    AIO_->wait_for_job(jobid_J_[buf_]);
+    AIO_->wait_for_job(jobid_K_[buf_]);
     // Make sure the buffer in which we are going to write is set to zero
     ::memset((void *) J_buf_[buf_], '\0', buffer_size_ * sizeof(double));
     ::memset((void *) K_buf_[buf_], '\0', buffer_size_ * sizeof(double));

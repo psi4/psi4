@@ -573,6 +573,9 @@ public:
  */
 class PKJK : public JK {
 
+    /// Which algorithm are we using for PK?
+    std::string algo_;
+
     /// The PSIO instance to use for I/O
     boost::shared_ptr<PSIO> psio_;
 
@@ -608,7 +611,7 @@ class PKJK : public JK {
     std::vector<size_t> batch_index_max_;
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return false; }
+    virtual bool C1() const { algo_ == "REORDER" ? return true : return false; }
     /// Setup integrals, files, etc
     virtual void preiterations();
     /// Compute J/K for current C/D

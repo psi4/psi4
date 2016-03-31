@@ -48,6 +48,7 @@ AIOHandler::AIOHandler(boost::shared_ptr<PSIO> psio)
     : psio_(psio)
 {
     locked_ = new boost::mutex();
+    uniqueID_ = 0;
 }
 AIOHandler::~AIOHandler()
 {
@@ -66,10 +67,11 @@ void AIOHandler::synchronize()
     lock.unlock();
     thread_->join();
 }
-void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
+unsigned long int AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(1);
   unit_.push(unit);
   key_.push(key);
@@ -77,16 +79,19 @@ void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size
   size_.push(size);
   start_.push(start);
   end_.push(end);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
+unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(2);
   unit_.push(unit);
   key_.push(key);
@@ -94,6 +99,7 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   size_.push(size);
   start_.push(start);
   end_.push(end);
+  jobID_.push_back(uniqueID_);
 
   //printf("Adding a write to the queue\n");
 
@@ -109,48 +115,56 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   //    }
   //    fprintf(stderr, "Thread is joined, need new thread\n");
   //}
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //fprintf(stderr,"Starting a thread\n");
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size)
+unsigned long AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(3);
   unit_.push(unit);
   key_.push(key);
   buffer_.push(buffer);
   size_.push(size);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size)
+unsigned long AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(4);
   unit_.push(unit);
   key_.push(key);
   buffer_.push(buffer);
   size_.push(size);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::read_discont(unsigned int unit, const char *key,
+unsigned long AIOHandler::read_discont(unsigned int unit, const char *key,
   double **matrix, ULI row_length, ULI col_length, ULI col_skip,
   psio_address start)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(5);
   unit_.push(unit);
   key_.push(key);
@@ -159,18 +173,21 @@ void AIOHandler::read_discont(unsigned int unit, const char *key,
   col_length_.push(col_length);
   col_skip_.push(col_skip);
   start_.push(start);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::write_discont(unsigned int unit, const char *key,
+unsigned long AIOHandler::write_discont(unsigned int unit, const char *key,
   double **matrix, ULI row_length, ULI col_length, ULI col_skip,
   psio_address start)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(6);
   unit_.push(unit);
   key_.push(key);
@@ -179,27 +196,32 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
   col_length_.push(col_length);
   col_skip_.push(col_skip);
   start_.push(start);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
-void AIOHandler::zero_disk(unsigned int unit, const char *key,
+unsigned long AIOHandler::zero_disk(unsigned int unit, const char *key,
     ULI rows, ULI cols)
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
 
+  ++uniqueID_;
   job_.push(7);
   unit_.push(unit);
   key_.push(key);
   row_length_.push(rows);
   col_length_.push(cols);
+  jobID_.push_back(uniqueID_);
 
-  if (job_.size() > 1) return;
+  if (job_.size() > 1) return uniqueID_;
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
 }
 void AIOHandler::call_aio()
 {
@@ -388,8 +410,27 @@ void AIOHandler::call_aio()
     // Only pop the job once the work is actually done and we are gonna leave the loop.
     // This way, job_.size() == 0 indicates there is no active thread.
     job_.pop(); 
+    // We also pop the jobID so that external threads may check that the job completed
+    jobID_.pop_front();
+    // Once it is popped, notify waiting threads to check again for their jobid.
+    condition_.notify_all();
   }
   //printf("End of function call_aio\n");
+}
+
+void AIOHandler::wait_for_job(unsigned long jobid) {
+
+    std::deque<unsigned long int>::iterator it;
+
+    boost::unique_lock<boost::mutex> lock(*locked_);
+    it = std::find(jobID_.begin(),jobID_.end(),jobid);
+    bool found = it != jobID_.end();
+    while(found) {
+        condition_.wait(lock);
+        it = std::find(jobID_.begin(),jobID_.end(),jobid);
+        found = it != jobID_.end();
+    }
+    return;
 }
 
 } //Namespace psi
