@@ -66,6 +66,7 @@ PKJK::~PKJK()
 {
 }
 
+
 void PKJK::common_init()
 {
     pk_file_ = PSIF_SO_PK;
@@ -73,6 +74,14 @@ void PKJK::common_init()
 #ifdef _OPENMP
     nthreads_ = omp_get_max_threads();
 #endif
+}
+
+bool PKJK::C1() const {
+    if(algo_ == "REORDER") {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void PKJK::print_header() const
@@ -102,11 +111,13 @@ void PKJK::preiterations()
 
 
     if (algo_ == "REORDER") {
+      timer_on("Total PK formation time");
     // We compute the integrals so that we can directly write the
     // PK file to disk. Also, do everything in the AO basis
     // like the modern JK algos, for adding sieving later
       integrals_reorder();
     // PK files are written at this point. We are done.
+      timer_off("Total PK formation time");
       return;
     }
     // ==> Section below only executed if algo != REORDER <==
@@ -561,7 +572,13 @@ void PKJK::compute_JK()
     if (algo_ == "REORDER") {
         // We are using AO integrals and two files, one for J and one for K
         // For now we are not handling asymmetric density matrices
-        PKmanager_.open_files();
+        // Keep files open for asym I/O
+        if (PKmanager_->writing()) {
+            PKmanager_->deallocate_buffers();
+            PKmanager_->set_writing(false);
+        } else {
+            PKmanager_->open_files(true);
+        }
 
         // We form the vector containing the density matrix triangular elements
         for(int N = 0; N < D_ao_.size(); ++N) {
@@ -570,18 +587,18 @@ void PKJK::compute_JK()
                 throw PSIEXCEPTION("Only symmetric density matrices implemented for now\n");
             }
         }
-        PKmanager_.form_D_vec(D_ao_);
+        PKmanager_->form_D_vec(D_ao_);
 
         // Now we actually compute J and K as needed
         if(J_.size()) {
-            PKmanager_.form_J(J_);
+            PKmanager_->form_J(J_ao_);
         }
         if(K_.size()) {
-            PKmanager_.form_K(K_);
+            PKmanager_->form_K(K_ao_);
         }
-        PKmanager_.finalize_D();
+        PKmanager_->finalize_D();
         // Everything done, we close the files
-        PKmanager_.close_files();
+        PKmanager_->close_files();
 
         return;
 
@@ -990,7 +1007,7 @@ void PKJK::compute_JK()
 //TODO: We may not need this anymore.
 void PKJK::postiterations()
 {
-    if(algo_ != REORDER) {
+    if(algo_ != "REORDER") {
         delete[] so2symblk_;
         delete[] so2index_;
     }

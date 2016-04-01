@@ -599,7 +599,7 @@ class PKJK : public JK {
     size_t pk_pairs_;
 
     /// Class handling the PK integrals
-    PK_integrals PKmanager_;
+    boost::shared_ptr<PK_integrals> PKmanager_;
 
     /// The index of the first pair in each batch
     std::vector<size_t> batch_pq_min_;
@@ -611,7 +611,7 @@ class PKJK : public JK {
     std::vector<size_t> batch_index_max_;
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { algo_ == "REORDER" ? return true : return false; }
+    virtual bool C1() const;
     /// Setup integrals, files, etc
     virtual void preiterations();
     /// Compute J/K for current C/D
