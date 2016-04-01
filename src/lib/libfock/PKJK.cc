@@ -561,7 +561,29 @@ void PKJK::compute_JK()
     if (algo_ == "REORDER") {
         // We are using AO integrals and two files, one for J and one for K
         // For now we are not handling asymmetric density matrices
-        PKmanager_->open_files();
+        PKmanager_.open_files();
+
+        // We form the vector containing the density matrix triangular elements
+        for(int N = 0; N < D_ao_.size(); ++N) {
+            if(C_left_[N] != C_right_[N]) {
+                outfile->Printf("ERROR: REORDER algorithm does not support this computation\n");
+                throw PSIEXCEPTION("Only symmetric density matrices implemented for now\n");
+            }
+        }
+        PKmanager_.form_D_vec(D_ao_);
+
+        // Now we actually compute J and K as needed
+        if(J_.size()) {
+            PKmanager_.form_J(J_);
+        }
+        if(K_.size()) {
+            PKmanager_.form_K(K_);
+        }
+        PKmanager_.finalize_D();
+        // Everything done, we close the files
+        PKmanager_.close_files();
+
+        return;
 
     }
 
@@ -968,7 +990,9 @@ void PKJK::compute_JK()
 //TODO: We may not need this anymore.
 void PKJK::postiterations()
 {
-    delete[] so2symblk_;
-    delete[] so2index_;
+    if(algo_ != REORDER) {
+        delete[] so2symblk_;
+        delete[] so2index_;
+    }
 }
 }

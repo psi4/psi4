@@ -111,6 +111,7 @@ void PKJK::integrals_reorder() {
         // to disk
         PKmanager_.write();
     }
+    PKmanager_.deallocate_buffers();
     PKmanager_.close_files();
 }
 
