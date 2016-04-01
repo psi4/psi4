@@ -231,11 +231,16 @@ private:
     boost::shared_ptr<AIOHandler> AIO_;  /* AIO handler for all asynchronous operations */
     boost::shared_ptr<PSIO> psio_;       /* PSIO instance for opening/closing files */
 
+    // The data for actually contracting density matrices with integrals
+    std::vector<double*> D_vec_;
 
 public:
     // Constructor
     PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
                  int max_batches_, size_t memory);
+
+    // Destructor
+    ~PK_integrals();
 
     // Sizing the buckets
     void batch_sizing();
@@ -243,6 +248,8 @@ public:
     void print_batches();
     // Initialize and allocate buffers
     void allocate_buffers();
+    // Delete buffers
+    void deallocate_buffers();
     // We fill each buffer using parallel threads, then write it when
     // all threads have joined. We then loop over the next buffer and restart parallel
     // threads. How many of such macroloops do we need ?
@@ -266,6 +273,13 @@ public:
     short int Q(size_t idx) { return buf_Q[idx]; }
     short int R(size_t idx) { return buf_R[idx]; }
     short int S(size_t idx) { return buf_S[idx]; }
+
+    // Functions for contracting the density matrix with the integrals
+    void form_D_vec(std::vector<SharedMatrix> D_ao);
+    void form_J(std::vector<SharedMatrix> J, bool exch = false);
+    void form_K(std::vector<SharedMatrix> K);
+    // Simply deallocate the D vector
+    void finalize_D();
 };
 }
 

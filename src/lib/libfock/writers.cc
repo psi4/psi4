@@ -328,6 +328,52 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     label_K_[1] = NULL;
 }
 
+PK_integrals::~PK_integrals() {
+    delete AIO_;
+    // In case we forgot something before
+
+    if (J_buf_[0] != NULL) {
+        delete [] J_buf_[0];
+        J_buf_[0] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (J_buf_[1] != NULL) {
+        delete [] J_buf_[1];
+        J_buf_[1] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (K_buf_[0] != NULL) {
+        delete [] K_buf_[0];
+        K_buf_[0] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (K_buf_[1] != NULL) {
+        delete [] K_buf_[1];
+        K_buf_[1] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (label_J_[0] != NULL) {
+        delete [] label_J_[0];
+        label_J_[0] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (label_J_[1] != NULL) {
+        delete [] label_J_[1];
+        label_J_[1] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (label_K_[0] != NULL) {
+        delete [] label_K_[0];
+        label_K_[0] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+    if (label_K_[1] != NULL) {
+        delete [] label_K_[1];
+        label_K_[1] = NULL;
+        outfile->Printf("Clean up your code!!!");
+    }
+}
+
 void PK_integrals::batch_sizing() {
 
     double batch_thresh = 0.1;
@@ -411,10 +457,10 @@ void PK_integrals::allocate_buffers() {
     nbuffers_ = (pk_size_ - 1) / buffer_size_ + 1;
     outfile->Printf("We need %3d buffers during integral computation\n",nbuffers_);
     // Now we proceed to actually allocate buffer memory
-    J_buf[0] = new double[buffer_size_];
-    J_buf[1] = new double[buffer_size_];
-    K_buf[0] = new double[buffer_size_];
-    K_buf[1] = new double[buffer_size_];
+    J_buf_[0] = new double[buffer_size_];
+    J_buf_[1] = new double[buffer_size_];
+    K_buf_[0] = new double[buffer_size_];
+    K_buf_[1] = new double[buffer_size_];
     ::memset((void*) J_buf_[0], '\0', buffer_size_ * sizeof(double));
     ::memset((void*) J_buf_[1], '\0', buffer_size_ * sizeof(double));
     ::memset((void*) K_buf_[0], '\0', buffer_size_ * sizeof(double));
@@ -433,6 +479,28 @@ void PK_integrals::allocate_buffers() {
     jobid_J_[1] = 0;
     jobid_K_[0] = 0;
     jobid_K_[1] = 0;
+}
+
+void PK_integrals::deallocate_buffers() {
+    delete [] J_buf_[0];
+    delete [] J_buf_[1];
+    delete [] K_buf_[0];
+    delete [] K_buf_[1];
+
+    J_buf_[0] = NULL;
+    J_buf_[1] = NULL;
+    K_buf_[0] = NULL;
+    K_buf_[1] = NULL;
+
+    delete[] label_J_[0];
+    delete[] label_J_[1];
+    delete[] label_K_[0];
+    delete[] label_K_[1];
+
+    label_J_[0] = NULL;
+    label_J_[1] = NULL;
+    label_K_[0] = NULL;
+    label_K_[1] = NULL;
 }
 
 size_t PK_integrals::task_quartets() {
@@ -590,12 +658,16 @@ void PK_integrals::open_files() {
 // This function is not designed thread-safe and is supposed to execute outside parallel
 // environment for now.
 void PK_integrals::write() {
+    // Clear up the buffers holding P, Q, R, S since the task is over
+    buf_P.clear();
+    buf_Q.clear();
+    buf_R.clear();
+    buf_S.clear();
     // Compute initial ijkl index for current buffer
     size_t ijkl0 = buffer_size_ * bufidx_;
     size_t ijkl_end = ijl0 + buffer_size_ - 1;
 
     std::vector<int> target_batches;  // Vector of batch number to which we want to write
-    char* label = new char[100];
 
     for (int i = 0; i < batch_index_min_.size(); ++i) {
         if (ijkl0 >= batch_index_min_[i] && ijkl0 < batch_index_max_[i]) {
@@ -655,6 +727,103 @@ void PK_integrals::write() {
 void PK_integrals::close_files() {
     psio_->close(itap_J_, 1);
     psio_->close(itap_K_, 1);
+}
+
+// We should really use safer pointers right here
+void PK_integrals::form_D_vec(std::vector<SharedMatrix> D_ao) {
+    // Assume symmetric density matrix for now.
+    for (int N = 0; N < D_ao.size(); ++N) {
+        double* D_vec = new double[pk_pairs_];
+        ::memset((void *)D_vec,'\0',pk_pairs_ * sizeof(double));
+        D_vec_.push_back(D_vec);
+        size_t pqval = 0;
+        for(int p = 0; p < nbf_; ++p) {
+            for(int q = 0; q <= p; ++q) {
+                if(p != q) {
+                    D_vec[pqval] = 2.0 * D_ao[N]->get(0,p,q);
+                } else {
+                    D_vec[pqval] = D_ao[N]->get(0,p,q);
+                }
+                ++pqval;
+            }
+        }
+    }
+}
+
+void PK_integrals::finalize_D() {
+    for(int N = 0; N < D_vec_.size(); ++N) {
+        delete [] D_vec_[N];
+    }
+}
+
+void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
+    std::vector<SharedMatrix> Jvecs;
+    // Begin by allocating vector for triangular J
+    for(int N = 0; N < J.size(); ++N) {
+        double* J_vec = new double[pk_pairs_];
+        ::memset((void*)J_vec,'\0',pk_pairs_ * sizeof(double));
+        Jvecs.push_back(J_vec);
+    }
+
+    // Now loop over batches
+    for(int batch = 0; batch < batch_pq_min_.size(); ++batch) {
+        size_t min_index = batch_index_min_[batch];
+        size_t max_index = batch_index_max_[batch];
+        size_t batch_size = max_index - min_index;
+        size_t min_pq = batch_pq_min_[batch];
+        size_t max_pq = batch_pq_max_[batch];
+        double* j_block = new double[batch_size];
+
+        char* label = new char[100];
+        if (exch) {
+
+        } else {
+            sprintf(label,"J Block (Batch %d)", batch);
+        }
+        psio_->read_entry(itap_J_, label, (char *) j_block, batch_size * sizeof(double));
+
+        // Read one entry, use it for all density matrices
+        for(int N = 0; N < J.size(); ++N) {
+            double* D_vec = D_vec_[N];
+            double* J_vec = Jvecs[N];
+            double* j_ptr = j_block;
+            for(size_t pq = min_pq; pq < max_pq; ++pq) {
+                double D_pq = D_vec[pq];
+                double *D_rs = D_vec;
+                double J_pq = 0.0;
+                double *J_rs = J_vec;
+                for(size_t rs = 0; rs <= pq; ++rs) {
+                    J_pq += *j_ptr * (*D_rs);
+                    *J_rs += *j_ptr * D_pq;
+                    ++D_rs;
+                    ++J_rs;
+                    ++j_ptr;
+                }
+                J_vec[pq] += J_pq;
+            }
+        }
+
+        delete [] label;
+        delete [] j_block;
+    }
+
+    // Now, directly transfer data to resulting matrices
+    for(int N = 0; N < J.size(); ++N) {
+        double *J = Jvecs[N];
+        for(int p = 0; p < nbf_; ++p) {
+            for(int q = 0; q <= p; ++q) {
+                J[N]->set(0,p,q,*J++);
+            }
+        }
+        J[N]->copy_lower_to_upper();
+        delete [] Jvecs[N];
+    }
+}
+
+void PK_integrals::form_K(std::vector<SharedMatrix> K) {
+    // For asymmetric densities, we do exactly the same than for J
+    // but we read another entry
+    form_J(K, true);
 }
 
 }
