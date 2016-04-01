@@ -58,7 +58,7 @@ void PKJK::integrals_reorder() {
     outfile->Printf(" Computing reordered integrals for PK\n\n");
     int max_buckets = Process::environment.options.get_int("MAX_BUCKETS");
 
-    PKmanager_ = PK_integrals(primary_, max_buckets, memory_);
+    PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_));
 
     // Get an AO integral factory
     boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
@@ -71,13 +71,13 @@ void PKJK::integrals_reorder() {
 
     // Get all rs index for a given pq to fit in the same
     // batch
-    PKmanager_.batch_sizing();
+    PKmanager_->batch_sizing();
 
-    PKmanager_.print_batches();
+    PKmanager_->print_batches();
 
     // Create the buffer class, that is storing integrals in buffers in order
     // and taking care of writing to disk.
-    PKmanager_.allocate_buffers();
+    PKmanager_->allocate_buffers();
 
     // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
     // threads, then write it asynchronously to disk while filling the next buffer.
@@ -87,11 +87,12 @@ void PKJK::integrals_reorder() {
     // as integrals may be stored at random places in the buffer. We also need
     // to pre-stripe the PK file in this case.
 
-    PKmanager_.open_files();
+    PKmanager_->open_files(false);
     size_t task_size = 0;
-    for (int buf = 0; buf < PKmanager_.buf_ntasks(); ++ buf) {
+    for (int buf = 0; buf < PKmanager_->buf_ntasks(); ++ buf) {
+        timer_on("Actual integral computation");
         // Here we need a vector of tasks to distribute over threads
-        task_size = PKmanager_.task_quartets();
+        task_size = PKmanager_->task_quartets();
         outfile->Printf("The task size is %12zu\n",task_size);
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
         for(size_t task = 0; task < task_size; ++task ) {
@@ -99,20 +100,25 @@ void PKJK::integrals_reorder() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-            short int P = PKmanager_.P(task);
-            short int Q = PKmanager_.Q(task);
-            short int R = PKmanager_.R(task);
-            short int S = PKmanager_.S(task);
+            short int P = PKmanager_->P(task);
+            short int Q = PKmanager_->Q(task);
+            short int R = PKmanager_->R(task);
+            short int S = PKmanager_->S(task);
             tb[thread]->compute_shell(P,Q,R,S);
-            PKmanager_.integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
+            PKmanager_->integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
         }
+        timer_off("Actual integral computation");
 
         // All shell quartets for the current task are done. We write the ordered integrals
         // to disk
-        PKmanager_.write();
+        timer_on("AIO write");
+        PKmanager_->write();
+        timer_off("AIO write");
     }
-    PKmanager_.deallocate_buffers();
-    PKmanager_.close_files();
+    // We want ot deallocate buffers and wait for writing as late as possible
+    PKmanager_->set_writing(true);
+//    PKmanager_->deallocate_buffers();
+//    PKmanager_->close_files();
 }
 
 
@@ -283,7 +289,7 @@ void PKJK::integrals(){
                   std::swap(p, r);
                   std::swap(q, s);
               }
-              printf("Computing integral <%i %i|%i %i>\n", p, q, r, s);
+//              printf("Computing integral <%i %i|%i %i>\n", p, q, r, s);
               eri->compute_shell(p, q, r, s, *writers[thread]);
             }
 

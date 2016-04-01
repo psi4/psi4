@@ -23,10 +23,12 @@
 #include <cstdio>
 
 #include <libpsio/psio.h>
+#include <libqt/qt.h>
 #include "writers.h"
 #include <libmints/integral.h>
 #include <psi4-dec.h>
 #include <psifiles.h>
+#include <libmints/mints.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -290,7 +292,7 @@ void ijklBasisIterator::next() {
         if (j_ > i_) {
             j_ = 0;
             ++i_;
-            if (i_ > nbas_) {
+            if (i_ >= nbas_) {
                 done_=true;
             }
         }
@@ -302,10 +304,10 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
                            int max_batches, size_t memory) {
     primary_ = primary;
     nbf_ = primary_->nbf();
-    max_batches = max_buckets;
+    max_batches_ = max_batches;
     memory_ = memory;
 
-    pk_pairs_ = nbf * (nbf + 1) / 2;
+    pk_pairs_ = nbf_ * (nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
 
     if (memory_ < pk_pairs_) {
@@ -322,14 +324,12 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     psio_ = psio;
     AIO_ = boost::shared_ptr<AIOHandler>(new AIOHandler(psio_));
 
-    label_J_[0] = NULL;
-    label_J_[1] = NULL;
-    label_K_[0] = NULL;
-    label_K_[1] = NULL;
+    itap_J_ = PSIF_SO_PKSUPER1;
+    itap_K_ = PSIF_SO_PKSUPER2;
+
 }
 
 PK_integrals::~PK_integrals() {
-    delete AIO_;
     // In case we forgot something before
 
     if (J_buf_[0] != NULL) {
@@ -352,25 +352,17 @@ PK_integrals::~PK_integrals() {
         K_buf_[1] = NULL;
         outfile->Printf("Clean up your code!!!");
     }
-    if (label_J_[0] != NULL) {
-        delete [] label_J_[0];
-        label_J_[0] = NULL;
-        outfile->Printf("Clean up your code!!!");
+    if (label_J_[0].size() != 0) {
+        outfile->Printf("Labels: Clean up your code!!!");
     }
-    if (label_J_[1] != NULL) {
-        delete [] label_J_[1];
-        label_J_[1] = NULL;
-        outfile->Printf("Clean up your code!!!");
+    if (label_J_[1].size() != 0) {
+        outfile->Printf("Labels: Clean up your code!!!");
     }
-    if (label_K_[0] != NULL) {
-        delete [] label_K_[0];
-        label_K_[0] = NULL;
-        outfile->Printf("Clean up your code!!!");
+    if (label_K_[0].size() != 0) {
+        outfile->Printf("Labels: Clean up your code!!!");
     }
-    if (label_K_[1] != NULL) {
-        delete [] label_K_[1];
-        label_K_[1] = NULL;
-        outfile->Printf("Clean up your code!!!");
+    if (label_K_[1].size() != 0) {
+        outfile->Printf("Labels: Clean up your code!!!");
     }
 }
 
@@ -387,7 +379,7 @@ void PK_integrals::batch_sizing() {
     size_t min_pqrs = 0;
     size_t min_pq = 0;
     size_t pq = 0;
-    int pb, qb, rb, sb;
+    size_t pb, qb, rb, sb;
 
     batch_index_min_.push_back(0);
     batch_pq_min_.push_back(0);
@@ -416,26 +408,29 @@ void PK_integrals::batch_sizing() {
             old_max = pqrs;
         }
     }
-    batch_index_max_.push_back(INDEX4(pb,qb,rb,sb));
-    batch_pq_max_.push_back(INDEX2(pb,qb));
+    batch_index_max_.push_back(INDEX4(pb,qb,rb,sb) + 1);
+    batch_pq_max_.push_back(INDEX2(pb,qb) + 1);
 
     // A little check here: if the last batch is less than 10% full,
     // we just transfer it to the previous batch.
 
     int lastb = batch_index_max_.size() - 1;
+    if (lastb > 0) {
     size_t size_lastb = batch_index_max_[lastb] - batch_index_min_[lastb];
-    if (((double) size_lastb / memory_) < batch_thresh) {
-        batch_index_max_[lastb - 1] = batch_index_max_[lastb];
-        batch_pq_max_[lastb - 1] = batch_pq_max_[lastb];
-        batch_pq_max_.pop_back();
-        batch_index_max_.pop_back();
+        if (((double) size_lastb / memory_) < batch_thresh) {
+            batch_index_max_[lastb - 1] = batch_index_max_[lastb];
+            batch_pq_max_[lastb - 1] = batch_pq_max_[lastb];
+            batch_pq_max_.pop_back();
+            batch_index_max_.pop_back();
+            batch_pq_min_.pop_back();
+            batch_index_min_.pop_back();
+        }
     }
 
     int nbatches = batch_pq_min_.size();
     if (nbatches > max_batches_) {
       outfile->Printf( "PKJK: maximum number of batches exceeded\n") ;
       outfile->Printf( "   requested %d batches\n", nbatches) ;
-      tstop() ;
       exit(PSI_RETURN_FAILURE) ;
     }
 
@@ -470,11 +465,6 @@ void PK_integrals::allocate_buffers() {
     offset_ = 0;
     buf_ = 0;
 
-    // We allocate space to store the entries labels here
-    label_J_[0] = new char[100];
-    label_J_[1] = new char[100];
-    label_K_[0] = new char[100];
-    label_K_[1] = new char[100];
     jobid_J_[0] = 0;
     jobid_J_[1] = 0;
     jobid_K_[0] = 0;
@@ -482,6 +472,12 @@ void PK_integrals::allocate_buffers() {
 }
 
 void PK_integrals::deallocate_buffers() {
+
+    // We need to make sure writing is over before deallocating!
+    timer_on("AIO synchronize");
+    AIO_->synchronize();
+    timer_off("AIO synchronize");
+
     delete [] J_buf_[0];
     delete [] J_buf_[1];
     delete [] K_buf_[0];
@@ -492,15 +488,17 @@ void PK_integrals::deallocate_buffers() {
     K_buf_[0] = NULL;
     K_buf_[1] = NULL;
 
-    delete[] label_J_[0];
-    delete[] label_J_[1];
-    delete[] label_K_[0];
-    delete[] label_K_[1];
+    for(int i = 0; i < 2; ++i) {
+        for(int j = 0; j < label_J_[i].size(); ++j) {
+            delete[] label_J_[i][j];
+        }
+        for(int j = 0; j < label_K_[i].size(); ++j) {
+            delete[] label_K_[i][j];
+        }
+        label_J_[i].clear();
+        label_K_[i].clear();
+    }
 
-    label_J_[0] = NULL;
-    label_J_[1] = NULL;
-    label_K_[0] = NULL;
-    label_K_[1] = NULL;
 }
 
 size_t PK_integrals::task_quartets() {
@@ -514,10 +512,10 @@ size_t PK_integrals::task_quartets() {
         int S = shelliter.s();
         // Get the lowest basis function indices in the shells
 
-        int lowi = primary_->shell_to_basis_function(P);
-        int lowj = primary_->shell_to_basis_function(Q);
-        int lowk = primary_->shell_to_basis_function(R);
-        int lowl = primary_->shell_to_basis_function(S);
+        size_t lowi = primary_->shell_to_basis_function(P);
+        size_t lowj = primary_->shell_to_basis_function(Q);
+        size_t lowk = primary_->shell_to_basis_function(R);
+        size_t lowl = primary_->shell_to_basis_function(S);
 
         size_t low_ijkl = INDEX4(lowi, lowj, lowk, lowl);
         size_t low_ikjl = INDEX4(lowi, lowk, lowj, lowl);
@@ -539,10 +537,10 @@ size_t PK_integrals::task_quartets() {
         int nk = primary_->shell(R).nfunction();
         int nl = primary_->shell(S).nfunction();
 
-        int hii = lowi + ni - 1;
-        int hij = lowj + nj - 1;
-        int hik = lowk + nk - 1;
-        int hil = lowl + nl - 1;
+        size_t hii = lowi + ni - 1;
+        size_t hij = lowj + nj - 1;
+        size_t hik = lowk + nk - 1;
+        size_t hil = lowl + nl - 1;
 
         size_t hi_ijkl = INDEX4(hii, hij, hik, hil);
         size_t hi_ikjl = INDEX4(hii, hik, hij, hil);
@@ -562,10 +560,10 @@ size_t PK_integrals::task_quartets() {
         // Now we loop over unique basis function quartets in the shell quartet
         AOIntegralsIterator bfiter = shelliter.integrals_iterator();
         for(bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
-            int i = bfiter.i();
-            int j = bfiter.j();
-            int k = bfiter.k();
-            int l = bfiter.l();
+            size_t i = bfiter.i();
+            size_t j = bfiter.j();
+            size_t k = bfiter.k();
+            size_t l = bfiter.l();
 
             size_t ijkl = INDEX4(i,j,k,l);
             size_t ikjl = INDEX4(i,k,j,l);
@@ -589,7 +587,8 @@ size_t PK_integrals::task_quartets() {
 }
 
 // This function is thread-safe
-void PK_integrals::integrals_buffering(double *buffer, int P, int Q, int R, int S) {
+void PK_integrals::integrals_buffering(const double *buffer, int P, int Q, int R, int S) {
+
     AOIntegralsIterator bfiter(primary_->shell(P), primary_->shell(Q), primary_->shell(R), primary_->shell(S));
     int i0 = primary_->shell_to_basis_function(P);
     int j0 = primary_->shell_to_basis_function(Q);
@@ -606,19 +605,15 @@ void PK_integrals::integrals_buffering(double *buffer, int P, int Q, int R, int 
         int j = bfiter.j();
         int k = bfiter.k();
         int l = bfiter.l();
+        size_t idx = bfiter.index();
 
-        int irel = i - i0;
-        int jrel = j - j0;
-        int krel = k - k0;
-        int lrel = l - l0;
-
-        double val = buffer[lrel + krel*nl + jrel*nl*nk + irel*nj*nl*nk];
+        double val = buffer[idx];
         fill_values(val, i, j, k, l);
     }
 }
 
 // This function is thread-safe
-void PK_integrals::fill_values(double val, int i, int j, int k, int l) {
+void PK_integrals::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
     size_t ijkl = INDEX4(i, j, k, l);
     if (ijkl / buffer_size_ == bufidx_) {
 #pragma omp atomic
@@ -650,9 +645,9 @@ void PK_integrals::fill_values(double val, int i, int j, int k, int l) {
     }
 }
 
-void PK_integrals::open_files() {
-    psio_->open(itap_J_, PSIO_OPEN_NEW);
-    psio_->open(itap_K_, PSIO_OPEN_NEW);
+void PK_integrals::open_files(bool old) {
+    psio_->open(itap_J_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    psio_->open(itap_K_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
 }
 
 // This function is not designed thread-safe and is supposed to execute outside parallel
@@ -665,7 +660,7 @@ void PK_integrals::write() {
     buf_S.clear();
     // Compute initial ijkl index for current buffer
     size_t ijkl0 = buffer_size_ * bufidx_;
-    size_t ijkl_end = ijl0 + buffer_size_ - 1;
+    size_t ijkl_end = ijkl0 + buffer_size_ - 1;
 
     std::vector<int> target_batches;  // Vector of batch number to which we want to write
 
@@ -697,16 +692,20 @@ void PK_integrals::write() {
 
     // And now we write to the files in the appropriate entries
     for (int i = 0; i < target_batches.size(); ++i) {
-        sprintf(label_J_[buf_],"J Block (Batch %d)", i);
-        size_t start = max(ijkl0, batch_index_min_[i]);
-        size_t stop = min(ijkl_end + 1, batch_index_max_[i]);
-        psio_address adr = psio_get_address(PSIO_ZERO, start - batch_index_min_[i]);
+        char* label_J = new char[100];
+        sprintf(label_J,"J Block (Batch %d)", target_batches[i]);
+        label_J_[buf_].push_back(label_J);
+        size_t start = std::max(ijkl0, batch_index_min_[target_batches[i]]);
+        size_t stop = std::min(ijkl_end + 1, batch_index_max_[target_batches[i]]);
+        psio_address adr = psio_get_address(PSIO_ZERO, (start - batch_index_min_[target_batches[i]]) * sizeof(double));
         size_t nints = stop - start;
-        jobid_J_[buf_] = AIO_->write(itap_J_, label_J_[buf_], (char *)(J_buf_[buf_]),
-                    nints * sizeof(double), adr, &dummy);
-        sprintf(label_K_[buf_],"K Block (Batch %d)",i);
-        jobid_K_[buf_] = AIO_->write(itap_K_, label_K_[buf_], (char *)(K_buf_[buf_]),
-                    nints * sizeof(double), adr, &K_adr_);
+        jobid_J_[buf_] = AIO_->write(itap_J_, label_J_[buf_][i], (char *)(&J_buf_[buf_][start - offset_]),
+                    nints * sizeof(double), adr, &dummy_);
+        char* label_K = new char[100];
+        sprintf(label_K,"K Block (Batch %d)",target_batches[i]);
+        label_K_[buf_].push_back(label_K);
+        jobid_K_[buf_] = AIO_->write(itap_K_, label_K_[buf_][i], (char *)(&K_buf_[buf_][start - offset_]),
+                    nints * sizeof(double), adr, &dummy_);
     }
 
     // Update the buffer being written into
@@ -714,6 +713,15 @@ void PK_integrals::write() {
     // Make sure the buffer has been written to disk and we can erase it
     AIO_->wait_for_job(jobid_J_[buf_]);
     AIO_->wait_for_job(jobid_K_[buf_]);
+    // We can delete the labels for these buffers
+    for(int i = 0; i < label_J_[buf_].size(); ++i) {
+        delete [] label_J_[buf_][i];
+    }
+    for(int i = 0; i < label_K_[buf_].size(); ++i) {
+        delete [] label_K_[buf_][i];
+    }
+    label_J_[buf_].clear();
+    label_K_[buf_].clear();
     // Make sure the buffer in which we are going to write is set to zero
     ::memset((void *) J_buf_[buf_], '\0', buffer_size_ * sizeof(double));
     ::memset((void *) K_buf_[buf_], '\0', buffer_size_ * sizeof(double));
@@ -754,10 +762,11 @@ void PK_integrals::finalize_D() {
     for(int N = 0; N < D_vec_.size(); ++N) {
         delete [] D_vec_[N];
     }
+    D_vec_.clear();
 }
 
 void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
-    std::vector<SharedMatrix> Jvecs;
+    std::vector<double*> Jvecs;
     // Begin by allocating vector for triangular J
     for(int N = 0; N < J.size(); ++N) {
         double* J_vec = new double[pk_pairs_];
@@ -774,13 +783,17 @@ void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
         size_t max_pq = batch_pq_max_[batch];
         double* j_block = new double[batch_size];
 
+        int filenum;
+
         char* label = new char[100];
         if (exch) {
-
+            sprintf(label,"K Block (Batch %d)", batch);
+            filenum = itap_K_;
         } else {
             sprintf(label,"J Block (Batch %d)", batch);
+            filenum = itap_J_;
         }
-        psio_->read_entry(itap_J_, label, (char *) j_block, batch_size * sizeof(double));
+        psio_->read_entry(filenum, label, (char *) j_block, batch_size * sizeof(double));
 
         // Read one entry, use it for all density matrices
         for(int N = 0; N < J.size(); ++N) {
@@ -809,10 +822,10 @@ void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
 
     // Now, directly transfer data to resulting matrices
     for(int N = 0; N < J.size(); ++N) {
-        double *J = Jvecs[N];
+        double *Jp = Jvecs[N];
         for(int p = 0; p < nbf_; ++p) {
             for(int q = 0; q <= p; ++q) {
-                J[N]->set(0,p,q,*J++);
+                J[N]->set(0,p,q,*Jp++);
             }
         }
         J[N]->copy_lower_to_upper();

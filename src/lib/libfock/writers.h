@@ -24,6 +24,7 @@
 #define WRITERS_H
 
 #include <libiwl/iwl.hpp>
+#include <libmints/typedefs.h>
 #include <libpsio/aiohandler.h>
 
 namespace psi {
@@ -200,7 +201,7 @@ private:
     std::vector<short int> buf_Q; // Vector of Q shell quartet indices for the current task
     std::vector<short int> buf_R; // Vector of R shell quartet indices for the current task
     std::vector<short int> buf_S; // Vector of S shell quartet indices for the current task
-    void fill_values(double val, int i, int j, int k, int l);
+    void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
     // Values of the AIOHandler job IDs
     unsigned long int jobid_J_[2];
     unsigned long int jobid_K_[2];
@@ -221,8 +222,8 @@ private:
     psio_address dummy_;
     // The labels, need to be stored because we pass a pointer to them
     // to the AIOHandler
-    char* label_J_[2];
-    char* label_K_[2];
+    std::vector<char*> label_J_[2];
+    std::vector<char*> label_K_[2];
 
     int itap_J_;    // File number for J supermatrix
     int itap_K_;    // File number for K supermatrix
@@ -230,6 +231,7 @@ private:
     size_t pk_size_;      // Total dimension of supermatrix PK
     boost::shared_ptr<AIOHandler> AIO_;  /* AIO handler for all asynchronous operations */
     boost::shared_ptr<PSIO> psio_;       /* PSIO instance for opening/closing files */
+    bool writing_; // Are we still doing AIO ?
 
     // The data for actually contracting density matrices with integrals
     std::vector<double*> D_vec_;
@@ -260,11 +262,11 @@ public:
     // R, S indices of the shell in vectors.
     size_t task_quartets();
     // Sort computed integrals from IntegralFactory buffer to our PK buffers
-    void integrals_buffering(double* buffer, int P, int Q, int R, int S);
+    void integrals_buffering(const double* buffer, int P, int Q, int R, int S);
     // Write the buffers of ordered integrals to disk
     void write();
     // We want to open the PK files for writing
-    void open_files();
+    void open_files(bool old);
     // And then we want to close the files
     void close_files();
 
@@ -273,6 +275,8 @@ public:
     short int Q(size_t idx) { return buf_Q[idx]; }
     short int R(size_t idx) { return buf_R[idx]; }
     short int S(size_t idx) { return buf_S[idx]; }
+    bool writing()          { return writing_; }
+    void set_writing(bool tmp) { writing_ = tmp; }
 
     // Functions for contracting the density matrix with the integrals
     void form_D_vec(std::vector<SharedMatrix> D_ao);
