@@ -120,9 +120,9 @@ void CCEnergyWavefunction::lmp2(void)
   global_dpd_->buf4_close(&T2);
   global_dpd_->buf4_close(&D);
 
-  outfile->Printf( "\n\tComputing LMP2 amplitudes:\n");
-  outfile->Printf(   "\t--------------------------\n");
-  outfile->Printf( "\titer = %d    LMP2 Energy = %20.14f\n", 0, energy);
+  outfile->Printf( "\n    Computing LMP2 amplitudes:\n");
+  outfile->Printf(   "    --------------------------\n");
+  outfile->Printf( "    iter = %d    LMP2 Energy = %20.14f\n", 0, energy);
 
   conv = 0;
   int lmp2_maxiter=1000;
@@ -191,11 +191,11 @@ void CCEnergyWavefunction::lmp2(void)
 
     rms = sqrt(rms);
 
-    outfile->Printf( "\titer = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
+    outfile->Printf( "    iter = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
 
     if(rms < params_.convergence) {
       conv = 1;
-      outfile->Printf( "\n\tLMP2 Iterations converged.\n");
+      outfile->Printf( "\n    LMP2 Iterations converged.\n");
       break;
     }
     else {
@@ -206,7 +206,7 @@ void CCEnergyWavefunction::lmp2(void)
   }
 
   if(!conv) {
-    outfile->Printf( "\n\tLMP2 Iterative procedure failed.\n");
+    outfile->Printf( "\n    LMP2 Iterative procedure failed.\n");
     throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params_.convergence, rms, __FILE__, __LINE__);
   }
 
@@ -241,9 +241,9 @@ void CCEnergyWavefunction::lmp2(void)
   global_dpd_->buf4_mat_irrep_close(&D, 0);
   global_dpd_->buf4_close(&D);
 
-  outfile->Printf( "\n\tLMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
-  outfile->Printf( "\tLMP2 Correlation Energy = %20.14f\n", energy);
-  outfile->Printf( "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
+  outfile->Printf( "\n    LMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
+  outfile->Printf( "    LMP2 Correlation Energy = %20.14f\n", energy);
+  outfile->Printf( "    LMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
   
 
   local_.weak_pair_energy = weak_pair_energy;

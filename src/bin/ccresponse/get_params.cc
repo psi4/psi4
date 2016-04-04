@@ -202,24 +202,24 @@ void get_params(boost::shared_ptr<Wavefunction> wfn, Options &options)
     outfile->Printf( "\tProperty         =    POLARIZABILITY + ROTATION\n");
   else
     outfile->Printf( "\tProperty         =    %s\n", params.prop.c_str());
-  outfile->Printf( "\tReference wfn    =    %5s\n",
+  outfile->Printf( "\tReference wfn    =    %s\n",
           (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  outfile->Printf( "\tMemory (Mbytes)  =  %5.1f\n",params.memory/1e6);
-  outfile->Printf( "\tCache Level      =    %1d\n", params.cachelev);
-  outfile->Printf( "\tPrint Level      =    %1d\n",  params.print);
-  outfile->Printf( "\tMaxiter          =    %3d\n",  params.maxiter);
-  outfile->Printf( "\tConvergence      = %3.1e\n", params.convergence);
-  outfile->Printf( "\tRestart          =     %s\n", params.restart ? "Allowed" : "Not Allowed");
-  outfile->Printf( "\tDIIS             =     %s\n", params.diis ? "Yes" : "No");
-  outfile->Printf( "\tModel III        =     %s\n", params.sekino ? "Yes" : "No");
-  outfile->Printf( "\tLinear Model     =     %s\n", params.linear ? "Yes" : "No");
-  outfile->Printf( "\tABCD             =     %s\n", params.abcd.c_str());
-  outfile->Printf( "\tIrrep X          =    %3s\n", moinfo.labels[moinfo.mu_irreps[0]]);
-  outfile->Printf( "\tIrrep Y          =    %3s\n", moinfo.labels[moinfo.mu_irreps[1]]);
-  outfile->Printf( "\tIrrep Z          =    %3s\n", moinfo.labels[moinfo.mu_irreps[2]]);
-  outfile->Printf( "\tIrrep RX         =    %3s\n", moinfo.labels[moinfo.l_irreps[0]]);
-  outfile->Printf( "\tIrrep RY         =    %3s\n", moinfo.labels[moinfo.l_irreps[1]]);
-  outfile->Printf( "\tIrrep RZ         =    %3s\n", moinfo.labels[moinfo.l_irreps[2]]);
+  outfile->Printf( "\tMemory (Mbytes)  =    %5.1f\n",params.memory/1e6);
+  outfile->Printf( "\tCache Level      =    %d\n", params.cachelev);
+  outfile->Printf( "\tPrint Level      =    %d\n",  params.print);
+  outfile->Printf( "\tMaxiter          =    %d\n",  params.maxiter);
+  outfile->Printf( "\tConvergence      =    %3.1e\n", params.convergence);
+  outfile->Printf( "\tRestart          =    %s\n", params.restart ? "Allowed" : "Not Allowed");
+  outfile->Printf( "\tDIIS             =    %s\n", params.diis ? "Yes" : "No");
+  outfile->Printf( "\tModel III        =    %s\n", params.sekino ? "Yes" : "No");
+  outfile->Printf( "\tLinear Model     =    %s\n", params.linear ? "Yes" : "No");
+  outfile->Printf( "\tABCD             =    %s\n", params.abcd.c_str());
+  outfile->Printf( "\tIrrep X          =    %s\n", moinfo.labels[moinfo.mu_irreps[0]]);
+  outfile->Printf( "\tIrrep Y          =    %s\n", moinfo.labels[moinfo.mu_irreps[1]]);
+  outfile->Printf( "\tIrrep Z          =    %s\n", moinfo.labels[moinfo.mu_irreps[2]]);
+  outfile->Printf( "\tIrrep RX         =    %s\n", moinfo.labels[moinfo.l_irreps[0]]);
+  outfile->Printf( "\tIrrep RY         =    %s\n", moinfo.labels[moinfo.l_irreps[1]]);
+  outfile->Printf( "\tIrrep RZ         =    %s\n", moinfo.labels[moinfo.l_irreps[2]]);
   outfile->Printf( "\tGauge            =    %s\n", params.gauge.c_str());
   for(i=0; i < params.nomega; i++) {
     if(params.omega[i] == 0.0)
@@ -232,12 +232,12 @@ void get_params(boost::shared_ptr<Wavefunction> wfn, Options &options)
   outfile->Printf( "\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
   outfile->Printf( "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    outfile->Printf( "\tLocal Cutoff      = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Cutoff      =    %3.1e\n", local.cutoff);
     outfile->Printf( "\tLocal Method      =    %s\n", local.method.c_str());
     outfile->Printf( "\tWeak pairs        =    %s\n", local.weakp.c_str());
     outfile->Printf( "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
     outfile->Printf( "\tLocal pairs       =    %s\n", local.pairdef.c_str());
-    outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
+    outfile->Printf( "\tLocal CPHF cutoff =    %3.1e\n", local.cphf_cutoff);
   }
   outfile->Printf( "\n");
 }

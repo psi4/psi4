@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                              Psi4 0.4.190 Driver
 
-                          Git: Rev {master} dbe9080
+                          Git: Rev {test_ref_refresh} 9b1b239 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -12,13 +12,15 @@
     (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:15:45 2016
+    Psi4 started on: Mon Apr  4 10:20:47 2016
 
-    Process ID:   9335
+    Process ID:   4488
     PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
@@ -72,7 +74,7 @@ psi4_io.print_out()
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:15:46 2016
+*** at Mon Apr  4 10:20:47 2016
 
 
          ---------------------------------------------------------
@@ -200,7 +202,7 @@ psi4_io.print_out()
       12B2     3.739854    12B1     3.739854     6A2     3.809173  
       22A1     3.809173     7A2     3.897341    23A1     3.897341  
       24A1     3.908670    13B2     3.947554    13B1     3.947554  
-      14B1     3.949190    14B2     3.949190    15B2     4.001132  
+      14B2     3.949190    14B1     3.949190    15B2     4.001132  
       15B1     4.001132     8A2     4.099324    25A1     4.099324  
       26A1     4.138267    27A1     5.032926    28A1     5.283525  
       16B2     5.505709    16B1     5.505709    17B1     6.418822  
@@ -253,18 +255,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:15:46 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:20:48 2016
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:15:46 2016
+*** at Mon Apr  4 10:20:48 2016
 
 
 	Wfn Parameters:
@@ -351,58 +353,58 @@ Total time:
 	Two-electron energy          =      2.59001472936072
 	Reference energy             =    -25.10354689697908
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:15:47 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:20:49 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.34 seconds =       0.01 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.41 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.98 seconds =       0.02 minutes
-	system time =       0.42 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:15:47 2016
+*** at Mon Apr  4 10:20:49 2016
 
-			**************************
-			*                        *
-			*        CCENERGY        *
-			*                        *
-			**************************
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
 
-	Nuclear Rep. energy (wfn)     =    2.645886042950000
-	SCF energy          (wfn)     =  -25.103546896979154
-	Reference energy    (file100) =  -25.103546896979083
+    Nuclear Rep. energy (wfn)     =    2.645886042950000
+    SCF energy          (wfn)     =  -25.103546896979154
+    Reference energy    (file100) =  -25.103546896979083
 
-	Input parameters:
-	-----------------
-	Wave function   =   CCSD_T
-	Reference wfn   =     RHF
-	Brueckner       =     No
-	Memory (Mbytes) =     250.0
-	Maxiter         =     50
-	R_Convergence   =     1.0e-10
-	E_Convergence   =     1.0e-10
-	Restart         =     Yes
-	DIIS            =     Yes
-	AO Basis        =     NONE
-	ABCD            =     NEW
-	Cache Level     =     2
-	Cache Type      =     LOW
-	Print Level     =     1
-	Num. of threads =     1
-	# Amps to Print =     10
-	Print MP2 Amps? =     No
-	Analyze T2 Amps =     No
-	Print Pair Ener =     No
-	Local CC        =     No
-	SCS-MP2         =     False
-	SCSN-MP2        =     False
-	SCS-CCSD        =     False
+    Input parameters:
+    -----------------
+    Wave function   =   CCSD_T
+    Reference wfn   =     RHF
+    Brueckner       =     No
+    Memory (Mbytes) =     250.0
+    Maxiter         =     50
+    R_Convergence   =     1.0e-10
+    E_Convergence   =     1.0e-10
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LOW
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
 
-MP2 correlaction energy -0.0777617270519943
-	            Solving CC Amplitude Equations
-	            ------------------------------
+MP2 correlation energy -0.0777617270519943
+                Solving CC Amplitude Equations
+                ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
      0        -0.077761727051994    0.000e+00    0.000000    0.000000    0.000000    0.148207
@@ -419,99 +421,100 @@ MP2 correlaction energy -0.0777617270519943
     11        -0.100265809732684    3.294e-07    0.012982    0.025595    0.025595    0.267312
     12        -0.100265806174599    1.059e-07    0.012982    0.025595    0.025595    0.267312
     13        -0.100265803698733    2.286e-08    0.012982    0.025595    0.025595    0.267312
-    14        -0.100265803876618    5.332e-09    0.012982    0.025595    0.025595    0.267312
+    14        -0.100265803876617    5.332e-09    0.012982    0.025595    0.025595    0.267312
     15        -0.100265803960723    1.648e-09    0.012982    0.025595    0.025595    0.267312
     16        -0.100265803983654    6.115e-10    0.012982    0.025595    0.025595    0.267312
     17        -0.100265803963963    2.874e-10    0.012982    0.025595    0.025595    0.267312
     18        -0.100265803960514    9.330e-11    0.012982    0.025595    0.025595    0.267312
 
-	Iterations converged.
+    Iterations converged.
 
 
-	Largest TIA Amplitudes:
-	          1   1         0.0169682693
-	          1   4        -0.0118098019
-	          1   2        -0.0097755523
-	          1  10         0.0054481605
-	          0   4         0.0051858813
-	          0   1        -0.0051797620
-	          1   5         0.0048449450
-	          0  10        -0.0031773622
-	          0   5        -0.0030988704
-	          1   7         0.0023553184
+    Largest TIA Amplitudes:
+              1   1         0.0169682693
+              1   4        -0.0118098019
+              1   2        -0.0097755523
+              1  10         0.0054481605
+              0   4         0.0051858813
+              0   1        -0.0051797620
+              1   5         0.0048449450
+              0  10        -0.0031773622
+              0   5        -0.0030988704
+              1   7         0.0023553184
 
-	Largest TIjAb Amplitudes:
-	  1   1  42  42        -0.1078166237
-	  1   1  62  62        -0.1078166237
-	  1   1  42  43        -0.0571252180
-	  1   1  43  42        -0.0571252180
-	  1   1  62  63        -0.0571252180
-	  1   1  63  62        -0.0571252180
-	  1   1   2   2        -0.0430333630
-	  1   1  42  44        -0.0406258130
-	  1   1  44  42        -0.0406258130
-	  1   1  62  64        -0.0406258130
+    Largest TIjAb Amplitudes:
+      1   1  42  42        -0.1078166237
+      1   1  62  62        -0.1078166237
+      1   1  42  43        -0.0571252180
+      1   1  43  42        -0.0571252180
+      1   1  62  63        -0.0571252180
+      1   1  63  62        -0.0571252180
+      1   1   2   2        -0.0430333630
+      1   1  42  44        -0.0406258130
+      1   1  44  42        -0.0406258130
+      1   1  62  64        -0.0406258130
 
-	SCF energy       (wfn)                =  -25.103546896979154
-	Reference energy (file100)            =  -25.103546896979083
+    SCF energy       (wfn)                    =  -25.103546896979154
+    Reference energy (file100)                =  -25.103546896979083
 
-	Opposite-spin MP2 correlation energy  =   -0.072816818190229
-	Same-spin MP2 correlation energy      =   -0.004944908861765
-	MP2 correlation energy                =   -0.077761727051994
+    Opposite-spin MP2 correlation energy      =   -0.072816818190229
+    Same-spin MP2 correlation energy          =   -0.004944908861765
+    MP2 correlation energy                    =   -0.077761727051994
       * MP2 total energy                      =  -25.181308624031075
 
-	Opposite-spin CCSD correlation energy =   -0.095052637410569
-	Same-spin CCSD correlation energy     =   -0.005213166542788
-	CCSD correlation energy               =   -0.100265803960514
-      * CCSD total energy                 =  -25.203812700939597
+    Opposite-spin CCSD correlation energy     =   -0.095052637410569
+    Same-spin CCSD correlation energy         =   -0.005213166542788
+    CCSD correlation energy                   =   -0.100265803960514
+      * CCSD total energy                     =  -25.203812700939597
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:15:48 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:20:49 2016
 Module time:
 	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.19 seconds =       0.02 minutes
-	system time =       0.75 seconds =       0.01 minutes
+	user time   =       1.27 seconds =       0.02 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:15:48 2016
+*** at Mon Apr  4 10:20:49 2016
 
-			**************************
-			*                        *
-			*        CCTRIPLES       *
-			*                        *
-			**************************
-
-
-	Wave function   =    CCSD_T
-	Reference wfn   =      RHF
-
-	Nuclear Rep. energy (wfn)     =    2.645886042950000
-	SCF energy          (wfn)     =  -25.103546896979154
-	Reference energy    (file100) =  -25.103546896979083
-	CCSD energy         (file100) =   -0.100265803960514
-	Total CCSD energy   (file100) =  -25.203812700939597
-
-	Number of ijk index combinations: 4
-	Memory available in words        :        31250000
-	~Words needed per explicit thread:          131072
-	Number of threads for explicit ijk threading:    1.
-	(T) energy                    =   -0.002090933451839
-      * CCSD(T) total energy          =  -25.205903634391436
+            **************************
+            *                        *
+            *        CCTRIPLES       *
+            *                        *
+            **************************
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:15:48 2016
+    Wave function   =    CCSD_T
+    Reference wfn   =      RHF
+
+    Nuclear Rep. energy (wfn)                =    2.645886042950000
+    SCF energy          (wfn)                =  -25.103546896979154
+    Reference energy    (file100)            =  -25.103546896979083
+    CCSD energy         (file100)            =   -0.100265803960514
+    Total CCSD energy   (file100)            =  -25.203812700939597
+
+    Number of ijk index combinations:                4
+    Memory available in words        :        31250000
+    ~Words needed per explicit thread:          131072
+    Number of threads for explicit ijk threading:    1
+
+    (T) energy                                =   -0.002090933451839
+      * CCSD(T) total energy                  =  -25.205903634391436
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:20:50 2016
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.62 seconds =       0.03 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.72 seconds =       0.03 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
 	CCSD contribution.................................................PASSED
@@ -542,74 +545,74 @@ Total time:
 
   Filename                                          Status   Fate         
   ----------------------------------------------------------------------
-  /scratch/dsmith//psi.9335.bh.100                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.101                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.102                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.103                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.104                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.105                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.106                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.107                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.108                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.109                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.110                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.111                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.112                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.113                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.114                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.115                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.116                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.117                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.118                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.119                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.120                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.121                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.122                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.123                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.124                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.125                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.126                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.127                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.128                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.129                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.130                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.131                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.132                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.133                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.134                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.135                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.136                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.137                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.138                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.139                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.140                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.141                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.142                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.143                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.144                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.145                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.146                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.147                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.148                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.149                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.150                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.151                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.152                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.153                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.154                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.155                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.156                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.157                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.158                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.159                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.160                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.161                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.162                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.163                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.164                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.180                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.34                   CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.35                   CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.100                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.101                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.102                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.103                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.104                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.105                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.106                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.107                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.108                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.109                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.110                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.111                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.112                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.113                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.114                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.115                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.116                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.117                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.118                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.119                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.120                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.121                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.122                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.123                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.124                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.125                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.126                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.127                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.128                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.129                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.130                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.131                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.132                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.133                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.134                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.135                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.136                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.137                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.138                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.139                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.140                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.141                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.142                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.143                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.144                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.145                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.146                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.147                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.148                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.149                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.150                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.151                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.152                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.153                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.154                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.155                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.156                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.157                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.158                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.159                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.160                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.161                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.162                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.163                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.164                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.180                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.34                   CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.35                   CLOSED   DEREZZ       
 
                     --------------------------------
                     ==> PSI4 Current File Status <==
@@ -636,75 +639,75 @@ Total time:
 
   Filename                                          Status   Fate         
   ----------------------------------------------------------------------
-  /scratch/dsmith//psi.9335.bh.100                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.101                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.102                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.103                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.104                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.105                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.106                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.107                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.108                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.109                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.110                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.111                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.112                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.113                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.114                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.115                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.116                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.117                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.118                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.119                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.120                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.121                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.122                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.123                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.124                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.125                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.126                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.127                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.128                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.129                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.130                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.131                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.132                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.133                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.134                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.135                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.136                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.137                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.138                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.139                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.140                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.141                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.142                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.143                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.144                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.145                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.146                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.147                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.148                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.149                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.150                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.151                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.152                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.153                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.154                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.155                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.156                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.157                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.158                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.159                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.160                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.161                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.162                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.163                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.164                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.180                  CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.34                   CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.bh.35                   CLOSED   DEREZZ       
-  /scratch/dsmith//psi.9335.cool.32                 CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.100                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.101                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.102                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.103                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.104                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.105                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.106                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.107                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.108                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.109                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.110                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.111                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.112                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.113                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.114                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.115                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.116                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.117                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.118                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.119                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.120                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.121                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.122                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.123                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.124                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.125                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.126                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.127                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.128                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.129                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.130                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.131                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.132                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.133                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.134                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.135                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.136                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.137                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.138                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.139                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.140                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.141                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.142                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.143                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.144                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.145                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.146                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.147                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.148                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.149                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.150                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.151                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.152                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.153                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.154                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.155                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.156                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.157                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.158                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.159                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.160                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.161                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.162                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.163                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.164                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.180                  CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.34                   CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.bh.35                   CLOSED   DEREZZ       
+  /scratch/dsmith//psi.4488.cool.32                 CLOSED   DEREZZ       
 
 
 *** PSI4 exiting successfully. Buy a developer a beer!

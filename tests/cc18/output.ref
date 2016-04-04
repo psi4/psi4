@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                              Psi4 0.4.190 Driver
 
-                          Git: Rev {master} dbe9080
+                          Git: Rev {test_ref_refresh} 9b1b239 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -12,13 +12,15 @@
     (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:13:49 2016
+    Psi4 started on: Mon Apr  4 10:18:54 2016
 
-    Process ID:   9175
+    Process ID:   4265
     PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
@@ -60,7 +62,7 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
 
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:54 2016
 
 
          ---------------------------------------------------------
@@ -234,18 +236,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:55 2016
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:55 2016
 
 
 	Wfn Parameters:
@@ -324,58 +326,58 @@ Total time:
 	Two-electron energy          =    113.55889725662205
 	Reference energy             =   -174.41843300162441
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:55 2016
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:55 2016
 
-			**************************
-			*                        *
-			*        CCENERGY        *
-			*                        *
-			**************************
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
 
-	Nuclear Rep. energy (wfn)     =   46.780362058359806
-	SCF energy          (wfn)     = -174.418433001624464
-	Reference energy    (file100) = -174.418433001624408
+    Nuclear Rep. energy (wfn)     =   46.780362058359806
+    SCF energy          (wfn)     = -174.418433001624464
+    Reference energy    (file100) = -174.418433001624408
 
-	Input parameters:
-	-----------------
-	Wave function   =     CCSD
-	Reference wfn   =     RHF
-	Brueckner       =     No
-	Memory (Mbytes) =     250.0
-	Maxiter         =     50
-	R_Convergence   =     1.0e-07
-	E_Convergence   =     1.0e-08
-	Restart         =     Yes
-	DIIS            =     Yes
-	AO Basis        =     NONE
-	ABCD            =     NEW
-	Cache Level     =     2
-	Cache Type      =     LOW
-	Print Level     =     1
-	Num. of threads =     1
-	# Amps to Print =     10
-	Print MP2 Amps? =     No
-	Analyze T2 Amps =     No
-	Print Pair Ener =     No
-	Local CC        =     No
-	SCS-MP2         =     False
-	SCSN-MP2        =     False
-	SCS-CCSD        =     False
+    Input parameters:
+    -----------------
+    Wave function   =     CCSD
+    Reference wfn   =     RHF
+    Brueckner       =     No
+    Memory (Mbytes) =     250.0
+    Maxiter         =     50
+    R_Convergence   =     1.0e-07
+    E_Convergence   =     1.0e-08
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LOW
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
 
-MP2 correlaction energy -0.3566362407141977
-	            Solving CC Amplitude Equations
-	            ------------------------------
+MP2 correlation energy -0.3566362407141977
+                Solving CC Amplitude Equations
+                ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
      0        -0.356636240714198    0.000e+00    0.000000    0.000000    0.000000    0.109615
@@ -386,66 +388,66 @@ MP2 correlaction energy -0.3566362407141977
      5        -0.368847102126406    5.172e-04    0.005511    0.017384    0.017384    0.128207
      6        -0.368845295153371    1.896e-04    0.005559    0.017671    0.017671    0.128212
      7        -0.368842607499228    4.221e-05    0.005566    0.017712    0.017712    0.128200
-     8        -0.368842991731992    9.726e-06    0.005568    0.017722    0.017722    0.128199
+     8        -0.368842991731993    9.726e-06    0.005568    0.017722    0.017722    0.128199
      9        -0.368843083956831    1.805e-06    0.005568    0.017722    0.017722    0.128199
     10        -0.368843084634206    4.602e-07    0.005568    0.017723    0.017723    0.128198
     11        -0.368843099036337    1.246e-07    0.005568    0.017723    0.017723    0.128198
-    12        -0.368843101812754    3.400e-08    0.005568    0.017723    0.017723    0.128198
+    12        -0.368843101812753    3.400e-08    0.005568    0.017723    0.017723    0.128198
     13        -0.368843102642330    8.788e-09    0.005568    0.017723    0.017723    0.128198
 
-	Iterations converged.
+    Iterations converged.
 
 
-	Largest TIA Amplitudes:
-	          6   0         0.0137313980
-	          6   2        -0.0064752642
-	          7  17        -0.0058546058
-	          5   0        -0.0054830976
-	          6   9         0.0050129177
-	          3   1         0.0049539841
-	          8  17        -0.0043004441
-	          6   1        -0.0041980390
-	          4   9        -0.0039633123
-	          7  18         0.0038967922
+    Largest TIA Amplitudes:
+              6   0         0.0137313980
+              6   2        -0.0064752642
+              7  17        -0.0058546058
+              5   0        -0.0054830976
+              6   9         0.0050129177
+              3   1         0.0049539841
+              8  17        -0.0043004441
+              6   1        -0.0041980390
+              4   9        -0.0039633123
+              7  18         0.0038967922
 
-	Largest TIjAb Amplitudes:
-	  8   8  17  17        -0.0347803136
-	  6   6   2   2        -0.0346572612
-	  6   6   0   0        -0.0242680490
-	  6   6   0   2         0.0221026068
-	  6   6   2   0         0.0221026068
-	  8   8  18  18        -0.0216499642
-	  7   7  18  18        -0.0211241947
-	  7   8  17  17        -0.0203462181
-	  8   7  17  17        -0.0203462181
-	  7   8  18  18         0.0189838363
+    Largest TIjAb Amplitudes:
+      8   8  17  17        -0.0347803136
+      6   6   2   2        -0.0346572612
+      6   6   0   0        -0.0242680490
+      6   6   0   2         0.0221026068
+      6   6   2   0         0.0221026068
+      8   8  18  18        -0.0216499642
+      7   7  18  18        -0.0211241947
+      7   8  17  17        -0.0203462181
+      8   7  17  17        -0.0203462181
+      7   8  18  18         0.0189838363
 
-	SCF energy       (wfn)                = -174.418433001624464
-	Reference energy (file100)            = -174.418433001624408
+    SCF energy       (wfn)                    = -174.418433001624464
+    Reference energy (file100)                = -174.418433001624408
 
-	Opposite-spin MP2 correlation energy  =   -0.260477904528144
-	Same-spin MP2 correlation energy      =   -0.096158336186053
-	MP2 correlation energy                =   -0.356636240714198
+    Opposite-spin MP2 correlation energy      =   -0.260477904528144
+    Same-spin MP2 correlation energy          =   -0.096158336186053
+    MP2 correlation energy                    =   -0.356636240714198
       * MP2 total energy                      = -174.775069242338617
 
-	Opposite-spin CCSD correlation energy =   -0.280899925283456
-	Same-spin CCSD correlation energy     =   -0.087943177358588
-	CCSD correlation energy               =   -0.368843102642330
-      * CCSD total energy                 = -174.787276104266738
+    Opposite-spin CCSD correlation energy     =   -0.280899925283456
+    Same-spin CCSD correlation energy         =   -0.087943177358588
+    CCSD correlation energy                   =   -0.368843102642330
+      * CCSD total energy                     = -174.787276104266738
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:55 2016
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.19 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.27 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:55 2016
 
 
 			**************************
@@ -455,18 +457,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:55 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.29 seconds =       0.00 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:55 2016
 
 
 			**************************
@@ -475,7 +477,7 @@ Total time:
 
 
 	Nuclear Rep. energy (wfn)     =   46.780362058359806
-	Reference           (wfn)     = 0
+	Reference           (wfn)     =                    0
 	SCF energy          (wfn)     = -174.418433001624464
 	Reference energy    (CC_INFO) = -174.418433001624408
 	CCSD energy         (CC_INFO) =   -0.368843102642330
@@ -483,15 +485,15 @@ Total time:
 
 	Input parameters:
 	-----------------
-	Maxiter       =      50
-	Convergence   = 1.0e-07
-	Restart       =     No
-	Cache Level   =     2
-	Model III     =     No
-	DIIS          =     Yes
-	AO Basis      =     No
-	ABCD            =     NEW
-	Local CC        =     No
+	Maxiter           =     50
+	Convergence       = 1.0e-07
+	Restart           =     No
+	Cache Level       =     2
+	Model III         =     No
+	DIIS              =     Yes
+	AO Basis          =     No
+	ABCD              =     NEW
+	Local CC          =     No
 	Paramaters for left-handed eigenvectors:
 	    Irr   Root  Ground-State?    EOM energy        R0
 	  1   0     0        Yes       0.0000000000   1.0000000000
@@ -546,18 +548,18 @@ Total time:
 
 	Overlap <L|e^T> =        0.92327310262
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:55 2016
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:50 2016
+*** at Mon Apr  4 10:18:55 2016
 
 			**************************
 			*                        *
@@ -700,7 +702,7 @@ Total time:
     5  (  5) -0.016981854822781  0.004948048788520  0.318027411128535 -0.311334572235773  0.400040741666932 -0.163260855972361 -0.043209699967124 -0.714667048601921  0.807833175029889
     6  (  6)  0.405126484977215 -0.384326977793986  0.412161084116086  0.554052652868783  0.580944240555373 -0.043533045697761 -0.738038189794228  0.085634839790995 -0.225430347670854
     7  (  7)  0.084899534842618 -0.477102952406990  0.155861734125426  0.049692746196546 -0.151524749952036 -0.714700304957326  0.085653110403714  1.020372569523931  0.273203758113639
-    8  (  8)  0.184458527478999 -0.023781009084402  0.165473299953048 -0.114600831840758 -0.558632517828092  0.809040540946061 -0.225150367794973  0.272550659411801  0.714544346163997
+    8  (  8)  0.184458527478999 -0.023781009084402  0.165473299953048 -0.114600831840758 -0.558632517828092  0.809040540946061 -0.225150367794973  0.272550659411801  0.714544346163998
     9  (  9)  0.053140085550881 -0.342609131409186 -0.159311675960687  0.022341895162533 -0.065531666454094 -0.269706601806970 -0.158590290054837 -0.172377416674253  0.098583572094309
    10  ( 10)  0.103318634517953  0.336891904619550 -0.211860379636880  0.028705977483184  0.219074363311157  0.147144167953135  0.232719520025753  0.268264154914567  0.208839112793899
    11  ( 11) -0.186528320717506  0.153201146149205  0.313141523668825 -0.072865729157214 -0.113774903873248  0.278147399346303 -0.079792554958670 -0.195212219980152  0.186019861524612
@@ -1243,21 +1245,21 @@ Total time:
 
                    0                     1                     2        
 
-    0      5.725437023927114    -1.786158519574429     0.000000000000000
-    1     -1.786158519574429     6.486317386955802     0.000000000000000
+    0      5.725437023927115    -1.786158519574430     0.000000000000000
+    1     -1.786158519574430     6.486317386955803     0.000000000000000
     2      0.000000000000000     0.000000000000000     3.162419712605410
 
 	alpha_(0.000) =       5.124724707829 a.u.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:51 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:56 2016
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
+	user time   =       0.34 seconds =       0.01 minutes
 	system time =       0.32 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.75 seconds =       0.01 minutes
-	system time =       0.63 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
 	CCSD correlation energy...........................................PASSED

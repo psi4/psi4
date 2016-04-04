@@ -183,8 +183,8 @@ double CCEnergyWavefunction::uhf_energy(void)
   */
 
   /*
-  outfile->Printf("\n\tOpposite-spin energy  = %20.15f\n",E2AB);
-  outfile->Printf("\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
+  outfile->Printf("\n    Opposite-spin energy  = %20.15f\n",E2AB);
+  outfile->Printf("    Same-spin energy  = %20.15f\n",E2AA+E2BB);
   */
 
   // Store the same-spin and opposite-spin pair energies
