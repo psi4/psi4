@@ -2165,85 +2165,85 @@ void FISAPT::print_trailer()
 
     outfile->Printf("\n    SAPT Results  \n");
     std::string scaled = "   ";
-    outfile->Printf("  -------------------------------------------------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics            %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scalars_["Electrostatics"] * 1000.0,
       scalars_["Electrostatics"] * pc_hartree2kcalmol,
       scalars_["Electrostatics"] * pc_hartree2kJmol);
-    outfile->Printf("      Elst10,r                %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n\n",
+    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
       scalars_["Elst10,r"] * 1000.0,
       scalars_["Elst10,r"] * pc_hartree2kcalmol,
       scalars_["Elst10,r"] * pc_hartree2kJmol);
 
-    outfile->Printf("    Exchange %3s              %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["Exchange"] * 1000.0,
       scalars_["Exchange"] * pc_hartree2kcalmol,
       scalars_["Exchange"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch10                  %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch10                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scalars_["Exch10"] * 1000.0,
       scalars_["Exch10"] * pc_hartree2kcalmol,
       scalars_["Exch10"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch10(S^2)             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n\n",
+    outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
       scalars_["Exch10(S^2)"] * 1000.0,
       scalars_["Exch10(S^2)"] * pc_hartree2kcalmol,
       scalars_["Exch10(S^2)"] * pc_hartree2kJmol);
 
-    outfile->Printf("    Induction %3s             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["Induction"] * 1000.0,
       scalars_["Induction"] * pc_hartree2kcalmol,
       scalars_["Induction"] * pc_hartree2kJmol);
-    outfile->Printf("      Ind20,r                 %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scalars_["Ind20,r"] * 1000.0,
       scalars_["Ind20,r"] * pc_hartree2kcalmol,
       scalars_["Ind20,r"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["Exch-Ind20,r"] * 1000.0,
       scalars_["Exch-Ind20,r"] * pc_hartree2kcalmol,
       scalars_["Exch-Ind20,r"] * pc_hartree2kJmol);
-    outfile->Printf("      delta HF,r (2) %3s      %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["delta HF,r (2)"] * 1000.0,
       scalars_["delta HF,r (2)"] * pc_hartree2kcalmol,
       scalars_["delta HF,r (2)"] * pc_hartree2kJmol);
-    outfile->Printf("      Induction (A<-B) %3s    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Induction (A<-B) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["Induction (A<-B)"] * 1000.0,
       scalars_["Induction (A<-B)"] * pc_hartree2kcalmol,
       scalars_["Induction (A<-B)"] * pc_hartree2kJmol);
-    outfile->Printf("      Induction (B<-A) %3s    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n\n",
+    outfile->Printf("      Induction (B<-A) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
       scaled.c_str(),
       scalars_["Induction (B<-A)"] * 1000.0,
       scalars_["Induction (B<-A)"] * pc_hartree2kcalmol,
       scalars_["Induction (B<-A)"] * pc_hartree2kJmol);
 
-    outfile->Printf("    Dispersion %3s            %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["Dispersion"] * 1000.0,
       scalars_["Dispersion"] * pc_hartree2kcalmol,
       scalars_["Dispersion"] * pc_hartree2kJmol);
-    outfile->Printf("      Disp20                  %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scalars_["Disp20"] * 1000.0,
       scalars_["Disp20"] * pc_hartree2kcalmol,
       scalars_["Disp20"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Disp20 %3s         %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n\n",
+    outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
       scaled.c_str(),
       scalars_["Exch-Disp20"] * 1000.0,
       scalars_["Exch-Disp20"] * pc_hartree2kcalmol,
       scalars_["Exch-Disp20"] * pc_hartree2kJmol);
 
-    outfile->Printf("  Total HF                    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scalars_["HF"] * 1000.0,
       scalars_["HF"] * pc_hartree2kcalmol,
       scalars_["HF"] * pc_hartree2kJmol);
-    outfile->Printf("  Total SAPT0 %3s             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       scalars_["SAPT"] * 1000.0,
       scalars_["SAPT"] * pc_hartree2kcalmol,
       scalars_["SAPT"] * pc_hartree2kJmol);
-    outfile->Printf("  -------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
 
     outfile->Printf("\n");
     outfile->Printf("    Han Solo: This is *not* gonna work.\n");

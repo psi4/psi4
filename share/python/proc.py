@@ -2985,15 +2985,16 @@ def run_sapt_ct(name, **kwargs):
     CTm = psi4.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm
 
+    units = (1000.0, p4const.psi_hartree2kcalmol, p4const.psi_hartree2kJmol)
     psi4.print_out('\n\n')
     psi4.print_out('    SAPT Charge Transfer Analysis\n')
-    psi4.print_out('  -----------------------------------------------------------------------------\n')
-    line1 = '    SAPT Induction (Dimer Basis)      %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTd * 1000.0, CTd * p4const.psi_hartree2kcalmol)
-    line2 = '    SAPT Induction (Monomer Basis)    %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTm * 1000.0, CTm * p4const.psi_hartree2kcalmol)
-    line3 = '    SAPT Charge Transfer              %10.4lf mH    %10.4lf kcal mol^-1\n\n' % (CT * 1000.0, CT * p4const.psi_hartree2kcalmol)
-    psi4.print_out(line1)
-    psi4.print_out(line2)
-    psi4.print_out(line3)
+    psi4.print_out('  ------------------------------------------------------------------------------------------------\n')
+    psi4.print_out('    SAPT Induction (Dimer Basis)  %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
+        tuple(CTd * u for u in units))
+    psi4.print_out('    SAPT Induction (Monomer Basis)%12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' % 
+        tuple(CTm * u for u in units))
+    psi4.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' % 
+        tuple(CT * u for u in units))
     psi4.set_variable('SAPT CT ENERGY', CT)
 
     optstash.restore()

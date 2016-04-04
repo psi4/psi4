@@ -230,113 +230,113 @@ void SAPT0::print_results()
         outfile->Printf("    with Alpha = %12.6f \n", exch_scale_alpha_);
     }
     std::string scaled = (scal_it != Xscal.begin() ? "sc." : "   ");
-    outfile->Printf("  -------------------------------------------------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics            %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       tot_elst * 1000.0,
       tot_elst * pc_hartree2kcalmol,
       tot_elst * pc_hartree2kJmol);
-    outfile->Printf("      Elst10,r                %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_elst10_ * 1000.0,
       e_elst10_ * pc_hartree2kcalmol,
       e_elst10_ * pc_hartree2kJmol);
-    outfile->Printf("\n    Exchange %3s              %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("\n    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       tot_exch * 1000.0,
       tot_exch * pc_hartree2kcalmol,
       tot_exch * pc_hartree2kJmol);
-    outfile->Printf("      Exch10                  %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch10                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_exch10_ * 1000.0,
       e_exch10_ * pc_hartree2kcalmol,
       e_exch10_ * pc_hartree2kJmol);
-    outfile->Printf("      Exch10(S^2)             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_exch10_s2_ * 1000.0,
       e_exch10_s2_ * pc_hartree2kcalmol,
       e_exch10_s2_ * pc_hartree2kJmol);
-    outfile->Printf("\n    Induction %3s             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("\n    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       tot_ind * 1000.0,
       tot_ind * pc_hartree2kcalmol,
       tot_ind * pc_hartree2kJmol);
-    outfile->Printf("      Ind20,r                 %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_ind20_ * 1000.0,
       e_ind20_ * pc_hartree2kcalmol,
       e_ind20_ * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       *scal_it * e_exch_ind20_ * 1000.0,
       *scal_it * e_exch_ind20_ * pc_hartree2kcalmol,
       *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
-    outfile->Printf("      delta HF,r (2) %3s      %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       dHF2 * 1000.0,
       dHF2 * pc_hartree2kcalmol,
       dHF2 * pc_hartree2kJmol);
-    outfile->Printf("\n    Dispersion %3s            %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("\n    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       tot_disp * 1000.0,
       tot_disp * pc_hartree2kcalmol,
       tot_disp * pc_hartree2kJmol);
-    outfile->Printf("      Disp20                  %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_disp20_ * 1000.0,
       e_disp20_ * pc_hartree2kcalmol,
       e_disp20_ * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Disp20 %3s         %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       *scal_it * e_exch_disp20_ * 1000.0,
       *scal_it * e_exch_disp20_ * pc_hartree2kcalmol,
       *scal_it * e_exch_disp20_ * pc_hartree2kJmol);
-    outfile->Printf("      Disp20 (SS)             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Disp20 (SS)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_disp20_ss_ * 1000.0,
       e_disp20_ss_ * pc_hartree2kcalmol,
       e_disp20_ss_ * pc_hartree2kJmol);
-    outfile->Printf("      Disp20 (OS)             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Disp20 (OS)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       e_disp20_os_ * 1000.0,
       e_disp20_os_ * pc_hartree2kcalmol,
       e_disp20_os_ * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Disp20 (SS) %3s    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch-Disp20 (SS) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       *scal_it * e_exch_disp20_ss_ * 1000.0,
       *scal_it * e_exch_disp20_ss_ * pc_hartree2kcalmol,
       *scal_it * e_exch_disp20_ss_ * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Disp20 (OS) %3s    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("      Exch-Disp20 (OS) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       *scal_it * e_exch_disp20_os_*1000.0,
       *scal_it * e_exch_disp20_os_*pc_hartree2kcalmol,
       *scal_it * e_exch_disp20_os_*pc_hartree2kJmol);
 
-    outfile->Printf("\n  Total HF                    %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("\n  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       eHF_ * 1000.0,
       eHF_ * pc_hartree2kcalmol,
       eHF_ * pc_hartree2kJmol);
-    outfile->Printf("  Total SAPT0 %3s             %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+    outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
       scaled.c_str(),
       e_sapt0_ * 1000.0,
       e_sapt0_ * pc_hartree2kcalmol,
       e_sapt0_ * pc_hartree2kJmol);
     if(scal_it == Xscal.begin())  {
           outfile->Printf("\n  Special recipe for scaled SAPT0 (see Manual):\n");
-          outfile->Printf("    Electrostatics sSAPT0     %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+          outfile->Printf("    Electrostatics sSAPT0     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
             elst_sSAPT0 * 1000.0,
             elst_sSAPT0 * pc_hartree2kcalmol,
             elst_sSAPT0 * pc_hartree2kJmol);
-          outfile->Printf("    Exchange sSAPT0           %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+          outfile->Printf("    Exchange sSAPT0           %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
             exch_sSAPT0 * 1000.0,
             exch_sSAPT0 * pc_hartree2kcalmol,
             exch_sSAPT0 * pc_hartree2kJmol);
-          outfile->Printf("    Induction sSAPT0          %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+          outfile->Printf("    Induction sSAPT0          %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
             ind_sSAPT0 * 1000.0,
             ind_sSAPT0 * pc_hartree2kcalmol,
             ind_sSAPT0 * pc_hartree2kJmol);
-          outfile->Printf("    Dispersion sSAPT0         %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+          outfile->Printf("    Dispersion sSAPT0         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
             disp_sSAPT0 * 1000.0,
             disp_sSAPT0 * pc_hartree2kcalmol,
             disp_sSAPT0 * pc_hartree2kJmol);
-          outfile->Printf("  Total sSAPT0                %16.8lf mH %16.8lf kcal mol^-1 %16.8lf kJ mol^-1\n",
+          outfile->Printf("  Total sSAPT0                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
             e_sSAPT0 * 1000.0,
             e_sSAPT0 * pc_hartree2kcalmol,
             e_sSAPT0 * pc_hartree2kJmol);
     }
-    outfile->Printf("  -------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
 
     // Only export if not scaled.
     if(scal_it == Xscal.begin()) {
