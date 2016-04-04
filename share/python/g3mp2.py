@@ -91,7 +91,6 @@ kT = (psi_kb * 298.15 * psi_na) / psi_cal2J / psi_hartree2kcalmol / 1000.0
 g3mp2_verbose_flag = False
 use_QCISDT = False
 debug_flag = False        # console stderr output
-csv_output = False
 
 def run_g3mp2(name, qcisd=False, **kwargs):
 
@@ -126,8 +125,11 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         if (g3mp2_verbose_flag or debug_flag) is True:
             sys.stderr.write(s)  # print to console stderr without newline
 
-    def log(line):
+    def log (line):
         psi4.print_out(line + '\n')
+
+    def report(line):
+        log(line)
         if (g3mp2_verbose_flag or debug_flag) is True:
             print line
 
@@ -139,7 +141,6 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         log("\n")
         log("g3mp2 flags are:")
         log(" qcisdt  - calculate QCISD(T) energy. default: CCSD(T)")
-        log(" csvdb   - write component energies in CSV database format")
         log(" verbose - print progress to console")
         log(" debug   - print more progress to console")
         log(" help    - this")
@@ -265,9 +266,11 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         return (_e0, _h298)
     #________________________________________________________________________
     def dHf_one_atom(Z=0):
-        '''return experimental atomic heats of formation
-           returns:      tuple
-           return type:     2 doubles
+        ''' return experimental atomic heats of formation.
+
+            Values harvested from the NIST Webbook at webbook.nist.gov/chemistry
+
+            returns:      tuple of 2 floats
         '''
     #      atom [dHf(0), dHf(298)]  in kcal/mol
 
@@ -361,13 +364,10 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     charge = 0
     multiplicity = 1
 
-    set_debug(0)
-
-    set_debug(1)
     kwargs = p4util.kwargs_lower(kwargs)
     debug('%s: %d args: %s' % (name, len(kwargs), ','.join([arg for arg in kwargs])))
 
-    flag_list = ["verbose", "qcisdt", "csvdb", "debug", "help"]
+    flag_list = ["verbose", "qcisdt", "debug", "help"]
     arg_list = list(kwargs)
 
     if "help" in kwargs:
@@ -387,15 +387,10 @@ def run_g3mp2(name, qcisd=False, **kwargs):
                 use_QCISDT = kwargs.pop('qc==dt', True)
                 debug('qcisdt is set %s' % str(use_QCISDT))
 
-            if arg == 'csvdb':
-                csv_output = kwargs.pop('csvdb', True)
-                debug('CSV output flag is set %s' % str(csv_output))
-
             if arg == 'debug':
                 kwargs.pop('debug')
-                debug_flag = True
-                g3mp2_verbose_flag = True
-    set_debug(0)
+                verbose()
+                set_debug(1)
 
     mol = psi4.get_active_molecule()
     g3mp2_name = mol.name()
@@ -405,14 +400,15 @@ def run_g3mp2(name, qcisd=False, **kwargs):
 
     debug("name: \"%s\" charge = %d multiplicity=%d." % (g3mp2_name, charge, multiplicity))
 
-    _atomZlist = ",".join([str(int(mol.Z(i))) for i in range(nAtoms)])
-    debug("There are %d atoms, Z = [%s]" % (nAtoms, _atomZlist))
+    debug("There are %d atoms, Z = [%s]" %
+          (nAtoms, join([str(int(mol.Z(i))) for i in range(nAtoms)])))
+
 
     if multiplicity > 1:
         if use_QCISDT is True:      # UHF-QCISD(T) currently unsupported
-            log("\n")
-            log("g3mp2: QCISD(T) doesn't support species with multiplicity > 1.")
-            log("g3mp2: Use the default CCSD(T) if acceptable.\n")
+            report("\n")
+            report("g3mp2: QCISD(T) doesn't support species with multiplicity > 1.")
+            report("g3mp2: Use the default CCSD(T) if acceptable.\n")
             psi4.clean()
             raise ValidationError("UHF unsupported for QCISD(T)\n")
 
@@ -450,7 +446,7 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     else:
         pass
 
-    # scf frequencies for ZPE
+    # Harmonic Zero Point Energy, etc.
     say('ZPE.')
 
     if nAtoms == 1:
@@ -599,51 +595,48 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     else:
         ccstring = 'CCSD(T)'
 
-    log('    ____________________________________________________________Psi4')
-    log('               SUMMARY OF G3(MP2, %s) CALCULATIONS'
+    report('    ____________________________________________________________Psi4')
+    report('               SUMMARY OF G3(MP2, %s) CALCULATIONS'
         % ccstring)
-    log('    ________________________________________________________________')
-    log('    MP2/6-31G(d)    = % 12.6f   %s/6-31G(d) = % 12.6f'
+    report('    ________________________________________________________________')
+    report('    MP2/6-31G(d)    = % 12.6f   %s/6-31G(d) = % 12.6f'
         % (Emp2_fc_631gd, ccstring, Ecc))
-    log('    MP2/G3MP2large  = % 12.6f   delta(MP2)       = % 12.6f'
+    report('    MP2/G3MP2large  = % 12.6f   delta(MP2)       = % 12.6f'
         % (Eg3mp2large, dMP2))
-    log('    ZPE(HF/6-31G(d))= % 12.6f   ZPE Scale Factor = % 12.6f'
+    report('    ZPE(HF/6-31G(d))= % 12.6f   ZPE Scale Factor = % 12.6f'
         % (Ezpe_scaled, 0.8929))
-    log('    HLC             = % 12.6f   Free Energy      = % 12.6f'
+    report('    HLC             = % 12.6f   Free Energy      = % 12.6f'
         % (Ehlc, Gthermal))
-    log('    Thermal Energy  = % 12.6f   Thermal Enthalpy = % 12.6f'
+    report('    Thermal Energy  = % 12.6f   Thermal Enthalpy = % 12.6f'
         % (Ethermal, Hthermal))
-    log('    ________________________________________________________________')
-    log('    E(G3(MP2)) @ 0K = % 12.6f   E(G3(MP2)) @298K = % 12.6f'
+    report('    ________________________________________________________________')
+    report('    E(G3(MP2)) @ 0K = % 12.6f   E(G3(MP2)) @298K = % 12.6f'
         % (E0_g3mp2, E298_g3mp2))
-    log('    H(G3(MP2))      = % 12.6f   G(G3(MP2))       = % 12.6f'
+    report('    H(G3(MP2))      = % 12.6f   G(G3(MP2))       = % 12.6f'
         % (H298_g3mp2, G298_g3mp2))
-    log('    ________________________________________________________________')
-    log("          HEAT OF FORMATION   (0K): % 10.2f kCal/mol" % dHf0)
-    log("          HEAT OF FORMATION (298K): % 10.2f kCal/mol" % dHf298)
-    log('    ________________________________________________________________')
+    report('    ________________________________________________________________')
+    report("          HEAT OF FORMATION   (0K): % 10.2f kCal/mol" % dHf0)
+    report("          HEAT OF FORMATION (298K): % 10.2f kCal/mol" % dHf298)
+    report('    ________________________________________________________________')
+
+
+    # write final energies in CSV format for trivial extraction,  e.g.,
+    #
+    #   grep -A 3 "CSV format" *.out |grep -v "CSV format" >> tempcsv.txt
+    #   sort -r <tempcsv.txt | uniq >moldb.csv
+
+    log("\n")
+    log("## CSV format of G3(MP2) component energies")
+
+    log("#SPECIE,E0,E298,H298,Gibbs,dHf0_kcal,dHf298_kcal")
+    log("#unit,Ha,Ha,Ha,Ha,kcal,kcal")
+    log("\"%s\",%.6f,%.6f,%.6f,%.6f,%.2f,%.2f" %
+        (g3mp2_name,E0_g3mp2, E298_g3mp2, H298_g3mp2, G298_g3mp2,dHf0, dHf298))
+
+    log("\n")
 
     psi4.clean()
     optstash.restore()
-
-    # write component energies in CSV format
-    if csv_output is True:
-        verbose()
-        log("\"%s G3(MP2) component energies\"" % g3mp2_name)
-        log("energy,Hartrees")
-        log("631gd, %.6f"      % Emp2_fc_631gd)
-        log("g3mp2large, %.6f" % Eg3mp2large)
-        if use_QCISDT:
-            log("qcisdt, %.6f"    % Ecc)
-        else:
-            log("ccsdt, %.6f"     % Ecc)
-        log("ethermal, %.6f"   % Ethermal)
-        log("hthermal, %.6f"   % Hthermal)
-        log("gthermal, %.6f"   % Gthermal)
-        log("hlc, %.6f"        % Ehlc)
-        log("E0, %.6f"         % E0_g3mp2)
-        log("dHf0, %.2f"       % dHf0)
-        log("dHf298, %.2f"     % dHf298)
 
     # return E @0K g3mp2 results
 
