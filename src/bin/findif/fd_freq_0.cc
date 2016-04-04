@@ -251,7 +251,7 @@ SharedMatrix fd_freq_0(boost::shared_ptr<Molecule> mol, Options &options,
       dim, 0, normal_irr[0], dim);
 
     if (print_lvl >= 3) {
-      outfile->Printf("\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h]);
       eivout(normal_irr, evals, 3*Natom, dim, "outfile");
     }
 

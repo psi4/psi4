@@ -13,6 +13,6 @@ h 1 0.958 2 104.4776
 set {
   basis cc-pvdz
 }
-energy('ocepa(0)')
+energy('olccd')
 
 

@@ -155,10 +155,21 @@ double CoupledPair::compute_energy() {
   // cepa energy
   char*cepatype = (char*)malloc(100*sizeof(char));
   if (cepa_level == 0){
-     Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = eccsd;
-     Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
-     Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
-     Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = eccsd + escf;
+     if (options_.get_bool("CEPA_NO_SINGLES")) {
+        Process::environment.globals["LCCD CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["LCCD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["LCCD SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["LCCD TOTAL ENERGY"]                     = eccsd + escf;
+     } else {
+        Process::environment.globals["LCCSD CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["LCCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["LCCSD SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["LCCSD TOTAL ENERGY"]                     = eccsd + escf;
+        Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = eccsd + escf;
+     }
   }
   if (cepa_level == 1){
      Process::environment.globals["CEPA(1) CORRELATION ENERGY"]               = eccsd;

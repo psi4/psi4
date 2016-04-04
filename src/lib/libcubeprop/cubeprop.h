@@ -89,7 +89,7 @@ public:
     /// Compute a density grid task (key.cube)
     void compute_density(boost::shared_ptr<Matrix> D, const std::string& key);
     /// Compute an ESP grid task (Dt.cube and ESP.cube)
-    void compute_esp(boost::shared_ptr<Matrix> Dt);
+    void compute_esp(boost::shared_ptr<Matrix> Dt, const std::vector<double>& nuc_weights = std::vector<double>());
     /// Compute an orbital task (key_N.cube, for 0-based indices of C)
     void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key);
     /// Compute a basis function task (key_N.cube, for 0-based indices of basisset_)

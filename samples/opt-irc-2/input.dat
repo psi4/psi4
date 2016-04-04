@@ -18,6 +18,7 @@ set hessian_write   true # write the hessian to a file for later use
 
 hessian('scf')
 
+
 #####################################################
 #### could split into separate input files here #####
 #####################################################
@@ -44,4 +45,4 @@ set {
 
 energy = optimize('scf')
 
-compare_values(energy, -92.86913416, 5, "Energy of last IRC point")
+compare_values(energy, -92.8743625872132, 4, "Energy of last IRC point")

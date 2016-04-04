@@ -290,8 +290,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
       throw(INTCO_EXCEPT("Impossibly large index for atom in fixed dihedral string."));
 
     TORS *one_tors = new TORS(a, b, c, d, 0);
-    // Insist on user-specified fixed coordinates to be given in Angstroms/radians
-    one_tors->set_fixed_eq_val(D[i].eq_val/180.0*_pi);
+    // Insist on user-specified fixed coordinates to be given in Angstroms/degrees
+    double user_val = D[i].eq_val/180.0*_pi;
+    if (user_val <= -_pi)
+      user_val += 2*_pi;
+    else if (user_val > _pi)
+      user_val -= 2*_pi;
+    one_tors->set_fixed_eq_val(user_val);
 
     // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
@@ -299,7 +304,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     if ((std::size_t) index == coords.simples.size())
       coords.simples.push_back(one_tors);// add it
     else {
-      coords.simples[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(user_val); // it's there already, add the fixed value
       delete one_tors;
     }
   }
