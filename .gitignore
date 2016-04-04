@@ -44,7 +44,17 @@ output.dat
 *.clean
 *timer.dat
 *.molden
-tests/*/@pcmsolver.inp
+
+# Special test cases
+tests/*/iter.dat
+tests/*/*.in
+tests/*/*.rst
+tests/*/*/*.h5
+tests/*/*/*.intco
+tests/docs*/*.txt
+tests/pcmsolver/*/*OUT*
+tests/pcmsolver/*/cavity*
+tests/pcmsolver/*/*pcmsolver.inp
 tests/*/PCM_matrix
 tests/*/PEDRA.OUT
 tests/*/cavity.npz

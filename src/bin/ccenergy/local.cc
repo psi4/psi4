@@ -72,13 +72,13 @@ void CCEnergyWavefunction::local_init(void)
   psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) local_.weak_pairs,
           local_.nocc*local_.nocc*sizeof(int));
 
-  outfile->Printf( "\tLocalization parameters ready.\n\n");
+  outfile->Printf( "    Localization parameters ready.\n\n");
   
 }
 
 void CCEnergyWavefunction::local_done(void)
 {
-  outfile->Printf( "\tLocal parameters free.\n");
+  outfile->Printf( "    Local parameters free.\n");
   
 }
 
@@ -134,7 +134,7 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
     ii = i*nocc + i;  /* diagonal element of pair matrices */
 
     if(!local_.pairdom_len[ii]) {
-      outfile->Printf( "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
+      outfile->Printf( "\n    local_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
       throw PsiException("local_filter_T1: Pair ii is zero-length, which makes no sense.", __FILE__, __LINE__);
     }
 

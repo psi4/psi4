@@ -160,7 +160,7 @@ void test_abc_loops_AAA() {
       }
     }
   }
-  outfile->Printf( "\tE(T) AAA from Andy's code = %20.15f\n", ET/36.0);
+  outfile->Printf( "    E(T) AAA from Andy's code = %20.15f\n", ET/36.0);
   global_dpd_->buf4_close(&EAAints);
   global_dpd_->buf4_close(&FAAints);
   global_dpd_->buf4_close(&T2AA);
@@ -280,7 +280,7 @@ void test_abc_loops_BBB() {
       }
     }
   }
-  outfile->Printf( "\tE(T) BBB from Andy's code = %20.15f\n", ET/36.0);
+  outfile->Printf( "    E(T) BBB from Andy's code = %20.15f\n", ET/36.0);
   global_dpd_->buf4_close(&EBBints);
   global_dpd_->buf4_close(&FBBints);
   global_dpd_->buf4_close(&T2BB);
@@ -427,7 +427,7 @@ void test_abc_loops_AAB() {
     }
   }
 
-  outfile->Printf( "\tE(T) AAB from Andy's code = %20.15f\n", ET/4.0);
+  outfile->Printf( "    E(T) AAB from Andy's code = %20.15f\n", ET/4.0);
   global_dpd_->file2_close(&fij);
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fab);
@@ -586,7 +586,7 @@ void test_abc_loops_BBA() {
     }
   }
 
-  outfile->Printf( "\tE(T) BBA from Andy's code = %20.15f\n", ET/4.0);
+  outfile->Printf( "    E(T) BBA from Andy's code = %20.15f\n", ET/4.0);
   global_dpd_->file2_close(&fij);
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fab);

@@ -84,8 +84,8 @@ double ET_RHF(void)
       max_a = virtpi[h];
   long int thread_mem_estimate = 4 * max_a * max_a * max_a;
 
-  outfile->Printf("\tMemory available in words        : %15ld\n", mem_avail);
-  outfile->Printf("\t~Words needed per explicit thread: %15ld\n", thread_mem_estimate);
+  outfile->Printf("    Memory available in words        : %15ld\n", mem_avail);
+  outfile->Printf("    ~Words needed per explicit thread: %15ld\n", thread_mem_estimate);
 
   // subtract at least 1/2 for non-abc quantities (mainly 2 ijab's + other buffers)
   double tval = (double) mem_avail / (double) thread_mem_estimate;
@@ -96,16 +96,16 @@ double ET_RHF(void)
   // by ccenergy directly as in energy(ccsd't') at present.
   if (possible_nthreads < nthreads) {
     nthreads = possible_nthreads;
-    outfile->Printf("\tReducing threads due to memory limitations.\n");
+    outfile->Printf("    Reducing threads due to memory limitations.\n");
   }
 
-  outfile->Printf("\tNumber of threads for explicit ijk threading: %4d.\n", nthreads);
+  outfile->Printf("    Number of threads for explicit ijk threading: %4d\n\n", nthreads);
 
 // Don't parallelize mkl if explicit threads are used; should be added for acml too.
 #ifdef HAVE_MKL
   int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
-  outfile->Printf("\tMKL num_threads set to 1 for explicit threading.\n\n");
+  outfile->Printf("    MKL num_threads set to 1 for explicit threading.\n\n");
 #endif
 
   thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
@@ -218,7 +218,7 @@ double ET_RHF(void)
         /* execute threads */
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          printer->Printf("\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
+          printer->Printf("    thread %d: first_ijk=%d,  last_ijk=%d\n", thread,
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
         }
 
