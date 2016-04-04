@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 (no tag) Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} 0cd0b11 dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Jan  8 11:21:40 2016
+    Psi4 started on: Mon Mar 14 15:13:47 2016
 
-    Process ID:  16285
-    PSI4DATADIR: /Users/brandonbakr/psi4/lib
+    Process ID:   9171
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -51,8 +51,8 @@ compare_values(refSCF, thisSCF, 10, "Reference energy")                     #TES
 compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on lawn-128-61-75-188.lawn.gatech.edu
-*** at Fri Jan  8 11:21:48 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:48 2016
 
 
          ---------------------------------------------------------
@@ -116,9 +116,6 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
     Total      10      10       1       1       1       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -153,16 +150,16 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
 
    @DF-UHF iter   1:    -0.80648083886740   -8.06481e-01   1.24628e-02 
    @DF-UHF iter   2:    -0.82592760804565   -1.94468e-02   2.07783e-03 DIIS
-   @DF-UHF iter   3:    -0.82648405662725   -5.56449e-04   1.52749e-05 DIIS
+   @DF-UHF iter   3:    -0.82648405662724   -5.56449e-04   1.52749e-05 DIIS
    @DF-UHF iter   4:    -0.82648407748726   -2.08600e-08   6.36134e-07 DIIS
-   @DF-UHF iter   5:    -0.82648407752154   -3.42806e-11   1.57365e-10 DIIS
-   @DF-UHF iter   6:    -0.82648407752154   -2.22045e-16   1.93103e-13 DIIS
+   @DF-UHF iter   5:    -0.82648407752154   -3.42812e-11   1.57365e-10 DIIS
+   @DF-UHF iter   6:    -0.82648407752154    6.66134e-16   1.93082e-13 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   8.881784197E-16
+   @Spin Contamination Metric:   3.108624469E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                8.881784197E-16
+   @S^2 Observed:                3.108624469E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -200,14 +197,14 @@ compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TES
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.1763924028633333
-    One-Electron Energy =                  -1.3590907619679640
-    Two-Electron Energy =                   0.3562142815830870
+    Nuclear Repulsion Energy =              0.1763924028633335
+    One-Electron Energy =                  -1.3590907619679626
+    Two-Electron Energy =                   0.3562142815830872
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                         -0.8264840775215437
+    Total Energy =                         -0.8264840775215421
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -221,13 +218,13 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
@@ -240,18 +237,18 @@ Properties computed using the SCF density matrix
   LUNO+3 :    5  A 0.0000000
 
 
-*** tstop() called on lawn-128-61-75-188.lawn.gatech.edu at Fri Jan  8 11:21:49 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:48 2016
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-128-61-75-188.lawn.gatech.edu
-*** at Fri Jan  8 11:21:49 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:48 2016
 
 
          ---------------------------------------------------------
@@ -277,7 +274,7 @@ Total time:
 
   Rotational constants: A = ************  B =      3.71705  C =      3.71705 [cm^-1]
   Rotational constants: A = ************  B = 111434.46727  C = 111434.46727 [MHz]
-  Nuclear repulsion =    0.176392402863333
+  Nuclear repulsion =    0.176392402863334
 
   Charge       = 0
   Multiplicity = 1
@@ -315,9 +312,6 @@ Total time:
     Total      10      10       1       1       1       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -354,12 +348,12 @@ Total time:
 
    @DF-UHF iter   1:    -0.99655309223690   -9.96553e-01   4.46561e-03 
    @DF-UHF iter   2:    -0.99858554682906   -2.03245e-03   1.04498e-03 DIIS
-   @DF-UHF iter   3:    -0.99871960587578   -1.34059e-04   1.05084e-04 DIIS
+   @DF-UHF iter   3:    -0.99871960587579   -1.34059e-04   1.05084e-04 DIIS
    @DF-UHF iter   4:    -0.99872132548771   -1.71961e-06   1.20127e-05 DIIS
    @DF-UHF iter   5:    -0.99872135069226   -2.52046e-08   1.58942e-06 DIIS
    @DF-UHF iter   6:    -0.99872135103596   -3.43701e-10   1.25919e-07 DIIS
-   @DF-UHF iter   7:    -0.99872135103893   -2.97162e-12   2.59576e-08 DIIS
-   @DF-UHF iter   8:    -0.99872135103903   -9.72555e-14   1.59559e-12 DIIS
+   @DF-UHF iter   7:    -0.99872135103894   -2.97207e-12   2.59576e-08 DIIS
+   @DF-UHF iter   8:    -0.99872135103903   -9.68114e-14   1.59562e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -403,14 +397,14 @@ Total time:
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.1763924028633333
-    One-Electron Energy =                  -1.3518351355714504
-    Two-Electron Energy =                   0.1767213816690853
+    Nuclear Repulsion Energy =              0.1763924028633335
+    One-Electron Energy =                  -1.3518351355714511
+    Two-Electron Energy =                   0.1767213816690849
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                         -0.9987213510390318
+    Total Energy =                         -0.9987213510390327
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -424,13 +418,13 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
@@ -443,14 +437,17 @@ Properties computed using the SCF density matrix
   LUNO+3 :    5  A 0.0000000
 
 
-*** tstop() called on lawn-128-61-75-188.lawn.gatech.edu at Fri Jan  8 11:21:49 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:48 2016
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+	Nuclear repulsion energy..........................................PASSED
+	Reference energy..................................................PASSED
+	Reference broken-symmetry energy..................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -117,12 +117,12 @@ int CCEnergyWavefunction::rotate(void)
     }
 
     if(fabs(max) <= params_.bconv) {
-        outfile->Printf( "\tBrueckner orbitals converged.  Maximum T1 = %15.12f\n",
+        outfile->Printf( "    Brueckner orbitals converged.  Maximum T1 = %15.12f\n",
                          fabs(max));
         return(1);
     }
     else
-        outfile->Printf( "\tRotating orbitals.  Maximum T1 = %15.12f\n", fabs(max));
+        outfile->Printf( "    Rotating orbitals.  Maximum T1 = %15.12f\n", fabs(max));
 
     /* grab the SO-basis overlap integrals for later use */
     SO_S = block_matrix(nso, nso);
@@ -220,7 +220,7 @@ int CCEnergyWavefunction::rotate(void)
         Fb_->set(fock);
 
         /*
-    outfile->Printf( "\n\tSO-basis Fock matrix:\n");
+    outfile->Printf( "\n    SO-basis Fock matrix:\n");
     mat_print(fock, nso, nso, outfile);
     */
 
@@ -233,7 +233,7 @@ int CCEnergyWavefunction::rotate(void)
         free_block(X);
 
         /*
-    outfile->Printf( "\n\tMO-basis Fock matrix:\n");
+    outfile->Printf( "\n    MO-basis Fock matrix:\n");
     mat_print(fock, nmo, nmo, outfile);
     */
 
@@ -258,10 +258,10 @@ int CCEnergyWavefunction::rotate(void)
                     Fvv[h][A][B] = fock[a][b];
 
             /*
-      outfile->Printf( "\n\tOcc-occ Fock matrix for irrep %d:\n", h);
+      outfile->Printf( "\n    Occ-occ Fock matrix for irrep %d:\n", h);
       mat_print(Foo[h], moinfo.occpi[h], moinfo.occpi[h], outfile);
 
-      outfile->Printf( "\n\tVir-vir Fock matrix for irrep %d:\n", h);
+      outfile->Printf( "\n    Vir-vir Fock matrix for irrep %d:\n", h);
       mat_print(Fvv[h], moinfo.virtpi[h], moinfo.virtpi[h], outfile);
       */
 
@@ -278,7 +278,7 @@ int CCEnergyWavefunction::rotate(void)
                 free(work);
 
                 /*
-    outfile->Printf( "\n\tEigenfunctions of Occ-occ Fock matrix for irrep %1d:\n", h);
+    outfile->Printf( "\n    Eigenfunctions of Occ-occ Fock matrix for irrep %1d:\n", h);
     mat_print(Foo[h], moinfo.occpi[h], moinfo.occpi[h], outfile);
     */
 
@@ -300,7 +300,7 @@ int CCEnergyWavefunction::rotate(void)
                 free(work);
 
                 /*
-    outfile->Printf( "\n\tEigenfunctions of Vir-vir Fock matrix for irrep %1d:\n", h);
+    outfile->Printf( "\n    Eigenfunctions of Vir-vir Fock matrix for irrep %1d:\n", h);
     mat_print(Fvv[h], moinfo.virtpi[h], moinfo.virtpi[h], outfile);
     */
 
@@ -318,7 +318,7 @@ int CCEnergyWavefunction::rotate(void)
 
         /* semicanonicalization of the basis */
         /*
-    outfile->Printf( "\n\tSemicanonical transformation matrix:\n");
+    outfile->Printf( "\n    Semicanonical transformation matrix:\n");
     mat_print(X, nmo, nmo, outfile);
     */
 
@@ -330,7 +330,7 @@ int CCEnergyWavefunction::rotate(void)
 
         /* Reorder new MO's to Pitzer and write to wfn */
         /*
-    outfile->Printf( "\n\tSemicanonical Brueckner orbitals (Pitzer order):\n");
+    outfile->Printf( "\n    Semicanonical Brueckner orbitals (Pitzer order):\n");
     mat_print(scf_new, nso, nmo, outfile);
     */
 
@@ -365,9 +365,9 @@ int CCEnergyWavefunction::rotate(void)
         free_block(MO_S);
 
         /*
-    outfile->Printf( "\n\tOriginal SCF MOs:\n");
+    outfile->Printf( "\n    Original SCF MOs:\n");
     mat_print(scf_orig, nso, nmo, outfile);
-    outfile->Printf( "\n\tNew SCF MOs:\n");
+    outfile->Printf( "\n    New SCF MOs:\n");
     mat_print(scf_new, nso, nmo, outfile);
     */
 

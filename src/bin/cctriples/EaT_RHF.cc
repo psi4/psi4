@@ -195,7 +195,7 @@ double EaT_RHF(void)
         /* execute threads */
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          printer->Printf("\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
+          printer->Printf("    thread %d: first_ijk=%d,  last_ijk=%d\n", thread,
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
         }
 

@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.282 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} c17d006 dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,16 +16,16 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tue Dec  8 12:41:33 2015
+    Psi4 started on: Mon Mar 14 15:16:26 2016
 
-    Process ID:  99241
-    PSI4DATADIR: /Users/daniel/Gits/psi4public/lib/
+    Process ID:  10934
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# Benzene
+#! Second-order SCF convergnece: Benzene
 molecule mol {
 C    1.39410    0.00000   0.00000
 C    0.69705   -1.20732   0.00000
@@ -41,9 +41,6 @@ H   -1.23809    2.14444   0.00000
 H    1.23809    2.14444   0.00000
 }
 
-
-reference_energy = -230.72173960633896
-
 set {
 basis cc-pVDZ
 guess sad
@@ -51,18 +48,17 @@ soscf true
 scf_type df
 }
 
-
 rhf_energy = energy('HF')
 
-compare_values(-230.72173960646708, rhf_energy, 6, 'RHF Energy')
+reference_energy = -230.72173960646708
+compare_values(reference_energy, rhf_energy, 6, 'RHF Energy')
 --------------------------------------------------------------------------
-
-*** tstart() called on Daniels-MacBook-Pro.local
-*** at Tue Dec  8 12:41:33 2015
-
     There are an even number of electrons - assuming singlet.
-    Specify the multiplicity with the MULTP option in the
-    input if this is incorrect
+    Specify the multiplicity in the molecule input block.
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:27 2016
 
 
          ---------------------------------------------------------
@@ -143,9 +139,6 @@ compare_values(-230.72173960646708, rhf_energy, 6, 'RHF Energy')
     Total     114     114      21      21      21       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -178,13 +171,13 @@ compare_values(-230.72173960646708, rhf_energy, 6, 'RHF Energy')
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -232.73749125634507   -2.32737e+02   9.73948e-02 
-   @DF-RHF iter   1:  -230.58221322117529    2.15528e+00   9.16915e-03 
-   @DF-RHF iter   2:  -230.70874000336008   -1.26527e-01   2.73527e-03 DIIS
-   @DF-RHF iter   3:  -230.72013156148327   -1.13916e-02   1.09928e-03 DIIS
-   @DF-RHF iter   4:  -230.72169647267415   -1.56491e-03   1.54955e-04 SOSCF, nmicro = 4
-   @DF-RHF iter   5:  -230.72173960545368   -4.31328e-05   7.23236e-07 SOSCF, nmicro = 4
-   @DF-RHF iter   6:  -230.72173960633896   -8.85279e-10   5.26195e-09 SOSCF, conv
+   @DF-RHF iter   0:  -232.70606024790331   -2.32706e+02   9.69423e-02 
+   @DF-RHF iter   1:  -230.58888111173999    2.11718e+00   8.96256e-03 
+   @DF-RHF iter   2:  -230.70939151285839   -1.20510e-01   2.67220e-03 DIIS
+   @DF-RHF iter   3:  -230.72021367618632   -1.08222e-02   1.07502e-03 DIIS
+   @DF-RHF iter   4:  -230.72170059401518   -1.48692e-03   1.46110e-04 SOSCF, nmicro = 5
+   @DF-RHF iter   5:  -230.72173960634606   -3.90123e-05   1.69395e-07 SOSCF, nmicro = 5
+   @DF-RHF iter   6:  -230.72173960638801   -4.19504e-11   1.75371e-10 SOSCF, conv
 
   ==> Post-Iterations <==
 
@@ -241,18 +234,18 @@ compare_values(-230.72173960646708, rhf_energy, 6, 'RHF Energy')
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -230.72173960633896
+  @DF-RHF Final Energy:  -230.72173960638801
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.6379446300579446
-    One-Electron Energy =                -713.6691123996580473
-    Two-Electron Energy =                 279.3094281632611455
+    One-Electron Energy =                -713.6691132618336724
+    Two-Electron Energy =                 279.3094290253877716
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -230.7217396063389288
+    Total Energy =                       -230.7217396063879278
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -277,14 +270,15 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on Daniels-MacBook-Pro.local at Tue Dec  8 12:41:37 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:29 2016
 Module time:
-	user time   =       4.30 seconds =       0.07 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.56 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       4.30 seconds =       0.07 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.56 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+	RHF Energy........................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

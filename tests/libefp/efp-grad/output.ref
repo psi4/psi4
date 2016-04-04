@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} fdb9578f5cb0074d552ae8944aabc354df928483
+                          Git: Rev {master} ad94c93
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   7494
-    PSI4DATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib
+
+    Psi4 started on: Fri Mar 18 13:36:41 2016
+
+    Process ID:    428
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -106,13 +109,9 @@ torq = get_efp_torque()
 compare_matrices(refEFP, torq, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
 
 --------------------------------------------------------------------------
-
-*** tstart() called on ds4
-*** at Tue Feb  3 12:36:02 2015
-
-  EFP fragment ch3oh read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/ch3oh.efp
-  EFP fragment h2o read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/h2o.efp
-  EFP fragment nh3 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/nh3.efp
+  EFP fragment ch3oh read from /home/dsmith/Gits/dgas_psi/share/efpfrag/ch3oh.efp
+  EFP fragment h2o read from /home/dsmith/Gits/dgas_psi/share/efpfrag/h2o.efp
+  EFP fragment nh3 read from /home/dsmith/Gits/dgas_psi/share/efpfrag/nh3.efp
 Warning: There are no quantum mechanical atoms in this molecule.
 
 
@@ -189,7 +188,7 @@ Project web site: http://www.libefp.org/
     2    -0.00247985099412    -0.00027662523411     0.00293434566925    -0.00331248775090    -0.00480144492523
     3     0.00213414315615     0.00237006914069     0.00156559300648    -0.00051884014966    -0.00044060757227
     4    -0.00200178012673     0.00453942874581     0.00011400765695    -0.00111590499961     0.00217665867700
-    5    -0.00049970475967     0.00374167730439    -0.00172265792840     0.01081383241644     0.00564654240450
+    5    -0.00049970475967     0.00374167730439    -0.00172265792841     0.01081383241644     0.00564654240450
     6    -0.00041611618378    -0.00468911202986    -0.00170980530796    -0.00238005991857     0.00423225971248
     7     0.00078289639359     0.00017441224264    -0.00068611469728     0.00037528269692    -0.00323311549127
     8     0.00388306348118    -0.00398837203078    -0.00011942278728     0.00124277118700    -0.00263624622559
@@ -240,5 +239,8 @@ Project web site: http://www.libefp.org/
       QM/EFP                            0.000000000000 [H] 
 
     Total EFP                          -0.006608796957 [H]
+	NRE...............................................................PASSED
+	EFP Total.........................................................PASSED
+	libefp printed gradients, vs. psi4 read-from-libefp gradients.....PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!
