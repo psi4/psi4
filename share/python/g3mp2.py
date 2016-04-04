@@ -36,10 +36,6 @@ import warnings
 
 from driver import *
 
-# from extend_Molecule import *
-# CUfrom molutil import *
-# CUfrom p4regex import *
-# never import aliases into this file
 
 # _____________________________________________________________________________
 #
@@ -50,11 +46,11 @@ from driver import *
 #  Curtiss, Redfern, Raghavachari,Rassolov, Pople
 #  J.Chem.Phys., 110, 10(1999)
 #
-# The CCSD(T) and HLC revisions are in accord with the later article:
+# The CCSD(T) and HLC revisions are included and described in:
 #
 #  Gaussian-3 theory using coupled cluster energies
 #  Curtiss, Raghavachari, Redfern, Baboul, Pople
-#  Chemical Physics Letters 314(1999) 101-107
+#  Chem.Phys.Lett., 314(1999) 101-107
 #
 # Daniel R. Haney 3/28/2016 --------------------------
 #
@@ -69,14 +65,10 @@ from driver import *
 ZPE_SCALE_FACTOR = 0.8929
 
 
-# explicitly:  Boltzmann kT contribution @ 298.15K in Hartrees
+# Convenient term:  Boltzmann kT contribution @ 298.15K in Hartrees
 #    = (k_boltzmann * T298.15 * Avogadro) / JoulePerkcal / kcalPerHartree / cal_per_kcal
 
 kT = (psi_kb * 298.15 * psi_na) / psi_cal2J / psi_hartree2kcalmol / 1000.0
-
-kT_kcal = (psi_kb * 298.15 * psi_na) / psi_cal2J
-
-
 
 #
 # Zero Point Energy scale factors vary with applications and vibration data.
@@ -95,22 +87,34 @@ kT_kcal = (psi_kb * 298.15 * psi_na) / psi_cal2J
 # is a method replication and not a revision.
 #
 
+
 g3mp2_verbose_flag = False
+use_QCISDT = False
+debug_flag = False        # console stderr output
+csv_output = False
 
 def run_g3mp2(name, qcisd=False, **kwargs):
 
-    def say(s=''):
-        if g3mp2_verbose_flag:
-            sys.stderr.write(s)  # print to console stderr without newline
+    global g3mp2_verbose_flag
+    global use_QCISDT
+    global debug_flag
+    global csv_output
 
-    def log(line):
-        psi4.print_out(line + '\n')
-        if g3mp2_verbose_flag:
-            print line
+    def verbose ():
+        global g3mp2_verbose_flag
+        g3mp2_verbose_flag = True
+
+    def terse ():
+        global g3mp2_verbose_flag
+        g3mp2_verbose_flag = False
+
+    def set_debug (onoff=0):
+        global debug_flag
+        debug_flag = (onoff != 0)
 
     def debug(s):
-        return
-        print s
+        if debug_flag is True:
+            print ('DEBUG: %s' % s)
 
     def dumpobj(obj, objname='obj'):
         print '%s is type %s' % (objname, type(obj).__name__)
@@ -118,8 +122,31 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         for attr in dir(obj):
             print '%s.%s = %s' % (objname, attr, getattr(obj, attr))
 
+    def say(s=''):
+        if (g3mp2_verbose_flag or debug_flag) is True:
+            sys.stderr.write(s)  # print to console stderr without newline
+
+    def log(line):
+        psi4.print_out(line + '\n')
+        if (g3mp2_verbose_flag or debug_flag) is True:
+            print line
+
+    #________________________________________________________________________
+    def g3mp2_usage ():
+
+        verbose()
+
+        log("\n")
+        log("g3mp2 flags are:")
+        log(" qcisdt  - calculate QCISD(T) energy. default: CCSD(T)")
+        log(" csvdb   - write component energies in CSV database format")
+        log(" verbose - print progress to console")
+        log(" debug   - print more progress to console")
+        log(" help    - this")
+        log("\n")
     #________________________________________________________________________
     def nfrozen_core ():
+
         _nfcz = 0
         _mol = psi4.get_active_molecule()
         natoms = _mol.natom()
@@ -179,37 +206,60 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         else:
             ion = 0
 
-        debug("Spin orbit energy = %.2f mHa" % (_ESO[Z][ion]))
-
         milliHa_to_Ha = 0.001
         return (_ESO[Z][ion] * milliHa_to_Ha)
     #________________________________________________________________________
     def E0_ccsdt (Z=0):
-        # G3(MP2) @0K energies of atomic species.
+        # G3(MP2, CCSD(T)) @0K energies of atomic species.
         #
         # returns:  atom E0 in Hartrees
         #
         # TODO: 3rd row
         debug("E0_ccsdt(%d)" % Z)
 
-        _Z2E0 = [0.0,       # 0 index placeholder
+        _ccsdtE0 = [0.0,       # 0 index placeholder
                 -0.501765, -2.902353, -7.366280, -14.629072,        # H  He Li Be
                 -24.606789, -37.788989, -54.524780, -74.989201,     # B  C  N  O
                 -99.640199, -128.827752, -161.847930, -199.650655,  # F  Ne Na Mg
                 -241.936660, -288.939067, -340.826225, -397.663216, # Al Si P  S
                 -459.686583, -527.060194, -599.160438, -676.790288] # Cl Ar K  Ca
 
-        if Z < 1 and Z > len(_Z2E0):
+        if Z < 1 and Z > len(_ccsdtE0):
             return 0.0
         else:
-            return _Z2E0[Z]
+            return _ccsdtE0[Z]
+    #________________________________________________________________________
+    def E0_qcisdt (Z=0):
+        # G3(MP2, QCISDT) @0K energies of atomic species.
+        #   Values from Nwchem until UHF-QCISD(T) is implemented.
+        #
+        # returns:  atom E0 in Hartrees
+        #
+        # TODO: 3rd row
+        debug("E0_qcisdt(%d)" % Z)
+
+        _qcisdtE0 = [0.0,       # 0 index placeholder
+                -0.501839, -2.902543, -7.434048, -14.629262,        # H  He Li Be
+                -24.607093, -37.789349, -54.525198, -74.989850,     # B  C  N  O
+                -99.641120, -128.828970, -161.848004, -199.650845,  # F  Ne Na Mg
+                -241.936973, -288.939460, -340.826670, -397.663794, # Al Si P  S
+                -459.687272, -527.060963, -599.160512, -676.789424] # Cl Ar K  Ca
+
+        if Z < 1 and Z > len(_qcisdtE0):
+            return 0.0
+        else:
+            return _qcisdtE0[Z]
     #________________________________________________________________________
     def E0_one_atom (Z=0):
+        global use_QCISDT
 
-        _e0 = E0_ccsdt(Z)
+        if use_QCISDT is True:
+            _e0 = E0_qcisdt(Z)
+        else:
+            _e0 = E0_ccsdt(Z)
+
         _h298 = _e0 + (5.0/2 * kT)      # Ideal gas kinetic energy contribution
 
-        debug("E0_one_atom: 5/2*kT = %.6f Ha" % (5.0/2 * kT))
         debug("E0_one_atom: e0 = %.6f h298 = %.6f" % (_e0, _h298))
 
         return (_e0, _h298)
@@ -271,9 +321,9 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     # input:    ab initio E0, H298 in Hartrees
     # returns: dHf@0K, dHf@298K -> 2 doubles
 
-    def calc_deltaHf(_E0, _H298):
+    def heat_of_formation(_E0, _H298):
 
-        debug("calc_deltaHf(%.6f, %.6f) entry" % (_E0, _H298))
+        debug("heat_of_formation(%.6f, %.6f) entry" % (_E0, _H298))
 
         E0_sum_atoms = 0.0
         H298_sum_atoms = 0.0
@@ -285,81 +335,107 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         for A in range(0,_natoms):
             Z = int(mol.Z(A))
 
-            debug("\ncalc_deltaHf(Z=%d)" % (Z))
-
             e0_atom, h298_atom = E0_one_atom(Z)     # in Hartrees
             E0_sum_atoms += e0_atom
             H298_sum_atoms += h298_atom
-            debug("E0_sum_atoms = %.6f Ha  H298_sum_atoms = %.6f Ha" % (E0_sum_atoms, H298_sum_atoms))
 
             d0, d298 = dHf_one_atom(Z)              # in kcal/mol
             dhf0_sum_atoms += d0
             dhf298_sum_atoms += d298
-            debug('sumDHF0,sumDHF298 = %.2f kcal, %.2f kcal' % (dhf0_sum_atoms, dhf298_sum_atoms))
 
-        debug("total E0 = %.6f Ha  E0_atoms = %.6f Ha" % (_E0, E0_sum_atoms))
         dhf0 = (_E0 - E0_sum_atoms) * psi_hartree2kcalmol + dhf0_sum_atoms
-
-        debug("total H298 = %.6f Ha  H298_atoms = %.6f Ha" % (_H298, H298_sum_atoms))
         dhf298 = (_H298 - H298_sum_atoms) * psi_hartree2kcalmol + dhf298_sum_atoms
+        debug('dhf0,dhf298 = %.2f,%.2f' % (dhf0, dhf298))
 
         #Eatomization = -(H298 - H298_sum_atoms) * psi_hartree2kcalmol
 
-        debug('dhf0,dhf298 = %.2f,%.2f' % (dhf0, dhf298))
-
         return dhf0,dhf298
+
+    #______________________________________________________
+    #_____________________      ___________________________
+    #_____________________ MAIN ___________________________
+    #_____________________      ___________________________
     #______________________________________________________
 
-
-    use_QCISDT = False
     nAtoms = 0
-    multiplicity = 1
     charge = 0
+    multiplicity = 1
 
+    set_debug(0)
+
+    set_debug(1)
     kwargs = p4util.kwargs_lower(kwargs)
-    g3mp2_verbose_flag = kwargs.pop('verbose', True)
+    debug('%s: %d args: %s' % (name, len(kwargs), ','.join([arg for arg in kwargs])))
 
-    # debug('%s: %d args: %s' % (name, len(kwargs), ','.join([arg for arg in kwargs])))
-    #
-    # mol = kwargs.pop('molecule', psi4.get_active_molecule())
+    flag_list = ["verbose", "qcisdt", "csvdb", "debug", "help"]
+    arg_list = list(kwargs)
+
+    if "help" in kwargs:
+        g3mp2_usage()
+        return 0.0      # quit
+
+    for arg in arg_list:
+        debug("testing arg %s" % arg)
+        if arg in flag_list:
+            debug("arg %s is in flag list" % arg)
+
+            if arg == 'verbose':
+                g3mp2_verbose_flag = kwargs.pop('verbose', True)
+                debug('verbose flag is set %s' % str(g3mp2_verbose_flag))
+
+            if arg == 'qcisdt':
+                use_QCISDT = kwargs.pop('qc==dt', True)
+                debug('qcisdt is set %s' % str(use_QCISDT))
+
+            if arg == 'csvdb':
+                csv_output = kwargs.pop('csvdb', True)
+                debug('CSV output flag is set %s' % str(csv_output))
+
+            if arg == 'debug':
+                kwargs.pop('debug')
+                debug_flag = True
+                g3mp2_verbose_flag = True
+    set_debug(0)
 
     mol = psi4.get_active_molecule()
-
+    g3mp2_name = mol.name()
     nAtoms = mol.natom()
-    multiplicity = mol.multiplicity()
     charge = mol.molecular_charge()
+    multiplicity = mol.multiplicity()
 
-    debug("charge = %d multiplicity=%d." % (charge, multiplicity))
+    debug("name: \"%s\" charge = %d multiplicity=%d." % (g3mp2_name, charge, multiplicity))
 
-    atomZlist = ",".join([str(int(mol.Z(i))) for i in range(nAtoms)])
-    debug("There are %d atoms: %s" % (nAtoms, atomZlist))
-
-    debug("frozen core count# %d" % (nfrozen_core()))
-
-    #if 'qcisdt' in kwargs:
-    #    use_QCISDT = kwargs.pop('qcisdt')
-    #else:
-    #   use_QCISDT = False
-
-    # debug('use_QCISDT is %s' % str(use_QCISDT))
+    _atomZlist = ",".join([str(int(mol.Z(i))) for i in range(nAtoms)])
+    debug("There are %d atoms, Z = [%s]" % (nAtoms, _atomZlist))
 
     if multiplicity > 1:
-        psi4.set_global_option('REFERENCE', 'UHF')
+        if use_QCISDT is True:      # UHF-QCISD(T) currently unsupported
+            log("\n")
+            log("g3mp2: QCISD(T) doesn't support species with multiplicity > 1.")
+            log("g3mp2: Use the default CCSD(T) if acceptable.\n")
+            psi4.clean()
+            raise ValidationError("UHF unsupported for QCISD(T)\n")
+
+        else:
+            psi4.set_global_option('REFERENCE', 'UHF')
 
     else:
         psi4.set_global_option('REFERENCE', 'RHF')
 
     # stash user options:
-    optstash = p4util.OptionsState(['FREEZE_CORE'],
-                                   ['MP2_TYPE'],
-                                   ['SCF', 'SCF_TYPE'])
+    optstash = p4util.OptionsState(
+        ['FNOCC','COMPUTE_TRIPLES'],
+        ['FNOCC','COMPUTE_MP4_TRIPLES'],
+        ['FREEZE_CORE'],
+        ['MP2_TYPE'],
+        ['SCF','SCF_TYPE'])
 
     # override default scf_type
     # OUT-OF-CORE, DIRECT, PK, DF available
-    # DIRECT yields Eopt same as GAMESS, Nwchem to +/- 1.0E-06 Hartree for <= 6 big atoms
-    # PK, a faster DIRECT
-    # fastest: DF diverges beyond 1.0E-04 Ha ~= 1/15 kcal
-    # OUT-OF-CORE: life is too short
+    # DIRECT and PK yield an Eopt same as GAMESS, Nwchem
+    #  usually agrees to +/- 1.0E-06 Hartree for <= 6 big atoms
+    # DF diverges beyond 1.0E-04 Ha ~= 1/15 kcal
+    # OUT-OF-CORE:
     #psi4.set_local_option('SCF', 'SCF_TYPE', 'DIRECT')
     psi4.set_local_option('SCF', 'SCF_TYPE', 'PK')
 
@@ -367,7 +443,6 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     say('HF optimize.')
 
     if nAtoms > 1:
-        psi4.clean()
         psi4.set_global_option('BASIS', '6-31G(D)')
         optimize('scf')
         psi4.clean()
@@ -379,10 +454,6 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     say('ZPE.')
 
     if nAtoms == 1:
-        # Set up Gas constant to Hartree/K units for obviousness.
-        #temperature = 298.15        # TODO: fetch from molecule class instance
-        #Rgas = psi_R / psi_cal2J / 1000.0 / psi_hartree2kcalmol
-        #kT = Rgas * temperature
         Ezpe = 0.0
         Ethermal = (3.0/2.0) * kT
         Hthermal = Ethermal + kT
@@ -423,12 +494,14 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     # optimize('mp2')
     # psi4.clean()
 
-    if False:       # use_QCISDT is True:
+    if use_QCISDT is True:
         # QCISD(T,fc)/6-31G* energy for Gaussian compatibility
         say('QCISD(T).')
-        psi4.set_global_option('BASIS', '6-31G*')
-        psi4.set_global_option('FREEZE_CORE', 'TRUE')
+
         psi4.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', 'TRUE')
+        #psi4.set_local_option('SCF', 'SCF_TYPE', 'DIRECT')
+        psi4.set_global_option('FREEZE_CORE', 'TRUE')
+        psi4.set_global_option('BASIS', '6-31G*')
         ccref = run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
         Ecc = psi4.get_variable('QCISD(T) TOTAL ENERGY')
     else:
@@ -441,10 +514,7 @@ def run_g3mp2(name, qcisd=False, **kwargs):
         en, ccref = energy('ccsd(t)', return_wfn=True)
         Ecc = psi4.get_variable('CCSD(T) TOTAL ENERGY')
 
-    debug('\nCC TOTAL ENERGY = %.6f Ha' % Ecc)
-
     Emp2_fc_631gd = psi4.get_variable('MP2 TOTAL ENERGY')
-    debug('MP2 TOTAL ENERGY = %.6f Ha' % Emp2_fc_631gd)
 
     # ###  HLC: high-level correction based on number of valence electrons
 
@@ -472,7 +542,7 @@ def run_g3mp2(name, qcisd=False, **kwargs):
 
     debug("Higher Level Correction Ehlc = %.6f Ha" % (Ehlc))
 
-    # ### Done HLC
+    # # Done HLC   ________________________________________
 
     psi4.clean()
 
@@ -494,29 +564,35 @@ def run_g3mp2(name, qcisd=False, **kwargs):
     E0_g3mp2 = Ecc + dMP2 + Ezpe_scaled + Ehlc
 
     if nAtoms == 1:
-        E0_g3mp2 += E_spin_orbit(int(mol.Z(0)), charge)
+        Eso = E_spin_orbit(int(mol.Z(0)), charge)
+        E0_g3mp2 += Eso
 
     E298_g3mp2 = E0_g3mp2 + Ethermal - Ezpe
     H298_g3mp2 = E0_g3mp2 + Hthermal - Ezpe
     G298_g3mp2 = H298_g3mp2 - (Hthermal - Gthermal)  # equiv. to "dG = dH - Tds"
 
-    dHf0, dHf298 = calc_deltaHf(E0_g3mp2, H298_g3mp2)
+    dHf0, dHf298 = heat_of_formation(E0_g3mp2, H298_g3mp2)
 
-    # LOG format was taken from the GAMESS-US G3MP2 implementation so that
-    # data extraction tools for GAMESS G3(MP2) files may be reused here.
-    #
-    #    ____________________________________________________________Psi4
-    #               SUMMARY OF G3(MP2, CCSD(T)) CALCULATIONS
-    #    ________________________________________________________________
-    #    MP2/6-31G(d)    =   -76.196848   CCSD(T)/6-31G(d) =   -76.207841
-    #    MP2/G3MP2large  =   -76.314754   delta(MP2)       =    -0.117906
-    #    ZPE(HF/6-31G(d))=     0.020516   ZPE Scale Factor =     0.892900
-    #    HLC             =    -0.036680   Free Energy      =     0.004735
-    #    Thermal Energy  =     0.025811   Thermal Enthalpy =     0.026755
-    #    ________________________________________________________________
-    #    E(G3(MP2)) @ 0K =   -76.341911   E(G3(MP2)) @298K =   -76.339077
-    #    H(G3(MP2))      =   -76.338133   G(G3(MP2))       =   -76.360152
-    #    ________________________________________________________________
+    '''
+     Summary format was taken from the GAMESS-US G3MP2 implementation so that
+     data extraction tools for GAMESS G3(MP2) files may be reused here.
+
+        ____________________________________________________________Psi4
+                   SUMMARY OF G3(MP2, CCSD(T)) CALCULATIONS
+        ________________________________________________________________
+        MP2/6-31G(d)    =   -76.196848   CCSD(T)/6-31G(d) =   -76.207841
+        MP2/G3MP2large  =   -76.314754   delta(MP2)       =    -0.117906
+        ZPE(HF/6-31G(d))=     0.020516   ZPE Scale Factor =     0.892900
+        HLC             =    -0.036680   Free Energy      =     0.004735
+        Thermal Energy  =     0.025811   Thermal Enthalpy =     0.026755
+        ________________________________________________________________
+        E(G3(MP2)) @ 0K =   -76.341911   E(G3(MP2)) @298K =   -76.339077
+        H(G3(MP2))      =   -76.338133   G(G3(MP2))       =   -76.360152
+        ________________________________________________________________
+          HEAT OF FORMATION   (0K):     -56.87 kCal/mol
+          HEAT OF FORMATION (298K):     -57.42 kCal/mol
+        ________________________________________________________________
+    '''
 
     if use_QCISDT is True:
         ccstring = 'QCISDT '
@@ -549,6 +625,25 @@ def run_g3mp2(name, qcisd=False, **kwargs):
 
     psi4.clean()
     optstash.restore()
+
+    # write component energies in CSV format
+    if csv_output is True:
+        verbose()
+        log("\"%s G3(MP2) component energies\"" % g3mp2_name)
+        log("energy,Hartrees")
+        log("631gd, %.6f"      % Emp2_fc_631gd)
+        log("g3mp2large, %.6f" % Eg3mp2large)
+        if use_QCISDT:
+            log("qcisdt, %.6f"    % Ecc)
+        else:
+            log("ccsdt, %.6f"     % Ecc)
+        log("ethermal, %.6f"   % Ethermal)
+        log("hthermal, %.6f"   % Hthermal)
+        log("gthermal, %.6f"   % Gthermal)
+        log("hlc, %.6f"        % Ehlc)
+        log("E0, %.6f"         % E0_g3mp2)
+        log("dHf0, %.2f"       % dHf0)
+        log("dHf298, %.2f"     % dHf298)
 
     # return E @0K g3mp2 results
 
