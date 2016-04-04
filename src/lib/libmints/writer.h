@@ -26,6 +26,7 @@
 #include <boost/shared_ptr.hpp>
 #include <libmints/vector.h>
 #include <string>
+#include "typedefs.h"
 
 namespace psi {
 
@@ -46,6 +47,25 @@ public:
     void write(const std::string& filename);
 };
 
+class FCHKWriter
+{
+private:
+    /*! \brief Extracts information from a wavefunction object, and writes it into a formatted FCHK file.  */
+    boost::shared_ptr<Wavefunction> wavefunction_;
+    FILE *chk_;
+    void write_number(const char *label, int value);
+    void write_number(const char *label, double value);
+    void write_sym_matrix(const char *label, const SharedMatrix &mat);
+    void write_matrix(const char *label, const SharedVector &mat);
+    void write_matrix(const char *label, const SharedMatrix &mat);
+    void write_matrix(const char *label, const std::vector<double> &mat);
+    void write_matrix(const char *label, const std::vector<int> &mat);
+
+public:
+    FCHKWriter(boost::shared_ptr<Wavefunction> wavefunction);
+    void write(const std::string &filename);
+};
+
 class MoldenWriter
 {
     boost::shared_ptr<Wavefunction> wavefunction_;
@@ -56,6 +76,7 @@ public:
     MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction);
 
 };
+
 class MOWriter
 {
     boost::shared_ptr<Wavefunction> wavefunction_;

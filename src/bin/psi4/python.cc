@@ -81,7 +81,6 @@ void export_psio();
 void export_mints();
 void export_functional();
 void export_oeprop();
-void export_cubefile();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -101,9 +100,10 @@ namespace opt {
 psi::PsiReturnType optking(psi::Options&);
 void opt_clean(void);
 }
-
 // Forward declare /src/bin/ methods
 namespace psi {
+
+std::string get_writer_file_prefix(std::string molecule_name);
 
 // Wavefunction returns
 namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
@@ -116,6 +116,9 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+#ifdef HAVE_GDMA
+namespace gdma { SharedWavefunction     gdma(SharedWavefunction, Options&, const std::string &datfilename); }
+#endif
 
 // Matrix returns
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
@@ -491,6 +494,20 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
     py_psi_prepare_options_for_module("DETCI");
     return detci::detci(ref_wfn, Process::environment.options);
 }
+
+#ifdef HAVE_GDMA
+double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
+{
+    py_psi_prepare_options_for_module("GDMA");
+    gdma::gdma(ref_wfn, Process::environment.options, datfilename);
+    return 0.0;
+}
+#else
+double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
+{
+    throw PSIEXCEPTION("GDMA not enabled. Recompile with it enabled.");
+}
+#endif
 
 #ifdef ENABLE_CHEMPS2
 double py_psi_dmrg(SharedWavefunction ref_wfn)
@@ -1308,6 +1325,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
+    def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
     // Benchmarks
     export_benchmarks();
 
@@ -1319,9 +1337,6 @@ BOOST_PYTHON_MODULE (psi4)
 
     // OEProp/GridProp
     export_oeprop();
-
-    // CubeFile
-    export_cubefile();
 
     // EFP
     export_efp();
@@ -1521,6 +1536,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
+    def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
@@ -1718,7 +1734,7 @@ void Python::run(FILE *input)
 
             //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred Py-side" << endl << "Traceback:" << endl;
+            whole << endl << "An error has occurred. Traceback:" << endl;
 
             PyObject *pExcType , *pExcValue , *pExcTraceback;
             PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);

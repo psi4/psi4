@@ -1,6 +1,6 @@
 set(headers_list "")
 # List of headers
-list(APPEND headers_list fisapt.h csg.h local2.h)
+list(APPEND headers_list fisapt.h local2.h)
 
 # If you want to remove some headers specify them explictly here
 if(DEVELOPMENT_CODE)
@@ -13,7 +13,7 @@ list(SORT headers_list)
 
 set(sources_list "")
 # List of sources
-list(APPEND sources_list wrapper.cc fisapt.cc csg.cc local2.cc)
+list(APPEND sources_list wrapper.cc fisapt.cc local2.cc)
 
 # If you want to remove some sources specify them explictly here
 if(DEVELOPMENT_CODE)

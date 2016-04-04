@@ -100,14 +100,18 @@ def return_energy_components():
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'mp3corl': 'MP3 CORRELATION ENERGY',
                           'omp3corl': 'OMP3 CORRELATION ENERGY'}
-    VARH['ocepa'] = {
+    VARH['olccd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                         'ocepacorl': 'OCEPA(0) CORRELATION ENERGY'}
-    VARH['cepa0'] = {
+                         'olccdcorl': 'OLCCD CORRELATION ENERGY'}
+    VARH['lccd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                         'cepa0corl': 'CEPA(0) CORRELATION ENERGY'}
+                          'lccdcorl': 'LCCD CORRELATION ENERGY'}
+    VARH['lccsd'] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'lccsdcorl': 'LCCSD CORRELATION ENERGY'}
     VARH['cepa(0)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
@@ -1155,6 +1159,7 @@ def database(name, db_name, **kwargs):
         ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
         libraryPath
     sys.path = [sys.path[0]] + dbPath.split(':') + sys.path[1:]
+    # TODO this should be modernized a la interface_cfour
 
     # Define path and load module for requested database
     database = p4util.import_ignorecase(db_name)
@@ -1215,25 +1220,19 @@ def database(name, db_name, **kwargs):
         raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
-    if not('db_mode' in kwargs):
-        if ('mode' in kwargs):
-            kwargs['db_mode'] = kwargs['mode']
-            del kwargs['mode']
-        else:
-            kwargs['db_mode'] = 'continuous'
-    db_mode = kwargs['db_mode']
+    db_mode = kwargs.pop('db_mode', kwargs.pop('mode', 'continuous')).lower()
+    kwargs['db_mode'] = db_mode
 
-    if (db_mode.lower() == 'continuous'):
+    if db_mode == 'continuous':
         pass
-    elif (db_mode.lower() == 'sow'):
+    elif db_mode == 'sow':
         pass
-    elif (db_mode.lower() == 'reap'):
-        if 'linkage' in kwargs:
-            db_linkage = kwargs['linkage']
-        else:
-            raise ValidationError('Database execution mode \'reap\' requires a linkage option.')
+    elif db_mode == 'reap':
+        db_linkage = kwargs.get('linkage', None)
+        if db_linkage is None:
+            raise ValidationError("""Database execution mode 'reap' requires a linkage option.""")
     else:
-        raise ValidationError('Database execution mode \'%s\' not valid.' % (db_mode))
+        raise ValidationError("""Database execution mode '%s' not valid.""" % (db_mode))
 
     #   Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
     db_cp = 'no'
@@ -1361,7 +1360,7 @@ def database(name, db_name, **kwargs):
     psi4.print_out("\n")
 
     #   write index of calcs to output file
-    if (db_mode.lower() == 'continuous'):
+    if db_mode == 'continuous':
         instructions = """\n    The database single-job procedure has been selected through mode='continuous'.\n"""
         instructions += """    Calculations for the reagents will proceed in the order below and will be followed\n"""
         instructions += """    by summary results for the database.\n\n"""
@@ -1372,7 +1371,7 @@ def database(name, db_name, **kwargs):
         psi4.print_out(instructions)
 
     #   write sow/reap instructions and index of calcs to output file and reap input file
-    if (db_mode.lower() == 'sow'):
+    if db_mode == 'sow':
         instructions = """\n    The database sow/reap procedure has been selected through mode='sow'. In addition\n"""
         instructions += """    to this output file (which contains no quantum chemical calculations), this job\n"""
         instructions += """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
@@ -1391,11 +1390,10 @@ def database(name, db_name, **kwargs):
         instructions += """    the database wrapper option mode='continuous'.\n\n"""
         psi4.print_out(instructions)
 
-        fmaster = open('%s-master.in' % (dbse), 'w')
-        fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-        fmaster.write("database('%s', '%s', mode='reap', cp='%s', rlxd='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
-            (name, db_name, db_cp, db_rlxd, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
-        fmaster.close()
+        with open('%s-master.in' % (dbse), 'w') as fmaster:
+            fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
+            fmaster.write("database('%s', '%s', mode='reap', cp='%s', rlxd='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
+                (name, db_name, db_cp, db_rlxd, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
 
     #   Loop through chemical systems
     ERGT = {}
@@ -1458,7 +1456,7 @@ def database(name, db_name, **kwargs):
         # continuous: defines necessary commands, executes energy(method) call, and collects results into dictionary
         # sow: opens individual reagent input file, writes the necessary commands, and writes energy(method) call
         # reap: opens individual reagent output file, collects results into a dictionary
-        if (db_mode.lower() == 'continuous'):
+        if db_mode == 'continuous':
             exec(banners)
 
             molecule = psi4.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
@@ -1478,31 +1476,30 @@ def database(name, db_name, **kwargs):
             #psi4.opt_clean()
             psi4.clean_variables()
 
-        elif (db_mode.lower() == 'sow'):
-            freagent = open('%s.in' % (rgt), 'w')
-            freagent.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-            freagent.write(banners)
-            freagent.write(p4util.format_molecule_for_input(GEOS[rgt]))
+        elif db_mode == 'sow':
+            with open('%s.in' % (rgt), 'w') as freagent:
+                freagent.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
+                freagent.write(banners)
+                freagent.write(p4util.format_molecule_for_input(GEOS[rgt], 'dbmol'))
 
-            freagent.write(commands)
-            freagent.write('''\npickle_kw = ("""''')
-            pickle.dump(kwargs, freagent)
-            freagent.write('''""")\n''')
-            freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
-            freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
-            freagent.write("""psi4.print_variables()\n""")
-            freagent.write("""psi4.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
-                % (os.getpid(), rgt))
-            freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
-            freagent.write("""psi4.set_variable('NATOM', molecule.natom())\n""")
-            for envv in db_tabulate:
-                freagent.write("""psi4.print_out('DATABASE RESULT: computation %d for reagent %s """
+                freagent.write(commands)
+                freagent.write('''\npickle_kw = ("""''')
+                pickle.dump(kwargs, freagent)
+                freagent.write('''""")\n''')
+                freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+                freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
+                freagent.write("""psi4.print_variables()\n""")
+                freagent.write("""psi4.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                     % (os.getpid(), rgt))
-                freagent.write("""yields variable value    %20.12f for variable %s\\n' % (psi4.get_variable(""")
-                freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
-            freagent.close()
+                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+                freagent.write("""psi4.set_variable('NATOM', dbmol.natom())\n""")
+                for envv in db_tabulate:
+                    freagent.write("""psi4.print_out('DATABASE RESULT: computation %d for reagent %s """
+                        % (os.getpid(), rgt))
+                    freagent.write("""yields variable value    %20.12f for variable %s\\n' % (psi4.get_variable(""")
+                    freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
 
-        elif (db_mode.lower() == 'reap'):
+        elif db_mode == 'reap':
             ERGT[rgt] = 0.0
             for envv in db_tabulate:
                 VRGT[rgt][envv.upper()] = 0.0
@@ -1541,7 +1538,7 @@ def database(name, db_name, **kwargs):
                 freagent.close()
 
     #   end sow after writing files
-    if (db_mode.lower() == 'sow'):
+    if db_mode == 'sow':
         return 0.0
 
     # Reap all the necessary reaction computations
@@ -1766,8 +1763,9 @@ def complete_basis_set(name, **kwargs):
            * omp2
            * omp2.5
            * omp3
-           * ocepa
-           * cepa0
+           * olccd
+           * lccd
+           * lccsd
            * cepa(0)
            * cepa(1)
            * cepa(3)

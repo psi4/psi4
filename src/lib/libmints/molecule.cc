@@ -220,7 +220,6 @@ Molecule& Molecule::operator=(const Molecule& other)
     charge_specified_        = other.charge_specified_;
     multiplicity_specified_  = other.multiplicity_specified_;
     reinterpret_coordentries_= other.reinterpret_coordentries_;
-    lock_frame_              = other.lock_frame_;
     zmat_                    = other.zmat_;
 
     // These are symmetry related variables, and are filled in by the following functions
@@ -246,7 +245,10 @@ Molecule& Molecule::operator=(const Molecule& other)
     }
 
     // This is called here, so that the atoms list is populated
+    // First, we unlock the frame
+    lock_frame_ = false;
     update_geometry();
+    lock_frame_              = other.lock_frame_;
 
     return *this;
 }
@@ -3559,7 +3561,8 @@ std::string Molecule::full_point_group() const {
   if (pg_with_n == "D_inf_h" || pg_with_n == "C_inf_v" ||
       pg_with_n == "C1"      || pg_with_n == "Cs"      ||
       pg_with_n == "Ci"      || pg_with_n == "Td"      ||
-      pg_with_n == "Oh"      || pg_with_n == "Ih" )
+      pg_with_n == "Oh"      || pg_with_n == "Ih"      ||
+      pg_with_n == "ATOM")
         return pg_with_n;
 
   stringstream n_integer;

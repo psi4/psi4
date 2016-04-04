@@ -319,6 +319,7 @@ void export_mints()
 
     class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
+            def(init<const Dimension&>()).
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -428,6 +429,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
             def("array_interfaces", make_matix_array_interfaces, "docstring").
             add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
@@ -896,6 +898,7 @@ void export_mints()
             def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
             def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
             def("normalmodes", &Wavefunction::normalmodes, "docstring").
+            def("name", &Wavefunction::name, return_value_policy<copy_const_reference>(), "The level of theory this wavefunction corresponds to.").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
             def("molecule", &Wavefunction::molecule, "docstring").
@@ -913,6 +916,8 @@ void export_mints()
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
+            def("occupation_a", &scf::HF::occupation_a, "docstring").
+            def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
@@ -936,6 +941,10 @@ void export_mints()
 
     class_<BoysLocalizer, boost::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
     class_<PMLocalizer, boost::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
+
+    class_<FCHKWriter, boost::shared_ptr<FCHKWriter> >("FCHKWriter", "docstring", no_init).
+            def(init<boost::shared_ptr<Wavefunction> >()).
+            def("write", &FCHKWriter::write, "docstring");
 
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).

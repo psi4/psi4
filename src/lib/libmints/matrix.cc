@@ -957,10 +957,10 @@ void Matrix::eivprint(const boost::shared_ptr<Vector>& values, std::string out)
     eivprint(values.get(), out);
 }
 
-void Matrix::symmetrize(boost::shared_ptr<Molecule> molecule)
+void Matrix::symmetrize_gradient(boost::shared_ptr<Molecule> molecule)
 {
     if (nirrep_ > 1 || rowspi_[0] != molecule->natom() || colspi_[0] != 3)
-        throw PSIEXCEPTION("Molecule::symmetrize: Matrix cannot be symmetrized.");
+        throw PSIEXCEPTION("Molecule::symmetrize_gradient: Matrix cannot be symmetrized.");
 
     // Symmetrize the gradients to remove any noise:
     CharacterTable ct = molecule->point_group()->char_table();
@@ -968,6 +968,8 @@ void Matrix::symmetrize(boost::shared_ptr<Molecule> molecule)
     // Obtain atom mapping of atom * symm op to atom
     int **atom_map = compute_atom_map(molecule);
 
+    SharedMatrix ret(clone());
+    ret->zero();
     Matrix temp = *this;
 
     // Symmetrize the gradients to remove any noise
@@ -978,11 +980,22 @@ void Matrix::symmetrize(boost::shared_ptr<Molecule> molecule)
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
-            add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
-            add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
+            ret->add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
+            ret->add(atom, 0, so(0, 1) * temp(Gatom, 1) / ct.order());
+            ret->add(atom, 0, so(0, 2) * temp(Gatom, 2) / ct.order());
+
+            ret->add(atom, 1, so(1, 0) * temp(Gatom, 0) / ct.order());
+            ret->add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
+            ret->add(atom, 1, so(1, 2) * temp(Gatom, 2) / ct.order());
+
+            ret->add(atom, 2, so(2, 0) * temp(Gatom, 0) / ct.order());
+            ret->add(atom, 2, so(2, 1) * temp(Gatom, 1) / ct.order());
+            ret->add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
         }
     }
+    delete_atom_map(atom_map, molecule);
+    copy(ret);
+    ret.reset();
 }
 
 void Matrix::identity()

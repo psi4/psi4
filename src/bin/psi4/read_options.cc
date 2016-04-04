@@ -128,8 +128,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
-  /*- Either a set of 3 coordinates, or a string (see manual) describing the origin about which one-electron
-       properties are computed -*/
+  /*- Either :ref:`a set of 3 coordinates or a string <table:oe_origin>`
+  describing the origin about which one-electron properties are computed. -*/
   options.add("PROPERTIES_ORIGIN", new ArrayType());
 
   /*- PSI4 dies if energy does not converge. !expert -*/
@@ -167,11 +167,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("MP_TYPE", "CONV", "DF CONV CD");
-  /*- Algorithm to use for CEPA computation (e.g., CEPA(3) or ACPF or OCEPA(0)).
-  See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
-  options.add_str("CEPA_TYPE", "CONV", "DF CONV CD");
   // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files, while CONV results in no approximations being made.
-  /*- Algorithm to use for CC computation (e.g., CCD, CCSD, CCSD(T)).
+  /*- Algorithm to use for CC or CEPA computation (e.g., CCD, CCSD(T), CEPA(3), ACPF).
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CC_TYPE", "CONV", "DF CONV CD");
   /*- Algorithm to use for CI computation (e.g., CID or CISD).
@@ -199,30 +196,32 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 
-
-  /*- Cube property data filepath -*/
+  /*- Directory to which to write cube files. Default is the input file
+  directory. -*/
   options.add_str_i("CUBEPROP_FILEPATH", ".");
+
   /*- Properties to compute. Valid tasks include:
-      DENSITY - Da, Db, Dt, Ds
-      ESP - Dt, ESP
-      ORBITALS - Psi_a_N, Psi_b_N
-      BASIS_FUNCTIONS - Phi_N
-      LOL - LOLa, LOLb
-      ELF - ELFa, ELFb
+      ``DENSITY`` - Da, Db, Dt, Ds
+      ``ESP`` - Dt, ESP
+      ``ORBITALS`` - Psi_a_N, Psi_b_N
+      ``BASIS_FUNCTIONS`` - Phi_N
+      ``LOL`` - LOLa, LOLb
+      ``ELF`` - ELFa, ELFb
   -*/
   options.add("CUBEPROP_TASKS", new ArrayType());
-  /*- List of desired orbital indices (1-based, + for alpha, - for beta). All orbitals computed if empty.-*/
+  /*- List of orbital indices for which cube files are generated (1-based,
+  $+$ for alpha, $-$ for beta). All orbitals computed if empty. -*/
   options.add("CUBEPROP_ORBITALS", new ArrayType());
-  /*- List of desired basis function indices (1-based). All basis functions computed if empty.-*/
+  /*- List of basis function indices for which cube files are generated
+  (1-based). All basis functions computed if empty.-*/
   options.add("CUBEPROP_BASIS_FUNCTIONS", new ArrayType());
-
   /*- CubicScalarGrid basis cutoff. !expert -*/
   options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
   /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
   options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
-  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+  /*- CubicScalarGrid spatial extent in bohr [O_X, O_Y, O_Z]. Defaults to 4.0 bohr each. -*/
   options.add("CUBIC_GRID_OVERAGE", new ArrayType());
-  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+  /*- CubicScalarGrid grid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
   options.add("CUBIC_GRID_SPACING", new ArrayType());
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
@@ -810,7 +809,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether or not to perform exchange scaling for SAPT exchange components.
      * Default is false, i.e. no scaling. If set to true, performs scaling with
      * Exch10 / Exch10(S^2). If set to a value \alpha, performs scaling with
-     * (Exch10 / Exch10(S^2))^{\alpha}. 
+     * (Exch10 / Exch10(S^2))^{\alpha}.
      */
     options.add_str("EXCH_SCALE_ALPHA", "FALSE", "");
     /* For SAPT0 only, compute only first-order electrostatics and exchange.
@@ -972,10 +971,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       // => CubicScalarGrid options <= //
 
-      /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
-      options.add("CUBIC_GRID_SPACING", new ArrayType());
-      /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/
+      /*- CubicScalarGrid spatial extent in bohr [O_X, O_Y, O_Z]. Defaults to 4.0 bohr each. -*/
       options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+      /*- CubicScalarGrid grid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/
+      options.add("CUBIC_GRID_SPACING", new ArrayType());
       /*- CubicScalarGrid basis cutoff. !expert -*/
       options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
       /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
@@ -1122,6 +1121,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("DF_BASIS_DCFT","");
 
   }
+  if (name == "GDMA"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs distributed multipole analysis (DMA), using
+    Anthony Stone's GDMA program. See :ref:`GDMA <sec:gdma>` for more details. -*/
+
+    /*- The order of multipole expansion on each site.  Currently limited to the same
+        order for all sites; for more advanced usage a user-provided GDMA data file
+        should be provided. -*/
+    options.add_int("GDMA_LIMIT", 2);
+    /*- The radii to be used, overriding the defaults.  Specified as an array
+        [ n1, r1, n2, r2, ... ] where n1,n2,n3... are atom type strings and
+        r1,r2,r3 are radii in Angstrom. -*/
+    options.add("GDMA_RADIUS", new ArrayType());
+    /*- The origin (in Angstrom, expressed as an [x, y, z] array) about which the total multipoles
+        will be computed during DMA.  Useful for determining single site expansions at an arbitrary point. -*/
+    options.add("GDMA_ORIGIN", new ArrayType());
+    /*- Whether to print DMA results in atomic units or SI. -*/
+    options.add_str("GDMA_MULTIPOLE_UNITS", "AU SI", "AU");
+    /*- The value to switch between the older standard DMA and the new grid-based approach.
+        Pairs of primitives whose exponents sum is above this value will be treated using
+        standard DMA.  Set to 0 to force all pairs to be treated with standard DMA. -*/
+    options.add_double("GDMA_SWITCH", 4.0);
+  }
+
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
       whenever disk-based molecular integrals are required. -*/
@@ -2495,11 +2517,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*In constrained optimizations, for coordinates with user-specified
-      equilibrium values, this is the force constant (in au) used to apply an additional
-      force to each coordinate.  If the user is only concerned to satisfy the desired constraint,
-      then the user need only ensure that this value is sufficiently large. */
-      //options.add_double("FIXED_COORD_FORCE_CONSTANT", 2.0);
+      /*- In constrained optimizations, for coordinates with user-specified
+      equilibrium values, this is the initial force constant (in au) used to apply an
+      additional force to each coordinate. -*/
+      options.add_double("FIXED_COORD_FORCE_CONSTANT", 0.5);
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest
