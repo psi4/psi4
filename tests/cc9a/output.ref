@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                              Psi4 0.4.190 Driver
 
-                          Git: Rev {master} dbe9080
+                          Git: Rev {test_ref_refresh} 9b1b239 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -12,13 +12,15 @@
     (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:17:06 2016
+    Psi4 started on: Mon Apr  4 10:22:59 2016
 
-    Process ID:  11055
+    Process ID:   4666
     PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
@@ -69,7 +71,7 @@ compare_values(etotal, get_variable("Current energy"), 9, "Total energy")       
   Memory set to 250.000 MiB by Python script.
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:17:06 2016
+*** at Mon Apr  4 10:22:59 2016
 
 
          ---------------------------------------------------------
@@ -159,20 +161,20 @@ compare_values(etotal, get_variable("Current energy"), 9, "Total energy")       
    @ROHF iter   2:   -84.13066745073223   -9.32254e-01   1.22587e-01 DIIS
    @ROHF iter   3:   -91.56994102487488   -7.43927e+00   4.70362e-02 DIIS
    @ROHF iter   4:   -92.11548468951906   -5.45544e-01   1.78041e-02 DIIS
-   @ROHF iter   5:   -92.17531716254760   -5.98325e-02   4.68871e-03 DIIS
-   @ROHF iter   6:   -92.18489693171708   -9.57977e-03   1.97972e-03 DIIS
-   @ROHF iter   7:   -92.18849213633592   -3.59520e-03   2.60041e-03 DIIS
-   @ROHF iter   8:   -92.19473815552828   -6.24602e-03   8.77748e-04 DIIS
-   @ROHF iter   9:   -92.19547838920769   -7.40234e-04   4.93687e-04 DIIS
-   @ROHF iter  10:   -92.19552604195412   -4.76527e-05   2.46913e-04 DIIS
-   @ROHF iter  11:   -92.19549304134888    3.30006e-05   2.65380e-04 DIIS
-   @ROHF iter  12:   -92.19555559553604   -6.25542e-05   2.76122e-05 DIIS
-   @ROHF iter  13:   -92.19555658870786   -9.93172e-07   5.25184e-06 DIIS
-   @ROHF iter  14:   -92.19555660604073   -1.73329e-08   4.11111e-07 DIIS
-   @ROHF iter  15:   -92.19555660616746   -1.26732e-10   4.25812e-08 DIIS
-   @ROHF iter  16:   -92.19555660616848   -1.02318e-12   1.47859e-08 DIIS
-   @ROHF iter  17:   -92.19555660616876   -2.84217e-13   1.94133e-09 DIIS
-   @ROHF iter  18:   -92.19555660616882   -5.68434e-14   5.90419e-11 DIIS
+   @ROHF iter   5:   -92.17531716254763   -5.98325e-02   4.68871e-03 DIIS
+   @ROHF iter   6:   -92.18489693171701   -9.57977e-03   1.97972e-03 DIIS
+   @ROHF iter   7:   -92.18849213633597   -3.59520e-03   2.60041e-03 DIIS
+   @ROHF iter   8:   -92.19473815552833   -6.24602e-03   8.77748e-04 DIIS
+   @ROHF iter   9:   -92.19547838920772   -7.40234e-04   4.93687e-04 DIIS
+   @ROHF iter  10:   -92.19552604195417   -4.76527e-05   2.46913e-04 DIIS
+   @ROHF iter  11:   -92.19549304134894    3.30006e-05   2.65380e-04 DIIS
+   @ROHF iter  12:   -92.19555559553601   -6.25542e-05   2.76122e-05 DIIS
+   @ROHF iter  13:   -92.19555658870789   -9.93172e-07   5.25184e-06 DIIS
+   @ROHF iter  14:   -92.19555660604077   -1.73329e-08   4.11111e-07 DIIS
+   @ROHF iter  15:   -92.19555660616754   -1.26775e-10   4.25812e-08 DIIS
+   @ROHF iter  16:   -92.19555660616858   -1.03739e-12   1.47859e-08 DIIS
+   @ROHF iter  17:   -92.19555660616879   -2.13163e-13   1.94133e-09 DIIS
+   @ROHF iter  18:   -92.19555660616879    0.00000e+00   5.90413e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -182,7 +184,7 @@ compare_values(etotal, get_variable("Current energy"), 9, "Total energy")       
     Doubly Occupied:                                                      
 
        1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
-       4A1    -0.626091     1B1    -0.507352     1B2    -0.507352  
+       4A1    -0.626091     1B2    -0.507352     1B1    -0.507352  
 
     Singly Occupied:                                                      
 
@@ -190,13 +192,13 @@ compare_values(etotal, get_variable("Current energy"), 9, "Total energy")       
 
     Virtual:                                                              
 
-       2B2     0.177180     2B1     0.177180     6A1     0.384745  
-       3B1     0.655939     3B2     0.655939     7A1     0.699522  
-       8A1     0.869525     4B2     1.036480     4B1     1.036480  
+       2B1     0.177180     2B2     0.177180     6A1     0.384745  
+       3B2     0.655939     3B1     0.655939     7A1     0.699522  
+       8A1     0.869525     4B1     1.036480     4B2     1.036480  
        9A1     1.044978    10A1     1.314443     1A2     1.314443  
-       5B1     1.503400     5B2     1.503400    11A1     1.564388  
-       2A2     2.160944    12A1     2.160944    13A1     2.254479  
-       6B2     2.677031     6B1     2.677031    14A1     3.095851  
+       5B2     1.503400     5B1     1.503400    11A1     1.564388  
+      12A1     2.160944     2A2     2.160944    13A1     2.254479  
+       6B1     2.677031     6B2     2.677031    14A1     3.095851  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -205,18 +207,18 @@ compare_values(etotal, get_variable("Current energy"), 9, "Total energy")       
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19555660616882
+  @ROHF Final Energy:   -92.19555660616879
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             18.9152704347063967
-    One-Electron Energy =                -161.7960330237674498
-    Two-Electron Energy =                  50.6852059828922279
+    One-Electron Energy =                -161.7960330237674214
+    Two-Electron Energy =                  50.6852059828922208
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1955566061688216
+    Total Energy =                        -92.1955566061687932
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -241,18 +243,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:17:06 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:59 2016
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:17:06 2016
+*** at Mon Apr  4 10:22:59 2016
 
 
 	Wfn Parameters:
@@ -388,223 +390,223 @@ Total time:
 	Total:                                     0.005 (MW) /      0.043 (MB)
 
 	Nuclear Rep. energy          =     18.91527043470640
-	SCF energy                   =    -92.19555660616882
-	One-electron energy          =   -161.79603302536893
-	Two-electron (AA) energy     =     11.19205100828054
-	Two-electron (BB) energy     =      8.49570670573937
-	Two-electron (AB) energy     =     30.99744827047389
+	SCF energy                   =    -92.19555660616879
+	One-electron energy          =   -161.79603302536896
+	Two-electron (AA) energy     =     11.19205100828055
+	Two-electron (BB) energy     =      8.49570670573936
+	Two-electron (AB) energy     =     30.99744827047390
 	Two-electron energy          =     50.68520598449381
-	Reference energy             =    -92.19555660616872
+	Reference energy             =    -92.19555660616875
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:17:06 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:59 2016
 Module time:
 	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:17:06 2016
+*** at Mon Apr  4 10:22:59 2016
 
-			**************************
-			*                        *
-			*        CCENERGY        *
-			*                        *
-			**************************
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
 
-	Nuclear Rep. energy (wfn)     =   18.915270434706397
-	SCF energy          (wfn)     =  -92.195556606168822
-	Reference energy    (file100) =  -92.195556606168722
+    Nuclear Rep. energy (wfn)     =   18.915270434706397
+    SCF energy          (wfn)     =  -92.195556606168793
+    Reference energy    (file100) =  -92.195556606168751
 
-	Input parameters:
-	-----------------
-	Wave function   =   CCSD_T
-	Reference wfn   =     ROHF changed to UHF for Semicanonical Orbitals
-	Brueckner       =     No
-	Memory (Mbytes) =     250.0
-	Maxiter         =     50
-	R_Convergence   =     1.0e-10
-	E_Convergence   =     1.0e-10
-	Restart         =     Yes
-	DIIS            =     Yes
-	AO Basis        =     DISK
-	ABCD            =     NEW
-	Cache Level     =     2
-	Cache Type      =     LRU
-	Print Level     =     1
-	Num. of threads =     1
-	# Amps to Print =     10
-	Print MP2 Amps? =     No
-	Analyze T2 Amps =     No
-	Print Pair Ener =     No
-	Local CC        =     No
-	SCS-MP2         =     False
-	SCSN-MP2        =     False
-	SCS-CCSD        =     False
+    Input parameters:
+    -----------------
+    Wave function   =   CCSD_T
+    Reference wfn   =     ROHF changed to UHF for Semicanonical Orbitals
+    Brueckner       =     No
+    Memory (Mbytes) =     250.0
+    Maxiter         =     50
+    R_Convergence   =     1.0e-10
+    E_Convergence   =     1.0e-10
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     DISK
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LRU
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
 
-MP2 correlaction energy -0.2744053080900146
-	            Solving CC Amplitude Equations
-	            ------------------------------
+MP2 correlation energy -0.2744053080900142
+                Solving CC Amplitude Equations
+                ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
      0        -0.274514295540544    0.000e+00    0.013430    0.000000    0.000000    0.000000
-     1        -0.263908576887879    1.106e-01    0.031103    0.000000    0.000000    0.000000
-     2        -0.277753004833411    4.184e-02    0.034767    0.000000    0.000000    0.000000
-     3        -0.282899024470397    3.490e-02    0.046111    0.000000    0.000000    0.000000
-     4        -0.283881380726976    1.811e-02    0.054370    0.000000    0.000000    0.000000
-     5        -0.284747224686850    1.217e-02    0.061801    0.000000    0.000000    0.000000
-     6        -0.284789644308439    5.881e-03    0.065648    0.000000    0.000000    0.000000
-     7        -0.284896575114498    2.111e-03    0.066557    0.000000    0.000000    0.000000
-     8        -0.284941188545889    1.031e-03    0.067250    0.000000    0.000000    0.000000
-     9        -0.284916220661106    4.000e-04    0.067255    0.000000    0.000000    0.000000
-    10        -0.284925701578542    2.038e-04    0.067307    0.000000    0.000000    0.000000
-    11        -0.284923592917986    1.095e-04    0.067370    0.000000    0.000000    0.000000
-    12        -0.284924905695553    5.568e-05    0.067361    0.000000    0.000000    0.000000
-    13        -0.284923309770642    1.501e-05    0.067367    0.000000    0.000000    0.000000
-    14        -0.284922709021218    3.891e-06    0.067369    0.000000    0.000000    0.000000
-    15        -0.284922821278418    1.391e-06    0.067369    0.000000    0.000000    0.000000
-    16        -0.284922909802491    6.346e-07    0.067370    0.000000    0.000000    0.000000
-    17        -0.284922918548669    1.131e-07    0.067370    0.000000    0.000000    0.000000
-    18        -0.284922924617133    4.440e-08    0.067370    0.000000    0.000000    0.000000
-    19        -0.284922922121068    1.657e-08    0.067370    0.000000    0.000000    0.000000
-    20        -0.284922922373865    6.397e-09    0.067370    0.000000    0.000000    0.000000
-    21        -0.284922921932960    3.100e-09    0.067370    0.000000    0.000000    0.000000
-    22        -0.284922921845554    1.423e-09    0.067370    0.000000    0.000000    0.000000
-    23        -0.284922921833758    5.478e-10    0.067370    0.000000    0.000000    0.000000
-    24        -0.284922921788762    3.242e-10    0.067370    0.000000    0.000000    0.000000
-    25        -0.284922921793316    1.398e-10    0.067370    0.000000    0.000000    0.000000
-    26        -0.284922921794448    7.330e-11    0.067370    0.000000    0.000000    0.000000
+     1        -0.263908576887880    1.106e-01    0.031103    0.000000    0.000000    0.000000
+     2        -0.277753004833412    4.184e-02    0.034767    0.000000    0.000000    0.000000
+     3        -0.282899024470399    3.490e-02    0.046111    0.000000    0.000000    0.000000
+     4        -0.283881380726979    1.811e-02    0.054370    0.000000    0.000000    0.000000
+     5        -0.284747224686853    1.217e-02    0.061801    0.000000    0.000000    0.000000
+     6        -0.284789644308442    5.881e-03    0.065648    0.000000    0.000000    0.000000
+     7        -0.284896575114501    2.111e-03    0.066557    0.000000    0.000000    0.000000
+     8        -0.284941188545892    1.031e-03    0.067250    0.000000    0.000000    0.000000
+     9        -0.284916220661109    4.000e-04    0.067255    0.000000    0.000000    0.000000
+    10        -0.284925701578545    2.038e-04    0.067307    0.000000    0.000000    0.000000
+    11        -0.284923592917988    1.095e-04    0.067370    0.000000    0.000000    0.000000
+    12        -0.284924905695555    5.568e-05    0.067361    0.000000    0.000000    0.000000
+    13        -0.284923309770645    1.501e-05    0.067367    0.000000    0.000000    0.000000
+    14        -0.284922709021221    3.891e-06    0.067369    0.000000    0.000000    0.000000
+    15        -0.284922821278421    1.391e-06    0.067369    0.000000    0.000000    0.000000
+    16        -0.284922909802494    6.346e-07    0.067370    0.000000    0.000000    0.000000
+    17        -0.284922918548672    1.131e-07    0.067370    0.000000    0.000000    0.000000
+    18        -0.284922924617136    4.440e-08    0.067370    0.000000    0.000000    0.000000
+    19        -0.284922922121071    1.657e-08    0.067370    0.000000    0.000000    0.000000
+    20        -0.284922922373867    6.397e-09    0.067370    0.000000    0.000000    0.000000
+    21        -0.284922921932963    3.100e-09    0.067370    0.000000    0.000000    0.000000
+    22        -0.284922921845556    1.423e-09    0.067370    0.000000    0.000000    0.000000
+    23        -0.284922921833761    5.478e-10    0.067370    0.000000    0.000000    0.000000
+    24        -0.284922921788764    3.242e-10    0.067370    0.000000    0.000000    0.000000
+    25        -0.284922921793319    1.398e-10    0.067370    0.000000    0.000000    0.000000
+    26        -0.284922921794451    7.330e-11    0.067370    0.000000    0.000000    0.000000
 
-	Iterations converged.
-
-
-	Largest TIA Amplitudes:
-	          5  11        -0.0353828687
-	          6  16        -0.0353828687
-	          5  12        -0.0248789275
-	          6  17        -0.0248789275
-	          5  14        -0.0239951936
-	          6  19        -0.0239951936
-	          4   1         0.0179530796
-	          4   3         0.0164691627
-	          4   0        -0.0113429349
-	          5  13         0.0097034083
-
-	Largest Tia Amplitudes:
-	          3   0        -0.2197999496
-	          4  12         0.0352135230
-	          5  17         0.0352135230
-	          3   2         0.0219359849
-	          4  14         0.0185864687
-	          5  19         0.0185864687
-	          2   0         0.0145613700
-	          3   1         0.0136676955
-	          4  15         0.0107724477
-	          5  20         0.0107724477
-
-	Largest TIJAB Amplitudes:
-	  6   5  16  11        -0.0345988970
-	  5   4  11   3        -0.0226926753
-	  6   4  16   3        -0.0226926753
-	  6   5  17  12        -0.0172561361
-	  6   5   9   4         0.0164439325
-	  5   3  12   1         0.0147258171
-	  6   3  17   1         0.0147258171
-	  6   5  16  13        -0.0114044357
-	  6   5  18  11        -0.0114044357
-	  5   4  13   3        -0.0113075813
-
-	Largest Tijab Amplitudes:
-	  4   3  12   0        -0.0383395929
-	  5   3  17   0        -0.0383395929
-	  5   4  17  12        -0.0367707958
-	  5   4  18  13        -0.0148992497
-	  5   4  10   5        -0.0147264946
-	  4   3  14   0        -0.0136504578
-	  5   3  19   0        -0.0136504578
-	  5   4  17  14        -0.0130977056
-	  5   4  19  12        -0.0130977056
-	  5   4  19  14        -0.0130893483
-
-	Largest TIjAb Amplitudes:
-	  5   4  11  12        -0.1034066065
-	  6   5  16  17        -0.1034066065
-	  5   3  11   0        -0.0804563473
-	  6   3  16   0        -0.0804563473
-	  5   5  11  17        -0.0611850845
-	  6   4  16  12        -0.0611850845
-	  3   4  11   0         0.0596578085
-	  3   5  16   0         0.0596578085
-	  3   3  11  12         0.0484330179
-	  3   3  16  17         0.0484330179
-
-	SCF energy       (wfn)                =  -92.195556606168822
-	Reference energy (file100)            =  -92.195556606168722
-
-	Opposite-spin MP2 correlation energy  =   -0.198604568257784
-	Same-spin MP2 correlation energy      =   -0.073221632953434
-	MP2 correlation energy                =   -0.274405308090015
-      * MP2 total energy                      =  -92.469961914258732
-
-	Opposite-spin CCSD correlation energy =   -0.220906583379578
-	Same-spin CCSD correlation energy     =   -0.060082419854999
-	CCSD correlation energy               =   -0.284922921794448
-      * CCSD total energy                 =  -92.480479527963169
+    Iterations converged.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:17:07 2016
+    Largest TIA Amplitudes:
+              5  11        -0.0353828687
+              6  16        -0.0353828687
+              5  12        -0.0248789275
+              6  17        -0.0248789275
+              5  14        -0.0239951936
+              6  19        -0.0239951936
+              4   1         0.0179530796
+              4   3         0.0164691627
+              4   0        -0.0113429349
+              5  13         0.0097034083
+
+    Largest Tia Amplitudes:
+              3   0        -0.2197999496
+              4  12         0.0352135230
+              5  17         0.0352135230
+              3   2         0.0219359849
+              4  14         0.0185864687
+              5  19         0.0185864687
+              2   0         0.0145613700
+              3   1         0.0136676955
+              4  15         0.0107724477
+              5  20         0.0107724477
+
+    Largest TIJAB Amplitudes:
+      6   5  16  11        -0.0345988970
+      5   4  11   3        -0.0226926753
+      6   4  16   3        -0.0226926753
+      6   5  17  12        -0.0172561361
+      6   5   9   4        -0.0164439325
+      5   3  12   1         0.0147258171
+      6   3  17   1         0.0147258171
+      6   5  16  13        -0.0114044357
+      6   5  18  11        -0.0114044357
+      5   4  13   3        -0.0113075813
+
+    Largest Tijab Amplitudes:
+      4   3  12   0        -0.0383395929
+      5   3  17   0        -0.0383395929
+      5   4  17  12        -0.0367707958
+      5   4  18  13        -0.0148992497
+      5   4  10   5         0.0147264946
+      4   3  14   0        -0.0136504578
+      5   3  19   0        -0.0136504578
+      5   4  17  14        -0.0130977056
+      5   4  19  12        -0.0130977056
+      5   4  19  14        -0.0130893483
+
+    Largest TIjAb Amplitudes:
+      5   4  11  12        -0.1034066065
+      6   5  16  17        -0.1034066065
+      5   3  11   0        -0.0804563473
+      6   3  16   0        -0.0804563473
+      5   5  11  17        -0.0611850845
+      6   4  16  12        -0.0611850845
+      3   4  11   0         0.0596578085
+      3   5  16   0         0.0596578085
+      3   3  11  12         0.0484330179
+      3   3  16  17         0.0484330179
+
+    SCF energy       (wfn)                    =  -92.195556606168793
+    Reference energy (file100)                =  -92.195556606168751
+
+    Opposite-spin MP2 correlation energy      =   -0.198604568257784
+    Same-spin MP2 correlation energy          =   -0.073221632953434
+    MP2 correlation energy                    =   -0.274405308090014
+      * MP2 total energy                      =  -92.469961914258761
+
+    Opposite-spin CCSD correlation energy     =   -0.220906583379578
+    Same-spin CCSD correlation energy         =   -0.060082419855000
+    CCSD correlation energy                   =   -0.284922921794451
+      * CCSD total energy                     =  -92.480479527963197
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:23:00 2016
 Module time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.40 seconds =       0.01 minutes
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.36 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.95 seconds =       0.02 minutes
-	system time =       0.47 seconds =       0.01 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.42 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:17:07 2016
+*** at Mon Apr  4 10:23:00 2016
 
-			**************************
-			*                        *
-			*        CCTRIPLES       *
-			*                        *
-			**************************
-
-
-	Wave function   =    CCSD_T
-	Reference wfn   =    ROHF changed to UHF for Semicanonical Orbitals
-
-	Nuclear Rep. energy (wfn)     =   18.915270434706397
-	SCF energy          (wfn)     =  -92.195556606168822
-	Reference energy    (file100) =  -92.195556606168722
-	CCSD energy         (file100) =   -0.284922921794448
-	Total CCSD energy   (file100) =  -92.480479527963169
-
-	Number of ijk index combinations:
-	Spin Case AAA: 35
-	Spin Case BBB: 20
-	Spin Case AAB: 126
-	Spin Case ABB: 105
-	AAA (T) energy                =   -0.000198637636809
-	BBB (T) energy                =   -0.000177305581851
-	AAB (T) energy                =   -0.007197928419914
-	ABB (T) energy                =   -0.006489164130459
-	(T) energy                    =   -0.014063035769032
-      * CCSD(T) total energy          =  -92.494542563732196
+            **************************
+            *                        *
+            *        CCTRIPLES       *
+            *                        *
+            **************************
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:17:07 2016
+    Wave function   =    CCSD_T
+    Reference wfn   =    ROHF changed to UHF for Semicanonical Orbitals
+
+    Nuclear Rep. energy (wfn)                =   18.915270434706397
+    SCF energy          (wfn)                =  -92.195556606168793
+    Reference energy    (file100)            =  -92.195556606168751
+    CCSD energy         (file100)            =   -0.284922921794451
+    Total CCSD energy   (file100)            =  -92.480479527963197
+
+    Number of ijk index combinations:
+    Spin Case AAA:                                  35
+    Spin Case BBB:                                  20
+    Spin Case AAB:                                 126
+    Spin Case ABB:                                 105
+    AAA (T) energy                             =   -0.000198637636809
+    BBB (T) energy                             =   -0.000177305581851
+    AAB (T) energy                             =   -0.007197928419914
+    ABB (T) energy                             =   -0.006489164130458
+    (T) energy                                   =   -0.014063035769032
+      * CCSD(T) total energy                     =  -92.494542563732239
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:23:00 2016
 Module time:
 	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.01 seconds =       0.02 minutes
-	system time =       0.48 seconds =       0.01 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.44 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED

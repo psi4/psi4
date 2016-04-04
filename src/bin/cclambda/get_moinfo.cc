@@ -222,7 +222,7 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
                     sizeof(double));
 
     outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo.enuc);
-    outfile->Printf(  "\tReference           (wfn)     = %d\n",params.ref);
+    outfile->Printf(  "\tReference           (wfn)     = %20d\n",params.ref);
     outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (CC_INFO) = %20.15f\n",moinfo.eref);
 

@@ -44,7 +44,7 @@ void CCEnergyWavefunction::init_amps(void)
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA"))
       global_dpd_->file2_scm(&tIA, 0);
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
     global_dpd_->file2_close(&tIA);
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb")) {
@@ -63,7 +63,7 @@ void CCEnergyWavefunction::init_amps(void)
       }
       global_dpd_->buf4_close(&tIjAb);
     }
-    else outfile->Printf( "\tUsing old T2 amplitudes.\n\n");
+    else outfile->Printf( "    Using old T2 amplitudes.\n\n");
   }
   else if(params_.ref == 1) { /*** ROHF ***/
     if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
@@ -95,7 +95,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -128,7 +128,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->buf4_close(&dIjAb);
     }
     else 
-      outfile->Printf( "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "    Using old T2 amplitudes.\n");
   }
   else if(params_.ref == 2) { /*** UHF ***/
 
@@ -161,7 +161,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -194,7 +194,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->buf4_close(&dIJAB);
     }
     else 
-      outfile->Printf( "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "    Using old T2 amplitudes.\n");
   }
   else {  /*** RHF/ROHF ***/
 

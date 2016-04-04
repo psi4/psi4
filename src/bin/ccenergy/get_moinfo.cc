@@ -302,9 +302,9 @@ void CCEnergyWavefunction::get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo_.eref),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo_.enuc);
-    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo_.escf);
-    outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo_.eref);
+    outfile->Printf("\n    Nuclear Rep. energy (wfn)     = %20.15f\n",moinfo_.enuc);
+    outfile->Printf(  "    SCF energy          (wfn)     = %20.15f\n",moinfo_.escf);
+    outfile->Printf(  "    Reference energy    (file100) = %20.15f\n",moinfo_.eref);
 }
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */

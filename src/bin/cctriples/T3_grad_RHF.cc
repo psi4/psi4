@@ -753,7 +753,7 @@ namespace psi { namespace cctriples {
 	} /* Gj */
       } /* Gi */
 
-      outfile->Printf( "\tE(T) = %20.14f\n", ET);
+      outfile->Printf( "    E(T) = %20.14f\n", ET);
 
       free(W0); free(W1); free(V); free(M);
 
