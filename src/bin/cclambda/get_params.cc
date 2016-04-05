@@ -438,21 +438,21 @@ void get_params(Options& options)
 
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");
-  outfile->Printf( "\tMaxiter       =    %4d\n", params.maxiter);
-  outfile->Printf( "\tConvergence   = %3.1e\n", params.convergence);
-  outfile->Printf( "\tRestart       =     %s\n", params.restart ? "Yes" : "No");
-  outfile->Printf( "\tCache Level   =     %1d\n", params.cachelev);
-  outfile->Printf( "\tModel III     =     %s\n", params.sekino ? "Yes" : "No");
-  outfile->Printf( "\tDIIS          =     %s\n", params.diis ? "Yes" : "No");
-  outfile->Printf( "\tAO Basis      =     %s\n",
+  outfile->Printf( "\tMaxiter           =   %4d\n", params.maxiter);
+  outfile->Printf( "\tConvergence       = %3.1e\n", params.convergence);
+  outfile->Printf( "\tRestart           =     %s\n", params.restart ? "Yes" : "No");
+  outfile->Printf( "\tCache Level       =     %1d\n", params.cachelev);
+  outfile->Printf( "\tModel III         =     %s\n", params.sekino ? "Yes" : "No");
+  outfile->Printf( "\tDIIS              =     %s\n", params.diis ? "Yes" : "No");
+  outfile->Printf( "\tAO Basis          =     %s\n",
           params.aobasis ? "Yes" : "No");
-  outfile->Printf( "\tABCD            =     %s\n", params.abcd.c_str());
-  outfile->Printf( "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tABCD              =     %s\n", params.abcd.c_str());
+  outfile->Printf( "\tLocal CC          =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    outfile->Printf( "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    outfile->Printf( "\tLocal Method    =    %s\n", local.method.c_str());
-    outfile->Printf( "\tWeak pairs      =    %s\n", local.weakp.c_str());
-    outfile->Printf( "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
+    outfile->Printf( "\tLocal Cutoff      = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Method      =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs        =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
     outfile->Printf( "\tLocal pairs       =    %s\n", local.pairdef.c_str());
     outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }

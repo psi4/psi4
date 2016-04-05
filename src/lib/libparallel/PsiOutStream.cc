@@ -30,7 +30,7 @@ void Destructor(std::ostream* Stream_){}
 
 void PsiOutStream::Buffer2Stream(){
    if(this->ImSpecial()){
-        (*Stream_)<<Buffer_.rdbuf();
+        (*Stream_)<<Buffer_.str();
         this->Flush();
      }
    this->EmptyBuffer();

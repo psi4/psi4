@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.454 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} f798b4f dirty
+                          Git: Rev {master} ad94c93
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,15 +16,17 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Jan 13 00:02:30 2016
+    Psi4 started on: Fri Mar 18 13:37:37 2016
 
-    Process ID:  20405
-    PSI4DATADIR: /home/roberto/Workspace/psi4/lib
+    Process ID:    476
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! dipole moment for HF and B3LYP in presence of perturbation
+
 molecule h2o {
 symmetry c1
 0 1
@@ -96,8 +98,8 @@ for m in methods:
     compare_values(dipole_z, dm_z_5point*psi_dipmom_au2debye, 4, "Dipole moment along the z-axis")
 --------------------------------------------------------------------------
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:30 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:38 2016
 
 
          ---------------------------------------------------------
@@ -124,7 +126,7 @@ for m in methods:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -202,66 +204,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by 0.001000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04915091123679
-   @DF-RHF iter   1:   -68.95866152955648   -6.89587e+01   1.73869e-01 
-   PCM polarization energy = -0.15458443595500
-   @DF-RHF iter   2:   -72.08750905856938   -3.12885e+00   1.22240e-01 DIIS
-   PCM polarization energy = -0.01717931574295
-   @DF-RHF iter   3:   -75.88590199104667   -3.79839e+00   3.22311e-02 DIIS
-   PCM polarization energy = -0.01380467998730
-   @DF-RHF iter   4:   -76.01369102615762   -1.27789e-01   7.07317e-03 DIIS
-   PCM polarization energy = -0.01206603058873
-   @DF-RHF iter   5:   -76.02114820913120   -7.45718e-03   9.18990e-04 DIIS
-   PCM polarization energy = -0.01192426071399
-   @DF-RHF iter   6:   -76.02130507552297   -1.56866e-04   2.88364e-04 DIIS
-   PCM polarization energy = -0.01185764698088
-   @DF-RHF iter   7:   -76.02132576751269   -2.06920e-05   5.26579e-05 DIIS
-   PCM polarization energy = -0.01185051196518
-   @DF-RHF iter   8:   -76.02132618595500   -4.18442e-07   1.01879e-05 DIIS
-   PCM polarization energy = -0.01184800346182
-   @DF-RHF iter   9:   -76.02132620994497   -2.39900e-08   1.70862e-06 DIIS
-   PCM polarization energy = -0.01184796411483
-   @DF-RHF iter  10:   -76.02132621037605   -4.31072e-10   1.20857e-07 DIIS
-   PCM polarization energy = -0.01184790205470
-   @DF-RHF iter  11:   -76.02132621038118   -5.13012e-12   2.99134e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by 0.001000 mu(z).
@@ -274,12 +217,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01184788358174
-   @RHF iter  12:   -76.02135105811780   -2.48477e-05   5.73915e-06 DIIS
-   PCM polarization energy = -0.01184624657280
-   @RHF iter  13:   -76.02135106264485   -4.52705e-09   7.05139e-07 DIIS
-   PCM polarization energy = -0.01184647120722
-   @RHF iter  14:   -76.02135106272665   -8.17977e-11   2.56381e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04915091123679
+   @RHF iter   1:   -68.95869650974836   -6.89587e+01   1.73866e-01 
+   PCM polarization energy = -0.15458117414519
+   @RHF iter   2:   -72.08755268104640   -3.12886e+00   1.22239e-01 DIIS
+   PCM polarization energy = -0.01717754412398
+   @RHF iter   3:   -75.88595653884224   -3.79840e+00   3.22276e-02 DIIS
+   PCM polarization energy = -0.01380282857328
+   @RHF iter   4:   -76.01371589075016   -1.27759e-01   7.07342e-03 DIIS
+   PCM polarization energy = -0.01206449585788
+   @RHF iter   5:   -76.02117317030189   -7.45728e-03   9.18708e-04 DIIS
+   PCM polarization energy = -0.01192280711622
+   @RHF iter   6:   -76.02132993763230   -1.56767e-04   2.88286e-04 DIIS
+   PCM polarization energy = -0.01185624503246
+   @RHF iter   7:   -76.02135061956685   -2.06819e-05   5.26981e-05 DIIS
+   PCM polarization energy = -0.01184910435028
+   @RHF iter   8:   -76.02135103837315   -4.18806e-07   1.01720e-05 DIIS
+   PCM polarization energy = -0.01184659765788
+   @RHF iter   9:   -76.02135106230119   -2.39280e-08   1.70749e-06 DIIS
+   PCM polarization energy = -0.01184655895777
+   @RHF iter  10:   -76.02135106273136   -4.30163e-10   1.20729e-07 DIIS
+   PCM polarization energy = -0.01184649693071
+   @RHF iter  11:   -76.02135106273641   -5.05906e-12   2.98793e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -288,16 +255,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.561780     2A     -1.341992     3A     -0.710186  
+       1A    -20.561782     2A     -1.341992     3A     -0.710187  
        4A     -0.576027     5A     -0.503499  
 
     Virtual:                                                              
 
        6A      0.226616     7A      0.321575     8A      1.027268  
-       9A      1.119151    10A      1.158775    11A      1.162570  
-      12A      1.378463    13A      1.431553    14A      2.016697  
-      15A      2.025454    16A      2.060705    17A      2.618281  
-      18A      2.941863    19A      3.966555  
+       9A      1.119151    10A      1.158774    11A      1.162570  
+      12A      1.378462    13A      1.431553    14A      2.016697  
+      15A      2.025454    16A      2.060704    17A      2.618280  
+      18A      2.941862    19A      3.966554  
 
     Final Occupation by Irrep:
               A 
@@ -305,18 +272,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02135106272665 with 0.001000 perturbation
+  @RHF Final Energy:   -76.02135106273641 with 0.001000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0883552196612243
-    Two-Electron Energy =                  37.8995033396097369
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0883432448229939
+    Two-Electron Energy =                  37.8994913904852240
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0118464712072208
+    PCM Polarization Energy =              -0.0118464969307069
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213510627266658
+    Total Energy =                        -76.0213510627364286
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -330,29 +297,29 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0004
+     X:    -0.0000      Y:    -0.0000      Z:     0.0004
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.9595     Total:     0.9595
+     X:    -0.0000      Y:    -0.0000      Z:     0.9595     Total:     0.9595
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.4388     Total:     2.4388
+     X:    -0.0000      Y:    -0.0000      Z:     2.4388     Total:     2.4388
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:32 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:39 2016
 Module time:
-	user time   =       2.19 seconds =       0.04 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.19 seconds =       0.04 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:32 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:39 2016
 
 
          ---------------------------------------------------------
@@ -379,7 +346,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -457,66 +424,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by -0.001000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04918473452996
-   @DF-RHF iter   1:   -68.96050272303590   -6.89605e+01   1.73860e-01 
-   PCM polarization energy = -0.15354105533747
-   @DF-RHF iter   2:   -72.08521471927497   -3.12471e+00   1.22250e-01 DIIS
-   PCM polarization energy = -0.01738036171897
-   @DF-RHF iter   3:   -75.88626720202974   -3.80105e+00   3.21993e-02 DIIS
-   PCM polarization energy = -0.01401043622711
-   @DF-RHF iter   4:   -76.01374513328358   -1.27478e-01   7.06218e-03 DIIS
-   PCM polarization energy = -0.01227898417812
-   @DF-RHF iter   5:   -76.02116316088245   -7.41803e-03   9.11754e-04 DIIS
-   PCM polarization energy = -0.01213913059051
-   @DF-RHF iter   6:   -76.02131694196449   -1.53781e-04   2.85715e-04 DIIS
-   PCM polarization energy = -0.01207405859749
-   @DF-RHF iter   7:   -76.02133706913845   -2.01272e-05   5.16600e-05 DIIS
-   PCM polarization energy = -0.01206716443832
-   @DF-RHF iter   8:   -76.02133746883912   -3.99701e-07   9.95346e-06 DIIS
-   PCM polarization energy = -0.01206474156264
-   @DF-RHF iter   9:   -76.02133749163764   -2.27985e-08   1.67134e-06 DIIS
-   PCM polarization energy = -0.01206470605233
-   @DF-RHF iter  10:   -76.02133749205260   -4.14957e-10   1.18906e-07 DIIS
-   PCM polarization energy = -0.01206464515587
-   @DF-RHF iter  11:   -76.02133749205765   -5.05906e-12   2.95277e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by -0.001000 mu(z).
@@ -529,12 +437,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01206462690847
-   @RHF iter  12:   -76.02136219025935   -2.46982e-05   5.69079e-06 DIIS
-   PCM polarization energy = -0.01206298373833
-   @RHF iter  13:   -76.02136219470906   -4.44970e-09   7.01849e-07 DIIS
-   PCM polarization energy = -0.01206320960234
-   @RHF iter  14:   -76.02136219478980   -8.07461e-11   2.56718e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04918473452996
+   @RHF iter   1:   -68.96053768520579   -6.89605e+01   1.73857e-01 
+   PCM polarization energy = -0.15353779046269
+   @RHF iter   2:   -72.08525757169483   -3.12472e+00   1.22249e-01 DIIS
+   PCM polarization energy = -0.01737860046695
+   @RHF iter   3:   -75.88632153869644   -3.80106e+00   3.21957e-02 DIIS
+   PCM polarization energy = -0.01400858725960
+   @RHF iter   4:   -76.01376983524646   -1.27448e-01   7.06244e-03 DIIS
+   PCM polarization energy = -0.01227744418455
+   @RHF iter   5:   -76.02118797025722   -7.41814e-03   9.11474e-04 DIIS
+   PCM polarization energy = -0.01213767190813
+   @RHF iter   6:   -76.02134165412517   -1.53684e-04   2.85640e-04 DIIS
+   PCM polarization energy = -0.01207265171296
+   @RHF iter   7:   -76.02136177157547   -2.01175e-05   5.16999e-05 DIIS
+   PCM polarization energy = -0.01206575166494
+   @RHF iter   8:   -76.02136217163947   -4.00064e-07   9.93819e-06 DIIS
+   PCM polarization energy = -0.01206333044442
+   @RHF iter   9:   -76.02136219438059   -2.27411e-08   1.67024e-06 DIIS
+   PCM polarization energy = -0.01206329555627
+   @RHF iter  10:   -76.02136219479462   -4.14033e-10   1.18777e-07 DIIS
+   PCM polarization energy = -0.01206323469101
+   @RHF iter  11:   -76.02136219479952   -4.90274e-12   2.94939e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -543,16 +475,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.561130     2A     -1.341317     3A     -0.709574  
-       4A     -0.576082     5A     -0.503121  
+       1A    -20.561132     2A     -1.341317     3A     -0.709575  
+       4A     -0.576083     5A     -0.503121  
 
     Virtual:                                                              
 
        6A      0.229162     7A      0.324098     8A      1.027550  
-       9A      1.118444    10A      1.158987    11A      1.163552  
-      12A      1.378825    13A      1.433226    14A      2.016672  
-      15A      2.025568    16A      2.060782    17A      2.618721  
-      18A      2.942091    19A      3.966839  
+       9A      1.118444    10A      1.158986    11A      1.163551  
+      12A      1.378824    13A      1.433226    14A      2.016671  
+      15A      2.025567    16A      2.060782    17A      2.618720  
+      18A      2.942090    19A      3.966838  
 
     Final Occupation by Irrep:
               A 
@@ -560,18 +492,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02136219478980 with -0.001000 perturbation
+  @RHF Final Energy:   -76.02136219479952 with -0.001000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0935241415176904
-    Two-Electron Energy =                  37.9048778677981772
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0935120136424388
+    Two-Electron Energy =                  37.9048657650019010
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0120632096023355
+    PCM Polarization Energy =              -0.0120632346910088
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213621947898019
+    Total Energy =                        -76.0213621947995080
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -596,18 +528,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:35 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:39 2016
 Module time:
-	user time   =       2.15 seconds =       0.04 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.38 seconds =       0.07 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.55 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:35 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:39 2016
 
 
          ---------------------------------------------------------
@@ -634,7 +566,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -712,66 +644,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by 0.002000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04913400524453
-   @DF-RHF iter   1:   -68.95774226195869   -6.89577e+01   1.73873e-01 
-   PCM polarization energy = -0.15510627629833
-   @DF-RHF iter   2:   -72.08868034445803   -3.13094e+00   1.22235e-01 DIIS
-   PCM polarization energy = -0.01707914666909
-   @DF-RHF iter   3:   -75.88572814976278   -3.79705e+00   3.22468e-02 DIIS
-   PCM polarization energy = -0.01370222657633
-   @DF-RHF iter   4:   -76.01367173271157   -1.27944e-01   7.07856e-03 DIIS
-   PCM polarization energy = -0.01196005201351
-   @DF-RHF iter   5:   -76.02114849217298   -7.47676e-03   9.22652e-04 DIIS
-   PCM polarization energy = -0.01181732234109
-   @DF-RHF iter   6:   -76.02130693715061   -1.58445e-04   2.89711e-04 DIIS
-   PCM polarization energy = -0.01174992999740
-   @DF-RHF iter   7:   -76.02132792079429   -2.09836e-05   5.31662e-05 DIIS
-   PCM polarization energy = -0.01174267295978
-   @DF-RHF iter   8:   -76.02132834895912   -4.28165e-07   1.03060e-05 DIIS
-   PCM polarization energy = -0.01174012165120
-   @DF-RHF iter   9:   -76.02132837356075   -2.46016e-08   1.72729e-06 DIIS
-   PCM polarization energy = -0.01174008043326
-   @DF-RHF iter  10:   -76.02132837399994   -4.39186e-10   1.21841e-07 DIIS
-   PCM polarization energy = -0.01174001780669
-   @DF-RHF iter  11:   -76.02132837400529   -5.35749e-12   3.01070e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by 0.002000 mu(z).
@@ -784,12 +657,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01173999922504
-   @RHF iter  12:   -76.02135329696422   -2.49230e-05   5.76339e-06 DIIS
-   PCM polarization energy = -0.01173836546245
-   @RHF iter  13:   -76.02135330153031   -4.56609e-09   7.06808e-07 DIIS
-   PCM polarization energy = -0.01173858947491
-   @RHF iter  14:   -76.02135330161248   -8.21672e-11   2.56216e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04913400524453
+   @RHF iter   1:   -68.95777725118403   -6.89578e+01   1.73871e-01 
+   PCM polarization energy = -0.15510301616229
+   @RHF iter   2:   -72.08872435234254   -3.13095e+00   1.22234e-01 DIIS
+   PCM polarization energy = -0.01707736994200
+   @RHF iter   3:   -75.88578280429059   -3.79706e+00   3.22433e-02 DIIS
+   PCM polarization energy = -0.01370037406261
+   @RHF iter   4:   -76.01369667926906   -1.27914e-01   7.07882e-03 DIIS
+   PCM polarization energy = -0.01195852006429
+   @RHF iter   5:   -76.02117352972347   -7.47685e-03   9.22368e-04 DIIS
+   PCM polarization energy = -0.01181587144631
+   @RHF iter   6:   -76.02133187469617   -1.58345e-04   2.89633e-04 DIIS
+   PCM polarization energy = -0.01174853067970
+   @RHF iter   7:   -76.02135284811287   -2.09734e-05   5.32066e-05 DIIS
+   PCM polarization energy = -0.01174126809192
+   @RHF iter   8:   -76.02135327664166   -4.28529e-07   1.02897e-05 DIIS
+   PCM polarization energy = -0.01173871867405
+   @RHF iter   9:   -76.02135330117892   -2.45373e-08   1.72614e-06 DIIS
+   PCM polarization energy = -0.01173867811521
+   @RHF iter  10:   -76.02135330161722   -4.38305e-10   1.21713e-07 DIIS
+   PCM polarization energy = -0.01173861552263
+   @RHF iter  11:   -76.02135330162236   -5.13012e-12   3.00726e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -798,16 +695,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.562109     2A     -1.342333     3A     -0.710496  
-       4A     -0.576001     5A     -0.503691  
+       1A    -20.562112     2A     -1.342333     3A     -0.710497  
+       4A     -0.576002     5A     -0.503692  
 
     Virtual:                                                              
 
-       6A      0.225342     7A      0.320312     8A      1.027123  
-       9A      1.119476    10A      1.158666    11A      1.162107  
-      12A      1.378283    13A      1.430715    14A      2.016708  
-      15A      2.025395    16A      2.060664    17A      2.618059  
-      18A      2.941747    19A      3.966410  
+       6A      0.225341     7A      0.320312     8A      1.027123  
+       9A      1.119475    10A      1.158665    11A      1.162107  
+      12A      1.378282    13A      1.430714    14A      2.016707  
+      15A      2.025395    16A      2.060664    17A      2.618058  
+      18A      2.941746    19A      3.966410  
 
     Final Occupation by Irrep:
               A 
@@ -815,18 +712,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02135330161248 with 0.002000 perturbation
+  @RHF Final Energy:   -76.02135330162236 with 0.002000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0857494155828391
-    Two-Electron Energy =                  37.8967874149131916
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0857375181120119
+    Two-Electron Energy =                  37.8967755434802314
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0117385894749104
+    PCM Polarization Energy =              -0.0117386155226313
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213533016125211
+    Total Energy =                        -76.0213533016223693
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -840,29 +737,29 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0048
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0048
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.9543     Total:     0.9543
+     X:    -0.0000      Y:    -0.0000      Z:     0.9543     Total:     0.9543
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.4255     Total:     2.4255
+     X:    -0.0000      Y:    -0.0000      Z:     2.4255     Total:     2.4255
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:37 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:40 2016
 Module time:
-	user time   =       2.14 seconds =       0.04 minutes
+	user time   =       0.70 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.57 seconds =       0.11 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       2.28 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:37 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:40 2016
 
 
          ---------------------------------------------------------
@@ -889,7 +786,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -967,66 +864,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by -0.002000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04920165183359
-   @DF-RHF iter   1:   -68.96142464883447   -6.89614e+01   1.73855e-01 
-   PCM polarization energy = -0.15301952908601
-   @DF-RHF iter   2:   -72.08409164735497   -3.12267e+00   1.22255e-01 DIIS
-   PCM polarization energy = -0.01748123877698
-   @DF-RHF iter   3:   -75.88645854261748   -3.80237e+00   3.21831e-02 DIIS
-   PCM polarization energy = -0.01411373814704
-   @DF-RHF iter   4:   -76.01377992657989   -1.27321e-01   7.05659e-03 DIIS
-   PCM polarization energy = -0.01238595687197
-   @DF-RHF iter   5:   -76.02117837522755   -7.39845e-03   9.08178e-04 DIIS
-   PCM polarization energy = -0.01224705949931
-   @DF-RHF iter   6:   -76.02133064878713   -1.52274e-04   2.84414e-04 DIIS
-   PCM polarization energy = -0.01218275059575
-   @DF-RHF iter   7:   -76.02135050252522   -1.98537e-05   5.11704e-05 DIIS
-   PCM polarization energy = -0.01217597525115
-   @DF-RHF iter   8:   -76.02135089319684   -3.90672e-07   9.83701e-06 DIIS
-   PCM polarization energy = -0.01217359517463
-   @DF-RHF iter   9:   -76.02135091541524   -2.22184e-08   1.65273e-06 DIIS
-   PCM polarization energy = -0.01217356163144
-   @DF-RHF iter  10:   -76.02135091582235   -4.07113e-10   1.17938e-07 DIIS
-   PCM polarization energy = -0.01217350133197
-   @DF-RHF iter  11:   -76.02135091582728   -4.93117e-12   2.93355e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by -0.002000 mu(z).
@@ -1039,12 +877,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01217348320141
-   @RHF iter  12:   -76.02137553971932   -2.46239e-05   5.66666e-06 DIIS
-   PCM polarization energy = -0.01217183711559
-   @RHF iter  13:   -76.02137554413071   -4.41139e-09   7.00228e-07 DIIS
-   PCM polarization energy = -0.01217206358720
-   @RHF iter  14:   -76.02137554421091   -8.02061e-11   2.56890e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04920165183359
+   @RHF iter   1:   -68.96145960201579   -6.89615e+01   1.73853e-01 
+   PCM polarization energy = -0.15301626281989
+   @RHF iter   2:   -72.08413411514235   -3.12267e+00   1.22253e-01 DIIS
+   PCM polarization energy = -0.01747948278345
+   @RHF iter   3:   -75.88651277488309   -3.80238e+00   3.21796e-02 DIIS
+   PCM polarization energy = -0.01411189052552
+   @RHF iter   4:   -76.01380454787760   -1.27292e-01   7.05685e-03 DIIS
+   PCM polarization energy = -0.01238441439670
+   @RHF iter   5:   -76.02120310918839   -7.39856e-03   9.07900e-04 DIIS
+   PCM polarization energy = -0.01224559843463
+   @RHF iter   6:   -76.02135528643807   -1.52177e-04   2.84339e-04 DIIS
+   PCM polarization energy = -0.01218134140497
+   @RHF iter   7:   -76.02137513061217   -1.98442e-05   5.12102e-05 DIIS
+   PCM polarization energy = -0.01217456006538
+   @RHF iter   8:   -76.02137552164648   -3.91034e-07   9.82208e-06 DIIS
+   PCM polarization energy = -0.01217218156800
+   @RHF iter   9:   -76.02137554380961   -2.21631e-08   1.65165e-06 DIIS
+   PCM polarization energy = -0.01217214863446
+   @RHF iter  10:   -76.02137554421581   -4.06203e-10   1.17809e-07 DIIS
+   PCM polarization energy = -0.01217208836526
+   @RHF iter  11:   -76.02137554422063   -4.81748e-12   2.93019e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1053,16 +915,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.560809     2A     -1.340983     3A     -0.709271  
-       4A     -0.576112     5A     -0.502935  
+       1A    -20.560812     2A     -1.340984     3A     -0.709272  
+       4A     -0.576113     5A     -0.502936  
 
     Virtual:                                                              
 
        6A      0.230433     7A      0.325359     8A      1.027688  
-       9A      1.118064    10A      1.159090    11A      1.164068  
-      12A      1.379006    13A      1.434062    14A      2.016658  
-      15A      2.025622    16A      2.060819    17A      2.618939  
-      18A      2.942202    19A      3.966978  
+       9A      1.118064    10A      1.159090    11A      1.164067  
+      12A      1.379006    13A      1.434061    14A      2.016657  
+      15A      2.025622    16A      2.060819    17A      2.618938  
+      18A      2.942202    19A      3.966977  
 
     Final Occupation by Irrep:
               A 
@@ -1070,18 +932,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02137554421091 with -0.002000 perturbation
+  @RHF Final Energy:   -76.02137554422063 with -0.002000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0960874694315095
-    Two-Electron Energy =                  37.9075367002757488
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0960752658785538
+    Two-Electron Energy =                  37.9075245214911405
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0121720635871980
+    PCM Polarization Energy =              -0.0121720883652627
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213755442109118
+    Total Energy =                        -76.0213755442206320
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -1095,26 +957,26 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0159
+     X:     0.0000      Y:    -0.0000      Z:     0.0159
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9751     Total:     0.9751
+     X:     0.0000      Y:    -0.0000      Z:     0.9751     Total:     0.9751
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.4783     Total:     2.4783
+     X:     0.0000      Y:    -0.0000      Z:     2.4783     Total:     2.4783
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:39 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:41 2016
 Module time:
-	user time   =       2.14 seconds =       0.04 minutes
+	user time   =       0.71 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.75 seconds =       0.15 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       3.02 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Perturbation strength =  0.0010, computed energy =   -76.0213510627
 Perturbation strength = -0.0010, computed energy =   -76.0213621948
 Perturbation strength =  0.0020, computed energy =   -76.0213533016
@@ -1127,8 +989,8 @@ Total dipoles
 3 Point formula: mu(z) =   0.964684 ea0,   2.451983 Debye
 5 Point formula: mu(z) =   0.964686 ea0,   2.451988 Debye
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:39 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:41 2016
 
 
          ---------------------------------------------------------
@@ -1155,7 +1017,7 @@ Total dipoles
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -1233,65 +1095,6 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04916782099815
-   @DF-RHF iter   1:   -68.95958168326277   -6.89596e+01   1.73864e-01 
-   PCM polarization energy = -0.15406269330491
-   @DF-RHF iter   2:   -72.08635385319147   -3.12677e+00   1.22245e-01 DIIS
-   PCM polarization energy = -0.01727972073408
-   @DF-RHF iter   3:   -75.88608167999472   -3.79973e+00   3.22152e-02 DIIS
-   PCM polarization energy = -0.01390741669056
-   @DF-RHF iter   4:   -76.01371549642435   -1.27634e-01   7.06771e-03 DIIS
-   PCM polarization energy = -0.01217234170009
-   @DF-RHF iter   5:   -76.02115310212290   -7.43761e-03   9.15358e-04 DIIS
-   PCM polarization energy = -0.01203153056663
-   @DF-RHF iter   6:   -76.02130841401708   -1.55312e-04   2.87032e-04 DIIS
-   PCM polarization energy = -0.01196569029081
-   @DF-RHF iter   7:   -76.02132882056304   -2.04065e-05   5.21558e-05 DIIS
-   PCM polarization energy = -0.01195867623803
-   @DF-RHF iter   8:   -76.02132922951895   -4.08956e-07   1.00704e-05 DIIS
-   PCM polarization energy = -0.01195621054952
-   @DF-RHF iter   9:   -76.02132925290790   -2.33889e-08   1.68997e-06 DIIS
-   PCM polarization energy = -0.01195617310484
-   @DF-RHF iter  10:   -76.02132925333096   -4.23057e-10   1.19879e-07 DIIS
-   PCM polarization energy = -0.01195611162146
-   @DF-RHF iter  11:   -76.02132925333601   -5.04485e-12   2.97203e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
 	Batch   1 pq = [       0,     190] index = [             0,18145]
@@ -1303,12 +1106,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01195609325991
-   @RHF iter  12:   -76.02135402615303   -2.47728e-05   5.71495e-06 DIIS
-   PCM polarization energy = -0.01195445311526
-   @RHF iter  13:   -76.02135403064129   -4.48826e-09   7.03486e-07 DIIS
-   PCM polarization energy = -0.01195467836687
-   @RHF iter  14:   -76.02135403072255   -8.12577e-11   2.56549e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04916782099815
+   @RHF iter   1:   -68.95961665443623   -6.89596e+01   1.73862e-01 
+   PCM polarization energy = -0.15405942991553
+   @RHF iter   2:   -72.08639709051067   -3.12678e+00   1.22244e-01 DIIS
+   PCM polarization energy = -0.01727795427352
+   @RHF iter   3:   -75.88613612183730   -3.79974e+00   3.22117e-02 DIIS
+   PCM polarization energy = -0.01390556645874
+   @RHF iter   4:   -76.01374027948536   -1.27604e-01   7.06796e-03 DIIS
+   PCM polarization energy = -0.01217080428789
+   @RHF iter   5:   -76.02117798723469   -7.43771e-03   9.15077e-04 DIIS
+   PCM polarization energy = -0.01203007437311
+   @RHF iter   6:   -76.02133320099769   -1.55214e-04   2.86955e-04 DIIS
+   PCM polarization energy = -0.01196428582026
+   @RHF iter   7:   -76.02135359765626   -2.03967e-05   5.21959e-05 DIIS
+   PCM polarization energy = -0.01195726598812
+   @RHF iter   8:   -76.02135400697590   -4.09320e-07   1.00548e-05 DIIS
+   PCM polarization energy = -0.01195480203204
+   @RHF iter   9:   -76.02135403030535   -2.33294e-08   1.68885e-06 DIIS
+   PCM polarization energy = -0.01195476522193
+   @RHF iter  10:   -76.02135403072727   -4.21920e-10   1.19751e-07 DIIS
+   PCM polarization energy = -0.01195470377068
+   @RHF iter  11:   -76.02135403073237   -5.10170e-12   2.96863e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1317,7 +1144,7 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.561453     2A     -1.341653     3A     -0.709879  
+       1A    -20.561455     2A     -1.341654     3A     -0.709880  
        4A     -0.576054     5A     -0.503309  
 
     Virtual:                                                              
@@ -1325,8 +1152,8 @@ Permittivity = 78.39
        6A      0.227889     7A      0.322837     8A      1.027410  
        9A      1.118807    10A      1.158881    11A      1.163052  
       12A      1.378643    13A      1.432390    14A      2.016685  
-      15A      2.025512    16A      2.060744    17A      2.618501  
-      18A      2.941977    19A      3.966698  
+      15A      2.025511    16A      2.060744    17A      2.618501  
+      18A      2.941977    19A      3.966697  
 
     Final Occupation by Irrep:
               A 
@@ -1334,18 +1161,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02135403072255
+  @RHF Final Energy:   -76.02135403073237
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0909467597818576
-    Two-Electron Energy =                  37.9022001188941715
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0909347081439620
+    Two-Electron Energy =                  37.9021880926502206
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0119546783668705
+    PCM Polarization Energy =              -0.0119547037706804
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213540307225202
+    Total Energy =                        -76.0213540307323825
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -1359,29 +1186,30 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0056
+     X:     0.0000      Y:    -0.0000      Z:     0.0056
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9647     Total:     0.9647
+     X:     0.0000      Y:    -0.0000      Z:     0.9647     Total:     0.9647
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.4520     Total:     2.4520
+     X:     0.0000      Y:    -0.0000      Z:     2.4520     Total:     2.4520
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:42 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:42 2016
 Module time:
-	user time   =       2.16 seconds =       0.04 minutes
+	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      10.95 seconds =       0.18 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       3.76 seconds =       0.06 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+	Dipole moment along the z-axis....................................PASSED
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:42 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:42 2016
 
 
          ---------------------------------------------------------
@@ -1408,7 +1236,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -1520,7 +1348,7 @@ Permittivity = 78.39
     Spherical Points =            302
     Total Points     =          65565
     Total Blocks     =             66
-    Max Points       =           4954
+    Max Points       =           4925
     Max Functions    =             19
 
   ==> Pre-Iterations <==
@@ -1533,64 +1361,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by 0.001000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04915091123679
-   @DF-RKS iter   1:   -69.30264361155015   -6.93026e+01   1.73886e-01 
-   PCM polarization energy = -0.16896315748716
-   @DF-RKS iter   2:   -70.66585664176961   -1.36321e+00   1.44599e-01 DIIS
-   PCM polarization energy = -0.01931593562118
-   @DF-RKS iter   3:   -76.32786182712367   -5.66201e+00   2.45804e-02 DIIS
-   PCM polarization energy = -0.01174038817746
-   @DF-RKS iter   4:   -76.41679128417410   -8.89295e-02   3.27962e-03 DIIS
-   PCM polarization energy = -0.01059670952129
-   @DF-RKS iter   5:   -76.41840242951942   -1.61115e-03   5.63586e-05 DIIS
-   PCM polarization energy = -0.01059060506042
-   @DF-RKS iter   6:   -76.41840322615982   -7.96640e-07   2.30151e-05 DIIS
-   PCM polarization energy = -0.01058796921229
-   @DF-RKS iter   7:   -76.41840329210673   -6.59469e-08   7.53645e-06 DIIS
-   PCM polarization energy = -0.01058897136774
-   @DF-RKS iter   8:   -76.41840329911180   -7.00507e-09   1.78805e-06 DIIS
-   PCM polarization energy = -0.01058910172342
-   @DF-RKS iter   9:   -76.41840329948928   -3.77483e-10   2.33676e-07 DIIS
-   PCM polarization energy = -0.01058913198258
-   @DF-RKS iter  10:   -76.41840329949589   -6.60805e-12   5.48435e-09 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by 0.001000 mu(z).
@@ -1603,12 +1374,34 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01058913284445
-   @RKS iter  11:   -76.41840201198434    1.28751e-06   1.84682e-06 DIIS
-   PCM polarization energy = -0.01058921346850
-   @RKS iter  12:   -76.41840201255907   -5.74730e-10   2.56260e-07 DIIS
-   PCM polarization energy = -0.01058920512162
-   @RKS iter  13:   -76.41840201256257   -3.49587e-12   2.14026e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04915091123679
+   @RKS iter   1:   -69.30264868777896   -6.93026e+01   1.73885e-01 
+   PCM polarization energy = -0.16896211994783
+   @RKS iter   2:   -70.66576039923521   -1.36311e+00   1.44601e-01 DIIS
+   PCM polarization energy = -0.01931521855439
+   @RKS iter   3:   -76.32788004580760   -5.66212e+00   2.45776e-02 DIIS
+   PCM polarization energy = -0.01174017612633
+   @RKS iter   4:   -76.41679070281756   -8.89107e-02   3.27893e-03 DIIS
+   PCM polarization energy = -0.01059685694366
+   @RKS iter   5:   -76.41840114385425   -1.61044e-03   5.62916e-05 DIIS
+   PCM polarization energy = -0.01059071562213
+   @RKS iter   6:   -76.41840193960655   -7.95752e-07   2.29500e-05 DIIS
+   PCM polarization energy = -0.01058807340263
+   @RKS iter   7:   -76.41840200523356   -6.56270e-08   7.50727e-06 DIIS
+   PCM polarization energy = -0.01058907195489
+   @RKS iter   8:   -76.41840201218696   -6.95340e-09   1.78184e-06 DIIS
+   PCM polarization energy = -0.01058920151923
+   @RKS iter   9:   -76.41840201256188   -3.74925e-10   2.33709e-07 DIIS
+   PCM polarization energy = -0.01058923175913
+   @RKS iter  10:   -76.41840201256849   -6.60805e-12   5.51317e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1618,7 +1411,7 @@ Permittivity = 78.39
     Doubly Occupied:                                                      
 
        1A    -19.136689     2A     -1.000384     3A     -0.523940  
-       4A     -0.374969     5A     -0.297433  
+       4A     -0.374968     5A     -0.297433  
 
     Virtual:                                                              
 
@@ -1634,18 +1427,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RKS Final Energy:   -76.41840201256257 with 0.001000 perturbation
+  @RKS Final Energy:   -76.41840201256849 with 0.001000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.1646846255179923
-    Two-Electron Energy =                  45.1432990741618596
-    DFT Exchange-Correlation Energy =      -7.5657745446168612
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.1647009300887987
+    Two-Electron Energy =                  45.1433172195794512
+    DFT Exchange-Correlation Energy =      -7.5657763588320499
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0105892051216232
+    PCM Polarization Energy =              -0.0105892317591268
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4184020125625665
+    Total Energy =                        -76.4184020125684782
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -1670,18 +1463,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:48 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:44 2016
 Module time:
-	user time   =       6.29 seconds =       0.10 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       1.96 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      17.29 seconds =       0.29 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       5.75 seconds =       0.10 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:48 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:44 2016
 
 
          ---------------------------------------------------------
@@ -1708,7 +1501,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -1820,7 +1613,7 @@ Permittivity = 78.39
     Spherical Points =            302
     Total Points     =          65565
     Total Blocks     =             66
-    Max Points       =           4954
+    Max Points       =           4925
     Max Functions    =             19
 
   ==> Pre-Iterations <==
@@ -1833,64 +1626,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by -0.001000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04918473452996
-   @DF-RKS iter   1:   -69.30447857958494   -6.93045e+01   1.73877e-01 
-   PCM polarization energy = -0.16807928520936
-   @DF-RKS iter   2:   -70.66281348971089   -1.35833e+00   1.44621e-01 DIIS
-   PCM polarization energy = -0.01952578776038
-   @DF-RKS iter   3:   -76.32819090079782   -5.66538e+00   2.45372e-02 DIIS
-   PCM polarization energy = -0.01195334382353
-   @DF-RKS iter   4:   -76.41668687335275   -8.84960e-02   3.28726e-03 DIIS
-   PCM polarization energy = -0.01081577273895
-   @DF-RKS iter   5:   -76.41829990517164   -1.61303e-03   5.19233e-05 DIIS
-   PCM polarization energy = -0.01080739980093
-   @DF-RKS iter   6:   -76.41830063399567   -7.28824e-07   2.02679e-05 DIIS
-   PCM polarization energy = -0.01080499327376
-   @DF-RKS iter   7:   -76.41830068633745   -5.23418e-08   6.49188e-06 DIIS
-   PCM polarization energy = -0.01080591790138
-   @DF-RKS iter   8:   -76.41830069157642   -5.23897e-09   1.59205e-06 DIIS
-   PCM polarization energy = -0.01080602749556
-   @DF-RKS iter   9:   -76.41830069187488   -2.98456e-10   2.29496e-07 DIIS
-   PCM polarization energy = -0.01080605664458
-   @DF-RKS iter  10:   -76.41830069188126   -6.38067e-12   5.85605e-09 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by -0.001000 mu(z).
@@ -1903,12 +1639,34 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01080605752941
-   @RKS iter  11:   -76.41829941255351    1.27933e-06   1.83046e-06 DIIS
-   PCM polarization energy = -0.01080613717481
-   @RKS iter  12:   -76.41829941311866   -5.65151e-10   2.51242e-07 DIIS
-   PCM polarization energy = -0.01080613134552
-   @RKS iter  13:   -76.41829941312231   -3.65219e-12   2.06864e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04918473452996
+   @RKS iter   1:   -69.30448365585815   -6.93045e+01   1.73876e-01 
+   PCM polarization energy = -0.16807826604433
+   @RKS iter   2:   -70.66271697373092   -1.35823e+00   1.44622e-01 DIIS
+   PCM polarization energy = -0.01952507087786
+   @RKS iter   3:   -76.32820905302492   -5.66549e+00   2.45344e-02 DIIS
+   PCM polarization energy = -0.01195313066940
+   @RKS iter   4:   -76.41668629931890   -8.84772e-02   3.28657e-03 DIIS
+   PCM polarization energy = -0.01081591916801
+   @RKS iter   5:   -76.41829862712856   -1.61233e-03   5.18935e-05 DIIS
+   PCM polarization energy = -0.01080751013335
+   @RKS iter   6:   -76.41829935556162   -7.28433e-07   2.02049e-05 DIIS
+   PCM polarization energy = -0.01080509727602
+   @RKS iter   7:   -76.41829940762834   -5.20667e-08   6.46416e-06 DIIS
+   PCM polarization energy = -0.01080601853142
+   @RKS iter   8:   -76.41829941282550   -5.19717e-09   1.58574e-06 DIIS
+   PCM polarization energy = -0.01080612734251
+   @RKS iter   9:   -76.41829941312142   -2.95913e-10   2.29412e-07 DIIS
+   PCM polarization energy = -0.01080615645612
+   @RKS iter  10:   -76.41829941312783   -6.40910e-12   5.88768e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1917,15 +1675,15 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -19.136027     2A     -0.999542     3A     -0.523144  
-       4A     -0.374971     5A     -0.297084  
+       1A    -19.136026     2A     -0.999541     3A     -0.523144  
+       4A     -0.374970     5A     -0.297084  
 
     Virtual:                                                              
 
        6A      0.083502     7A      0.171236     8A      0.788260  
        9A      0.860189    10A      0.881923    11A      0.888044  
       12A      1.068203    13A      1.192065    14A      1.727268  
-      15A      1.736254    16A      1.773422    17A      2.292031  
+      15A      1.736254    16A      1.773422    17A      2.292032  
       18A      2.594715    19A      3.556006  
 
     Final Occupation by Irrep:
@@ -1934,18 +1692,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RKS Final Energy:   -76.41829941312231 with -0.001000 perturbation
+  @RKS Final Energy:   -76.41829941312783 with -0.001000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.1703073616963451
-    Two-Electron Energy =                  45.1495219633891907
-    DFT Exchange-Correlation Energy =      -7.5660551720016809
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.1703230490388705
+    Two-Electron Energy =                  45.1495394221848727
+    DFT Exchange-Correlation Energy =      -7.5660569183497532
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0108061313455155
+    PCM Polarization Energy =              -0.0108061564561185
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4182994131223126
+    Total Energy =                        -76.4182994131278122
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -1959,29 +1717,29 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0458
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0458
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9133     Total:     0.9133
+     X:    -0.0000      Y:    -0.0000      Z:     0.9133     Total:     0.9133
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.3215     Total:     2.3215
+     X:    -0.0000      Y:    -0.0000      Z:     2.3215     Total:     2.3215
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:02:55 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:46 2016
 Module time:
-	user time   =       6.33 seconds =       0.11 minutes
+	user time   =       1.96 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      23.70 seconds =       0.40 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =       7.75 seconds =       0.13 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:02:55 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:46 2016
 
 
          ---------------------------------------------------------
@@ -2008,7 +1766,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -2120,7 +1878,7 @@ Permittivity = 78.39
     Spherical Points =            302
     Total Points     =          65565
     Total Blocks     =             66
-    Max Points       =           4954
+    Max Points       =           4925
     Max Functions    =             19
 
   ==> Pre-Iterations <==
@@ -2133,64 +1891,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by 0.002000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04913400524453
-   @DF-RKS iter   1:   -69.30172747018659   -6.93017e+01   1.73890e-01 
-   PCM polarization energy = -0.16940491339471
-   @DF-RKS iter   2:   -70.66740097087354   -1.36567e+00   1.44588e-01 DIIS
-   PCM polarization energy = -0.01921132932953
-   @DF-RKS iter   3:   -76.32770638288095   -5.66031e+00   2.46018e-02 DIIS
-   PCM polarization energy = -0.01163426958754
-   @DF-RKS iter   4:   -76.41685204328350   -8.91457e-02   3.27545e-03 DIIS
-   PCM polarization energy = -0.01048767539238
-   @DF-RKS iter   5:   -76.41846197081354   -1.60993e-03   5.90989e-05 DIIS
-   PCM polarization energy = -0.01048269346695
-   @DF-RKS iter   6:   -76.41846281020170   -8.39388e-07   2.44250e-05 DIIS
-   PCM polarization energy = -0.01047995479975
-   @DF-RKS iter   7:   -76.41846288376379   -7.35621e-08   8.07595e-06 DIIS
-   PCM polarization energy = -0.01048099746942
-   @DF-RKS iter   8:   -76.41846289178089   -8.01710e-09   1.88515e-06 DIIS
-   PCM polarization energy = -0.01048113818619
-   @DF-RKS iter   9:   -76.41846289220105   -4.20158e-10   2.34825e-07 DIIS
-   PCM polarization energy = -0.01048116888372
-   @DF-RKS iter  10:   -76.41846289220769   -6.63647e-12   5.32485e-09 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by 0.002000 mu(z).
@@ -2203,12 +1904,34 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01048116973677
-   @RKS iter  11:   -76.41846160058722    1.29162e-06   1.85502e-06 DIIS
-   PCM polarization energy = -0.01048125086449
-   @RKS iter  12:   -76.41846160116658   -5.79362e-10   2.58796e-07 DIIS
-   PCM polarization energy = -0.01048124124858
-   @RKS iter  13:   -76.41846160116997   -3.38218e-12   2.17639e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04913400524453
+   @RKS iter   1:   -69.30173254639116   -6.93017e+01   1.73890e-01 
+   PCM polarization energy = -0.16940386669692
+   @RKS iter   2:   -70.66730486475626   -1.36557e+00   1.44590e-01 DIIS
+   PCM polarization energy = -0.01921061216630
+   @RKS iter   3:   -76.32772463496569   -5.66042e+00   2.45989e-02 DIIS
+   PCM polarization energy = -0.01163405810058
+   @RKS iter   4:   -76.41685145821059   -8.91268e-02   3.27476e-03 DIIS
+   PCM polarization energy = -0.01048782332099
+   @RKS iter   5:   -76.41846068133549   -1.60922e-03   5.90152e-05 DIIS
+   PCM polarization energy = -0.01048280415725
+   @RKS iter   6:   -76.41846151957348   -8.38238e-07   2.43587e-05 DIIS
+   PCM polarization energy = -0.01048005908684
+   @RKS iter   7:   -76.41846159279154   -7.32181e-08   8.04612e-06 DIIS
+   PCM polarization energy = -0.01048109804083
+   @RKS iter   8:   -76.41846160075198   -7.96044e-09   1.87900e-06 DIIS
+   PCM polarization energy = -0.01048123796584
+   @RKS iter   9:   -76.41846160116944   -4.17458e-10   2.34908e-07 DIIS
+   PCM polarization energy = -0.01048126865119
+   @RKS iter  10:   -76.41846160117616   -6.72173e-12   5.35246e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2217,16 +1940,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -19.137026     2A     -1.000809     3A     -0.524342  
+       1A    -19.137025     2A     -1.000809     3A     -0.524342  
        4A     -0.374972     5A     -0.297611  
 
     Virtual:                                                              
 
        6A      0.079686     7A      0.167517     8A      0.787358  
-       9A      0.860922    10A      0.881675    11A      0.886652  
-      12A      1.067682    13A      1.189465    14A      1.727205  
+       9A      0.860922    10A      0.881676    11A      0.886652  
+      12A      1.067682    13A      1.189465    14A      1.727206  
       15A      1.735993    16A      1.773222    17A      2.291266  
-      18A      2.594249    19A      3.555586  
+      18A      2.594249    19A      3.555587  
 
     Final Occupation by Irrep:
               A 
@@ -2234,18 +1957,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RKS Final Energy:   -76.41846160116997 with 0.002000 perturbation
+  @RKS Final Energy:   -76.41846160117616 with 0.002000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.1618476313958439
-    Two-Electron Energy =                  45.1401514228709786
-    DFT Exchange-Correlation Energy =      -7.5656314399285733
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.1618642452464911
+    Two-Electron Energy =                  45.1401699123160753
+    DFT Exchange-Correlation Energy =      -7.5656332881265849
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0104812412485759
+    PCM Polarization Energy =              -0.0104812686511926
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4184616011699660
+    Total Energy =                        -76.4184616011761477
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -2270,18 +1993,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:03:01 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:48 2016
 Module time:
-	user time   =       6.30 seconds =       0.10 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       1.96 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      30.07 seconds =       0.50 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =       9.75 seconds =       0.16 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:03:01 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:48 2016
 
 
          ---------------------------------------------------------
@@ -2308,7 +2031,7 @@ Total time:
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -2420,7 +2143,7 @@ Permittivity = 78.39
     Spherical Points =            302
     Total Points     =          65565
     Total Blocks     =             66
-    Max Points       =           4954
+    Max Points       =           4925
     Max Functions    =             19
 
   ==> Pre-Iterations <==
@@ -2433,64 +2156,7 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
   Perturbing V by -0.002000 mu(z).
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04920165183359
-   @DF-RKS iter   1:   -69.30539740619189   -6.93054e+01   1.73872e-01 
-   PCM polarization energy = -0.16763717484954
-   @DF-RKS iter   2:   -70.66131466028328   -1.35592e+00   1.44632e-01 DIIS
-   PCM polarization energy = -0.01963103300942
-   @DF-RKS iter   3:   -76.32836450697786   -5.66705e+00   2.45153e-02 DIIS
-   PCM polarization energy = -0.01206017896130
-   @DF-RKS iter   4:   -76.41664319211694   -8.82787e-02   3.29073e-03 DIIS
-   PCM polarization energy = -0.01092579776448
-   @DF-RKS iter   5:   -76.41825689357090   -1.61370e-03   5.02811e-05 DIIS
-   PCM polarization energy = -0.01091627919612
-   @DF-RKS iter   6:   -76.41825759689291   -7.03322e-07   1.89298e-05 DIIS
-   PCM polarization energy = -0.01091399937131
-   @DF-RKS iter   7:   -76.41825764319958   -4.63067e-08   5.98743e-06 DIIS
-   PCM polarization energy = -0.01091488644796
-   @DF-RKS iter   8:   -76.41825764767678   -4.47720e-09   1.49362e-06 DIIS
-   PCM polarization energy = -0.01091498569510
-   @DF-RKS iter   9:   -76.41825764793887   -2.62091e-10   2.26287e-07 DIIS
-   PCM polarization energy = -0.01091501415404
-   @DF-RKS iter  10:   -76.41825764794513   -6.25278e-12   6.07239e-09 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
   Perturbing V by -0.002000 mu(z).
@@ -2503,12 +2169,34 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01091501505339
-   @RKS iter  11:   -76.41825637269282    1.27525e-06   1.82230e-06 DIIS
-   PCM polarization energy = -0.01091509422367
-   @RKS iter  12:   -76.41825637325348   -5.60661e-10   2.48760e-07 DIIS
-   PCM polarization energy = -0.01091508964266
-   @RKS iter  13:   -76.41825637325705   -3.56692e-12   2.03314e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04920165183359
+   @RKS iter   1:   -69.30540248248536   -6.93054e+01   1.73872e-01 
+   PCM polarization energy = -0.16763616489934
+   @RKS iter   2:   -70.66121800729633   -1.35582e+00   1.44633e-01 DIIS
+   PCM polarization energy = -0.01963031621428
+   @RKS iter   3:   -76.32838262614752   -5.66716e+00   2.45125e-02 DIIS
+   PCM polarization energy = -0.01205996526816
+   @RKS iter   4:   -76.41664262168992   -8.82600e-02   3.29004e-03 DIIS
+   PCM polarization energy = -0.01092594370633
+   @RKS iter   5:   -76.41825561933719   -1.61300e-03   5.02712e-05 DIIS
+   PCM polarization energy = -0.01091638942771
+   @RKS iter   6:   -76.41825632250402   -7.03167e-07   1.88678e-05 DIIS
+   PCM polarization energy = -0.01091410328140
+   @RKS iter   7:   -76.41825636855673   -4.60527e-08   5.96052e-06 DIIS
+   PCM polarization energy = -0.01091498710486
+   @RKS iter   8:   -76.41825637299625   -4.43953e-09   1.48728e-06 DIIS
+   PCM polarization energy = -0.01091508557680
+   @RKS iter   9:   -76.41825637325623   -2.59973e-10   2.26136e-07 DIIS
+   PCM polarization energy = -0.01091511399125
+   @RKS iter  10:   -76.41825637326237   -6.13909e-12   6.10564e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2517,16 +2205,16 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -19.135701     2A     -0.999125     3A     -0.522750  
+       1A    -19.135700     2A     -0.999125     3A     -0.522750  
        4A     -0.374975     5A     -0.296913  
 
     Virtual:                                                              
 
        6A      0.084771     7A      0.172474     8A      0.788554  
-       9A      0.859862    10A      0.882002    11A      0.888586  
-      12A      1.068379    13A      1.192931    14A      1.727286  
+       9A      0.859862    10A      0.882002    11A      0.888587  
+      12A      1.068380    13A      1.192931    14A      1.727286  
       15A      1.736337    16A      1.773485    17A      2.292284  
-      18A      2.594867    19A      3.556142  
+      18A      2.594867    19A      3.556143  
 
     Final Occupation by Irrep:
               A 
@@ -2534,18 +2222,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RKS Final Energy:   -76.41825637325705 with -0.002000 perturbation
+  @RKS Final Energy:   -76.41825637326237 with -0.002000 perturbation
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.1730933959911454
-    Two-Electron Energy =                  45.1525975500008485
-    DFT Exchange-Correlation Energy =      -7.5661927261561317
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.1731087750388269
+    Two-Electron Energy =                  45.1526146658168983
+    DFT Exchange-Correlation Energy =      -7.5661944385812143
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0109150896426630
+    PCM Polarization Energy =              -0.0109151139912529
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4182563732570515
+    Total Energy =                        -76.4182563732623663
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -2559,26 +2247,26 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0403
+     X:     0.0000      Y:    -0.0000      Z:    -0.0403
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9188     Total:     0.9188
+     X:     0.0000      Y:    -0.0000      Z:     0.9188     Total:     0.9188
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.3354     Total:     2.3354
+     X:     0.0000      Y:    -0.0000      Z:     2.3354     Total:     2.3354
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:03:08 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:50 2016
 Module time:
-	user time   =       6.27 seconds =       0.10 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       1.96 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      36.42 seconds =       0.61 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      11.75 seconds =       0.20 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
 Perturbation strength =  0.0010, computed energy =   -76.0213510627
 Perturbation strength = -0.0010, computed energy =   -76.0213621948
 Perturbation strength =  0.0020, computed energy =   -76.0213533016
@@ -2591,8 +2279,8 @@ Total dipoles
 3 Point formula: mu(z) =   0.964684 ea0,   2.451983 Debye
 5 Point formula: mu(z) =   0.964686 ea0,   2.451988 Debye
 
-*** tstart() called on stallo-1.local
-*** at Wed Jan 13 00:03:08 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:37:50 2016
 
 
          ---------------------------------------------------------
@@ -2619,7 +2307,7 @@ Total dipoles
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
   Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Nuclear repulsion =    9.179347288532046
 
   Charge       = 0
   Multiplicity = 1
@@ -2697,65 +2385,6 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   PCM polarization energy = -0.04916782099815
-   @DF-RHF iter   1:   -68.95958168326277   -6.89596e+01   1.73864e-01 
-   PCM polarization energy = -0.15406269330491
-   @DF-RHF iter   2:   -72.08635385319147   -3.12677e+00   1.22245e-01 DIIS
-   PCM polarization energy = -0.01727972073408
-   @DF-RHF iter   3:   -75.88608167999472   -3.79973e+00   3.22152e-02 DIIS
-   PCM polarization energy = -0.01390741669056
-   @DF-RHF iter   4:   -76.01371549642435   -1.27634e-01   7.06771e-03 DIIS
-   PCM polarization energy = -0.01217234170009
-   @DF-RHF iter   5:   -76.02115310212290   -7.43761e-03   9.15358e-04 DIIS
-   PCM polarization energy = -0.01203153056663
-   @DF-RHF iter   6:   -76.02130841401708   -1.55312e-04   2.87032e-04 DIIS
-   PCM polarization energy = -0.01196569029081
-   @DF-RHF iter   7:   -76.02132882056304   -2.04065e-05   5.21558e-05 DIIS
-   PCM polarization energy = -0.01195867623803
-   @DF-RHF iter   8:   -76.02132922951895   -4.08956e-07   1.00704e-05 DIIS
-   PCM polarization energy = -0.01195621054952
-   @DF-RHF iter   9:   -76.02132925290790   -2.33889e-08   1.68997e-06 DIIS
-   PCM polarization energy = -0.01195617310484
-   @DF-RHF iter  10:   -76.02132925333096   -4.23057e-10   1.19879e-07 DIIS
-   PCM polarization energy = -0.01195611162146
-   @DF-RHF iter  11:   -76.02132925333601   -5.04485e-12   2.97203e-08 DIIS
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
 	Batch   1 pq = [       0,     190] index = [             0,18145]
@@ -2767,12 +2396,36 @@ Permittivity = 78.39
     Memory (MB):               183
     Schwarz Cutoff:          1E-12
 
-   PCM polarization energy = -0.01195609325991
-   @RHF iter  12:   -76.02135402615303   -2.47728e-05   5.71495e-06 DIIS
-   PCM polarization energy = -0.01195445311526
-   @RHF iter  13:   -76.02135403064129   -4.48826e-09   7.03486e-07 DIIS
-   PCM polarization energy = -0.01195467836687
-   @RHF iter  14:   -76.02135403072255   -8.12577e-11   2.56549e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   PCM polarization energy = -0.04916782099815
+   @RHF iter   1:   -68.95961665443623   -6.89596e+01   1.73862e-01 
+   PCM polarization energy = -0.15405942991553
+   @RHF iter   2:   -72.08639709051060   -3.12678e+00   1.22244e-01 DIIS
+   PCM polarization energy = -0.01727795427352
+   @RHF iter   3:   -75.88613612183727   -3.79974e+00   3.22117e-02 DIIS
+   PCM polarization energy = -0.01390556645874
+   @RHF iter   4:   -76.01374027948538   -1.27604e-01   7.06796e-03 DIIS
+   PCM polarization energy = -0.01217080428789
+   @RHF iter   5:   -76.02117798723469   -7.43771e-03   9.15077e-04 DIIS
+   PCM polarization energy = -0.01203007437311
+   @RHF iter   6:   -76.02133320099759   -1.55214e-04   2.86955e-04 DIIS
+   PCM polarization energy = -0.01196428582026
+   @RHF iter   7:   -76.02135359765623   -2.03967e-05   5.21959e-05 DIIS
+   PCM polarization energy = -0.01195726598812
+   @RHF iter   8:   -76.02135400697594   -4.09320e-07   1.00548e-05 DIIS
+   PCM polarization energy = -0.01195480203204
+   @RHF iter   9:   -76.02135403030518   -2.33292e-08   1.68885e-06 DIIS
+   PCM polarization energy = -0.01195476522193
+   @RHF iter  10:   -76.02135403072725   -4.22077e-10   1.19751e-07 DIIS
+   PCM polarization energy = -0.01195470377068
+   @RHF iter  11:   -76.02135403073230   -5.04485e-12   2.96863e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2781,7 +2434,7 @@ Permittivity = 78.39
 
     Doubly Occupied:                                                      
 
-       1A    -20.561453     2A     -1.341653     3A     -0.709879  
+       1A    -20.561455     2A     -1.341654     3A     -0.709880  
        4A     -0.576054     5A     -0.503309  
 
     Virtual:                                                              
@@ -2789,8 +2442,8 @@ Permittivity = 78.39
        6A      0.227889     7A      0.322837     8A      1.027410  
        9A      1.118807    10A      1.158881    11A      1.163052  
       12A      1.378643    13A      1.432390    14A      2.016685  
-      15A      2.025512    16A      2.060744    17A      2.618501  
-      18A      2.941977    19A      3.966698  
+      15A      2.025511    16A      2.060744    17A      2.618501  
+      18A      2.941977    19A      3.966697  
 
     Final Occupation by Irrep:
               A 
@@ -2798,18 +2451,18 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02135403072255
+  @RHF Final Energy:   -76.02135403073230
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0909467597818576
-    Two-Electron Energy =                  37.9022001188941715
+    Nuclear Repulsion Energy =              9.1793472885320462
+    One-Electron Energy =                -123.0909347081437204
+    Two-Electron Energy =                  37.9021880926500430
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0119546783668705
+    PCM Polarization Energy =              -0.0119547037706797
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213540307225202
+    Total Energy =                        -76.0213540307323257
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -2823,25 +2476,26 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0056
+     X:    -0.0000      Y:     0.0000      Z:     0.0056
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9647     Total:     0.9647
+     X:    -0.0000      Y:     0.0000      Z:     0.9647     Total:     0.9647
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.4520     Total:     2.4520
+     X:    -0.0000      Y:     0.0000      Z:     2.4520     Total:     2.4520
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on stallo-1.local at Wed Jan 13 00:03:10 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:37:50 2016
 Module time:
-	user time   =       2.13 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      38.61 seconds =       0.64 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =         40 seconds =       0.67 minutes
+	user time   =      12.50 seconds =       0.21 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
+	Dipole moment along the z-axis....................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

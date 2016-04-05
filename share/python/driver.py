@@ -1940,7 +1940,7 @@ def molden(wfn, filename):
         occb = wfn.occupation_a()
     except AttributeError:
         psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
-                       "Writing zero's for occupation numbers")
+                       "Writing zero's for occupation numbers\n\n")
         occa = psi4.Vector(wfn.nmopi())
         occb = psi4.Vector(wfn.nmopi())
 

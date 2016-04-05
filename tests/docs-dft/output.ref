@@ -1,24 +1,25 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta2+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev ea09e7fde510aa231df53312faed57841cb2c5a7
+                          Git: Rev {master} ad94c93
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  17627
-    PSI4DATADIR: /Users/loriab/linux/psi4/objdir/../lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Fri Mar 18 13:27:09 2016
 
+    Process ID:  31638
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -217,10 +218,16 @@ dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfou
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
 fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
-fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method DFT :ref:`[manual] <sec:dft>`'))
 fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
-for fctl in sorted(funcdict.iterkeys()):
+fopt = open('autodoc_dft_opt.rst', 'w')
+fopt.write('\n.. _`table:opt_dft`:\n\n')
+fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method DFT :ref:`[manual] <sec:dft>`'))
+fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
+
+for fctl in sorted(funcdict.keys()):
 
     if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
         pass
@@ -258,6 +265,16 @@ for fctl in sorted(funcdict.iterkeys()):
     
         fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 
+        if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['is_x_lrc'])):
+            if funcdict[fctl]['dispersion']:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+            else:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+        
+            fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+
 
 fall.write('\n')
 fall.close()
@@ -278,8 +295,111 @@ fdisp.close()
 
 fenergy.write('\n')
 fenergy.close()
+fopt.write('\n')
+fopt.close()
 
 --------------------------------------------------------------------------
+   => B3LYP-D1 Composite Functional <= 
+
+    B3LYP Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   2.000000E-01
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000    B3_X
+    0.2000      HF 
+
+   => Correlation Functionals <=
+
+    0.1900 VWN3RPA_C
+    0.8100   LYP_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => -D1: Empirical Dispersion <=
+
+    Grimme's -D1 Dispersion Correction
+
+    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473
+
+    S6  =   1.050000E+00
+    A6  =   2.300000E+01
+
    => SVWN Composite Functional <= 
 
     SVWN3 (RPA) LSDA Functional
@@ -297,19 +417,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000   S_X
+    1.0000     S_X
 
    => Correlation Functionals <=
 
     1.0000 VWN3RPA_C
-    0.0000 DF-MP2 
 
    => S_X Functional <=
 
@@ -351,6 +468,246 @@ fenergy.close()
               c =   6.2035049089939986E-01
          two_13 =   1.2599210498948732E+00
 
+   => wPBE-D3ZERO Composite Functional <= 
+
+    PBE SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =           TRUE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   4.000000E-01
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000  wPBE_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000   PBE_C
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => -D3ZERO: Empirical Dispersion <=
+
+    Grimme's -D3 (zero-damping) Dispersion Correction
+
+    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104
+
+    S6  =   1.000000E+00
+    S8  =   1.279000E+00
+    SR6 =   1.355000E+00
+    A6  =   1.400000E+01
+
+   => WPBE-D3 Composite Functional <= 
+
+    PBE SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =           TRUE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   4.000000E-01
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000  wPBE_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000   PBE_C
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => -D3ZERO: Empirical Dispersion <=
+
+    Grimme's -D3 (zero-damping) Dispersion Correction
+
+    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104
+
+    S6  =   1.000000E+00
+    S8  =   1.279000E+00
+    SR6 =   1.355000E+00
+    A6  =   1.400000E+01
+
    => HCTH120-D3BJ Composite Functional <= 
 
     HCTH120 Pure-GGA Exchange-Correlation Functional
@@ -368,10 +725,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -380,7 +735,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH120_C
-    0.0000 DF-MP2 
 
    => HCTH120_X Functional <=
 
@@ -456,19 +810,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PW91_X
+    1.0000  PW91_X
 
    => Correlation Functionals <=
 
-    1.0000 PW91_C
-    0.0000 DF-MP2 
+    1.0000  PW91_C
 
    => PW91_X Functional <=
 
@@ -557,20 +908,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -598,7 +947,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -626,10 +975,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -637,8 +984,7 @@ fenergy.close()
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => SOGGA_X Functional <=
 
@@ -714,19 +1060,16 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000  wS_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000    wS_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => wS_X Functional <=
 
@@ -760,20 +1103,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -849,18 +1189,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => PBE_X Functional <=
 
@@ -896,18 +1233,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_C Functional <=
 
@@ -966,20 +1300,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -1064,18 +1395,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 FT97_C
-    0.0000 DF-MP2 
+    1.0000  FT97_C
 
    => FT97_C Functional <=
 
@@ -1128,26 +1456,23 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB88_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000    wPBE_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
-   => wB88_X Functional <=
+   =>    wPBE_X Functional <=
 
-    B88 Short-Range GGA Exchange (HJS Formalism)
+    Short-Range PBE Exchange Hole (HJS Model)
 
-    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
-    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+    Henderson, Janesko, and Scuseria, J. Chem. Phys., 128, 194105 (2008)
+Weintrab, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
 
     GGA   =           TRUE
     Meta  =          FALSE
@@ -1157,29 +1482,6 @@ fenergy.close()
 
     > Parameters <
 
-              A =   7.5721099999999997E-01
-              B =  -1.0636400000000000E-01
-              C =  -1.1864900000000000E-01
-              D =   6.0965000000000003E-01
-              E =  -4.7796300000000000E-02
-            Ha0 =   0.0000000000000000E+00
-            Ha1 =   0.0000000000000000E+00
-            Ha2 =   2.5393300000000001E-02
-            Ha3 =  -6.7307500000000006E-02
-            Ha4 =   8.9147599999999994E-02
-            Ha5 =  -4.5416800000000000E-02
-            Ha6 =  -7.6581000000000002E-03
-            Ha7 =   1.4250600000000000E-02
-            Hb0 =   1.0000000000000000E+00
-            Hb1 =  -2.6505999999999998E+00
-            Hb2 =   3.9110800000000001E+00
-            Hb3 =  -3.3150900000000001E+00
-            Hb4 =   1.5448500000000001E+00
-            Hb5 =  -1.9838600000000001E-01
-            Hb6 =  -1.3611200000000001E-01
-            Hb7 =   6.4786200000000002E-02
-            Hb8 =   1.5958600000000000E-02
-            Hb9 =  -2.4506600000000000E-04
 
    => M05-2X-D3ZERO Composite Functional <= 
 
@@ -1198,20 +1500,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     0.4400 M05_2X_X
-    0.5600    HF 
+    0.5600      HF 
 
    => Correlation Functionals <=
 
     1.0000 M05_2X_C
-    0.0000 DF-MP2 
 
    => M05_2X_X Functional <=
 
@@ -1293,20 +1592,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     0.4400 M05_2X_X
-    0.5600    HF 
+    0.5600      HF 
 
    => Correlation Functionals <=
 
     1.0000 M05_2X_C
-    0.0000 DF-MP2 
 
    => M05_2X_X Functional <=
 
@@ -1388,18 +1684,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 RPBE_X
+    1.0000  RPBE_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => RPBE_X Functional <=
 
@@ -1435,10 +1728,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -1446,7 +1737,6 @@ fenergy.close()
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => FT97B_X Functional <=
 
@@ -1484,19 +1774,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -1570,18 +1857,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 PW92_C
-    0.0000 DF-MP2 
+    1.0000  PW92_C
 
    => PW92_C Functional <=
 
@@ -1613,21 +1897,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -1708,19 +1989,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -1807,19 +2085,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -1906,18 +2181,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 VWN3_C
-    0.0000 DF-MP2 
+    1.0000  VWN3_C
 
    => VWN3_C Functional <=
 
@@ -1961,20 +2233,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -2061,20 +2330,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     1.0000 B97-0_X
-    0.1943    HF 
+    0.1943      HF 
 
    => Correlation Functionals <=
 
     1.0000 B97-0_C
-    0.0000 DF-MP2 
 
    => B97-0_X Functional <=
 
@@ -2133,20 +2399,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     1.0000 B97-1_X
-    0.2100    HF 
+    0.2100      HF 
 
    => Correlation Functionals <=
 
     1.0000 B97-1_C
-    0.0000 DF-MP2 
 
    => B97-1_X Functional <=
 
@@ -2205,20 +2468,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     1.0000 B97-2_X
-    0.2100    HF 
+    0.2100      HF 
 
    => Correlation Functionals <=
 
     1.0000 B97-2_C
-    0.0000 DF-MP2 
 
    => B97-2_X Functional <=
 
@@ -2278,19 +2538,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -2340,6 +2597,90 @@ fenergy.close()
     A1  =   4.298000E-01
     A2  =   4.235900E+00
 
+   => wPBE2 Composite Functional <= 
+
+    Double-Hybrid PBE LRC Functional
+
+    TODO
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =           TRUE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   3.000000E-01
+    C_LRC        =           TRUE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   5.000000E-01
+
+   => Exchange Functionals <=
+
+    1.0000  wPBE_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
+
+   => Correlation Functionals <=
+
+    1.0000  wPBE_C [omega = 0.5000]
+    1.0000  MP2,LR [omega = 0.5000]
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => wPBE_C Functional <=
+
+    New Implementation of PBEC-SR in wPBEc-sr.
+
+   Goll, Werner, Stoll, Leninger, Gori-Giorgi, and Savin, Chem. Phys., 329, 276 (2006).
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   5.000000E-01
+
+    > Parameters <
+
+
    => wPBE0 Composite Functional <= 
 
     PBE0 SR-XC Functional (HJS Model)
@@ -2358,21 +2699,18 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 wPBE_X [\omega = 0.3000]
-    0.7500 HF,LR [\omega = 0.3000]
-    0.2500    HF 
+    0.7500  wPBE_X [omega = 0.3000]
+    0.7500   HF,LR [omega = 0.3000]
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => wPBE_X Functional <=
 
@@ -2453,105 +2791,6 @@ fenergy.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
-   => DSD-PBEPBE Composite Functional <= 
-
-    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional
-
-    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011
-
-    Points   =              1
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
-
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   6.600000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =           TRUE
-    C_SCS_Hybrid =           TRUE
-    C_Alpha      =   1.000000E+00
-    C_SS_Alpha   =   1.200000E-01
-    C_OS_Alpha   =   5.300000E-01
-
-   => Exchange Functionals <=
-
-    0.3400 PBE_X
-    0.6600    HF 
-
-   => Correlation Functionals <=
-
-    0.5100 PBE_C
-    0.1200 Same-Spin SCS-DF-MP2 
-    0.5300 Opposite-Spin SCS-DF-MP2 
-
-   => PBE_X Functional <=
-
-    PBE GGA Exchange Hole (Parameter Free)
-
-    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =          FALSE
-    Alpha =   1.000000E+00
-    Omega =   0.000000E+00
-
-    > Parameters <
-
-         PBE_kp =   8.0400000000000005E-01
-         PBE_mu =   2.1951497276451709E-01
-
-   => PBE_C Functional <=
-
-    PBE Correlation
-
-    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =          FALSE
-    Alpha =   5.100000E-01
-    Omega =   0.000000E+00
-
-    > Parameters <
-
-             Aa =   1.6886900000000000E-02
-            a1a =   1.1125000000000000E-01
-            a1f =   2.0548000000000000E-01
-            a1p =   2.1370000000000000E-01
-            b1a =   1.0356999999999999E+01
-            b1f =   1.4118900000000000E+01
-            b1p =   7.5956999999999999E+00
-            b2a =   3.6231000000000000E+00
-            b2f =   6.1977000000000002E+00
-            b2p =   3.5876000000000001E+00
-            b3a =   8.8026000000000004E-01
-            b3f =   3.3662000000000001E+00
-            b3p =   1.6382000000000001E+00
-            b4a =   4.9670999999999998E-01
-            b4f =   6.2517000000000000E-01
-            b4p =   4.9293999999999999E-01
-            bet =   6.6724550603149205E-02
-              c =   6.2035049089939986E-01
-            c0f =   1.5545349999999999E-02
-            c0p =   3.1090699999999999E-02
-          d2fz0 =   1.7099209341613653E+00
-         gammas =   3.1090690869654901E-02
-              k =   3.0936677262801355E+00
-         pi_m12 =   5.6418958354775628E-01
-         two_13 =   1.2599210498948732E+00
-
-   => -D2: Empirical Dispersion <=
-
-    Grimme's -D2 Dispersion Correction
-
-    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
-
-    S6  =   4.200000E-01
-    A6  =   2.000000E+01
-
    => S_X Composite Functional <= 
 
     Slater LSDA Exchange
@@ -2569,18 +2808,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000   S_X
+    1.0000     S_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => S_X Functional <=
 
@@ -2614,20 +2850,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -2712,20 +2945,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -2810,20 +3040,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -2908,10 +3135,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -2919,7 +3144,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 VWN5RPA_C
-    0.0000 DF-MP2 
 
    => VWN5RPA_C Functional <=
 
@@ -2951,61 +3175,41 @@ fenergy.close()
           d2fz0 =   1.7099209341613653E+00
          two_13 =   1.2599210498948732E+00
 
-   => wB97X-2(TQZ) Composite Functional <= 
+   => BLYP-D1 Composite Functional <= 
 
-    Double Hybrid LRC B97 GGA XC Functional (TQZ parametrization)
+    B3LYP Hybrid-GGA Exchange-Correlation Functional
 
-    J.-D. Chai and M. Head-Gordon, J. Chem. Phys., 131, 174105, 2009
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
     Points   =              1
     Deriv    =              1
     GGA      =           TRUE
     Meta     =          FALSE
 
-    X_LRC        =           TRUE
+    X_LRC        =          FALSE
     X_Hybrid     =           TRUE
-    X_Alpha      =   6.361580E-01
-    X_Omega      =   3.000000E-01
+    X_Alpha      =   2.000000E-01
+    X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
-    C_Hybrid     =           TRUE
-    C_SCS_Hybrid =           TRUE
-    C_Alpha      =   1.000000E+00
-    C_SS_Alpha   =   5.293190E-01
-    C_OS_Alpha   =   4.471050E-01
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB97X_X [\omega = 0.3000]
-    0.3638 HF,LR [\omega = 0.3000]
-    0.6362    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
-    1.0000 wB97X_C
-    0.5293 Same-Spin SCS-DF-MP2 
-    0.4471 Opposite-Spin SCS-DF-MP2 
+    0.1900 VWN3RPA_C
+    0.8100   LYP_C
 
-   => wB97X_X Functional <=
+   => B3_X Functional <=
 
+    Becke88 GGA Exchange (B3LYP weighting)
 
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =           TRUE
-    Alpha =   2.748446E+00
-    Omega =   3.000000E-01
-
-    > Parameters <
-
-         B97_a0 =   3.1550299999999998E-01
-         B97_a1 =   1.0477200000000000E+00
-         B97_a2 =  -2.3350599999999999E+00
-         B97_a3 =   3.1990900000000000E+00
-      B97_gamma =   4.0000000000000001E-03
-
-   => wB97X_C Functional <=
-
-
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
     GGA   =           TRUE
     Meta  =          FALSE
@@ -3015,91 +3219,62 @@ fenergy.close()
 
     > Parameters <
 
-      B97_os_a0 =   5.1819800000000005E-01
-      B97_os_a1 =  -5.8595600000000003E-01
-      B97_os_a2 =   4.2708000000000004E+00
-      B97_os_a3 =  -6.4889700000000001E+00
-    B97_os_gamma =   6.0000000000000001E-03
-      B97_ss_a0 =   9.0846000000000005E-01
-      B97_ss_a1 =  -2.8093599999999999E+00
-      B97_ss_a2 =   6.0267600000000003E+00
-      B97_ss_a3 =  -4.5698100000000004E+00
-    B97_ss_gamma =   2.0000000000000001E-01
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
 
-   => wB97X-2(LP) Composite Functional <= 
+   => VWN3RPA_C Functional <=
 
-    Double Hybrid LRC B97 GGA XC Functional (Large Pople parametrization)
+    VWN3 (RPA) LSDA Correlation
 
-    J.-D. Chai and M. Head-Gordon, J. Chem. Phys., 131, 174105, 2009
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
 
-    Points   =              1
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
-
-    X_LRC        =           TRUE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   6.787920E-01
-    X_Omega      =   3.000000E-01
-    C_LRC        =          FALSE
-    C_Hybrid     =           TRUE
-    C_SCS_Hybrid =           TRUE
-    C_Alpha      =   1.000000E+00
-    C_SS_Alpha   =   5.815690E-01
-    C_OS_Alpha   =   4.779920E-01
-
-   => Exchange Functionals <=
-
-    1.0000 wB97X_X [\omega = 0.3000]
-    0.3212 HF,LR [\omega = 0.3000]
-    0.6788    HF 
-
-   => Correlation Functionals <=
-
-    1.0000 wB97X_C
-    0.5816 Same-Spin SCS-DF-MP2 
-    0.4780 Opposite-Spin SCS-DF-MP2 
-
-   => wB97X_X Functional <=
-
-
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =           TRUE
-    Alpha =   3.113247E+00
-    Omega =   3.000000E-01
-
-    > Parameters <
-
-         B97_a0 =   2.5176700000000002E-01
-         B97_a1 =   1.5737500000000000E+00
-         B97_a2 =  -5.2662399999999998E+00
-         B97_a3 =   6.7431299999999998E+00
-      B97_gamma =   4.0000000000000001E-03
-
-   => wB97X_C Functional <=
-
-
-
-    GGA   =           TRUE
+    GGA   =          FALSE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   1.000000E+00
+    Alpha =   1.900000E-01
     Omega =   0.000000E+00
 
     > Parameters <
 
-      B97_os_a0 =   5.5326100000000000E-01
-      B97_os_a1 =  -1.1662600000000001E+00
-      B97_os_a2 =   6.8440899999999996E+00
-      B97_os_a3 =  -8.9063999999999997E+00
-    B97_os_gamma =   6.0000000000000001E-03
-      B97_ss_a0 =   1.1569799999999999E+00
-      B97_ss_a1 =  -3.3166899999999999E+00
-      B97_ss_a2 =   6.2726499999999996E+00
-      B97_ss_a3 =  -4.5146400000000000E+00
-    B97_ss_gamma =   2.0000000000000001E-01
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => -D1: Empirical Dispersion <=
+
+    Grimme's -D1 Dispersion Correction
+
+    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473
+
+    S6  =   1.200000E+00
+    A6  =   2.300000E+01
 
    => wPBE Composite Functional <= 
 
@@ -3119,20 +3294,17 @@ fenergy.close()
     X_Omega      =   4.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wPBE_X [\omega = 0.4000]
-    1.0000 HF,LR [\omega = 0.4000]
+    1.0000  wPBE_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => wPBE_X Functional <=
 
@@ -3230,19 +3402,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -3327,19 +3496,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -3424,19 +3590,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -3521,21 +3684,18 @@ fenergy.close()
     X_Omega      =   2.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB97X_X [\omega = 0.2000]
-    0.7780 HF,LR [\omega = 0.2000]
-    0.2220    HF 
+    1.0000 wB97X_X [omega = 0.2000]
+    0.7780   HF,LR [omega = 0.2000]
+    0.2220      HF 
 
    => Correlation Functionals <=
 
     1.0000 wB97X_C
-    0.0000 DF-MP2 
 
    => wB97X_X Functional <=
 
@@ -3607,18 +3767,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => P86_C Functional <=
 
@@ -3677,10 +3834,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -3688,7 +3843,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 VWN3RPA_C
-    0.0000 DF-MP2 
 
    => VWN3RPA_C Functional <=
 
@@ -3732,19 +3886,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -3830,19 +3981,16 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wPBE_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000  wPBE_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => wPBE_X Functional <=
 
@@ -3901,20 +4049,17 @@ fenergy.close()
     X_Omega      =   4.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wPBEsol_X [\omega = 0.4000]
-    1.0000 HF,LR [\omega = 0.4000]
+    1.0000 wPBEsol_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => wPBEsol_X Functional <=
 
@@ -3995,6 +4140,167 @@ fenergy.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
+   => wPBE-D3BJ Composite Functional <= 
+
+    PBE SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =           TRUE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   4.000000E-01
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000  wPBE_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000   PBE_C
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => -D3BJ: Empirical Dispersion <=
+
+    Grimme's -D3 (BJ-damping) Dispersion Correction
+
+    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
+
+    S6  =   1.000000E+00
+    S8  =   1.854100E+00
+    A1  =   3.919000E-01
+    A2  =   5.089700E+00
+
+   => HF_X Composite Functional <= 
+
+    Hartree-Fock Exchange Functional
+
+    
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   1.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.0000        
+    1.0000      HF 
+
+   => Correlation Functionals <=
+
+
+   =>  Functional <=
+
+
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
    => LYP_C Composite Functional <= 
 
     LYP Correlation
@@ -4012,18 +4318,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => LYP_C Functional <=
 
@@ -4045,6 +4348,49 @@ fenergy.close()
           CFext =   3.6462398978764774E+01
              Dd =   3.4899999999999998E-01
 
+   => wPBE_C Composite Functional <= 
+
+    Short-Range PBE Correlation Functional
+
+    TODO
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =           TRUE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   5.000000E-01
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000  wPBE_C [omega = 0.5000]
+    1.0000  MP2,LR [omega = 0.5000]
+
+   => wPBE_C Functional <=
+
+    New Implementation of PBEC-SR in wPBEc-sr.
+
+   Goll, Werner, Stoll, Leninger, Gori-Giorgi, and Savin, Chem. Phys., 329, 276 (2006).
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   5.000000E-01
+
+    > Parameters <
+
+
    => dlDF+D09 Composite Functional <= 
 
     Dispersionless Hybrid Meta-GGA XC Functional
@@ -4062,20 +4408,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.3856 dlDF_X
-    0.6144    HF 
+    0.3856  dlDF_X
+    0.6144      HF 
 
    => Correlation Functionals <=
 
-    1.0000 dlDF_C
-    0.0000 DF-MP2 
+    1.0000  dlDF_C
 
    => dlDF_X Functional <=
 
@@ -4126,6 +4469,48 @@ fenergy.close()
 
     S6  =   1.000000E+00
 
+   => PBEA_C Composite Functional <= 
+
+    New Implementation of PBEC in wPBEc-sr.
+
+   Perdew, Burke, and Ernzerhof, PRL, 77, 3865 (1996).
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000  PBEA_C
+
+   => PBEA_C Functional <=
+
+    New Implementation of PBEC in wPBEc-sr.
+
+   Perdew, Burke, and Ernzerhof, PRL, 77, 3865 (1996).
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
    => PBE-D2GR Composite Functional <= 
 
     PBE GGA Exchange-Correlation Functional
@@ -4143,19 +4528,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -4240,10 +4622,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -4251,7 +4631,6 @@ fenergy.close()
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => SOGGA_X Functional <=
 
@@ -4287,18 +4666,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 PW91_C
-    0.0000 DF-MP2 
+    1.0000  PW91_C
 
    => PW91_C Functional <=
 
@@ -4349,6 +4725,48 @@ fenergy.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
+   => PW92A_C Composite Functional <= 
+
+    New Implementation of PW92C in wPBEc-sr.
+
+   Perdew and Yang, PRB, 45, 13244 (1992).
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 PW92A_C
+
+   => PW92A_C Functional <=
+
+    New Implementation of PW92C in wPBEc-sr.
+
+   Perdew and Yang, PRB, 45, 13244 (1992).
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
    => B2PLYP-D3BJ Composite Functional <= 
 
     B2PLYP Double Hybrid Exchange-Correlation Functional
@@ -4366,20 +4784,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -4407,7 +4823,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -4446,19 +4862,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -4534,18 +4947,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PW91_X
+    1.0000  PW91_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => PW91_X Functional <=
 
@@ -4568,6 +4978,49 @@ fenergy.close()
         PW91_a5 =   1.6455307846020562E+00
         PW91_a6 =   1.0831086252292235E-06
 
+   => wPW92_C Composite Functional <= 
+
+    Short-Range PW92 Correlation Functional
+
+    TODO
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =           TRUE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   3.000000E-01
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 wPW92_C [omega = 0.3000]
+    1.0000  MP2,LR [omega = 0.3000]
+
+   => wPW92_C Functional <=
+
+    New Implementation of PW92C-SR in wPBEc-sr.
+
+   Paziani, Moroni, Gori-Giorgi, and Bachelet, PRB, 73, 155111 (2006).
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+
    => BP86-D2P4 Composite Functional <= 
 
     BP86 GGA Exchange-Correlation Functional
@@ -4585,19 +5038,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -4682,19 +5132,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -4779,19 +5226,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -4876,20 +5320,17 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000  wS_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000    wS_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
     1.0000 VWN3RPA_C
-    0.0000 DF-MP2 
 
    => wS_X Functional <=
 
@@ -4948,20 +5389,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -5048,20 +5486,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 PBE_X
-    0.2500    HF 
+    0.7500   PBE_X
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -5148,10 +5583,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -5160,7 +5593,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH120_C
-    0.0000 DF-MP2 
 
    => HCTH120_X Functional <=
 
@@ -5225,10 +5657,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -5237,7 +5667,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -5276,7 +5705,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D3ZERO: Empirical Dispersion <=
@@ -5307,10 +5736,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -5319,7 +5746,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -5358,7 +5784,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D3ZERO: Empirical Dispersion <=
@@ -5387,18 +5813,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000    HF 
+    1.0000      HF 
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => -DAS2010: Empirical Dispersion <=
 
@@ -5425,19 +5848,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -5524,19 +5944,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 HCTH_X
+    1.0000  HCTH_X
 
    => Correlation Functionals <=
 
-    1.0000 HCTH_C
-    0.0000 DF-MP2 
+    1.0000  HCTH_C
 
    => HCTH_X Functional <=
 
@@ -5584,6 +6001,100 @@ fenergy.close()
       B97_ss_a4 =   1.5539600000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
+   => PBE-D1 Composite Functional <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000   PBE_X
+
+   => Correlation Functionals <=
+
+    1.0000   PBE_C
+
+   => PBE_X Functional <=
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   2.1951497276451709E-01
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => -D1: Empirical Dispersion <=
+
+    Grimme's -D1 Dispersion Correction
+
+    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473
+
+    S6  =   7.500000E-01
+    A6  =   2.300000E+01
+
    => PZ81_C Composite Functional <= 
 
     PZ81 Correlation
@@ -5601,18 +6112,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 PZ81_C
-    0.0000 DF-MP2 
+    1.0000  PZ81_C
 
    => PZ81_C Functional <=
 
@@ -5663,19 +6171,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -5740,21 +6245,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -5844,20 +6346,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7200 M05_X
-    0.2800    HF 
+    0.7200   M05_X
+    0.2800      HF 
 
    => Correlation Functionals <=
 
-    1.0000 M05_C
-    0.0000 DF-MP2 
+    1.0000   M05_C
 
    => M05_X Functional <=
 
@@ -5928,20 +6427,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.3856 dlDF_X
-    0.6144    HF 
+    0.3856  dlDF_X
+    0.6144      HF 
 
    => Correlation Functionals <=
 
-    1.0000 dlDF_C
-    0.0000 DF-MP2 
+    1.0000  dlDF_C
 
    => dlDF_X Functional <=
 
@@ -6001,18 +6497,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => B88_X Functional <=
 
@@ -6048,20 +6541,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -6089,7 +6580,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6128,20 +6619,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -6169,7 +6658,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6209,19 +6698,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -6289,19 +6775,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -6368,20 +6851,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -6409,7 +6890,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6446,20 +6927,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -6487,7 +6966,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6524,20 +7003,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -6565,7 +7042,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6602,21 +7079,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -6706,20 +7180,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   5.000000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.2063 PBE_X
-    0.7937    HF 
+    0.2063   PBE_X
+    0.7937      HF 
 
    => Correlation Functionals <=
 
-    0.5000 PBE_C
-    0.5000 DF-MP2 
+    0.5000   PBE_C
+    0.5000     MP2 
 
    => PBE_X Functional <=
 
@@ -6747,7 +7219,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   5.000000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -6778,105 +7250,6 @@ fenergy.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
-   => DSD-PBEP86 Composite Functional <= 
-
-    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (opt. for -D2)
-
-    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011
-
-    Points   =              1
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
-
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   6.800000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =           TRUE
-    C_SCS_Hybrid =           TRUE
-    C_Alpha      =   1.000000E+00
-    C_SS_Alpha   =   2.300000E-01
-    C_OS_Alpha   =   5.100000E-01
-
-   => Exchange Functionals <=
-
-    0.3200 PBE_X
-    0.6800    HF 
-
-   => Correlation Functionals <=
-
-    0.4500 P86_C
-    0.2300 Same-Spin SCS-DF-MP2 
-    0.5100 Opposite-Spin SCS-DF-MP2 
-
-   => PBE_X Functional <=
-
-    PBE GGA Exchange Hole (Parameter Free)
-
-    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =          FALSE
-    Alpha =   1.000000E+00
-    Omega =   0.000000E+00
-
-    > Parameters <
-
-         PBE_kp =   8.0400000000000005E-01
-         PBE_mu =   2.1951497276451709E-01
-
-   => P86_C Functional <=
-
-    P86 Correlation (PZ81 LSDA + P86 GGA)
-
-    J.P. Perdew, Phys. Rev. B., 33, 8822-8824, 1986
-
-    GGA   =           TRUE
-    Meta  =          FALSE
-    LRC   =          FALSE
-    Alpha =   4.500000E-01
-    Omega =   0.000000E+00
-
-    > Parameters <
-
-             Bg =   7.3889999999999999E-06
-           Cg_1 =   2.5680000000000000E-03
-           Cg_2 =   2.3265999999999998E-02
-           Cg_3 =   8.7230000000000008E+00
-           Cg_4 =   4.7199999999999998E-01
-           Cinf =   4.2350000000000000E-03
-             Cx =   1.6670000000000001E-03
-        EcFhd_1 =   1.5550000000000000E-02
-        EcFhd_2 =  -2.6900000000000000E-02
-        EcFhd_3 =   6.9999999999999999E-04
-        EcFhd_4 =  -4.7999999999999996E-03
-        EcFld_1 =  -8.4300000000000000E-02
-        EcFld_2 =   1.3980999999999999E+00
-        EcFld_3 =   2.6110000000000000E-01
-        EcPhd_1 =   3.1099999999999999E-02
-        EcPhd_2 =  -4.8000000000000001E-02
-        EcPhd_3 =   2.0000000000000000E-03
-        EcPhd_4 =  -1.1599999999999999E-02
-        EcPld_1 =  -1.4230000000000001E-01
-        EcPld_2 =   1.0528999999999999E+00
-        EcPld_3 =   3.3339999999999997E-01
-             Fg =   1.1000000000000000E-01
-           Pg_1 =   1.7450000000000001E+00
-              c =   6.2035049089939986E-01
-         two_13 =   1.2599210498948732E+00
-
-   => -D2: Empirical Dispersion <=
-
-    Grimme's -D2 Dispersion Correction
-
-    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
-
-    S6  =   2.900000E-01
-    A6  =   2.000000E+01
-
    => BLYP-D2P4 Composite Functional <= 
 
     BLYP GGA Exchange-Correlation Functional
@@ -6895,19 +7268,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -6973,19 +7343,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -7051,19 +7418,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -7128,20 +7492,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7200 M05_X
-    0.2800    HF 
+    0.7200   M05_X
+    0.2800      HF 
 
    => Correlation Functionals <=
 
-    1.0000 M05_C
-    0.0000 DF-MP2 
+    1.0000   M05_C
 
    => M05_X Functional <=
 
@@ -7223,20 +7584,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7200 M05_X
-    0.2800    HF 
+    0.7200   M05_X
+    0.2800      HF 
 
    => Correlation Functionals <=
 
-    1.0000 M05_C
-    0.0000 DF-MP2 
+    1.0000   M05_C
 
    => M05_X Functional <=
 
@@ -7318,18 +7676,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
 
    => Correlation Functionals <=
 
-    1.0000 VWN5_C
-    0.0000 DF-MP2 
+    1.0000  VWN5_C
 
    => VWN5_C Functional <=
 
@@ -7379,27 +7734,24 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB88_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000    wPBE_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
-   => wB88_X Functional <=
+   =>    wPBE_X Functional <=
 
-    B88 Short-Range GGA Exchange (HJS Formalism)
+    Short-Range PBE Exchange Hole (HJS Model)
 
-    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
-    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+    Henderson, Janesko, and Scuseria, J. Chem. Phys., 128, 194105 (2008)
+Weintrab, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
 
     GGA   =           TRUE
     Meta  =          FALSE
@@ -7409,29 +7761,6 @@ fenergy.close()
 
     > Parameters <
 
-              A =   7.5721099999999997E-01
-              B =  -1.0636400000000000E-01
-              C =  -1.1864900000000000E-01
-              D =   6.0965000000000003E-01
-              E =  -4.7796300000000000E-02
-            Ha0 =   0.0000000000000000E+00
-            Ha1 =   0.0000000000000000E+00
-            Ha2 =   2.5393300000000001E-02
-            Ha3 =  -6.7307500000000006E-02
-            Ha4 =   8.9147599999999994E-02
-            Ha5 =  -4.5416800000000000E-02
-            Ha6 =  -7.6581000000000002E-03
-            Ha7 =   1.4250600000000000E-02
-            Hb0 =   1.0000000000000000E+00
-            Hb1 =  -2.6505999999999998E+00
-            Hb2 =   3.9110800000000001E+00
-            Hb3 =  -3.3150900000000001E+00
-            Hb4 =   1.5448500000000001E+00
-            Hb5 =  -1.9838600000000001E-01
-            Hb6 =  -1.3611200000000001E-01
-            Hb7 =   6.4786200000000002E-02
-            Hb8 =   1.5958600000000000E-02
-            Hb9 =  -2.4506600000000000E-04
 
    => LYP_C Functional <=
 
@@ -7470,10 +7799,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -7482,7 +7809,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -7521,7 +7847,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D3BJ: Empirical Dispersion <=
@@ -7552,20 +7878,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
     0.4400 M05_2X_X
-    0.5600    HF 
+    0.5600      HF 
 
    => Correlation Functionals <=
 
     1.0000 M05_2X_C
-    0.0000 DF-MP2 
 
    => M05_2X_X Functional <=
 
@@ -7636,21 +7959,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -7742,21 +8062,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -7848,21 +8165,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -7954,18 +8268,15 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
+    0.8000    B3_X
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => B3_X Functional <=
 
@@ -8001,10 +8312,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8013,7 +8322,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -8052,7 +8360,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D2: Empirical Dispersion <=
@@ -8081,10 +8389,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8093,7 +8399,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -8132,7 +8437,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D2: Empirical Dispersion <=
@@ -8161,10 +8466,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8173,7 +8476,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -8212,7 +8514,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D2: Empirical Dispersion <=
@@ -8241,20 +8543,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =           TRUE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   2.700000E-01
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.4700 B88_X
-    0.5300    HF 
+    0.4700   B88_X
+    0.5300      HF 
 
    => Correlation Functionals <=
 
-    0.7300 LYP_C
-    0.2700 DF-MP2 
+    0.7300   LYP_C
+    0.2700     MP2 
 
    => B88_X Functional <=
 
@@ -8282,7 +8582,7 @@ fenergy.close()
     GGA   =           TRUE
     Meta  =          FALSE
     LRC   =          FALSE
-    Alpha =   7.300000E-01
+    Alpha =   1.000000E+00
     Omega =   0.000000E+00
 
     > Parameters <
@@ -8319,21 +8619,18 @@ fenergy.close()
     X_Omega      =   4.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB97X_X [\omega = 0.4000]
-    0.8423 HF,LR [\omega = 0.4000]
-    0.1577    HF 
+    1.0000 wB97X_X [omega = 0.4000]
+    0.8423   HF,LR [omega = 0.4000]
+    0.1577      HF 
 
    => Correlation Functionals <=
 
     1.0000 wB97X_C
-    0.0000 DF-MP2 
 
    => wB97X_X Functional <=
 
@@ -8396,10 +8693,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8407,8 +8702,7 @@ fenergy.close()
 
    => Correlation Functionals <=
 
-    1.0000 FT97_C
-    0.0000 DF-MP2 
+    1.0000  FT97_C
 
    => FT97B_X Functional <=
 
@@ -8479,10 +8773,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8491,7 +8783,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH120_C
-    0.0000 DF-MP2 
 
    => HCTH120_X Functional <=
 
@@ -8567,10 +8858,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8579,7 +8868,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH120_C
-    0.0000 DF-MP2 
 
    => HCTH120_X Functional <=
 
@@ -8655,20 +8943,17 @@ fenergy.close()
     X_Omega      =   4.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wB97_X [\omega = 0.4000]
-    1.0000 HF,LR [\omega = 0.4000]
+    1.0000  wB97_X [omega = 0.4000]
+    1.0000   HF,LR [omega = 0.4000]
 
    => Correlation Functionals <=
 
-    1.0000 wB97_C
-    0.0000 DF-MP2 
+    1.0000  wB97_C
 
    => wB97_X Functional <=
 
@@ -8731,10 +9016,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -8743,7 +9026,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH147_C
-    0.0000 DF-MP2 
 
    => HCTH147_X Functional <=
 
@@ -8808,20 +9090,17 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.3856 dlDF_X
-    0.6144    HF 
+    0.3856  dlDF_X
+    0.6144      HF 
 
    => Correlation Functionals <=
 
-    1.0000 dlDF_C
-    0.0000 DF-MP2 
+    1.0000  dlDF_C
 
    => dlDF_X Functional <=
 
@@ -8889,19 +9168,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -8988,19 +9264,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 PBE_X
+    1.0000   PBE_X
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => PBE_X Functional <=
 
@@ -9088,19 +9361,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 LYP_C
-    0.0000 DF-MP2 
+    1.0000   LYP_C
 
    => B88_X Functional <=
 
@@ -9156,10 +9426,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -9168,7 +9436,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 HCTH407_C
-    0.0000 DF-MP2 
 
    => HCTH407_X Functional <=
 
@@ -9233,21 +9500,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -9337,21 +9601,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -9441,21 +9702,18 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.8000  B3_X
-    0.2000    HF 
+    0.8000    B3_X
+    0.2000      HF 
 
    => Correlation Functionals <=
 
     0.1900 VWN3RPA_C
-    0.8100 LYP_C
-    0.0000 DF-MP2 
+    0.8100   LYP_C
 
    => B3_X Functional <=
 
@@ -9528,6 +9786,107 @@ fenergy.close()
     S6  =   1.050000E+00
     A6  =   2.000000E+01
 
+   => BP86-D1 Composite Functional <= 
+
+    B3LYP Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   2.000000E-01
+    X_Omega      =   0.000000E+00
+    C_LRC        =          FALSE
+    C_Hybrid     =          FALSE
+    C_Alpha      =   0.000000E+00
+    C_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000    B3_X
+    0.2000      HF 
+
+   => Correlation Functionals <=
+
+    0.1900 VWN3RPA_C
+    0.8100   LYP_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => -D1: Empirical Dispersion <=
+
+    Grimme's -D1 Dispersion Correction
+
+    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473
+
+    S6  =   1.050000E+00
+    A6  =   2.300000E+01
+
    => BP86-D3BJ Composite Functional <= 
 
     BP86 GGA Exchange-Correlation Functional
@@ -9545,19 +9904,16 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 B88_X
+    1.0000   B88_X
 
    => Correlation Functionals <=
 
-    1.0000 P86_C
-    0.0000 DF-MP2 
+    1.0000   P86_C
 
    => B88_X Functional <=
 
@@ -9645,19 +10001,16 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    1.0000 wPBEsol_X [\omega = 0.3000]
-    1.0000 HF,LR [\omega = 0.3000]
+    1.0000 wPBEsol_X [omega = 0.3000]
+    1.0000   HF,LR [omega = 0.3000]
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => wPBEsol_X Functional <=
 
@@ -9715,10 +10068,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -9727,7 +10078,6 @@ fenergy.close()
    => Correlation Functionals <=
 
     1.0000 B97-D_C
-    0.0000 DF-MP2 
 
    => B97-D_X Functional <=
 
@@ -9766,7 +10116,7 @@ fenergy.close()
     B97_os_gamma =   6.0000000000000001E-03
       B97_ss_a0 =   2.2339999999999999E-01
       B97_ss_a1 =  -1.5620799999999999E+00
-      B97_ss_a2 =   3.2542900000000001E+00
+      B97_ss_a2 =   1.9429300000000000E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
    => -D2GR: Empirical Dispersion <=
@@ -9795,10 +10145,8 @@ fenergy.close()
     X_Omega      =   0.000000E+00
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
@@ -9806,7 +10154,6 @@ fenergy.close()
 
    => Correlation Functionals <=
 
-    0.0000 DF-MP2 
 
    => PBEsol_X Functional <=
 
@@ -9843,21 +10190,18 @@ fenergy.close()
     X_Omega      =   3.000000E-01
     C_LRC        =          FALSE
     C_Hybrid     =          FALSE
-    C_SCS_Hybrid =          FALSE
     C_Alpha      =   0.000000E+00
-    C_SS_Alpha   =   0.000000E+00
-    C_OS_Alpha   =   0.000000E+00
+    C_Omega      =   0.000000E+00
 
    => Exchange Functionals <=
 
-    0.7500 wPBEsol_X [\omega = 0.3000]
-    0.7500 HF,LR [\omega = 0.3000]
-    0.2500    HF 
+    0.7500 wPBEsol_X [omega = 0.3000]
+    0.7500   HF,LR [omega = 0.3000]
+    0.2500      HF 
 
    => Correlation Functionals <=
 
-    1.0000 PBE_C
-    0.0000 DF-MP2 
+    1.0000   PBE_C
 
    => wPBEsol_X Functional <=
 
