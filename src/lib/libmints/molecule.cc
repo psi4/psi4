@@ -3561,7 +3561,8 @@ std::string Molecule::full_point_group() const {
   if (pg_with_n == "D_inf_h" || pg_with_n == "C_inf_v" ||
       pg_with_n == "C1"      || pg_with_n == "Cs"      ||
       pg_with_n == "Ci"      || pg_with_n == "Td"      ||
-      pg_with_n == "Oh"      || pg_with_n == "Ih" )
+      pg_with_n == "Oh"      || pg_with_n == "Ih"      ||
+      pg_with_n == "ATOM")
         return pg_with_n;
 
   stringstream n_integer;
