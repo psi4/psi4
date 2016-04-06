@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.103 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {stability} aab60d4 dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,36 +16,21 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Feb 24 16:48:58 2016
+    Psi4 started on: Mon Mar 14 15:31:34 2016
 
-    Process ID:  39988
-    PSI4DATADIR: /Users/andysim/programming/psi4/share
+    Process ID:  13603
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! UHF->UHF stability analysis test for CN with cc-pVDZ
-#! Test direct SCF with and without symmetry, test PK without symmetry
+#! ROHF stability analysis check for CN with cc-pVDZ.  
+#! This test corresponds to the rohf-stab test from Psi3.
 
-##      B2 0.022220        B1 0.022220        A1 0.094068        B2 0.194516
-##      B1 0.194516        A1 0.213961        A2 0.213961        A1 0.338722
-##      A2 0.359135        A1 0.387962        A1 0.413652        B1 0.434411
-##      B2 0.434411        B1 0.474796        B2 0.474798        A1 0.555036
-##      A1 0.608132        B2 0.618638        B1 0.618639        B1 0.688123
-##      B2 0.688124        A1 0.723342        A1 0.741728        A2 0.741728
-##      A1 0.768285        A2 0.768285        A1 0.776906        B1 0.833088
-##      B2 0.833088        A2 0.833392        B1 0.889066        B2 0.889066
-##      A1 0.933335        B2 0.955617        B1 0.955618        A1 0.969954
-##      B2 1.021805        B1 1.021805        B2 1.046458        B1 1.046461
-##      A1 1.054236        A1 1.112069        A2 1.112069        B2 1.118666
-##      B1 1.118667        A2 1.176381        A2 1.231302        B1 1.240136
-##      B2 1.240136        B1 1.360578        B2 1.360578        B2 1.473786
-##      B1 1.473787        A2 1.564732        A2 1.596708        A2 1.600315
-##      A2 2.144561        A2 2.320092        A2 2.724518        A2 2.747591
 
-ref_vals_sym = [ 0.094068, 0.213961, 0.213961, 0.359135,  #TEST
-                 0.022220, 0.194516, 0.022220, 0.194516 ] #TEST 
+ref_vals_sym = [ 0.094068, 0.213961, 0.213961, 0.359135,   #TEST
+                 0.022220, 0.194516, 0.022220, 0.194516 ]  #TEST 
 
 nirrep = 4                                                 #TEST
 rows = psi4.Dimension(nirrep)                              #TEST
@@ -98,8 +83,8 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
     Specify the multiplicity in the molecule input block.
 
 
-*** tstart() called on QuickSilver.local
-*** at Wed Feb 24 16:48:58 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:31:34 2016
 
 
          ---------------------------------------------------------
@@ -125,7 +110,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
   Rotational constants: A = ************  B =      1.88947  C =      1.88947 [cm^-1]
   Rotational constants: A = ************  B =  56644.99264  C =  56644.99264 [MHz]
-  Nuclear repulsion =   18.915270434706382
+  Nuclear repulsion =   18.915270434706397
 
   Charge       = 0
   Multiplicity = 2
@@ -185,42 +170,27 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -83.19841367423679   -8.31984e+01   1.36243e-01 
-   @ROHF iter   2:   -84.13066745073196   -9.32254e-01   1.22587e-01 DIIS
-   @ROHF iter   3:   -91.56994102487477   -7.43927e+00   4.70362e-02 DIIS
-   @ROHF iter   4:   -92.11548468951904   -5.45544e-01   1.78041e-02 DIIS
-   @ROHF iter   5:   -92.17531716254764   -5.98325e-02   4.68871e-03 DIIS
-   @ROHF iter   6:   -92.18489693171706   -9.57977e-03   1.97972e-03 DIIS
+   @ROHF iter   1:   -83.19841367423673   -8.31984e+01   1.36243e-01 
+   @ROHF iter   2:   -84.13066745073218   -9.32254e-01   1.22587e-01 DIIS
+   @ROHF iter   3:   -91.56994102487485   -7.43927e+00   4.70362e-02 DIIS
+   @ROHF iter   4:   -92.11548468951912   -5.45544e-01   1.78041e-02 DIIS
+   @ROHF iter   5:   -92.17531716254767   -5.98325e-02   4.68871e-03 DIIS
+   @ROHF iter   6:   -92.18489693171711   -9.57977e-03   1.97972e-03 DIIS
    @ROHF iter   7:   -92.18849213633594   -3.59520e-03   2.60041e-03 DIIS
-   @ROHF iter   8:   -92.19473815552824   -6.24602e-03   8.77748e-04 DIIS
-   @ROHF iter   9:   -92.19547838920765   -7.40234e-04   4.93687e-04 DIIS
-   @ROHF iter  10:   -92.19552604195425   -4.76527e-05   2.46913e-04 DIIS
-   @ROHF iter  11:   -92.19549304134880    3.30006e-05   2.65380e-04 DIIS
-   @ROHF iter  12:   -92.19555559553598   -6.25542e-05   2.76122e-05 DIIS
-   @ROHF iter  13:   -92.19555658870787   -9.93172e-07   5.25184e-06 DIIS
-   @ROHF iter  14:   -92.19555660604064   -1.73328e-08   4.11111e-07 DIIS
-   @ROHF iter  15:   -92.19555660616754   -1.26903e-10   4.25812e-08 DIIS
-   @ROHF iter  16:   -92.19555660616859   -1.05160e-12   1.47859e-08 DIIS
-   @ROHF iter  17:   -92.19555660616872   -1.27898e-13   1.94133e-09 DIIS
-   @ROHF iter  18:   -92.19555660616881   -8.52651e-14   5.90414e-11 DIIS
-   @ROHF iter  19:   -92.19555660616872    8.52651e-14   9.71051e-12 DIIS
-   @ROHF iter  20:   -92.19555660616874   -1.42109e-14   2.19012e-12 DIIS
-   @ROHF iter  21:   -92.19555660616869    4.26326e-14   4.60008e-13 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
-	Batch   1 pq = [       0,     150] index = [             0,11325]
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               357
-    Schwarz Cutoff:          1E-12
-
-   @ROHF iter  22:   -92.19555660616868    1.42109e-14   6.33902e-14 DIIS
+   @ROHF iter   8:   -92.19473815552826   -6.24602e-03   8.77748e-04 DIIS
+   @ROHF iter   9:   -92.19547838920775   -7.40234e-04   4.93687e-04 DIIS
+   @ROHF iter  10:   -92.19552604195410   -4.76527e-05   2.46913e-04 DIIS
+   @ROHF iter  11:   -92.19549304134894    3.30006e-05   2.65380e-04 DIIS
+   @ROHF iter  12:   -92.19555559553605   -6.25542e-05   2.76122e-05 DIIS
+   @ROHF iter  13:   -92.19555658870794   -9.93172e-07   5.25184e-06 DIIS
+   @ROHF iter  14:   -92.19555660604071   -1.73328e-08   4.11111e-07 DIIS
+   @ROHF iter  15:   -92.19555660616740   -1.26690e-10   4.25812e-08 DIIS
+   @ROHF iter  16:   -92.19555660616857   -1.16529e-12   1.47859e-08 DIIS
+   @ROHF iter  17:   -92.19555660616871   -1.42109e-13   1.94133e-09 DIIS
+   @ROHF iter  18:   -92.19555660616888   -1.70530e-13   5.90417e-11 DIIS
+   @ROHF iter  19:   -92.19555660616881    7.10543e-14   9.71048e-12 DIIS
+   @ROHF iter  20:   -92.19555660616869    1.13687e-13   2.19060e-12 DIIS
+   @ROHF iter  21:   -92.19555660616876   -7.10543e-14   4.60277e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -238,13 +208,13 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
     Virtual:                                                              
 
-       2B1     0.177180     2B2     0.177180     6A1     0.384745  
+       2B2     0.177180     2B1     0.177180     6A1     0.384745  
        3B2     0.655939     3B1     0.655939     7A1     0.699522  
        8A1     0.869525     4B1     1.036480     4B2     1.036480  
        9A1     1.044978     1A2     1.314443    10A1     1.314443  
-       5B2     1.503400     5B1     1.503400    11A1     1.564388  
+       5B1     1.503400     5B2     1.503400    11A1     1.564388  
       12A1     2.160944     2A2     2.160944    13A1     2.254479  
-       6B1     2.677031     6B2     2.677031    14A1     3.095851  
+       6B2     2.677031     6B1     2.677031    14A1     3.095851  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -253,18 +223,18 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19555660616868
+  @ROHF Final Energy:   -92.19555660616876
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             18.9152704347063825
-    One-Electron Energy =                -161.7960330251849541
-    Two-Electron Energy =                  50.6852059843098814
+    Nuclear Repulsion Energy =             18.9152704347063967
+    One-Electron Energy =                -161.7960330251809751
+    Two-Electron Energy =                  50.6852059843058100
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1955566061687080
+    Total Energy =                        -92.1955566061687648
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
@@ -319,15 +289,15 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Wed Feb 24 16:48:59 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:34 2016
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 	Nuclear repulsion energy..........................................PASSED
 	Reference energy..................................................PASSED
 	Stability eigenvalues with symmetry...............................PASSED

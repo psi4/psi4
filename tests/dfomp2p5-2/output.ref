@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.236 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} 25a6d03 
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tue Nov 17 22:02:18 2015
+    Psi4 started on: Mon Mar 14 15:12:52 2016
 
-    Process ID:  27999
-    PSI4DATADIR: /Users/ugur/test/psi4/lib
+    Process ID:   7452
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -48,21 +48,22 @@ set {
   guess gwh
   freeze_core true
   reference uhf
+  mp_type df
 }
-energy('df-omp2.5')
+energy('omp2.5')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy");                        #TEST
-compare_values(refomp3, get_variable("DF-OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 Total Energy");               #TEST
+compare_values(refomp3, get_variable("OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 Total Energy");               #TEST
 
 
 --------------------------------------------------------------------------
 
   Memory set to 256.000 MiB by Python script.
-  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on Ugurs-MacBook-Pro.local
-*** at Tue Nov 17 22:02:18 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:52 2016
 
 
          ---------------------------------------------------------
@@ -89,7 +90,7 @@ compare_values(refomp3, get_variable("DF-OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 To
 
   Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
   Rotational constants: A = 820325.16776  B = 437109.76453  C = 285161.58706 [MHz]
-  Nuclear repulsion =    9.187386421477592
+  Nuclear repulsion =    9.187386421477591
 
   Charge       = 1
   Multiplicity = 2
@@ -127,9 +128,6 @@ compare_values(refomp3, get_variable("DF-OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 To
     Total      24      24       5       4       4       1
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -162,18 +160,18 @@ compare_values(refomp3, get_variable("DF-OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 To
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:   -74.82646240386276   -7.48265e+01   6.91189e-02 
-   @DF-UHF iter   2:   -75.52518829212282   -6.98726e-01   2.26875e-02 DIIS
-   @DF-UHF iter   3:   -75.62908429295987   -1.03896e-01   2.84888e-03 DIIS
-   @DF-UHF iter   4:   -75.63165948805924   -2.57520e-03   6.39296e-04 DIIS
-   @DF-UHF iter   5:   -75.63186288024946   -2.03392e-04   1.62214e-04 DIIS
-   @DF-UHF iter   6:   -75.63188161353408   -1.87333e-05   6.61175e-05 DIIS
-   @DF-UHF iter   7:   -75.63188558205735   -3.96852e-06   1.70326e-05 DIIS
-   @DF-UHF iter   8:   -75.63188585489640   -2.72839e-07   2.72862e-06 DIIS
-   @DF-UHF iter   9:   -75.63188585979113   -4.89473e-09   3.71072e-07 DIIS
-   @DF-UHF iter  10:   -75.63188585986664   -7.55165e-11   7.99324e-08 DIIS
-   @DF-UHF iter  11:   -75.63188585987015   -3.51008e-12   1.56722e-08 DIIS
-   @DF-UHF iter  12:   -75.63188585987031   -1.56319e-13   3.00840e-09 DIIS
+   @DF-UHF iter   1:   -74.82646240386376   -7.48265e+01   6.91189e-02 
+   @DF-UHF iter   2:   -75.52518829212363   -6.98726e-01   2.26875e-02 DIIS
+   @DF-UHF iter   3:   -75.62908429296075   -1.03896e-01   2.84888e-03 DIIS
+   @DF-UHF iter   4:   -75.63165948806011   -2.57520e-03   6.39296e-04 DIIS
+   @DF-UHF iter   5:   -75.63186288025031   -2.03392e-04   1.62214e-04 DIIS
+   @DF-UHF iter   6:   -75.63188161353489   -1.87333e-05   6.61175e-05 DIIS
+   @DF-UHF iter   7:   -75.63188558205820   -3.96852e-06   1.70326e-05 DIIS
+   @DF-UHF iter   8:   -75.63188585489723   -2.72839e-07   2.72862e-06 DIIS
+   @DF-UHF iter   9:   -75.63188585979194   -4.89470e-09   3.71072e-07 DIIS
+   @DF-UHF iter  10:   -75.63188585986745   -7.55165e-11   7.99324e-08 DIIS
+   @DF-UHF iter  11:   -75.63188585987095   -3.49587e-12   1.56722e-08 DIIS
+   @DF-UHF iter  12:   -75.63188585987112   -1.70530e-13   3.00840e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -223,18 +221,18 @@ compare_values(refomp3, get_variable("DF-OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 To
 
   Energy converged.
 
-  @DF-UHF Final Energy:   -75.63188585987031
+  @DF-UHF Final Energy:   -75.63188585987112
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1873864214775924
-    One-Electron Energy =                -118.0596668277854491
-    Two-Electron Energy =                  33.2403945464375496
+    Nuclear Repulsion Energy =              9.1873864214775907
+    One-Electron Energy =                -118.0596668277863728
+    Two-Electron Energy =                  33.2403945464376633
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.6318858598702946
+    Total Energy =                        -75.6318858598711188
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -269,18 +267,18 @@ Properties computed using the SCF density matrix
   LUNO+3 :    9  A 0.0000003
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Tue Nov 17 22:02:18 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:52 2016
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Ugurs-MacBook-Pro.local
-*** at Tue Nov 17 22:02:18 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:52 2016
 
 
 
@@ -292,9 +290,10 @@ Total time:
   CC_DIIS_MIN_VECS            => 2                
   CC_LAMBDA                   => FALSE            
   CC_MAXITER                  => 50               
-  CC_TYPE                     => CONVENTIONAL     
-  CHOLESKY                    => FALSE            
+  CC_TYPE                     => CONV             
+  CHOLESKY                    => FALSE           !
   CHOLESKY_TOLERANCE          => 0.0001           
+  CI_TYPE                     => CONV             
   COMPUT_S2                   => FALSE            
   CUBEPROP_BASIS_FUNCTIONS    => [  ]             
   CUBEPROP_FILEPATH           => .                
@@ -313,8 +312,8 @@ Total time:
   DOCC                        => [  ]             
   DO_DIIS                     => TRUE             
   DO_LEVEL_SHIFT              => TRUE             
-  DO_SCS                      => FALSE            
-  DO_SOS                      => FALSE            
+  DO_SCS                      => FALSE           !
+  DO_SOS                      => FALSE           !
   E3_SCALE                    => 0.25             
   EKT_IP                      => FALSE            
   EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
@@ -339,6 +338,8 @@ Total time:
   MP2_SOS_SCALE               => 1.3              
   MP2_SOS_SCALE2              => 1.2              
   MP2_SS_SCALE                => 0.333333         
+  MP2_TYPE                    => DF               
+  MP_TYPE                     => DF              !
   NAT_ORBS                    => FALSE            
   NUM_FROZEN_DOCC             => 0                
   NUM_FROZEN_UOCC             => 0                
@@ -360,6 +361,7 @@ Total time:
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
   QCHF                        => FALSE            
+  QC_MODULE                   => (empty)          
   RAS1                        => [  ]             
   RAS2                        => [  ]             
   RAS3                        => [  ]             
@@ -372,6 +374,7 @@ Total time:
   RESTRICTED_DOCC             => [  ]             
   RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
+  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
@@ -390,7 +393,7 @@ Total time:
 
                     DF-OMP2.5 (DF-OO-MP2.5)   
               Program Written by Ugur Bozkaya
-              Latest Revision October 8, 2015
+              Latest Revision February 19, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -418,32 +421,32 @@ Total time:
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -75.63188585987031
-	REF Energy (a.u.)                  :   -75.63188585987031
+	DF-HF Energy (a.u.)                :   -75.63188585987112
+	REF Energy (a.u.)                  :   -75.63188585987112
 	Alpha-Alpha Contribution (a.u.)    :    -0.02406248686865
 	Alpha-Beta Contribution (a.u.)     :    -0.11584755188562
 	Beta-Beta Contribution (a.u.)      :    -0.01111175575401
 	Scaled_SS Correlation Energy (a.u.):    -0.01172474754089
-	Scaled_OS Correlation Energy (a.u.):    -0.13901706226275
-	DF-SCS-MP2 Total Energy (a.u.)     :   -75.78262766967394
-	DF-SOS-MP2 Total Energy (a.u.)     :   -75.78248767732163
-	DF-SCSN-MP2 Total Energy (a.u.)    :   -75.69379252688618
-	DF-MP2 Correlation Energy (a.u.)   :    -0.15102179450828
-	DF-MP2 Total Energy (a.u.)         :   -75.78290765437859
+	Scaled_OS Correlation Energy (a.u.):    -0.13901706226274
+	DF-SCS-MP2 Total Energy (a.u.)     :   -75.78262766967474
+	DF-SOS-MP2 Total Energy (a.u.)     :   -75.78248767732242
+	DF-SCSN-MP2 Total Energy (a.u.)    :   -75.69379252688698
+	DF-MP2 Correlation Energy (a.u.)   :    -0.15102179450827
+	DF-MP2 Total Energy (a.u.)         :   -75.78290765437939
 	======================================================================= 
 
 	Computing DF-MP2.5 energy using SCF MOs (Canonical DF-MP2.5)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -75.63188585987031
-	REF Energy (a.u.)                  :   -75.63188585987031
+	SCF Energy (a.u.)                  :   -75.63188585987112
+	REF Energy (a.u.)                  :   -75.63188585987112
 	Alpha-Alpha Contribution (a.u.)    :    -0.02404358713061
 	Alpha-Beta Contribution (a.u.)     :    -0.12296802142712
 	Beta-Beta Contribution (a.u.)      :    -0.01100331855758
-	DF-MP3 Correlation Energy (a.u.)   :    -0.16500805972235
-	DF-MP3 Total Energy (a.u.)         :   -75.79689391959266
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16500805972234
+	DF-MP3 Total Energy (a.u.)         :   -75.79689391959346
 	DF-MP2.5 Correlation Energy (a.u.) :    -0.15801492711531
-	DF-MP2.5 Total Energy (a.u.)       :   -75.78990078698563
+	DF-MP2.5 Total Energy (a.u.)       :   -75.78990078698642
 	======================================================================= 
 
 	Number of alpha independent-pairs: 99
@@ -474,37 +477,40 @@ Total time:
 	Computing DF-MP2.5 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -75.63188585987031
-	REF Energy (a.u.)                  :   -75.63118403705667
-	Alpha-Alpha Contribution (a.u.)    :    -0.02416232284135
+	SCF Energy (a.u.)                  :   -75.63188585987112
+	REF Energy (a.u.)                  :   -75.63118403705755
+	Alpha-Alpha Contribution (a.u.)    :    -0.02416232284134
 	Alpha-Beta Contribution (a.u.)     :    -0.12430974654312
 	Beta-Beta Contribution (a.u.)      :    -0.01107305144916
-	DF-MP3 Correlation Energy (a.u.)   :    -0.16725855441642
-	DF-MP3 Total Energy (a.u.)         :   -75.79914441428673
-	DF-MP2.5 Correlation Energy (a.u.) :    -0.15954512083363
-	DF-MP2.5 Total Energy (a.u.)       :   -75.79143098070394
+	DF-MP3 Correlation Energy (a.u.)   :    -0.16725855441635
+	DF-MP3 Total Energy (a.u.)         :   -75.79914441428747
+	DF-MP2.5 Correlation Energy (a.u.) :    -0.15954512083362
+	DF-MP2.5 Total Energy (a.u.)       :   -75.79143098070475
 	======================================================================= 
 
 	======================================================================= 
 	================ DF-OMP2.5 FINAL RESULTS ============================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -75.63188585987031
-	REF Energy (a.u.)                  :   -75.63118403705667
+	DF-HF Energy (a.u.)                :   -75.63188585987112
+	REF Energy (a.u.)                  :   -75.63118403705755
 	DF-OMP2.5 Correlation Energy (a.u.):    -0.15954512083363
-	Edfomp2.5 - Eref (a.u.)            :    -0.16024694364727
-	DF-OMP2.5 Total Energy (a.u.)      :   -75.79143098070394
+	Edfomp2.5 - Eref (a.u.)            :    -0.16024694364719
+	DF-OMP2.5 Total Energy (a.u.)      :   -75.79143098070475
 	======================================================================= 
 
 
-*** tstop() called on Ugurs-MacBook-Pro.local at Tue Nov 17 22:02:20 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:53 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       1.42 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.52 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       1.43 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.53 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+	Nuclear Repulsion Energy..........................................PASSED
+	DF-HF Energy......................................................PASSED
+	DF-OMP2.5 Total Energy............................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

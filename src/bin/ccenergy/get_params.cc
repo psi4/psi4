@@ -173,69 +173,69 @@ void CCEnergyWavefunction::get_params(Options &options)
     }
 
 
-  outfile->Printf( "\n\tInput parameters:\n");
-  outfile->Printf( "\t-----------------\n");
-  outfile->Printf( "\tWave function   =   %6s\n", params_.wfn.c_str());
+  outfile->Printf( "\n    Input parameters:\n");
+  outfile->Printf( "    -----------------\n");
+  outfile->Printf( "    Wave function   =     %s\n", params_.wfn.c_str());
 
   if(params_.semicanonical) {
-    outfile->Printf( "\tReference wfn   =     ROHF changed to UHF for Semicanonical Orbitals\n");
+    outfile->Printf( "    Reference wfn   =     ROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-    outfile->Printf( "\tReference wfn   =     %s\n",
+    outfile->Printf( "    Reference wfn   =     %s\n",
         (params_.ref == 0) ? "RHF" : ((params_.ref == 1) ? "ROHF" : "UHF"));
   }
-  outfile->Printf("\tBrueckner       =     %s\n", params_.brueckner ? "Yes" : "No");
+  outfile->Printf("    Brueckner       =     %s\n", params_.brueckner ? "Yes" : "No");
   if(params_.brueckner)
-    outfile->Printf( "\tBrueckner conv. =     %3.1e\n", params_.bconv);
-  outfile->Printf( "\tMemory (Mbytes) =     %5.1f\n",params_.memory/1e6);
-  outfile->Printf( "\tMaxiter         =   %4d\n", params_.maxiter);
-  outfile->Printf( "\tR_Convergence   =     %3.1e\n", params_.convergence);
-  outfile->Printf( "\tE_Convergence   =     %3.1e\n", params_.e_convergence);
-  outfile->Printf( "\tRestart         =     %s\n",
+    outfile->Printf( "    Brueckner conv. =     %3.1e\n", params_.bconv);
+  outfile->Printf( "    Memory (Mbytes) =     %5.1f\n",params_.memory/1e6);
+  outfile->Printf( "    Maxiter         =   %4d\n", params_.maxiter);
+  outfile->Printf( "    R_Convergence   =     %3.1e\n", params_.convergence);
+  outfile->Printf( "    E_Convergence   =     %3.1e\n", params_.e_convergence);
+  outfile->Printf( "    Restart         =     %s\n",
       params_.restart ? "Yes" : "No");
-  outfile->Printf( "\tDIIS            =     %s\n", params_.diis ? "Yes" : "No");
-  outfile->Printf( "\tAO Basis        =     %s\n", params_.aobasis.c_str());
-  outfile->Printf( "\tABCD            =     %s\n", params_.abcd.c_str());
-  outfile->Printf( "\tCache Level     =     %1d\n", params_.cachelev);
-  outfile->Printf( "\tCache Type      =    %4s\n",
+  outfile->Printf( "    DIIS            =     %s\n", params_.diis ? "Yes" : "No");
+  outfile->Printf( "    AO Basis        =     %s\n", params_.aobasis.c_str());
+  outfile->Printf( "    ABCD            =     %s\n", params_.abcd.c_str());
+  outfile->Printf( "    Cache Level     =     %1d\n", params_.cachelev);
+  outfile->Printf( "    Cache Type      =    %4s\n",
       params_.cachetype ? "LOW" : "LRU");
-  outfile->Printf( "\tPrint Level     =     %1d\n",  params_.print);
-  outfile->Printf( "\tNum. of threads =     %d\n",  params_.nthreads);
-  outfile->Printf( "\t# Amps to Print =     %1d\n",  params_.num_amps);
-  outfile->Printf( "\tPrint MP2 Amps? =     %s\n",  params_.print_mp2_amps ?
+  outfile->Printf( "    Print Level     =     %1d\n",  params_.print);
+  outfile->Printf( "    Num. of threads =     %d\n",  params_.nthreads);
+  outfile->Printf( "    # Amps to Print =     %1d\n",  params_.num_amps);
+  outfile->Printf( "    Print MP2 Amps? =     %s\n",  params_.print_mp2_amps ?
       "Yes" : "No" );
-  outfile->Printf( "\tAnalyze T2 Amps =     %s\n",  params_.analyze ? "Yes" : "No" );
-  outfile->Printf( "\tPrint Pair Ener =     %s\n",  params_.print_pair_energies ? "Yes" : "No" );
+  outfile->Printf( "    Analyze T2 Amps =     %s\n",  params_.analyze ? "Yes" : "No" );
+  outfile->Printf( "    Print Pair Ener =     %s\n",  params_.print_pair_energies ? "Yes" : "No" );
 
   if (params_.print_pair_energies)
-    outfile->Printf( "\tSpinadapt Ener. =     %s\n",  params_.spinadapt_energies ? "Yes" : "No" );
-  outfile->Printf( "\tLocal CC        =     %s\n", params_.local ? "Yes" : "No");
+    outfile->Printf( "    Spinadapt Ener. =     %s\n",  params_.spinadapt_energies ? "Yes" : "No" );
+  outfile->Printf( "    Local CC        =     %s\n", params_.local ? "Yes" : "No");
 
   if ( params_.wfn == "CC3" || params_.wfn == "EOM_CC3")
-    outfile->Printf( "\tT3 Ws incore    =     %s\n", params_.t3_Ws_incore ? "Yes" : "No");
+    outfile->Printf( "    T3 Ws incore    =     %s\n", params_.t3_Ws_incore ? "Yes" : "No");
 
   if(params_.local) {
-    outfile->Printf( "\tLocal Cutoff       =     %3.1e\n", local_.cutoff);
-    outfile->Printf( "\tLocal Method      =     %s\n", local_.method.c_str());
-    outfile->Printf( "\tWeak pairs        =     %s\n", local_.weakp.c_str());
-    outfile->Printf( "\tFilter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
-    outfile->Printf( "\tLocal pairs       =     %s\n", local_.pairdef.c_str());
-    outfile->Printf( "\tLocal CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
+    outfile->Printf( "    Local Cutoff       =     %3.1e\n", local_.cutoff);
+    outfile->Printf( "    Local Method      =     %s\n", local_.method.c_str());
+    outfile->Printf( "    Weak pairs        =     %s\n", local_.weakp.c_str());
+    outfile->Printf( "    Filter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
+    outfile->Printf( "    Local pairs       =     %s\n", local_.pairdef.c_str());
+    outfile->Printf( "    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
   }
-  outfile->Printf( "\tSCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
-  outfile->Printf( "\tSCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");
-  outfile->Printf( "\tSCS-CCSD        =     %s\n", (params_.scscc == 1) ? "True" : "False");
+  outfile->Printf( "    SCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
+  outfile->Printf( "    SCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");
+  outfile->Printf( "    SCS-CCSD        =     %s\n", (params_.scscc == 1) ? "True" : "False");
   if (params_.scs) {
-    outfile->Printf( "\tSCS_MP2_OS_SCALE =     %.2f\n",params_.scsmp2_scale_os);
-    outfile->Printf( "\tSCS_MP2_SS_SCALE =     %.2f\n",params_.scsmp2_scale_ss);
+    outfile->Printf( "    SCS_MP2_OS_SCALE =     %.2f\n",params_.scsmp2_scale_os);
+    outfile->Printf( "    SCS_MP2_SS_SCALE =     %.2f\n",params_.scsmp2_scale_ss);
   }
   if (params_.scsn) {
-    outfile->Printf( "\tSCSN_MP2_OS_SCALE =     %.2f\n",0.0);
-    outfile->Printf( "\tSCSN_MP2_SS_SCALE =     %.2f\n",1.76);
+    outfile->Printf( "    SCSN_MP2_OS_SCALE =     %.2f\n",0.0);
+    outfile->Printf( "    SCSN_MP2_SS_SCALE =     %.2f\n",1.76);
   }
   if (params_.scscc) {
-    outfile->Printf( "\tCC_OS_SCALE     =     %.2f\n",params_.scscc_scale_os);
-    outfile->Printf( "\tCC_SS_SCALE     =     %.2f\n",params_.scscc_scale_ss);
+    outfile->Printf( "    CC_OS_SCALE     =     %.2f\n",params_.scscc_scale_os);
+    outfile->Printf( "    CC_SS_SCALE     =     %.2f\n",params_.scscc_scale_ss);
   }
 
   outfile->Printf( "\n");
