@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.1.266 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {ciwave} fe32e41 dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: 12-15-2015  05:04:13 PM CST
+    Psi4 started on: Mon Mar 14 15:13:27 2016
 
-    Process ID:  37010
-    PSI4DATADIR: /Users/daniel/Gits/psi4/lib/
+    Process ID:   7610
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -58,8 +58,8 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
 --------------------------------------------------------------------------
 
-*** tstart() called on Daniels-MacBook-Pro.local
-*** at Tue Dec 15 17:04:13 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:27 2016
 
 
          ---------------------------------------------------------
@@ -76,18 +76,18 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           H          1.080977000000    -2.558832000000     0.000000000000
-           H         -1.080977000000     2.558832000000     0.000000000000
-           H          2.103773000000    -1.017723000000     0.000000000000
-           H         -2.103773000000     1.017723000000     0.000000000000
-           H         -0.973565000000    -1.219040000000     0.000000000000
-           H          0.973565000000     1.219040000000     0.000000000000
-           C         -0.000000000000     0.728881000000     0.000000000000
-           C          0.000000000000    -0.728881000000     0.000000000000
-           C          1.117962000000    -1.474815000000     0.000000000000
-           C         -1.117962000000     1.474815000000     0.000000000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          1.080977000000    -2.558832000000     0.000000000000     1.007825032070
+           H         -1.080977000000     2.558832000000     0.000000000000     1.007825032070
+           H          2.103773000000    -1.017723000000     0.000000000000     1.007825032070
+           H         -2.103773000000     1.017723000000     0.000000000000     1.007825032070
+           H         -0.973565000000    -1.219040000000     0.000000000000     1.007825032070
+           H          0.973565000000     1.219040000000     0.000000000000     1.007825032070
+           C         -0.000000000000     0.728881000000     0.000000000000    12.000000000000
+           C          0.000000000000    -0.728881000000     0.000000000000    12.000000000000
+           C          1.117962000000    -1.474815000000     0.000000000000    12.000000000000
+           C         -1.117962000000     1.474815000000     0.000000000000    12.000000000000
 
   Running in c2h symmetry.
 
@@ -103,7 +103,7 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DF.
+  SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -134,32 +134,16 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
     Total      26      26      15      15      15       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+	Batch   1 pq = [       0,     138] index = [             0,9591]
+  ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
     Memory (MB):               183
-    Algorithm:                Core
-    Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 108
-    Number of basis function: 308
-    Number of Cartesian functions: 354
-    Spherical Harmonics?: true
-    Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 1.8809327918E-01.
   Using Symmetric Orthogonalization.
@@ -167,23 +151,23 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
   ==> Iterations <==
 
-                           Total Energy        Delta E     RMS |[F,P]|
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:  -134.15392948071855   -1.34154e+02   1.19475e-01 
-   @DF-RHF iter   2:  -135.13655485627271   -9.82625e-01   1.66885e-01 DIIS
-   @DF-RHF iter   3:  -152.06105174295431   -1.69245e+01   7.53657e-02 DIIS
-   @DF-RHF iter   4:  -151.96362236780715    9.74294e-02   7.53444e-02 DIIS
-   @DF-RHF iter   5:  -151.98550179023437   -2.18794e-02   7.38943e-02 DIIS
-   @DF-RHF iter   6:  -152.49465252900160   -5.09151e-01   4.88332e-02 DIIS
-   @DF-RHF iter   7:  -152.92785813123555   -4.33206e-01   2.02184e-02 DIIS
-   @DF-RHF iter   8:  -153.01691784121346   -8.90597e-02   1.62405e-03 DIIS
-   @DF-RHF iter   9:  -153.01793999424501   -1.02215e-03   6.42164e-04 DIIS
-   @DF-RHF iter  10:  -153.01799862247560   -5.86282e-05   1.69455e-04 DIIS
-   @DF-RHF iter  11:  -153.01800253593717   -3.91346e-06   2.25887e-05 DIIS
-   @DF-RHF iter  12:  -153.01800264052429   -1.04587e-07   1.83760e-06 DIIS
-   @DF-RHF iter  13:  -153.01800264245605   -1.93177e-09   2.31384e-07 DIIS
-   @DF-RHF iter  14:  -153.01800264247015   -1.40972e-11   2.46193e-08 DIIS
-   @DF-RHF iter  15:  -153.01800264247026   -1.13687e-13   1.81411e-09 DIIS
+   @RHF iter   1:  -134.15449076245159   -1.34154e+02   1.19463e-01 
+   @RHF iter   2:  -135.13484520034581   -9.80354e-01   1.66866e-01 DIIS
+   @RHF iter   3:  -152.05962695009805   -1.69248e+01   7.53768e-02 DIIS
+   @RHF iter   4:  -151.96195128403855    9.76757e-02   7.53610e-02 DIIS
+   @RHF iter   5:  -151.98375532780022   -2.18040e-02   7.39160e-02 DIIS
+   @RHF iter   6:  -152.49310058822039   -5.09345e-01   4.88543e-02 DIIS
+   @RHF iter   7:  -152.92657436393415   -4.33474e-01   2.02454e-02 DIIS
+   @RHF iter   8:  -153.01584921753698   -8.92749e-02   1.62653e-03 DIIS
+   @RHF iter   9:  -153.01687378764922   -1.02457e-03   6.42903e-04 DIIS
+   @RHF iter  10:  -153.01693251481993   -5.87272e-05   1.69817e-04 DIIS
+   @RHF iter  11:  -153.01693644493514   -3.93012e-06   2.26116e-05 DIIS
+   @RHF iter  12:  -153.01693654976668   -1.04832e-07   1.84120e-06 DIIS
+   @RHF iter  13:  -153.01693655170612   -1.93944e-09   2.32412e-07 DIIS
+   @RHF iter  14:  -153.01693655172028   -1.41540e-11   2.46944e-08 DIIS
+   @RHF iter  15:  -153.01693655172051   -2.27374e-13   1.81181e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -192,18 +176,18 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
     Doubly Occupied:                                                      
 
-       1Bu   -11.031410     1Ag   -11.031280     2Bu   -11.017238  
-       2Ag   -11.017225     3Ag    -1.030852     3Bu    -0.940326  
-       4Ag    -0.771701     4Bu    -0.706293     5Bu    -0.591013  
-       5Ag    -0.587087     6Bu    -0.497345     6Ag    -0.493541  
-       7Ag    -0.440286     1Au    -0.394349     1Bg    -0.260947  
+       1Bu   -11.031070     1Ag   -11.030940     2Bu   -11.016929  
+       2Ag   -11.016916     3Ag    -1.030845     3Bu    -0.940325  
+       4Ag    -0.771694     4Bu    -0.706296     5Bu    -0.591038  
+       5Ag    -0.587103     6Bu    -0.497345     6Ag    -0.493571  
+       7Ag    -0.440277     1Au    -0.394381     1Bg    -0.260958  
 
     Virtual:                                                              
 
-       2Au     0.241850     2Bg     0.416089     7Bu     0.588593  
-       8Ag     0.672620     8Bu     0.682153     9Bu     0.692748  
-       9Ag     0.699207    10Ag     0.871216    10Bu     0.904385  
-      11Bu     1.010471    11Ag     1.070241  
+       2Au     0.241784     2Bg     0.416021     7Bu     0.588532  
+       8Ag     0.672536     8Bu     0.682090     9Bu     0.692668  
+       9Ag     0.699143    10Ag     0.871153    10Bu     0.904364  
+      11Bu     1.010413    11Ag     1.070218  
 
     Final Occupation by Irrep:
              Ag    Bg    Au    Bu 
@@ -211,18 +195,18 @@ compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -153.01800264247026
+  @RHF Final Energy:  -153.01693655172051
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            103.5160937733975146
-    One-Electron Energy =                -411.4464086661405986
-    Two-Electron Energy =                 154.9123122502727483
+    One-Electron Energy =                -411.4466842274239298
+    Two-Electron Energy =                 154.9136539023059242
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -153.0180026424703215
+    Total Energy =                       -153.0169365517204767
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -233,28 +217,28 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on Daniels-MacBook-Pro.local at Tue Dec 15 17:04:13 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:27 2016
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
          ---------------------------------------------------------
@@ -347,79 +331,80 @@ ORBITALS:
 
    ==> Starting DF-MCSCF iterations <==
 
-                             Total Energy         Delta E       RMS Grad
+                           Total Energy        Delta E      RMS Grad   NCI
 
-(sem_iter): H0block_->H0b_diag[1][1] - H0block_->H0b_diag[2][1] = 0.506584 - -0.506584 = 1.013167 > 1.0E-8
-   @DF-MCSCF Iter   1:  -152.9654719554380904    5.25307e-02   6.09287e-03 Initial CI
-   @DF-MCSCF Iter   2:  -152.9656552960068723   -1.83341e-04   9.96598e-04 APPROX
-   @DF-MCSCF Iter   3:  -152.9656611109224400   -5.81492e-06   2.01863e-04 APPROX
-   @DF-MCSCF Iter   4:  -152.9656613468835644   -2.35961e-07   4.26049e-05 APPROX
-   @DF-MCSCF Iter   5:  -152.9656613575962183   -1.07127e-08   9.41556e-06 APPROX, DIIS
+(sem_iter): H0block_->H0b_diag[1][1] - H0block_->H0b_diag[2][1] = 0.506583 - -0.506583 = 1.013167 > 1.0E-8
+   @DF-MCSCF Iter   1:  -152.96547220692096    5.1464e-02   6.0745e-03   1   Initial CI
+   @DF-MCSCF Iter   2:  -152.96565529543233   -1.8309e-04   9.9640e-04   5   APPROX
+   @DF-MCSCF Iter   3:  -152.96566111026507   -5.8148e-06   2.0203e-04   4   APPROX
+   @DF-MCSCF Iter   4:  -152.96566134680154   -2.3654e-07   4.2698e-05   3   APPROX
+   @DF-MCSCF Iter   5:  -152.96566135757485   -1.0773e-08   9.4520e-06   3   APPROX, DIIS
 
        MCSCF has converged!
 
-   @DF-MCSCF Final Energy:  -152.965661357596218
+   @DF-MCSCF Final Energy:  -152.965661357574845
 
 
    => Energetics <=
 
-   SCF energy =             -153.018002642470265
-   Total CI energy =        -152.965661357596218
+   SCF energy =             -153.016936551720505
+   Total CI energy =        -152.965661357574845
 
 
-   CI Root  1 energy =      -153.104345665210644
+   CI Root  1 energy =      -153.104345665669200
 
 
 The 20 most important determinants
 
     1    0.934555  (    2,    2)  1BgX  1AuX  
     2   -0.215357  (    1,    1)  1AuX  2AuX  
-    3   -0.125673  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
-    4   -0.125673  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
+    3   -0.125674  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
+    4   -0.125674  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
     5    0.098526  (    0,    1)  1BgA  2BgA  1AuB  2AuB  
     6    0.098526  (    1,    0)  1BgB  2BgB  1AuA  2AuA  
     7   -0.094773  (    0,    0)  1BgX  2BgX  
     8   -0.090462  (    4,    4)  1BgX  2AuX  
-    9   -0.083627  (    3,    3)  2BgX  1AuX  
+    9   -0.083626  (    3,    3)  2BgX  1AuX  
    10    0.055464  (    5,    5)  2BgX  2AuX  
-   11   -0.027147  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
-   12   -0.027147  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
-   13   -0.010225  (    4,    5)  1BgA  2BgB  2AuX  
-   14   -0.010225  (    5,    4)  1BgB  2BgA  2AuX  
-   15    0.009571  (    3,    5)  2BgX  1AuA  2AuB  
-   16    0.009571  (    5,    3)  2BgX  1AuB  2AuA  
-   17    0.006622  (    3,    2)  1BgB  2BgA  1AuX  
-   18    0.006622  (    2,    3)  1BgA  2BgB  1AuX  
-   19   -0.004292  (    2,    4)  1BgX  1AuA  2AuB  
-   20   -0.004292  (    4,    2)  1BgX  1AuB  2AuA  
+   11   -0.027148  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
+   12   -0.027148  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
+   13   -0.010220  (    4,    5)  1BgA  2BgB  2AuX  
+   14   -0.010220  (    5,    4)  1BgB  2BgA  2AuX  
+   15    0.009575  (    3,    5)  2BgX  1AuA  2AuB  
+   16    0.009575  (    5,    3)  2BgX  1AuB  2AuA  
+   17    0.006622  (    2,    3)  1BgA  2BgB  1AuX  
+   18    0.006622  (    3,    2)  1BgB  2BgA  1AuX  
+   19   -0.004327  (    2,    4)  1BgX  1AuA  2AuB  
+   20   -0.004327  (    4,    2)  1BgX  1AuB  2AuA  
 
 
-   CI Root  2 energy =      -152.826977049981735
+   CI Root  2 energy =      -152.826977049480519
 
 
 The 20 most important determinants
 
     1    0.557780  (    1,    1)  1AuX  2AuX  
-    2   -0.343772  (    4,    4)  1BgX  2AuX  
-    3   -0.308880  (    4,    2)  1BgX  1AuB  2AuA  
-    4   -0.308880  (    2,    4)  1BgX  1AuA  2AuB  
-    5   -0.302597  (    3,    3)  2BgX  1AuX  
-    6    0.266476  (    2,    3)  1BgA  2BgB  1AuX  
-    7    0.266476  (    3,    2)  1BgB  2BgA  1AuX  
-    8    0.184166  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
-    9    0.184166  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
+    2   -0.343750  (    4,    4)  1BgX  2AuX  
+    3   -0.308896  (    4,    2)  1BgX  1AuB  2AuA  
+    4   -0.308896  (    2,    4)  1BgX  1AuA  2AuB  
+    5   -0.302592  (    3,    3)  2BgX  1AuX  
+    6    0.266486  (    3,    2)  1BgB  2BgA  1AuX  
+    7    0.266486  (    2,    3)  1BgA  2BgB  1AuX  
+    8    0.184154  (    5,    2)  1BgB  2BgA  1AuB  2AuA  
+    9    0.184154  (    2,    5)  1BgA  2BgB  1AuA  2AuB  
    10    0.163851  (    0,    0)  1BgX  2BgX  
-   11    0.135258  (    1,    0)  1BgB  2BgB  1AuA  2AuA  
-   12    0.135258  (    0,    1)  1BgA  2BgA  1AuB  2AuB  
-   13    0.071986  (    2,    2)  1BgX  1AuX  
-   14    0.048907  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
-   15    0.048907  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
-   16    0.038689  (    5,    3)  2BgX  1AuB  2AuA  
-   17    0.038689  (    3,    5)  2BgX  1AuA  2AuB  
-   18   -0.032199  (    4,    5)  1BgA  2BgB  2AuX  
-   19   -0.032199  (    5,    4)  1BgB  2BgA  2AuX  
-   20    0.000559  (    5,    5)  2BgX  2AuX  
+   11    0.135258  (    0,    1)  1BgA  2BgA  1AuB  2AuB  
+   12    0.135258  (    1,    0)  1BgB  2BgB  1AuA  2AuA  
+   13    0.071963  (    2,    2)  1BgX  1AuX  
+   14    0.048896  (    3,    4)  1BgB  2BgA  1AuA  2AuB  
+   15    0.048896  (    4,    3)  1BgA  2BgB  1AuB  2AuA  
+   16    0.038700  (    5,    3)  2BgX  1AuB  2AuA  
+   17    0.038700  (    3,    5)  2BgX  1AuA  2AuB  
+   18   -0.032209  (    5,    4)  1BgB  2BgA  2AuX  
+   19   -0.032209  (    4,    5)  1BgA  2BgB  2AuX  
+   20    0.000556  (    5,    5)  2BgX  2AuX  
 
 
+	CASSCF Energy.....................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

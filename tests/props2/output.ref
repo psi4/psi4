@@ -1,20 +1,25 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta1 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
+
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:18:50 2016
 
+    Process ID:  11333
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -33,41 +38,9 @@ refESCF   = [ -303.20625701081264, -75.32040649154762,  #TEST
 refDipY   = [ 17.7759552887,  2.2770512884, 21.6845920985,  2.2770512884 ]  #TEST
 refQuadYY = [ 25.4523671288, -5.5116358496, 57.3954213176, -5.5116358496 ]  #TEST
  
-molecule dimer {
-0 1
-C
-C  1  CC
-C  2  CC  1  A1
-C  3  CC  2  A1   1  0
-H  1  CH  2  A1   3  A2
-H  4  CH  3  A1   2  A2
-C  1  CC  5  A1   2  A2
-C  4  CC  6  A1   3  -A2
-H  2  CH  3  A1   1  A2
-H  3  CH  2  A1   4  -A2
-H  7  CH  8  A1   1  -A2
-H  8  CH  7  A1   4  A2
---
-1 1
-X  1  CC  3  30   2  A2
-O  13 R   1  90   2  90
-H  14 OH  13 TDA  1  0
-H  14 OH  15 TDA  13 A1
-H  14 OH  15 TDA  13 -A1
-
-CC    = 1.421
-CH    = 1.088
-A1    = 120.0
-A2    = 180.0
-OH    = 1.05
-units angstrom
-}
-
 Rvals = [ 4.0, 5.0 ]
 
-set globals {
-    BASIS sto-3g
-    DF_BASIS_SCF cc-pVDZ-JKFIT
+set {
     DIIS True
     DIIS_MIN_VECS 5
     DIIS_MAX_VECS 9
@@ -76,24 +49,48 @@ set globals {
     D_CONVERGENCE 11
     GUESS SAD
     SCF_TYPE DF
-    DF_BASIS_SCF cc-pVDZ-JKFIT
     REFERENCE RHF
 }
-
 
 count = 0                                                                                            #TEST
 
 for R in Rvals:
-    dimer.R = R
+    molecule dimer {
+    0 1
+               C          0.710500000000    Bz    -1.230622098778
+               C          1.421000000000    Bz     0.000000000000
+               C          0.710500000000    Bz     1.230622098778
+               C         -0.710500000000    Bz     1.230622098778
+               H          1.254500000000    Bz    -2.172857738095
+               H         -1.254500000000    Bz     2.172857738095
+               C         -0.710500000000    Bz    -1.230622098778
+               C         -1.421000000000    Bz     0.000000000000
+               H          2.509000000000    Bz     0.000000000000
+               H          1.254500000000    Bz     2.172857738095
+               H         -1.254500000000    Bz    -2.172857738095
+               H         -2.509000000000    Bz     0.000000000000
+    --
+    1 1
+               O          0.000000000000    Oy     0.000000000000
+               H          0.494974746831    Hy    -0.857321409974
+               H          0.494974746831    Hy     0.857321409974
+               H         -0.989949493661    Hy     0.000000000000
+    units angstrom
+    }
+    #dimer.Bz = -4.794637665924 + R
+    #dimer.Oy = -0.794637665924 + R
+    #dimer.Hy = -0.444637665924 + R
+    dimer.Bz = 0.0
+    dimer.Oy = R
+    dimer.Hy = R + 0.35
+
+    set BASIS sto-3g
+    set DF_BASIS_SCF cc-pVDZ-JKFIT
 
     activate(dimer)
 
-    eehf = energy('scf')
-    oe = OEProp()
-    oe.set_title("BZH3O+ SCF")
-    oe.add("DIPOLE")
-    oe.add("QUADRUPOLE")
-    oe.compute()
+    eehf, hf_wfn = energy('scf', return_wfn=True)
+    oeprop(hf_wfn, "DIPOLE", "QUADRUPOLE", title='BZH3O+ SCF')
 
     compare_values(refENuc[count], dimer.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
@@ -109,12 +106,8 @@ for R in Rvals:
 
     monoB = dimer.extract_subsets(2)
 
-    eehf = energy('scf')
-    oe = OEProp()
-    oe.set_title("H3O+ SCF")
-    oe.add("DIPOLE")
-    oe.add("QUADRUPOLE")
-    oe.compute()
+    eehf, hf_wfn = energy('scf', return_wfn=True)
+    oeprop(hf_wfn, "DIPOLE", "QUADRUPOLE",title="H3O+ SCF")
     
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
@@ -130,10 +123,12 @@ for R in Rvals:
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.
-Setting geometry variable R to 4.000000
+Setting geometry variable Bz to 0.000000
+Setting geometry variable Oy to 4.000000
+Setting geometry variable Hy to 4.350000
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 14:38:54 2012
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:18:50 2016
 
 
          ---------------------------------------------------------
@@ -146,46 +141,34 @@ Setting geometry variable R to 4.000000
   ==> Geometry <==
 
     Molecular point group: cs
+    Full point group: C3v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           C          0.710500000000    -0.794637665924    -1.230622098778
-           C          1.421000000000    -0.794637665924     0.000000000000
-           C          0.710500000000    -0.794637665924     1.230622098778
-           C         -0.710500000000    -0.794637665924     1.230622098778
-           H          1.254500000000    -0.794637665924    -2.172857738095
-           H         -1.254500000000    -0.794637665924     2.172857738095
-           C         -0.710500000000    -0.794637665924    -1.230622098778
-           C         -1.421000000000    -0.794637665924     0.000000000000
-           H          2.509000000000    -0.794637665924     0.000000000000
-           H          1.254500000000    -0.794637665924     2.172857738095
-           H         -1.254500000000    -0.794637665924    -2.172857738095
-           H         -2.509000000000    -0.794637665924     0.000000000000
-           O          0.000000000000     3.205362334076     0.000000000000
-           H          0.494974746831     3.555362334076    -0.857321409974
-           H          0.494974746831     3.555362334076     0.857321409974
-           H         -0.989949493661     3.555362334076     0.000000000000
-
-    Number of unique atoms: 11
-
-    Atoms equivalency:
-       unique atom 0: 0 2 
-       unique atom 1: 1 
-       unique atom 2: 3 6 
-       unique atom 3: 4 9 
-       unique atom 4: 5 10 
-       unique atom 5: 7 
-       unique atom 6: 8 
-       unique atom 7: 11 
-       unique atom 8: 12 
-       unique atom 9: 13 14 
-       unique atom 10: 15 
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.710500000000    -0.794637665924    -1.230622098778    12.000000000000
+           C          1.421000000000    -0.794637665924     0.000000000000    12.000000000000
+           C          0.710500000000    -0.794637665924     1.230622098778    12.000000000000
+           C         -0.710500000000    -0.794637665924     1.230622098778    12.000000000000
+           H          1.254500000000    -0.794637665924    -2.172857738095     1.007825032070
+           H         -1.254500000000    -0.794637665924     2.172857738095     1.007825032070
+           C         -0.710500000000    -0.794637665924    -1.230622098778    12.000000000000
+           C         -1.421000000000    -0.794637665924     0.000000000000    12.000000000000
+           H          2.509000000000    -0.794637665924     0.000000000000     1.007825032070
+           H          1.254500000000    -0.794637665924     2.172857738095     1.007825032070
+           H         -1.254500000000    -0.794637665924    -2.172857738095     1.007825032070
+           H         -2.509000000000    -0.794637665924     0.000000000000     1.007825032070
+           O         -0.000000000000     3.205362334076     0.000000000000    15.994914619560
+           H          0.494974746831     3.555362334076    -0.857321409974     1.007825032070
+           H          0.494974746831     3.555362334076     0.857321409974     1.007825032070
+           H         -0.989949493661     3.555362334076     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
-  Nuclear repulsion =  268.617178206587084
+  Rotational constants: A =      0.09043  B =      0.04886  C =      0.04886 [cm^-1]
+  Rotational constants: A =   2711.05134  B =   1464.67255  C =   1464.67255 [MHz]
+  Nuclear repulsion =  268.617178206572532
 
   Charge       = 1
   Multiplicity = 1
@@ -204,9 +187,9 @@ Setting geometry variable R to 4.000000
   Density threshold  = 1.00e-11
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: STO-3G <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: STO-3G
     Number of shells: 30
     Number of basis function: 44
     Number of Cartesian functions: 44
@@ -215,105 +198,120 @@ Setting geometry variable R to 4.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.8500269953E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  Initial RHF energy:  -197.10239456647236
-
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A'        28      28      24      24      24       0
-     A"        16      16      14      14      14       0
+     A'        28      28       0       0       0       0
+     A"        16      16       0       0       0       0
    -------------------------------------------------------
     Total      44      44      26      26      26       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- DFHF: Density-Fitted SCF Algorithms.
-   by Rob Parrish
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
-  ==> Auxiliary Basis: CC-PVDZ-JKFIT <==
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
 
-  Basis Set
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 249
     Number of basis function: 697
     Number of Cartesian functions: 792
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Using Core Algorithm.
+  Minimum eigenvalue in the overlap matrix is 1.8500269953E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                           Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -300.82857161051749   -1.03726e+02   0.00000e+00 
-   @RHF iter   1:  -303.12793290517840   -2.29936e+00   9.25058e-02 
-   @RHF iter   2:  -303.20205732378753   -7.41244e-02   1.10870e-02 
-   @RHF iter   3:  -303.20575179954943   -3.69448e-03   2.19994e-03 
-   @RHF iter   4:  -303.20617954945379   -4.27750e-04   7.34995e-04 
-   @RHF iter   5:  -303.20624349428232   -6.39448e-05   2.99569e-04 DIIS
-   @RHF iter   6:  -303.20625692880145   -1.34345e-05   2.12416e-04 DIIS
-   @RHF iter   7:  -303.20625700467627   -7.58748e-08   1.20941e-05 DIIS
-   @RHF iter   8:  -303.20625701067019   -5.99391e-09   3.48734e-06 DIIS
-   @RHF iter   9:  -303.20625701080888   -1.38698e-10   5.46607e-07 DIIS
-   @RHF iter  10:  -303.20625701081195   -3.06954e-12   6.95108e-08 DIIS
-   @RHF iter  11:  -303.20625701081207   -1.13687e-13   2.37278e-08 DIIS
-   @RHF iter  12:  -303.20625701081229   -2.27374e-13   1.59937e-08 DIIS
-   @RHF iter  13:  -303.20625701081241   -1.13687e-13   1.13362e-08 DIIS
-   @RHF iter  14:  -303.20625701081241    0.00000e+00   5.18788e-10 DIIS
-   @RHF iter  15:  -303.20625701081229    1.13687e-13   1.50419e-10 DIIS
-   @RHF iter  16:  -303.20625701081264   -3.41061e-13   1.70774e-10 DIIS
-   @RHF iter  17:  -303.20625701081229    3.41061e-13   4.05627e-11 DIIS
-   @RHF iter  18:  -303.20625701081229    0.00000e+00   2.41687e-11 DIIS
-   @RHF iter  19:  -303.20625701081252   -2.27374e-13   2.00724e-11 DIIS
-   @RHF iter  20:  -303.20625701081229    2.27374e-13   1.81423e-11 DIIS
-   @RHF iter  21:  -303.20625701081229    0.00000e+00   1.76731e-11 DIIS
-   @RHF iter  22:  -303.20625701081218    1.13687e-13   9.17013e-11 DIIS
-   @RHF iter  23:  -303.20625701081241   -2.27374e-13   4.94319e-11 DIIS
-   @RHF iter  24:  -303.20625701081229    1.13687e-13   2.13988e-11 DIIS
-   @RHF iter  25:  -303.20625701081264   -3.41061e-13   1.34564e-11 DIIS
+   @DF-RHF iter   0:  -300.82857161016301   -3.00829e+02   1.19840e-01 
+   @DF-RHF iter   1:  -303.12803827613862   -2.29947e+00   9.52314e-03 
+   @DF-RHF iter   2:  -303.20205073375615   -7.40125e-02   1.93112e-03 
+   @DF-RHF iter   3:  -303.20575197103750   -3.70124e-03   6.07830e-04 
+   @DF-RHF iter   4:  -303.20617961774423   -4.27647e-04   2.17819e-04 
+   @DF-RHF iter   5:  -303.20624350372344   -6.38860e-05   8.90288e-05 DIIS
+   @DF-RHF iter   6:  -303.20625693503672   -1.34313e-05   8.88432e-06 DIIS
+   @DF-RHF iter   7:  -303.20625700469935   -6.96626e-08   2.24348e-06 DIIS
+   @DF-RHF iter   8:  -303.20625701032469   -5.62534e-09   3.15951e-07 DIIS
+   @DF-RHF iter   9:  -303.20625701046043   -1.35742e-10   5.02980e-08 DIIS
+   @DF-RHF iter  10:  -303.20625701046293   -2.50111e-12   1.81854e-08 DIIS
+   @DF-RHF iter  11:  -303.20625701046328   -3.41061e-13   7.30326e-09 DIIS
+   @DF-RHF iter  12:  -303.20625701046350   -2.27374e-13   3.04149e-09 DIIS
+   @DF-RHF iter  13:  -303.20625701046373   -2.27374e-13   3.55443e-10 DIIS
+   @DF-RHF iter  14:  -303.20625701046362    1.13687e-13   1.44456e-10 DIIS
+   @DF-RHF iter  15:  -303.20625701046362    0.00000e+00   3.33395e-11 DIIS
+   @DF-RHF iter  16:  -303.20625701046384   -2.27374e-13   8.78767e-12 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A'   -20.841022     1A"   -11.131451     2A'   -11.131451  
-	   3A'   -11.131382     2A"   -11.131217     4A'   -11.131217  
-	   5A'   -11.131131     6A'    -1.735966     7A'    -1.177220  
-	   3A"    -1.048347     8A'    -1.048347     4A"    -1.040704  
-	   9A'    -1.040704    10A'    -0.888139     5A"    -0.863988  
-	  11A'    -0.863988    12A'    -0.754290    13A'    -0.699787  
-	   6A"    -0.643866     7A"    -0.631087    14A'    -0.631087  
-	  15A'    -0.546821    16A'    -0.532754     8A"    -0.532754  
-	   9A"    -0.376469    17A'    -0.376469  
+       1Ap   -20.841022     2Ap   -11.131451     1App  -11.131451  
+       3Ap   -11.131382     2App  -11.131217     4Ap   -11.131217  
+       5Ap   -11.131131     6Ap    -1.735966     7Ap    -1.177220  
+       3App   -1.048347     8Ap    -1.048347     9Ap    -1.040704  
+       4App   -1.040704    10Ap    -0.888139    11Ap    -0.863988  
+       5App   -0.863988    12Ap    -0.754290    13Ap    -0.699787  
+       6App   -0.643866     7App   -0.631087    14Ap    -0.631087  
+      15Ap    -0.546821    16Ap    -0.532754     8App   -0.532754  
+      17Ap    -0.376469     9App   -0.376469  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	  18A'     0.051961    10A"     0.157002    19A'     0.157002  
-	  11A"     0.209699    20A'     0.209699    21A'     0.381297  
-	  22A'     0.481209    12A"     0.545968    23A'     0.545968  
-	  24A'     0.594357    13A"     0.603442    25A'     0.603442  
-	  26A'     0.764591    14A"     0.764591    15A"     0.767006  
-	  27A'     0.767006    16A"     0.943364    28A'     1.006810  
+      18Ap     0.051961    19Ap     0.157002    10App    0.157002  
+      11App    0.209699    20Ap     0.209699    21Ap     0.381297  
+      22Ap     0.481209    12App    0.545968    23Ap     0.545968  
+      24Ap     0.594357    25Ap     0.603442    13App    0.603442  
+      26Ap     0.764591    14App    0.764591    15App    0.767006  
+      27Ap     0.767006    16App    0.943364    28Ap     1.006810  
 
-	Final Occupation by Irrep:
-	         A'    A" 
-	DOCC [    17,    9 ]
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [    17,    9 ]
 
   Energy converged.
 
-  @RHF Final Energy:  -303.20625701081264
+  @DF-RHF Final Energy:  -303.20625701046384
 
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            268.6171782065725324
+    One-Electron Energy =                -937.5235567109175463
+    Two-Electron Energy =                 365.7001214938813405
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -303.2062570104636166
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     5.5448      Z:     0.0000
+     X:     0.0000      Y:     5.5448      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.4488      Z:     0.0000
@@ -327,17 +325,23 @@ Setting geometry variable R to 4.000000
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:59 2012
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:51 2016
 Module time:
-	user time   =       4.80 seconds =       0.08 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.80 seconds =       0.08 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the BZH3O+ SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     5.5448      Z:     0.0000
+     X:     0.0000      Y:     5.5448      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.4488      Z:     0.0000
@@ -350,15 +354,19 @@ Total time:
 
   Quadrupole Moment: (Debye Ang)
     XX:   -33.2696     YY:    25.4524     ZZ:   -33.2696
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:   -19.5740     YY:    39.1480     ZZ:   -19.5740
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
+	Nuclear repulsion energy 0........................................PASSED
+	Reference energy 0................................................PASSED
+	Y Component of Dipole 0...........................................PASSED
+	YY Component of Quadrupole 0......................................PASSED
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 14:38:59 2012
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:18:51 2016
 
 
          ---------------------------------------------------------
@@ -371,26 +379,22 @@ Total time:
   ==> Geometry <==
 
     Molecular point group: cs
+    Full point group: C3v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.055641739363     0.000000000000
-           H          0.494974746831     0.294358260637    -0.857321409974
-           H          0.494974746831     0.294358260637     0.857321409974
-           H         -0.989949493661     0.294358260637     0.000000000000
-
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 2 
-       unique atom 2: 3 
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.055641739363     0.000000000000    15.994914619560
+           H          0.494974746831     0.294358260637    -0.857321409974     1.007825032070
+           H          0.494974746831     0.294358260637     0.857321409974     1.007825032070
+           H         -0.989949493661     0.294358260637     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
-  Nuclear repulsion =   13.021346299597003
+  Rotational constants: A =      9.40193  B =      9.40193  C =      5.68937 [cm^-1]
+  Rotational constants: A = 281862.63756  B = 281862.63756  C = 170562.96011 [MHz]
+  Nuclear repulsion =   13.021346299596821
 
   Charge       = 1
   Multiplicity = 1
@@ -409,9 +413,9 @@ Total time:
   Density threshold  = 1.00e-11
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: STO-3G <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -420,137 +424,163 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  Initial RHF energy:   -46.05816007732729
-
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A'         6       6       6       6       6       0
-     A"         2       2       2       2       2       0
+     A'         6       6       0       0       0       0
+     A"         2       2       0       0       0       0
    -------------------------------------------------------
     Total       8       8       5       5       5       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- DFHF: Density-Fitted SCF Algorithms.
-   by Rob Parrish
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
-  ==> Auxiliary Basis: CC-PVDZ-JKFIT <==
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
 
-  Basis Set
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 51
     Number of basis function: 139
     Number of Cartesian functions: 156
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Using Core Algorithm.
+  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                           Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -70.65811387347316   -2.46000e+01   0.00000e+00 
-   @RHF iter   1:   -75.16752797101503   -4.50941e+00   1.65170e-01 
-   @RHF iter   2:   -75.31067054637224   -1.43143e-01   7.77444e-02 
-   @RHF iter   3:   -75.31968276252529   -9.01222e-03   1.91537e-02 
-   @RHF iter   4:   -75.32034271924626   -6.59957e-04   4.96135e-03 
-   @RHF iter   5:   -75.32039895241776   -5.62332e-05   1.51183e-03 DIIS
-   @RHF iter   6:   -75.32040648663950   -7.53422e-06   7.33496e-04 DIIS
-   @RHF iter   7:   -75.32040649131483   -4.67533e-09   1.37798e-05 DIIS
-   @RHF iter   8:   -75.32040649154501   -2.30187e-10   4.25985e-06 DIIS
-   @RHF iter   9:   -75.32040649154760   -2.58638e-12   3.71761e-07 DIIS
-   @RHF iter  10:   -75.32040649154759    1.42109e-14   4.87649e-08 DIIS
-   @RHF iter  11:   -75.32040649154762   -2.84217e-14   1.18589e-08 DIIS
-   @RHF iter  12:   -75.32040649154763   -1.42109e-14   8.55749e-10 DIIS
-   @RHF iter  13:   -75.32040649154759    4.26326e-14   2.42909e-10 DIIS
-   @RHF iter  14:   -75.32040649154764   -5.68434e-14   4.91010e-10 DIIS
-   @RHF iter  15:   -75.32040649154764    0.00000e+00   5.50261e-11 DIIS
-   @RHF iter  16:   -75.32040649154760    4.26326e-14   2.49359e-11 DIIS
-   @RHF iter  17:   -75.32040649154766   -5.68434e-14   1.90327e-11 DIIS
-   @RHF iter  18:   -75.32040649154759    7.10543e-14   2.35169e-11 DIIS
-   @RHF iter  19:   -75.32040649154757    1.42109e-14   1.20454e-11 DIIS
-   @RHF iter  20:   -75.32040649154760   -2.84217e-14   1.01855e-10 DIIS
-   @RHF iter  21:   -75.32040649154764   -4.26326e-14   6.44425e-11 DIIS
-   @RHF iter  22:   -75.32040649154760    4.26326e-14   2.79552e-11 DIIS
-   @RHF iter  23:   -75.32040649154762   -1.42109e-14   2.45185e-11 DIIS
+   @DF-RHF iter   0:   -70.65811387347074   -7.06581e+01   2.37958e-01 
+   @DF-RHF iter   1:   -75.16756673231669   -4.50945e+00   7.30718e-02 
+   @DF-RHF iter   2:   -75.31066576986473   -1.43099e-01   1.98761e-02 
+   @DF-RHF iter   3:   -75.31968220113538   -9.01643e-03   5.02784e-03 
+   @DF-RHF iter   4:   -75.32034262627147   -6.60425e-04   1.34866e-03 
+   @DF-RHF iter   5:   -75.32039893468578   -5.63084e-05   4.16236e-04 DIIS
+   @DF-RHF iter   6:   -75.32040648679376   -7.55211e-06   1.03344e-05 DIIS
+   @DF-RHF iter   7:   -75.32040649130732   -4.51357e-09   2.04057e-06 DIIS
+   @DF-RHF iter   8:   -75.32040649154246   -2.35133e-10   2.26200e-07 DIIS
+   @DF-RHF iter   9:   -75.32040649154482   -2.35900e-12   2.78653e-08 DIIS
+   @DF-RHF iter  10:   -75.32040649154490   -8.52651e-14   5.48089e-09 DIIS
+   @DF-RHF iter  11:   -75.32040649154490    0.00000e+00   7.01667e-10 DIIS
+   @DF-RHF iter  12:   -75.32040649154490    0.00000e+00   4.27473e-11 DIIS
+   @DF-RHF iter  13:   -75.32040649154490    0.00000e+00   4.37067e-13 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A'   -20.845305     2A'    -1.740778     3A'    -1.045562  
-	   1A"    -1.045562     4A'    -0.893667  
+       1Ap   -20.845305     2Ap    -1.740778     1App   -1.045562  
+       3Ap    -1.045562     4Ap    -0.893667  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   5A'     0.047800     6A'     0.205207     2A"     0.205207  
+       5Ap     0.047800     2App    0.205207     6Ap     0.205207  
 
-	Final Occupation by Irrep:
-	         A'    A" 
-	DOCC [     4,    1 ]
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -75.32040649154762
+  @DF-RHF Final Energy:   -75.32040649154490
 
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             13.0213462995968214
+    One-Electron Energy =                -125.5417597070653954
+    Two-Electron Energy =                  37.2000069159236659
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -75.3204064915449010
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0683      Z:     0.0000
+     X:     0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:00 2012
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:51 2016
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.88 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       4.94 seconds =       0.08 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the H3O+ SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0683      Z:     0.0000
+     X:     0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
   Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
-Setting geometry variable R to 5.000000
+	Nuclear repulsion energy 1........................................PASSED
+	Reference energy 1................................................PASSED
+	Y Component of Dipole 1...........................................PASSED
+	YY Component of Quadrupole 1......................................PASSED
+Setting geometry variable Bz to 0.000000
+Setting geometry variable Oy to 5.000000
+Setting geometry variable Hy to 5.350000
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 14:39:00 2012
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:18:51 2016
 
 
          ---------------------------------------------------------
@@ -563,46 +593,34 @@ Setting geometry variable R to 5.000000
   ==> Geometry <==
 
     Molecular point group: cs
+    Full point group: C3v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           C          0.710500000000    -0.990571556783    -1.230622098778
-           C          1.421000000000    -0.990571556783     0.000000000000
-           C          0.710500000000    -0.990571556783     1.230622098778
-           C         -0.710500000000    -0.990571556783     1.230622098778
-           H          1.254500000000    -0.990571556783    -2.172857738095
-           H         -1.254500000000    -0.990571556783     2.172857738095
-           C         -0.710500000000    -0.990571556783    -1.230622098778
-           C         -1.421000000000    -0.990571556783     0.000000000000
-           H          2.509000000000    -0.990571556783     0.000000000000
-           H          1.254500000000    -0.990571556783     2.172857738095
-           H         -1.254500000000    -0.990571556783    -2.172857738095
-           H         -2.509000000000    -0.990571556783     0.000000000000
-           O          0.000000000000     4.009428443217     0.000000000000
-           H          0.494974746831     4.359428443217    -0.857321409974
-           H          0.494974746831     4.359428443217     0.857321409974
-           H         -0.989949493661     4.359428443217     0.000000000000
-
-    Number of unique atoms: 11
-
-    Atoms equivalency:
-       unique atom 0: 0 2 
-       unique atom 1: 1 
-       unique atom 2: 3 6 
-       unique atom 3: 4 9 
-       unique atom 4: 5 10 
-       unique atom 5: 7 
-       unique atom 6: 8 
-       unique atom 7: 11 
-       unique atom 8: 12 
-       unique atom 9: 13 14 
-       unique atom 10: 15 
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.710500000000    -0.990571556783    -1.230622098778    12.000000000000
+           C          1.421000000000    -0.990571556783     0.000000000000    12.000000000000
+           C          0.710500000000    -0.990571556783     1.230622098778    12.000000000000
+           C         -0.710500000000    -0.990571556783     1.230622098778    12.000000000000
+           H          1.254500000000    -0.990571556783    -2.172857738095     1.007825032070
+           H         -1.254500000000    -0.990571556783     2.172857738095     1.007825032070
+           C         -0.710500000000    -0.990571556783    -1.230622098778    12.000000000000
+           C         -1.421000000000    -0.990571556783     0.000000000000    12.000000000000
+           H          2.509000000000    -0.990571556783     0.000000000000     1.007825032070
+           H          1.254500000000    -0.990571556783     2.172857738095     1.007825032070
+           H         -1.254500000000    -0.990571556783    -2.172857738095     1.007825032070
+           H         -2.509000000000    -0.990571556783     0.000000000000     1.007825032070
+           O         -0.000000000000     4.009428443217     0.000000000000    15.994914619560
+           H          0.494974746831     4.359428443217    -0.857321409974     1.007825032070
+           H          0.494974746831     4.359428443217     0.857321409974     1.007825032070
+           H         -0.989949493661     4.359428443217     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
-  Nuclear repulsion =  258.850941286554473
+  Rotational constants: A =      0.09043  B =      0.03480  C =      0.03480 [cm^-1]
+  Rotational constants: A =   2711.05134  B =   1043.36125  C =   1043.36125 [MHz]
+  Nuclear repulsion =  258.850941286540149
 
   Charge       = 1
   Multiplicity = 1
@@ -621,9 +639,9 @@ Setting geometry variable R to 5.000000
   Density threshold  = 1.00e-11
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: STO-3G <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: STO-3G
     Number of shells: 30
     Number of basis function: 44
     Number of Cartesian functions: 44
@@ -632,108 +650,118 @@ Setting geometry variable R to 5.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.8500269979E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  Initial RHF energy:  -197.31080727483919
-
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A'        28      28      24      24      24       0
-     A"        16      16      14      14      14       0
+     A'        28      28       0       0       0       0
+     A"        16      16       0       0       0       0
    -------------------------------------------------------
     Total      44      44      26      26      26       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- DFHF: Density-Fitted SCF Algorithms.
-   by Rob Parrish
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
-  ==> Auxiliary Basis: CC-PVDZ-JKFIT <==
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
 
-  Basis Set
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 249
     Number of basis function: 697
     Number of Cartesian functions: 792
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Using Core Algorithm.
+  Minimum eigenvalue in the overlap matrix is 1.8500269979E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                           Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -300.83303978002817   -1.03522e+02   0.00000e+00 
-   @RHF iter   1:  -303.12682155035958   -2.29378e+00   9.25267e-02 
-   @RHF iter   2:  -303.20086599580128   -7.40444e-02   1.10803e-02 
-   @RHF iter   3:  -303.20449728959221   -3.63129e-03   2.17088e-03 
-   @RHF iter   4:  -303.20492206872592   -4.24779e-04   7.32294e-04 
-   @RHF iter   5:  -303.20498610753765   -6.40388e-05   2.98949e-04 DIIS
-   @RHF iter   6:  -303.20499962901084   -1.35215e-05   2.14777e-04 DIIS
-   @RHF iter   7:  -303.20499966771189   -3.87010e-08   9.43868e-06 DIIS
-   @RHF iter   8:  -303.20499967302777   -5.31588e-09   3.05153e-06 DIIS
-   @RHF iter   9:  -303.20499967316454   -1.36765e-10   5.37754e-07 DIIS
-   @RHF iter  10:  -303.20499967316658   -2.04636e-12   6.07904e-08 DIIS
-   @RHF iter  11:  -303.20499967316647    1.13687e-13   9.28545e-09 DIIS
-   @RHF iter  12:  -303.20499967316636    1.13687e-13   3.70978e-09 DIIS
-   @RHF iter  13:  -303.20499967316636    0.00000e+00   3.26441e-09 DIIS
-   @RHF iter  14:  -303.20499967316647   -1.13687e-13   6.58525e-10 DIIS
-   @RHF iter  15:  -303.20499967316636    1.13687e-13   2.04127e-10 DIIS
-   @RHF iter  16:  -303.20499967316658   -2.27374e-13   8.85198e-11 DIIS
-   @RHF iter  17:  -303.20499967316636    2.27374e-13   5.71792e-11 DIIS
-   @RHF iter  18:  -303.20499967316647   -1.13687e-13   3.55448e-11 DIIS
-   @RHF iter  19:  -303.20499967316613    3.41061e-13   4.59885e-11 DIIS
-   @RHF iter  20:  -303.20499967316636   -2.27374e-13   1.99851e-10 DIIS
-   @RHF iter  21:  -303.20499967316636    0.00000e+00   1.18382e-11 DIIS
-   @RHF iter  22:  -303.20499967316658   -2.27374e-13   1.78585e-10 DIIS
-   @RHF iter  23:  -303.20499967316636    2.27374e-13   7.23853e-11 DIIS
-   @RHF iter  24:  -303.20499967316624    1.13687e-13   3.16022e-11 DIIS
-   @RHF iter  25:  -303.20499967316658   -3.41061e-13   1.96510e-11 DIIS
-   @RHF iter  26:  -303.20499967316647    1.13687e-13   1.52036e-11 DIIS
-   @RHF iter  27:  -303.20499967316681   -3.41061e-13   1.23546e-11 DIIS
-   @RHF iter  28:  -303.20499967316658    2.27374e-13   1.30466e-11 DIIS
-   @RHF iter  29:  -303.20499967316658    0.00000e+00   1.19994e-11 DIIS
-   @RHF iter  30:  -303.20499967316636    2.27374e-13   1.22874e-11 DIIS
+   @DF-RHF iter   0:  -300.83303977987106   -3.00833e+02   1.19828e-01 
+   @DF-RHF iter   1:  -303.12692818669569   -2.29389e+00   9.49510e-03 
+   @DF-RHF iter   2:  -303.20085917647333   -7.39310e-02   1.89537e-03 
+   @DF-RHF iter   3:  -303.20449744457682   -3.63827e-03   6.00573e-04 
+   @DF-RHF iter   4:  -303.20492213262077   -4.24688e-04   2.17274e-04 
+   @DF-RHF iter   5:  -303.20498611526563   -6.39826e-05   8.88357e-05 DIIS
+   @DF-RHF iter   6:  -303.20499963234630   -1.35171e-05   6.10472e-06 DIIS
+   @DF-RHF iter   7:  -303.20499966792062   -3.55743e-08   2.27266e-06 DIIS
+   @DF-RHF iter   8:  -303.20499967286440   -4.94379e-09   3.19191e-07 DIIS
+   @DF-RHF iter   9:  -303.20499967299787   -1.33468e-10   3.89754e-08 DIIS
+   @DF-RHF iter  10:  -303.20499967299969   -1.81899e-12   8.20479e-09 DIIS
+   @DF-RHF iter  11:  -303.20499967299969    0.00000e+00   2.90175e-09 DIIS
+   @DF-RHF iter  12:  -303.20499967299946    2.27374e-13   1.15598e-09 DIIS
+   @DF-RHF iter  13:  -303.20499967299980   -3.41061e-13   3.34821e-10 DIIS
+   @DF-RHF iter  14:  -303.20499967299969    1.13687e-13   7.96092e-11 DIIS
+   @DF-RHF iter  15:  -303.20499967299969    0.00000e+00   2.17381e-11 DIIS
+   @DF-RHF iter  16:  -303.20499967299969    0.00000e+00   6.72183e-12 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A'   -20.842792     1A"   -11.116006     2A'   -11.116006  
-	   3A'   -11.115938     2A"   -11.115777     4A'   -11.115777  
-	   5A'   -11.115691     6A'    -1.738008     7A'    -1.160812  
-	   8A'    -1.042766     3A"    -1.042766     4A"    -1.032314  
-	   9A'    -1.032314    10A'    -0.890551     5A"    -0.848420  
-	  11A'    -0.848420    12A'    -0.738806    13A'    -0.684785  
-	   6A"    -0.628139     7A"    -0.615618    14A'    -0.615618  
-	  15A'    -0.530248    16A'    -0.517440     8A"    -0.517440  
-	   9A"    -0.360022    17A'    -0.360022  
+       1Ap   -20.842792     2Ap   -11.116006     1App  -11.116006  
+       3Ap   -11.115938     2App  -11.115777     4Ap   -11.115777  
+       5Ap   -11.115691     6Ap    -1.738008     7Ap    -1.160812  
+       8Ap    -1.042766     3App   -1.042766     4App   -1.032314  
+       9Ap    -1.032314    10Ap    -0.890551    11Ap    -0.848420  
+       5App   -0.848420    12Ap    -0.738806    13Ap    -0.684785  
+       6App   -0.628139    14Ap    -0.615618     7App   -0.615618  
+      15Ap    -0.530248    16Ap    -0.517440     8App   -0.517440  
+      17Ap    -0.360022     9App   -0.360022  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	  18A'     0.050251    10A"     0.173305    19A'     0.173305  
-	  20A'     0.207824    11A"     0.207824    21A'     0.397550  
-	  22A'     0.495914    12A"     0.561009    23A'     0.561009  
-	  24A'     0.609503    13A"     0.619013    25A'     0.619013  
-	  26A'     0.780123    14A"     0.780123    15A"     0.782444  
-	  27A'     0.782444    16A"     0.958966    28A'     1.022689  
+      18Ap     0.050251    19Ap     0.173305    10App    0.173305  
+      20Ap     0.207824    11App    0.207824    21Ap     0.397550  
+      22Ap     0.495914    23Ap     0.561009    12App    0.561009  
+      24Ap     0.609503    25Ap     0.619013    13App    0.619013  
+      14App    0.780123    26Ap     0.780123    27Ap     0.782444  
+      15App    0.782444    16App    0.958966    28Ap     1.022689  
 
-	Final Occupation by Irrep:
-	         A'    A" 
-	DOCC [    17,    9 ]
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [    17,    9 ]
 
   Energy converged.
 
-  @RHF Final Energy:  -303.20499967316636
+  @DF-RHF Final Energy:  -303.20499967299969
 
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            258.8509412865401487
+    One-Electron Energy =                -918.6268932962468625
+    Two-Electron Energy =                 356.5709523367070801
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -303.2049996729996906
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     6.7080      Z:     0.0000
 
@@ -749,15 +777,21 @@ Setting geometry variable R to 5.000000
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:04 2012
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:52 2016
 Module time:
-	user time   =       5.08 seconds =       0.08 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      10.02 seconds =       0.17 minutes
-	system time =       0.41 seconds =       0.01 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the BZH3O+ SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     6.7080      Z:     0.0000
 
@@ -772,15 +806,19 @@ Total time:
 
   Quadrupole Moment: (Debye Ang)
     XX:   -33.3919     YY:    57.3954     ZZ:   -33.3919
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:   -30.2624     YY:    60.5249     ZZ:   -30.2624
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
 
+	Nuclear repulsion energy 2........................................PASSED
+	Reference energy 2................................................PASSED
+	Y Component of Dipole 2...........................................PASSED
+	YY Component of Quadrupole 2......................................PASSED
 
-*** tstart() called on QuickSilver.local
-*** at Mon Jan 23 14:39:04 2012
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:18:52 2016
 
 
          ---------------------------------------------------------
@@ -793,26 +831,22 @@ Total time:
   ==> Geometry <==
 
     Molecular point group: cs
+    Full point group: C3v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.055641739363     0.000000000000
-           H          0.494974746831     0.294358260637    -0.857321409974
-           H          0.494974746831     0.294358260637     0.857321409974
-           H         -0.989949493661     0.294358260637     0.000000000000
-
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 2 
-       unique atom 2: 3 
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -0.000000000000    -0.055641739363     0.000000000000    15.994914619560
+           H          0.494974746831     0.294358260637    -0.857321409974     1.007825032070
+           H          0.494974746831     0.294358260637     0.857321409974     1.007825032070
+           H         -0.989949493661     0.294358260637     0.000000000000     1.007825032070
 
   Running in cs symmetry.
 
-  Nuclear repulsion =   13.021346299596999
+  Rotational constants: A =      9.40193  B =      9.40193  C =      5.68937 [cm^-1]
+  Rotational constants: A = 281862.63756  B = 281862.63756  C = 170562.96011 [MHz]
+  Nuclear repulsion =   13.021346299596811
 
   Charge       = 1
   Multiplicity = 1
@@ -831,9 +865,9 @@ Total time:
   Density threshold  = 1.00e-11
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: STO-3G <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -842,132 +876,156 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  Initial RHF energy:   -46.05816007732729
-
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A'         6       6       6       6       6       0
-     A"         2       2       2       2       2       0
+     A'         6       6       0       0       0       0
+     A"         2       2       0       0       0       0
    -------------------------------------------------------
     Total       8       8       5       5       5       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- DFHF: Density-Fitted SCF Algorithms.
-   by Rob Parrish
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
-  ==> Auxiliary Basis: CC-PVDZ-JKFIT <==
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
 
-  Basis Set
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 51
     Number of basis function: 139
     Number of Cartesian functions: 156
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Using Core Algorithm.
+  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                           Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -70.65811387347090   -2.46000e+01   0.00000e+00 
-   @RHF iter   1:   -75.16752797101260   -4.50941e+00   1.65170e-01 
-   @RHF iter   2:   -75.31067054636985   -1.43143e-01   7.77444e-02 
-   @RHF iter   3:   -75.31968276252289   -9.01222e-03   1.91537e-02 
-   @RHF iter   4:   -75.32034271924381   -6.59957e-04   4.96135e-03 
-   @RHF iter   5:   -75.32039895241533   -5.62332e-05   1.51183e-03 DIIS
-   @RHF iter   6:   -75.32040648663701   -7.53422e-06   7.33496e-04 DIIS
-   @RHF iter   7:   -75.32040649131237   -4.67536e-09   1.37798e-05 DIIS
-   @RHF iter   8:   -75.32040649154250   -2.30131e-10   4.25985e-06 DIIS
-   @RHF iter   9:   -75.32040649154511   -2.61480e-12   3.71760e-07 DIIS
-   @RHF iter  10:   -75.32040649154513   -1.42109e-14   4.87878e-08 DIIS
-   @RHF iter  11:   -75.32040649154519   -5.68434e-14   1.18418e-08 DIIS
-   @RHF iter  12:   -75.32040649154519    0.00000e+00   8.55350e-10 DIIS
-   @RHF iter  13:   -75.32040649154514    4.26326e-14   2.43006e-10 DIIS
-   @RHF iter  14:   -75.32040649154510    4.26326e-14   4.91323e-10 DIIS
-   @RHF iter  15:   -75.32040649154516   -5.68434e-14   5.50390e-11 DIIS
-   @RHF iter  16:   -75.32040649154517   -1.42109e-14   2.49416e-11 DIIS
-   @RHF iter  17:   -75.32040649154514    2.84217e-14   1.90421e-11 DIIS
-   @RHF iter  18:   -75.32040649154511    2.84217e-14   2.35225e-11 DIIS
-   @RHF iter  19:   -75.32040649154516   -4.26326e-14   1.19806e-11 DIIS
-   @RHF iter  20:   -75.32040649154513    2.84217e-14   1.01807e-10 DIIS
-   @RHF iter  21:   -75.32040649154516   -2.84217e-14   6.44328e-11 DIIS
-   @RHF iter  22:   -75.32040649154516    0.00000e+00   2.79640e-11 DIIS
-   @RHF iter  23:   -75.32040649154514    1.42109e-14   2.45322e-11 DIIS
+   @DF-RHF iter   0:   -70.65811387347151   -7.06581e+01   2.37958e-01 
+   @DF-RHF iter   1:   -75.16756673231731   -4.50945e+00   7.30718e-02 
+   @DF-RHF iter   2:   -75.31066576986537   -1.43099e-01   1.98761e-02 
+   @DF-RHF iter   3:   -75.31968220113602   -9.01643e-03   5.02784e-03 
+   @DF-RHF iter   4:   -75.32034262627208   -6.60425e-04   1.34866e-03 
+   @DF-RHF iter   5:   -75.32039893468647   -5.63084e-05   4.16236e-04 DIIS
+   @DF-RHF iter   6:   -75.32040648679443   -7.55211e-06   1.03344e-05 DIIS
+   @DF-RHF iter   7:   -75.32040649130802   -4.51359e-09   2.04057e-06 DIIS
+   @DF-RHF iter   8:   -75.32040649154311   -2.35090e-10   2.26200e-07 DIIS
+   @DF-RHF iter   9:   -75.32040649154551   -2.40163e-12   2.78653e-08 DIIS
+   @DF-RHF iter  10:   -75.32040649154565   -1.42109e-13   5.48089e-09 DIIS
+   @DF-RHF iter  11:   -75.32040649154558    7.10543e-14   7.01667e-10 DIIS
+   @DF-RHF iter  12:   -75.32040649154550    8.52651e-14   4.27481e-11 DIIS
+   @DF-RHF iter  13:   -75.32040649154557   -7.10543e-14   4.37410e-13 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A'   -20.845305     2A'    -1.740778     3A'    -1.045562  
-	   1A"    -1.045562     4A'    -0.893667  
+       1Ap   -20.845305     2Ap    -1.740778     1App   -1.045562  
+       3Ap    -1.045562     4Ap    -0.893667  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   5A'     0.047800     6A'     0.205207     2A"     0.205207  
+       5Ap     0.047800     2App    0.205207     6Ap     0.205207  
 
-	Final Occupation by Irrep:
-	         A'    A" 
-	DOCC [     4,    1 ]
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -75.32040649154514
+  @DF-RHF Final Energy:   -75.32040649154557
 
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             13.0213462995968108
+    One-Electron Energy =                -125.5417597070653244
+    Two-Electron Energy =                  37.2000069159229483
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -75.3204064915455547
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8276      Z:     0.0000
+     X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0683      Z:     0.0000
+     X:     0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:05 2012
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:52 2016
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      10.16 seconds =       0.17 minutes
-	system time =       0.42 seconds =       0.01 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       1.87 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the H3O+ SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8276      Z:     0.0000
+     X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0683      Z:     0.0000
+     X:     0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
   Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
+	Nuclear repulsion energy 3........................................PASSED
+	Reference energy 3................................................PASSED
+	Y Component of Dipole 3...........................................PASSED
+	YY Component of Quadrupole 3......................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!
