@@ -58,7 +58,7 @@ void PKJK::integrals_reorder() {
     outfile->Printf(" Computing reordered integrals for PK\n\n");
     int max_buckets = Process::environment.options.get_int("MAX_BUCKETS");
 
-    PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_));
+    PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_,cutoff_));
 
     // Get an AO integral factory
     boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
@@ -79,6 +79,17 @@ void PKJK::integrals_reorder() {
     // and taking care of writing to disk.
     PKmanager_->allocate_buffers();
 
+    // Print out some useful information
+    outfile->Printf( "   Calculation information:\n");
+    outfile->Printf( "      Number of atoms:                %4d\n", primary_->molecule()->natom());
+    outfile->Printf( "      Number of AO shells:            %4d\n", primary_->nshell());
+    outfile->Printf( "      Number of primitives:           %4d\n", primary_->nprimitive());
+    outfile->Printf( "      Number of atomic orbitals:      %4d\n", primary_->nao());
+    outfile->Printf( "      Number of basis functions:      %4d\n\n", primary_->nbf());
+    outfile->Printf( "      Integral cutoff                 %4.2e\n", cutoff_);
+    outfile->Printf( "      Number of threads:              %4d\n", nthreads_);
+    outfile->Printf( "\n");
+
     // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
     // threads, then write it asynchronously to disk while filling the next buffer.
     //
@@ -90,10 +101,12 @@ void PKJK::integrals_reorder() {
     PKmanager_->open_files(false);
     size_t task_size = 0;
     for (int buf = 0; buf < PKmanager_->buf_ntasks(); ++ buf) {
-        timer_on("Actual integral computation");
+        timer_on("Task sizing");
         // Here we need a vector of tasks to distribute over threads
         task_size = PKmanager_->task_quartets();
         outfile->Printf("The task size is %12zu\n",task_size);
+        timer_off("Task sizing");
+        timer_on("Actual integral computation");
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
         for(size_t task = 0; task < task_size; ++task ) {
             int thread = 0;
