@@ -301,7 +301,7 @@ void ijklBasisIterator::next() {
 
 
 PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
-                           int max_batches, size_t memory) {
+                           int max_batches, size_t memory, double cutoff) {
     primary_ = primary;
     nbf_ = primary_->nbf();
     max_batches_ = max_batches;
@@ -318,6 +318,7 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     J_buf_[1] = NULL;
     K_buf_[0] = NULL;
     K_buf_[1] = NULL;
+    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff));
 
     nbuffers_ = 0;
 
@@ -510,6 +511,7 @@ size_t PK_integrals::task_quartets() {
         int Q = shelliter.q();
         int R = shelliter.r();
         int S = shelliter.s();
+        if (!sieve_->shell_significant(P,Q,R,S)) continue;
         // Get the lowest basis function indices in the shells
 
         size_t lowi = primary_->shell_to_basis_function(P);

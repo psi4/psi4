@@ -25,6 +25,7 @@
 
 #include <libiwl/iwl.hpp>
 #include <libmints/typedefs.h>
+#include <libmints/sieve.h>
 #include <libpsio/aiohandler.h>
 
 namespace psi {
@@ -224,6 +225,8 @@ private:
     // to the AIOHandler
     std::vector<char*> label_J_[2];
     std::vector<char*> label_K_[2];
+    // Sieving object for increased efficiency
+    boost::shared_ptr<ERISieve> sieve_;
 
     int itap_J_;    // File number for J supermatrix
     int itap_K_;    // File number for K supermatrix
@@ -239,7 +242,7 @@ private:
 public:
     // Constructor
     PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
-                 int max_batches_, size_t memory);
+                 int max_batches_, size_t memory, double cutoff);
 
     // Destructor
     ~PK_integrals();
