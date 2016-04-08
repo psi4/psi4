@@ -434,8 +434,8 @@ def run_g3mp2(name, **kwargs):
 
     if nAtoms > 1:
         psi4.set_global_option('BASIS', '6-31G(D)')
-        opt_e, opt_wfn = optimize('scf', return_wfn=True, molecule=g3mp2_mol)
-        g3mp2_mol = opt_wfn.molecule()
+        opt_e = optimize('scf', molecule=g3mp2_mol)
+        g3mp2_mol = psi4.get_active_molecule()
         psi4.clean()
 
     else:
