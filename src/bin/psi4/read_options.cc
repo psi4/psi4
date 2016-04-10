@@ -807,24 +807,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
     /*- Whether or not to perform exchange scaling for SAPT exchange components.
-     * Default is false, i.e. no scaling. If set to true, performs scaling with
-     * Exch10 / Exch10(S^2). If set to a value \alpha, performs scaling with
-     * (Exch10 / Exch10(S^2))^{\alpha}.
-     */
+    Default is false, i.e. no scaling. If set to true, performs scaling with
+    $Exch10 / Exch10(S^2)$. If set to a value $\alpha$, performs scaling with
+    $(Exch10 / Exch10(S^2))^{\alpha}$. -*/
     options.add_str("EXCH_SCALE_ALPHA", "FALSE", "");
-    /* For SAPT0 only, compute only first-order electrostatics and exchange.
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only first-order electrostatics and exchange.
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E10",false);
-    /* For SAPT0 only, compute only second-order induction
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only second-order induction
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E20IND",false);
-    /* For SAPT0 only, compute only second-order induction
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only second-order induction
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E20DISP",false);
-
 
     /*- Convergence criterion for energy (change) in the SAPT
     $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
