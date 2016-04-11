@@ -33,7 +33,11 @@
 #include <vector>
 
 
-namespace psi{ namespace psimrcc{
+namespace psi{
+
+class IntegralTransform;
+
+namespace psimrcc{
 
 class CCMatrix;
 
@@ -78,7 +82,7 @@ private:
   void   dump_integrals_to_disk(MatrixBlks& to_be_processed);
 
   // MRPT2 algorithm
-  void   build_integrals_mrpt2();
+  void   build_integrals_mrpt2(IntegralTransform *ints);
   void   frozen_core_energy_mrpt2();
   void   allocate_and_sort_integrals_mrpt2();
   void   allocate_amplitudes_mrpt2();

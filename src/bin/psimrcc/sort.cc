@@ -44,55 +44,77 @@
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
-    extern MOInfo *moinfo;
-    extern MemoryManager* memory_manager;
+extern MOInfo *moinfo;
+extern MemoryManager* memory_manager;
 
 using namespace std;
 
 CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
-  fraction_of_memory_for_sorting(0.5),nfzc(0),efzc(0.0),frozen_core(0)
+    fraction_of_memory_for_sorting(0.5),nfzc(0),efzc(0.0),frozen_core(0)
 {
+    init();
 
-  // Use libtrans to generate MO basis integrals in Pitzer order
-  std::vector<boost::shared_ptr<MOSpace> > spaces;
-  spaces.push_back(MOSpace::all);
-  IntegralTransform *ints = new IntegralTransform(ref_wfn, spaces,
-                                                  IntegralTransform::Restricted,
-                                                  IntegralTransform::IWLOnly,
-                                                  IntegralTransform::PitzerOrder,
-                                                  IntegralTransform::None);
-  ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
-  delete ints;
-  init();
+    IntegralTransform *ints;
+    // Use libtrans to generate MO basis integrals in Pitzer order
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::all);
+    if(algorithm == mrpt2_sort){
+        // For MRPT2 calculations we need integrals of the form (OO|VV) and (OA|OA), where
+        // O represents occ+act, V represents act+vir and A is all orbitals.
+        boost::shared_ptr<MOSpace> aocc;
+        boost::shared_ptr<MOSpace> avir;
+        int nirrep = ref_wfn->nirrep();
+        std::vector<int> aocc_orbs;
+        std::vector<int> avir_orbs;
+        std::vector<int> actv = moinfo->get_actv();
+        std::vector<int> mopi = moinfo->get_mopi();
+        std::vector<int> occ  = moinfo->get_occ();
+        int offset = 0;
+        for(int h = 0; h < nirrep; ++h){
+            for(int i = 0; i < occ[h] + actv[h]; ++i)
+                aocc_orbs.push_back(i + offset);
+            for(int a = occ[h]; a < mopi[h]; ++a)
+                avir_orbs.push_back(a + offset);
+            offset += mopi[h];
+        }
+        aocc = boost::shared_ptr<MOSpace>(new MOSpace('M', aocc_orbs, aocc_orbs));
+        avir = boost::shared_ptr<MOSpace>(new MOSpace('E', avir_orbs, avir_orbs));
+        spaces.push_back(aocc);
+        spaces.push_back(avir);
+        ints = new IntegralTransform(ref_wfn, spaces,
+                                     IntegralTransform::Restricted,
+                                     IntegralTransform::DPDOnly,
+                                     IntegralTransform::PitzerOrder,
+                                     IntegralTransform::None);
+        ints->set_keep_dpd_so_ints(true);
+        // Only transform the subclasses needed for MRPT2
+        ints->transform_tei(aocc, MOSpace::all, aocc, MOSpace::all);
+        ints->set_keep_dpd_so_ints(false);
+        ints->transform_tei(aocc, aocc, avir, avir);
+        build_integrals_mrpt2(ints);
+    }else{
+        ints = new IntegralTransform(ref_wfn, spaces,
+                                     IntegralTransform::Restricted,
+                                     IntegralTransform::IWLOnly,
+                                     IntegralTransform::PitzerOrder,
+                                     IntegralTransform::None);
+        ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+        // Presort the integrals in the CCTransform class
+        trans->presort_integrals();
+        // Out-of-core algorithm: the transformed integrals and the CCMatrix(s) don't fit in
+        // core or they are requested to be out-of-core
+        build_integrals_out_of_core();
+    }
 
-  // Presort the integrals in the CCTransform class
-  trans->presort_integrals();
+    moinfo->set_fzcore_energy(efzc);
+    outfile->Printf("\n\n    Frozen-core energy                     = %20.9f",efzc);
+    delete ints;
 
-
-  // Two algorithms for forming the integrals
-
-  // 1. Full in-core algorithm: the transformed integrals and CCMatrix object fit in core
-  //   build_integrals_in_core();
-
-  // 2. Out-of-core algorithm: the transformed integrals and the CCMatrix(s) don't fit in
-  //    core or they are requested to be out-of-core
-  switch (algorithm) {
-    case out_of_core_sort :
-      build_integrals_out_of_core();
-      break;
-    case mrpt2_sort :
-      build_integrals_mrpt2();
-      break;
-  }
-
-  moinfo->set_fzcore_energy(efzc);
-  outfile->Printf("\n\n    Frozen-core energy                     = %20.9f",efzc);
-  
 }
 
 CCSort::~CCSort()
 {
-  cleanup();
+    cleanup();
 }
 
 /**
@@ -100,18 +122,18 @@ CCSort::~CCSort()
  */
 void CCSort::init()
 {
-  // Find the frozen core orbitals in Pitzer ordering
-  nfzc        = moinfo->get_nfocc();
-  intvec focc = moinfo->get_focc();
-  intvec mopi = moinfo->get_mopi();
-  allocate1(int,frozen_core,nfzc);
-  int count1  = 0;
-  int count2  = 0;
-  for(int h = 0; h < moinfo->get_nirreps(); ++h){
-    for(int i = 0; i < focc[h]; ++i)
-      frozen_core[count1++] = count2 + i;
-    count2 += mopi[h];
-  }
+    // Find the frozen core orbitals in Pitzer ordering
+    nfzc        = moinfo->get_nfocc();
+    intvec focc = moinfo->get_focc();
+    intvec mopi = moinfo->get_mopi();
+    allocate1(int,frozen_core,nfzc);
+    int count1  = 0;
+    int count2  = 0;
+    for(int h = 0; h < moinfo->get_nirreps(); ++h){
+        for(int i = 0; i < focc[h]; ++i)
+            frozen_core[count1++] = count2 + i;
+        count2 += mopi[h];
+    }
 }
 
 /**
@@ -119,7 +141,7 @@ void CCSort::init()
  */
 void CCSort::cleanup()
 {
-  release1(frozen_core);
+    release1(frozen_core);
 }
 
 }} /* End Namespaces */
