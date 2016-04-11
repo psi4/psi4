@@ -625,36 +625,39 @@ def n_body(name, **kwargs):
 
     if bsse == 'on' or bsse == 'both':
         psi4.print_out('     => Full Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         for n in Ns:
             for k in range(len(energies_full[n])):
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k],
-                   p4const.psi_hartree2kcalmol * energies_full[n][k]))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k],
+                   p4const.psi_hartree2kcalmol * energies_full[n][k],
+                   p4const.psi_hartree2kJmol * energies_full[n][k]))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
         psi4.print_out('     => Cluster Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         for n in Ns:
             for k in range(len(energies_mon[n])):
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_mon[n][k],
-                   p4const.psi_hartree2kcalmol * energies_mon[n][k]))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, energies_mon[n][k],
+                   p4const.psi_hartree2kcalmol * energies_mon[n][k],
+                   p4const.psi_hartree2kJmol * energies_mon[n][k]))
         psi4.print_out('\n')
 
     if bsse == 'both':
         psi4.print_out('     => BSSE Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "Delta E [Eh]", "Delta E [kcal/mol]", "Delta E [kJ/mol]"))
         for n in Ns:
             for k in range(len(energies_mon[n])):
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k] - energies_mon[n][k],
-                   p4const.psi_hartree2kcalmol * (energies_full[n][k] - energies_mon[n][k])))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k] - energies_mon[n][k],
+                   p4const.psi_hartree2kcalmol * (energies_full[n][k] - energies_mon[n][k]),
+                   p4const.psi_hartree2kJmol * (energies_full[n][k] - energies_mon[n][k])))
         psi4.print_out('\n')
 
     psi4.print_out('    ==> N-Body Interaction Energy Analysis: N-Body Energies <==\n\n')
 
     if bsse == 'on' or bsse == 'both':
         psi4.print_out('     => Full Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         energies_n_full = {}
         for n in Ns:
             if n == 1:
@@ -664,7 +667,9 @@ def n_body(name, **kwargs):
                 E = energies_full[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, E, 
+                    p4const.psi_hartree2kcalmol * E,
+                    p4const.psi_hartree2kJmol * E))
                 En += E
             energies_n_full[n] = En
         for n in Ns:
@@ -673,13 +678,14 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_full[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_full[n],
-               p4const.psi_hartree2kcalmol * energies_n_full[n]))
+            psi4.print_out('     %6d %6s %24.16E %24.16E %24.16E\n' % (n, 'Total', energies_n_full[n],
+               p4const.psi_hartree2kcalmol * energies_n_full[n],
+               p4const.psi_hartree2kJmol * energies_n_full[n]))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
         psi4.print_out('     => Cluster Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         energies_n_mon = {}
         for n in Ns:
             if n == 1:
@@ -689,7 +695,9 @@ def n_body(name, **kwargs):
                 E = energies_mon[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_mon[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, E,
+                    p4const.psi_hartree2kcalmol * E,
+                    p4const.psi_hartree2kJmol * E))
                 En += E
             energies_n_mon[n] = En
         for n in Ns:
@@ -698,13 +706,14 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_mon[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_mon[n],
-               p4const.psi_hartree2kcalmol * energies_n_mon[n]))
+            psi4.print_out('     %6d %6s %24.16E %24.16E %24.16E\n' % (n, 'Total', energies_n_mon[n],
+               p4const.psi_hartree2kcalmol * energies_n_mon[n],
+               p4const.psi_hartree2kJmol * energies_n_mon[n]))
         psi4.print_out('\n')
 
     if bsse == 'both':
         psi4.print_out('     => BSSE Results <=\n\n')
-        psi4.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        psi4.print_out('     %6s %6s %24s %24s %24s\n' % ("N-Body", "Combo", "Delta E [Eh]", "Delta E [kcal/mol]", "Delta E [kJ/mol]"))
         energies_n_bsse = {}
         for n in Ns:
             if n == 1:
@@ -715,7 +724,9 @@ def n_body(name, **kwargs):
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l] - 1]
                     E += energies_mon[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E %24.16E\n' % (n, k + 1, E,
+                    p4const.psi_hartree2kcalmol * E,
+                    p4const.psi_hartree2kJmol * E))
                 En += E
             energies_n_bsse[n] = En
         for n in Ns:
@@ -724,8 +735,9 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_bsse[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_bsse[n],
-               p4const.psi_hartree2kcalmol * energies_n_bsse[n]))
+            psi4.print_out('     %6d %6s %24.16E %24.16E %24.16E\n' % (n, 'Total', energies_n_bsse[n],
+               p4const.psi_hartree2kcalmol * energies_n_bsse[n],
+               p4const.psi_hartree2kJmol * energies_n_bsse[n]))
         psi4.print_out('\n')
 
     psi4.print_out('    ==> N-Body Interaction Energy Analysis: Non-Additivities <==\n\n')
@@ -733,37 +745,43 @@ def n_body(name, **kwargs):
     if bsse == 'on' or bsse == 'both':
         energies_n_full[1] = 0.0
         psi4.print_out('     => Full Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %24s %24s\n' % ("N-Body", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %24s %24s %24s\n' % ("N-Body", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         for k in range(len(Ns)):
             n = Ns[k]
             if n == 1:
                 continue
             E = energies_n_full[Ns[k]] - energies_n_full[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E %24.16E\n' % (n, E,
+                p4const.psi_hartree2kcalmol * E,
+                p4const.psi_hartree2kJmol * E))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
         energies_n_mon[1] = 0.0
         psi4.print_out('     => Cluster Basis Set Results <=\n\n')
-        psi4.print_out('     %6s %24s %24s\n' % ("N-Body", "E [H]", "E [kcal mol^-1]"))
+        psi4.print_out('     %6s %24s %24s %24s\n' % ("N-Body", "E [Eh]", "E [kcal/mol]", "E [kJ/mol]"))
         for k in range(len(Ns)):
             n = Ns[k]
             if n == 1:
                 continue
             E = energies_n_mon[Ns[k]] - energies_n_mon[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E %24.16E\n' % (n, E,
+                p4const.psi_hartree2kcalmol * E,
+                p4const.psi_hartree2kJmol * E))
         psi4.print_out('\n')
 
     if bsse == 'both':
         energies_n_bsse[1] = 0.0
         psi4.print_out('     => BSSE Results <=\n\n')
-        psi4.print_out('     %6s %24s %24s\n' % ("N-Body", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        psi4.print_out('     %6s %24s %24s %24s\n' % ("N-Body", "Delta E [Eh]", "Delta E [kcal/mol]", "Delta E [kJ/mol]"))
         for k in range(len(Ns)):
             n = Ns[k]
             if n == 1:
                 continue
             E = energies_n_bsse[Ns[k]] - energies_n_bsse[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E %24.16E\n' % (n, E,
+                p4const.psi_hartree2kcalmol * E,
+                p4const.psi_hartree2kJmol * E))
         psi4.print_out('\n')
 
     # Put everything back the way it was
@@ -912,7 +930,7 @@ def cp(name, **kwargs):
     psioh.set_specific_retention(97, False)
 
     if not check_bsse:
-        cp_table = p4util.Table(rows=["System:"], cols=["Energy (full):"])
+        cp_table = p4util.Table(rows=["System:"], cols=["Energy (full):"], width=24)
         cp_table["Complex"] = [e_dimer]
         for cluster_n in range(0, len(monomers)):
             key = "Monomer %d" % (cluster_n + 1)
@@ -926,7 +944,7 @@ def cp(name, **kwargs):
         psi4.set_variable('CP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
 
     else:
-        cp_table = Table(rows=["System:"], cols=["Energy (full):", "Energy (monomer):", "BSSE:"])
+        cp_table = Table(rows=["System:"], cols=["Energy (full):", "Energy (monomer):", "BSSE:"], width=24)
         cp_table["Complex"] = [e_dimer, 0.0, 0.0]
         for cluster_n in range(0, len(monomers)):
             key = "Monomer %d" % (cluster_n + 1)
@@ -946,16 +964,24 @@ def cp(name, **kwargs):
     p4util.banner("CP Computation: Results.")
     psi4.print_out("\n")
 
-    p4util.banner("Hartree", 2)
+    p4util.banner("[Eh]", 2)
     psi4.print_out("\n")
 
     psi4.print_out(str(cp_table))
 
     psi4.print_out("\n")
-    p4util.banner("kcal*mol^-1", 2)
+    p4util.banner("[kcal/mol]", 2)
     psi4.print_out("\n")
 
     cp_table.scale()
+
+    psi4.print_out(str(cp_table))
+
+    psi4.print_out("\n")
+    p4util.banner("[kJ/mol]", 2)
+    psi4.print_out("\n")
+
+    cp_table.scale(Factor=p4const.psi_hartree2kJmol/p4const.psi_hartree2kcalmol)
 
     psi4.print_out(str(cp_table))
     return e_full
@@ -996,7 +1022,7 @@ def database(name, db_name, **kwargs):
        * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
-        using the script :source:`lib/scripts/ixyz2database.pl`.
+        using the script :source:`share/scripts/ixyz2database.pl`.
         See :ref:`sec:createDatabase` for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.
@@ -1019,7 +1045,7 @@ def database(name, db_name, **kwargs):
 
         Second argument, usually unlabeled. Indicates the requested database
         name, matching (case insensitive) the name of a python file in
-        ``psi4/lib/databases`` or :envvar:`PYTHONPATH`.  Consult that
+        ``psi4/share/databases`` or :envvar:`PYTHONPATH`.  Consult that
         directory for available databases and literature citations.
 
     :type func: :ref:`function <op_py_function>`
@@ -1303,6 +1329,7 @@ def database(name, db_name, **kwargs):
                 raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
 
     #   Option tabulate- whether tables of variables other than primary energy method are formed
+    # TODO db(func=cbs,tabulate=[non-current-energy])  # broken
     db_tabulate = []
     if 'tabulate' in kwargs:
         db_tabulate = kwargs['tabulate']
@@ -1550,7 +1577,7 @@ def database(name, db_name, **kwargs):
     for rxn in HRXN:
         maxactv.append(len(ACTV[dbse + '-' + str(rxn)]))
     maxrgt = max(maxactv)
-    table_delimit = '-' * (54 + 20 * maxrgt)
+    table_delimit = '-' * (62 + 20 * maxrgt)
     tables = ''
 
     #   find any reactions that are incomplete
@@ -1578,7 +1605,7 @@ def database(name, db_name, **kwargs):
             db_rxn = dbse + '-' + str(rxn)
 
             if FAIL[rxn]:
-                tables += """\n%23s   %8s %8s   %8s""" % (db_rxn, '', '****', '')
+                tables += """\n%23s   %8s %8s %8s %8s""" % (db_rxn, '', '****', '', '')
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -1587,7 +1614,7 @@ def database(name, db_name, **kwargs):
                 for i in range(len(ACTV[db_rxn])):
                     VRXN[db_rxn][envv] += VRGT[ACTV[db_rxn][i]][envv] * RXNM[db_rxn][ACTV[db_rxn][i]]
 
-                tables += """\n%23s        %16.8f       """ % (db_rxn, VRXN[db_rxn][envv])
+                tables += """\n%23s        %16.8f                  """ % (db_rxn, VRXN[db_rxn][envv])
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
         tables += """\n   %s\n""" % (table_delimit)
@@ -1606,7 +1633,7 @@ def database(name, db_name, **kwargs):
         db_rxn = dbse + '-' + str(rxn)
 
         if FAIL[rxn]:
-            tables += """\n%23s   %8.4f %8s   %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+            tables += """\n%23s   %8.4f %8s %10s %10s""" % (db_rxn, BIND[db_rxn], '****', '****', '****')
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -1616,7 +1643,8 @@ def database(name, db_name, **kwargs):
                 ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
             error = p4const.psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
 
-            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], p4const.psi_hartree2kcalmol * ERXN[db_rxn], error)
+            tables += """\n%23s   %8.4f %8.4f %10.4f %10.4f""" % (db_rxn, BIND[db_rxn], p4const.psi_hartree2kcalmol * ERXN[db_rxn],
+                error, error * p4const.psi_cal2J)
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -1636,11 +1664,11 @@ def database(name, db_name, **kwargs):
         MADerror /= float(count_rxn)
         RMSDerror = math.sqrt(RMSDerror / float(count_rxn))
 
-        tables += """%23s   %19s %8.4f\n""" % ('Minimal Dev', '', minDerror)
-        tables += """%23s   %19s %8.4f\n""" % ('Maximal Dev', '', maxDerror)
-        tables += """%23s   %19s %8.4f\n""" % ('Mean Signed Dev', '', MSDerror)
-        tables += """%23s   %19s %8.4f\n""" % ('Mean Absolute Dev', '', MADerror)
-        tables += """%23s   %19s %8.4f\n""" % ('RMS Dev', '', RMSDerror)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Minimal Dev', '', minDerror, minDerror * p4const.psi_cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Maximal Dev', '', maxDerror, maxDerror * p4const.psi_cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Signed Dev', '', MSDerror, MSDerror * p4const.psi_cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Absolute Dev', '', MADerror, MADerror * p4const.psi_cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('RMS Dev', '', RMSDerror, RMSDerror * p4const.psi_cal2J)
         tables += """   %s\n""" % (table_delimit)
 
         psi4.set_variable('%s DATABASE MEAN SIGNED DEVIATION' % (db_name), MSDerror)
@@ -1673,18 +1701,18 @@ def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     tbl_str = ''
     tbl_str += """   %s""" % (tbl_delimit)
     if ttype == 1:
-        tbl_str += """\n%23s %19s   %8s""" % ('Reaction', 'Reaction Energy', 'Error')
+        tbl_str += """\n%23s %19s %21s""" % ('Reaction', 'Reaction Energy', 'Reaction Error')
     elif ttype == 2:
-        tbl_str += """\n%23s     %19s %6s""" % ('Reaction', 'Reaction Value', '')
+        tbl_str += """\n%23s     %19s %17s""" % ('Reaction', 'Reaction Value', '')
     for i in range(tbl_maxrgt):
         tbl_str += """%20s""" % ('Reagent ' + str(i + 1))
     if ttype == 1:
-        tbl_str += """\n%23s   %8s %8s %8s""" % ('', 'Ref', 'Calc', '[kcal/mol]')
+        tbl_str += """\n%23s   %8s %8s %10s %10s""" % ('', 'Ref', 'Calc', '[kcal/mol]', '[kJ/mol]')
     elif ttype == 2:
-        tbl_str += """\n%54s""" % ('')
+        tbl_str += """\n%65s""" % ('')
     for i in range(tbl_maxrgt):
         if ttype == 1:
-            tbl_str += """%20s""" % ('[H] Wt')
+            tbl_str += """%20s""" % ('[Eh] Wt')
         elif ttype == 2:
             tbl_str += """%20s""" % ('Value Wt')
     tbl_str += """\n   %s""" % (tbl_delimit)
@@ -2474,7 +2502,7 @@ def complete_basis_set(name, **kwargs):
     tables = ''
     tables += """\n   ==> %s <==\n\n""" % ('Components')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [H]', 'Variable')
+    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]', 'Variable')
     tables += table_delimit
     for job in JOBS_EXT:
         star = ''
@@ -2487,7 +2515,7 @@ def complete_basis_set(name, **kwargs):
 
     tables += """\n   ==> %s <==\n\n""" % ('Stages')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [H]', 'Scheme')
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]', 'Scheme')
     tables += table_delimit
     for stage in GRAND_NEED:
         tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'],
@@ -2496,7 +2524,7 @@ def complete_basis_set(name, **kwargs):
 
     tables += """\n   ==> %s <==\n\n""" % ('CBS')
     tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [H]', 'Scheme')
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
     tables += table_delimit
     if do_scf:
         tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'],

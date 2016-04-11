@@ -102,7 +102,9 @@ foreach my $Module (@PSIMODULES) {
     #     Assign stray variables as for OEPROP below
     my @RelevantDirs = ($SrcFolder . "/bin/" . lc($Module), $SrcFolder . "/lib/lib" . lc($Module) . "_solver");
     if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "/lib/libmints"); }
+    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "/lib/libgdma"); }
     my @EnvVariables = ();
+    my @EnvArrays = ();
     printf TEXOUT "\n\\subsection{%s}\n",$Module;
     # Search each line in each file in each module-relevant directory for environment variables
     foreach my $Dir (@RelevantDirs) {
@@ -117,6 +119,12 @@ foreach my $Module (@PSIMODULES) {
                                 push(@EnvVariables, $ltemp[1]);
                             }
                         }
+                        if ($line =~ /\QProcess::environment.arrays\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\QProcess::environment.arrays\E/) {
+                                push(@EnvArrays, $ltemp[1]);
+                            }
+                        }
                     }
                     close(CODE);
                 }
@@ -128,6 +136,9 @@ foreach my $Module (@PSIMODULES) {
     my %EnvHash;
     foreach my $EnvVar (@EnvVariables){
          $EnvHash{$EnvVar} = 1 if $EnvVar;
+    }
+    foreach my $EnvVar (@EnvArrays){
+         $EnvHash{$EnvVar} = 2 if $EnvVar;
     }
     if (scalar keys %EnvHash > 0) {
        print VOUT "   autodir_psivariables/module__" . lc($Module) . "\n";
@@ -144,7 +155,11 @@ foreach my $Module (@PSIMODULES) {
            print TEXOUT "\\end{tabular*}\n";
            my $squashedVar = $Var;
            $squashedVar =~ s/ //g;
-           printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+           if ($EnvHash{$Var} == 2) {
+               printf VVOUT "   * :psivar:`%s <%s>` (array)\n\n", $Var, $squashedVar;
+           } else {
+               printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+           }
        }
        print VVOUT "\n";
        close VVOUT;
