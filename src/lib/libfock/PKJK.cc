@@ -570,7 +570,6 @@ void PKJK::preiterations()
 void PKJK::compute_JK()
 {
     if (algo_ == "REORDER") {
-        // We are using AO integrals and two files, one for J and one for K
         // For now we are not handling asymmetric density matrices
         // Keep files open for asym I/O
         if (PKmanager_->writing()) {
