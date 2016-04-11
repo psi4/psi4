@@ -651,14 +651,14 @@ def build_wb88_x_functional(name):
 
     return fun
 
-def build_wb88_x_functional(name):
-
-    # Call this first
-    fun = psi4.Functional.build_base('wB88_X')
-
-    # => End User-Customization <= #
-
-    return fun
+#def build_wb88_x_functional(name):
+#
+#    # Call this first
+#    fun = psi4.Functional.build_base('wB88_X')
+#
+#    # => End User-Customization <= #
+#
+#    return fun
 
 def build_hf_x_functional(name):
 
@@ -1311,7 +1311,8 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     sup.add_x_functional(b3)
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
-    vwn = build_functional('VWN5RPA_C')
+    #vwn = build_functional('VWN5RPA_C')
+    vwn = build_functional('VWN5_C')
     vwn.set_alpha(0.19)
     sup.add_c_functional(lyp)
     sup.add_c_functional(vwn)
@@ -2085,9 +2086,33 @@ def build_b3lyp5d3bj_superfunctional(name, npoints, deriv):
 
     return sup
 
+
+def build_b3lyp5d3mzero_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3MZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mzero')))
+
+    return sup
+
+
+def build_b3lyp5d3mbj_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3MBJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mbj')))
+
+    return sup
+
+
 def build_bp86d1_superfunctional(name, npoints, deriv):
 
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    #sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup = build_bp86_superfunctional(name, npoints, deriv)
     sup.set_name('BP86-D1')
 
     # => -D2 <= #
@@ -3453,7 +3478,7 @@ superfunctionals = {
         'pbe'             : build_pbe_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
-#        'b3lyp5'          : build_b3lyp5_superfunctional,  # broken
+        'b3lyp5'          : build_b3lyp5_superfunctional,  # broken
         'hf_x'            : build_hf_x_superfunctional,
         'pbe0'            : build_pbe0_superfunctional,
         'b97-0'           : build_b970_superfunctional,
@@ -3506,10 +3531,12 @@ superfunctionals = {
         #'b3lyp-d3mbj'     : build_b3lypd3mbj_superfunctional,
         'b3lyp-chg'       : build_b3lypchg_superfunctional,
         'b3lyp-d1'       : build_b3lypd1_superfunctional,
-#        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,  # broken
-#        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,  # broken
-#        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,  # broken
-#        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,  # broken
+        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,  # broken
+        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,  # broken
+        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,  # broken
+        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,  # broken
+        #'b3lyp5-d3mzero'   : build_b3lyp5d3mzero_superfunctional,
+        #'b3lyp5-d3mbj'     : build_b3lyp5d3mbj_superfunctional,
         'wsvwn'           : build_wsvwn_superfunctional,
         'wpbe'            : build_wpbe_superfunctional,
         'wpbe-d3zero'     : build_wpbed3zero_superfunctional,
