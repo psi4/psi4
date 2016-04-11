@@ -143,7 +143,7 @@ recommend to scale all :math:`S^{2}` approximated exchange terms by the ratio:
 
 where the recommended exponent is :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
 simply set the keyword ``exch_scale_alpha true``. Alternatively, another value for :math:`\alpha`
-can be specified by setting ``exch_scale_alpha`` to a value. For example, ::
+can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
   set exch_scale_alpha 1.0
 
@@ -395,10 +395,10 @@ one in the monomer basis. Finally, it will print a summary of the
 charge-transfer results::
 
       SAPT Charge Transfer Analysis
-    -----------------------------------------------------------------------------
-      SAPT Induction (Dimer Basis)         -2.0970 mH       -1.3159 kcal mol^-1
-      SAPT Induction (Monomer Basis)       -1.1396 mH       -0.7151 kcal mol^-1
-      SAPT Charge Transfer                 -0.9574 mH       -0.6008 kcal mol^-1
+    ------------------------------------------------------------------------------------------------
+      SAPT Induction (Dimer Basis)       -2.0970 [mEh]      -1.3159 [kcal/mol]      -5.5057 [kJ/mol]
+      SAPT Induction (Monomer Basis)     -1.1396 [mEh]      -0.7151 [kcal/mol]      -2.9920 [kJ/mol]
+      SAPT Charge Transfer               -0.9574 [mEh]      -0.6008 [kcal/mol]      -2.5137 [kJ/mol]
 
 These results are for the water dimer geometry shown above computed with 
 SAPT0/aug-cc-pVDZ. 
@@ -467,57 +467,55 @@ them in the evaluation of the triples correction to dispersion, and the
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
 results::
 
-    SAPT Results 
-  --------------------------------------------------------------------------
-    Electrostatics              -13.06509072 mH      -8.19846854 kcal mol^-1
-      Elst10,r                  -13.37542914 mH      -8.39320885 kcal mol^-1
-      Elst12,r                    0.04490321 mH       0.02817719 kcal mol^-1
-      Elst13,r                    0.26543521 mH       0.16656311 kcal mol^-1
+    SAPT Results
+  --------------------------------------------------------------------------------------------------------
+    Electrostatics                -13.06509118 [mEh]      -8.19846883 [kcal/mol]     -34.30239689 [kJ/mol]
+      Elst10,r                    -13.37542977 [mEh]      -8.39320925 [kcal/mol]     -35.11719087 [kJ/mol]
+      Elst12,r                      0.04490350 [mEh]       0.02817737 [kcal/mol]       0.11789413 [kJ/mol]
+      Elst13,r                      0.26543510 [mEh]       0.16656305 [kcal/mol]       0.69689985 [kJ/mol]
 
-    Exchange                     13.41768624 mH       8.41972558 kcal mol^-1
-      Exch10                     11.21822694 mH       7.03954398 kcal mol^-1
-      Exch10(S^2)                11.13803101 mH       6.98922027 kcal mol^-1
-      Exch11(S^2)                 0.04558910 mH       0.02860759 kcal mol^-1
-      Exch12(S^2)                 2.15387020 mH       1.35157401 kcal mol^-1
+    Exchange                       13.41768202 [mEh]       8.41972294 [kcal/mol]      35.22812415 [kJ/mol]
+      Exch10                       11.21822294 [mEh]       7.03954147 [kcal/mol]      29.45344432 [kJ/mol]
+      Exch10(S^2)                  11.13802706 [mEh]       6.98921779 [kcal/mol]      29.24289005 [kJ/mol]
+      Exch11(S^2)                   0.04558907 [mEh]       0.02860757 [kcal/mol]       0.11969410 [kJ/mol]
+      Exch12(S^2)                   2.15387002 [mEh]       1.35157390 [kcal/mol]       5.65498573 [kJ/mol]
 
-    Induction                    -3.91313510 mH      -2.45552945 kcal mol^-1
-      Ind20,r                    -4.57530912 mH      -2.87104994 kcal mol^-1
-      Ind30,r                    -4.91715016 mH      -3.08555844 kcal mol^-1
-      Ind22                      -0.83718660 mH      -0.52534254 kcal mol^-1
-      Exch-Ind20,r                2.47828624 mH       1.55514816 kcal mol^-1
-      Exch-Ind30,r                4.33916384 mH       2.72286653 kcal mol^-1
-      Exch-Ind22                  0.45347494 mH       0.28455983 kcal mol^-1
-      delta HF,r (2)             -1.43240056 mH      -0.89884496 kcal mol^-1
-      delta HF,r (3)             -0.85441424 mH      -0.53615305 kcal mol^-1
+    Induction                      -3.91313050 [mEh]      -2.45552656 [kcal/mol]     -10.27392413 [kJ/mol]
+      Ind20,r                      -4.57530818 [mEh]      -2.87104935 [kcal/mol]     -12.01247162 [kJ/mol]
+      Ind30,r                      -4.91714746 [mEh]      -3.08555675 [kcal/mol]     -12.90997067 [kJ/mol]
+      Ind22                        -0.83718642 [mEh]      -0.52534243 [kcal/mol]      -2.19803293 [kJ/mol]
+      Exch-Ind20,r                  2.47828501 [mEh]       1.55514739 [kcal/mol]       6.50673730 [kJ/mol]
+      Exch-Ind30,r                  4.33916119 [mEh]       2.72286487 [kcal/mol]      11.39246770 [kJ/mol]
+      Exch-Ind22                    0.45347471 [mEh]       0.28455969 [kcal/mol]       1.19059785 [kJ/mol]
+      delta HF,r (2)               -1.43239563 [mEh]      -0.89884187 [kcal/mol]      -3.76075473 [kJ/mol]
+      delta HF,r (3)               -0.85440936 [mEh]      -0.53614999 [kcal/mol]      -2.24325177 [kJ/mol]
 
-    Dispersion                   -3.62000732 mH      -2.27158898 kcal mol^-1
-      Disp20                     -3.54291985 mH      -2.22321586 kcal mol^-1
-      Disp30                      0.05959980 mH       0.03739944 kcal mol^-1
-      Disp21                      0.11216175 mH       0.07038256 kcal mol^-1
-      Disp22 (SDQ)               -0.17892161 mH      -0.11227501 kcal mol^-1
-      Disp22 (T)                 -0.47692539 mH      -0.29927522 kcal mol^-1
-      Est. Disp22 (T)            -0.54385240 mH      -0.34127255 kcal mol^-1
-      Exch-Disp20                 0.64545612 mH       0.40502984 kcal mol^-1
-      Exch-Disp30                -0.01823410 mH      -0.01144207 kcal mol^-1
-      Ind-Disp30                 -0.91816922 mH      -0.57615991 kcal mol^-1
-      Exch-Ind-Disp30             0.76487219 mH       0.47996457 kcal mol^-1
+    Dispersion                     -3.62000698 [mEh]      -2.27158877 [kcal/mol]      -9.50432831 [kJ/mol]
+      Disp20                       -3.54291925 [mEh]      -2.22321549 [kcal/mol]      -9.30193450 [kJ/mol]
+      Disp30                        0.05959979 [mEh]       0.03739944 [kcal/mol]       0.15647926 [kJ/mol]
+      Disp21                        0.11216169 [mEh]       0.07038252 [kcal/mol]       0.29448051 [kJ/mol]
+      Disp22 (SDQ)                 -0.17892163 [mEh]      -0.11227502 [kcal/mol]      -0.46975875 [kJ/mol]
+      Disp22 (T)                   -0.47692534 [mEh]      -0.29927518 [kcal/mol]      -1.25216749 [kJ/mol]
+      Est. Disp22 (T)              -0.54385233 [mEh]      -0.34127251 [kcal/mol]      -1.42788430 [kJ/mol]
+      Exch-Disp20                   0.64545587 [mEh]       0.40502969 [kcal/mol]       1.69464439 [kJ/mol]
+      Exch-Disp30                  -0.01823410 [mEh]      -0.01144207 [kcal/mol]      -0.04787362 [kJ/mol]
+      Ind-Disp30                   -0.91816882 [mEh]      -0.57615966 [kcal/mol]      -2.41065224 [kJ/mol]
+      Exch-Ind-Disp30               0.76487181 [mEh]       0.47996433 [kcal/mol]       2.00817094 [kJ/mol]
 
-  Total HF                           -5.68662563 mH      -3.56841161 kcal mol^-1
-  Total SAPT0                        -8.58408936 mH      -5.38659762 kcal mol^-1
-  Total SAPT2                        -6.72343851 mH      -4.21902154 kcal mol^-1
-  Total SAPT2+                       -7.33405078 mH      -4.60218654 kcal mol^-1
-  Total SAPT2+(3)                    -7.00901577 mH      -4.39822398 kcal mol^-1
-  Total SAPT2+3                      -7.18054690 mH      -4.50586139 kcal mol^-1
+  Total HF                         -5.68662563 [mEh]      -3.56841161 [kcal/mol]     -14.93023559 [kJ/mol]
+  Total SAPT0                      -8.58408901 [mEh]      -5.38659740 [kcal/mol]     -22.53752571 [kJ/mol]
+  Total SAPT2                      -6.72343814 [mEh]      -4.21902130 [kcal/mol]     -17.65238683 [kJ/mol]
+  Total SAPT2+                     -7.33405042 [mEh]      -4.60218631 [kcal/mol]     -19.25554938 [kJ/mol]
+  Total SAPT2+(3)                  -7.00901553 [mEh]      -4.39822383 [kcal/mol]     -18.40217026 [kJ/mol]
+  Total SAPT2+3                    -7.18054663 [mEh]      -4.50586123 [kcal/mol]     -18.85252518 [kJ/mol]
 
   Special recipe for scaled SAPT0 (see Manual):
-    Electrostatics sSAPT0       -13.37542914 mH      -8.39320885 kcal mol^-1
-    Exchange sSAPT0              11.21822694 mH       7.03954398 kcal mol^-1
-    Induction sSAPT0             -3.47550468 mH      -2.18091220 kcal mol^-1
-    Dispersion sSAPT0            -2.88342088 mH      -1.80937400 kcal mol^-1
-  Total sSAPT0                       -8.51612775 mH      -5.34395107 kcal mol^-1
-
-  --------------------------------------------------------------------------
-
+    Electrostatics sSAPT0         -13.37542977 [mEh]      -8.39320925 [kcal/mol]     -35.11719087 [kJ/mol]
+    Exchange sSAPT0                11.21822294 [mEh]       7.03954147 [kcal/mol]      29.45344432 [kJ/mol]
+    Induction sSAPT0               -3.47550008 [mEh]      -2.18090932 [kcal/mol]      -9.12492546 [kJ/mol]
+    Dispersion sSAPT0              -2.88342055 [mEh]      -1.80937379 [kcal/mol]      -7.57042064 [kJ/mol]
+  Total sSAPT0                     -8.51612746 [mEh]      -5.34395089 [kcal/mol]     -22.35909265 [kJ/mol]
+  --------------------------------------------------------------------------------------------------------
 
 At the bottom of this output are the total SAPT energies (defined above),
 they are composed of subsets of the individual terms printed above. The
@@ -542,58 +540,58 @@ scheme of the SAPT0 energy that can yield improved results and was described in 
 above. The corresponding scaled total component energies are printed as well.
 
 As mentioned above, SAPT results with scaled exchange are also optionally available
-by setting the ``exch_scale_alpha`` keyword. When activated, the unscaled results are
+by setting the |sapt__exch_scale_alpha| keyword. When activated, the unscaled results are
 printed first as reported above, and then repeated with exchange scaling for all 
 relevant terms: :: 
 
-    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== 
+    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <==
 
     Scaling factor (Exch10/Exch10(S^2))^{Alpha} =     1.007200
-    with Alpha =     1.000000 
-  --------------------------------------------------------------------------
-    Electrostatics              -13.06509072 mH      -8.19846854 kcal mol^-1
-      Elst10,r                  -13.37542914 mH      -8.39320885 kcal mol^-1
-      Elst12,r                    0.04490321 mH       0.02817719 kcal mol^-1
-      Elst13,r                    0.26543521 mH       0.16656311 kcal mol^-1
+    with Alpha =     1.000000
+  --------------------------------------------------------------------------------------------------------
+    Electrostatics                -13.06509118 [mEh]      -8.19846883 [kcal/mol]     -34.30239689 [kJ/mol]
+      Elst10,r                    -13.37542977 [mEh]      -8.39320925 [kcal/mol]     -35.11719087 [kJ/mol]
+      Elst12,r                      0.04490350 [mEh]       0.02817737 [kcal/mol]       0.11789413 [kJ/mol]
+      Elst13,r                      0.26543510 [mEh]       0.16656305 [kcal/mol]       0.69689985 [kJ/mol]
 
-    Exchange scal.               13.43352277 mH       8.42966315 kcal mol^-1
-      Exch10                     11.21822694 mH       7.03954398 kcal mol^-1
-      Exch10(S^2)                11.13803101 mH       6.98922027 kcal mol^-1
-      Exch11(S^2) scal.           0.04591735 mH       0.02881357 kcal mol^-1
-      Exch12(S^2) scal.           2.16937848 mH       1.36130560 kcal mol^-1
+    Exchange sc.                   13.43351854 [mEh]       8.42966050 [kcal/mol]      35.26970292 [kJ/mol]
+      Exch10                       11.21822294 [mEh]       7.03954147 [kcal/mol]      29.45344432 [kJ/mol]
+      Exch10(S^2)                  11.13802706 [mEh]       6.98921779 [kcal/mol]      29.24289005 [kJ/mol]
+      Exch11(S^2) sc.               0.04591732 [mEh]       0.02881355 [kcal/mol]       0.12055592 [kJ/mol]
+      Exch12(S^2) sc.               2.16937828 [mEh]       1.36130548 [kcal/mol]       5.69570268 [kJ/mol]
 
-    Induction scal.              -3.90986999 mH      -2.45348056 kcal mol^-1
-      Ind20,r                    -4.57530912 mH      -2.87104994 kcal mol^-1
-      Ind30,r                    -4.91715016 mH      -3.08555844 kcal mol^-1
-      Ind22                      -0.83718660 mH      -0.52534254 kcal mol^-1
-      Exch-Ind20,r scal.          2.49613037 mH       1.56634552 kcal mol^-1
-      Exch-Ind30,r scal.          4.37040664 mH       2.74247168 kcal mol^-1
-      Exch-Ind22 scal.            0.45674004 mH       0.28660872 kcal mol^-1
-      delta HF,r (2) scal.       -1.45024469 mH      -0.91004232 kcal mol^-1
-      delta HF,r (3) scal.       -0.90350117 mH      -0.56695557 kcal mol^-1
+    Induction sc.                  -3.90986540 [mEh]      -2.45347768 [kcal/mol]     -10.26535160 [kJ/mol]
+      Ind20,r                      -4.57530818 [mEh]      -2.87104935 [kcal/mol]     -12.01247162 [kJ/mol]
+      Ind30,r                      -4.91714746 [mEh]      -3.08555675 [kcal/mol]     -12.90997067 [kJ/mol]
+      Ind22                        -0.83718642 [mEh]      -0.52534243 [kcal/mol]      -2.19803293 [kJ/mol]
+      Exch-Ind20,r sc.              2.49612913 [mEh]       1.56634474 [kcal/mol]       6.55358703 [kJ/mol]
+      Exch-Ind30,r sc.              4.37040396 [mEh]       2.74247000 [kcal/mol]      11.47449560 [kJ/mol]
+      Exch-Ind22 sc.                0.45673981 [mEh]       0.28660857 [kcal/mol]       1.19917038 [kJ/mol]
+      delta HF,r (2) sc.           -1.45023975 [mEh]      -0.91003922 [kcal/mol]      -3.80760445 [kJ/mol]
+      delta HF,r (3) sc.           -0.90349624 [mEh]      -0.56695248 [kcal/mol]      -2.37212939 [kJ/mol]
 
-    Dispersion scal.             -3.60998398 mH      -2.26529924 kcal mol^-1
-      Disp20                     -3.54291985 mH      -2.22321586 kcal mol^-1
-      Disp30                      0.05959980 mH       0.03739944 kcal mol^-1
-      Disp21                      0.11216175 mH       0.07038256 kcal mol^-1
-      Disp22 (SDQ)               -0.17892161 mH      -0.11227501 kcal mol^-1
-      Disp22 (T)                 -0.47692539 mH      -0.29927522 kcal mol^-1
-      Est. Disp22 (T)            -0.54385240 mH      -0.34127255 kcal mol^-1
-      Exch-Disp20 scal.           0.65010352 mH       0.40794614 kcal mol^-1
-      Exch-Disp30 scal.          -0.01836539 mH      -0.01152446 kcal mol^-1
-      Ind-Disp30                 -0.91816922 mH      -0.57615991 kcal mol^-1
-      Exch-Ind-Disp30 scal.       0.77037942 mH       0.48342040 kcal mol^-1
+    Dispersion sc.                 -3.60998364 [mEh]      -2.26529903 [kcal/mol]      -9.47801205 [kJ/mol]
+      Disp20                       -3.54291925 [mEh]      -2.22321549 [kcal/mol]      -9.30193450 [kJ/mol]
+      Disp30                        0.05959979 [mEh]       0.03739944 [kcal/mol]       0.15647926 [kJ/mol]
+      Disp21                        0.11216169 [mEh]       0.07038252 [kcal/mol]       0.29448051 [kJ/mol]
+      Disp22 (SDQ)                 -0.17892163 [mEh]      -0.11227502 [kcal/mol]      -0.46975875 [kJ/mol]
+      Disp22 (T)                   -0.47692534 [mEh]      -0.29927518 [kcal/mol]      -1.25216749 [kJ/mol]
+      Est. Disp22 (T)              -0.54385233 [mEh]      -0.34127251 [kcal/mol]      -1.42788430 [kJ/mol]
+      Exch-Disp20 sc.               0.65010327 [mEh]       0.40794598 [kcal/mol]       1.70684615 [kJ/mol]
+      Exch-Disp30 sc.              -0.01836538 [mEh]      -0.01152445 [kcal/mol]      -0.04821832 [kJ/mol]
+      Ind-Disp30                   -0.91816882 [mEh]      -0.57615966 [kcal/mol]      -2.41065224 [kJ/mol]
+      Exch-Ind-Disp30 sc.           0.77037903 [mEh]       0.48342016 [kcal/mol]       2.02263015 [kJ/mol]
 
-  Total HF                           -5.68662563 mH      -3.56841161 kcal mol^-1
-  Total SAPT0 scal.                  -8.57944196 mH      -5.38368133 kcal mol^-1
-  Total SAPT2 scal.                  -6.69968948 mH      -4.20411879 kcal mol^-1
-  Total SAPT2+ scal.                 -7.31030174 mH      -4.58728379 kcal mol^-1
-  Total SAPT2+(3) scal.              -6.98526674 mH      -4.38332124 kcal mol^-1
-  Total SAPT2+3 scal.                -7.15142193 mH      -4.48758520 kcal mol^-1
-  --------------------------------------------------------------------------
+  Total HF                         -5.68662563 [mEh]      -3.56841161 [kcal/mol]     -14.93023559 [kJ/mol]
+  Total SAPT0 sc.                  -8.57944161 [mEh]      -5.38368112 [kcal/mol]     -22.52532395 [kJ/mol]
+  Total SAPT2 sc.                  -6.69968912 [mEh]      -4.20411857 [kcal/mol]     -17.59003378 [kJ/mol]
+  Total SAPT2+ sc.                 -7.31030140 [mEh]      -4.58728357 [kcal/mol]     -19.19319632 [kJ/mol]
+  Total SAPT2+(3) sc.              -6.98526650 [mEh]      -4.38332109 [kcal/mol]     -18.33981720 [kJ/mol]
+  Total SAPT2+3 sc.                -7.15142168 [mEh]      -4.48758504 [kcal/mol]     -18.77605762 [kJ/mol]
+  --------------------------------------------------------------------------------------------------------
 
 The scaling factor is reported at the top (here ``1.0072``) together with the 
-:math:`\alpha` parameter. All terms that are scaled are indicated by the ``scal.`` 
+:math:`\alpha` parameter. All terms that are scaled are indicated by the ``sc.``
 keyword. Note that if Exch10 is less than :math:`1.0e-5`, the scaling factor is
 set to :math:`1.0`.
 

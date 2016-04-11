@@ -69,6 +69,7 @@
 #define pc_hartree2ev 27.21138                /*- Hartree to eV conversion factor -*/
 #define pc_hartree2wavenumbers 219474.6       /*- Hartree to cm$^{-1}$ conversion factor -*/
 #define pc_hartree2kcalmol 627.5095           /*- Hartree to kcal mol$^{-1}$ conversion factor -*/
+#define pc_hartree2kJmol 2625.500             /*- Hartree to kilojoule mol$^{-1}$ conversion factor -*/
 #define pc_hartree2MHz 6.579684E9             /*- Hartree to MHz conversion factor -*/
 #define pc_kcalmol2wavenumbers 349.7551       /*- kcal mol$^{-1}$ to cm$^{-1}$ conversion factor -*/
 #define pc_e0 8.854187817E-12                 /*- Vacuum permittivity (Fm$^{-1}$)-*/
