@@ -18,7 +18,7 @@ a1 = 60.0
 
 set globals {
   reference uhf
-  basis 6-31G**
+  basis 6-31G(d,p)
   docc [2, 0, 0, 1]
   socc [1, 0, 1, 0]
   scf_type pk
