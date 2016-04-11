@@ -58,6 +58,7 @@ void PKJK::integrals_reorder() {
     outfile->Printf(" Computing reordered integrals for PK\n\n");
     int max_buckets = Process::environment.options.get_int("MAX_BUCKETS");
 
+    // New PK integrals object now
     PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_,cutoff_));
 
     // Get an AO integral factory
@@ -72,6 +73,9 @@ void PKJK::integrals_reorder() {
     // Get all rs index for a given pq to fit in the same
     // batch
     PKmanager_->batch_sizing();
+
+    // Open files and potentially do pre-striping as soon as possible.
+    PKmanager_->open_files(false);
 
     PKmanager_->print_batches();
 
@@ -98,9 +102,29 @@ void PKJK::integrals_reorder() {
     // as integrals may be stored at random places in the buffer. We also need
     // to pre-stripe the PK file in this case.
 
-    PKmanager_->open_files(false);
+    // This whole piece of code should be in the PKmanager itself, very probably.
+#pragma omp parallel for schedule(dynamic)
+    for(size_t i = 0; i < PKmanager_->ntasks(); ++i) {
+        // We need to get the list of shell quartets for each task
+        int thread = 1;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        IOBuffer_PK* buf = PKmanager_->buffer();
+        for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
+            unsigned int P = buf->P();
+            unsigned int Q = buf->Q();
+            unsigned int R = buf->R();
+            unsigned int S = buf->S();
+            tb[thread]->compute_shell(P,Q,R,S);
+            PKmanager_->integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
+        }
+        PKmanager_->write();
+    }
+    // Deprecated for now
+#if 0
     size_t task_size = 0;
-    for (int buf = 0; buf < PKmanager_->buf_ntasks(); ++ buf) {
+    for (int buf = 0; buf < PKmanager_->ntasks(); ++ buf) {
         timer_on("Task sizing");
         // Here we need a vector of tasks to distribute over threads
         task_size = PKmanager_->task_quartets();
@@ -128,6 +152,7 @@ void PKJK::integrals_reorder() {
         PKmanager_->write();
         timer_off("AIO write");
     }
+#endif
     // We want ot deallocate buffers and wait for writing as late as possible
     PKmanager_->set_writing(true);
 //    PKmanager_->deallocate_buffers();

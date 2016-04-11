@@ -299,8 +299,274 @@ void ijklBasisIterator::next() {
     }
 }
 
+IOBuffer_PK::IOBuffer_PK(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<AIOHandler> AIO,
+                         size_t buf_size, size_t nbuf, int pk_file) {
+    AIO_ = AIO;
+    pk_file_ = pk_file;
+    primary_ = primary;
+    buf_size_ = buf_size;
+    nbuf_ = nbuf;
+    offset_ = 0;
+    bufidx_ = 0;
+    buf_ = 0;
+    allocate();
+}
 
-PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
+IOBuffer_PK::~IOBuffer_PK() {
+    deallocate();
+}
+
+void IOBuffer_PK::allocate() {
+    for (unsigned int i = 0; i < nbuf_; ++i) {
+        double* buf = new double[buf_size_];
+        J_buf_.push_back(buf);
+        buf = new double[buf_size_];
+        K_buf_.push_back(buf);
+        std::vector<char*> label_J;
+        std::vector<char*> label_K;
+        label_J_.push_back(label_J);
+        label_K_.push_back(label_K);
+        std::vector<size_t> id_J;
+        std::vector<size_t> id_K;
+        jobID_J_.push_back(id_J);
+        jobID_K_.push_back(id_K);
+    }
+    // We only need to set to zero the first buffers.
+    // The others are taken care of in the write function
+    ::memset((void*) J_buf_[0], '\0', buf_size_ * sizeof(double));
+    ::memset((void*) K_buf_[0], '\0', buf_size_ * sizeof(double));
+}
+
+void IOBuffer_PK::deallocate() {
+    std::vector<double*>::iterator it;
+    for(it = J_buf_.begin(); it != J_buf_.end(); ++it) {
+        delete [] *it;
+    }
+    J_buf_.clear();
+    for(it = K_buf_.begin(); it != K_buf_.end(); ++it) {
+        delete [] *it;
+    }
+    K_buf_.clear();
+    for(int i = 0; i < label_J_.size(); ++i) {
+        for(int j = 0; j < label_J_[i].size(); ++j) {
+            delete [] label_J_[i][j];
+        }
+        label_J_[i].clear();
+    }
+    for(int i = 0; i < label_K_.size(); ++i) {
+        for(int j = 0; j < label_K_[i].size(); ++j) {
+            delete [] label_K_[i][j];
+        }
+        label_K_[i].clear();
+    }
+}
+
+void IOBuffer_PK::first_quartet(size_t i) {
+    shelliter_ = AOShellCombinationsIterator(primary_,primary_,primary_,primary_);
+    bufidx_ = i;
+    offset_ = bufidx_ * buf_size_;
+    shells_left_ = false;
+    for(shelliter_.first(); (shells_left_ || shelliter_.is_done()) == false; shelliter_.next()) {
+        P_ = shelliter_.p();
+        Q_ = shelliter_.q();
+        R_ = shelliter_.r();
+        S_ = shelliter_.s();
+
+        shells_left_ = is_shell_relevant();
+    }
+
+}
+
+void IOBuffer_PK::next_quartet() {
+    if(shelliter_.is_done()) {
+        shells_left_ = false;
+        return;
+    }
+    bool shell_found = false;
+    for(; (shell_found || shelliter_.is_done()) == false; shelliter_.next()) {
+        P_ = shelliter_.p();
+        Q_ = shelliter_.q();
+        R_ = shelliter_.r();
+        S_ = shelliter_.s();
+
+        shell_found = is_shell_relevant();
+    }
+
+    shells_left_ = shell_found;
+}
+
+bool IOBuffer_PK::is_shell_relevant() {
+        // May implement the sieve here
+
+        size_t lowi = primary_->shell_to_basis_function(P_);
+        size_t lowj = primary_->shell_to_basis_function(Q_);
+        size_t lowk = primary_->shell_to_basis_function(R_);
+        size_t lowl = primary_->shell_to_basis_function(S_);
+
+        size_t low_ijkl = INDEX4(lowi, lowj, lowk, lowl);
+        size_t low_ikjl = INDEX4(lowi, lowk, lowj, lowl);
+        size_t low_iljk = INDEX4(lowi, lowl, lowj, lowk);
+
+        size_t nbJ_lo = low_ijkl / buf_size_;
+        size_t nbK1_lo = low_ikjl / buf_size_;
+        size_t nbK2_lo = low_iljk / buf_size_;
+
+        // Can we filter out this shell because all of its basis function
+        // indices are too high ?
+
+        if (nbJ_lo > bufidx_ && nbK1_lo > bufidx_ && nbK2_lo > bufidx_) {
+            return false;
+        }
+
+        int ni = primary_->shell(P_).nfunction();
+        int nj = primary_->shell(Q_).nfunction();
+        int nk = primary_->shell(R_).nfunction();
+        int nl = primary_->shell(S_).nfunction();
+
+        size_t hii = lowi + ni - 1;
+        size_t hij = lowj + nj - 1;
+        size_t hik = lowk + nk - 1;
+        size_t hil = lowl + nl - 1;
+
+        size_t hi_ijkl = INDEX4(hii, hij, hik, hil);
+        size_t hi_ikjl = INDEX4(hii, hik, hij, hil);
+        size_t hi_iljk = INDEX4(hii, hil, hij, hik);
+
+        size_t nbJ_hi = hi_ijkl / buf_size_;
+        size_t nbK1_hi = hi_ikjl / buf_size_;
+        size_t nbK2_hi = hi_iljk / buf_size_;
+
+        // Can we filter out this shell because all of its basis function
+        // indices are too low ?
+
+        if (nbJ_hi < bufidx_ && nbK1_hi < bufidx_ && nbK2_hi < bufidx_) {
+            return false;
+        }
+
+        // Now we loop over unique basis function quartets in the shell quartet
+        AOIntegralsIterator bfiter = shelliter_.integrals_iterator();
+        for(bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
+            size_t i = bfiter.i();
+            size_t j = bfiter.j();
+            size_t k = bfiter.k();
+            size_t l = bfiter.l();
+
+            size_t ijkl = INDEX4(i,j,k,l);
+            size_t ikjl = INDEX4(i,k,j,l);
+            size_t iljk = INDEX4(i,l,j,k);
+
+            size_t nbJ = ijkl / buf_size_;
+            size_t nbK1 = ikjl / buf_size_;
+            size_t nbK2 = iljk / buf_size_;
+
+            if (nbJ == bufidx_ || nbK1 == bufidx_ || nbK2 == bufidx_) {
+                // This shell should be computed by the present thread.
+                return true;
+            }
+        }
+}
+
+void IOBuffer_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+    size_t ijkl = INDEX4(i,j,k,l);
+    if (ijkl / buf_size_ == bufidx_) {
+        J_buf_[buf_][ijkl - offset_] += val;
+    }
+    size_t ikjl = INDEX4(i, k, j, l);
+    if(ikjl / buf_size_ == bufidx_) {
+        if (i == k || j == l) {
+            K_buf_[buf_][ikjl - offset_] += val;
+        } else {
+            K_buf_[buf_][ikjl - offset_] += 0.5 * val;
+        }
+    }
+
+    if(i != j && k != l) {
+        size_t iljk = INDEX4(i, l, j, k);
+        if (iljk / buf_size_ == bufidx_) {
+            if ( i == l || j == k) {
+                K_buf_[buf_][iljk - offset_] += val;
+            } else {
+                K_buf_[buf_][iljk - offset_] += 0.5 * val;
+            }
+        }
+    }
+}
+
+void IOBuffer_PK::write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
+                   size_t pk_pairs) {
+    // Compute initial ijkl index for current buffer
+    size_t ijkl0 = buf_size_ * bufidx_;
+    size_t ijkl_end = ijkl0 + buf_size_ - 1;
+
+    std::vector<unsigned int> target_batches;  // Vector of batch number to which we want to write
+
+    for (unsigned int i = 0; i < batch_min_ind.size(); ++i) {
+        if (ijkl0 >= batch_min_ind[i] && ijkl0 < batch_max_ind[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+        if (ijkl_end >= batch_min_ind[i] && ijkl_end < batch_max_ind[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+        if (ijkl0 < batch_min_ind[i] && ijkl_end >= batch_max_ind[i]) {
+            target_batches.push_back(i);
+            continue;
+        }
+    }
+
+    // Now that all buffers are full, and before we write integrals, we need
+    // to divide diagonal elements by 2.
+
+    for (size_t pq = 0; pq < pk_pairs; ++pq) {
+        size_t pqpq = INDEX2(pq, pq);
+        if (pqpq >= ijkl0 && pqpq <= ijkl_end) {
+            J_buf_[buf_][pqpq - offset_] *= 0.5;
+            K_buf_[buf_][pqpq - offset_] *= 0.5;
+        }
+    }
+
+    // And now we write to the file in the appropriate entries
+    for (int i = 0; i < target_batches.size(); ++i) {
+        label_J_[buf_].push_back(PK_integrals_old::get_label_J(target_batches[i]));
+        size_t start = std::max(ijkl0, batch_min_ind[target_batches[i]]);
+        size_t stop = std::min(ijkl_end + 1, batch_max_ind[target_batches[i]]);
+        psio_address adr = psio_get_address(PSIO_ZERO, (start - batch_min_ind[target_batches[i]]) * sizeof(double));
+        size_t nints = stop - start;
+        jobID_J_[buf_].push_back(AIO_->write(pk_file_, label_J_[buf_][i], (char *)(&J_buf_[buf_][start - offset_]),
+                    nints * sizeof(double), adr, &dummy_));
+        label_K_[buf_].push_back(PK_integrals_old::get_label_K(target_batches[i]));
+        jobID_K_[buf_].push_back(AIO_->write(pk_file_, label_K_[buf_][i], (char *)(&K_buf_[buf_][start - offset_]),
+                    nints * sizeof(double), adr, &dummy_));
+    }
+
+    // Update the buffer being written into
+    ++buf_;
+    if (buf_ >= nbuf_) buf_ = 0;
+    // Make sure the buffer has been written to disk and we can erase it
+    for(int i = 0; i < jobID_J_[buf_].size(); ++i) {
+      AIO_->wait_for_job(jobID_J_[buf_][i]);
+    }
+    jobID_J_[buf_].clear();
+    for(int i = 0; i < jobID_K_[buf_].size(); ++i) {
+      AIO_->wait_for_job(jobID_K_[buf_][i]);
+    }
+    jobID_K_[buf_].clear();
+    // We can delete the labels for these buffers
+    for(int i = 0; i < label_J_[buf_].size(); ++i) {
+        delete [] label_J_[buf_][i];
+    }
+    for(int i = 0; i < label_K_[buf_].size(); ++i) {
+        delete [] label_K_[buf_][i];
+    }
+    label_J_[buf_].clear();
+    label_K_[buf_].clear();
+    // Make sure the buffer in which we are going to write is set to zero
+    ::memset((void *) J_buf_[buf_], '\0', buf_size_ * sizeof(double));
+    ::memset((void *) K_buf_[buf_], '\0', buf_size_ * sizeof(double));
+}
+
+PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
                            int max_batches, size_t memory, double cutoff) {
     primary_ = primary;
     nbf_ = primary_->nbf();
@@ -330,7 +596,20 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
 
 }
 
-PK_integrals::~PK_integrals() {
+PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio, int max_batches,
+                           size_t memory, double cutoff) :
+        PK_integrals_old(primary,psio, max_batches, memory, cutoff) {
+    pk_file_ = PSIF_SO_PK;
+    nthreads_ = 1;
+#ifdef _OPENMP
+    nthreads_ = omp_get_max_threads();
+#endif
+    tgt_tasks_ = 100;
+    itap_J_ = pk_file_;
+    itap_K_ = pk_file_;
+}
+
+PK_integrals_old::~PK_integrals_old() {
     // In case we forgot something before
 
     if (J_buf_[0] != NULL) {
@@ -367,7 +646,7 @@ PK_integrals::~PK_integrals() {
     }
 }
 
-void PK_integrals::batch_sizing() {
+void PK_integrals_old::batch_sizing() {
 
     double batch_thresh = 0.1;
 
@@ -377,8 +656,6 @@ void PK_integrals::batch_sizing() {
     size_t old_max = 0;
     size_t nintpq = 0;
     size_t nintbatch = 0;
-    size_t min_pqrs = 0;
-    size_t min_pq = 0;
     size_t pq = 0;
     size_t pb, qb, rb, sb;
 
@@ -437,7 +714,7 @@ void PK_integrals::batch_sizing() {
 
 }
 
-void PK_integrals::print_batches() {
+void PK_integrals_old::print_batches() {
     // Print batches for the user and for control
     for(int batch = 0; batch < batch_pq_min_.size(); ++batch){
         outfile->Printf("\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu] size = %12zu\n",
@@ -448,7 +725,7 @@ void PK_integrals::print_batches() {
     }
 }
 
-void PK_integrals::allocate_buffers() {
+void PK_integrals_old::allocate_buffers() {
     buffer_size_ = memory_ / 4;
     nbuffers_ = (pk_size_ - 1) / buffer_size_ + 1;
     outfile->Printf("We need %3d buffers during integral computation\n",nbuffers_);
@@ -472,7 +749,43 @@ void PK_integrals::allocate_buffers() {
     jobid_K_[1] = 0;
 }
 
-void PK_integrals::deallocate_buffers() {
+void PK_integrals::allocate_buffers() {
+    // Factor 2 because we need memory for J and K buffers
+    size_t mem_per_thread = memory_ / (2 * nthreads_);
+    // Factor 2 because we need 2 buffers for asynchronous I/O
+    size_t max_buf_size = mem_per_thread / 2;
+    // We need to fill min_task_num buffers to process all integrals
+    size_t min_task_num = pk_size_ / max_buf_size + 1;
+    // Task number divisible by the number of threads.
+    size_t big_task_num = tgt_tasks_ * nthreads_;
+    // Some printing for us
+    outfile->Printf("  Min task number: %lu\n",min_task_num);
+    outfile->Printf("  Big task number: %lu\n",big_task_num);
+    // Make sure we have enough tasks for the memory available
+    ntasks_ = big_task_num > min_task_num ? big_task_num : min_task_num;
+    // Each task computes all ijkl index in a given interval
+    // How much memory is that ?
+    size_t task_buf_size = pk_size_ / ntasks_;
+    // Correct number of tasks to make sure we got all integrals
+    ntasks_ = pk_size_ / task_buf_size + 1;
+    size_t buf_per_thread = mem_per_thread / task_buf_size;
+
+    // Ok, now we have the size of a buffer and how many buffers
+    // we want for each thread. We can allocate IO buffers.
+    for(int i = 0; i < nthreads_; ++i) {
+        iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,task_buf_size,buf_per_thread,pk_file_));
+    }
+}
+
+IOBuffer_PK* PK_integrals::buffer() {
+    int thread = 1;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    return iobuffers_[thread - 1];
+}
+
+void PK_integrals_old::deallocate_buffers() {
 
     // We need to make sure writing is over before deallocating!
     timer_on("AIO synchronize");
@@ -502,7 +815,16 @@ void PK_integrals::deallocate_buffers() {
 
 }
 
-size_t PK_integrals::task_quartets() {
+void PK_integrals::deallocate_buffers() {
+    timer_on("AIO synchronize");
+    AIO_->synchronize();
+    timer_off("AIO_synchronize");
+    for(int i = 0; i < nthreads_; ++i) {
+        delete iobuffers_[i];
+    }
+}
+
+size_t PK_integrals_old::task_quartets() {
     // Need iterator over AO shells here
     AOShellCombinationsIterator shelliter(primary_,primary_,primary_,primary_);
     size_t nsh_task = 0;
@@ -589,7 +911,7 @@ size_t PK_integrals::task_quartets() {
 }
 
 // This function is thread-safe
-void PK_integrals::integrals_buffering(const double *buffer, int P, int Q, int R, int S) {
+void PK_integrals_old::integrals_buffering(const double *buffer, int P, int Q, int R, int S) {
 
     AOIntegralsIterator bfiter(primary_->shell(P), primary_->shell(Q), primary_->shell(R), primary_->shell(S));
     int i0 = primary_->shell_to_basis_function(P);
@@ -614,8 +936,29 @@ void PK_integrals::integrals_buffering(const double *buffer, int P, int Q, int R
     }
 }
 
+void PK_integrals::integrals_buffering(const double *buffer, unsigned int P,
+                                       unsigned int Q, unsigned int R, unsigned int S) {
+    int thread = 1;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    AOIntegralsIterator bfiter(primary_->shell(P), primary_->shell(Q), primary_->shell(R), primary_->shell(S));
+
+    for (bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
+        int i = bfiter.i();
+        int j = bfiter.j();
+        int k = bfiter.k();
+        int l = bfiter.l();
+        size_t idx = bfiter.index();
+
+        double val = buffer[idx];
+        iobuffers_[thread - 1]->fill_values(val, i, j, k, l);
+    }
+
+}
+
 // This function is thread-safe
-void PK_integrals::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+void PK_integrals_old::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
     size_t ijkl = INDEX4(i, j, k, l);
     if (ijkl / buffer_size_ == bufidx_) {
 #pragma omp atomic
@@ -647,14 +990,41 @@ void PK_integrals::fill_values(double val, size_t i, size_t j, size_t k, size_t 
     }
 }
 
-void PK_integrals::open_files(bool old) {
+void PK_integrals_old::open_files(bool old) {
     psio_->open(itap_J_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
     psio_->open(itap_K_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
 }
 
+void PK_integrals::open_files(bool old) {
+    psio_->open(pk_file_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    // Create the files ? Pre-stripe them.
+    if(!old) {
+        for(int batch = 0; batch < batch_index_min_.size(); ++batch) {
+            size_t batch_size = batch_index_max_[batch] - batch_index_min_[batch];
+            // We need to keep the labels around in a vector
+            label_J_[0].push_back(get_label_J(batch));
+            AIO_->zero_disk(pk_file_,label_J_[0][batch],1,batch_size);
+            label_K_[0].push_back(get_label_K(batch));
+            AIO_->zero_disk(pk_file_,label_K_[0][batch],1,batch_size);
+        }
+
+    }
+}
+
+char* PK_integrals_old::get_label_J(size_t i) {
+    char* label = new char[100];
+    sprintf(label, "J Block (Batch %d)", i);
+    return label;
+}
+char* PK_integrals_old::get_label_K(size_t i) {
+    char* label = new char[100];
+    sprintf(label, "K Block (Batch %d)", i);
+    return label;
+}
+
 // This function is not designed thread-safe and is supposed to execute outside parallel
 // environment for now.
-void PK_integrals::write() {
+void PK_integrals_old::write() {
     // Clear up the buffers holding P, Q, R, S since the task is over
     buf_P.clear();
     buf_Q.clear();
@@ -734,13 +1104,26 @@ void PK_integrals::write() {
 
 }
 
-void PK_integrals::close_files() {
+// Thread-safe function, invokes the appropriate buffer to perform the write
+void PK_integrals::write() {
+    int thread = 1;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    iobuffers_[thread - 1]->write(batch_index_min_,batch_index_max_,pk_pairs_);
+}
+
+void PK_integrals_old::close_files() {
     psio_->close(itap_J_, 1);
     psio_->close(itap_K_, 1);
 }
 
+void PK_integrals::close_files() {
+    psio_->close(pk_file_, 1);
+}
+
 // We should really use safer pointers right here
-void PK_integrals::form_D_vec(std::vector<SharedMatrix> D_ao) {
+void PK_integrals_old::form_D_vec(std::vector<SharedMatrix> D_ao) {
     // Assume symmetric density matrix for now.
     for (int N = 0; N < D_ao.size(); ++N) {
         double* D_vec = new double[pk_pairs_];
@@ -760,14 +1143,14 @@ void PK_integrals::form_D_vec(std::vector<SharedMatrix> D_ao) {
     }
 }
 
-void PK_integrals::finalize_D() {
+void PK_integrals_old::finalize_D() {
     for(int N = 0; N < D_vec_.size(); ++N) {
         delete [] D_vec_[N];
     }
     D_vec_.clear();
 }
 
-void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
+void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
     std::vector<double*> Jvecs;
     // Begin by allocating vector for triangular J
     for(int N = 0; N < J.size(); ++N) {
@@ -787,12 +1170,12 @@ void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
 
         int filenum;
 
-        char* label = new char[100];
+        char* label;
         if (exch) {
-            sprintf(label,"K Block (Batch %d)", batch);
+            label = get_label_K(batch);
             filenum = itap_K_;
         } else {
-            sprintf(label,"J Block (Batch %d)", batch);
+            label = get_label_J(batch);
             filenum = itap_J_;
         }
         psio_->read_entry(filenum, label, (char *) j_block, batch_size * sizeof(double));
@@ -835,7 +1218,7 @@ void PK_integrals::form_J(std::vector<SharedMatrix> J, bool exch) {
     }
 }
 
-void PK_integrals::form_K(std::vector<SharedMatrix> K) {
+void PK_integrals_old::form_K(std::vector<SharedMatrix> K) {
     // For asymmetric densities, we do exactly the same than for J
     // but we read another entry
     form_J(K, true);
