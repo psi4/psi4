@@ -36,6 +36,8 @@ from interface_cfour import *
 # never import wrappers or aliases into this file
 
 
+
+
 # Procedure lookup tables
 procedures = {
         'energy': {
@@ -195,7 +197,7 @@ procedures = {
 
 # Will only allow energy to be run for the following methods
 energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
-energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis'] 
+energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])
@@ -215,6 +217,51 @@ for ssuper in cfour_list():
 for ssuper in cfour_gradient_list():
     procedures['gradient'][ssuper] = run_cfour
 
+### Helper functions
+def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec):
+    r"""
+    This function will set local SCF and global energy convergence criterion to the defaults
+    listed at: http://www.psicode.org/psi4manual/master/scf.html#convergence-and-algorithm-defaults.
+    SCF will be convergence more tightly if a post-SCF method is select (pscf_Ec, and pscf_Dc) else the
+    looser (scf_Ec, and scf_Dc convergence criterion will be used).
+
+    ptype -         Procedure type (energy, gradient, etc)
+    method_name -   Name of the method
+    scf_Ec -        SCF E convergence criterion
+    pscf_Ec -       Post-SCF E convergence criterion
+    scf_Dc -        SCF D convergence criterion
+    pscf_Dc -       Post-SCF D convergence criterion
+    gen_Ec -        General E convergence for all methods
+    """
+
+    if method_name not in procedures[ptype].keys():
+        alternatives = ""
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures[ptype].keys(), 2)
+        if len(alt_method_name) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
+        Cptype = ptype[0].upper() + ptype[1:]
+        raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
+
+    # Set method-dependent scf convergence criteria, check against energy routines
+    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if procedures['energy'][method_name] in [run_scf, run_dft]:
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
+        else:
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
+
+    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
+        if procedures['energy'][method_name] in [run_scf, run_dft]:
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
+        else:
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
+
+    # Set post-scf convergence criteria (global will cover all correlated modules)
+    if not psi4.has_global_option_changed('E_CONVERGENCE'):
+        if procedures['energy'][method_name] not in [run_scf, run_dft]:
+            psi4.set_global_option('E_CONVERGENCE', gen_Ec)
+
+    # We passed!
+    return True
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -495,58 +542,35 @@ def energy(name, **kwargs):
     for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
-    try:
-        # Set method-dependent scf convergence criteria
-        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
+    _set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
 
-        # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if procedures['energy'][lowername] not in [run_scf, run_dft]:
-                psi4.set_global_option('E_CONVERGENCE', 6)
+    # Before invoking the procedure, we rename any file that should be read.
+    # This is a workaround to do restarts with the current PSI4 capabilities
+    # before actual, clean restarts are put in there
+    # Restartfile is always converted to a single-element list if
+    # it contains a single string
+    if 'restart_file' in kwargs:
+        restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
+        if restartfile != list(restartfile):
+            restartfile = [restartfile]
+        # Rename the files to be read to be consistent with psi4's file system
+        for item in restartfile:
+            name_split = re.split(r'\.', item)
+            filenum = name_split[len(name_split) - 1]
+            try:
+                filenum = int(filenum)
+            except ValueError:
+                filenum = 32  # Default file number is the checkpoint one
+            psioh = psi4.IOManager.shared_object()
+            psio = psi4.IO.shared_object()
+            filepath = psioh.get_file_path(filenum)
+            namespace = psio.get_default_namespace()
+            pid = str(os.getpid())
+            prefix = 'psi'
+            targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+            shutil.copy(item, targetfile)
 
-# Before invoking the procedure, we rename any file that should be read.
-# This is a workaround to do restarts with the current PSI4 capabilities
-# before actual, clean restarts are put in there
-# Restartfile is always converted to a single-element list if
-# it contains a single string
-        if 'restart_file' in kwargs:
-            restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
-            if restartfile != list(restartfile):
-                restartfile = [restartfile]
-            # Rename the files to be read to be consistent with psi4's file system
-            for item in restartfile:
-                name_split = re.split(r'\.', item)
-                filenum = name_split[len(name_split) - 1]
-                try:
-                    filenum = int(filenum)
-                except ValueError:
-                    filenum = 32  # Default file number is the checkpoint one
-                psioh = psi4.IOManager.shared_object()
-                psio = psi4.IO.shared_object()
-                filepath = psioh.get_file_path(filenum)
-                namespace = psio.get_default_namespace()
-                pid = str(os.getpid())
-                prefix = 'psi'
-                targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
-                shutil.copy(item, targetfile)
-
-        wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
-
-    except KeyError:
-        alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Energy method %s not available.%s' % (lowername, alternatives))
+    wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
 
     for postcallback in hooks['energy']['post']:
         postcallback(lowername, **kwargs)
@@ -578,9 +602,9 @@ def gradient(name, **kwargs):
     psi4.clean_variables()
     dertype = 1
 
-    # Prevent methods that do not have associated energies 
+    # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
-	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
+    	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -669,21 +693,7 @@ def gradient(name, **kwargs):
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-
-    # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            psi4.set_global_option('E_CONVERGENCE', 8)
+    _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -902,34 +912,8 @@ def property(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    try:
-        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-        #   SCF properties have been set as 6/5 so as to match those
-        #       run normally through OEProp so subject to change
-        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-
-        # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if procedures['energy'][lowername] not in [run_scf, run_dft]:
-                psi4.set_global_option('E_CONVERGENCE', 8)
-
-        wfn = procedures['property'][lowername](lowername, **kwargs)
-
-    except KeyError:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['property'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
-        raise ValidationError("""Property method %s not available.%s""" % (lowername, alternatives))
+    _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
+    wfn = procedures['property'][lowername](lowername, **kwargs)
 
     optstash.restore()
 
@@ -1319,9 +1303,9 @@ def hessian(name, **kwargs):
     psi4.clean_variables()
     dertype = 2
 
-    # Prevent methods that do not have associated energies 
+    # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
-	raise ValidationError("hessian('%s') does not have an associated hessian" % name)
+    	raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -1417,21 +1401,7 @@ def hessian(name, **kwargs):
         raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-
-    # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            psi4.set_global_option('E_CONVERGENCE', 8)
+    _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Select certain irreps
     irrep = kwargs.get('irrep', -1)
