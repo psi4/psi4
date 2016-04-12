@@ -24,14 +24,11 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
-#CUimport psi4
 import re
 import os
 import sys
 import math
 import copy
-#CUfrom psiexceptions import *
-#CUfrom dashparam import *
 from qcdb.interface_dftd3 import *
 
 ## ==> Functionals <== ##

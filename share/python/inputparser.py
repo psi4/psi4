@@ -34,9 +34,7 @@ import re
 import os
 import sys
 import random
-#CUimport psi4
 import pubchem
-#CUfrom psiexceptions import *
 from p4xcpt import *  # CU
 
 

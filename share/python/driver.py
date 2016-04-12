@@ -31,13 +31,8 @@ properties, and vibrational frequency calculations.
 from __future__ import absolute_import
 import sys
 import re
-#CUimport psi4
-#CUimport p4util
-#CUimport p4const
 from proc import *
 from interface_cfour import *
-#CUfrom functional import *
-#CUfrom p4regex import *
 # never import wrappers or aliases into this file
 
 

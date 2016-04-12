@@ -31,11 +31,7 @@ import shutil
 import os
 import subprocess
 import re
-#CU#CUimport psi4
-#CUimport p4const
 import p4util
-#CUfrom p4regex import *
-#from extend_Molecule import *
 from molutil import *
 from functional import *
 from roa import *

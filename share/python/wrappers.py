@@ -33,17 +33,9 @@ import warnings
 import pickle
 import copy
 import collections
-#CUimport psi4
-#CUimport p4const
-#CUimport p4util
 from driver import *
-#from extend_Molecule import *
-#CUfrom molutil import *
-#CUfrom p4regex import *
 # never import aliases into this file
 
-#Where the implementation for running MBEs is held
-from parallel import *
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -232,7 +224,8 @@ def return_energy_components():
 
 VARH=return_energy_components() 
 
-def convert(p, symbol):
+def _autofragment_convert(p, symbol):
+    # Finding radii for auto-fragmenter
     if symbol[p] == 'H':
         d = 1.001
     if symbol[p] == 'He':
@@ -325,7 +318,7 @@ def auto_fragments(**kwargs):
                     Distance = math.sqrt((X[i] - X[u]) * (X[i] - X[u]) +
                                          (Y[i] - Y[u]) * (Y[i] - Y[u]) +
                                          (Z[i] - Z[u]) * (Z[i] - Z[u]))
-                    if Distance < convert(u, symbol) + convert(i, symbol):
+                    if Distance < _autofragment_convert(u, symbol) + _autofragment_convert(i, symbol):
                         Queue.append(i)  # if you find you, put it in the que
                         White.remove(i)  # and remove it from the untouched list
             Queue.remove(u)  # remove focus from Queue
@@ -353,58 +346,6 @@ def auto_fragments(**kwargs):
     psi4.print_out("""  Exiting auto_fragments\n""")
 
     return moleculenew
-
-
-def GetCalcDetails(methodname):
-    energylist=[]
-    for k, v in VARH[methodname].iteritems():
-        energylist.append(v)
-    energylist.append("CURRENT ENERGY")
-    return energylist
-   
-   
-def new_run_calc(methodname, molecule,BeQuiet,**kwargs):
-    oldmolecule = psi4.get_active_molecule()
-    frag=geometry(molecule)  # TODO
-    activate(frag)  # TODO
-    # TODO: Ryan, molecule is a string molecule?
-    #   If so, switch to frag = psi4.Molecule.create_molecule_from_string(geom),
-    #   avoid activate(frag) (now deprecated in driver), and pass
-    #   energy(methodname, molecule=frag, ...)
-    frag.update_geometry()
-    if(BeQuiet==1):
-        psi4.be_quiet()
-    energy(methodname,**kwargs)
-    energylist={}
-    energynames=GetCalcDetails(methodname)
-    for v in energynames:
-        energylist[v]=psi4.get_variable(v)
-    if(BeQuiet==1):
-        psi4.reopen_outfile()
-    activate(oldmolecule)  # TODO
-    oldmolecule.update_geometry()
-    psi4.clean()
-    return energylist
-
-def new_new_run_calc(methodname, moleculelist,**kwargs):
-    MolList=moleculelist.split("***")
-    PMan=Parallel()
-    for i in MolList:
-        Prior=i.splitlines()
-        txt=os.linesep.join([s for s in i.splitlines() if s])
-        if(len(Prior) > 0):
-            PMan.AddTask(txt,len(Prior))
-    PMan.MakeJob()
-    MyGeom=PMan.Begin()
-    energylist=GetCalcDetails(methodname)
-    Energies=[]
-    while not PMan.Done():
-        new_run_calc(methodname,MyGeom,1)
-        for k in energylist:
-            Energies.append(psi4.get_variable(k))
-        MyGeom=PMan.Next()
-    return PMan.Synch(Energies,len(energylist))
-              
 
 #######################
 ##  Start of n_body  ##
