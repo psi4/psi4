@@ -27,13 +27,7 @@ import re
 import os
 import math
 import warnings
-#CUimport psi4
-#CUimport p4const
-#CUimport p4util
 from driver import *
-#from extend_Molecule import *
-#CUfrom molutil import *
-#CUfrom p4regex import *
 # never import aliases into this file
 
 def run_gaussian_2(name, **kwargs):
@@ -60,7 +54,7 @@ def run_gaussian_2(name, **kwargs):
     psi4.clean()
 
     # scf frequencies for zpe
-    scf_e, ref= frequency('scf', return_wfn=True)
+    scf_e, ref = frequency('scf', return_wfn=True)
 
     # thermodynamic properties
     du = psi4.get_variable('INTERNAL ENERGY CORRECTION')
@@ -70,7 +64,7 @@ def run_gaussian_2(name, **kwargs):
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
     freqsum = 0.0
-    for i in range (0,nfreq):
+    for i in range(0, nfreq):
         freqsum += freqs.get(i)
     zpe = freqsum / p4const.psi_hartree2wavenumbers * 0.8929 * 0.5
     psi4.clean()

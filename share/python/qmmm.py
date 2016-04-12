@@ -25,12 +25,9 @@ a QM calculation.
 
 """
 from __future__ import absolute_import
-#CUimport psi4
 import re
 import os
 import math
-#CUimport p4const
-#CUfrom molutil import *
 from driver import *
 
 

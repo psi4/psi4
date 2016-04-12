@@ -33,15 +33,10 @@ import re
 import os
 import math
 import warnings
-#CUimport psi4
-#CUimport p4util
-#CUfrom driver import *
 from wrappers import *
-from gaussian_n import * #CU
-#from extend_Molecule import *
-#CUfrom molutil import *
-from wrappers_cfour import * #CU
-from qmmm import * #CU
+from gaussian_n import *  # CU
+from wrappers_cfour import *  # CU
+from qmmm import *  # CU
 
 # Import plugin add-ons here for now
 try:
@@ -50,7 +45,8 @@ except ImportError:
     pass
 
 # Python procedures like these can be run directly from the input file or integrated
-#   with the energy(), etc. routines by means of lines like those at the end of this file.
+# with the energy(), etc. routines by means of lines like those at the end
+# of this file.
 
 
 def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
@@ -83,11 +79,12 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
         handle.write('%d\n' % (molecule.natom()))
 
         for at in range(molecule.natom()):
-            handle.write('%6s %16.8f %16.8f %16.8f\n' % (molecule.symbol(at), molecule.x(at), molecule.y(at), molecule.z(at)))
+            handle.write('%6s %16.8f %16.8f %16.8f\n' % (molecule.symbol(
+                at), molecule.x(at), molecule.y(at), molecule.z(at)))
 
         for at in range(molecule.natom()):
-            handle.write('%6s %16.8f %16.8f %16.8f\n' % ('', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
-
+            handle.write('%6s %16.8f %16.8f %16.8f\n' % (
+                '', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
 
 
 def sherrill_gold_standard(name='mp2', **kwargs):
@@ -191,100 +188,6 @@ def allen_focal_point(name='mp2', **kwargs):
 
     return cbs(name, **kwargs)
 
-
-#def run_mp2_5(name, **kwargs):
-#    r"""Function that computes MP2.5 energy from results of a FNOCC
-#    MP3 calculation.
-#
-#    .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}
-#
-#    :PSI variables:
-#
-#    .. hlist::
-#       :columns: 1
-#
-#       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>`
-#       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>`
-#
-#    >>> energy('mp2.5')
-#
-#    """
-#    lowername = name.lower()
-#    kwargs = kwargs_lower(kwargs)
-#
-#    # Run detci calculation and collect conventional quantities
-#    energy('mp3', **kwargs)
-#    e_scf = psi4.get_variable('SCF TOTAL ENERGY')
-#    ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
-#    ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
-#    e_mp2 = e_scf + ce_mp2
-#    e_mp3 = e_scf + ce_mp3
-#
-#    # Compute quantities particular to MP2.5
-#    ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
-#    e_mp25 = e_scf + ce_mp25
-#    psi4.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
-#    psi4.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
-#    psi4.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
-#    psi4.set_variable('CURRENT ENERGY', e_mp25)
-#
-#    # build string of title banner and print results
-#    banners = ''
-#    banners += """psi4.print_out('\\n')\n"""
-#    banners += """banner(' MP2.5 ')\n"""
-#    banners += """psi4.print_out('\\n')\n\n"""
-#    exec(banners)
-#
-#    tables = ''
-#    tables += """  SCF total energy:                        %16.8f\n""" % (e_scf)
-#    tables += """  MP2 total energy:                        %16.8f\n""" % (e_mp2)
-#    tables += """  MP2.5 total energy:                      %16.8f\n""" % (e_mp25)
-#    tables += """  MP3 total energy:                        %16.8f\n\n""" % (e_mp3)
-#    tables += """  MP2 correlation energy:                  %16.8f\n""" % (ce_mp2)
-#    tables += """  MP2.5 correlation energy:                %16.8f\n""" % (ce_mp25)
-#    tables += """  MP3 correlation energy:                  %16.8f\n""" % (ce_mp3)
-#    psi4.print_out(tables)
-#
-#    return e_mp25
-
-
-# A direct translation of a plugin input file into a function call. Function calls are the only
-#     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
-#     but is an example of what to do for a more complicated procedure where different options
-#     are set for different qc steps.
-#def run_plugin_omega(name, **kwargs):
-#    r"""Function encoding sequence of PSI module and plugin calls, as well
-#    as typical options, to access Rob Parrish's omega plugin.
-#
-#    >>> energy('plugin_omega')
-#
-#    """
-#    lowername = name.lower()
-#    kwargs = p4util.kwargs_lower(kwargs)
-#
-#    plugfile = psi4.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
-#    psi4.plugin_load("%s" % (plugfile))
-#
-#    psi4.set_global_option('BASIS', 'AUG-CC-PVDZ')
-#    psi4.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
-#    psi4.set_global_option('REFERENCE', 'UHF')
-#    psi4.set_global_option('SCF_TYPE', 'DF')
-#    energy('scf', **kwargs)
-#
-#    psi4.set_global_option('dft_functional', 'wB97')
-#    psi4.set_global_option('dft_order_spherical', 25)
-#    psi4.set_global_option('dft_num_radial', 35)
-#    psi4.set_global_option('omega_procedure', 'ip')
-#    psi4.set_global_option('maxiter', 50)
-#    psi4.set_global_option('d_convergence', 5)
-#    psi4.set_global_option('e_convergence', 7)
-#    psi4.plugin("plugin_omega.so")
-#
-#    return psi4.get_variable('SCF TOTAL ENERGY')
-
-
 # Integration with driver routines
-#procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrill_gold_standard'] = sherrill_gold_standard
 procedures['energy']['allen_focal_point'] = allen_focal_point
-#procedures['energy']['plugin_omega'] = run_plugin_omega
