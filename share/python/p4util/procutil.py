@@ -28,10 +28,8 @@ import sys
 import pickle
 import collections
 import inspect
-#CUimport psi4
-#CUimport inputparser
-from p4xcpt import *
-from p4regex import *
+from .exceptions import *
+from . import p4regex
 
 
 if sys.version_info[0] > 2:
@@ -48,10 +46,26 @@ def kwargs_lower(kwargs):
     # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.iteritems():
         lkey = key.lower()
-        if yes.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
+
+        if lkey in ['irrep', 'check_bsse']:
+            caseless_kwargs[lkey] = value
+
+        elif 'dertype' in lkey:
+            if p4regex.der0th.match(str(value)):
+                caseless_kwargs[lkey] = 0
+            elif p4regex.der1st.match(str(value)):
+                caseless_kwargs[lkey] = 1
+            elif p4regex.der2nd.match(str(value)):
+                caseless_kwargs[lkey] = 2
+            else:
+                raise KeyError('Derivative type key %s was not recognized' % str(key))
+
+        elif p4regex.yes.match(str(value)):
             caseless_kwargs[lkey] = True
-        elif no.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
+
+        elif p4regex.no.match(str(value)):
             caseless_kwargs[lkey] = False
+
         else:
             caseless_kwargs[lkey] = value
     return caseless_kwargs

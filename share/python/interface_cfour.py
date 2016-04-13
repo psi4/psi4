@@ -37,7 +37,7 @@ import random
 import p4util
 import qcdb
 from molutil import *
-from p4xcpt import *  #CU add revisit
+from p4util.exceptions import *
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

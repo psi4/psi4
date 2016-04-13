@@ -35,7 +35,7 @@ import os
 import sys
 import random
 import pubchem
-from p4xcpt import *  # CU
+from p4util.exceptions import *
 
 
 # inputfile contents to be preserved from the processor

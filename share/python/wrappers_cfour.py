@@ -38,7 +38,7 @@ import shelve
 import datetime
 import difflib
 from driver import *
-from p4xcpt import *
+from p4util.exceptions import *
 # never import driver, wrappers, or aliases into this file
 
 
