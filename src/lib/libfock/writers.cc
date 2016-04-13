@@ -492,6 +492,7 @@ void IOBuffer_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l
     }
 }
 
+// Pretty sure I'm leaking memory over there
 void IOBuffer_PK::write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
                    size_t pk_pairs) {
     // Compute initial ijkl index for current buffer
@@ -605,6 +606,8 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     nthreads_ = omp_get_max_threads();
 #endif
     tgt_tasks_ = 100;
+    max_mem_buf_ = 71520;
+    max_mem_buf_ = Process::environment.options.get_int("MAX_MEM_BUF");
     itap_J_ = pk_file_;
     itap_K_ = pk_file_;
 }
@@ -753,36 +756,42 @@ void PK_integrals::allocate_buffers() {
     // Factor 2 because we need memory for J and K buffers
     size_t mem_per_thread = memory_ / (2 * nthreads_);
     // Factor 2 because we need 2 buffers for asynchronous I/O
-    size_t max_buf_size = mem_per_thread / 2;
-    // We need to fill min_task_num buffers to process all integrals
-    size_t min_task_num = pk_size_ / max_buf_size + 1;
-    // Task number divisible by the number of threads.
-    size_t big_task_num = tgt_tasks_ * nthreads_;
+    size_t buf_size = mem_per_thread / 2;
+    // If there is only one buffer, we could use less memory
+    // In practice it should switch to in core PK
+    if (max_mem_buf_ != 0) buf_size = std::min(buf_size, max_mem_buf_);
+
+    // Number of tasks needed with this buffer size
+    ntasks_ = pk_size_ / buf_size + 1;
+    // Is there less tasks than threads ?
+    if(ntasks_ < nthreads_) {
+        ntasks_ = ntasks_ * nthreads_;
+        size_t tmp_size = pk_size_ / ntasks_ + 1;
+        if(tmp_size > buf_size) {
+            throw PSIEXCEPTION("I cannot math.\n");
+        }
+        buf_size = tmp_size;
+        ntasks_ = pk_size_ / buf_size + 1;
+    }
+    size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks_ / nthreads_);
     // Some printing for us
-    outfile->Printf("  Min task number: %lu\n",min_task_num);
-    outfile->Printf("  Big task number: %lu\n",big_task_num);
-    // Make sure we have enough tasks for the memory available
-    ntasks_ = big_task_num > min_task_num ? big_task_num : min_task_num;
-    // Each task computes all ijkl index in a given interval
-    // How much memory is that ?
-    size_t task_buf_size = pk_size_ / ntasks_;
-    // Correct number of tasks to make sure we got all integrals
-    ntasks_ = pk_size_ / task_buf_size + 1;
-    size_t buf_per_thread = mem_per_thread / task_buf_size;
+    outfile->Printf("  Task number: %lu\n",ntasks_);
+    outfile->Printf("  Buffer size: %lu\n",buf_size);
+    outfile->Printf("  Buffer per thread: %lu\n",buf_per_thread);
 
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,task_buf_size,buf_per_thread,pk_file_));
+        iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,buf_size,buf_per_thread,pk_file_));
     }
 }
 
 IOBuffer_PK* PK_integrals::buffer() {
-    int thread = 1;
+    int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #endif
-    return iobuffers_[thread - 1];
+    return iobuffers_[thread];
 }
 
 void PK_integrals_old::deallocate_buffers() {
@@ -818,7 +827,16 @@ void PK_integrals_old::deallocate_buffers() {
 void PK_integrals::deallocate_buffers() {
     timer_on("AIO synchronize");
     AIO_->synchronize();
-    timer_off("AIO_synchronize");
+    timer_off("AIO synchronize");
+    // Can get rid of the pre-striping labels
+    for(int i = 0; i < label_J_[0].size(); ++i ) {
+        delete [] label_J_[0][i];
+    }
+    label_J_[0].clear();
+    for(int i = 0; i < label_K_[0].size(); ++i ) {
+        delete [] label_K_[0][i];
+    }
+    label_K_[0].clear();
     for(int i = 0; i < nthreads_; ++i) {
         delete iobuffers_[i];
     }
@@ -938,7 +956,7 @@ void PK_integrals_old::integrals_buffering(const double *buffer, int P, int Q, i
 
 void PK_integrals::integrals_buffering(const double *buffer, unsigned int P,
                                        unsigned int Q, unsigned int R, unsigned int S) {
-    int thread = 1;
+    int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #endif
@@ -952,7 +970,7 @@ void PK_integrals::integrals_buffering(const double *buffer, unsigned int P,
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        iobuffers_[thread - 1]->fill_values(val, i, j, k, l);
+        iobuffers_[thread]->fill_values(val, i, j, k, l);
     }
 
 }
@@ -1106,11 +1124,11 @@ void PK_integrals_old::write() {
 
 // Thread-safe function, invokes the appropriate buffer to perform the write
 void PK_integrals::write() {
-    int thread = 1;
+    int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
 #endif
-    iobuffers_[thread - 1]->write(batch_index_min_,batch_index_max_,pk_pairs_);
+    iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
 }
 
 void PK_integrals_old::close_files() {

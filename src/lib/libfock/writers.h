@@ -361,9 +361,6 @@ public:
     // And then we want to close the files
     virtual void close_files();
 
-    // Pure virtual function for forward compatibility
-    virtual IOBuffer_PK* buffer() {}
-
     // Getting J and K labels
     static char* get_label_J(size_t i);
     static char* get_label_K(size_t i);
@@ -391,6 +388,8 @@ private:
     int nthreads_;
     // Number of tasks per thread we would like for load balancing
     size_t tgt_tasks_;
+    // Max memory per buffer, for fast allocation/writing
+    size_t max_mem_buf_;
     // Total number of tasks we actually have
     size_t ntasks_;
 public:
