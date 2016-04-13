@@ -4,3 +4,4 @@ from .basislist import *
 from .procutil import *
 from .util import *
 from .exceptions import *
+from .inpsight import *
