@@ -103,10 +103,11 @@ void PKJK::integrals_reorder() {
     // to pre-stripe the PK file in this case.
 
     // This whole piece of code should be in the PKmanager itself, very probably.
-#pragma omp parallel for schedule(dynamic)
+    size_t nshqu = 0;
+#pragma omp parallel for schedule(dynamic) reduction(+:nshqu)
     for(size_t i = 0; i < PKmanager_->ntasks(); ++i) {
         // We need to get the list of shell quartets for each task
-        int thread = 1;
+        int thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
@@ -118,9 +119,16 @@ void PKJK::integrals_reorder() {
             unsigned int S = buf->S();
             tb[thread]->compute_shell(P,Q,R,S);
             PKmanager_->integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
+            ++nshqu;
         }
         PKmanager_->write();
     }
+    outfile->Printf("  We computed %lu shell quartets total.\n",nshqu);
+    size_t nsh = primary_->nshell();
+    size_t nsh_u = nsh * (nsh + 1) / 2;
+    nsh_u = nsh_u * (nsh_u + 1) / 2;
+    outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
+    outfile->Printf("  %7.2f percent of shell quartets recomputed.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
     // Deprecated for now
 #if 0
     size_t task_size = 0;
