@@ -24,8 +24,7 @@ r"""Module to provide mechanism to store and restore option states in driver.
 
 """
 import sys
-#CUimport psi4
-from p4xcpt import * #CU
+from .exceptions import *
 
 
 class OptionState(object):

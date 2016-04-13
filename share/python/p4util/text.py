@@ -29,7 +29,7 @@ to data tables and text.
 import sys
 import re
 import p4const
-from p4xcpt import *
+from .exceptions import *
 
 class Table(object):
     """Class defining a flexible Table object for storing data."""

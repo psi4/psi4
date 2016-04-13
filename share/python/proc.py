@@ -32,6 +32,7 @@ import os
 import subprocess
 import re
 import p4util
+from p4util.exceptions import *
 from molutil import *
 from functional import *
 from roa import *

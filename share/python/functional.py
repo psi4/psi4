@@ -29,6 +29,7 @@ import os
 import sys
 import math
 import copy
+import psi4
 from qcdb.interface_dftd3 import *
 
 ## ==> Functionals <== ##

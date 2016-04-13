@@ -25,7 +25,6 @@ from __future__ import absolute_import
 import math
 import psi4
 import p4const
-from p4regex import *
 
 
 def extract_clusters(mol, ghost=True, cluster_size=0):

@@ -53,7 +53,7 @@ import gzip
 import re
 import sys
 import os
-from p4xcpt import *
+from p4util.exceptions import *
 
 
 class PubChemObj(object):
