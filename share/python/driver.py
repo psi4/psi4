@@ -220,10 +220,13 @@ for ssuper in cfour_gradient_list():
 ### Helper functions
 def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec):
     r"""
-    This function will set local SCF and global energy convergence criterion to the defaults
-    listed at: http://www.psicode.org/psi4manual/master/scf.html#convergence-and-algorithm-defaults.
-    SCF will be convergence more tightly if a post-SCF method is select (pscf_Ec, and pscf_Dc) else the
-    looser (scf_Ec, and scf_Dc convergence criterion will be used).
+
+    This function will set local SCF and global energy convergence criterion
+    to the defaults listed at:
+    http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
+    algorithm-defaults. SCF will be convergence more tightly if a post-SCF
+    method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
+    scf_Dc convergence criterion will be used).
 
     ptype -         Procedure type (energy, gradient, etc)
     method_name -   Name of the method
@@ -236,7 +239,8 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
 
     if method_name not in procedures[ptype].keys():
         alternatives = ""
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures[ptype].keys(), 2)
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name,
+                                                                procedures[ptype].keys(), 2)
         if len(alt_method_name) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
         Cptype = ptype[0].upper() + ptype[1:]
@@ -262,6 +266,58 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
 
     # We passed!
     return True
+
+
+def _find_derivative_type(ptype, method_name, user_dertype):
+    r"""
+    Figures out the derivate type (0, 1, 2) for a given method_name. Will
+    first use user default and then the highest available derivative type for
+    a given method.
+    """
+
+    if ptype not in ['gradient', 'hessian']:
+        raise KeyError("_find_derivative_type: ptype must either be gradient or hessian.")
+
+    dertype = "(auto)"
+
+    # If user type is None, try to find the highest derivative
+    if user_dertype is None:
+        if (ptype == 'hessian') and (method_name in procedures['hessian']):
+            dertype = 2
+            # Will need special logic if we ever have managed Hessians
+        elif method_name in procedures['gradient']:
+            dertype = 1
+            if procedures['gradient'][method_name].__name__.startswith('select_'):
+                try:
+                    procedures['gradient'][method_name](method_name, probe=True)
+                except ManagedMethodError:
+                    dertype = 0
+        elif method_name in procedures['energy']:
+            dertype = 0
+    else:
+        # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
+        if not isinstance(user_dertype, int):
+            raise TypeError("_find_derivative_type: user_dertype should only be None or int!")
+        dertype = user_dertype
+
+    # Summary validation
+    if (dertype == 2) and (method_name in procedures['hessian']):
+        method = hessian
+    elif (dertype == 1) and (method_name in procedures['gradient']):
+        method = gradient
+    elif (dertype == 0) and (method_name in procedures['energy']):
+        method = energy
+    else:
+        alternatives = ''
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
+        if len(alt_lowername) > 0:
+            alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
+
+        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
+            % (method_name, str(dertype), alternatives))
+
+    return (dertype, method)
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -611,63 +667,12 @@ def gradient(name, **kwargs):
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
 
-    # Order of precedence:
-    #    1. Default for wavefunction
-    #    2. Value obtained from kwargs, if user changed it
-    #    3. If user provides a custom 'func' use that
-
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
-    # 1. set the default to that of the provided name
-    if lowername in procedures['gradient']:
-        dertype = 1
-        if procedures['gradient'][lowername].__name__.startswith('select_'):
-            try:
-                procedures['gradient'][lowername](lowername, probe=True)
-            except ManagedMethodError:
-                dertype = 0
-                func = energy
-    elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    # 2. Check if the user passes dertype into this function
-    if 'dertype' in kwargs:
-        opt_dertype = kwargs['dertype']
-
-        if der0th.match(str(opt_dertype)):
-            dertype = 0
-            func = energy
-        elif der1st.match(str(opt_dertype)):
-            dertype = 1
-        else:
-            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function optimize.""" % (opt_dertype))
-
-    # 3. if the user provides a custom function THAT takes precendence
-    if ('opt_func' in kwargs) or ('func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['opt_func'] = kwargs['func']
-            del kwargs['func']
-        dertype = 0
-        func = kwargs['opt_func']
-
-    # Summary validation
-    if (dertype == 1) and (lowername in procedures['gradient']):
-        pass
-    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
-        pass
-    elif (dertype == 0) and not(func is energy):
-        pass
-    else:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (lowername, dertype, alternatives))
+    dertype, func = _find_derivative_type('gradient', lowername, kwargs.pop('dertype', None))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -1313,74 +1318,12 @@ def hessian(name, **kwargs):
         ['FINDIF', 'HESSIAN_WRITE'],
         ['E_CONVERGENCE'])
 
-    # Order of precedence:
-    #    1. Default for wavefunction
-    #    2. Value obtained from kwargs, if user changed it
-    #    3. If user provides a custom 'func' use that
-
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
-    # 1. set the default to that of the provided name
-    if lowername in procedures['hessian']:
-        dertype = 2
-    elif lowername in procedures['gradient']:
-        dertype = 1
-        func = gradient
-        if procedures['gradient'][lowername].__name__.startswith('select_'):
-            try:
-                procedures['gradient'][lowername](lowername, probe=True)
-            except ManagedMethodError:
-                dertype = 0
-                func = energy
-    elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    # 2. Check if the user passes dertype into this function
-    if 'dertype' in kwargs:
-        freq_dertype = kwargs['dertype']
-
-        if der0th.match(str(freq_dertype)):
-            dertype = 0
-            func = energy
-        elif der1st.match(str(freq_dertype)):
-            dertype = 1
-            func = gradient
-        elif der2nd.match(str(freq_dertype)):
-            dertype = 2
-        else:
-            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function frequency.""" % (freq_dertype))
-
-    # 3. if the user provides a custom function THAT takes precedence
-    if ('freq_func' in kwargs) or ('func' in kwargs):
-        if 'func' in kwargs:
-            kwargs['freq_func'] = kwargs['func']
-            del kwargs['func']
-        dertype = 0
-        func = kwargs['freq_func']
-
-    # Summary validation
-    if (dertype == 2) and (lowername in procedures['hessian']):
-        pass
-    elif (dertype == 1) and (func is gradient) and (lowername in procedures['gradient']):
-        pass
-    elif (dertype == 1) and not(func is gradient):
-        pass
-    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
-        pass
-    elif (dertype == 0) and not(func is energy):
-        pass
-    else:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
-
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (lowername, dertype, alternatives))
+    dertype, func = _find_derivative_type('hessian', lowername, kwargs.pop('dertype', None))
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
