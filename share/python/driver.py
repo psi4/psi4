@@ -319,7 +319,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
     else:
         alternatives = ''
         alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
-        if len(alt_lowername) > 0:
+        if len(alt_method_name) > 0:
             alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
         raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
@@ -441,7 +441,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             elif len(basissets) == 2:
                 method_dict['extrapolation_type'] = driver_util.scf_xtpl_helgaker_2
             elif len(basissets) == 3:
-                method_dict['extrapolation_type'] = 'helgaker3pt'
+                method_dict['extrapolation_type'] = driver_util.scf_xtpl_helgaker_3
             else:
                 raise ValidationError("CBS Gufunc: SCF-type method '%s' can only be supplied 1, 2, or" 
                                       " 3 basis sets (given %d)." % (method, len(basissets)))
@@ -453,14 +453,6 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             else:
                 raise ValidationError("CBS Gufunc: post-SCF-type method '%s' can only be supplied 1 or 2" 
                                       " basis sets (given %d)." % (method, len(basissets)))
-        #else:
-        #    if len(basissets) == 1:
-        #        method_dict['extrapolation_type'] = None
-        #    elif len(basissets) == 2:
-        #        method_dict['extrapolation_type'] = 'helgaker2pt'
-        #    else:
-        #        raise ValidationError("CBS Gufunc: post-SCF-type method '%s' can only be supplied 1 or 2" \ 
-        #                              " basis sets (given %d)." % (method, len(basissets))
 
         method_list.append(method_dict)
 
@@ -491,6 +483,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         # Loop over basis sets
         method_name = method_dict['method_name']
         for basis in method_dict['basissets']:
+            #print(ptype, method_name, basis)
             psi4.set_global_option('BASIS', basis)
 
             # Just need a single energy list
@@ -573,7 +566,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     if ptype == 'energy':
         ptype_value = sum(ptype_list)
     else:
-        ptype_value = ptype_list.clone()
+        ptype_value = ptype_list[0].clone()
         for val in ptype_list[1:]:
             ptype_value.add(val)
 
@@ -849,7 +842,7 @@ def energy(name, **kwargs):
     lowername = name.lower()
 
     # Check if this is a CBS extrapolation 
-    if any(x in lowername for x in "/"):
+    if "/" in lowername:
         return _cbs_gufunc('energy', lowername, **kwargs)
 
     kwargs = p4util.kwargs_lower(kwargs)
@@ -928,6 +921,11 @@ def gradient(name, **kwargs):
 
     """
     lowername = name.lower()
+
+    # Check if this is a CBS extrapolation 
+    if "/" in lowername:
+        return _cbs_gufunc('gradient', lowername, **kwargs)
+
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
@@ -1577,7 +1575,10 @@ def hessian(name, **kwargs):
     finite difference of energies.
 
     """
-    lowername = name.lower()
+    # Check if this is a CBS extrapolation 
+    if "/" in lowername:
+        return _cbs_gufunc('hessian', lowername, **kwargs)
+
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
