@@ -341,7 +341,7 @@ def build_vwn5_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN5_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN5 LSDA Correlation\n')
+    fun.set_description('    VWN5 LSDA Correlation, QMC Parameters, VWN5 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -377,7 +377,7 @@ def build_vwn5rpa_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN5RPA_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN5 (RPA) LSDA Correlation\n')
+    fun.set_description('    VWN5 LSDA Correlation, RPA Parameters, VWN5 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -413,7 +413,7 @@ def build_vwn3_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN3_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN3 LSDA Correlation\n')
+    fun.set_description('    VWN3 LSDA Correlation, QMC Parameters, VWN1 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -446,7 +446,7 @@ def build_vwn3rpa_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN3RPA_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN3 (RPA) LSDA Correlation\n')
+    fun.set_description('    VWN3 LSDA Correlation, RPA Parameters, VWN1 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -650,15 +650,6 @@ def build_wb88_x_functional(name):
     # => End User-Customization <= #
 
     return fun
-
-#def build_wb88_x_functional(name):
-#
-#    # Call this first
-#    fun = psi4.Functional.build_base('wB88_X')
-#
-#    # => End User-Customization <= #
-#
-#    return fun
 
 def build_hf_x_functional(name):
 
@@ -1311,7 +1302,6 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     sup.add_x_functional(b3)
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
-    #vwn = build_functional('VWN5RPA_C')
     vwn = build_functional('VWN5_C')
     vwn.set_alpha(0.19)
     sup.add_c_functional(lyp)
@@ -2111,7 +2101,6 @@ def build_b3lyp5d3mbj_superfunctional(name, npoints, deriv):
 
 def build_bp86d1_superfunctional(name, npoints, deriv):
 
-    #sup = build_b3lyp_superfunctional(name, npoints, deriv)
     sup = build_bp86_superfunctional(name, npoints, deriv)
     sup.set_name('BP86-D1')
 
