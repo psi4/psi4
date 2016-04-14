@@ -27,7 +27,11 @@ import psi4
 import qcdb
 import numpy as np
 
-def validate_bracketed_basis(basisstring, molecule=None):
+zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
+zeta_val2sym = {k+2:v for k, v in zip(range(7), zeta_values)}
+zeta_sym2val = {v:k for k, v in zeta_val2sym.items()}
+
+def expand_bracketed_basis(basisstring, molecule=None):
     r"""Function to transform and validate basis series specification
     *basisstring* for cbs(). A basis set with no paired square brackets is
     passed through with zeta level 0 (e.g., '6-31+G(d,p)' is returned as
@@ -41,7 +45,6 @@ def validate_bracketed_basis(basisstring, molecule=None):
     8] or non-Dunning sets or non-findable .gbs sets.
 
     """
-    ZETA = ['d', 't', 'q', '5', '6', '7', '8']
     BSET = []
     ZSET = []
     legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*)\[(?P<zeta>[dtq2345678,]*)\](?P<post>.*z)$', re.IGNORECASE)
@@ -49,13 +52,13 @@ def validate_bracketed_basis(basisstring, molecule=None):
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
         # filter out commas and be forgiving of e.g., t5q or 3q
-        zetas = [z for z in ZETA if (z in basisname.group('zeta') or str(ZETA.index(z) + 2) in basisname.group('zeta'))]
+        bn_gz = basisname.group('zeta')
+        zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
         for b in zetas:
-            if ZSET:
-                if (int(ZSET[len(ZSET) - 1]) - ZETA.index(b)) != 1:
+            if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
                     raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, b))
             BSET.append(basisname.group('pre') + b + basisname.group('post'))
-            ZSET.append(ZETA.index(b) + 2)
+            ZSET.append(zeta_values.index(b) + 2)
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
         raise ValidationError("""Basis series '%s' invalid. Specify a basis series matching"""
                               """ '*cc-*[dtq2345678,]*z'.""" % (basisstring))
@@ -65,13 +68,14 @@ def validate_bracketed_basis(basisstring, molecule=None):
 
     if molecule is None:
         molecule = """\nH\nH 1 1.00\n"""
-    for b in BSET:
-        try:
-            bsdict = qcdb.BasisSet.pyconstruct(molecule, "BASIS", b)
-        except qcdb.BasisSetNotFound, e:
-            raise ValidationError("""Basis set '%s' not available for molecule.""" % (b))
 
-    return [BSET, ZSET]
+    for basis in BSET:
+        try:
+            qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
+        except qcdb.BasisSetNotFound, e:
+            raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
+
+    return (BSET, ZSET)
 
 
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
@@ -93,17 +97,21 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     if isinstance(valueLO, float):
         beta = (valueHI - valueLO) / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
         value = valueHI - beta * math.exp(-1 * alpha * zHI)
-        print(valueLO, valueHI)
 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname)
-            cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (value)
-            cbsscheme += """   Alpha (exponent) Value:          %16.8f\n""" % (alpha)
-            cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
+            cbsscheme += """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:             % 16.14f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%s) Energy:             % 16.14f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:          % 16.14f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:        % 16.14f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """  @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.14f\n\n""" % value
             psi4.print_out(cbsscheme)
 
         return value
@@ -120,7 +128,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         value.set_name('Helgaker SCF (%s, %s) data' % (zLO, zHI))
 
         if verbose > 2:
-            psi4.print_out( """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname))
+            psi4.print_out( """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
             psi4.print_out( """   LO-zeta (%s)""" % str(zLO))
             psi4.print_out( """   LO-zeta Data""")
             valueLO.print_out()
@@ -153,10 +161,6 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
     if isinstance(valueLO, float):
 
         ratio = (valueHI - valueMD) / (valueMD - valueLO)
-        print(valueLO, valueMD, valueHI)
-        print(ratio)
-        print((valueHI - valueMD))
-        print((valueMD - valueLO))
         alpha = -1 * math.log(ratio)
         beta = (valueHI - valueMD) / (math.exp(-1 * alpha * zMD) * (ratio - 1))
         value = valueHI - beta * math.exp(-1 * alpha * zHI)
@@ -164,13 +168,19 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname)
-            cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   MD-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zMD), valueMD)
-            cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (value)
-            cbsscheme += """   Alpha (exponent) Value:          %16.8f\n""" % (alpha)
-            cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
+            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   LO-zeta (%s) Energy:             % 16.14f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   MD-zeta (%s) Energy:             % 16.14f\n""" % (str(zMD), valueMD)
+            cbsscheme += """   HI-zeta (%s) Energy:             % 16.14f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Alpha (exponent) Value:          % 16.14f\n""" % (alpha)
+            cbsscheme += """   Beta (coefficient) Value:        % 16.14f\n\n""" % (beta)
+
+            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zMD].upper(),
+                                                             zeta_val2sym[zHI].upper())
+            cbsscheme += """  @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (18 - len(name_str))
+            cbsscheme += """% 16.14f\n\n""" % value
             psi4.print_out(cbsscheme)
 
         return value
@@ -196,7 +206,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         value_view[:] = np_value
 
         if verbose > 2:
-            psi4.print_out( """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname))
+            psi4.print_out( """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
 
             psi4.print_out( """   LO-zeta (%s)""" % str(zLO))
             psi4.print_out( """   LO-zeta Data""")
@@ -222,7 +232,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
+def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
 
@@ -231,24 +241,31 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
     """
 
     if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
+        raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
                               % (type(valueLO), type(valueHI)))
 
     if isinstance(valueLO, float):
         value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
         beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
 
+        final = valueSCF + value
         if verbose:
             # Output string with extrapolation parameters
-            cbsscheme = ''
-            cbsscheme += """\n   ==> %s <==\n\n""" % (functionname)
-            cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (value)
-            cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
+            cbsscheme  = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.14f\n""" % (str(zHI), valueSCF)
+            cbsscheme += """   LO-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zLO), valueLO)
+            cbsscheme += """   HI-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zHI), valueHI)
+            cbsscheme += """   Beta (coefficient) Value:         % 16.14f\n""" % beta
+            cbsscheme += """   Extrapolated Correlation Energy:  % 16.14f\n\n""" % value
+        
+            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            cbsscheme += """  @Extrapolated """
+            cbsscheme += name_str + ':'
+            cbsscheme += " " * (19 - len(name_str))
+            cbsscheme += """% 16.14f\n\n""" % final
             psi4.print_out(cbsscheme)
 
-        return value
+        return final
 
     elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
 
@@ -268,7 +285,8 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         value.set_name('Helgaker Corr (%s, %s) data' % (zLO, zHI))
 
         if verbose > 2:
-            psi4.print_out( """\n   ==> %s <==\n\n""" % (functionname))
+            psi4.print_out( """\n   ==> Helgaker 2-point correlated extrapolation for """
+                            """method: %s <==\n\n""" % (functionname.upper()))
             psi4.print_out( """   LO-zeta (%s)\n""" % str(zLO))
             psi4.print_out( """   LO-zeta Data\n""" % str(zLO))
             valueLO.print_out()
@@ -279,7 +297,9 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
             psi4.print_out( """   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
             psi4.print_out( """   Beta Data:\n""")
             beta.print_out()
-        
+       
+
+        value.add(valueSCF) 
         return value
 
     else:

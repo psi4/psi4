@@ -38,7 +38,6 @@ import driver_util
 
 
 
-
 # Procedure lookup tables
 procedures = {
         'energy': {
@@ -394,7 +393,8 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     method_list = []
 
     # Split into components
-    for method_str in total_method_name.split('+'):
+    total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
+    for method_str in total_method_name_list:
         if (method_str.count("[") > 1) or (method_str.count("]") > 1):
             raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str) 
        
@@ -414,7 +414,8 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         fpos = basis_str.find("[")
         spos = basis_str.find("]")
 
-        basissets, dunning_num = _expand_bracketed_basis(basis_str)
+        molstr = molecule.create_psi4_string_from_molecule()
+        basissets, dunning_num = driver_util.expand_bracketed_basis(basis_str, molecule=molstr)
 
         # check method, need to be careful with gradients
         _method_exists(ptype, method)
@@ -534,27 +535,36 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
                 e_list = corr_energy_list
                 p_list = corr_ptype_list
 
-            # Extrapolate the list
+            # Extrapolate the list for energy
             extrap_data = []
             for z, data in zip(method_dict['basis_zetas'], e_list):
                 extrap_data.append(z)
                 extrap_data.append(data)
-            method_total_energy = xt_type(mt_name, *extrap_data, verbose=cbs_verbose)
 
-            extrap_data = []
-            for z, data in zip(method_dict['basis_zetas'], p_list):
-                extrap_data.append(z)
-                extrap_data.append(data)
-            method_ptype_data = xt_type(mt_name, *extrap_data, verbose=cbs_verbose)
+            if method_dict['isSCF']:
+                method_total_energy = xt_type(mt_name,
+                                              *extrap_data, verbose=cbs_verbose)
+            else:
+                method_total_energy = xt_type(mt_name, scf_energy_list[-1],
+                                              *extrap_data, verbose=cbs_verbose)
 
-            # Add the largest SCF back into correlated methods
-            if not method_dict['isSCF']:
-                method_total_energy += scf_energy_list[-1]
+            # Extrapolate the list of ptype data
+            if ptype == 'energy':
+                # We already have energy, skip extrapolation
+                method_ptype_data = method_total_energy
+            else:
+                extrap_data = []
+                for z, data in zip(method_dict['basis_zetas'], p_list):
+                    extrap_data.append(z)
+                    extrap_data.append(data)
 
-                if ptype == 'energy':
-                    method_ptype_data += scf_ptype_list[-1] 
+                if method_dict['isSCF']:
+                    method_ptype_data = xt_type(mt_name,
+                                                *extrap_data, verbose=cbs_verbose)
                 else:
-                    method_ptype_data.add(scf_ptype_list[-1])
+                    method_ptype_data = xt_type(mt_name, scf_type_list[-1],
+                                                *extrap_data, verbose=cbs_verbose)
+
 
         # Append to total list
         energy_list.append(method_total_energy)
