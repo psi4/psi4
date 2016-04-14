@@ -202,13 +202,16 @@ fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
 for fctl in sorted(funcdict.keys()):
 
-    if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
+    if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero', 'd3mzero')):
         pass
 
     else:
         body(fall, funcdict, fctl)
     
-        if funcdict[fctl]['is_gga']:
+        if funcdict[fctl]['is_gga'] and not funcdict[fctl]['is_x_hybrid'] \
+                                    and not funcdict[fctl]['is_c_hybrid'] \
+                                    and not funcdict[fctl]['is_x_lrc'] \
+                                    and not funcdict[fctl]['is_meta']:
             body(fgga, funcdict, fctl)
     
         if funcdict[fctl]['is_meta']:
