@@ -312,6 +312,14 @@ IOBuffer_PK::IOBuffer_PK(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<
     allocate();
 }
 
+IOBuffer_PK::IOBuffer_PK(boost::shared_ptr<BasisSet> primary, size_t buf_size) {
+    primary_ = primary;
+    buf_size_ = buf_size;
+    offset_ = 0;
+    bufidx_ = 0;
+    buf_ = 0;
+}
+
 IOBuffer_PK::~IOBuffer_PK() {
     deallocate();
 }
@@ -567,6 +575,112 @@ void IOBuffer_PK::write(std::vector<size_t> &batch_min_ind, std::vector<size_t> 
     ::memset((void *) K_buf_[buf_], '\0', buf_size_ * sizeof(double));
 }
 
+InCoreBufferPK::InCoreBufferPK(boost::shared_ptr<BasisSet> primary, size_t buf_size, size_t lastbuf,
+                               double *Jbuf, double *Kbuf) : IOBuffer_PK(primary,buf_size) {
+    last_buf_ = lastbuf;
+    J_bufp_ = Jbuf;
+    K_bufp_ = Kbuf;
+}
+
+bool InCoreBufferPK::is_shell_relevant() {
+        // May implement the sieve here
+
+        size_t lowi = primary_->shell_to_basis_function(P_);
+        size_t lowj = primary_->shell_to_basis_function(Q_);
+        size_t lowk = primary_->shell_to_basis_function(R_);
+        size_t lowl = primary_->shell_to_basis_function(S_);
+
+        size_t low_ijkl = INDEX4(lowi, lowj, lowk, lowl);
+        size_t low_ikjl = INDEX4(lowi, lowk, lowj, lowl);
+        size_t low_iljk = INDEX4(lowi, lowl, lowj, lowk);
+
+        // Use the max ijkl that can be in the buffer
+        size_t max_idx = buf_size_ * (bufidx_ + 1) + last_buf_ - 1;
+
+        // Can we filter out this shell because all of its basis function
+        // indices are too high ?
+
+        if (low_ijkl > max_idx && low_ikjl > max_idx && low_iljk > max_idx) {
+            return false;
+        }
+
+        int ni = primary_->shell(P_).nfunction();
+        int nj = primary_->shell(Q_).nfunction();
+        int nk = primary_->shell(R_).nfunction();
+        int nl = primary_->shell(S_).nfunction();
+
+        size_t hii = lowi + ni - 1;
+        size_t hij = lowj + nj - 1;
+        size_t hik = lowk + nk - 1;
+        size_t hil = lowl + nl - 1;
+
+        size_t hi_ijkl = INDEX4(hii, hij, hik, hil);
+        size_t hi_ikjl = INDEX4(hii, hik, hij, hil);
+        size_t hi_iljk = INDEX4(hii, hil, hij, hik);
+
+        // Use the min ijkl that can be in buffer, which is the offset_
+
+        // Can we filter out this shell because all of its basis function
+        // indices are too low ?
+
+        if (hi_ijkl < offset_ && hi_ikjl < offset_ && hi_iljk < offset_) {
+            return false;
+        }
+
+        // Now we loop over unique basis function quartets in the shell quartet
+        AOIntegralsIterator bfiter = shelliter_.integrals_iterator();
+        for(bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
+            size_t i = bfiter.i();
+            size_t j = bfiter.j();
+            size_t k = bfiter.k();
+            size_t l = bfiter.l();
+
+            size_t ijkl = INDEX4(i,j,k,l);
+            size_t ikjl = INDEX4(i,k,j,l);
+            size_t iljk = INDEX4(i,l,j,k);
+
+            bool bJ = ijkl >= offset_ && ijkl <= max_idx;
+            bool bK1 = ikjl >= offset_ && ikjl <= max_idx;
+            bool bK2 = iljk >= offset_ && iljk <= max_idx;
+
+            if (bJ || bK1 || bK2) {
+                // This shell should be computed by the present thread.
+                return true;
+            }
+        }
+
+}
+
+void InCoreBufferPK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+    size_t ijkl = INDEX4(i,j,k,l);
+    size_t ikjl = INDEX4(i, k, j, l);
+    // Use the max ijkl that can be in the buffer
+    size_t max_idx = buf_size_ * (bufidx_ + 1) + last_buf_ - 1;
+
+    if (ijkl >= offset_ && ijkl <= max_idx) {
+        J_bufp_[ijkl - offset_] += val;
+    }
+    if(ikjl >= offset_ && ikjl <= max_idx) {
+        if (i == k || j == l) {
+            K_bufp_[ikjl - offset_] += val;
+        } else {
+            K_bufp_[ikjl - offset_] += 0.5 * val;
+        }
+    }
+
+    if(i != j && k != l) {
+        size_t iljk = INDEX4(i, l, j, k);
+        if (iljk >= offset_ && iljk <= max_idx) {
+            if ( i == l || j == k) {
+                K_bufp_[iljk - offset_] += val;
+            } else {
+                K_bufp_[iljk - offset_] += 0.5 * val;
+            }
+        }
+    }
+
+}
+
 PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
                            int max_batches, size_t memory, double cutoff) {
     primary_ = primary;
@@ -576,6 +690,11 @@ PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::s
 
     pk_pairs_ = nbf_ * (nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
+    if (2 * pk_size_ < memory_ ) {
+        in_core_ = true;
+    } else {
+        in_core_ = false;
+    }
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm");
@@ -610,6 +729,7 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     max_mem_buf_ = Process::environment.options.get_int("MAX_MEM_BUF");
     itap_J_ = pk_file_;
     itap_K_ = pk_file_;
+
 }
 
 PK_integrals_old::~PK_integrals_old() {
@@ -647,9 +767,19 @@ PK_integrals_old::~PK_integrals_old() {
     if (label_K_[1].size() != 0) {
         outfile->Printf("Labels: Clean up your code!!!");
     }
+
+    //If we did in-core, now is the time to delete the big buffers
+    if (in_core_) {
+        delete [] J_ints_;
+        delete [] K_ints_;
+    }
 }
 
 void PK_integrals_old::batch_sizing() {
+
+    if (in_core_) {
+        return;
+    }
 
     double batch_thresh = 0.1;
 
@@ -718,13 +848,17 @@ void PK_integrals_old::batch_sizing() {
 }
 
 void PK_integrals_old::print_batches() {
-    // Print batches for the user and for control
-    for(int batch = 0; batch < batch_pq_min_.size(); ++batch){
-        outfile->Printf("\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu] size = %12zu\n",
-                batch + 1,
-                batch_pq_min_[batch],batch_pq_max_[batch],
-                batch_index_min_[batch],batch_index_max_[batch],
-                batch_index_max_[batch] - batch_index_min_[batch]);
+    if (in_core_) {
+        outfile->Printf("\tPerforming in-core PK\n";)
+    } else {
+        // Print batches for the user and for control
+        for(int batch = 0; batch < batch_pq_min_.size(); ++batch){
+            outfile->Printf("\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu] size = %12zu\n",
+                    batch + 1,
+                    batch_pq_min_[batch],batch_pq_max_[batch],
+                    batch_index_min_[batch],batch_index_max_[batch],
+                    batch_index_max_[batch] - batch_index_min_[batch]);
+        }
     }
 }
 
@@ -753,36 +887,63 @@ void PK_integrals_old::allocate_buffers() {
 }
 
 void PK_integrals::allocate_buffers() {
-    // Factor 2 because we need memory for J and K buffers
-    size_t mem_per_thread = memory_ / (2 * nthreads_);
-    // Factor 2 because we need 2 buffers for asynchronous I/O
-    size_t buf_size = mem_per_thread / 2;
-    // If there is only one buffer, we could use less memory
-    // In practice it should switch to in core PK
-    if (max_mem_buf_ != 0) buf_size = std::min(buf_size, max_mem_buf_);
+    if(in_core_) {
+        // Need to allocate two big arrays
+        J_ints_ = new double[pk_size_];
+        K_ints_ = new double[pk_size_];
+        ::memset((void*) J_ints_, '\0', pk_size_ * sizeof(double));
+        ::memset((void*) K_ints_, '\0', pk_size_ * sizeof(double));
 
-    // Number of tasks needed with this buffer size
-    ntasks_ = pk_size_ / buf_size + 1;
-    // Is there less tasks than threads ?
-    if(ntasks_ < nthreads_) {
-        ntasks_ = ntasks_ * nthreads_;
-        size_t tmp_size = pk_size_ / ntasks_ + 1;
-        if(tmp_size > buf_size) {
-            throw PSIEXCEPTION("I cannot math.\n");
+        // Now we allocate a derived class of IOBuffer_PK that takes care of
+        // giving the tasks to the threads and storing results properly.
+
+        size_t buffer_size = pk_size_ / nthreads_;
+        size_t lastbuf = pk_size_ % nthreads_;
+        size_t start = 0;
+
+        for(int i = 0, i < nthreads_; ++i) {
+            start = i * buffer_size;
+            if(i < nthreads_ - 1) {
+                IOBuffer_PK* buf = new InCoreBufferPK(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
+            } else {
+                IOBuffer_PK* buf = new InCoreBufferPK(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
+            }
+            iobuffers_.push_back(buf);
+            ntasks_ = nthreads_;
         }
-        buf_size = tmp_size;
-        ntasks_ = pk_size_ / buf_size + 1;
-    }
-    size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks_ / nthreads_);
-    // Some printing for us
-    outfile->Printf("  Task number: %lu\n",ntasks_);
-    outfile->Printf("  Buffer size: %lu\n",buf_size);
-    outfile->Printf("  Buffer per thread: %lu\n",buf_per_thread);
 
-    // Ok, now we have the size of a buffer and how many buffers
-    // we want for each thread. We can allocate IO buffers.
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,buf_size,buf_per_thread,pk_file_));
+    } else {
+        // Factor 2 because we need memory for J and K buffers
+        size_t mem_per_thread = memory_ / (2 * nthreads_);
+        // Factor 2 because we need 2 buffers for asynchronous I/O
+        size_t buf_size = mem_per_thread / 2;
+        // If there is only one buffer, we could use less memory
+        // In practice it should switch to in core PK
+        if (max_mem_buf_ != 0) buf_size = std::min(buf_size, max_mem_buf_);
+
+        // Number of tasks needed with this buffer size
+        ntasks_ = pk_size_ / buf_size + 1;
+        // Is there less tasks than threads ?
+        if(ntasks_ < nthreads_) {
+            ntasks_ = ntasks_ * nthreads_;
+            size_t tmp_size = pk_size_ / ntasks_ + 1;
+            if(tmp_size > buf_size) {
+                throw PSIEXCEPTION("I cannot math.\n");
+            }
+            buf_size = tmp_size;
+            ntasks_ = pk_size_ / buf_size + 1;
+        }
+        size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks_ / nthreads_);
+        // Some printing for us
+        outfile->Printf("  Task number: %lu\n",ntasks_);
+        outfile->Printf("  Buffer size: %lu\n",buf_size);
+        outfile->Printf("  Buffer per thread: %lu\n",buf_per_thread);
+
+        // Ok, now we have the size of a buffer and how many buffers
+        // we want for each thread. We can allocate IO buffers.
+        for(int i = 0; i < nthreads_; ++i) {
+            iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,buf_size,buf_per_thread,pk_file_));
+        }
     }
 }
 
@@ -932,15 +1093,6 @@ size_t PK_integrals_old::task_quartets() {
 void PK_integrals_old::integrals_buffering(const double *buffer, int P, int Q, int R, int S) {
 
     AOIntegralsIterator bfiter(primary_->shell(P), primary_->shell(Q), primary_->shell(R), primary_->shell(S));
-    int i0 = primary_->shell_to_basis_function(P);
-    int j0 = primary_->shell_to_basis_function(Q);
-    int k0 = primary_->shell_to_basis_function(R);
-    int l0 = primary_->shell_to_basis_function(S);
-
-    int ni = primary_->shell(P).nfunction();
-    int nj = primary_->shell(Q).nfunction();
-    int nk = primary_->shell(R).nfunction();
-    int nl = primary_->shell(S).nfunction();
 
     for (bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
         int i = bfiter.i();
@@ -1009,11 +1161,17 @@ void PK_integrals_old::fill_values(double val, size_t i, size_t j, size_t k, siz
 }
 
 void PK_integrals_old::open_files(bool old) {
+    if (in_core_) {
+        return;
+    }
     psio_->open(itap_J_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
     psio_->open(itap_K_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
 }
 
 void PK_integrals::open_files(bool old) {
+    if(in_core_) {
+        return;
+    }
     psio_->open(pk_file_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
     // Create the files ? Pre-stripe them.
     if(!old) {
@@ -1043,6 +1201,9 @@ char* PK_integrals_old::get_label_K(size_t i) {
 // This function is not designed thread-safe and is supposed to execute outside parallel
 // environment for now.
 void PK_integrals_old::write() {
+    if (in_core_) {
+        return;
+    }
     // Clear up the buffers holding P, Q, R, S since the task is over
     buf_P.clear();
     buf_Q.clear();
@@ -1124,19 +1285,29 @@ void PK_integrals_old::write() {
 
 // Thread-safe function, invokes the appropriate buffer to perform the write
 void PK_integrals::write() {
-    int thread = 0;
+    if(in_core_) {
+        return;
+    } else {
+        int thread = 0;
 #ifdef _OPENMP
-    thread = omp_get_thread_num();
+        thread = omp_get_thread_num();
 #endif
-    iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
+        iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
+    }
 }
 
 void PK_integrals_old::close_files() {
+    if(in_core_) {
+        return;
+    }
     psio_->close(itap_J_, 1);
     psio_->close(itap_K_, 1);
 }
 
 void PK_integrals::close_files() {
+    if(in_core_) {
+        return;
+    }
     psio_->close(pk_file_, 1);
 }
 
@@ -1177,33 +1348,19 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
         Jvecs.push_back(J_vec);
     }
 
-    // Now loop over batches
-    for(int batch = 0; batch < batch_pq_min_.size(); ++batch) {
-        size_t min_index = batch_index_min_[batch];
-        size_t max_index = batch_index_max_[batch];
-        size_t batch_size = max_index - min_index;
-        size_t min_pq = batch_pq_min_[batch];
-        size_t max_pq = batch_pq_max_[batch];
-        double* j_block = new double[batch_size];
-
-        int filenum;
-
-        char* label;
-        if (exch) {
-            label = get_label_K(batch);
-            filenum = itap_K_;
-        } else {
-            label = get_label_J(batch);
-            filenum = itap_J_;
-        }
-        psio_->read_entry(filenum, label, (char *) j_block, batch_size * sizeof(double));
-
+    if(in_core_) {
         // Read one entry, use it for all density matrices
         for(int N = 0; N < J.size(); ++N) {
             double* D_vec = D_vec_[N];
             double* J_vec = Jvecs[N];
-            double* j_ptr = j_block;
-            for(size_t pq = min_pq; pq < max_pq; ++pq) {
+            double* j_ptr;
+            if(exch) {
+                j_ptr = K_ints_;
+            } else {
+                j_ptr = J_ints_;
+            }
+//TODO We should totally parallelize this loop now.
+            for(size_t pq = 0; pq < pk_pairs_; ++pq) {
                 double D_pq = D_vec[pq];
                 double *D_rs = D_vec;
                 double J_pq = 0.0;
@@ -1218,9 +1375,53 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
                 J_vec[pq] += J_pq;
             }
         }
+    } else {
+        // Now loop over batches
+        for(int batch = 0; batch < batch_pq_min_.size(); ++batch) {
+            size_t min_index = batch_index_min_[batch];
+            size_t max_index = batch_index_max_[batch];
+            size_t batch_size = max_index - min_index;
+            size_t min_pq = batch_pq_min_[batch];
+            size_t max_pq = batch_pq_max_[batch];
+            double* j_block = new double[batch_size];
 
-        delete [] label;
-        delete [] j_block;
+            int filenum;
+
+            char* label;
+            if (exch) {
+                label = get_label_K(batch);
+                filenum = itap_K_;
+            } else {
+                label = get_label_J(batch);
+                filenum = itap_J_;
+            }
+            psio_->read_entry(filenum, label, (char *) j_block, batch_size * sizeof(double));
+
+            // Read one entry, use it for all density matrices
+            for(int N = 0; N < J.size(); ++N) {
+                double* D_vec = D_vec_[N];
+                double* J_vec = Jvecs[N];
+                double* j_ptr = j_block;
+            //TODO Could consider parallelizing this loop
+                for(size_t pq = min_pq; pq < max_pq; ++pq) {
+                    double D_pq = D_vec[pq];
+                    double *D_rs = D_vec;
+                    double J_pq = 0.0;
+                    double *J_rs = J_vec;
+                    for(size_t rs = 0; rs <= pq; ++rs) {
+                        J_pq += *j_ptr * (*D_rs);
+                        *J_rs += *j_ptr * D_pq;
+                        ++D_rs;
+                        ++J_rs;
+                        ++j_ptr;
+                    }
+                    J_vec[pq] += J_pq;
+                }
+            }
+
+            delete [] label;
+            delete [] j_block;
+        }
     }
 
     // Now, directly transfer data to resulting matrices
@@ -1237,7 +1438,7 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
 }
 
 void PK_integrals_old::form_K(std::vector<SharedMatrix> K) {
-    // For asymmetric densities, we do exactly the same than for J
+    // For symmetric densities, we do exactly the same than for J
     // but we read another entry
     form_J(K, true);
 }
