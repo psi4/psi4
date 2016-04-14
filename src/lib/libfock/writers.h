@@ -182,6 +182,7 @@ public:
    need to wait on asynchronous I/O before getting a free buffer.
    -*/
 
+//TODO: Make a base class with explicit index bounds for all functions that use them
 class IOBuffer_PK {
 private:
     // File to which we write
@@ -201,6 +202,20 @@ private:
     std::vector<double*> J_buf_;
     std::vector<double*> K_buf_;
 
+    // Allocating function
+    void allocate();
+    // Deallocating function
+    void deallocate();
+
+
+    boost::shared_ptr<AIOHandler> AIO_;
+    psio_address dummy_;
+
+    // That should never be copied
+    IOBuffer_PK(const IOBuffer_PK &other) {};
+    IOBuffer_PK & operator = (IOBuffer_PK &other) {};
+
+protected:
     // Size of internal buffers
     size_t buf_size_;
     // Number of internal buffers for each J and K
@@ -210,34 +225,24 @@ private:
     unsigned int bufidx_;
     // Offset for current buffer
     size_t offset_;
-
-    // Allocating function
-    void allocate();
-    // Deallocating function
-    void deallocate();
-
     boost::shared_ptr<BasisSet> primary_;
     AOShellCombinationsIterator shelliter_;
     // Which shell quartet to compute ?
     unsigned int P_, Q_, R_, S_;
-    // Does this shell quartet contain target integrals for current buffer ?
-    bool is_shell_relevant();
     // Are there any shells left ?
     bool shells_left_;
+    // Does this shell quartet contain target integrals for current buffer ?
+    virtual bool is_shell_relevant();
 
-    boost::shared_ptr<AIOHandler> AIO_;
-    psio_address dummy_;
-
-    // That should never be copied
-    IOBuffer_PK(const IOBuffer_PK &other) {};
-    IOBuffer_PK & operator = (IOBuffer_PK &other) {};
 public:
 
-    // Creator
+    // Constructor
     IOBuffer_PK(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<AIOHandler> AIO,
                 size_t buf_size, size_t nbuf, int pk_file);
+    // Minimal constructor to be used by derived class
+    IOBuffer_PK(boost::shared_ptr<BasisSet> primary, size_t buf_size);
     //Destructor
-    ~IOBuffer_PK();
+    virtual ~IOBuffer_PK();
 
     // Accessor functions to shell indices
     unsigned int P() { return P_; }
@@ -251,11 +256,36 @@ public:
     void next_quartet();
 
     // Function to fill values in
-    void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
 
     // Task is done, write the buffer to file
     void write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
                size_t pk_pairs);
+
+};
+
+/*- InCoreBufferPK: Manages the computation and storage of integrals
+ * for in-core PK algorithm. -*/
+
+class InCoreBufferPK : public IOBuffer_PK {
+private:
+    size_t pk_size_;
+    size_t last_buf_;
+    double* J_bufp_;
+    double* K_bufp_;
+
+    // Version that takes into account last_buf_
+    //TODO This version is probably also more efficient than the base class
+    virtual bool is_shell_relevant();
+
+public:
+    InCoreBufferPK(boost::shared_ptr<BasisSet> primary, size_t buf_size, size_t lastbuf,
+                   double* Jbuf, double* Kbuf);
+    // May not need implementation: destructor
+    virtual ~InCoreBufferPK();
+
+    // Function to fill values to fill directly big buffer
+    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
 
 };
 
@@ -269,6 +299,7 @@ public:
    Should also make it easier to test different parallelization schemes for integral writing.
 -*/
 
+//TODO Seriously need to reorganize all these classes
 class PK_integrals_old {
 protected:
     int nbf_;  // Number of basis functions
@@ -326,6 +357,12 @@ protected:
 
     // The data for actually contracting density matrices with integrals
     std::vector<double*> D_vec_;
+
+    // Are we doing in-core PK ?
+    bool in_core_;
+    // Big in-core arrays for J and K
+    double* J_ints_;
+    double* K_ints_;
 
 public:
     // Constructor
@@ -392,6 +429,7 @@ private:
     size_t max_mem_buf_;
     // Total number of tasks we actually have
     size_t ntasks_;
+
 public:
     // Constructor. We are pre-striping so everything can go to a single file
     // like in the good old times
