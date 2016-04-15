@@ -535,16 +535,16 @@ class BasisSet(object):
         keyword *key* and string/function *target* of the basis to be
         constructed. For orbital basis sets, *key* will likely be 'BASIS'
         and, together with *target*, these arguments suffice.
-            pyconstruct(smol, "BASIS", basisspec_psi4_yo_631pg_d_p_)
-            pyconstruct(mol, "BASIS", "6-31+G**")
+        ``pyconstruct(smol, "BASIS", basisspec_psi4_yo_631pg_d_p_)``
+        ``pyconstruct(mol, "BASIS", "6-31+G**")``
         When building an auxiliary basis, *key* is again the keyword,
         *target* is the string or function for the fitting basis (this
         may also be an empty string). In case the fitting basis isn't
         fully specified, also provide a *fitrole* and the string/function
         of the orbital basis as *other*, so that orbital hints can be
         used to look up a suitable default basis in BasisFamily.
-            pyconstruct(smol, "DF_BASIS_MP2", basisspec_psi4_yo_ccpvdzri, 'RIFIT', basisspec_psi4_yo_631pg_d_p_)
-            pyconstruct(mol, "DF_BASIS_MP2", "", "RIFIT", "6-31+G(d,p)")
+        ``pyconstruct(smol, "DF_BASIS_MP2", basisspec_psi4_yo_ccpvdzri, 'RIFIT', basisspec_psi4_yo_631pg_d_p_)``
+        ``pyconstruct(mol, "DF_BASIS_MP2", "", "RIFIT", "6-31+G(d,p)")``
 
         """
         #print type(mol), type(key), type(target), type(fitrole), type(other)
@@ -928,12 +928,12 @@ class BasisSet(object):
 
     def print_by_level(self, out=None, level=2):
         """Print basis set information according to the level of detail in print_level
-        *  @param out The file stream to use for printing. Defaults to outfile.
-        *  @param print_level: < 1: Nothing
-                                 1: Brief summary
-                                 2: Summary and contraction details
-                               > 2: Full details
-                               Defaults to 2
+        @param out The file stream to use for printing. Defaults to outfile.
+        @param print_level: defaults to 2
+        *  < 1: Nothing 
+        *    1: Brief summary 
+        *    2: Summary and contraction details 
+        *  > 2: Full details
 
         """
         if level < 1:
@@ -1209,7 +1209,7 @@ class BasisSet(object):
 
     def refresh(self):
         """Refresh internal basis set data. Useful if someone has pushed
-        to shells_. Pushing to shells_ happens in the BasisSetParsers, so
+        to shells. Pushing to shells happens in the BasisSetParsers, so
         the parsers will call refresh(). This function is now defunct.
 
         """

@@ -726,7 +726,7 @@ class IrreducibleRepresentation(object):
         return self.degen
 
     def complex(self):
-        """Returns the value of complex_"""
+        """Returns the value of complex"""
         return self.PYcomplex
 
     def nproj(self):
@@ -876,7 +876,7 @@ class CharacterTable(object):
         """First parse the point group symbol, this will give us the
         order of the point group(g), the type of point group (pg), the
         order of the principle rotation axis (nt), and the number of
-        irreps (nirrep_).
+        irreps (nirrep).
 
         """
         if len(self.symb) == 0:

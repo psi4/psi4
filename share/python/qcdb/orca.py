@@ -47,7 +47,7 @@ def muster_memory(mem):
 def muster_modelchem(name, dertype):
     """Transform calculation method *name* and derivative level *dertype*
     into options for orca. While deliberately requested pieces,
-    generally |orca__orca_deriv_level| and |orca__orca_calc_level|,
+    generally orca__orca_deriv_level and orca__orca_calc_level,
     are set to complain if contradicted ('clobber' set to True), other
     'recommended' settings, can be countermanded by keywords in input file
     ('clobber' set to False). Occasionally, we want these pieces to actually

@@ -2067,7 +2067,7 @@ class LibmintsMolecule(object):
         self.form_symmetry_information()
 
     def set_full_point_group(self, tol=FULL_PG_TOL):
-        """Determine and set FULL point group. full_pg_n_ is highest
+        """Determine and set FULL point group. self.PYfull_pg_n is highest
         order n in Cn. 0 for atoms or infinity.
 
         """
@@ -3165,8 +3165,7 @@ def matrix_3d_rotation(mat, axis, phi, Sn):
     arbitrary axis.  Vectors are the rows of the matrix.
     @param  axis  Vector3   : axis around which to rotate (need not be normalized)
     @param  phi   double    : magnitude of rotation in rad
-    @param  Sn    bool      : if true, then also reflect in plane through origin and
-                              perpendicular to rotation
+    @param  Sn    bool      : if true, then also reflect in plane through origin and perpendicular to rotation
     @returns SharedMatrix with rotated points (rows)
 
     """
