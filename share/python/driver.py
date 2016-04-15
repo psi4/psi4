@@ -1912,6 +1912,31 @@ def gdma(wfn, datafile=""):
         os.remove(commands)
 
 
+def fchk(wfn, filename):
+    """Function to write wavefunction information in *wfn* to *filename* in
+    Gaussian FCHK format.
+
+    .. versionadded:: 0.6
+
+    :returns: None
+
+    :type filename: string
+    :param filename: destination file name for FCHK file
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate fchk file
+
+    :examples:
+
+    >>> # [1] FCHK file for DFT calculation
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> fchk(wfn, 'mycalc.fchk')
+
+    """
+    fw = psi4.FCHKWriter(wfn)
+    fw.write(filename)
+
+
 def molden(wfn, filename):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format.

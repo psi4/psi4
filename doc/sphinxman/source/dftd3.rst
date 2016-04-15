@@ -18,10 +18,15 @@ downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&su
 Installation
 ~~~~~~~~~~~~
 
-Follow the instructions provided with the source to build the DFTD3
-program (essentially, unpack the source, edit the Makefile to select a
-Fortran compiler, and run make). For the moment, you must apply a patch,
-:source:`share/scripts/patch_grimme_dftd3.3.0.2`, to the dftd3 source before building.
+DFTD3 is available as conda package. If the instructions at
+:ref:`sec:quickconda` have been followed, simply ``conda install dftd3``.
+
+Alternatively, to build DFTD3 yourself,
+follow the instructions provided with the source
+(essentially, unpack the source, edit the Makefile to select a
+Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can be used 
+as-is; for earlier versions, patches are available: 
+:source:`share/scripts/patch_grimme_dftd3.3.0.2`. 
 To be used by |PSIfour|, the program binary (``dftd3``) must be found in
 your :envvar:`PATH`. If |PSIfour| is unable to execute the binary, an
 error will be reported.
@@ -199,7 +204,7 @@ A few practical examples:
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~interface_dftd3.run_dftd3`. (This function
+through the python function :py:func:`~qcdb.interface_dftd3.run_dftd3`. (This function
 is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
 This route is much faster than running a DFT-D energy.
 
@@ -229,7 +234,7 @@ This route is much faster than running a DFT-D energy.
    >>> print E
    -0.00024762
 
-.. autofunction:: interface_dftd3.run_dftd3
+.. autofunction:: qcdb.interface_dftd3.run_dftd3
 
 
 .. comment print_stdout('  -D correction from Py-side')

@@ -76,7 +76,7 @@ class QCEssential(object):
 
 
 class Publication(QCEssential):
-    """Specialization of :pyclass:`QCEssential` for computational chemistry 
+    """Specialization of :py:class:`QCEssential` for computational chemistry 
     publications, presumably containing many quantum chemistry results.
 
     """
@@ -103,7 +103,7 @@ class Publication(QCEssential):
         return text
 
 class BasisSet(QCEssential):
-    """Specialization of :pyclass:`QCEssential` for basis sets.
+    """Specialization of :py:class:`QCEssential` for basis sets.
 
     """
     def __init__(self, name, fullname=None, latex=None, citations=None, doi=None, comment=None, zeta=None, build=None):
@@ -129,7 +129,7 @@ class BasisSet(QCEssential):
 
 
 class Method(QCEssential):
-    """Specialization of :pyclass:`QCEssential` for quantum chemical methods.
+    """Specialization of :py:class:`QCEssential` for quantum chemical methods.
 
     """
     def __init__(self, name, fullname=None, latex=None, citations=None, doi=None, comment=None):
@@ -151,7 +151,7 @@ class Method(QCEssential):
 
 
 class Error(QCEssential):
-    """Specialization of :pyclass:`QCEssential` for measures of error.
+    """Specialization of :py:class:`QCEssential` for measures of error.
 
     """
     def __init__(self, name, fullname=None, latex=None, citations=None, doi=None,  comment=None):
@@ -173,7 +173,7 @@ class Error(QCEssential):
 
 
 #class Option(QCEssential):
-#    """Specialization of :pyclass:`QCEssential` for computation variation.
+#    """Specialization of :py:class:`QCEssential` for computation variation.
 #
 #    """
 #    def __init__(self, name, fullname=None, latex=None, citations=None, doi=None,  comment=None):
