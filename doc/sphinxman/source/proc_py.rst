@@ -120,7 +120,7 @@ access each route through the code without contrivances like ``ccsd2``,
 into account reference (RHF/UHF/ROHF) and calc type (CONV, DF, CD).
 Managed methods handle both these cases through the addition of a new
 keyword |globals__qc_module| and a set of type keywords analogous to
-|globals__mp2_type|: |globals__mp_type|, |globals__cepa_type|,
+|globals__mp2_type|: |globals__mp_type|,
 |globals__ci_type|, |globals__cc_type|, which can have values ``CONV``,
 ``DF``, and ``CD``. These are all *global* keywords, as their values are
 shared among modules rather than (or in addition to) being used internally
