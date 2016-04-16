@@ -75,12 +75,19 @@ void PKJK::integrals_reorder() {
     PKmanager_->batch_sizing();
 
     // Open files and potentially do pre-striping as soon as possible.
-    PKmanager_->open_files(false);
+    if (algo_ == "INTBUCK") {
+        PKmanager_->open_iwlf(false);
+    } else {
+        PKmanager_->open_files(false);
+    }
 
     PKmanager_->print_batches();
 
     // Create the buffer class, that is storing integrals in buffers in order
     // and taking care of writing to disk.
+    if (algo_ == "INTBUCK") {
+        PKmanager_->allocate_iwlbuffers();
+    }
     PKmanager_->allocate_buffers();
 
     // Print out some useful information

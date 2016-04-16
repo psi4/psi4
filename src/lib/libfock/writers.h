@@ -128,6 +128,33 @@ public:
     void flush(int lastbuf);
 };
 
+/*- IWLAsync_PK: Modernized IWLAsync class for the new PK algorithms -*/
+class IWLAsync_PK {
+private:
+    // Position in bytes for next write
+    size_t* address_;
+    // Integral labels
+    Label* labels_[2];
+    // Integral values
+    Value* values_[2];
+    // Job Ids for AIO
+    size_t JobID_[2];
+    // Number of integrals per buffer
+    size_t ints_per_buf_;
+    // Current number of integrals in buffer
+    size_t nints_;
+    // Is this the last buffer for PK batch?
+    int lastbuf_[2];
+    // Are we using buffer 1 or 2?
+    int idx_;
+    // The AIO Handler
+    boost::shared_ptr<AIOHandler> AIO_;
+
+public:
+    // Constructor
+    IWLAsync_PK(size_t* address, boost::shared_ptr<AIOHandler> AIO);
+};
+
 /*-
   IWLAIOWriter  functor to use with SO TEIs, that is writing
   asynchronously to disk as the integrals get computed
@@ -202,20 +229,13 @@ private:
     std::vector<double*> J_buf_;
     std::vector<double*> K_buf_;
 
-    // Allocating function
-    void allocate();
-    // Deallocating function
-    void deallocate();
-
-
-    boost::shared_ptr<AIOHandler> AIO_;
-    psio_address dummy_;
-
     // That should never be copied
     IOBuffer_PK(const IOBuffer_PK &other) {};
     IOBuffer_PK & operator = (IOBuffer_PK &other) {};
 
 protected:
+    boost::shared_ptr<AIOHandler> AIO_;
+    psio_address dummy_;
     // Size of internal buffers
     size_t buf_size_;
     // Number of internal buffers for each J and K
@@ -233,6 +253,13 @@ protected:
     bool shells_left_;
     // Does this shell quartet contain target integrals for current buffer ?
     virtual bool is_shell_relevant();
+
+    // Allocating function
+    virtual void allocate();
+    // Deallocating function
+    virtual void deallocate();
+
+
 
 public:
 
@@ -259,7 +286,7 @@ public:
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
 
     // Task is done, write the buffer to file
-    void write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
+    virtual void write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
                size_t pk_pairs);
 
 };
@@ -282,11 +309,33 @@ public:
     InCoreBufferPK(boost::shared_ptr<BasisSet> primary, size_t buf_size, size_t lastbuf,
                    double* Jbuf, double* Kbuf);
     // May not need implementation: destructor
-    virtual ~InCoreBufferPK();
+    virtual ~InCoreBufferPK() {}
 
     // Function to fill values to fill directly big buffer
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
 
+    // Instead of writing we need to divide bz 2 diagonal elements...
+    virtual void write(std::vector<size_t> &batch_min_ind,
+                       std::vector<size_t> &batch_max_ind, size_t pk_pairs);
+};
+
+/*- IOBuffer_IWL: class to write integrals in batches in the IWL file. Ordering occurs in
+ * a second step where we read the batches from the file and then write them to the PK
+ * file.
+ -*/
+
+class IOBuffer_IWL : public IOBuffer_PK {
+private:
+    // Current addresses, in bytes, where each bucket is being written
+    size_t* addresses_;
+    std::vector<int> buf_for_pq_;
+    // Allocating the batch buffers
+    virtual void allocate();
+
+public:
+    IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,boost::shared_ptr<AIOHandler> AIO,
+                 size_t nbuf, size_t buf_size, int pk_file, size_t* pos,
+                 std::vector<int> bufforpq);
 };
 
 
@@ -337,6 +386,8 @@ protected:
     std::vector<size_t> batch_index_min_;
     /// The index of the last integral in each batch
     std::vector<size_t> batch_index_max_;
+    /// Mapping pq indices to the correct batch
+    std::vector<int> batch_for_pq_;
     // This address stores the return value of write statements that we are
     // never going to use.
     psio_address dummy_;
@@ -421,6 +472,7 @@ public:
 class PK_integrals : public PK_integrals_old {
 private:
     int pk_file_;
+    int iwl_file_;
     std::vector<IOBuffer_PK*> iobuffers_;
     int nthreads_;
     // Number of tasks per thread we would like for load balancing
@@ -429,6 +481,10 @@ private:
     size_t max_mem_buf_;
     // Total number of tasks we actually have
     size_t ntasks_;
+
+    // Size in bytes of one IWL buffer
+    size_t iwlintsize_;
+    size_t ints_per_buf_;
 
 public:
     // Constructor. We are pre-striping so everything can go to a single file
@@ -440,6 +496,8 @@ public:
     // Batch sizing is the same
     // Opening files for the first time: we pre-stripe
     virtual void open_files(bool old);
+    // Opening IWL file
+    void open_iwlf(bool old);
     // Closing file
     virtual void close_files();
     // Batch printing is the same
@@ -447,8 +505,11 @@ public:
     // Size the batches first, then adapt to have enough tasks for good load balancing
     // It is not clear yet how many tasks are enough, will have to experiment
     virtual void allocate_buffers();
+    // Need neww version for IWL algo
+    void allocate_iwlbuffers();
     // Finalize writing and deallocate the buffers
     virtual void deallocate_buffers();
+    void deallocate_iwlbuffers();
     // Returns the total number of tasks we need
     virtual size_t ntasks() { return ntasks_; }
     // Returns a pointer to the current thread's IO buffer
