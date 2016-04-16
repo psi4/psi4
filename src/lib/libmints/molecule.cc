@@ -1176,14 +1176,14 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
             int numEntries = splitLine.size();
 
-            // Grab the original label the user used. (H1)
+            // Grab the original label the user used. (H1, O_heavy@17.9991610) re-processed below
             atomLabel = boost::to_upper_copy(splitLine[0]);
 
             bool ghostAtom = false;
             // Do a little check for ghost atoms
             if(regex_match(atomLabel, reMatches, ghostAtom_)) {
                 // We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
-                atomLabel = reMatches[1] == "" ? reMatches[2] : reMatches[1];
+                atomLabel = (reMatches[1] == "" ? reMatches[2] : reMatches[1]);
                 ghostAtom = true;
             }
 
@@ -1198,7 +1198,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             zVal = zVals[atomSym];
             charge = zVal;
 
-            double atomMass = reMatches[5] == "" ? an2masses[(int)zVal] : to_double(reMatches[5]);
+            double atomMass = (reMatches[5] == "" ? an2masses[(int)zVal] : to_double(reMatches[5]));
+
+            // Remove mass specification from label string (H1 => H1, O_heavy@17.9991610 => O_heavy)
+            atomLabel = reMatches[2].str() + reMatches[3].str() + reMatches[4].str();
 
             // Not sure how charge is used right now, but let's zero it anyway...
             if(ghostAtom){
