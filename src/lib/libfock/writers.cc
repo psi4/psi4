@@ -29,6 +29,7 @@
 #include <psi4-dec.h>
 #include <psifiles.h>
 #include <libmints/mints.h>
+#include <libiwl/iwl.hpp>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -472,6 +473,7 @@ bool IOBuffer_PK::is_shell_relevant() {
                 return true;
             }
         }
+        return false;
 }
 
 void IOBuffer_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
@@ -595,7 +597,8 @@ bool InCoreBufferPK::is_shell_relevant() {
         size_t low_iljk = INDEX4(lowi, lowl, lowj, lowk);
 
         // Use the max ijkl that can be in the buffer
-        size_t max_idx = buf_size_ * (bufidx_ + 1) + last_buf_ - 1;
+        size_t max_idx = (buf_size_ * (bufidx_ + 1) + last_buf_) - 1;
+        //outfile->Printf("max idx is %lu\n",max_idx);
 
         // Can we filter out this shell because all of its basis function
         // indices are too high ?
@@ -649,13 +652,16 @@ bool InCoreBufferPK::is_shell_relevant() {
             }
         }
 
+        return false;
+
 }
 
 void InCoreBufferPK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
     size_t ijkl = INDEX4(i,j,k,l);
     size_t ikjl = INDEX4(i, k, j, l);
     // Use the max ijkl that can be in the buffer
-    size_t max_idx = buf_size_ * (bufidx_ + 1) + last_buf_ - 1;
+    size_t max_idx = (buf_size_ * (bufidx_ + 1) + last_buf_) - 1;
+    //    outfile->Printf("max idx is %lu\n",max_idx);
 
     if (ijkl >= offset_ && ijkl <= max_idx) {
         J_bufp_[ijkl - offset_] += val;
@@ -678,6 +684,37 @@ void InCoreBufferPK::fill_values(double val, size_t i, size_t j, size_t k, size_
             }
         }
     }
+
+}
+
+// Note: this function does not actually write anything, it divides by 2 diagonal
+// elements of the array once we know they are all computed
+
+void InCoreBufferPK::write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind, size_t pk_pairs) {
+    // And we do not actually use all arguments
+
+    size_t max_idx = (buf_size_ * (bufidx_ + 1) + last_buf_) - 1;
+        outfile->Printf("max idx is %lu\n",max_idx);
+    for (size_t pq = 0; pq < pk_pairs; ++pq) {
+        size_t pqpq = INDEX2(pq,pq);
+        if(pqpq >= offset_ && pqpq <= max_idx) {
+            J_bufp_[pqpq - offset_] *= 0.5;
+            K_bufp_[pqpq - offset_] *= 0.5;
+        }
+    }
+}
+
+IOBuffer_IWL::IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,
+                           boost::shared_ptr<AIOHandler> AIO, size_t nbuf, size_t buf_size,
+                           int pk_file, size_t *pos, std::vector<int> bufforpq)
+    : IOBuffer_PK(primary,AIO,buf_size,nbuf,pk_file) {
+
+    addresses_ = pos;
+    buf_for_pq_ = bufforpq;
+
+}
+
+void IOBuffer_IWL::allocate() {
 
 }
 
@@ -719,6 +756,7 @@ PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::s
 PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio, int max_batches,
                            size_t memory, double cutoff) :
         PK_integrals_old(primary,psio, max_batches, memory, cutoff) {
+    iwl_file_ = PSIF_SO_TEI;
     pk_file_ = PSIF_SO_PK;
     nthreads_ = 1;
 #ifdef _OPENMP
@@ -729,6 +767,9 @@ PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_pt
     max_mem_buf_ = Process::environment.options.get_int("MAX_MEM_BUF");
     itap_J_ = pk_file_;
     itap_K_ = pk_file_;
+    ints_per_buf_ = IWL_INTS_PER_BUF;
+    iwlintsize_ = 2L * sizeof(int) + ints_per_buf_ *
+            (4L * sizeof(Label) + sizeof(Value));
 
 }
 
@@ -794,6 +835,7 @@ void PK_integrals_old::batch_sizing() {
 
     batch_index_min_.push_back(0);
     batch_pq_min_.push_back(0);
+    batch_for_pq_.push_back(0);
     for (AOintsiter.first(); AOintsiter.is_done() == false; AOintsiter.next()) {
         pb = AOintsiter.i();
         qb = AOintsiter.j();
@@ -816,6 +858,7 @@ void PK_integrals_old::batch_sizing() {
             }
             nintpq = 1;
             old_pq = pq;
+            batch_for_pq_.push_back(pq);
             old_max = pqrs;
         }
     }
@@ -849,7 +892,7 @@ void PK_integrals_old::batch_sizing() {
 
 void PK_integrals_old::print_batches() {
     if (in_core_) {
-        outfile->Printf("\tPerforming in-core PK\n";)
+        outfile->Printf("\tPerforming in-core PK\n");
     } else {
         // Print batches for the user and for control
         for(int batch = 0; batch < batch_pq_min_.size(); ++batch){
@@ -901,12 +944,14 @@ void PK_integrals::allocate_buffers() {
         size_t lastbuf = pk_size_ % nthreads_;
         size_t start = 0;
 
-        for(int i = 0, i < nthreads_; ++i) {
+        for(int i = 0; i < nthreads_; ++i) {
             start = i * buffer_size;
+            outfile->Printf("start is %lu\n",start);
+            IOBuffer_PK* buf;
             if(i < nthreads_ - 1) {
-                IOBuffer_PK* buf = new InCoreBufferPK(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
+                buf = new InCoreBufferPK(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
             } else {
-                IOBuffer_PK* buf = new InCoreBufferPK(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
+                buf = new InCoreBufferPK(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
             }
             iobuffers_.push_back(buf);
             ntasks_ = nthreads_;
@@ -944,6 +989,25 @@ void PK_integrals::allocate_buffers() {
         for(int i = 0; i < nthreads_; ++i) {
             iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,buf_size,buf_per_thread,pk_file_));
         }
+    }
+}
+
+PK_integrals::allocate_iwlbuffers() {
+    int buf_per_thread = batch_index_min_.size();
+    size_t* current_pos = new size_t[buf_per_thread];
+
+    current_pos[0] = 0;
+    //Current position of the bucket in the IWL file
+    for(int i = 1; i < buf_per_thread; ++i) {
+        size_t batchsize = batch_index_max_[i - 1] - batch_index_min_[i - 1];
+        size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
+        current_pos[i] = iwlperbatch * iwlintsize_ + current_pos[i - 1];
+    }
+
+    // Ok, now we have the size of a buffer and how many buffers
+    // we want for each thread. We can allocate IO buffers.
+    for(int i = 0; i < nthreads_; ++i) {
+        iobuffers_.push_back(new IOBuffer_IWL());
     }
 }
 
@@ -986,9 +1050,11 @@ void PK_integrals_old::deallocate_buffers() {
 }
 
 void PK_integrals::deallocate_buffers() {
-    timer_on("AIO synchronize");
-    AIO_->synchronize();
-    timer_off("AIO synchronize");
+    if(!in_core_) {
+        timer_on("AIO synchronize");
+        AIO_->synchronize();
+        timer_off("AIO synchronize");
+    }
     // Can get rid of the pre-striping labels
     for(int i = 0; i < label_J_[0].size(); ++i ) {
         delete [] label_J_[0][i];
@@ -1187,6 +1253,21 @@ void PK_integrals::open_files(bool old) {
     }
 }
 
+void PK_integrals::open_iwlf(bool old) {
+    if (in_core_) {
+        return;
+    }
+    psio_->open(iwl_file_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    // Create the file ? Pre-stripe it
+    // Number of IWL buffers necessary
+    size_t num_iwlbuf = pk_size_ / ints_per_buf_ + 1;
+    // May need one more buffer at end of each batch
+    num_iwlbuf += batch_index_min_.size();
+    size_t iwlsize_bytes = num_iwlbuf * iwlintsize_;
+    size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
+    AIO_->zero_disk(iwl_file_,IWL_KEY_BUF,1,iwlsize);
+}
+
 char* PK_integrals_old::get_label_J(size_t i) {
     char* label = new char[100];
     sprintf(label, "J Block (Batch %d)", i);
@@ -1285,15 +1366,11 @@ void PK_integrals_old::write() {
 
 // Thread-safe function, invokes the appropriate buffer to perform the write
 void PK_integrals::write() {
-    if(in_core_) {
-        return;
-    } else {
-        int thread = 0;
+    int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+    thread = omp_get_thread_num();
 #endif
-        iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
-    }
+    iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
 }
 
 void PK_integrals_old::close_files() {
@@ -1366,6 +1443,9 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
                 double J_pq = 0.0;
                 double *J_rs = J_vec;
                 for(size_t rs = 0; rs <= pq; ++rs) {
+//DEBUG                    if(!exch && rs == 0) {
+//DEBUG                      outfile->Printf("PK int (%lu|%lu) = %f\n",pq,rs,*j_ptr);
+//DEBUG                    }
                     J_pq += *j_ptr * (*D_rs);
                     *J_rs += *j_ptr * D_pq;
                     ++D_rs;
@@ -1409,6 +1489,9 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
                     double J_pq = 0.0;
                     double *J_rs = J_vec;
                     for(size_t rs = 0; rs <= pq; ++rs) {
+ //DEBUG                       if(!exch && rs == 0) {
+ //DEBUG                         outfile->Printf("PK int (%lu|%lu) = %f\n",pq,rs,*j_ptr);
+ //DEBUG                       }
                         J_pq += *j_ptr * (*D_rs);
                         *J_rs += *j_ptr * D_pq;
                         ++D_rs;

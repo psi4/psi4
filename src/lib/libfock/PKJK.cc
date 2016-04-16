@@ -110,7 +110,7 @@ void PKJK::preiterations()
     algo_ = options.get_str("PK_ALGO");
 
 
-    if (algo_ == "REORDER") {
+    if (algo_ == "REORDER" || algo_ == "INTBUCK") {
       timer_on("Total PK formation time");
     // We compute the integrals so that we can directly write the
     // PK file to disk. Also, do everything in the AO basis
