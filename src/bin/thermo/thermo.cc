@@ -47,8 +47,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
 
   const boost::shared_ptr<Molecule> mol = ref_wfn->molecule();
 
-  // use this one?
-  double E_elec = ref_wfn->reference_energy();
+  double E_elec = psi::Process::environment.globals["CURRENT ENERGY"];
 
   int Natom = mol->natom();
   int multiplicity = mol->multiplicity();
@@ -340,7 +339,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
   outfile->Printf("  Total E, Electronic energy at %7.2f [K]                     %15.8lf [Eh]\n\n",
     T, E_elec + DU);
 
-  outfile->Printf("  Enthalpy, H_trans = E_trans + k_b * T\n");
+  outfile->Printf("  Enthalpy, H_trans = E_trans + k_B * T\n");
   outfile->Printf("    Electronic H    %11.3lf [kcal/mol] %11.3lf [kJ/mol] %15.8lf [Eh]\n",
     Helec / pc_cal2J, Helec, Helec / pc_hartree2kJmol);
   outfile->Printf("    Translational H %11.3lf [kcal/mol] %11.3lf [kJ/mol] %15.8lf [Eh]\n",
