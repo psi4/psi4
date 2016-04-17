@@ -87,8 +87,9 @@ void PKJK::integrals_reorder() {
     // and taking care of writing to disk.
     if (algo_ == "INTBUCK") {
         PKmanager_->allocate_iwlbuffers();
+    } else {
+        PKmanager_->allocate_buffers();
     }
-    PKmanager_->allocate_buffers();
 
     // Print out some useful information
     outfile->Printf( "   Calculation information:\n");
@@ -101,41 +102,133 @@ void PKJK::integrals_reorder() {
     outfile->Printf( "      Number of threads:              %4d\n", nthreads_);
     outfile->Printf( "\n");
 
-    // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
-    // threads, then write it asynchronously to disk while filling the next buffer.
-    //
-    // TODO (maybe): Other possibility: each thread has its own buffer, and writes it to disk
-    // as the job is complete. We need a signaling mechanism for the end of the task
-    // as integrals may be stored at random places in the buffer. We also need
-    // to pre-stripe the PK file in this case.
+    //TODO: integrate integral computation directly in the PKmanager_
+    //TODO: Have derived versions of PK manager implementing the different algorithms
+    if (algo_ == "REORDER") {
+        // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
+        // threads, then write it asynchronously to disk while filling the next buffer.
+        //
+        // TODO (maybe): Other possibility: each thread has its own buffer, and writes it to disk
+        // as the job is complete. We need a signaling mechanism for the end of the task
+        // as integrals may be stored at random places in the buffer. We also need
+        // to pre-stripe the PK file in this case.
 
-    // This whole piece of code should be in the PKmanager itself, very probably.
-    size_t nshqu = 0;
+        // This whole piece of code should be in the PKmanager itself, very probably.
+        size_t nshqu = 0;
 #pragma omp parallel for schedule(dynamic) reduction(+:nshqu)
-    for(size_t i = 0; i < PKmanager_->ntasks(); ++i) {
-        // We need to get the list of shell quartets for each task
-        int thread = 0;
+        for(size_t i = 0; i < PKmanager_->ntasks(); ++i) {
+            // We need to get the list of shell quartets for each task
+            int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
-        IOBuffer_PK* buf = PKmanager_->buffer();
-        for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
-            unsigned int P = buf->P();
-            unsigned int Q = buf->Q();
-            unsigned int R = buf->R();
-            unsigned int S = buf->S();
-            tb[thread]->compute_shell(P,Q,R,S);
-            PKmanager_->integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
-            ++nshqu;
+            IOBuffer_PK* buf = PKmanager_->buffer();
+            for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
+                unsigned int P = buf->P();
+                unsigned int Q = buf->Q();
+                unsigned int R = buf->R();
+                unsigned int S = buf->S();
+                tb[thread]->compute_shell(P,Q,R,S);
+                PKmanager_->integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
+                ++nshqu;
+            }
+            PKmanager_->write();
         }
-        PKmanager_->write();
+        outfile->Printf("  We computed %lu shell quartets total.\n",nshqu);
+        size_t nsh = primary_->nshell();
+        size_t nsh_u = nsh * (nsh + 1) / 2;
+        nsh_u = nsh_u * (nsh_u + 1) / 2;
+        outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
+        outfile->Printf("  %7.2f percent of shell quartets recomputed.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
+    } else if (algo_ == "INTBUCK") {
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
+      for(int i = 0; i < primary_->nshell(); ++i) {
+        int num_uniq_pk;
+        int P_arr[3];
+        int Q_arr[3];
+        int R_arr[3];
+        int S_arr[3];
+        int P, Q, R, S;
+        int thread = 0;
+        #ifdef _OPENMP
+          thread = omp_get_thread_num();
+        #endif
+        for(int j = 0; j <= i; ++j) {
+          for (int k = 0; k <= j; ++k) {
+            for(int l = 0; l <= k; ++l) {
+              P_arr[0] = i;
+              Q_arr[0] = j;
+              R_arr[0] = k;
+              S_arr[0] = l;
+              // Now we take care of all symmetry cases
+              if((i == j && i == k) || (j == k && j == l)) {
+                  num_uniq_pk = 1;
+              } else if (i == k || j == l) {
+                  num_uniq_pk = 2;
+                  P_arr[1] = i;
+                  Q_arr[1] = k;
+                  R_arr[1] = j;
+                  S_arr[1] = l;
+              } else if (j == k) {
+                  num_uniq_pk = 2;
+                  P_arr[1] = i;
+                  Q_arr[1] = l;
+                  R_arr[1] = j;
+                  S_arr[1] = k;
+              } else if (i == j || k == l) {
+                  num_uniq_pk = 2;
+                  P_arr[1] = i;
+                  Q_arr[1] = k;
+                  R_arr[1] = j;
+                  S_arr[1] = l;
+              } else {
+                  num_uniq_pk = 3;
+                  P_arr[1] = i;
+                  Q_arr[1] = k;
+                  R_arr[1] = j;
+                  S_arr[1] = l;
+
+                  P_arr[2] = i;
+                  Q_arr[2] = l;
+                  R_arr[2] = j;
+                  S_arr[2] = k;
+              }
+
+              for(int npk = 0; npk < num_uniq_pk; ++npk) {
+                P = P_arr[npk];
+                Q = Q_arr[npk];
+                R = R_arr[npk];
+                S = S_arr[npk];
+                //Sort shells based on AM to save ERI some work doing permutation resorting
+                if (sobasis->am(P) < sobasis->am(Q)) {
+                    std::swap(P,Q);
+                }
+                if (sobasis->am(R) < sobasis->am(S)) {
+                    std::swap(R,S);
+                }
+                if (sobasis->am(P) + sobasis->am(Q) >
+                        sobasis->am(R) + sobasis->am(S)) {
+                    std::swap(P, R);
+                    std::swap(Q, S);
+                }
+      //          printf("Computing integral <%i %i|%i %i>\n", p, q, r, s);
+                tb[thread]->compute_shell(P, Q, R, S);
+                PKmanager_->integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
+              }
+
+            }
+          }
+        }
+      } // end of parallelized loop
+
+      // We write all remaining buffers to disk.
+      PKmanager_->write_iwl();
+
+      // Now we need to actually read the integral file and sort
+      // the buckets to write them to the PK file
+    } else {
+        throw PSIEXCEPTION("Unrecognized algorithm for pk_algo\n");
     }
-    outfile->Printf("  We computed %lu shell quartets total.\n",nshqu);
-    size_t nsh = primary_->nshell();
-    size_t nsh_u = nsh * (nsh + 1) / 2;
-    nsh_u = nsh_u * (nsh_u + 1) / 2;
-    outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
-    outfile->Printf("  %7.2f percent of shell quartets recomputed.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
     // Deprecated for now
 #if 0
     size_t task_size = 0;

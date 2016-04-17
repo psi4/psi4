@@ -131,6 +131,8 @@ public:
 /*- IWLAsync_PK: Modernized IWLAsync class for the new PK algorithms -*/
 class IWLAsync_PK {
 private:
+    // File number
+    int itap_;
     // Position in bytes for next write
     size_t* address_;
     // Integral labels
@@ -144,15 +146,31 @@ private:
     // Current number of integrals in buffer
     size_t nints_;
     // Is this the last buffer for PK batch?
-    int lastbuf_[2];
+    int lastbuf_;
     // Are we using buffer 1 or 2?
     int idx_;
     // The AIO Handler
     boost::shared_ptr<AIOHandler> AIO_;
 
 public:
-    // Constructor
-    IWLAsync_PK(size_t* address, boost::shared_ptr<AIOHandler> AIO);
+    // Constructor, also allocates the arrays
+    IWLAsync_PK(size_t* address, boost::shared_ptr<AIOHandler> AIO, int itap);
+    // Destructor, also deallocates the arrays
+    ~IWLAsync_PK();
+
+    // Filling values in the bucket
+    void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+    // Popping a value from the current buffer, also decrements integral count
+    void pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    // Actually writing integrals from the buffer to the disk.
+    void write();
+    // Filling buffer with dummy values and flushing it. Also indicates
+    // that this is the last buffer.
+    void flush();
+
+    // Accessor functions
+    size_t nints() { return nints_; }
+    size_t maxints() { return ints_per_buf_; }
 };
 
 /*-
@@ -276,6 +294,17 @@ public:
     unsigned int Q() { return Q_; }
     unsigned int R() { return R_; }
     unsigned int S() { return S_; }
+    // Accessor function to number of buffers
+    unsigned int nbuf() { return nbuf_; }
+    // Pop a value from one of the buffers (only implemented for IWL)
+    virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+        throw PSIEXCEPTION("Function pop_values not implemented for current class\n");
+        return false;
+    }
+    // Also need to flush buffer for IWL, only implemented for it
+    virtual void flush() {
+        throw PSIEXCEPTION("Function flush not implemented for current class\n");
+    }
 
     // Iterator functions through current buffer's quartets
     void first_quartet(size_t i);
@@ -294,6 +323,7 @@ public:
 /*- InCoreBufferPK: Manages the computation and storage of integrals
  * for in-core PK algorithm. -*/
 
+//TODO: store max_idx computed properly, possible underflow.
 class InCoreBufferPK : public IOBuffer_PK {
 private:
     size_t pk_size_;
@@ -329,13 +359,30 @@ private:
     // Current addresses, in bytes, where each bucket is being written
     size_t* addresses_;
     std::vector<int> buf_for_pq_;
+    std::vector<IWLAsync_PK*> bufs_;
     // Allocating the batch buffers
     virtual void allocate();
+    // Deallocate batch buffers
+    virtual void deallocate();
 
 public:
     IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,boost::shared_ptr<AIOHandler> AIO,
                  size_t nbuf, size_t buf_size, int pk_file, size_t* pos,
                  std::vector<int> bufforpq);
+    ~IOBuffer_IWL() {}
+
+    //Function to fill values in
+    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+
+    // Pop values from partially filled buffers to transfer to final buffer.
+    // Returns false when there is no value left to pop.
+    virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    // Finalize the writing at the end of the loop
+    // We do not need any of these arguments
+    virtual void write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
+                       size_t pk_pairs)
+    // Need to flush remaining integrals after everything is computed.
+    virtual void flush();
 };
 
 
@@ -520,6 +567,8 @@ public:
                                      unsigned int Q, unsigned int R, unsigned int S);
     // Actually writing the integrals
     virtual void write();
+    // Write IWL buffers in a clever way.
+    void write_iwl();
 
 };
 
