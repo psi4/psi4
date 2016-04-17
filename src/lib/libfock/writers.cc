@@ -270,6 +270,78 @@ void IWLAsync::flush(int lastbuf) {
     idx_ = 0;
 }
 
+// IWLAsync_PK class implementation
+
+IWLAsync_PK::IWLAsync_PK(size_t *address, boost::shared_ptr<AIOHandler> AIO, int itap) {
+    itap_ = itap;
+    address_ = address;
+    AIO_ = AIO;
+    ints_per_buf_ = IWL_INTS_PER_BUF;
+    nints_ = 0;
+    idx_ = 0;
+    labels_[0] = new Label[4 * ints_per_buf_];
+    labels_[1] = new Label[4 * ints_per_buf_];
+    values_[0] = new Value[ints_per_buf_];
+    values_[1] = new Value[ints_per_buf_];
+    JobID_[0] = 0;
+    JobID_[1] = 0;
+    lastbuf_ = 0;
+}
+
+IWLAsync_PK::~IWLAsync_PK() {
+    delete [] labels_[0];
+    delete [] labels_[1];
+    delete [] values_[0];
+    delete [] values_[1];
+}
+
+IWLAsync_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+    labels_[idx_][4 * nints_] = i;
+    labels_[idx_][4 * nints_ + 1] = j;
+    labels_[idx_][4 * nints_ + 2] = k;
+    labels_[idx_][4 * nints_ + 3] = l;
+    values_[idx_][nints_] = val;
+    ++nints_;
+}
+
+// Buffer is full, write it using AIO to disk
+IWLAsync_PK::write() {
+    size_t lab_size = 4 * ints_per_buf_ * sizeof(Label);
+    size_t val_size = ints_per_buf_ * sizeof(Value);
+    // We need a special function in AIO to take care
+    // of IWL buffer writing, since these contain four parts.
+    JobID_[idx_] = AIO_->write_iwl(itap_,IWL_KEY_BUF,nints_,lastbuf_,(char *) labels_[idx_],
+                    (char*) values_[idx_], lab_size, val_size, address_);
+
+    // Now we need to switch the internal buffer to which we are writing.
+    idx_ = idx_ == 0 ? 1 : 0;
+    nints_ = 0;
+    AIO_->wait_for_job(JobID_[idx_]);
+}
+
+// Pop a value from the buffer storage
+IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    if(nints_ == 0) {
+        throw PSIEXCEPTION("Cannot pop value from empty buffer\n");
+    }
+    --nints_;
+    i = labels_[idx_][4 * nints_];
+    j = labels_[idx_][4 * nints_ + 1];
+    k = labels_[idx_][4 * nints_ + 2];
+    l = labels_[idx_][4 * nints_ + 3];
+    val = values_[idx_][nints_];
+}
+
+IWLAsync_PK::flush() {
+    unsigned int nints = nints_;
+    while(nints_ != ints_per_buf_) {
+        fill_values(0.0,0,0,0,0);
+    }
+    nints_ = nints;
+    lastbuf_ = 1;
+    write();
+}
+
 void ijklBasisIterator::first() {
     i_ = 0;
     j_ = 0;
@@ -715,7 +787,41 @@ IOBuffer_IWL::IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,
 }
 
 void IOBuffer_IWL::allocate() {
+    for(int i = 0; i < nbuf_; ++i) {
+        bufs_.push_back(new IWLAsync_PK(&addresses_[i],AIO_,pk_file_));
+    }
+}
 
+void IOBuffer_IWL::deallocate() {
+    for(int i = 0; i < nbuf_; ++i) {
+        delete bufs_[i];
+    }
+}
+
+void IOBuffer_IWL::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+    size_t pq = INDEX2(i,j);
+    IWLAsync_PK* buf = bufs_[buf_for_pq_[pq]];
+    buf->fill_values(val,i,j,k,l);
+    if(buf->nints() == buf->maxints()) {
+        buf->write();
+    }
+}
+
+bool IOBuffer_IWL::pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    IWLAsync_PK* buf = bufs_[bufid];
+    if(buf->nints() == 0) {
+        return false;
+    }
+    buf->pop_value(val,i,j,k,l);
+    return true;
+}
+
+void IOBuffer_IWL::flush() {
+    IWLAsync_PK* buf;
+    for(int bufid = 0; bufid < nbuf_; ++bufid) {
+        buf = bufs_[bufid];
+        buf->flush();
+    }
 }
 
 PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio,
@@ -1008,6 +1114,12 @@ PK_integrals::allocate_iwlbuffers() {
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads_; ++i) {
         iobuffers_.push_back(new IOBuffer_IWL());
+    }
+}
+
+PK_integrals::deallocate_iwlbuffers() {
+    for(int i = 0; i < nthreads_; ++i) {
+        delete iobuffers_[i];
     }
 }
 
@@ -1371,6 +1483,29 @@ void PK_integrals::write() {
     thread = omp_get_thread_num();
 #endif
     iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
+}
+
+void PK_integrals::write_iwl() {
+    // Each thread buffer has several buffers that may be partially full.
+    // Concatenate all internal buffers to the ones of thread buffer 0.
+    double val;
+    size_t i, j, k, l;
+    IOBuffer_PK* buf0 = iobuffers_[0];
+    IOBuffer_PK* buftarget;
+    //TODO Man if that loop actually works I'll be lucky
+    for(int t = 1; t < nthreads_; ++t) {
+        buftarget = iobuffers_[t];
+        unsigned int nbufs = buftarget->nbuf();
+        for(buf = 0; buf < nbufs; ++buf) {
+            while(buftarget->pop_value(buf,val,i,j,k,l)) {
+                buf0->fill_values(val,i,j,k,l);
+            }
+        }
+
+    }
+    // By now we should have transferred all remaining integrals to
+    // buffer 0, we now flush it.
+    buf0->flush();
 }
 
 void PK_integrals_old::close_files() {

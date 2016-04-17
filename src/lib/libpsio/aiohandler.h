@@ -58,6 +58,12 @@ private:
     std::queue<ULI> col_length_;
     /// Size argument for discontinuous I/O
     std::queue<ULI> col_skip_;
+    /// For IWL: number of ints in the buffer
+    std::queue<int> nints_;
+    /// For IWL: is this the last buffer ?
+    std::queue<int> lastbuf_;
+    /// For IWL: pointer to current position in file
+    std::queue<size_t*> address_;
     /// PSIO object this AIO_Handler is built on
     boost::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
@@ -115,6 +121,14 @@ public:
     /// Buffer memory of cols*sizeof(double) is used
     unsigned long zero_disk(unsigned int unit, const char* key, ULI rows, ULI cols);
 
+    /// Write IWL
+    /// Write an IWL buffer, thus containing
+    /// IWL_INTS_PER_BUF integrals, 4 labels per integral, plus one
+    /// integer indicating whether it is the last buffer and one integer
+    /// counting the number of integrals in the current buffer
+    unsigned long write_iwl(unsigned int unit, const char* key, size_t nints,
+                            int lastbuf, char* labels, char* values, size_t labsize,
+                            size_t valsize, size_t* address);
     /// Generic function bound to thread internally
     void call_aio();
 

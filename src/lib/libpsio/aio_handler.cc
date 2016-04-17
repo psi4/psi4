@@ -223,6 +223,32 @@ unsigned long AIOHandler::zero_disk(unsigned int unit, const char *key,
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
   return uniqueID_;
 }
+
+unsigned long AIOHandler::write_iwl(unsigned int unit, const char *key,
+              size_t nints, int lastbuf, char *labels, char *values,
+              size_t labsize, size_t valsize, size_t *address) {
+  boost::unique_lock<boost::mutex> lock(*locked_);
+  ++uniqueID_;
+  job_.push(8);
+  unit_.push(unit);
+  key_.push(key);
+  buffer_.push(labels);
+  buffer_.push(values);
+  size_.push(labsize);
+  size_.push(valsize);
+  nints_.push(nints);
+  lastbuf_.push(lastbuf);
+  address_.push(address);
+  jobID_.push_back(uniqueID_);
+
+  if (job_.size() > 1) return uniqueID_;
+
+  //thread start
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  return uniqueID_;
+
+}
+
 void AIOHandler::call_aio()
 {
   boost::unique_lock<boost::mutex> lock(*locked_);
@@ -401,6 +427,41 @@ void AIOHandler::call_aio()
       }
 
       delete[] buf;
+    }
+    else if (jobtype == 8) {
+
+        lock.lock();
+
+        unsigned int unit = unit_.front();
+        const char* key = key_.front();
+        char* labels = buffer_.front();
+        buffer_.pop();
+        char* values = buffer_.front();
+        ULI lab_size = size_.front();
+        size_.pop();
+        ULI val_size = size_.front();
+        int nints = nints_.front();
+        int lastbuf = lastbuf_.front();
+        size_t* address = address_.front();
+
+        psio_address start = psio_get_address(PSIO_ZERO, *address);
+        *address += val_size + lab_size + 2 * sizeof(int);
+
+        unit_.pop();
+        key_.pop();
+        buffer_.pop();
+        size_.pop();
+        nints_.pop();
+        lastbuf_.pop();
+        address_.pop();
+
+        lock.unlock();
+
+        psio_->write(unit,key,(char*) &(lastbuf), sizeof(int),start,&start);
+        psio_->write(unit,key,(char*) &(nints), sizeof(int), start, &start);
+        psio_->write(unit,key,labels,lab_size,start,&start);
+        psio_->write(unit,key,values,val_size,start,&start);
+
     }
     else {
       throw PsiException("Error in AIO: Unknown job type", __FILE__,__LINE__);

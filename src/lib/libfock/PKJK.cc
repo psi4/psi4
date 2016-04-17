@@ -569,7 +569,7 @@ void PKJK::preiterations()
 
 void PKJK::compute_JK()
 {
-    if (algo_ == "REORDER") {
+    if (algo_ == "REORDER" || algo_ == "INTBUCK") {
         // For now we are not handling asymmetric density matrices
         // Keep files open for asym I/O
         if (PKmanager_->writing()) {
