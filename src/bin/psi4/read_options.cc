@@ -2975,10 +2975,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CEPA_NO_SINGLES",false);
   }
   if (name == "THERMO"|| options.read_globals()) {
-      /*- Temperature in Kelvin for thermodynamic analysis. -*/
+      /*- Temperature in Kelvin for thermodynamic analysis. Note that 273.15
+      is the value for IUPAC STP. -*/
       options.add_double("T", 298.15);
-      /*- Pressure in Pascal for thermodynamic analysis. -*/
+      /*- Pressure in Pascal for thermodynamic analysis. Note that 100000.
+      is the value for IUPAC STP. -*/
       options.add_double("P", 101325);
+      /*- Rotational symmetry number for thermodynamic analysis. Default is set
+      from the full point group (e.g., Td for methane) as opposed to the computational
+      point group (e.g., C2v for methane). Default takes into account symmetry
+      reduction through asymmetric isotopic substitution and is unaffected by
+      user-set symmetry on molecule, so this option is the sole way to influence
+      the symmetry-dependent aspects of the thermodynamic analysis. -*/
+      options.add_int("ROTATIONAL_SYMMETRY_NUMBER", 1);
   }
   if (name == "CFOUR"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to CFOUR program written by Stanton and Gauss.

@@ -81,6 +81,9 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
   else
     throw PsiException("thermo(): Could not interpret molecular point group.", __FILE__, __LINE__);
 
+  if (options["ROTATIONAL_SYMMETRY_NUMBER"].has_changed())
+    rot_symm_num = options.get_int("ROTATIONAL_SYMMETRY_NUMBER"); 
+
   // Set number of vibrational frequencies.
   int nvib_freqs;
   if (rot_type == RT_ATOM)
@@ -257,7 +260,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
   outfile->Printf("  Entropy, S\n");
   outfile->Printf("    Electronic S    %11.3lf [cal/(mol K)] %11.3lf [J/(mol K)] %15.8lf [mEh/K] (multiplicity = %d)\n",
     Selec / pc_cal2J, Selec, Selec / pc_hartree2kJmol, multiplicity);
-  outfile->Printf("    Translational S %11.3lf [cal/(mol K)] %11.3lf [J/(mol K)] %15.8lf [mEh/K] (mol. weight = %.4f, P = %.2f [Pa])\n",
+  outfile->Printf("    Translational S %11.3lf [cal/(mol K)] %11.3lf [J/(mol K)] %15.8lf [mEh/K] (mol. weight = %.4f [u], P = %.2f [Pa])\n",
     Strans / pc_cal2J, Strans, Strans / pc_hartree2kJmol, molecular_mass, P);
   outfile->Printf("    Rotational S    %11.3lf [cal/(mol K)] %11.3lf [J/(mol K)] %15.8lf [mEh/K] (symmetry no. = %d)\n",
     Srot / pc_cal2J, Srot, Srot / pc_hartree2kJmol, rot_symm_num);

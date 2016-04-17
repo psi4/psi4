@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.254 Driver
+                              Psi4 0.4.262 Driver
 
-                          Git: Rev {b3lyp35} 22c3470 dirty
+                          Git: Rev {b3lyp35} 2888c4e dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sat Apr 16 04:22:56 2016
+    Psi4 started on: Sat Apr 16 23:07:17 2016
 
-    Process ID:   9239
+    Process ID:  15363
     PSI4DATADIR: ../../share/
     Memory level set to 256.000 MB
 
@@ -113,15 +113,36 @@ compare_values(47.525, entropy, 2, 'D2O S')  # molpro  #TEST
 
 clean()
 
-freq('hf', molecule=hdo)
+e, wfn = freq('hf', molecule=hdo, return_wfn=True)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'HDO E0')  #TEST
 compare_values(0.021103, get_variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
 compare_values(0.023935, get_variable('thermal energy correction'), 4, 'HDO dE')  #TEST
 compare_values(0.024878, get_variable('enthalpy correction'), 4, 'HDO dH')  #TEST
 entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
-compare_values(47.828, entropy, 2, 'HDO S')  # molpro  #TEST
+compare_values(47.828, entropy, 2, 'HDO S')  # molpro sym=cs #TEST
+
+# For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
+#  the rotational symmetry number with the lower point group. This only
+#  affects rotational entropy. That's why the above (non-default) molpro
+#  value from the above was computed with sym=cs. To replicate molpro &
+#  qchem's default, have to set rotational_symmetry_number to H2O value.
+
+set rotational_symmetry_number 2
+
+thermo(wfn, wfn.frequencies())
+compare_values(-74.96590119, get_variable('current energy'), 6, 'HDO E0')  #TEST
+compare_values(0.021103, get_variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
+compare_values(0.023935, get_variable('thermal energy correction'), 4, 'HDO dE')  #TEST
+compare_values(0.024878, get_variable('enthalpy correction'), 4, 'HDO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(46.450, entropy, 2, 'HDO S')  # molpro default #TEST
 
 clean()
+
+# Could just reset the symmetry number to 1 since that's the correct
+#  value for DTO. But the below will calculate the default.
+
+psi4.revoke_global_option_changed('rotational_symmetry_number')
 
 freq('hf', molecule=dto)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'DTO E0')  #TEST
@@ -138,7 +159,7 @@ gradient() will perform analytic gradient computation.
 
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:17 2016
 
 
          ---------------------------------------------------------
@@ -291,18 +312,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:17 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:17 2016
 
 
          ------------------------------------------------------------
@@ -353,13 +374,13 @@ Total time:
        3        0.000000000000    -0.140065454398    -0.029274938036
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:17 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -458,7 +479,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:17 2016
 
 
          ---------------------------------------------------------
@@ -614,18 +635,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:17 2016
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:17 2016
 
 
          ------------------------------------------------------------
@@ -676,13 +697,13 @@ Total time:
        3        0.000000000000    -0.037654818207    -0.011838775588
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:17 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.12 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -768,7 +789,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -924,18 +945,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ------------------------------------------------------------
@@ -986,15 +1007,15 @@ Total time:
        3       -0.000000000000     0.027460831811     0.016985145170
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:57 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -1080,7 +1101,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:57 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -1236,18 +1257,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.24 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ------------------------------------------------------------
@@ -1298,13 +1319,13 @@ Total time:
        3        0.000000000000    -0.015967358304    -0.013535521607
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -1405,7 +1426,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -1561,18 +1582,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.34 seconds =       0.01 minutes
+	user time   =       0.32 seconds =       0.01 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ------------------------------------------------------------
@@ -1623,13 +1644,13 @@ Total time:
        3        0.000000000000    -0.006007938863    -0.005673826529
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.36 seconds =       0.01 minutes
+	user time   =       0.34 seconds =       0.01 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -1717,7 +1738,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -1873,18 +1894,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ------------------------------------------------------------
@@ -1935,14 +1956,14 @@ Total time:
        3        0.000000000000    -0.000517923914    -0.000262960562
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 			-----------------------------------------
@@ -2027,7 +2048,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -2182,18 +2203,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.50 seconds =       0.01 minutes
+	user time   =       0.47 seconds =       0.01 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ------------------------------------------------------------
@@ -2244,13 +2265,13 @@ Total time:
        3       -0.000000000000     0.000030006966     0.000013859538
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:18 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
+	user time   =       0.49 seconds =       0.01 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -2336,7 +2357,7 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:18 2016
 
 
          ---------------------------------------------------------
@@ -2490,18 +2511,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -2552,15 +2573,15 @@ Total time:
        3        0.000000000000    -0.000000869245    -0.000000205931
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -2703,7 +2724,7 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -2855,18 +2876,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.65 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -2917,22 +2938,22 @@ Total time:
        3       -0.000000000000     0.000811487458     0.001187511149
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:58 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 6    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:58 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -3084,18 +3105,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.71 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -3146,14 +3167,14 @@ Total time:
        3        0.000000000000    -0.000805277394    -0.001185145512
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3161,7 +3182,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -3313,18 +3334,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.78 seconds =       0.01 minutes
+	user time   =       0.73 seconds =       0.01 minutes
 	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -3375,14 +3396,14 @@ Total time:
        3       -0.000000000000     0.001680689288     0.000766199273
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.75 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3390,7 +3411,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -3542,18 +3563,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.84 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -3604,14 +3625,14 @@ Total time:
        3        0.000000000000    -0.001670978321    -0.000757424987
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.86 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3619,7 +3640,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -3705,14 +3726,14 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24098509757745   -7.32410e+01   1.63850e-01 
-   @RHF iter   2:   -74.93098596449848   -1.69000e+00   3.35423e-02 DIIS
-   @RHF iter   3:   -74.96451592579066   -3.35300e-02   5.91674e-03 DIIS
-   @RHF iter   4:   -74.96583346010634   -1.31753e-03   1.03425e-03 DIIS
-   @RHF iter   5:   -74.96588746930826   -5.40092e-05   2.83972e-04 DIIS
-   @RHF iter   6:   -74.96589203514195   -4.56583e-06   2.63908e-05 DIIS
-   @RHF iter   7:   -74.96589207126783   -3.61259e-08   8.44745e-08 DIIS
-   @RHF iter   8:   -74.96589207126814   -3.12639e-13   1.02980e-08 DIIS
-   @RHF iter   9:   -74.96589207126814    0.00000e+00   1.62717e-09 DIIS
+   @RHF iter   2:   -74.93098596449850   -1.69000e+00   3.35423e-02 DIIS
+   @RHF iter   3:   -74.96451592579062   -3.35300e-02   5.91674e-03 DIIS
+   @RHF iter   4:   -74.96583346010631   -1.31753e-03   1.03425e-03 DIIS
+   @RHF iter   5:   -74.96588746930824   -5.40092e-05   2.83972e-04 DIIS
+   @RHF iter   6:   -74.96589203514186   -4.56583e-06   2.63908e-05 DIIS
+   @RHF iter   7:   -74.96589207126786   -3.61260e-08   8.44745e-08 DIIS
+   @RHF iter   8:   -74.96589207126814   -2.84217e-13   1.02980e-08 DIIS
+   @RHF iter   9:   -74.96589207126813    1.42109e-14   1.62717e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -3734,18 +3755,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589207126814
+  @RHF Final Energy:   -74.96589207126813
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9065154634638990
-    One-Electron Energy =                -121.8341527160666544
-    Two-Electron Energy =                  37.9617451813345923
+    One-Electron Energy =                -121.8341527160665692
+    Two-Electron Energy =                  37.9617451813345355
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658920712681578
+    Total Energy =                        -74.9658920712681294
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -3770,18 +3791,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.89 seconds =       0.01 minutes
+	user time   =       0.85 seconds =       0.01 minutes
 	system time =       0.08 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -3832,14 +3853,14 @@ Total time:
        3        0.000000000000     0.001923698649     0.001614335588
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.92 seconds =       0.02 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3847,7 +3868,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ---------------------------------------------------------
@@ -3999,18 +4020,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.90 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:19 2016
 
 
          ------------------------------------------------------------
@@ -4061,13 +4082,13 @@ Total time:
        3        0.000000000000    -0.000000869245    -0.000000206176
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:19 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.98 seconds =       0.02 minutes
+	user time   =       0.92 seconds =       0.02 minutes
 	system time =       0.09 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
@@ -4147,7 +4168,7 @@ Total time:
 
   Entropy, S
     Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
-    Translational S      34.608 [cal/(mol K)]     144.801 [J/(mol K)]      0.05515186 [mEh/K] (mol. weight = 18.0106, P = 101325.00 [Pa])
+    Translational S      34.608 [cal/(mol K)]     144.801 [J/(mol K)]      0.05515186 [mEh/K] (mol. weight = 18.0106 [u], P = 101325.00 [Pa])
     Rotational S         10.673 [cal/(mol K)]      44.654 [J/(mol K)]      0.01700786 [mEh/K] (symmetry no. = 2)
     Vibrational S         0.001 [cal/(mol K)]       0.003 [J/(mol K)]      0.00000103 [mEh/K]
   Total S                45.282 [cal/(mol K)]     189.458 [J/(mol K)]      0.07216074 [mEh/K]
@@ -4187,7 +4208,7 @@ Total time:
   Correction E           17.076 [kcal/mol]      71.445 [kJ/mol]      0.02721177 [Eh]
   Total E, Electronic energy at  298.15 [K]                        -74.93868942 [Eh]
 
-  Enthalpy, H_trans = E_trans + k_b * T
+  Enthalpy, H_trans = E_trans + k_B * T
     Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
     Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
     Rotational H          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
@@ -4233,7 +4254,7 @@ Total time:
 
   Entropy, S
     Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
-    Translational S      36.068 [cal/(mol K)]     150.910 [J/(mol K)]      0.05747842 [mEh/K] (mol. weight = 18.0106, P = 101325.00 [Pa])
+    Translational S      36.068 [cal/(mol K)]     150.910 [J/(mol K)]      0.05747842 [mEh/K] (mol. weight = 18.0106 [u], P = 101325.00 [Pa])
     Rotational S         11.549 [cal/(mol K)]      48.319 [J/(mol K)]      0.01840379 [mEh/K] (symmetry no. = 2)
     Vibrational S         0.007 [cal/(mol K)]       0.030 [J/(mol K)]      0.00001139 [mEh/K]
   Total S                47.624 [cal/(mol K)]     199.259 [J/(mol K)]      0.07589361 [mEh/K]
@@ -4273,7 +4294,7 @@ Total time:
   Correction E           17.685 [kcal/mol]      73.995 [kJ/mol]      0.02818315 [Eh]
   Total E, Electronic energy at  400.00 [K]                        -74.93771804 [Eh]
 
-  Enthalpy, H_trans = E_trans + k_b * T
+  Enthalpy, H_trans = E_trans + k_B * T
     Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
     Translational H       1.987 [kcal/mol]       8.314 [kJ/mol]      0.00316681 [Eh]
     Rotational H          1.192 [kcal/mol]       4.989 [kJ/mol]      0.00190009 [Eh]
@@ -4332,7 +4353,7 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -4484,18 +4505,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.02 seconds =       0.02 minutes
+	user time   =       0.96 seconds =       0.02 minutes
 	system time =       0.09 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -4546,22 +4567,22 @@ Total time:
        3       -0.000000000000     0.000604275075     0.000885398285
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.04 seconds =       0.02 minutes
+	user time   =       0.98 seconds =       0.02 minutes
 	system time =       0.09 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 6    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -4713,18 +4734,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.09 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -4775,22 +4796,22 @@ Total time:
        3        0.000000000000    -0.000601591789    -0.000884265228
 
 
-*** tstop() called on psinet at Sat Apr 16 04:22:59 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.10 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.05 seconds =       0.02 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 6    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:22:59 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -4942,18 +4963,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.14 seconds =       0.02 minutes
+	user time   =       1.08 seconds =       0.02 minutes
 	system time =       0.10 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -5004,14 +5025,14 @@ Total time:
        3       -0.000000000000     0.001187441758     0.000540977300
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       1.10 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -5019,7 +5040,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -5171,18 +5192,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -5233,14 +5254,14 @@ Total time:
        3        0.000000000000    -0.001183451119    -0.000536792812
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.22 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -5248,7 +5269,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -5337,10 +5358,10 @@ Total time:
    @RHF iter   2:   -74.93099127649849   -1.69000e+00   3.35420e-02 DIIS
    @RHF iter   3:   -74.96452021591580   -3.35289e-02   5.91664e-03 DIIS
    @RHF iter   4:   -74.96583770581685   -1.31749e-03   1.03423e-03 DIIS
-   @RHF iter   5:   -74.96589171264459   -5.40068e-05   2.83966e-04 DIIS
-   @RHF iter   6:   -74.96589627827120   -4.56563e-06   2.63896e-05 DIIS
-   @RHF iter   7:   -74.96589631439332   -3.61221e-08   6.33198e-08 DIIS
-   @RHF iter   8:   -74.96589631439350   -1.84741e-13   9.43002e-09 DIIS
+   @RHF iter   5:   -74.96589171264453   -5.40068e-05   2.83966e-04 DIIS
+   @RHF iter   6:   -74.96589627827119   -4.56563e-06   2.63896e-05 DIIS
+   @RHF iter   7:   -74.96589631439331   -3.61221e-08   6.33198e-08 DIIS
+   @RHF iter   8:   -74.96589631439350   -1.98952e-13   9.43002e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -5367,8 +5388,8 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9065004627544546
-    One-Electron Energy =                -121.8341347315100336
-    Two-Electron Energy =                  37.9617379543620785
+    One-Electron Energy =                -121.8341347315100620
+    Two-Electron Energy =                  37.9617379543621070
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
@@ -5398,18 +5419,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.26 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       1.19 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -5460,14 +5481,14 @@ Total time:
        3        0.000000000000     0.001404575821     0.001178884604
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.28 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       1.21 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -5475,7 +5496,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -5627,18 +5648,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       1.25 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ------------------------------------------------------------
@@ -5689,14 +5710,14 @@ Total time:
        3        0.000000000000    -0.000000869245    -0.000000206176
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:20 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.33 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       1.27 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 -------------------------------------------------------------
@@ -5775,7 +5796,7 @@ Total time:
 
   Entropy, S
     Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
-    Translational S      34.924 [cal/(mol K)]     146.122 [J/(mol K)]      0.05565504 [mEh/K] (mol. weight = 20.0231, P = 101325.00 [Pa])
+    Translational S      34.924 [cal/(mol K)]     146.122 [J/(mol K)]      0.05565504 [mEh/K] (mol. weight = 20.0231 [u], P = 101325.00 [Pa])
     Rotational S         12.592 [cal/(mol K)]      52.685 [J/(mol K)]      0.02006667 [mEh/K] (symmetry no. = 2)
     Vibrational S         0.008 [cal/(mol K)]       0.034 [J/(mol K)]      0.00001311 [mEh/K]
   Total S                47.524 [cal/(mol K)]     198.842 [J/(mol K)]      0.07573483 [mEh/K]
@@ -5815,7 +5836,7 @@ Total time:
   Correction E           12.911 [kcal/mol]      54.022 [kJ/mol]      0.02057576 [Eh]
   Total E, Electronic energy at  298.15 [K]                        -74.94532543 [Eh]
 
-  Enthalpy, H_trans = E_trans + k_b * T
+  Enthalpy, H_trans = E_trans + k_B * T
     Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
     Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
     Rotational H          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
@@ -5868,7 +5889,7 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:20 2016
 
 
          ---------------------------------------------------------
@@ -5957,10 +5978,10 @@ hessian() will perform frequency computation by finite difference of analytic gr
    @RHF iter   2:   -74.93098945736985   -1.69000e+00   3.35421e-02 DIIS
    @RHF iter   3:   -74.96451874280930   -3.35293e-02   5.91667e-03 DIIS
    @RHF iter   4:   -74.96583624787804   -1.31751e-03   1.03424e-03 DIIS
-   @RHF iter   5:   -74.96589025551965   -5.40076e-05   2.83968e-04 DIIS
-   @RHF iter   6:   -74.96589482121678   -4.56570e-06   2.63900e-05 DIIS
-   @RHF iter   7:   -74.96589485734017   -3.61234e-08   7.12955e-08 DIIS
-   @RHF iter   8:   -74.96589485734047   -2.98428e-13   9.76347e-09 DIIS
+   @RHF iter   5:   -74.96589025551962   -5.40076e-05   2.83968e-04 DIIS
+   @RHF iter   6:   -74.96589482121674   -4.56570e-06   2.63900e-05 DIIS
+   @RHF iter   7:   -74.96589485734016   -3.61234e-08   7.12955e-08 DIIS
+   @RHF iter   8:   -74.96589485734042   -2.55795e-13   9.76347e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -5982,18 +6003,18 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589485734047
+  @RHF Final Energy:   -74.96589485734042
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9065056299479952
-    One-Electron Energy =                -121.8341408759326185
-    Two-Electron Energy =                  37.9617403886441593
+    One-Electron Energy =                -121.8341408759325475
+    Two-Electron Energy =                  37.9617403886441309
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658948573404587
+    Total Energy =                        -74.9658948573404160
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -6018,18 +6039,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.37 seconds =       0.02 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.31 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -6080,22 +6101,22 @@ Total time:
        3        0.001589912606     0.001332592238     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.39 seconds =       0.02 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.33 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -6183,11 +6204,11 @@ Total time:
    @RHF iter   1:   -73.24098603449214   -7.32410e+01   1.63850e-01 
    @RHF iter   2:   -74.93098945736983   -1.69000e+00   3.35421e-02 DIIS
    @RHF iter   3:   -74.96451874280922   -3.35293e-02   5.91667e-03 DIIS
-   @RHF iter   4:   -74.96583624787802   -1.31751e-03   1.03424e-03 DIIS
+   @RHF iter   4:   -74.96583624787800   -1.31751e-03   1.03424e-03 DIIS
    @RHF iter   5:   -74.96589025551960   -5.40076e-05   2.83968e-04 DIIS
-   @RHF iter   6:   -74.96589482121672   -4.56570e-06   2.63900e-05 DIIS
-   @RHF iter   7:   -74.96589485734017   -3.61235e-08   7.12955e-08 DIIS
-   @RHF iter   8:   -74.96589485734042   -2.41585e-13   9.76347e-09 DIIS
+   @RHF iter   6:   -74.96589482121671   -4.56570e-06   2.63900e-05 DIIS
+   @RHF iter   7:   -74.96589485734022   -3.61235e-08   7.12955e-08 DIIS
+   @RHF iter   8:   -74.96589485734042   -1.98952e-13   9.76347e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -6214,13 +6235,13 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9065056299479952
-    One-Electron Energy =                -121.8341408759325617
-    Two-Electron Energy =                  37.9617403886441380
+    One-Electron Energy =                -121.8341408759325333
+    Two-Electron Energy =                  37.9617403886441309
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658948573404302
+    Total Energy =                        -74.9658948573404018
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -6245,18 +6266,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.43 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -6307,22 +6328,22 @@ Total time:
        3       -0.001601665108    -0.001344176870     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.45 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.38 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -6409,12 +6430,12 @@ Total time:
 
    @RHF iter   1:   -73.24122634353822   -7.32412e+01   1.63586e-01 
    @RHF iter   2:   -74.93020501561095   -1.68898e+00   3.39210e-02 DIIS
-   @RHF iter   3:   -74.96450358041641   -3.42986e-02   5.95761e-03 DIIS
-   @RHF iter   4:   -74.96583805604328   -1.33448e-03   1.04158e-03 DIIS
-   @RHF iter   5:   -74.96589276675171   -5.47107e-05   2.87439e-04 DIIS
-   @RHF iter   6:   -74.96589745729865   -4.69055e-06   2.66439e-05 DIIS
-   @RHF iter   7:   -74.96589749419491   -3.68963e-08   2.36247e-08 DIIS
-   @RHF iter   8:   -74.96589749419495   -4.26326e-14   4.54420e-09 DIIS
+   @RHF iter   3:   -74.96450358041638   -3.42986e-02   5.95761e-03 DIIS
+   @RHF iter   4:   -74.96583805604324   -1.33448e-03   1.04158e-03 DIIS
+   @RHF iter   5:   -74.96589276675172   -5.47107e-05   2.87439e-04 DIIS
+   @RHF iter   6:   -74.96589745729871   -4.69055e-06   2.66439e-05 DIIS
+   @RHF iter   7:   -74.96589749419495   -3.68962e-08   2.36247e-08 DIIS
+   @RHF iter   8:   -74.96589749419492    2.84217e-14   4.54420e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -6436,18 +6457,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589749419495
+  @RHF Final Energy:   -74.96589749419492
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8967909337791582
-    One-Electron Energy =                -121.8159218313910230
-    Two-Electron Energy =                  37.9532334034169097
+    One-Electron Energy =                -121.8159218313909662
+    Two-Electron Energy =                  37.9532334034168741
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658974941949623
+    Total Energy =                        -74.9658974941949339
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -6472,18 +6493,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.49 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.42 seconds =       0.02 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:00 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -6534,22 +6555,22 @@ Total time:
        3        0.001025358032     0.001310712707     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:00 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.51 seconds =       0.03 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.44 seconds =       0.02 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -6635,13 +6656,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24074747752928   -7.32407e+01   1.64112e-01 
-   @RHF iter   2:   -74.93176976066859   -1.69102e+00   3.31642e-02 DIIS
-   @RHF iter   3:   -74.96453922160380   -3.27695e-02   5.87539e-03 DIIS
-   @RHF iter   4:   -74.96583971066566   -1.30049e-03   1.02687e-03 DIIS
-   @RHF iter   5:   -74.96589301337316   -5.33027e-05   2.80490e-04 DIIS
-   @RHF iter   6:   -74.96589745572820   -4.44236e-06   2.61368e-05 DIIS
-   @RHF iter   7:   -74.96589749108850   -3.53603e-08   2.53514e-08 DIIS
-   @RHF iter   8:   -74.96589749108848    1.42109e-14   4.44791e-09 DIIS
+   @RHF iter   2:   -74.93176976066863   -1.69102e+00   3.31642e-02 DIIS
+   @RHF iter   3:   -74.96453922160379   -3.27695e-02   5.87539e-03 DIIS
+   @RHF iter   4:   -74.96583971066568   -1.30049e-03   1.02687e-03 DIIS
+   @RHF iter   5:   -74.96589301337319   -5.33027e-05   2.80490e-04 DIIS
+   @RHF iter   6:   -74.96589745572817   -4.44235e-06   2.61368e-05 DIIS
+   @RHF iter   7:   -74.96589749108848   -3.53603e-08   2.53514e-08 DIIS
+   @RHF iter   8:   -74.96589749108848    0.00000e+00   4.44791e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -6668,13 +6689,13 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9161824177624123
-    One-Electron Energy =                -121.8523134940961796
-    Two-Electron Energy =                  37.9702335852453103
+    One-Electron Energy =                -121.8523134940962649
+    Two-Electron Energy =                  37.9702335852453672
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658974910884552
+    Total Energy =                        -74.9658974910884837
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -6699,18 +6720,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.54 seconds =       0.03 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       1.47 seconds =       0.02 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -6761,14 +6782,14 @@ Total time:
        3       -0.001034563026    -0.001313767858     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.56 seconds =       0.03 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       1.49 seconds =       0.02 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -6776,7 +6797,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -6862,13 +6883,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24174837803517   -7.32417e+01   1.63557e-01 
-   @RHF iter   2:   -74.93058642804297   -1.68884e+00   3.37198e-02 DIIS
-   @RHF iter   3:   -74.96450718059681   -3.39208e-02   5.93660e-03 DIIS
-   @RHF iter   4:   -74.96583685432715   -1.32967e-03   1.04125e-03 DIIS
-   @RHF iter   5:   -74.96589165596855   -5.48016e-05   2.86588e-04 DIIS
-   @RHF iter   6:   -74.96589631885087   -4.66288e-06   2.65062e-05 DIIS
-   @RHF iter   7:   -74.96589635533141   -3.64805e-08   2.65773e-08 DIIS
-   @RHF iter   8:   -74.96589635533144   -2.84217e-14   5.81324e-09 DIIS
+   @RHF iter   2:   -74.93058642804296   -1.68884e+00   3.37198e-02 DIIS
+   @RHF iter   3:   -74.96450718059677   -3.39208e-02   5.93660e-03 DIIS
+   @RHF iter   4:   -74.96583685432712   -1.32967e-03   1.04125e-03 DIIS
+   @RHF iter   5:   -74.96589165596858   -5.48016e-05   2.86588e-04 DIIS
+   @RHF iter   6:   -74.96589631885091   -4.66288e-06   2.65062e-05 DIIS
+   @RHF iter   7:   -74.96589635533142   -3.64805e-08   2.65773e-08 DIIS
+   @RHF iter   8:   -74.96589635533145   -2.84217e-14   5.81324e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -6890,18 +6911,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589635533144
+  @RHF Final Energy:   -74.96589635533145
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8950544468120381
-    One-Electron Energy =                -121.8145895735904105
+    One-Electron Energy =                -121.8145895735904389
     Two-Electron Energy =                  37.9536387714469328
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658963553314379
+    Total Energy =                        -74.9658963553314663
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -6926,18 +6947,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.60 seconds =       0.03 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       1.53 seconds =       0.03 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -6988,14 +7009,14 @@ Total time:
        3        0.001854200481     0.000995827586     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.62 seconds =       0.03 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       1.55 seconds =       0.03 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -7003,7 +7024,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -7090,12 +7111,12 @@ Total time:
 
    @RHF iter   1:   -73.24022407262460   -7.32402e+01   1.64141e-01 
    @RHF iter   2:   -74.93139278345353   -1.69117e+00   3.33649e-02 DIIS
-   @RHF iter   3:   -74.96453324601190   -3.31405e-02   5.89661e-03 DIIS
-   @RHF iter   4:   -74.96583861566296   -1.30537e-03   1.02727e-03 DIIS
-   @RHF iter   5:   -74.96589183879807   -5.32231e-05   2.81364e-04 DIIS
-   @RHF iter   6:   -74.96589630892623   -4.47013e-06   2.62699e-05 DIIS
-   @RHF iter   7:   -74.96589634468194   -3.57557e-08   2.71018e-08 DIIS
-   @RHF iter   8:   -74.96589634468202   -8.52651e-14   5.75437e-09 DIIS
+   @RHF iter   3:   -74.96453324601194   -3.31405e-02   5.89661e-03 DIIS
+   @RHF iter   4:   -74.96583861566289   -1.30537e-03   1.02727e-03 DIIS
+   @RHF iter   5:   -74.96589183879804   -5.32231e-05   2.81364e-04 DIIS
+   @RHF iter   6:   -74.96589630892619   -4.47013e-06   2.62699e-05 DIIS
+   @RHF iter   7:   -74.96589634468189   -3.57557e-08   2.71018e-08 DIIS
+   @RHF iter   8:   -74.96589634468198   -8.52651e-14   5.75437e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -7117,18 +7138,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589634468202
+  @RHF Final Energy:   -74.96589634468198
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9179346091710645
-    One-Electron Energy =                -121.8536594134718456
-    Two-Electron Energy =                  37.9698284596187534
+    One-Electron Energy =                -121.8536594134717745
+    Two-Electron Energy =                  37.9698284596187250
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658963446820223
+    Total Energy =                        -74.9658963446819797
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -7153,18 +7174,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.66 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =       1.58 seconds =       0.03 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -7215,14 +7236,14 @@ Total time:
        3       -0.001865402139    -0.001008738986     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.68 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =       1.60 seconds =       0.03 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -7230,7 +7251,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -7316,13 +7337,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24098819009021   -7.32410e+01   1.63849e-01 
-   @RHF iter   2:   -74.93099743174405   -1.69001e+00   3.35416e-02 DIIS
-   @RHF iter   3:   -74.96452514865791   -3.35277e-02   5.91652e-03 DIIS
-   @RHF iter   4:   -74.96584258670907   -1.31744e-03   1.03421e-03 DIIS
-   @RHF iter   5:   -74.96589659079720   -5.40041e-05   2.83960e-04 DIIS
-   @RHF iter   6:   -74.96590115618061   -4.56538e-06   2.63882e-05 DIIS
-   @RHF iter   7:   -74.96590119229835   -3.61177e-08   2.03698e-08 DIIS
-   @RHF iter   8:   -74.96590119229840   -5.68434e-14   4.04115e-10 DIIS
+   @RHF iter   2:   -74.93099743174400   -1.69001e+00   3.35416e-02 DIIS
+   @RHF iter   3:   -74.96452514865790   -3.35277e-02   5.91652e-03 DIIS
+   @RHF iter   4:   -74.96584258670906   -1.31744e-03   1.03421e-03 DIIS
+   @RHF iter   5:   -74.96589659079717   -5.40041e-05   2.83960e-04 DIIS
+   @RHF iter   6:   -74.96590115618062   -4.56538e-06   2.63882e-05 DIIS
+   @RHF iter   7:   -74.96590119229839   -3.61178e-08   2.03698e-08 DIIS
+   @RHF iter   8:   -74.96590119229839    0.00000e+00   4.04115e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -7344,18 +7365,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96590119229840
+  @RHF Final Energy:   -74.96590119229839
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9064833159249126
-    One-Electron Energy =                -121.8341148574689043
-    Two-Electron Energy =                  37.9617303492455846
+    One-Electron Energy =                -121.8341148574688333
+    Two-Electron Energy =                  37.9617303492455420
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9659011922984035
+    Total Energy =                        -74.9659011922983751
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -7372,26 +7393,26 @@ Properties computed using the SCF density matrix
      X:    -0.7580      Y:     0.1787      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.6725      Z:     0.0000     Total:     0.6725
+     X:     0.0000      Y:     0.6725      Z:     0.0000     Total:     0.6725
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     1.7092      Z:     0.0000     Total:     1.7092
+     X:     0.0000      Y:     1.7092      Z:     0.0000     Total:     1.7092
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.72 seconds =       0.03 minutes
+	user time   =       1.64 seconds =       0.03 minutes
 	system time =       0.17 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ------------------------------------------------------------
@@ -7442,13 +7463,13 @@ Total time:
        3        0.000000869245     0.000000206176     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:21 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.74 seconds =       0.03 minutes
+	user time   =       1.66 seconds =       0.03 minutes
 	system time =       0.17 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
@@ -7527,7 +7548,7 @@ Total time:
 
   Entropy, S
     Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
-    Translational S      34.770 [cal/(mol K)]     145.479 [J/(mol K)]      0.05541011 [mEh/K] (mol. weight = 19.0168, P = 101325.00 [Pa])
+    Translational S      34.770 [cal/(mol K)]     145.479 [J/(mol K)]      0.05541011 [mEh/K] (mol. weight = 19.0168 [u], P = 101325.00 [Pa])
     Rotational S         13.055 [cal/(mol K)]      54.621 [J/(mol K)]      0.02080419 [mEh/K] (symmetry no. = 1)
     Vibrational S         0.002 [cal/(mol K)]       0.009 [J/(mol K)]      0.00000336 [mEh/K]
   Total S                47.827 [cal/(mol K)]     200.109 [J/(mol K)]      0.07621766 [mEh/K]
@@ -7567,7 +7588,7 @@ Total time:
   Correction E           15.026 [kcal/mol]      62.870 [kJ/mol]      0.02394605 [Eh]
   Total E, Electronic energy at  298.15 [K]                        -74.94195514 [Eh]
 
-  Enthalpy, H_trans = E_trans + k_b * T
+  Enthalpy, H_trans = E_trans + k_B * T
     Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
     Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
     Rotational H          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
@@ -7582,6 +7603,92 @@ Total time:
     Vibrational G        13.248 [kcal/mol]      55.431 [kJ/mol]      0.02111249 [Eh]
   Correction G            1.359 [kcal/mol]       5.687 [kJ/mol]      0.00216594 [Eh]
   Total G, Free enthalpy at  298.15 [K]                            -74.96373525 [Eh]
+
+	HDO E0............................................................PASSED
+	HDO ZPVE..........................................................PASSED
+	HDO dE............................................................PASSED
+	HDO dH............................................................PASSED
+	HDO S.............................................................PASSED
+
+            *********************************************
+            * Thermodynamic Analysis by R.A. King, 2012 *
+            *********************************************
+
+  ==> Inputs to Thermochemistry <==
+
+  Temperature:                       298.15 [K]
+  Pressure:                       101325.00 [Pa]
+  Multiplicity:                           1
+  Full point group:                 Cs (Cs)
+  Rotor type:                ASYMMETRIC_TOP
+  Rotational symmetry no.:                2
+  Rotational constants: A =     20.16058  B =      8.88473  C =      6.16696 [cm^-1]
+  Rotational constants: A = 604399.04307  B = 266357.45837  C = 184880.83946 [MHz]
+
+  No.    Vib. Freq. [cm^-1]      Vib. Temp. [K]
+    1              1900.836            2734.876
+    2              3090.228            4446.143
+    3              4276.294            6152.626
+
+  ==> Components <==
+
+  Entropy, S
+    Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S      34.770 [cal/(mol K)]     145.479 [J/(mol K)]      0.05541011 [mEh/K] (mol. weight = 19.0168 [u], P = 101325.00 [Pa])
+    Rotational S         11.677 [cal/(mol K)]      48.858 [J/(mol K)]      0.01860912 [mEh/K] (symmetry no. = 2)
+    Vibrational S         0.002 [cal/(mol K)]       0.009 [J/(mol K)]      0.00000336 [mEh/K]
+  Total S                46.450 [cal/(mol K)]     194.346 [J/(mol K)]      0.07402259 [mEh/K]
+
+  Constant volume heat capacity, Cv
+    Electronic Cv         0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K]
+    Translational Cv      2.981 [cal/(mol K)]      12.472 [J/(mol K)]      0.00475022 [mEh/K]
+    Rotational Cv         2.981 [cal/(mol K)]      12.472 [J/(mol K)]      0.00475022 [mEh/K]
+    Vibrational Cv        0.018 [cal/(mol K)]       0.073 [J/(mol K)]      0.00002791 [mEh/K]
+  Total Cv                5.979 [cal/(mol K)]      25.017 [J/(mol K)]      0.00952835 [mEh/K]
+
+  Constant pressure heat capacity, Cp
+    Electronic Cp         0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K]
+    Translational Cp      4.968 [cal/(mol K)]      20.786 [J/(mol K)]      0.00791704 [mEh/K]
+    Rotational Cp         2.981 [cal/(mol K)]      12.472 [J/(mol K)]      0.00475022 [mEh/K]
+    Vibrational Cp        0.018 [cal/(mol K)]       0.073 [J/(mol K)]      0.00002791 [mEh/K]
+  Total Cp                7.966 [cal/(mol K)]      33.331 [J/(mol K)]      0.01269517 [mEh/K]
+
+  ==> Energy Analysis <== 
+
+  Raw electronic energy, E0
+  Total E0, Electronic energy at well bottom at 0 [K]              -74.96590119 [Eh]
+
+  Zero-point energy, ZPE_vib = Sum_i nu_i / 2
+    Electronic ZPE        0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational ZPE     0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Rotational ZPE        0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Vibrational ZPE      13.248 [kcal/mol]      55.431 [kJ/mol]      0.02111260 [Eh]        4633.679 [cm^-1]
+    Correction ZPE       13.248 [kcal/mol]      55.431 [kJ/mol]      0.02111260 [Eh]        4633.679 [cm^-1]
+  Total ZPE, Electronic energy at 0 [K]                            -74.94478859 [Eh]
+
+  Thermal Energy, E (includes ZPE)
+    Electronic E          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational E       0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
+    Rotational E          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
+    Vibrational E        13.249 [kcal/mol]      55.433 [kJ/mol]      0.02111350 [Eh]
+  Correction E           15.026 [kcal/mol]      62.870 [kJ/mol]      0.02394605 [Eh]
+  Total E, Electronic energy at  298.15 [K]                        -74.94195514 [Eh]
+
+  Enthalpy, H_trans = E_trans + k_B * T
+    Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
+    Rotational H          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
+    Vibrational H        13.249 [kcal/mol]      55.433 [kJ/mol]      0.02111350 [Eh]
+  Correction H           15.619 [kcal/mol]      65.349 [kJ/mol]      0.02489024 [Eh]
+  Total H, Enthalpy at  298.15 [K]                                 -74.94101095 [Eh]
+
+  Gibbs free energy, G = H - T * S
+    Electronic G         -0.000 [kcal/mol]      -0.000 [kJ/mol]     -0.00000000 [Eh]
+    Translational G      -8.886 [kcal/mol]     -37.177 [kJ/mol]     -0.01416006 [Eh]
+    Rotational G         -2.593 [kcal/mol]     -10.849 [kJ/mol]     -0.00413203 [Eh]
+    Vibrational G        13.248 [kcal/mol]      55.431 [kJ/mol]      0.02111249 [Eh]
+  Correction G            1.770 [kcal/mol]       7.405 [kJ/mol]      0.00282040 [Eh]
+  Total G, Free enthalpy at  298.15 [K]                            -74.96308079 [Eh]
 
 	HDO E0............................................................PASSED
 	HDO ZPVE..........................................................PASSED
@@ -7620,7 +7727,7 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:21 2016
 
 
          ---------------------------------------------------------
@@ -7711,8 +7818,8 @@ hessian() will perform frequency computation by finite difference of analytic gr
    @RHF iter   4:   -74.96583853933410   -1.31748e-03   1.03423e-03 DIIS
    @RHF iter   5:   -74.96589254569611   -5.40064e-05   2.83965e-04 DIIS
    @RHF iter   6:   -74.96589711128203   -4.56559e-06   2.63893e-05 DIIS
-   @RHF iter   7:   -74.96589714740347   -3.61214e-08   5.82716e-08 DIIS
-   @RHF iter   8:   -74.96589714740355   -8.52651e-14   9.20574e-09 DIIS
+   @RHF iter   7:   -74.96589714740344   -3.61214e-08   5.82716e-08 DIIS
+   @RHF iter   8:   -74.96589714740355   -1.13687e-13   9.20574e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -7740,12 +7847,12 @@ hessian() will perform frequency computation by finite difference of analytic gr
 
     Nuclear Repulsion Energy =              8.9064975113724145
     One-Electron Energy =                -121.8341312381636214
-    Two-Electron Energy =                  37.9617365793876402
+    Two-Electron Energy =                  37.9617365793876544
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658971474035809
+    Total Energy =                        -74.9658971474035525
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -7770,18 +7877,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.78 seconds =       0.03 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.70 seconds =       0.03 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -7832,22 +7939,22 @@ Total time:
        3        0.001271752551     0.001065766226     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.80 seconds =       0.03 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -7936,8 +8043,8 @@ Total time:
    @RHF iter   2:   -74.93099232032864   -1.69001e+00   3.35419e-02 DIIS
    @RHF iter   3:   -74.96452105816414   -3.35287e-02   5.91662e-03 DIIS
    @RHF iter   4:   -74.96583853933407   -1.31748e-03   1.03423e-03 DIIS
-   @RHF iter   5:   -74.96589254569597   -5.40064e-05   2.83965e-04 DIIS
-   @RHF iter   6:   -74.96589711128195   -4.56559e-06   2.63893e-05 DIIS
+   @RHF iter   5:   -74.96589254569605   -5.40064e-05   2.83965e-04 DIIS
+   @RHF iter   6:   -74.96589711128192   -4.56559e-06   2.63893e-05 DIIS
    @RHF iter   7:   -74.96589714740335   -3.61214e-08   5.82716e-08 DIIS
    @RHF iter   8:   -74.96589714740350   -1.42109e-13   9.20574e-09 DIIS
 
@@ -7966,13 +8073,13 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9064975113724145
-    One-Electron Energy =                -121.8341312381635504
-    Two-Electron Energy =                  37.9617365793876331
+    One-Electron Energy =                -121.8341312381635362
+    Two-Electron Energy =                  37.9617365793876189
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658971474034956
+    Total Energy =                        -74.9658971474035098
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -7997,18 +8104,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.84 seconds =       0.03 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.75 seconds =       0.03 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -8059,22 +8166,22 @@ Total time:
        3       -0.001278515031    -0.001073137493     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.86 seconds =       0.03 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.77 seconds =       0.03 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -8164,9 +8271,9 @@ Total time:
    @RHF iter   3:   -74.96450890320118   -3.41336e-02   5.94887e-03 DIIS
    @RHF iter   4:   -74.96583974832089   -1.33085e-03   1.04001e-03 DIIS
    @RHF iter   5:   -74.96589430830564   -5.45600e-05   2.86699e-04 DIIS
-   @RHF iter   6:   -74.96589897206094   -4.66376e-06   2.65891e-05 DIIS
-   @RHF iter   7:   -74.96589900878979   -3.67288e-08   2.03147e-08 DIIS
-   @RHF iter   8:   -74.96589900878979    0.00000e+00   1.94725e-09 DIIS
+   @RHF iter   6:   -74.96589897206093   -4.66376e-06   2.65891e-05 DIIS
+   @RHF iter   7:   -74.96589900878976   -3.67288e-08   2.03147e-08 DIIS
+   @RHF iter   8:   -74.96589900878976    0.00000e+00   1.94725e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -8188,18 +8295,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589900878979
+  @RHF Final Energy:   -74.96589900878976
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8988506173628981
-    One-Electron Energy =                -121.8197887311425376
+    One-Electron Energy =                -121.8197887311425234
     Two-Electron Energy =                  37.9550391049898650
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658990087897763
+    Total Energy =                        -74.9658990087897621
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -8224,18 +8331,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:01 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.90 seconds =       0.03 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:01 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -8286,14 +8393,14 @@ Total time:
        3        0.000427228654     0.000711464767     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.92 seconds =       0.03 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       1.83 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -8301,7 +8408,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -8387,13 +8494,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24079887247547   -7.32408e+01   1.64056e-01 
-   @RHF iter   2:   -74.93160740441671   -1.69081e+00   3.32442e-02 DIIS
-   @RHF iter   3:   -74.96453697024123   -3.29296e-02   5.88413e-03 DIIS
-   @RHF iter   4:   -74.96584105334490   -1.30408e-03   1.02843e-03 DIIS
-   @RHF iter   5:   -74.96589450461995   -5.34513e-05   2.81227e-04 DIIS
+   @RHF iter   2:   -74.93160740441665   -1.69081e+00   3.32442e-02 DIIS
+   @RHF iter   3:   -74.96453697024126   -3.29296e-02   5.88413e-03 DIIS
+   @RHF iter   4:   -74.96584105334489   -1.30408e-03   1.02843e-03 DIIS
+   @RHF iter   5:   -74.96589450461994   -5.34513e-05   2.81227e-04 DIIS
    @RHF iter   6:   -74.96589897294049   -4.46832e-06   2.61898e-05 DIIS
-   @RHF iter   7:   -74.96589900846000   -3.55195e-08   2.20139e-08 DIIS
-   @RHF iter   8:   -74.96589900846000    0.00000e+00   1.92217e-09 DIIS
+   @RHF iter   7:   -74.96589900845998   -3.55195e-08   2.20139e-08 DIIS
+   @RHF iter   8:   -74.96589900846003   -4.26326e-14   1.92217e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -8415,18 +8522,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589900846000
+  @RHF Final Energy:   -74.96589900846003
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9141200193322145
     One-Electron Energy =                -121.8484445550849671
-    Two-Electron Energy =                  37.9684255272927373
+    Two-Electron Energy =                  37.9684255272927231
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658990084600134
+    Total Energy =                        -74.9658990084600276
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -8451,18 +8558,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       1.86 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -8513,14 +8620,14 @@ Total time:
        3       -0.000428018708    -0.000712041521     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.98 seconds =       0.03 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       1.88 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -8528,7 +8635,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -8614,13 +8721,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24155555927527   -7.32416e+01   1.63631e-01 
-   @RHF iter   2:   -74.93069259519707   -1.68914e+00   3.36744e-02 DIIS
+   @RHF iter   2:   -74.93069259519709   -1.68914e+00   3.36744e-02 DIIS
    @RHF iter   3:   -74.96451283006186   -3.38202e-02   5.93148e-03 DIIS
-   @RHF iter   4:   -74.96583937555260   -1.32655e-03   1.03945e-03 DIIS
-   @RHF iter   5:   -74.96589397276388   -5.45972e-05   2.85917e-04 DIIS
-   @RHF iter   6:   -74.96589861063681   -4.63787e-06   2.64762e-05 DIIS
-   @RHF iter   7:   -74.96589864702491   -3.63881e-08   2.15284e-08 DIIS
-   @RHF iter   8:   -74.96589864702486    5.68434e-14   2.61439e-09 DIIS
+   @RHF iter   4:   -74.96583937555258   -1.32655e-03   1.03945e-03 DIIS
+   @RHF iter   5:   -74.96589397276392   -5.45972e-05   2.85917e-04 DIIS
+   @RHF iter   6:   -74.96589861063676   -4.63787e-06   2.64762e-05 DIIS
+   @RHF iter   7:   -74.96589864702486   -3.63881e-08   2.15284e-08 DIIS
+   @RHF iter   8:   -74.96589864702489   -2.84217e-14   2.61439e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -8642,18 +8749,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589864702486
+  @RHF Final Energy:   -74.96589864702489
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8979572064926771
-    One-Electron Energy =                -121.8195508218164917
-    Two-Electron Energy =                  37.9556949682989568
+    One-Electron Energy =                -121.8195508218164775
+    Two-Electron Energy =                  37.9556949682989284
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9658986470248578
+    Total Energy =                        -74.9658986470248720
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -8678,18 +8785,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.02 seconds =       0.03 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       1.92 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -8740,14 +8847,14 @@ Total time:
        3        0.000899412564     0.000338444198     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.04 seconds =       0.03 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -8755,7 +8862,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -8841,13 +8948,13 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter   1:   -73.24041873536956   -7.32404e+01   1.64067e-01 
-   @RHF iter   2:   -74.93129397297793   -1.69088e+00   3.34097e-02 DIIS
+   @RHF iter   2:   -74.93129397297795   -1.69088e+00   3.34097e-02 DIIS
    @RHF iter   3:   -74.96453227739124   -3.32383e-02   5.90165e-03 DIIS
    @RHF iter   4:   -74.96584069715206   -1.30842e-03   1.02902e-03 DIIS
    @RHF iter   5:   -74.96589411715738   -5.34200e-05   2.82021e-04 DIIS
-   @RHF iter   6:   -74.96589861127916   -4.49412e-06   2.62999e-05 DIIS
+   @RHF iter   6:   -74.96589861127919   -4.49412e-06   2.62999e-05 DIIS
    @RHF iter   7:   -74.96589864712675   -3.58476e-08   2.20883e-08 DIIS
-   @RHF iter   8:   -74.96589864712672    2.84217e-14   2.59655e-09 DIIS
+   @RHF iter   8:   -74.96589864712678   -2.84217e-14   2.59655e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -8869,13 +8976,13 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96589864712672
+  @RHF Final Energy:   -74.96589864712678
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9150212113844916
-    One-Electron Energy =                -121.8486890877349964
-    Two-Electron Energy =                  37.9677692292237694
+    One-Electron Energy =                -121.8486890877350106
+    Two-Electron Energy =                  37.9677692292237552
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
@@ -8905,18 +9012,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.08 seconds =       0.03 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       1.98 seconds =       0.03 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -8967,14 +9074,14 @@ Total time:
        3       -0.000901334172    -0.000340208796     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =      -0.00 seconds =      -0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.10 seconds =       0.04 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       2.00 seconds =       0.03 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -8982,7 +9089,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ---------------------------------------------------------
@@ -9069,12 +9176,12 @@ Total time:
 
    @RHF iter   1:   -73.24098819009025   -7.32410e+01   1.63849e-01 
    @RHF iter   2:   -74.93099743174407   -1.69001e+00   3.35416e-02 DIIS
-   @RHF iter   3:   -74.96452514865797   -3.35277e-02   5.91652e-03 DIIS
-   @RHF iter   4:   -74.96584258670912   -1.31744e-03   1.03421e-03 DIIS
-   @RHF iter   5:   -74.96589659079723   -5.40041e-05   2.83960e-04 DIIS
-   @RHF iter   6:   -74.96590115618066   -4.56538e-06   2.63882e-05 DIIS
-   @RHF iter   7:   -74.96590119229842   -3.61178e-08   2.03698e-08 DIIS
-   @RHF iter   8:   -74.96590119229846   -4.26326e-14   4.04116e-10 DIIS
+   @RHF iter   3:   -74.96452514865798   -3.35277e-02   5.91652e-03 DIIS
+   @RHF iter   4:   -74.96584258670916   -1.31744e-03   1.03421e-03 DIIS
+   @RHF iter   5:   -74.96589659079721   -5.40041e-05   2.83960e-04 DIIS
+   @RHF iter   6:   -74.96590115618068   -4.56538e-06   2.63882e-05 DIIS
+   @RHF iter   7:   -74.96590119229843   -3.61178e-08   2.03698e-08 DIIS
+   @RHF iter   8:   -74.96590119229840    2.84217e-14   4.04115e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -9096,18 +9203,18 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96590119229846
+  @RHF Final Energy:   -74.96590119229840
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.9064833159249126
-    One-Electron Energy =                -121.8341148574690038
-    Two-Electron Energy =                  37.9617303492456273
+    One-Electron Energy =                -121.8341148574689043
+    Two-Electron Energy =                  37.9617303492455775
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9659011922984604
+    Total Energy =                        -74.9659011922984178
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -9132,18 +9239,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.14 seconds =       0.04 minutes
+	user time   =       2.03 seconds =       0.03 minutes
 	system time =       0.21 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on psinet
-*** at Sat Apr 16 04:23:02 2016
+*** at Sat Apr 16 23:07:22 2016
 
 
          ------------------------------------------------------------
@@ -9194,13 +9301,13 @@ Total time:
        3        0.000000869245     0.000000206176     0.000000000000
 
 
-*** tstop() called on psinet at Sat Apr 16 04:23:02 2016
+*** tstop() called on psinet at Sat Apr 16 23:07:22 2016
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.16 seconds =       0.04 minutes
+	user time   =       2.05 seconds =       0.03 minutes
 	system time =       0.21 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
@@ -9279,7 +9386,7 @@ Total time:
 
   Entropy, S
     Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
-    Translational S      35.070 [cal/(mol K)]     146.731 [J/(mol K)]      0.05588699 [mEh/K] (mol. weight = 21.0251, P = 101325.00 [Pa])
+    Translational S      35.070 [cal/(mol K)]     146.731 [J/(mol K)]      0.05588699 [mEh/K] (mol. weight = 21.0251 [u], P = 101325.00 [Pa])
     Rotational S         14.519 [cal/(mol K)]      60.750 [J/(mol K)]      0.02313829 [mEh/K] (symmetry no. = 1)
     Vibrational S         0.014 [cal/(mol K)]       0.058 [J/(mol K)]      0.00002209 [mEh/K]
   Total S                49.603 [cal/(mol K)]     207.539 [J/(mol K)]      0.07904736 [mEh/K]
@@ -9319,7 +9426,7 @@ Total time:
   Correction E           12.025 [kcal/mol]      50.312 [kJ/mol]      0.01916293 [Eh]
   Total E, Electronic energy at  298.15 [K]                        -74.94673826 [Eh]
 
-  Enthalpy, H_trans = E_trans + k_b * T
+  Enthalpy, H_trans = E_trans + k_B * T
     Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
     Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
     Rotational H          0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
