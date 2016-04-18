@@ -14,6 +14,11 @@ Interface to GDMA Distributed Multipole Analysis by A. J. Stone, :py:func:`~driv
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
+*Module:* :ref:`Keywords <apdx:gdma>`, :ref:`PSI Variables <apdx:gdma_psivar>`, :source:`PCMSolver <src/lib/libgdma>`
+
+Input
+~~~
+
 The distributed multipole analysis (DMA) technique, developed by Anthony J.
 Stone and implemented by him into the `GDMA package
 <http://www-stone.ch.cam.ac.uk/programs.html>`_, is available in |PSIfour|.

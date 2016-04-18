@@ -274,14 +274,24 @@ def convert(p, symbol):
 
 
 def auto_fragments(**kwargs):
-    r"""
-    Detects fragments if the user does not supply them.
-    Currently only used for the WebMO implementation of SAPT
-    Returns a new fragmented molecule
+    r"""Detects fragments if the user does not supply them.
+    Currently only used for the WebMO implementation of SAPT.
 
-    usage: auto_fragment()
+    :returns: :ref:`Molecule<sec:psimod_Molecule>`) |w--w| fragmented molecule.
 
-    auto_fragment(molecule=mol)
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :examples:
+
+    >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
+    >>> molecule mol {\nH 0.0 0.0 0.0\nH 2.0 0.0 0.0\nF 0.0 1.0 0.0\nF 2.0 1.0 0.0\n}
+    >>> print mol.nfragments()  # 1
+    >>> fragmol = auto_fragments()
+    >>> print fragmol.nfragments()  # 2
+
     """
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())

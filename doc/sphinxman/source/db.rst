@@ -8,8 +8,8 @@
 
 .. _`sec:db()`:
 
-Database
-========
+Database, :py:func:`~wrappers.database`
+=======================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
