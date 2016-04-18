@@ -41,7 +41,7 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
         fdriver.write('   :undoc-members:\n')
 
         if basename == 'driver':
-            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop, molden, gdma, fchk\n')
+            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop, molden, gdma, fchk, gradient, hessian\n')
         elif basename == 'wrappers':
             fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
             fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')

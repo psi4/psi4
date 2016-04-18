@@ -311,8 +311,8 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Print version information. ::
 
-   >>> psi4 --version
-   0.4.262
+     >>> psi4 --version
+     0.4.262
 
 .. option:: -w, --wipe
 
