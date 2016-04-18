@@ -1,0 +1,29 @@
+>>> grep -e Entropy -e 'Rotational Symm' -e 'Molecular Mass' isofreq.out
+
+   Molecular Mass:    18.010570 amu
+   Rotational Symmetry Number is   2
+   Translational Entropy:        34.608  cal/mol.K
+   Rotational Entropy:           10.672  cal/mol.K
+   Vibrational Entropy:           0.001  cal/mol.K
+   Total Entropy:                45.281  cal/mol.K
+
+   Molecular Mass:    20.023114 amu
+   Rotational Symmetry Number is   2
+   Translational Entropy:        34.924  cal/mol.K
+   Rotational Entropy:           12.592  cal/mol.K
+   Vibrational Entropy:           0.008  cal/mol.K
+   Total Entropy:                47.524  cal/mol.K
+
+   Molecular Mass:    19.016842 amu
+   Rotational Symmetry Number is   2
+   Translational Entropy:        34.771  cal/mol.K
+   Rotational Entropy:           11.677  cal/mol.K
+   Vibrational Entropy:           0.002  cal/mol.K
+   Total Entropy:                46.450  cal/mol.K
+
+   Molecular Mass:    21.025061 amu
+   Rotational Symmetry Number is   2
+   Translational Entropy:        35.070  cal/mol.K
+   Rotational Entropy:           13.142  cal/mol.K
+   Vibrational Entropy:           0.014  cal/mol.K
+   Total Entropy:                48.225  cal/mol.K
