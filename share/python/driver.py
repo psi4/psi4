@@ -573,8 +573,21 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    r"""Function complementary to optimize(). Carries out one gradient pass,
+    r"""Function complementary to :py:func:~driver.optimize(). Carries out one gradient pass,
     deciding analytic or finite difference.
+
+    :returns: :ref:`Matrix<sec:psimod_Matrix>` |w--w| Total electronic gradient in Hartrees/Bohr.
+
+    :returns: (:ref:`Matrix<sec:psimod_Matrix>`, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| gradient and wavefunction when **return_wfn** specified.
+
+    :examples:
+
+    >>> # [1] Single-point dft gradient getting the gradient
+    >>> #     in file, psi4.Matrix, and np.array forms
+    set write_gradient on
+    >>> G, wfn = gradient('b3lyp-d', return_wfn=True)
+    >>> wfn.gradient().print_out()
+    >>> np.array(G)
 
     """
     lowername = name.lower()
@@ -949,7 +962,9 @@ def optimize(name, **kwargs):
 
     :aliases: opt()
 
-    :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
+    :returns: *float* |w--w| Total electronic energy of optimized structure in Hartrees.
+
+    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -1064,16 +1079,25 @@ def optimize(name, **kwargs):
 
         The target molecule, if not the last molecule defined.
 
+    :type hessian_with: string
+    :param hessian_with: ``'scf'`` || ``'mp2'`` || etc.
+
+        Indicates the computational method with which to perform a hessian
+        analysis to guide the geometry optimization.
+
     :examples:
 
-    >>> # [1] Analytic scf optimization
-    >>> optimize('scf')
+    >>> # [1] Analytic hf optimization
+    >>> optimize('hf')
 
-    >>> # [2] Finite difference mp5 optimization
-    >>> opt('mp5')
+    >>> # [2] Finite difference mp5 optimization with gradient
+    >>> #     printed to output file
+    >>> e, wfn = opt('mp5', return_wfn='yes')
+    >>> wfn.gradient().print_out()
 
-    >>> # [3] Forced finite difference ccsd optimization
-    >>> optimize('ccsd', dertype=1)
+    >>> # [3] Forced finite difference hf optimization run in
+    >>> #     embarrassingly parallel fashion
+    >>> optimize('hf', dertype='energy', mode='sow')
 
     """
     lowername = name.lower()
@@ -1316,6 +1340,22 @@ def hessian(name, **kwargs):
     r"""Function complementary to :py:func:`~frequency`. Computes force
     constants, deciding analytic, finite difference of gradients, or
     finite difference of energies.
+
+    :returns: :ref:`Matrix<sec:psimod_Matrix>` |w--w| Total non-mass-weighted electronic Hessian in Hartrees/Bohr/Bohr.
+
+    :returns: (:ref:`Matrix<sec:psimod_Matrix>`, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| Hessian and wavefunction when **return_wfn** specified.
+
+    :examples:
+
+    >>> # [1] Frequency calculation without thermochemical analysis
+    >>> hessian('mp3')
+
+    >>> # [2] Frequency calc w/o thermo analysis getting the Hessian
+    >>> #     in file, psi4.Matrix, and np.array forms
+    >>> set hessian_write on
+    >>> H, wfn = hessian('ccsd', return_wfn=True)
+    >>> wfn.hessian().print_out()
+    >>> np.array(H)
 
     """
     lowername = name.lower()
@@ -1814,6 +1854,12 @@ def frequency(name, **kwargs):
     >>> E, wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
     >>> print wfn.frequencies().get(0, 0)
     >>> wfn.hessian().print_out()
+
+    >>> # [3] Frequency calculation at default conditions and Hessian reuse at STP
+    >>> E, wfn = freq('mp2', return_wfn=True)
+    >>> set t 273.15
+    >>> set p 100000
+    >>> thermo(wfn, wfn.frequencies())
 
     """
     lowername = name.lower()
