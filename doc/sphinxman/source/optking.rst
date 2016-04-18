@@ -2,8 +2,7 @@
 .. include:: autodoc_abbr_options_c.rst
 
 .. index::
-   single: geometry optimization
-   see: optimization; geometry optimization
+   single: geometry optimization, optimization
 
 .. _`sec:optking`:
 
@@ -342,7 +341,8 @@ Direct manipulation of the optmization coordinates
      R      1     3     1.70
      B      2     1     3
 
-.. index:: geometry optimization; convergence criteria
+.. index:: 
+   pair: geometry optimization; convergence criteria
 
 Convergence Criteria
 ^^^^^^^^^^^^^^^^^^^^

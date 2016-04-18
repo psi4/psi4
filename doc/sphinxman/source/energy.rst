@@ -6,8 +6,13 @@
 
 .. _`sec:energy()`:
 
-:py:func:`~driver.energy` Single-Point Energy
-=============================================
+Single-Point Energy, :py:func:`~driver.energy`
+==============================================
+
+* :ref:`Psi4 Native Energy Methods <table:energy_gen>`
+* :ref:`Psi4 Native DFT Energy Methods <table:energy_dft>`
+* :ref:`MRCC Interfaced Energy Methods <table:energy_mrcc>`
+* :ref:`CFOUR Interfaced Energy Methods <table:energy_cfour>`
 
 .. autofunction:: driver.energy(name [, molecule, return_wfn, restart_file])
 
