@@ -17,3 +17,5 @@ recompilation required.
    quickaddalias
    quickadddatabase
 
+* <https://github.com/dgasmith/psi4numpy>`_
+

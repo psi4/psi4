@@ -7,6 +7,10 @@
 A |PSIfour| Tutorial
 ====================
 
+.. note:: Some |PSIfour| functions and keywords have aliases.  For example,
+          ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
+          obtain vibrational frequencies.
+
 Basic Input File Structure
 ==========================
 
@@ -22,11 +26,6 @@ The syntax is:
 If you give an input name but no output name, then the output name will
 be the same as the input name (subtracting any ".in" or ".dat" suffix),
 plus a ".out" suffix.
-
-   .. note:: Some |PSIfour| functions and keywords have aliases.  For example,
-             ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
-             obtain vibrational frequencies.
-
 
 Sample Input Files
 ==================
@@ -268,11 +267,11 @@ options::
 
 Before, we have been setting keywords individually with commands like
 ``set basis cc-pVDZ``.  Because we have a few more options now, it's
-convenient to place them together into the ``set`` or ``set globals``
+convenient to place them together into the ``set``
 block, bounded by ``{...}``.  This
 will set all of these options as "global" options (meaning that they are
 visible to all parts of the program).  Most common |PSIfour| options can be
-set in a ``globals`` section like this.  If an option needs to be visible
+set in a globals section like this. If an option needs to be visible
 only to one part of the program (e.g., we only want to increase the
 energy convergence in the SCF code, but not the rest of the
 code), it can be placed in a section of input visible to that part of the
