@@ -230,8 +230,6 @@ public:
 //TODO: Make a base class with explicit index bounds for all functions that use them
 class IOBuffer_PK {
 private:
-    // File to which we write
-    int pk_file_;
 
     // TOC entry labels, need storage
     std::vector< std::vector<char*> > label_J_;
@@ -252,6 +250,8 @@ private:
     IOBuffer_PK & operator = (IOBuffer_PK &other) {};
 
 protected:
+    // File to which we write
+    int pk_file_;
     boost::shared_ptr<AIOHandler> AIO_;
     psio_address dummy_;
     // Size of internal buffers
@@ -300,6 +300,11 @@ public:
     virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
         throw PSIEXCEPTION("Function pop_values not implemented for current class\n");
         return false;
+    }
+    // insert value in the specified buffer. To be used only with values extracted
+    // with pop_values, does not check whether buffer assignment is correct
+    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+        throw PSIEXCEPTION("Function insert_value not implemented for current class\n");
     }
     // Also need to flush buffer for IWL, only implemented for it
     virtual void flush() {
@@ -356,10 +361,13 @@ public:
 
 class IOBuffer_IWL : public IOBuffer_PK {
 private:
+    // File for K batches
+    int K_file_;
     // Current addresses, in bytes, where each bucket is being written
     size_t* addresses_;
-    std::vector<int> buf_for_pq_;
-    std::vector<IWLAsync_PK*> bufs_;
+    std::vector<int> *buf_for_pq_;
+    std::vector<IWLAsync_PK*> bufs_J_;
+    std::vector<IWLAsync_PK*> bufs_K_;
     // Allocating the batch buffers
     virtual void allocate();
     // Deallocate batch buffers
@@ -367,8 +375,8 @@ private:
 
 public:
     IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,boost::shared_ptr<AIOHandler> AIO,
-                 size_t nbuf, size_t buf_size, int pk_file, size_t* pos,
-                 std::vector<int> bufforpq);
+                 size_t nbuf, size_t buf_size, int J_file, int K_file, size_t* pos,
+                 std::vector<int> *bufforpq);
     ~IOBuffer_IWL() {}
 
     //Function to fill values in
@@ -377,10 +385,9 @@ public:
     // Pop values from partially filled buffers to transfer to final buffer.
     // Returns false when there is no value left to pop.
     virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
-    // Finalize the writing at the end of the loop
-    // We do not need any of these arguments
-    virtual void write(std::vector<size_t> &batch_min_ind, std::vector<size_t> &batch_max_ind,
-                       size_t pk_pairs)
+    // insert value in the specified buffer. To be used only with values extracted
+    // with pop_values, does not check whether buffer assignment is correct
+    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l);
     // Need to flush remaining integrals after everything is computed.
     virtual void flush();
 };
@@ -507,6 +514,9 @@ public:
     short int S(size_t idx) { return buf_S[idx]; }
     bool writing()          { return writing_; }
     void set_writing(bool tmp) { writing_ = tmp; }
+    bool in_core()          { return in_core_; }
+    // Setter function
+    void set_in_core(bool tmp) { in_core_ = tmp; }
 
     // Functions for contracting the density matrix with the integrals
     void form_D_vec(std::vector<SharedMatrix> D_ao);
@@ -519,7 +529,8 @@ public:
 class PK_integrals : public PK_integrals_old {
 private:
     int pk_file_;
-    int iwl_file_;
+    int iwl_file_J_;
+    int iwl_file_K_;
     std::vector<IOBuffer_PK*> iobuffers_;
     int nthreads_;
     // Number of tasks per thread we would like for load balancing
@@ -533,6 +544,10 @@ private:
     size_t iwlintsize_;
     size_t ints_per_buf_;
 
+    // Reading buckets, sorting and writing to PK file
+    void generate_J_PK(double* twoel_ints, size_t max_size);
+    void generate_K_PK(double* twoel_ints, size_t max_size);
+
 public:
     // Constructor. We are pre-striping so everything can go to a single file
     // like in the good old times
@@ -545,6 +560,9 @@ public:
     virtual void open_files(bool old);
     // Opening IWL file
     void open_iwlf(bool old);
+    // Close IWL file and delete it for now (it contains AO ints when
+    // we need SO ints for post-HF)
+    void close_iwlf(bool del = true);
     // Closing file
     virtual void close_files();
     // Batch printing is the same
@@ -569,6 +587,9 @@ public:
     virtual void write();
     // Write IWL buffers in a clever way.
     void write_iwl();
+
+    // Actually sorting the integrals from the file
+    void sort_ints();
 
 };
 

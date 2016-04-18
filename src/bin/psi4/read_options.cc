@@ -1165,8 +1165,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
-    /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. -*/
-    options.add_str("PK_ALGO", "NEW", "NEW JET DIRECT REORDER");
+    /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
+    options.add_str("PK_ALGO", "NEW", "NEW JET DIRECT REORDER INTBUCK");
+    /*- Deactivate in core algorithm. For debug purposes. !expert -*/
+    options.add_bool("PK_NO_INCORE", false);
     /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
     options.add_int("MAX_MEM_BUF",  8940);
     /*- JK Independent options

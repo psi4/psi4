@@ -58,8 +58,13 @@ void PKJK::integrals_reorder() {
     outfile->Printf(" Computing reordered integrals for PK\n\n");
     int max_buckets = Process::environment.options.get_int("MAX_BUCKETS");
 
+    bool noincore = Process::environment.options.get_bool("PK_NO_INCORE");
+
     // New PK integrals object now
     PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_,cutoff_));
+    if (PKmanager_->in_core() && noincore) {
+        PKmanager_->set_in_core(!noincore);
+    }
 
     // Get an AO integral factory
     boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
@@ -75,7 +80,7 @@ void PKJK::integrals_reorder() {
     PKmanager_->batch_sizing();
 
     // Open files and potentially do pre-striping as soon as possible.
-    if (algo_ == "INTBUCK") {
+    if (algo_ == "INTBUCK" && !PKmanager_->in_core()) {
         PKmanager_->open_iwlf(false);
     } else {
         PKmanager_->open_files(false);
@@ -85,7 +90,7 @@ void PKJK::integrals_reorder() {
 
     // Create the buffer class, that is storing integrals in buffers in order
     // and taking care of writing to disk.
-    if (algo_ == "INTBUCK") {
+    if (algo_ == "INTBUCK" && !PKmanager_->in_core()) {
         PKmanager_->allocate_iwlbuffers();
     } else {
         PKmanager_->allocate_buffers();
@@ -104,7 +109,7 @@ void PKJK::integrals_reorder() {
 
     //TODO: integrate integral computation directly in the PKmanager_
     //TODO: Have derived versions of PK manager implementing the different algorithms
-    if (algo_ == "REORDER") {
+    if (algo_ == "REORDER" || PKmanager_->in_core()) {
         // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
         // threads, then write it asynchronously to disk while filling the next buffer.
         //
@@ -140,6 +145,10 @@ void PKJK::integrals_reorder() {
         nsh_u = nsh_u * (nsh_u + 1) / 2;
         outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
         outfile->Printf("  %7.2f percent of shell quartets recomputed.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
+        // We want ot deallocate buffers and wait for writing as late as possible
+        PKmanager_->set_writing(true);
+//        PKmanager_->deallocate_buffers();
+//        PKmanager_->close_files();
     } else if (algo_ == "INTBUCK") {
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
       for(int i = 0; i < primary_->nshell(); ++i) {
@@ -200,14 +209,14 @@ void PKJK::integrals_reorder() {
                 R = R_arr[npk];
                 S = S_arr[npk];
                 //Sort shells based on AM to save ERI some work doing permutation resorting
-                if (sobasis->am(P) < sobasis->am(Q)) {
+                if (primary_->shell(P).am() < primary_->shell(Q).am()) {
                     std::swap(P,Q);
                 }
-                if (sobasis->am(R) < sobasis->am(S)) {
+                if (primary_->shell(R).am() < primary_->shell(S).am()) {
                     std::swap(R,S);
                 }
-                if (sobasis->am(P) + sobasis->am(Q) >
-                        sobasis->am(R) + sobasis->am(S)) {
+                if (primary_->shell(P).am() + primary_->shell(Q).am() >
+                        primary_->shell(R).am() + primary_->shell(S).am()) {
                     std::swap(P, R);
                     std::swap(Q, S);
                 }
@@ -226,6 +235,10 @@ void PKJK::integrals_reorder() {
 
       // Now we need to actually read the integral file and sort
       // the buckets to write them to the PK file
+      // We deallocate buffers and finalize writing in there.
+
+      PKmanager_->sort_ints();
+
     } else {
         throw PSIEXCEPTION("Unrecognized algorithm for pk_algo\n");
     }
@@ -261,10 +274,6 @@ void PKJK::integrals_reorder() {
         timer_off("AIO write");
     }
 #endif
-    // We want ot deallocate buffers and wait for writing as late as possible
-    PKmanager_->set_writing(true);
-//    PKmanager_->deallocate_buffers();
-//    PKmanager_->close_files();
 }
 
 

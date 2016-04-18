@@ -77,7 +77,7 @@ void PKJK::common_init()
 }
 
 bool PKJK::C1() const {
-    if(algo_ == "REORDER") {
+    if(algo_ == "REORDER" || algo_ == "INTBUCK") {
         return true;
     } else {
         return false;
@@ -402,6 +402,9 @@ void PKJK::preiterations()
                                 } else {
                                     k_block[braket - min_index] += 0.5 * value;
                                 }
+//DEBUG                                if (bra == 0 && ket == 0) {
+//DEBUG                                   outfile->Printf("Int is %20.16f\n",k_block[braket - min_index]);
+//DEBUG                                }
                             }
                         }
                     }
@@ -418,6 +421,9 @@ void PKJK::preiterations()
                         } else {
                             k_block[braket - min_index] += 0.5 * value;
                         }
+//DEBUG                        if (bra == 0 && ket == 0) {
+//DEBUG                           outfile->Printf("Int is %20.16f\n",k_block[braket - min_index]);
+//DEBUG                        }
                     }
                 }
             }
@@ -782,7 +788,7 @@ void PKJK::compute_JK()
                         double J_pq = 0.0;
                         double *J_rs = J_vector;
                         for (size_t rs = 0; rs <= pq; ++rs) {
-//                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *j_ptr);
+//DEBUG                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *j_ptr);
                             J_pq  += *j_ptr * (*D_rs);
                             *J_rs += *j_ptr * D_pq;
                             ++D_rs;
@@ -879,7 +885,7 @@ void PKJK::compute_JK()
                         double K_pq = 0.0;
                         double *K_rs = K_vector;
                         for (size_t rs = 0; rs <= pq; ++rs) {
-//                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *k_ptr);
+//DEBUG                            outfile->Printf("PK int (%lu|%lu) = %20.16f\n", pq, rs, *k_ptr);
                             K_pq  += *k_ptr * (*D_rs);
                             *K_rs += *k_ptr * D_pq;
                             ++D_rs;

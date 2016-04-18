@@ -295,7 +295,7 @@ IWLAsync_PK::~IWLAsync_PK() {
     delete [] values_[1];
 }
 
-IWLAsync_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+void IWLAsync_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
     labels_[idx_][4 * nints_] = i;
     labels_[idx_][4 * nints_ + 1] = j;
     labels_[idx_][4 * nints_ + 2] = k;
@@ -305,7 +305,7 @@ IWLAsync_PK::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
 }
 
 // Buffer is full, write it using AIO to disk
-IWLAsync_PK::write() {
+void IWLAsync_PK::write() {
     size_t lab_size = 4 * ints_per_buf_ * sizeof(Label);
     size_t val_size = ints_per_buf_ * sizeof(Value);
     // We need a special function in AIO to take care
@@ -320,7 +320,7 @@ IWLAsync_PK::write() {
 }
 
 // Pop a value from the buffer storage
-IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+void IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
     if(nints_ == 0) {
         throw PSIEXCEPTION("Cannot pop value from empty buffer\n");
     }
@@ -332,7 +332,7 @@ IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l) 
     val = values_[idx_][nints_];
 }
 
-IWLAsync_PK::flush() {
+void IWLAsync_PK::flush() {
     unsigned int nints = nints_;
     while(nints_ != ints_per_buf_) {
         fill_values(0.0,0,0,0,0);
@@ -778,37 +778,71 @@ void InCoreBufferPK::write(std::vector<size_t> &batch_min_ind, std::vector<size_
 
 IOBuffer_IWL::IOBuffer_IWL(boost::shared_ptr<BasisSet> primary,
                            boost::shared_ptr<AIOHandler> AIO, size_t nbuf, size_t buf_size,
-                           int pk_file, size_t *pos, std::vector<int> bufforpq)
-    : IOBuffer_PK(primary,AIO,buf_size,nbuf,pk_file) {
+                           int J_file, int K_file, size_t *pos, std::vector<int> *bufforpq)
+    : IOBuffer_PK(primary,buf_size) {
 
+    pk_file_ = J_file;
+    nbuf_ = nbuf;
+    AIO_ = AIO;
+    K_file_ = K_file;
     addresses_ = pos;
     buf_for_pq_ = bufforpq;
+    allocate();
 
 }
 
 void IOBuffer_IWL::allocate() {
     for(int i = 0; i < nbuf_; ++i) {
-        bufs_.push_back(new IWLAsync_PK(&addresses_[i],AIO_,pk_file_));
+        bufs_J_.push_back(new IWLAsync_PK(&addresses_[2 * i],AIO_,pk_file_));
+        bufs_K_.push_back(new IWLAsync_PK(&addresses_[2 * i + 1],AIO_,K_file_));
     }
 }
 
 void IOBuffer_IWL::deallocate() {
     for(int i = 0; i < nbuf_; ++i) {
-        delete bufs_[i];
+        delete bufs_J_[i];
+        delete bufs_K_[i];
     }
 }
 
 void IOBuffer_IWL::fill_values(double val, size_t i, size_t j, size_t k, size_t l) {
+    // Pre-sorting for J
     size_t pq = INDEX2(i,j);
-    IWLAsync_PK* buf = bufs_[buf_for_pq_[pq]];
+    IWLAsync_PK* buf = bufs_J_[buf_for_pq_->at(pq)];
     buf->fill_values(val,i,j,k,l);
     if(buf->nints() == buf->maxints()) {
         buf->write();
     }
+
+    // Pre-sorting for K
+    pq = INDEX2(i,k);
+    int bufK1 = buf_for_pq_->at(pq);
+    buf = bufs_K_[bufK1];
+    buf->fill_values(val,i,j,k,l);
+    if(buf->nints() == buf->maxints()) {
+        buf->write();
+    }
+    // Second pre-sorting for K
+    if (i != j && k != l) {
+        pq = std::max(INDEX2(i,l), INDEX2(j,k));
+        int bufK2 = buf_for_pq_->at(pq);
+        if (bufK2 != bufK1) {
+            buf = bufs_K_[bufK2];
+            buf->fill_values(val,i,j,k,l);
+            if(buf->nints() == buf->maxints()) {
+                buf->write();
+            }
+        }
+    }
 }
 
 bool IOBuffer_IWL::pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
-    IWLAsync_PK* buf = bufs_[bufid];
+    IWLAsync_PK* buf;
+    if(bufid < nbuf_) {
+        buf = bufs_J_[bufid];
+    } else {
+        buf = bufs_K_[bufid - nbuf_];
+    }
     if(buf->nints() == 0) {
         return false;
     }
@@ -816,10 +850,22 @@ bool IOBuffer_IWL::pop_value(unsigned int bufid, double &val, size_t &i, size_t 
     return true;
 }
 
+void IOBuffer_IWL::insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+    IWLAsync_PK* buf;
+    if(bufid < nbuf_) {
+        buf = bufs_J_[bufid];
+    } else {
+        buf = bufs_K_[bufid - nbuf_];
+    }
+    buf->fill_values(val,i,j,k,l);
+}
+
 void IOBuffer_IWL::flush() {
     IWLAsync_PK* buf;
     for(int bufid = 0; bufid < nbuf_; ++bufid) {
-        buf = bufs_[bufid];
+        buf = bufs_J_[bufid];
+        buf->flush();
+        buf = bufs_K_[bufid];
         buf->flush();
     }
 }
@@ -862,7 +908,8 @@ PK_integrals_old::PK_integrals_old(boost::shared_ptr<BasisSet> primary, boost::s
 PK_integrals::PK_integrals(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<PSIO> psio, int max_batches,
                            size_t memory, double cutoff) :
         PK_integrals_old(primary,psio, max_batches, memory, cutoff) {
-    iwl_file_ = PSIF_SO_TEI;
+    iwl_file_J_ = PSIF_SO_TEI;
+    iwl_file_K_ = PSIF_SO_PKSUPER1;
     pk_file_ = PSIF_SO_PK;
     nthreads_ = 1;
 #ifdef _OPENMP
@@ -938,6 +985,7 @@ void PK_integrals_old::batch_sizing() {
     size_t nintbatch = 0;
     size_t pq = 0;
     size_t pb, qb, rb, sb;
+    int batch = 0;
 
     batch_index_min_.push_back(0);
     batch_pq_min_.push_back(0);
@@ -958,13 +1006,14 @@ void PK_integrals_old::batch_sizing() {
             if (nintbatch > memory_) {
                 batch_index_max_.push_back(old_max);
                 batch_pq_max_.push_back(old_pq);
+                ++batch;
                 batch_index_min_.push_back(old_max);
                 batch_pq_min_.push_back(old_pq);
                 nintbatch = nintpq;
             }
             nintpq = 1;
             old_pq = pq;
-            batch_for_pq_.push_back(pq);
+            batch_for_pq_.push_back(batch);
             old_max = pqrs;
         }
     }
@@ -1098,26 +1147,36 @@ void PK_integrals::allocate_buffers() {
     }
 }
 
-PK_integrals::allocate_iwlbuffers() {
+void PK_integrals::allocate_iwlbuffers() {
     int buf_per_thread = batch_index_min_.size();
-    size_t* current_pos = new size_t[buf_per_thread];
+    // Factor 2 because we need an address for J and an address for K
+    // J and K addresses for the same file are stored contiguously, i.e.
+    // element [0] is J address for first buffer and element [1] the
+    // K address for the first buffer.
+    size_t* current_pos = new size_t[2 * buf_per_thread];
 
     current_pos[0] = 0;
+    current_pos[1] = 0;
     //Current position of the bucket in the IWL file
+    // For K, each integral can potentially go into two buckets, so we
+    // give each bucket twice the J bucket's size. It's wasting quite a bit
+    // of space, other solution is to explicitly count integrals.
     for(int i = 1; i < buf_per_thread; ++i) {
         size_t batchsize = batch_index_max_[i - 1] - batch_index_min_[i - 1];
         size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
-        current_pos[i] = iwlperbatch * iwlintsize_ + current_pos[i - 1];
+        current_pos[2 * i] = iwlperbatch * iwlintsize_ + current_pos[2 * i - 2];
+        current_pos[2 * i + 1] = 2 * (iwlperbatch * iwlintsize_) + current_pos[2 * i - 1];
     }
 
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new IOBuffer_IWL());
+        iobuffers_.push_back(new IOBuffer_IWL(primary_,AIO_,buf_per_thread,
+                                 ints_per_buf_,iwl_file_J_,iwl_file_K_,current_pos,&batch_for_pq_));
     }
 }
 
-PK_integrals::deallocate_iwlbuffers() {
+void PK_integrals::deallocate_iwlbuffers() {
     for(int i = 0; i < nthreads_; ++i) {
         delete iobuffers_[i];
     }
@@ -1369,7 +1428,7 @@ void PK_integrals::open_iwlf(bool old) {
     if (in_core_) {
         return;
     }
-    psio_->open(iwl_file_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    psio_->open(iwl_file_J_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
     // Create the file ? Pre-stripe it
     // Number of IWL buffers necessary
     size_t num_iwlbuf = pk_size_ / ints_per_buf_ + 1;
@@ -1377,7 +1436,11 @@ void PK_integrals::open_iwlf(bool old) {
     num_iwlbuf += batch_index_min_.size();
     size_t iwlsize_bytes = num_iwlbuf * iwlintsize_;
     size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
-    AIO_->zero_disk(iwl_file_,IWL_KEY_BUF,1,iwlsize);
+    AIO_->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,iwlsize);
+
+    // And we do the same for the file containing K buckets
+    psio_->open(iwl_file_K_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
+    AIO_->zero_disk(iwl_file_K_,IWL_KEY_BUF,1,iwlsize);
 }
 
 char* PK_integrals_old::get_label_J(size_t i) {
@@ -1496,9 +1559,10 @@ void PK_integrals::write_iwl() {
     for(int t = 1; t < nthreads_; ++t) {
         buftarget = iobuffers_[t];
         unsigned int nbufs = buftarget->nbuf();
-        for(buf = 0; buf < nbufs; ++buf) {
+        // Factor 2 to get buffers for J and K
+        for(int buf = 0; buf < 2 * nbufs; ++buf) {
             while(buftarget->pop_value(buf,val,i,j,k,l)) {
-                buf0->fill_values(val,i,j,k,l);
+                buf0->insert_value(buf,val,i,j,k,l);
             }
         }
 
@@ -1521,6 +1585,188 @@ void PK_integrals::close_files() {
         return;
     }
     psio_->close(pk_file_, 1);
+}
+
+void PK_integrals::close_iwlf(bool del) {
+    if(in_core_) {
+        return;
+    }
+    psio_->close(iwl_file_J_, del ? 0 : 1);
+    psio_->close(iwl_file_K_, del ? 0 : 1);
+}
+
+void PK_integrals::sort_ints() {
+    // compute max batch size
+    size_t max_size = 0;
+    size_t batch_size;
+    int nbatches = batch_index_min_.size();
+
+    for(int i = 0; i < nbatches; ++i) {
+        batch_size = batch_index_max_[i] - batch_index_min_[i];
+        if(batch_size > max_size) max_size = batch_size;
+    }
+
+    // Allocate a big array to contain the batch.
+    double* twoel_ints = new double[max_size];
+    ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+
+    // At this point we need to close the IWL file to create
+    // an IWL object which will open it. Dumb but minor inconvenience (hopefully)
+    // We also open the PK file
+    psio_->open(pk_file_, PSIO_OPEN_NEW);
+    deallocate_buffers();
+    set_writing(false);
+    close_iwlf(false);
+    // Probably here, a call to a function for sorting
+
+    generate_J_PK(twoel_ints,max_size);
+    // Need to reset to zero the two-el integral array
+    ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+    generate_K_PK(twoel_ints,max_size);
+
+    psio_->close(pk_file_,1);
+
+}
+
+void PK_integrals::generate_J_PK(double *twoel_ints, size_t max_size) {
+
+    IWL inbuf(psio_.get(),iwl_file_J_,0.0, 1, 0);
+
+    int idx;
+    size_t p, q, r, s;
+    Label* lblptr = inbuf.labels();
+    Value* valptr = inbuf.values();
+    int lastbuf;
+    double val;
+
+    size_t offset, maxind, nintegrals;
+    size_t pqrs;
+
+    int batch = 0;
+    int nbatches = batch_index_min_.size();
+    while(batch < nbatches) {
+        inbuf.fetch();
+        offset = batch_index_min_[batch];
+        maxind = batch_index_max_[batch];
+        nintegrals = batch_index_max_[batch] - batch_index_min_[batch];
+
+        for(idx = 0; idx < inbuf.buffer_count(); ++idx) {
+            p = lblptr[4 * idx];
+            q = lblptr[4 * idx + 1];
+            r = lblptr[4 * idx + 2];
+            s = lblptr[4 * idx + 3];
+
+            pqrs = INDEX4(p,q,r,s);
+            //TODO: remove the check, for debug only
+            if(pqrs < offset || pqrs > maxind) {
+                throw PSIEXCEPTION("Integrals not written properly \n");
+            }
+            twoel_ints[pqrs - offset] += valptr[idx];
+        }
+
+        lastbuf = inbuf.last_buffer();
+        if(lastbuf) {
+            // We just completed a batch, write it to disk
+            char* label = get_label_J(batch);
+            // Divide by two diagonal elements
+            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq) {
+                pqrs = INDEX2(pq,pq);
+                twoel_ints[pqrs - offset] *= 0.5;
+            }
+            psio_->write_entry(pk_file_, label, (char*)twoel_ints, nintegrals * sizeof(double));
+            ++batch;
+            if(batch < nbatches) {
+                ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+            }
+        }
+
+    }
+
+    inbuf.set_keep_flag(false);
+
+}
+
+void PK_integrals::generate_K_PK(double *twoel_ints, size_t max_size) {
+
+    IWL inbuf(psio_.get(),iwl_file_K_,0.0, 1, 0);
+
+    int idx;
+    size_t p, q, r, s;
+    Label* lblptr = inbuf.labels();
+    Value* valptr = inbuf.values();
+    int lastbuf;
+    double val;
+
+    size_t offset, maxind, nintegrals;
+    size_t pqrs;
+
+    int batch = 0;
+    int nbatches = batch_index_min_.size();
+    while(batch < nbatches) {
+        inbuf.fetch();
+        offset = batch_index_min_[batch];
+        maxind = batch_index_max_[batch];
+        nintegrals = batch_index_max_[batch] - batch_index_min_[batch];
+
+        for(idx = 0; idx < inbuf.buffer_count(); ++idx) {
+            p = lblptr[4 * idx];
+            q = lblptr[4 * idx + 1];
+            r = lblptr[4 * idx + 2];
+            s = lblptr[4 * idx + 3];
+
+
+            // K first sort
+            pqrs = INDEX4(p,r,q,s);
+            size_t pqd = INDEX2(p,r);
+            size_t rsd = INDEX2(q,s);
+            if(pqrs <= maxind && pqrs >= offset) {
+                if(p == r || q == s) {
+                    twoel_ints[pqrs - offset] += valptr[idx];
+                } else {
+                    twoel_ints[pqrs - offset] += 0.5 * valptr[idx];
+                }
+//DEBUG                if(pqd == 0 && rsd == 0) {
+//DEBUG                    outfile->Printf("Int is %20.16f\n",twoel_ints[pqrs - offset]);
+//DEBUG                }
+            }
+
+            // K second sort
+            if(p != q && r != s) {
+                pqrs = INDEX4(p,s,q,r);
+                if(pqrs <= maxind && pqrs >= offset) {
+                    if(p == s || q == r) {
+                        twoel_ints[pqrs - offset] += valptr[idx];
+                    } else {
+                        twoel_ints[pqrs - offset] += 0.5 * valptr[idx];
+                    }
+//DEBUG                if(pqd == 0 && rsd == 0) {
+//DEBUG                    outfile->Printf("Int is %20.16f\n",twoel_ints[pqrs - offset]);
+//DEBUG                }
+                }
+
+            }
+        }
+
+        lastbuf = inbuf.last_buffer();
+        if(lastbuf) {
+            // We just completed a batch, write it to disk
+            char* label = get_label_K(batch);
+            // Divide by two diagonal elements
+            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq) {
+                pqrs = INDEX2(pq,pq);
+                twoel_ints[pqrs - offset] *= 0.5;
+            }
+            psio_->write_entry(pk_file_, label, (char*)twoel_ints, nintegrals * sizeof(double));
+            ++batch;
+            if(batch < nbatches) {
+                ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+            }
+        }
+
+    }
+
+    inbuf.set_keep_flag(false);
+
 }
 
 // We should really use safer pointers right here
@@ -1578,9 +1824,9 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
                 double J_pq = 0.0;
                 double *J_rs = J_vec;
                 for(size_t rs = 0; rs <= pq; ++rs) {
-//DEBUG                    if(!exch && rs == 0) {
-//DEBUG                      outfile->Printf("PK int (%lu|%lu) = %f\n",pq,rs,*j_ptr);
-//DEBUG                    }
+//DEBUG                    if(exch) { // && rs == 0) {
+//DEBUG                      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
+//DEBUG                    
                     J_pq += *j_ptr * (*D_rs);
                     *J_rs += *j_ptr * D_pq;
                     ++D_rs;
@@ -1624,9 +1870,9 @@ void PK_integrals_old::form_J(std::vector<SharedMatrix> J, bool exch) {
                     double J_pq = 0.0;
                     double *J_rs = J_vec;
                     for(size_t rs = 0; rs <= pq; ++rs) {
- //DEBUG                       if(!exch && rs == 0) {
- //DEBUG                         outfile->Printf("PK int (%lu|%lu) = %f\n",pq,rs,*j_ptr);
- //DEBUG                       }
+//DEBUG                        if(exch) { // && rs == 0) {
+//DEBUG                          outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
+//DEBUG                        }
                         J_pq += *j_ptr * (*D_rs);
                         *J_rs += *j_ptr * D_pq;
                         ++D_rs;
