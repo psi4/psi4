@@ -326,46 +326,8 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     return (dertype, method)
 
-# Transform and validate basis sets from 'cc-pV[Q5]Z' into [cc-pVQZ, cc-pV5Z] and [4, 5]
-def _expand_bracketed_basis(basisstring):
-    r"""Function to transform and validate basis sets for cbs(). A basis set with no
-    paired square brackets is passed through with zeta level 0 (e.g., '6-31+G(d,p)'
-    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is
-    checked for sensible sequence and Dunning-ness and returned as separate basis
-    sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
-    that this function has no communication with the basis set library to check
-    if the basis actually exists. Used by :py:func:`~wrappers.complete_basis_set`.
-
-    """
-    ZETA = ['d', 't', 'q', '5', '6']
-    BSET = []
-    ZSET = []
-    if re.match(r'.*cc-.*\[.*\].*z$', basisstring, flags=re.IGNORECASE):
-        basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
-        basisname = basispattern.match(basisstring)
-        for b in basisname.group(2):
-            if b not in ZETA:
-                raise ValidationError('Basis set \'%s\' has invalid zeta level \'%s\'.' % (basisstring, b))
-            if len(ZSET) != 0:
-                if (int(ZSET[len(ZSET) - 1]) - ZETA.index(b)) != 1:
-                    raise ValidationError('Basis set \'%s\' has out-of-order zeta level \'%s\'.' % (basisstring, b))
-            BSET.append(basisname.group(1) + b + basisname.group(3))
-            if b == 'd':
-                b = '2'
-            if b == 't':
-                b = '3'
-            if b == 'q':
-                b = '4'
-            ZSET.append(int(b))
-    elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
-        raise ValidationError('Basis set surrounding series indicator [] in \'%s\' is invalid.' % (basisstring))
-    else:
-        BSET.append(basisstring)
-        ZSET.append(0)
-    return [BSET, ZSET]
 
 def _cbs_gufunc(ptype, total_method_name, **kwargs):
-
 
     # Catch kwarg issues
     kwargs = p4util.kwargs_lower(kwargs)
@@ -411,9 +373,6 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             method = method[2:]
 
         # Expand basis set (aug-cc-pv[d,t]z -> [aug-cc-pvdz, aug-cc-pvtz])
-        fpos = basis_str.find("[")
-        spos = basis_str.find("]")
-
         molstr = molecule.create_psi4_string_from_molecule()
         basissets, dunning_num = driver_util.expand_bracketed_basis(basis_str, molecule=molstr)
 
@@ -473,6 +432,8 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     energy_list = []
     ptype_list = []
 
+
+    ### DGAS compute loop
     # Loop over methods 
     for method_dict in method_list:
         scf_ptype_list = []
