@@ -1,0 +1,97 @@
+molecule h2o {
+  units au
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+}
+
+molecule d2o {
+  units au
+  O                  0.00000000    0.00000000    0.00000000
+  H@2.014101779      0.00000000    1.93042809   -1.10715266
+  H@2.014101779      0.00000000   -1.93042809   -1.10715266
+}
+
+molecule hdo {
+  units au
+  O                  0.00000000    0.00000000    0.00000000
+  H@2.014101779      0.00000000    1.93042809   -1.10715266
+  H                  0.00000000   -1.93042809   -1.10715266
+}
+
+molecule dto {
+  units au
+  O                  0.00000000    0.00000000    0.00000000
+  H@2.014101779      0.00000000    1.93042809   -1.10715266
+  H@3.01604927       0.00000000   -1.93042809   -1.10715266
+}
+
+set basis sto-3g
+set e_convergence 9
+set g_convergence gau_verytight
+set scf_type pk
+
+optimize('hf', molecule=h2o)
+
+# can't currently update masses with set_mass() in the mols and redetect the right symmetry
+#   so have to create as as above and update the geometry
+ogeo = h2o.geometry()
+d2o.update_geometry()
+d2o.set_geometry(ogeo)
+hdo.update_geometry()
+hdo.set_geometry(ogeo)
+dto.update_geometry()
+dto.set_geometry(ogeo)
+
+freq('hf', molecule=h2o)
+compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0')
+compare_values(0.024367, get_variable('ZPVE'), 4, 'H2O ZPVE')
+compare_values(0.027199, get_variable('thermal energy correction'), 4, 'H2O dE')
+compare_values(0.028143, get_variable('enthalpy correction'), 4, 'H2O dH')
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(45.283, entropy, 2, 'H2O S')  # molpro
+
+clean()
+
+set t 400.0
+
+freq('hf', molecule=h2o)
+compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0 @400K')
+compare_values(0.024367, get_variable('ZPVE'), 4, 'H2O ZPVE @400K')
+compare_values(0.028170, get_variable('thermal energy correction'), 4, 'H2O dE @400K')
+compare_values(0.029436, get_variable('enthalpy correction'), 4, 'H2O dH @400K')
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.603, entropy, 1, 'H2O S @400K')
+
+clean()
+
+set t 298.15
+
+freq('hf', molecule=d2o)
+compare_values(-74.96590119, get_variable('current energy'), 6, 'D2O E0')
+compare_values(0.017731, get_variable('ZPVE'), 4, 'D2O ZPVE')
+compare_values(0.020566, get_variable('thermal energy correction'), 4, 'D2O dE')
+compare_values(0.021510, get_variable('enthalpy correction'), 4, 'D2O dH')
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.525, entropy, 2, 'D2O S')  # molpro
+
+clean()
+
+freq('hf', molecule=hdo)
+compare_values(-74.96590119, get_variable('current energy'), 6, 'HDO E0')
+compare_values(0.021103, get_variable('ZPVE'), 4, 'HDO ZPVE')
+compare_values(0.023935, get_variable('thermal energy correction'), 4, 'HDO dE')
+compare_values(0.024878, get_variable('enthalpy correction'), 4, 'HDO dH')
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.828, entropy, 2, 'HDO S')  # molpro
+
+clean()
+
+freq('hf', molecule=dto)
+compare_values(-74.96590119, get_variable('current energy'), 6, 'DTO E0')
+compare_values(0.016317, get_variable('ZPVE'), 4, 'DTO ZPVE')
+compare_values(0.019154, get_variable('thermal energy correction'), 4, 'DTO dE')
+compare_values(0.020098, get_variable('enthalpy correction'), 4, 'DTO dH')
+entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(49.603, entropy, 2, 'DTO S')  # molpro
+
