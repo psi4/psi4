@@ -18,7 +18,9 @@ to create aliases to commonly run calculations or to define hybrid methods. The
 :source:`share/python/aliases.py` file is intended for editing by the user for
 this purpose.
 
-As an example, the MP2.5 method is the average of MP2 and MP3. The latter is
+As an example, the MP2.5 method
+(which admittedly is already built in to |PSIfour|)
+is the average of MP2 and MP3. The latter is
 available through the arbitrary order MPn code and returns all lower energies
 along with it in PSI variables. The following is basic code that will compute
 and return the MP2.5 energy. ::
