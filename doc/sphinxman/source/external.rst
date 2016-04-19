@@ -394,6 +394,20 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PSI_SCRATCH
 
    Directory where scratch files are written. Overrides settings in |psirc|.
+   It is very important to ensure that |PSIfour| is writing its scratch files 
+   to a disk drive physically attached to the computer running the computation. 
+   If it is not, it will significantly slow down the program and the network. 
+
+   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking ``psi4`` ::
+
+      # csh, tcsh
+      >>> setenv PSI_SCRATCH /scratch/user
+
+      # bash
+      >>> export PSI_SCRATCH=/scratch/user
+
+   You can also include the above commands in the respective ``rc`` file, i.e.
+   ``~/.tcshrc`` for csh and tcsh or ``~/.bashrc`` for Bash.
 
 .. envvar:: PSIPATH
 
@@ -419,7 +433,7 @@ These environment variables will influence |PSIfours| behavior.
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
 
-   Modify :envvar:`PSIPATH` though normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking ``psi4`` ::
 
       # csh, tcsh
       >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
