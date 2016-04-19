@@ -7,8 +7,8 @@
 
 .. _`sec:cp()`:
 
-Counterpoise Correct
-====================
+Counterpoise Correct, :py:func:`~wrappers.cp`
+=============================================
 
 .. codeauthor:: Robert M. Parrish
 
