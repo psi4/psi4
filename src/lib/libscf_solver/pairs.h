@@ -437,4 +437,3 @@ typedef madness::WorldContainer<Pair,G_MAT> mad_G;
 #endif /* end of have_madness */
 
 #endif /* Header guard */
-

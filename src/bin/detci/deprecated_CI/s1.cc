@@ -338,4 +338,3 @@ void s1_block_ras_rotf(int *Cnt[2], int **Ij[2], int **Oij[2],
 }
 
 }} // namespace psi::detci
-

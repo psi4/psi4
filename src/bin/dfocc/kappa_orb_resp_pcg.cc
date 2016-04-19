@@ -641,4 +641,3 @@ void DFOCC::orb_resp_pcg_uhf()
 }// end orb_resp_pcg_uhf
 
 }} // End Namespaces
-

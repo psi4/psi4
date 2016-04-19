@@ -772,4 +772,3 @@ void OPT_DATA::reset_trust_radius(void) const {
 }
 
 } // end ::opt
-

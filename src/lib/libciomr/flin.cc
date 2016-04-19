@@ -70,4 +70,3 @@ void flin(double **a, double *b, int in, int im, double *det)
 }
 
 }
-

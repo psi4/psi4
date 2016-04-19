@@ -42,4 +42,3 @@ boost::shared_ptr<const Communicator> ParallelEnvironment::GetComm()const{
 void ParallelEnvironment::PrintOut()const{Guts_.PrintOut();}
 }}//End namespaces
 
-

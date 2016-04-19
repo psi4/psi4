@@ -536,4 +536,3 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
 }} // end of namespaces
 
-

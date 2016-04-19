@@ -652,4 +652,3 @@ else if (reference_ == "UNRESTRICTED") {
 } // end omp3_tpdm
 
 }} // End Namespaces
-

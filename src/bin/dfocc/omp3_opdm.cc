@@ -123,4 +123,3 @@ else if (reference_ == "UNRESTRICTED") {
 } // end omp3_opdm
 
 }} // End Namespaces
-

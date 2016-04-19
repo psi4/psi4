@@ -752,4 +752,3 @@ void DFOCC::sigma_orb_resp_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec)
 
 
 }} // End Namespaces
-

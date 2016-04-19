@@ -923,4 +923,3 @@ void print_ci_space(struct stringwr *strlist, int num_strings,
 }
 
 }} // namespace psi::detci
-

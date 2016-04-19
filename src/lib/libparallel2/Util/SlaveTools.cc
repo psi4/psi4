@@ -61,4 +61,3 @@ void SlaveTools::GiveTasks(){
 boost::shared_ptr<MPITaskQueue> SlaveTools::Tasks(){return MyTasks_;}
 
 }}
-

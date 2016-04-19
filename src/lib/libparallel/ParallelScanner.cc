@@ -41,4 +41,3 @@ void InFile::Open(const std::string& filename,const FileMode& mode){
 }
 
 }
-

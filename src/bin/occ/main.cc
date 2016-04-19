@@ -45,4 +45,3 @@ SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
     return occ;
 }
 }} // End Namespaces
-

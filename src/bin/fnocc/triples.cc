@@ -401,4 +401,3 @@ PsiReturnType CoupledCluster::triples(){
 
 }} // end of namespaces
 
-
