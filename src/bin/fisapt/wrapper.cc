@@ -48,4 +48,3 @@ PsiReturnType fisapt(SharedWavefunction ref_wfn, Options& options)
 }
 
 }} // End namespaces
-
