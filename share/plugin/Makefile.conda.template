@@ -35,7 +35,7 @@ NAME = $(shell basename `pwd`)
 CXXSRC = $(notdir $(wildcard *.cc))
 
 # miniconda environment
-MCONDA = @CMAKE_INSTALL_PREFIX@
+MCONDA = /opt/anaconda1anaconda2anaconda3
 
 # Flags that were used to compile Psi4.
 CXX = ${MCONDA}/bin/g++
