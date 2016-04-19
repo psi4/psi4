@@ -267,6 +267,105 @@ to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
 :py:func:`~p4util.util.set_num_threads` Psithon method or the default environmental variables.
 
+.. index:: PBS queueing system, threading
+.. _`sec:PBS`:
+
+PBS job file
+============
+
+To run a |PSIfour| job on a PBS queueing system, you need to properly set up
+all necessary variables in the PBS job file. Below is a minimal example of
+a PBS job file for a threaded job, and a short explanation for each section. ::
+
+    #!/bin/tcsh
+    #PBS -j oe 
+    #PBS -l pmem=2120mb
+    #PBS -N jobname
+    #PBS -V
+    
+    
+    setenv OMP_NUM_THREADS 4
+    setenv MKL_NUM_THREADS 4
+    cd $PBS_O_WORKDIR
+    setenv myscratch /scratch/user/psi4.$PBS_JOBID
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Creating scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+        ssh $i mkdir -p $myscratch
+    end
+
+    setenv PSI_SCRATCH $myscratch
+    setenv PSIPATH /path/to/external/modules:${PSIPATH}
+    setenv PSIPATH /path/to/python/modules:${PSIPATH}
+    setenv PSIDATADIR /psi/install/directory/share
+    /psi/install/directory/bin/psi4 -i input.in -o input.out
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Removing scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+    end
+
+The top section features PBS-specific commands. These depend on the 
+specific characteristics of your PBS queuing system but they may include: ::
+
+    #!/bin/tcsh
+    #PBS -j oe 
+    #PBS -l pmem=2120mb
+    #PBS -N jobname
+    #PBS -V
+    
+The ``PBS -j oe`` option instructs PBS to write any output or error message
+from the queuing system in dedicated files. ``PBS -l pmem=2120mb`` requests 
+2120 MB of memory for each thread on the node. The total memory requested for 
+the job by PBS should generally be slightly greater than what indicated 
+with the |adc__memory| keyword in the input file.
+
+In the next section, we define :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
+ to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
+
+    setenv OMP_NUM_THREADS 4
+    setenv MKL_NUM_THREADS 4
+
+Then, we move to the working directory using PBS variable ``$PBS_O_WORKDIR`` and 
+we create scratch directories on every node, using the ``$PBS_NODEFILE`` which 
+points to a file containing a list of the nodes attributed to the job. ::
+
+    cd $PBS_O_WORKDIR
+    setenv myscratch /scratch/user/psi4.$PBS_JOBID
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Creating scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+        ssh $i mkdir -p $myscratch
+    end
+
+The next section is _very important_ as it sets the environment variables needed
+by |PSIfour|: ::
+
+    setenv PSI_SCRATCH $myscratch
+    setenv PSIPATH /path/to/external/modules:${PSIPATH}
+    setenv PSIPATH /path/to/python/modules:${PSIPATH}
+    setenv PSIDATADIR /psi/install/directory/share
+
+:envvar:`PSIDATADIR` should point to the ``share`` directory in |PSIfour| install
+directory. :envvar:`PSIPATH` is needed only if you are using external modules or 
+plugins in |PSIfour| and should point to the directories where they can be found.
+Finally, :envvar:`PSI_SCRATCH` should point to a fast, local disk for temporary file
+storage. The next step is then to actually run the computation: ::
+
+    /psi/install/directory/bin/psi4 -i input.in -o input.out
+
+And then to clean up the scratch directories previously created: ::
+
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Removing scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+    end
+
+Note again that the specific commands for your PBS system may differ. Refer
+to your system administrator.
+
 .. _`sec:commandLineOptions`:
 
 Command Line Options
