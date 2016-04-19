@@ -35,7 +35,9 @@ or a fitting basis is not defined for the primary basis and atom type
 encountered. In particular, we have found excellent efficiency and tractability
 gains when using DF-MP2 in concert with a DF-SCF reference.  An efficient,
 threaded, disk-based DF-MP2 code is available in |PSIfour| for all single
-reference types available in the SCF module.  
+reference types available in the SCF module.
+MP2 defaults in |PSIfour| to the density-fitted code. See
+|globals__mp2_type| for performing a MP2 with conventional integrals.
 
 An example utilization of the code is::
 
@@ -50,9 +52,9 @@ An example utilization of the code is::
    set scf_type df
    set freeze_core True
    
-   energy('df-mp2')
+   energy('mp2')
 
-The ``energy('df-mp2')`` call to :py:func:`~driver.energy` executes 
+The ``energy('mp2')`` call to :py:func:`~driver.energy` executes 
 the predefined DF-MP2 procedure, first calling
 the SCF module with a default RHF reference and DF algorithm for the
 two-electron integrals. When the orbitals are converged, the DF-MP2 module is
