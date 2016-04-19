@@ -213,10 +213,10 @@ for ssuper in superfunctional_list():
 
 # Integrate CFOUR with driver routines
 for ssuper in cfour_list():
-    procedures['energy'][ssuper] = run_cfour
+    procedures['energy'][ssuper.lower()] = run_cfour
 
 for ssuper in cfour_gradient_list():
-    procedures['gradient'][ssuper] = run_cfour
+    procedures['gradient'][ssuper.lower()] = run_cfour
 
 
 def energy(name, **kwargs):
@@ -558,10 +558,10 @@ def energy(name, **kwargs):
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
-        if name.lower() in ['EFP', 'MRCC', 'DMRG', 'PSIMRCC']:
+        if lowername in ['EFP', 'MRCC', 'DMRG', 'PSIMRCC']:
             psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
             psi4.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
-        elif 'sapt' in name.lower():
+        elif 'sapt' in lowername:
             psi4.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
             psi4.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
 
@@ -1104,7 +1104,7 @@ def optimize(name, **kwargs):
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    hessian_with_method = kwargs.get('hessian_with', name)
+    hessian_with_method = kwargs.get('hessian_with', lowername)
 
     # are we in sow/reap mode?
     opt_mode = kwargs.get('mode', 'continuous').lower()
@@ -1147,7 +1147,7 @@ def optimize(name, **kwargs):
             old_thisenergy = psi4.get_variable('CURRENT ENERGY')
 
         # Compute the gradient
-        G, wfn = gradient(name, return_wfn=True, molecule=moleculeclone, **kwargs)
+        G, wfn = gradient(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
         thisenergy = psi4.get_variable('CURRENT ENERGY')
 
         # above, used to be getting energy as last of energy list from gradient()
@@ -1264,17 +1264,15 @@ def parse_arbitrary_order(name):
     level information like 4 for CISDTQ or MRCCSDTQ.
 
     """
-    namelower = name.lower()
-
     # matches 'mrccsdt(q)'
-    if namelower.startswith('mrcc'):
+    if name.startswith('mrcc'):
 
         # avoid undoing fn's good work when called twice
-        if namelower == 'mrcc':
-            return namelower, None
+        if name == 'mrcc':
+            return name, None
 
         # grabs 'sdt(q)'
-        ccfullname = namelower[4:]
+        ccfullname = name[4:]
 
         # A negative order indicates perturbative method
         methods = {
@@ -1314,24 +1312,24 @@ def parse_arbitrary_order(name):
         if ccfullname in methods:
             return 'mrcc', methods[ccfullname]
         else:
-            raise ValidationError('MRCC method \'%s\' invalid.' % (namelower))
+            raise ValidationError('MRCC method \'%s\' invalid.' % (name))
 
-    elif re.match(r'^[a-z]+\d+$', namelower):
-        decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
+    elif re.match(r'^[a-z]+\d+$', name):
+        decompose = re.compile(r'^([a-z]+)(\d+)$').match(name)
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
 
         if namestump in ['mp', 'zapt', 'ci']:
             # Let mp2, mp3, mp4 pass through to select functions
             if namestump == 'mp' and namelevel in [2, 3, 4]:
-                return namelower, None
+                return name, None
             # Otherwise return method and order
             else:
                 return namestump, namelevel
         else:
-            return namelower, None
+            return name, None
     else:
-        return namelower, None
+        return name, None
 
 
 def hessian(name, **kwargs):
@@ -1364,7 +1362,7 @@ def hessian(name, **kwargs):
 
     # Prevent methods that do not have associated energies 
     if lowername in energy_only_methods:
-	raise ValidationError("hessian('%s') does not have an associated hessian" % name)
+	    raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
@@ -1874,7 +1872,7 @@ def frequency(name, **kwargs):
     molecule.update_geometry()
 
     # Compute the hessian
-    H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
+    H, wfn = hessian(lowername, return_wfn=True, molecule=molecule, **kwargs)
 
     # S/R: Quit after getting new displacements
     if freq_mode == 'sow':
