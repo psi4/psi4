@@ -72,24 +72,21 @@ locally to a module, except for those without a module in
     psi4.set_local_option('MP2', 'WFN', 'MP2')
 
 If the regular scf module is to be run, run it through
-:py:func:`~proc.scf_helper` so that cast-up can be used. Also, add the
-option to bypass it by pre-running scf, then running the module with this
-``bypass_scf`` kwarg.  Also, if the full two-electron integrals are
-necessary for the post-scf, compute them if only the df integrals were run
-previously. ::
+:py:func:`~proc.scf_helper` so that cast-up can be used. Also, add
+the option to pass the reference wavefunciton by pre-running scf,
+then running the module with the ``ref_wfn`` kwarg.  Also, if the full
+two-electron integrals are necessary for the post-scf, compute them if
+only the df integrals were run previously. ::
 
-    # include if scf module is to be run
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-         scf_helper(name, **kwargs)
-
-         # include if TEI are needed beyond scf
-
-         # If the scf type is DF, then the AO integrals were never generated
-         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
-             mints = psi4.MintsHelper()
-             mints.integrals()
+    # Bypass the scf call if a reference wavefunction is given
+    
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+    
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+            psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
 Direct any post-scf modules to be run. ::
 

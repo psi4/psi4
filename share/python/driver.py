@@ -463,17 +463,16 @@ def energy(name, **kwargs):
     >>> molecule H2 {\n0 1\nH\nH 1 0.74\n}
     >>> set global basis cc-pVDZ
     >>> set global reference rohf
-    >>> energy('scf')
+    >>> scf_e, scf_wfn = energy('scf', return_wfn = True)
     >>> H2.set_multiplicity(3)
-    >>> psi4.MintsHelper().integrals()
-    >>> energy('detci', bypass_scf=True)
+    >>> psi4.MintsHelper(scf_wfn.basisset()).integrals()
+    >>> energy('detci', ref_wfn=scf_wfn)
 
     >>> # [5] Run two CI calculations, keeping the integrals generated in the first one.
-    >>> molecule ne {\\nNe\\n}
+    >>> molecule ne {\nNe\n}
     >>> set globals  basis cc-pVDZ
-    >>> set transqt2 delete_tei false
-    >>> energy('cisd')
-    >>> energy('fci', bypass_scf='True')
+    >>> cisd_e, cisd_wfn = energy('cisd', return_wfn = True)
+    >>> energy('fci', ref_wfn=cisd_wfn)
 
     """
     lowername = name.lower()
@@ -582,7 +581,7 @@ def gradient(name, **kwargs):
 
     >>> # [1] Single-point dft gradient getting the gradient
     >>> #     in file, psi4.Matrix, and np.array forms
-    set write_gradient on
+    >>> set gradient_write on
     >>> G, wfn = gradient('b3lyp-d', return_wfn=True)
     >>> wfn.gradient().print_out()
     >>> np.array(G)
