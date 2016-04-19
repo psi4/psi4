@@ -12,7 +12,24 @@ Vibrational and Thermochemical Analysis
 .. codeauthor:: Rollin A. King
 .. comment.. sectionauthor:: Rollin A. King and Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:thermo`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <src/bin/thermo>`
+*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <src/bin/thermo>`
+
+
+.. caution:: It is important to know that |PSIfour|, like any other
+   quantum chemistry program, does *not* compute the usual enthalpies,
+   entropies, or Gibbs free energies *of formation* provided by most
+   reference books.  Instead, quantum chemistry programs compute "absolute"
+   thermodynamic properties relative to infinitely separated nuclei and
+   electrons, not "formation" values relative to elements in their standard
+   states.  If you are computing thermodynamic differences, like a reaction
+   enthalpy computed as the enthalpy of the products minus the enthalpy
+   of the reactants, then these "absolute" enthalpies are perfectly valid
+   and usable.  However, they cannot be mixed and matched with enthalpies of
+   formation from reference books, since the zero of energy is not the same.
+   Additionally, the "thermal energies" reported in kcal/mol are the 
+   finite-temperature *corrections* to the electronic total energy, and 
+   not the overall thermal energies themselves.  If in doubt, use the
+   reported Total Energies in Hartree/particle.
 
 Keywords
 ^^^^^^^^
