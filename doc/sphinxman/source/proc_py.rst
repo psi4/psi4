@@ -79,9 +79,11 @@ two-electron integrals are necessary for the post-scf, compute them if
 only the df integrals were run previously. ::
 
     # Bypass the scf call if a reference wavefunction is given
+    
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+    
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
