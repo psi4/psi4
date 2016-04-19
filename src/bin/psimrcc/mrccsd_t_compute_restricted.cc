@@ -784,4 +784,3 @@ void MRCCSD_T::compute_oOO_triples_restricted()
 }
 
 }} /* End Namespaces */
-

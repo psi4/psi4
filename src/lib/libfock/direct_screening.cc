@@ -299,4 +299,3 @@ void DirectScreening::print_header() const
 }
 
 
-

@@ -2171,4 +2171,3 @@ DCFTSolver::write_molden_file() {
 }
 
 }} //End namespaces
-

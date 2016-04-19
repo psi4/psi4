@@ -114,4 +114,3 @@ void DFOCC::ccsd_opdm()
 } // end ccsd_opdm
 
 }} // End Namespaces
-

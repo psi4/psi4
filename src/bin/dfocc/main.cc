@@ -45,4 +45,3 @@ SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options)
     return dfocc_wfn;
 }
 }} // End Namespaces
-

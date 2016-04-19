@@ -405,4 +405,3 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_)
 }// end build_uhf_mohess
 
 }} // End Namespaces
-

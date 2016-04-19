@@ -444,4 +444,3 @@ void OCCWave::omp2_g_int()
 
 } // end of omp2_g_int
 }} // End Namespaces
-

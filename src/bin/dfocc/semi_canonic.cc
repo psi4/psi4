@@ -226,4 +226,3 @@ void DFOCC::semi_canonic()
      mo_coeff_blocks();
 }
 }} // End Namespaces
-

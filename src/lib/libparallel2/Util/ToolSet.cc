@@ -40,4 +40,3 @@ ToolSet::ToolSet(boost::shared_ptr<const Communicator>& State):State_(State){
 
 
 }}
-

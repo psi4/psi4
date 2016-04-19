@@ -295,4 +295,3 @@ void DFOCC::ccsd_energy()
 } // end ccsd_energy
 
 }} // End Namespaces
-

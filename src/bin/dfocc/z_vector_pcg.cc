@@ -737,4 +737,3 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
 }// end sigma_uhf
 
 }} // End Namespaces
-

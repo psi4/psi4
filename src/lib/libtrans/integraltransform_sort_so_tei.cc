@@ -522,4 +522,3 @@ IntegralTransform::presort_so_tei()
     global_dpd_->file4_close(&I);
     psio_->close(PSIF_SO_PRESORT, 1);
 }
-

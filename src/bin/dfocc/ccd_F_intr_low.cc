@@ -60,4 +60,3 @@ void DFOCC::ccd_F_intr_low()
 }// end ccd_F_intr_low
 
 }} // End Namespaces
-

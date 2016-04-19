@@ -199,4 +199,3 @@ else if (reference_ == "UNRESTRICTED") {
 } // end omp2_opdm
 
 }} // End Namespaces
-

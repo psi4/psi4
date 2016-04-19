@@ -38,4 +38,3 @@ SharedThis LocalComm::MakeComm(const int /*Color*/) const{
    return temp;
 }
 }}
-

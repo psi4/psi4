@@ -679,4 +679,3 @@ void OCCWave::cepa_energy()
 
 
 }} // End Namespaces
-

@@ -365,4 +365,3 @@ else if (reference_ == "UNRESTRICTED") {
 } // end gfock_cc_ov
 
 }} // End Namespaces
-

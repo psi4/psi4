@@ -754,4 +754,3 @@ void CIWavefunction::diag_h()
 
 
 }} // namespace psi::detci
-

@@ -209,4 +209,3 @@ DCFTSolver::compute_cepa0_energy()
 
 }} // Namespaces
 
-

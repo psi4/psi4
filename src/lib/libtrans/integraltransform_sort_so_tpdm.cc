@@ -281,4 +281,3 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
     } // End pq iterator
 }
 } // End namespace
-

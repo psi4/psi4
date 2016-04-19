@@ -148,4 +148,3 @@ void DFOCC::t2AB_ump2_direct(SharedTensor2d& T)
 } // end t2AB_ump2_direct
 
 }} // End Namespaces
-

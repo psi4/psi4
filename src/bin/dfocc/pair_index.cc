@@ -386,4 +386,3 @@ int DFOCC::get_rotation_block(string rotblock)
 }} // End Namespaces
 
 
-

@@ -195,4 +195,3 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
         }
     }
 }
-

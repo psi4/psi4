@@ -258,4 +258,3 @@ DCFTSolver::update_cumulant_jacobi()
 }
 
 }} // Namespaces
-

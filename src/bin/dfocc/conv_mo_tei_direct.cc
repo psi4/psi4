@@ -929,4 +929,3 @@ void DFOCC::tei_cs4_anti_symm_direct(SharedTensor2d &I, SharedTensor2d &J, Share
 }
 
 }} // End Namespaces
-

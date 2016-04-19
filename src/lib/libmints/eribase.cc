@@ -2571,4 +2571,3 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
     // Results are in source_
 	return size;
 }
-
