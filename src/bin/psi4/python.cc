@@ -1586,6 +1586,27 @@ void Python::finalize()
 //    Py_Finalize();
 }
 
+std::string handle_pyerror()
+{
+    using namespace boost::python;
+    using namespace boost;
+
+    PyObject *exc,*val,*tb;
+    object formatted_list, formatted;
+    PyErr_Fetch(&exc,&val,&tb);
+    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb)); 
+    object traceback(import("traceback"));
+    if (!tb) {
+        object format_exception_only(traceback.attr("format_exception_only"));
+        formatted_list = format_exception_only(hexc,hval);
+    } else {
+        object format_exception(traceback.attr("format_exception"));
+        formatted_list = format_exception(hexc,hval,htb);
+    }
+    formatted = str("\n").join(formatted_list);
+    return extract<std::string>(formatted);
+}
+
 void Python::run(FILE *input)
 {
     using namespace boost::python;
@@ -1732,45 +1753,11 @@ void Python::run(FILE *input)
         }
         catch (error_already_set const& e) {
 
-            //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred. Traceback:" << endl;
+            whole << "An error has occurred python-side. ";
+            whole << handle_pyerror();
+            cout << whole.str();
 
-            PyObject *pExcType , *pExcValue , *pExcTraceback;
-            PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);
-
-            if (pExcType != NULL) {
-                boost::python::handle<> h_type(pExcType);
-                boost::python::str type_pstr(h_type);
-                boost::python::extract<std::string> e_type_pstr(type_pstr);
-                if(e_type_pstr.check())
-                    whole << e_type_pstr();
-                else
-                    whole << "Unknown exception type";
-            }
-            if (pExcValue != NULL) {
-                boost::python::handle<> h_val(pExcValue);
-                boost::python::str a(h_val);
-                boost::python::extract<std::string> returned(a);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << std::string(": Unparseable Python error: ");
-            }
-            if (pExcTraceback != NULL) {
-                boost::python::handle<> h_tb(pExcTraceback);
-                boost::python::object tb(boost::python::import("traceback"));
-                boost::python::object fmt_tb(tb.attr("format_tb"));
-                boost::python::object tb_list(fmt_tb(h_tb));
-                boost::python::object tb_str(boost::python::str("\n").join(tb_list));
-                boost::python::extract<std::string> returned(tb_str);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << ": Unparseable Python traceback";
-            }
-
-            cout << whole.str() << endl << endl;
             outfile->Printf("%s\n\n", whole.str().c_str());
             exit(1);
         }
