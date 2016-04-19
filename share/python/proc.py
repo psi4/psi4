@@ -152,6 +152,37 @@ def select_mp2_gradient(name, **kwargs):
         return func(name, **kwargs)
 
 
+def select_mp2_property(name, **kwargs):
+    """Function selecting the algorithm for a MP2 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ/dfmp2
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc_property
+            elif module in ['', 'DFMP2']:
+                func = run_dfmp2_property
+    elif reference == 'UHF':
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_mp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
 def select_omp2(name, **kwargs):
     """Function selecting the algorithm for an OMP2 energy call
     and directing to specified or best-performance default modules.
@@ -204,6 +235,31 @@ def select_omp2_gradient(name, **kwargs):
 
     if func is None:
         raise ManagedMethodError(['select_omp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_omp2_property(name, **kwargs):
+    """Function selecting the algorithm for an OMP2 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = psi4.get_option('SCF', 'REFERENCE')
+    mtd_type = psi4.get_global_option('MP2_TYPE')
+    module = psi4.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1242,7 +1298,7 @@ def run_dfocc(name, **kwargs):
 
 def run_dfocc_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    an density-fitted (non-)orbital-optimized MPN or CC computation.
+    a density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
     lowername = name.lower()
@@ -1310,29 +1366,39 @@ def run_dfocc_gradient(name, **kwargs):
 
 def run_dfocc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    an density-fitted (non-)orbital-optimized MPN or CC computation.
+    a density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
     lowername = name.lower()
 
     optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'DFT_CUSTOM_FUNCTIONAL'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'ORB_OPT'],
         ['DFOCC', 'OEPROP'])
 
-    if lowername in ['ri-mp2', 'df-omp2']:
+    if lowername in ['mp2', 'omp2']:
         psi4.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     else:
         raise ValidationError('Unidentified method ' % (lowername))
 
-    if lowername in ['ri-mp2']:
+    # Alter default algorithm
+    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+        psi4.set_global_option('SCF_TYPE', 'DF')
+        psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    if psi4.get_option('SCF', 'SCF_TYPE') != 'DF':
+        raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
+
+    if lowername in ['mp2']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif lowername in ['df-omp2']:
+    elif lowername in ['omp2']:
         psi4.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     psi4.set_local_option('DFOCC', 'OEPROP', 'TRUE')
+    psi4.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
+    psi4.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     psi4.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -1791,8 +1857,6 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
     dfmp2_wfn.set_gradient(grad)
-    e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
-    e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
     return dfmp2_wfn
@@ -1997,37 +2061,7 @@ def run_scf_property(name, **kwargs):
     since SCF properties all handled through oeprop.
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
-
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-
-    if lowername == 'hf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif lowername == 'scf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','UHF')
-
-    run_scf(name, **kwargs)
-
-    optstash.restore()
+    return run_scf(name, **kwargs)
 
 
 def run_cc_property(name, **kwargs):
@@ -2035,6 +2069,15 @@ def run_cc_property(name, **kwargs):
     all CC property calculations.
 
     """
+    optstash = p4util.OptionsState(
+        ['WFN'],
+        ['DERTYPE'],
+        ['ONEPDM'],
+        ['PROPERTY'],
+        ['CCLAMBDA', 'R_CONVERGENCE'],
+        ['CCEOM', 'R_CONVERGENCE'],
+        ['CCEOM', 'E_CONVERGENCE'])
+
     oneel_properties = ['dipole', 'quadrupole']
     twoel_properties = []
     response_properties = ['polarizability', 'rotation', 'roa', 'roa_tensor']
@@ -2062,7 +2105,7 @@ def run_cc_property(name, **kwargs):
             else:
                 invalid.append(prop)
     else:
-        raise ValidationError("The \"properties\" keyword is required with the property() function.")
+        raise ValidationError("""The "properties" keyword is required with the property() function.""")
 
     n_one = len(one)
     n_two = len(two)
@@ -2070,22 +2113,22 @@ def run_cc_property(name, **kwargs):
     n_excited = len(excited)
     n_invalid = len(invalid)
 
-    if (n_invalid > 0):
-        print("The following properties are not currently supported: %s" % invalid)
+    if n_invalid > 0:
+        print("""The following properties are not currently supported: %s""" % invalid)
 
-    if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
-        raise ValidationError("Excited state CC properties require EOM-CC2 or EOM-CCSD.")
+    if n_excited > 0 and (name.lower() not in ['eom-ccsd', 'eom-cc2']):
+        raise ValidationError("""Excited state CC properties require EOM-CC2 or EOM-CCSD.""")
 
-    if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        raise ValidationError("Cannot (yet) compute response properties for excited states.")
+    if (name.lower() in ['eom-ccsd', 'eom-cc2']) and n_response > 0:
+        raise ValidationError("""Cannot (yet) compute response properties for excited states.""")
 
-    if ('roa' in response):
+    if 'roa' in response:
         # Perform distributed roa job
         run_roa(name.lower(), **kwargs)
-        return #Don't do anything further
+        return  # Don't do anything further
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
-        print("Computing both density- and response-based properties.")
+        print("""Computing both density- and response-based properties.""")
 
     if name.lower() in ['ccsd', 'cc2', 'eom-ccsd', 'eom-cc2']:
         this_name = name.upper().replace('-', '_')
@@ -2093,19 +2136,19 @@ def run_cc_property(name, **kwargs):
         ccwfn = run_ccenergy(name.lower(), **kwargs)
         psi4.set_global_option('WFN', this_name)
     else:
-        raise ValidationError("CC property name %s not recognized" % name.upper())
+        raise ValidationError("""CC property name %s not recognized""" % name.upper())
 
     # Need cchbar for everything
     psi4.cchbar(ccwfn)
 
     # Need ccdensity at this point only for density-based props
-    if (n_one > 0 or n_two > 0):
-        if (name.lower() == 'eom-ccsd'):
+    if n_one > 0 or n_two > 0:
+        if name.lower() == 'eom-ccsd':
             psi4.set_global_option('WFN', 'EOM_CCSD')
             psi4.set_global_option('DERTYPE', 'NONE')
             psi4.set_global_option('ONEPDM', 'TRUE')
             psi4.cceom(ccwfn)
-        elif (name.lower() == 'eom-cc2'):
+        elif name.lower() == 'eom-cc2':
             psi4.set_global_option('WFN', 'EOM_CC2')
             psi4.set_global_option('DERTYPE', 'NONE')
             psi4.set_global_option('ONEPDM', 'TRUE')
@@ -2116,7 +2159,7 @@ def run_cc_property(name, **kwargs):
         psi4.ccdensity(ccwfn)
 
     # Need ccresponse only for response-type props
-    if (n_response > 0):
+    if n_response > 0:
         psi4.set_global_option('DERTYPE', 'RESPONSE')
         psi4.cclambda(ccwfn)
         for prop in response:
@@ -2124,13 +2167,13 @@ def run_cc_property(name, **kwargs):
             psi4.ccresponse(ccwfn)
 
     # Excited-state transition properties
-    if (n_excited > 0):
-        if (name.lower() == 'eom-ccsd'):
+    if n_excited > 0:
+        if name.lower() == 'eom-ccsd':
             psi4.set_global_option('WFN', 'EOM_CCSD')
-        elif (name.lower() == 'eom-cc2'):
+        elif name.lower() == 'eom-cc2':
             psi4.set_global_option('WFN', 'EOM_CC2')
         else:
-            raise ValidationError("Unknown excited-state CC wave function.")
+            raise ValidationError("""Unknown excited-state CC wave function.""")
         psi4.set_global_option('DERTYPE', 'NONE')
         psi4.set_global_option('ONEPDM', 'TRUE')
         # Tight convergence unnecessary for transition properties
@@ -2145,6 +2188,8 @@ def run_cc_property(name, **kwargs):
     psi4.revoke_global_option_changed('WFN')
     psi4.set_global_option('DERTYPE', 'NONE')
     psi4.revoke_global_option_changed('DERTYPE')
+
+    optstash.restore()
     return ccwfn
 
 
@@ -2156,6 +2201,8 @@ def run_dfmp2_property(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
+        ['ONEPDM'],
+        ['OPDM_RELAX'],
         ['SCF_TYPE'])
 
     psi4.set_global_option('ONEPDM', 'TRUE')
@@ -2169,6 +2216,7 @@ def run_dfmp2_property(name, **kwargs):
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
 
+    # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
@@ -2178,16 +2226,15 @@ def run_dfmp2_property(name, **kwargs):
     psi4.print_out('\n')
 
     dfmp2_wfn = psi4.dfmp2grad(ref_wfn)
-    e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
-    e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
+
+    if name == 'scs-mp2':
+        psi4.set_variable('CURRENT ENERGY', psi4.get_variable('SCS-MP2 TOTAL ENERGY'))
+        psi4.set_variable('CURRENT CORRELATION ENERGY', psi4.get_variable('SCS-MP2 CORRELATION ENERGY'))
+    elif name == 'mp2':
+        psi4.set_variable('CURRENT ENERGY', psi4.get_variable('MP2 TOTAL ENERGY'))
+        psi4.set_variable('CURRENT CORRELATION ENERGY', psi4.get_variable('MP2 CORRELATION ENERGY'))
 
     optstash.restore()
-
-    # TODO not nearly enough. E not set in wfn. CURR CORL not set. etc.
-    if name.upper() == 'SCS-MP2':
-        psi4.set_variable('CURRENT ENERGY', e_scs_dfmp2)
-    elif name.upper() in ['DF-MP2', 'DFMP2', 'MP2']:
-        psi4.set_variable('CURRENT ENERGY', e_dfmp2)
     return dfmp2_wfn
 
 
@@ -2197,6 +2244,17 @@ def run_detci_property(name, **kwargs):
     CIn, MPn, and ZAPTn, computing properties.
 
     """
+    optstash = p4util.OptionsState(
+        ['DETCI', 'WFN'],
+        ['DETCI', 'MAX_NUM_VECS'],
+        ['DETCI', 'MPN_ORDER_SAVE'],
+        ['DETCI', 'MPN'],
+        ['DETCI', 'FCI'],
+        ['DETCI', 'EX_LEVEL'],
+        ['PRINT'],
+        ['OPDM'],
+        ['TDM'])
+
     oneel_properties = ['dipole', 'quadrupole']
     excited_properties = ['transition_dipole', 'transition_quadrupole']
 
@@ -2216,7 +2274,7 @@ def run_detci_property(name, **kwargs):
             else:
                 invalid.append(prop)
     else:
-        raise ValidationError("The \"properties\" keyword is required with the property() function.")
+        raise ValidationError("""The "properties" keyword is required with the property() function.""")
 
     n_one = len(one)
     n_excited = len(excited)
@@ -2234,51 +2292,49 @@ def run_detci_property(name, **kwargs):
     if n_excited > 0:
         psi4.set_global_option('TDM', 'TRUE')
 
-    optstash = p4util.OptionsState(
-        ['DETCI', 'WFN'],
-        ['DETCI', 'MAX_NUM_VECS'],
-        ['DETCI', 'MPN_ORDER_SAVE'],
-        ['DETCI', 'MPN'],
-        ['DETCI', 'FCI'],
-        ['DETCI', 'EX_LEVEL'])
-
-    user_ref = psi4.get_option('DETCI', 'REFERENCE')
-    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
-        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+    if psi4.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
+        raise ValidationError("""Reference %s for DETCI is not available.""" % 
+            psi4.get_option('DETCI', 'REFERENCE'))
 
     if name.lower() == 'zapt':
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
-        if ((level + 1) % 2):
+        if (level + 1) % 2:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif name.lower() == 'mp':
+    elif name.lower() in ['mp', 'mp2', 'mp3', 'mp4']:
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
-
-        level = kwargs['level']
+        if name == 'mp2':
+            level = 2
+        elif name == 'mp3':
+            level = 3
+        elif name == 'mp4':
+            level = 4
+        else:
+            level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
-        if ((level + 1) % 2):
+        if (level + 1) % 2:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif (name.lower() == 'fci'):
+    elif name.lower() == 'fci':
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'FCI', 'TRUE')
-    elif (name.lower() == 'cisd'):
+    elif name.lower() == 'cisd':
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
-    elif (name.lower() == 'cisdt'):
+    elif name.lower() == 'cisdt':
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
-    elif (name.lower() == 'cisdtq'):
+    elif name.lower() == 'cisdtq':
             psi4.set_local_option('DETCI', 'WFN', 'DETCI')
             psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
-    elif (name.lower() == 'ci'):
+    elif name.lower() == 'ci':
         psi4.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
         psi4.set_local_option('DETCI', 'EX_LEVEL', level)
@@ -2621,6 +2677,13 @@ def run_dfmp2(name, **kwargs):
 
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     dfmp2_wfn.compute_energy()
+
+    if name == 'scs-mp2':
+        psi4.set_variable('CURRENT ENERGY', psi4.get_variable('SCS-MP2 TOTAL ENERGY'))
+        psi4.set_variable('CURRENT CORRELATION ENERGY', psi4.get_variable('SCS-MP2 CORRELATION ENERGY'))
+    elif name == 'mp2':
+        psi4.set_variable('CURRENT ENERGY', psi4.get_variable('MP2 TOTAL ENERGY'))
+        psi4.set_variable('CURRENT CORRELATION ENERGY', psi4.get_variable('MP2 CORRELATION ENERGY'))
 
     optstash.restore()
     return dfmp2_wfn

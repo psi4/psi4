@@ -180,12 +180,11 @@ procedures = {
         },
         'property' : {
             'scf'      : run_scf_property,
+            'hf'       : run_scf_property,
             'cc2'      : run_cc_property,
             'ccsd'     : run_cc_property,
-            'df-mp2'   : run_dfmp2_property,
-            'dfmp2'    : run_dfmp2_property,
-            'ri-mp2'   : run_dfocc_property,
-            'df-omp2'  : run_dfocc_property,
+            'mp2'      : select_mp2_property,
+            'omp2'     : select_omp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
@@ -194,7 +193,6 @@ procedures = {
             'cisdtq'   : run_detci_property,
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
-            'hf'       : run_scf_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -862,7 +860,7 @@ def property(name, **kwargs):
     | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
@@ -873,11 +871,11 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | 'cisd', 'cisdt',   | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
-    | 'cisdt', 'cisdtq', |                                               |                |                                                               |
-    | 'ci5', etc...      |                                               |                |                                                               |
+    | cisd, cisdt,       | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | cisdt, cisdtq,     |                                               |                |                                                               |
+    | ci5, etc...        |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | fci                | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: string
