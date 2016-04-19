@@ -82,7 +82,7 @@ only the df integrals were run previously. ::
     
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+        ref_wfn = scf_helper(name, **kwargs)
     
         # If the scf type is DF/CD, then the AO integrals were never written to disk
         if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
