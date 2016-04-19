@@ -44,4 +44,3 @@ void export_efp()
         def("nfragments", &EFP::get_frag_count, "Returns the number of EFP fragments in the molecule").
         def("print_out", &EFP::print_out, "Prints options settings and EFP and QM geometries");
 }
-
