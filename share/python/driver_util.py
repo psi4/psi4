@@ -186,46 +186,25 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         return value
 
     elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
+        valueLO = np.array(valueLO)
+        valueMD = np.array(valueMD)
+        valueHI = np.array(valueHI)
 
-        ratio = (np.array(valueHI) - np.array(valueMD) / (np.array(valueMD) - np.array(valueLO)))
-        np_alpha = -1 * np.log(ratio)
-        np_beta = (np.array(valueHI) - valueMD) / (math.exp(-1 * alpha * zMD) * (ratio - 1))
-        np_value = np.array(valueHI) - np_beta * np.exp(-1 * np_alpha *zHI)
+        nonzero_mask = np.abs(valueHI) > 1.e-14
+        top = (valueHI - valueMD)[nonzero_mask]
+        bot = (valueMD - valueLO)[nonzero_mask]
+
+        ratio = top/bot
+        alpha = -1 * np.log(np.abs(ratio))
+        beta = top / (np.exp(-1 * alpha * zMD) * (ratio - 1))
+        np_value = valueHI.copy()
+        np_value[nonzero_mask] -= beta * np.exp(-1 * alpha * zHI)
+        np_value[~nonzero_mask] = 0.0
 
         # Build and set from numpy routines
-        alpha = valueHI.clone()
-        beta = valueHI.clone()
-        value = valueHI.clone()
-
-        alpha_view = np.asarray(alpha)
-        beta_view = np.asarray(beta)
+        value = psi4.Matrix(*valueHI.shape)
         value_view = np.asarray(value)
-
-        alpha_view[:] = np_alpha
-        beta_view[:] = np_beta
-        value_view[:] = np_value
-
-        if verbose > 2:
-            psi4.print_out( """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
-
-            psi4.print_out( """   LO-zeta (%s)""" % str(zLO))
-            psi4.print_out( """   LO-zeta Data""")
-            valueLO.print_out()
-
-            psi4.print_out( """   MD-zeta (%s)""" % str(zMD))
-            psi4.print_out( """   MD-zeta Data""")
-            valueMD.print_out()
-
-            psi4.print_out( """   HI-zeta (%s)""" % str(zHI))
-            psi4.print_out( """   HI-zeta Data""")
-            valueHI.print_out()
-
-            psi4.print_out( """   Extrapolated Data:\n""")
-            value.print_out()
-            psi4.print_out( """   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
-            psi4.print_out( """   Beta Data:\n""")
-            beta.print_out()
-        
+        value_view[:] = np_value 
         return value
 
     else:

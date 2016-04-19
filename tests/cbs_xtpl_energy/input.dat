@@ -3,12 +3,12 @@ import numpy as np
 memory 500 mb
 
 nucenergy_ref =   8.801465529972    #TEST
-scf_dz_ref =   -76.0213974638    #TEST
-scf_tzvp_ref =  -76.0531455176
+scf_dz_ref =    -76.0213974638      #TEST
+scf_tzvp_ref =  -76.0531455176      #TEST
 scf_adtz_ref =  -76.059124724830    #TEST
 scf_atqz_ref =  -76.060985115229    #TEST
 scf_adtqz_ref = -76.061691654613    #TEST
-mp2_addz_ref =   -76.261216702741    #TEST
+mp2_addz_ref =  -76.261216702741    #TEST
 mp2_atz_ref =   -76.341088480148    #TEST
 mp2_adtz_ref =  -76.3667778886      #TEST
 mp2_atqz_ref =  -76.4038500042      #TEST
@@ -40,10 +40,6 @@ compare_values(scf_tzvp_ref, scf_tzvp, 6, "SCF/TZVP Energy Check")
 
 scf_adtz = energy('SCF/aug-cc-pV[23]Z')
 compare_values(scf_adtz_ref, scf_adtz, 6, "SCF/a[DT]Z Energy Check")
-
-# Two point extrapolation
-scf_atqz = energy('SCF/aug-cc-pV[3,4]Z')
-compare_values(scf_atqz_ref, scf_atqz, 6, "SCF/a[TQ]Z Energy Check")
 
 # Three point extrapolation
 scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
