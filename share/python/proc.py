@@ -20,12 +20,12 @@
 #@END LICENSE
 #
 
-from __future__ import print_function
 """Module with functions that encode the sequence of PSI module
 calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
+from __future__ import print_function
 from __future__ import absolute_import
 import shutil
 import os
@@ -36,10 +36,12 @@ from p4util.exceptions import *
 from molutil import *
 from functional import *
 from roa import *
+import proc_util
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html
+
 
 
 def select_mp2(name, **kwargs):
@@ -1097,6 +1099,16 @@ def scf_helper(name, **kwargs):
     scf_wfn = psi4.scf(ref_wfn, precallback, postcallback)
     e_scf = psi4.get_variable('CURRENT ENERGY')
 
+    # We always would like to print a little dipole information
+    if kwargs.get('scf_do_dipole', True):
+        oeprop = psi4.OEProp(scf_wfn)
+        oeprop.set_title("SCF")
+        oeprop.add("DIPOLE")
+        oeprop.compute()
+        psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable("SCF DIPOLE X"))
+        psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable("SCF DIPOLE Y"))
+        psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable("SCF DIPOLE Z"))
+
     optstash.restore()
     return scf_wfn
 
@@ -1703,7 +1715,7 @@ def run_scf_gradient(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = run_scf(name, **kwargs)
 
     if psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
@@ -1987,6 +1999,30 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
+def run_dft_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DFT calculations. This is a simple alias to :py:func:`~proc.run_scf`
+    since DFT properties all handled through oeprop.
+
+    """
+    optstash = proc_util.dft_set_reference_local(name)
+
+    properties = kwargs.pop('properties')
+    proc_util.oeprop_validator(properties)
+
+    kwargs["scf_do_dipole"] = False
+    scf_wfn = run_scf(name, **kwargs)
+
+    # Run OEProp
+    oe = psi4.OEProp(scf_wfn)
+    oe.set_title(name.upper())
+    for prop in properties:
+        oe.add(prop.upper())
+    oe.compute()
+
+    optstash.restore()
+    return scf_wfn
+
 
 def run_scf_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -1994,37 +2030,23 @@ def run_scf_property(name, **kwargs):
     since SCF properties all handled through oeprop.
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
+    optstash = proc_util.scf_set_reference_local(name)
 
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    properties = kwargs.pop('properties')
+    proc_util.oeprop_validator(properties)
 
+    kwargs["scf_do_dipole"] = False
+    scf_wfn = run_scf(name, **kwargs)
 
-    if lowername == 'hf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif lowername == 'scf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','UHF')
-
-    run_scf(name, **kwargs)
+    # Run OEProp
+    oe = psi4.OEProp(scf_wfn)
+    oe.set_title(name.upper())
+    for prop in properties:
+        oe.add(prop.upper())
+    oe.compute()
 
     optstash.restore()
+    return scf_wfn
 
 
 def run_cc_property(name, **kwargs):
@@ -2045,7 +2067,6 @@ def run_cc_property(name, **kwargs):
 
     if 'properties' in kwargs:
         properties = kwargs['properties']
-        properties = p4util.drop_duplicates(properties)
 
         for prop in properties:
             if prop in oneel_properties:
@@ -2988,9 +3009,9 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out('  ------------------------------------------------------------------------------------------------\n')
     psi4.print_out('    SAPT Induction (Dimer Basis)  %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
         tuple(CTd * u for u in units))
-    psi4.print_out('    SAPT Induction (Monomer Basis)%12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' % 
+    psi4.print_out('    SAPT Induction (Monomer Basis)%12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
         tuple(CTm * u for u in units))
-    psi4.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' % 
+    psi4.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' %
         tuple(CT * u for u in units))
     psi4.set_variable('SAPT CT ENERGY', CT)
 

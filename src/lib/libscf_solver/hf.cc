@@ -571,32 +571,6 @@ double HF::finalize_E()
 #endif
 
         // Properties
-        if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
-            oe->set_title("SCF");
-            oe->add("DIPOLE");
-
-            if (print_ >= 2) {
-                oe->add("QUADRUPOLE");
-                oe->add("MULLIKEN_CHARGES");
-            }
-
-            if (print_ >= 3) {
-                oe->add("LOWDIN_CHARGES");
-                oe->add("MAYER_INDICES");
-                oe->add("WIBERG_LOWDIN_INDICES");
-            }
-
-                outfile->Printf( "  ==> Properties <==\n\n");
-            oe->compute();
-
-            // TODO: Hack to test CubicScalarGrid
-            /*
-            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
-            grid->print_header();
-            grid->compute_density_cube(Da_, "Da");
-            */
-
 //  Comments so that autodoc utility will find these PSI variables
 //
 //  Process::environment.globals["SCF DIPOLE X"] =
@@ -608,11 +582,6 @@ double HF::finalize_E()
 //  Process::environment.globals["SCF QUADRUPOLE YY"] =
 //  Process::environment.globals["SCF QUADRUPOLE YZ"] =
 //  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
-            Process::environment.globals["CURRENT DIPOLE X"] = Process::environment.globals["SCF DIPOLE X"];
-            Process::environment.globals["CURRENT DIPOLE Y"] = Process::environment.globals["SCF DIPOLE Y"];
-            Process::environment.globals["CURRENT DIPOLE Z"] = Process::environment.globals["SCF DIPOLE Z"];
-        }
 
         save_information();
     } else {
