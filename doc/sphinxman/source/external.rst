@@ -278,7 +278,7 @@ all necessary variables in the PBS job file. Below is a minimal example of
 a PBS job file for a threaded job, and a short explanation for each section. ::
 
     #!/bin/tcsh
-    #PBS -j oe 
+    #PBS -j oe
     #PBS -l pmem=2120mb
     #PBS -N jobname
     #PBS -V
@@ -294,11 +294,13 @@ a PBS job file for a threaded job, and a short explanation for each section. ::
         ssh $i rm -rf $myscratch
         ssh $i mkdir -p $myscratch
     end
-
+    
+    unsetenv PSI4DATADIR
+    unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
+    if ! ( $?PSIPATH ) setenv PSIPATH ""
     setenv PSIPATH /path/to/external/modules:${PSIPATH}
     setenv PSIPATH /path/to/python/modules:${PSIPATH}
-    setenv PSIDATADIR /psi/install/directory/share
     /psi/install/directory/bin/psi4 -i input.in -o input.out
     
     foreach i (`sort $PBS_NODEFILE | uniq`)
@@ -319,10 +321,10 @@ The ``PBS -j oe`` option instructs PBS to write any output or error message
 from the queuing system in dedicated files. ``PBS -l pmem=2120mb`` requests 
 2120 MB of memory for each thread on the node. The total memory requested for 
 the job by PBS should generally be slightly greater than what indicated 
-with the |adc__memory| keyword in the input file.
+in the input file (see :ref:`memory setting <sec:memory>`).
 
 In the next section, we define :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
- to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
+to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
 
     setenv OMP_NUM_THREADS 4
     setenv MKL_NUM_THREADS 4
@@ -340,19 +342,22 @@ points to a file containing a list of the nodes attributed to the job. ::
         ssh $i mkdir -p $myscratch
     end
 
-The next section is _very important_ as it sets the environment variables needed
+The next section is *very important* as it sets the environment variables needed
 by |PSIfour|: ::
 
+    unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
+    if ! ( $?PSIPATH ) setenv PSIPATH ""
     setenv PSIPATH /path/to/external/modules:${PSIPATH}
     setenv PSIPATH /path/to/python/modules:${PSIPATH}
-    setenv PSIDATADIR /psi/install/directory/share
 
-:envvar:`PSIDATADIR` should point to the ``share`` directory in |PSIfour| install
-directory. :envvar:`PSIPATH` is needed only if you are using external modules or 
-plugins in |PSIfour| and should point to the directories where they can be found.
-Finally, :envvar:`PSI_SCRATCH` should point to a fast, local disk for temporary file
-storage. The next step is then to actually run the computation: ::
+:envvar:`PSIDATADIR` does *not* need to be set if |PSIfour| has been *properly installed*.
+In the present example we unset it to make sure it does not interfere with the location
+of the installed directory. :envvar:`PSIPATH` is needed only if you are using external modules or 
+plugins in |PSIfour| and should point to the directories where they can be found. In the
+present example, we make sure the variable is set with ``if ! ( $?PSIPATH ) setenv PSIPATH ""``
+before adding more paths to it. Finally, :envvar:`PSI_SCRATCH` should point to a fast, 
+local disk for temporary file storage. The next step is then to actually run the computation: ::
 
     /psi/install/directory/bin/psi4 -i input.in -o input.out
 
