@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt0.h"
@@ -183,16 +188,16 @@ void SAPT0::exch10_s2()
   e_exch10_s2_ = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n\n",ex6);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n\n",ex6);
   }
 
   if (print_) {
-    outfile->Printf("    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
+    outfile->Printf("    Exch10 (S^2)        = %18.12lf [Eh]\n",e_exch10_s2_);
     
   }
 }
@@ -416,19 +421,19 @@ void SAPT0::exch10()
   e_exch10_ = -2.0*(ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9);
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
-    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
-    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
-    outfile->Printf("    Ex9                 = %18.12lf H\n\n",ex9);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf [Eh]\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf [Eh]\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf [Eh]\n\n",ex9);
   }
 
   if (print_) {
-    outfile->Printf("    Exch10              = %18.12lf H\n",e_exch10_);
+    outfile->Printf("    Exch10              = %18.12lf [Eh]\n",e_exch10_);
     
   }
 }
@@ -532,16 +537,16 @@ void SAPT2::exch10_s2()
   e_exch10_s2_ = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n\n",ex6);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n\n",ex6);
   }
 
   if (print_) {
-    outfile->Printf("    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
+    outfile->Printf("    Exch10 (S^2)        = %18.12lf [Eh]\n",e_exch10_s2_);
     
   }
 }
@@ -752,19 +757,19 @@ void SAPT2::exch10()
   e_exch10_ = ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9;
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
-    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
-    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
-    outfile->Printf("    Ex9                 = %18.12lf H\n\n",ex9);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf [Eh]\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf [Eh]\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf [Eh]\n\n",ex9);
   }
 
   if (print_) {
-    outfile->Printf("    Exch10              = %18.12lf H\n",e_exch10_);
+    outfile->Printf("    Exch10              = %18.12lf [Eh]\n",e_exch10_);
     
   }
 }

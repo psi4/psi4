@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt0.h"
@@ -67,9 +72,9 @@ void SAPT0::ind20()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    outfile->Printf("    Ind20 (A<-B)        = %18.12lf H\n",indA_B);
-    outfile->Printf("    Ind20 (B<-A)        = %18.12lf H\n",indB_A);
-    outfile->Printf("    Ind20               = %18.12lf H\n",e_ind20_);
+    outfile->Printf("    Ind20 (A<-B)        = %18.12lf [Eh]\n",indA_B);
+    outfile->Printf("    Ind20 (B<-A)        = %18.12lf [Eh]\n",indB_A);
+    outfile->Printf("    Ind20               = %18.12lf [Eh]\n",e_ind20_);
     
   }
 }
@@ -93,9 +98,9 @@ void SAPT0::ind20r()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
-    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
-    outfile->Printf("    Ind20,r             = %18.12lf H\n",e_ind20_);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",indA_B);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",indB_A);
+    outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",e_ind20_);
     
   }
 }
@@ -138,7 +143,7 @@ void SAPT0::ind20rA_B()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
 
   SAPTDFInts C_p_AA = set_C_AA();
   SAPTDFInts C_p_AR = set_C_AR();
@@ -333,7 +338,7 @@ void SAPT0::ind20rB_A()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
 
   SAPTDFInts C_p_BB = set_C_BB();
   SAPTDFInts C_p_BS = set_C_BS();
@@ -528,7 +533,7 @@ void SAPT0::ind20rA_B_aio()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
 
   SAPTDFInts C_p_AR = set_C_AR();
 
@@ -767,7 +772,7 @@ void SAPT0::ind20rB_A_aio()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
 
   SAPTDFInts C_p_BS = set_C_BS();
 
@@ -988,9 +993,9 @@ void SAPT2::ind20r()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
-    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
-    outfile->Printf("    Ind20,r             = %18.12lf H\n",e_ind20_);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",indA_B);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",indB_A);
+    outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",e_ind20_);
     
   }
 }
@@ -1052,4 +1057,3 @@ void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals,
 }
 
 }}
-

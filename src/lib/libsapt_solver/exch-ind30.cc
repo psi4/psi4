@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p3.h"
@@ -77,14 +82,14 @@ void SAPT2p3::exch_ind30()
   e_exch_ind30_ = ex_1 + ex_2 + ex_3 + ex_4 + ex_5;
 
   if (debug_) {
-    outfile->Printf("\n    Exch-Ind_1          = %18.12lf H\n",ex_1);
-    outfile->Printf("    Exch-Ind_2          = %18.12lf H\n",ex_2);
-    outfile->Printf("    Exch-Ind_3          = %18.12lf H\n",ex_3);
-    outfile->Printf("    Exch-Ind_4          = %18.12lf H\n",ex_4);
-    outfile->Printf("    Exch-Ind_5          = %18.12lf H\n",ex_5);
+    outfile->Printf("\n    Exch-Ind_1          = %18.12lf [Eh]\n",ex_1);
+    outfile->Printf("    Exch-Ind_2          = %18.12lf [Eh]\n",ex_2);
+    outfile->Printf("    Exch-Ind_3          = %18.12lf [Eh]\n",ex_3);
+    outfile->Printf("    Exch-Ind_4          = %18.12lf [Eh]\n",ex_4);
+    outfile->Printf("    Exch-Ind_5          = %18.12lf [Eh]\n",ex_5);
   }
   if (print_) {
-    outfile->Printf("    Exch-Ind30          = %18.12lf H\n",e_exch_ind30_);
+    outfile->Printf("    Exch-Ind30          = %18.12lf [Eh]\n",e_exch_ind30_);
     
   }
 }
@@ -329,4 +334,3 @@ double SAPT2p3::exch_ind30_3(double **sBS)
 }
 
 }}
-
