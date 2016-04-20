@@ -339,7 +339,7 @@ def build_vwn5_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN5_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN5 LSDA Correlation\n')
+    fun.set_description('    VWN5 LSDA Correlation, QMC Parameters, VWN5 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -375,7 +375,7 @@ def build_vwn5rpa_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN5RPA_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN5 (RPA) LSDA Correlation\n')
+    fun.set_description('    VWN5 LSDA Correlation, RPA Parameters, VWN5 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -411,7 +411,7 @@ def build_vwn3_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN3_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN3 LSDA Correlation\n')
+    fun.set_description('    VWN3 LSDA Correlation, QMC Parameters, VWN1 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -444,7 +444,7 @@ def build_vwn3rpa_c_functional(name):
     # No spaces, keep it short and according to convention
     fun.set_name('VWN3RPA_C')
     # Tab in, trailing newlines
-    fun.set_description('    VWN3 (RPA) LSDA Correlation\n')
+    fun.set_description('    VWN3 LSDA Correlation, RPA Parameters, VWN1 Spin Polarization\n')
     # Tab in, trailing newlines
     fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
 
@@ -644,15 +644,6 @@ def build_wb88_x_functional(name):
     fun.set_parameter('Hb7', 0.0647862)
     fun.set_parameter('Hb8', 0.0159586)
     fun.set_parameter('Hb9', -2.45066E-4)
-
-    # => End User-Customization <= #
-
-    return fun
-
-def build_wb88_x_functional(name):
-
-    # Call this first
-    fun = psi4.Functional.build_base('wB88_X')
 
     # => End User-Customization <= #
 
@@ -1228,7 +1219,7 @@ def build_b3lyp_superfunctional(name, npoints, deriv):
     # No spaces, keep it short and according to convention
     sup.set_name('B3LYP')
     # Tab in, trailing newlines
-    sup.set_description('    B3LYP Hybrid-GGA Exchange-Correlation Functional\n')
+    sup.set_description('    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)\n')
     # Tab in, trailing newlines
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n')
 
@@ -1299,7 +1290,7 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     # No spaces, keep it short and according to convention
     sup.set_name('B3LYP5')
     # Tab in, trailing newlines
-    sup.set_description('    B3LYP5 Hybrid-GGA Exchange-Correlation Functional\n')
+    sup.set_description('    B3LYP5 Hybrid-GGA Exchange-Correlation Functional (VWN5)\n')
     # Tab in, trailing newlines
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n')
 
@@ -1309,7 +1300,7 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     sup.add_x_functional(b3)
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
-    vwn = build_functional('VWN5RPA_C')
+    vwn = build_functional('VWN5_C')
     vwn.set_alpha(0.19)
     sup.add_c_functional(lyp)
     sup.add_c_functional(vwn)
@@ -2083,9 +2074,32 @@ def build_b3lyp5d3bj_superfunctional(name, npoints, deriv):
 
     return sup
 
+
+def build_b3lyp5d3mzero_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3MZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mzero')))
+
+    return sup
+
+
+def build_b3lyp5d3mbj_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3MBJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mbj')))
+
+    return sup
+
+
 def build_bp86d1_superfunctional(name, npoints, deriv):
 
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup = build_bp86_superfunctional(name, npoints, deriv)
     sup.set_name('BP86-D1')
 
     # => -D2 <= #
@@ -3451,7 +3465,7 @@ superfunctionals = {
         'pbe'             : build_pbe_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
-#        'b3lyp5'          : build_b3lyp5_superfunctional,  # broken
+        'b3lyp5'          : build_b3lyp5_superfunctional,
         'hf_x'            : build_hf_x_superfunctional,
         'pbe0'            : build_pbe0_superfunctional,
         'b97-0'           : build_b970_superfunctional,
@@ -3504,10 +3518,12 @@ superfunctionals = {
         #'b3lyp-d3mbj'     : build_b3lypd3mbj_superfunctional,
         'b3lyp-chg'       : build_b3lypchg_superfunctional,
         'b3lyp-d1'       : build_b3lypd1_superfunctional,
-#        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,  # broken
-#        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,  # broken
-#        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,  # broken
-#        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,  # broken
+        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,
+        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,
+        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,
+        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,
+        #'b3lyp5-d3mzero'   : build_b3lyp5d3mzero_superfunctional,
+        #'b3lyp5-d3mbj'     : build_b3lyp5d3mbj_superfunctional,
         'wsvwn'           : build_wsvwn_superfunctional,
         'wpbe'            : build_wpbe_superfunctional,
         'wpbe-d3zero'     : build_wpbed3zero_superfunctional,

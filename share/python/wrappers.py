@@ -147,15 +147,15 @@ def return_energy_components():
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc3corl': 'CC3 CORRELATION ENERGY'}
-    VARH['fno-df-ccsd'] = {
+    VARH['fno-ccsd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                   'fno-df-ccsdcorl': 'CCSD CORRELATION ENERGY'}
-    VARH['fno-df-ccsd(t)'] = {
+                      'fno-ccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['fno-ccsd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
-                'fno-df-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+                   'fno-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['qcisd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
@@ -267,14 +267,24 @@ def _autofragment_convert(p, symbol):
 
 
 def auto_fragments(**kwargs):
-    r"""
-    Detects fragments if the user does not supply them.
-    Currently only used for the WebMO implementation of SAPT
-    Returns a new fragmented molecule
+    r"""Detects fragments if the user does not supply them.
+    Currently only used for the WebMO implementation of SAPT.
 
-    usage: auto_fragment()
+    :returns: :ref:`Molecule<sec:psimod_Molecule>`) |w--w| fragmented molecule.
 
-    auto_fragment(molecule=mol)
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :examples:
+
+    >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
+    >>> molecule mol {\nH 0.0 0.0 0.0\nH 2.0 0.0 0.0\nF 0.0 1.0 0.0\nF 2.0 1.0 0.0\n}
+    >>> print mol.nfragments()  # 1
+    >>> fragmol = auto_fragments()
+    >>> print fragmol.nfragments()  # 2
+
     """
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
@@ -1743,12 +1753,12 @@ def complete_basis_set(name, **kwargs):
            * qcisd
            * cc2
            * ccsd
-           * fno-df-ccsd
+           * fno-ccsd
            * bccd
            * cc3
            * qcisd(t)
            * ccsd(t)
-           * fno-df-ccsd(t)
+           * fno-ccsd(t)
            * bccd(t)
            * cisd
            * cisdt
@@ -2021,7 +2031,7 @@ def complete_basis_set(name, **kwargs):
     # Establish method for reference energy
     if 'scf_wfn' in kwargs:
         cbs_scf_wfn = kwargs['scf_wfn'].lower()
-    elif 'name' in kwargs and ((lowername == 'scf') or (lowername == 'df-scf') or (lowername == 'c4-scf')):
+    elif 'name' in kwargs and (lowername in ['scf', 'c4-scf']):
         cbs_scf_wfn = lowername
     else:
         cbs_scf_wfn = 'scf'
@@ -2031,7 +2041,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if 'name' in kwargs:
-        if not((lowername == 'scf') or (lowername == 'df-scf') or (lowername == 'c4-scf')):
+        if lowername not in ['scf', 'c4-scf']:
             do_corl = True
             cbs_corl_wfn = kwargs['name'].lower()
     if 'corl_wfn' in kwargs:

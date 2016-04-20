@@ -229,6 +229,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
     // Process the files
     PluginFileManager file_manager(plugin_name);
     file_manager.add_file("Makefile.template", "Makefile");
+    file_manager.add_file("Makefile.conda.template", "Makefile.conda");
     file_manager.add_file("input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");

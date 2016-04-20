@@ -24,7 +24,7 @@ molecule formamide_dimer {
      units angstrom
 }
 
-set globals {
+set {
     basis         aug-cc-pvdz
     df_basis_sapt aug-cc-pvdz-ri
     df_basis_scf  aug-cc-pvdz-jkfit

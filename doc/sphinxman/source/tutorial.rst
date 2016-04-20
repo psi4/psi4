@@ -7,6 +7,10 @@
 A |PSIfour| Tutorial
 ====================
 
+.. note:: Some |PSIfour| functions and keywords have aliases.  For example,
+          ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
+          obtain vibrational frequencies.
+
 Basic Input File Structure
 ==========================
 
@@ -22,11 +26,6 @@ The syntax is:
 If you give an input name but no output name, then the output name will
 be the same as the input name (subtracting any ".in" or ".dat" suffix),
 plus a ".out" suffix.
-
-   .. note:: Some |PSIfour| functions and keywords have aliases.  For example,
-             ``frequency()``, ``frequencies()``, and ``freq()`` all work to 
-             obtain vibrational frequencies.
-
 
 Sample Input Files
 ==================
@@ -202,22 +201,6 @@ enthalpy (H), entropy (S), and Gibbs free energy (G).  Similarly, the
 molecular geometry is used to obtain rotational constants, which are
 then used to obtain rotational contributions to H, S, and G.
 
-.. caution:: It is important to know that |PSIfour|, like any other
-   quantum chemistry program, does *not* compute the usual enthalpies,
-   entropies, or Gibbs free energies *of formation* provided by most
-   reference books.  Instead, quantum chemistry programs compute "absolute"
-   thermodynamic properties relative to infinitely separated nuclei and
-   electrons, not "formation" values relative to elements in their standard
-   states.  If you are computing thermodynamic differences, like a reaction
-   enthalpy computed as the enthalpy of the products minus the enthalpy
-   of the reactants, then these "absolute" enthalpies are perfectly valid
-   and usable.  However, they cannot be mixed and matched with enthalpies of
-   formation from reference books, since the zero of energy is not the same.
-   Additionally, the "thermal energies" reported in kcal/mol are the 
-   finite-temperature *corrections* to the electronic total energy, and 
-   not the overall thermal energies themselves.  If in doubt, use the
-   reported Total Energies in Hartree/particle.
-
 Analysis of Intermolecular Interactions
 =======================================
 
@@ -268,11 +251,11 @@ options::
 
 Before, we have been setting keywords individually with commands like
 ``set basis cc-pVDZ``.  Because we have a few more options now, it's
-convenient to place them together into the ``set`` or ``set globals``
+convenient to place them together into the ``set``
 block, bounded by ``{...}``.  This
 will set all of these options as "global" options (meaning that they are
 visible to all parts of the program).  Most common |PSIfour| options can be
-set in a ``globals`` section like this.  If an option needs to be visible
+set in a globals section like this. If an option needs to be visible
 only to one part of the program (e.g., we only want to increase the
 energy convergence in the SCF code, but not the rest of the
 code), it can be placed in a section of input visible to that part of the

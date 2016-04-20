@@ -119,18 +119,18 @@ class ShellInfo(object):
     """This class has the same behavior as GaussianShell, but implements everything using
     slower data structures, which are easier to construct. These are used to build the
     basis set, which builds more efficient pointer-based GaussianShell objects.
-    *  @param e An array of exponent values.
-    *  @param am Angular momentum.
-    *  @param pure Pure spherical harmonics, or Cartesian.
-    *  @param c An array of contraction coefficients.
-    *  @param nc The atomic center that this shell is located on. Must map
-        back to the correct atom in the owning BasisSet molecule_. Used
-        in integral derivatives for indexing.
-    *  @param center The x, y, z position of the shell. This is passed to
-        reduce the number of calls to the molecule.
-    *  @param start The starting index of the first function this shell
-        provides. Used to provide starting positions in matrices.
-    *  @param pt Is the shell already normalized?
+    @param e An array of exponent values.
+    @param am Angular momentum.
+    @param pure Pure spherical harmonics, or Cartesian.
+    @param c An array of contraction coefficients.
+    @param nc The atomic center that this shell is located on. Must map
+    back to the correct atom in the owning BasisSet molecule. Used
+    in integral derivatives for indexing.
+    @param center The x, y, z position of the shell. This is passed to
+    reduce the number of calls to the molecule.
+    @param start The starting index of the first function this shell
+    provides. Used to provide starting positions in matrices.
+    @param pt Is the shell already normalized?
 
     """
 

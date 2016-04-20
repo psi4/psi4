@@ -1,0 +1,25 @@
+>>> grep -A 4 'Entropy' freq.out 
+
+ Total Entropy                    =   45.261 cal/mol-K
+   - Translational                =   34.593 cal/mol-K (mol. weight =  18.0106)
+   - Rotational                   =   10.668 cal/mol-K (symmetry #  =        2)
+   - Vibrational                  =    0.001 cal/mol-K
+
+--
+ Total Entropy                    =   45.269 cal/mol-K
+   - Translational                =   34.593 cal/mol-K (mol. weight =  18.0106)
+   - Rotational                   =   10.668 cal/mol-K (symmetry #  =        2)
+   - Vibrational                  =    0.008 cal/mol-K
+
+--
+ Total Entropy                    =   45.263 cal/mol-K
+   - Translational                =   34.593 cal/mol-K (mol. weight =  18.0106)
+   - Rotational                   =   10.668 cal/mol-K (symmetry #  =        2)
+   - Vibrational                  =    0.002 cal/mol-K
+
+--
+ Total Entropy                    =   45.275 cal/mol-K
+   - Translational                =   34.593 cal/mol-K (mol. weight =  18.0106)
+   - Rotational                   =   10.668 cal/mol-K (symmetry #  =        2)
+   - Vibrational                  =    0.014 cal/mol-K
+

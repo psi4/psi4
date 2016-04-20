@@ -9,7 +9,7 @@ molecule h2o {
   H 1 0.9894093 2 100.02688
 }
 
-set globals {
+set {
   basis sto-3g
   d_convergence 11
   scf_type pk
@@ -30,7 +30,7 @@ anal_freqs.set(0, 2, 4391.065) #TEST
 #  0.7296851             #TEST
 
 # Frequencies by 3-pt formula in C1 point group.
-set globals { points 3 }
+set { points 3 }
 set findif {print 3}
 
 scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
@@ -48,7 +48,7 @@ compare_vectors(anal_freqs, fd_freqs, 1,                                        
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -65,7 +65,7 @@ compare_vectors(anal_freqs, fd_freqs, 1,                                        
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 3 }
+#set { points 3 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -80,7 +80,7 @@ compare_vectors(anal_freqs, fd_freqs, 1,                                        
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -95,7 +95,7 @@ compare_vectors(anal_freqs, fd_freqs, 1,                                        
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #a1_freqs = psi4.Vector(2)          #TEST
 #a1_freqs.set(0, 0, anal_freqs[0])    #TEST
@@ -117,7 +117,7 @@ compare_vectors(anal_freqs, fd_freqs, 1,                                        
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #b2_freqs = psi4.Vector(1)       #TEST
 #b2_freqs.set(0, 0, anal_freqs[2]) #TEST

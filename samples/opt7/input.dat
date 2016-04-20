@@ -8,7 +8,7 @@ OOH_105_bend      = -150.78617685                    # TEST
 # Minimized energy with HOOH torsion at 120.0 degrees. # TEST
 HOOH_120_dihedral = -150.78664695                      # TEST
 
-set globals {
+set {
   diis false
   basis cc-pvdz
   g_convergence gau_tight

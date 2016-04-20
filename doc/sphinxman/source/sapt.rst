@@ -592,6 +592,6 @@ relevant terms: ::
 
 The scaling factor is reported at the top (here ``1.0072``) together with the 
 :math:`\alpha` parameter. All terms that are scaled are indicated by the ``sc.``
-keyword. Note that if Exch10 is less than :math:`1.0e-5`, the scaling factor is
+keyword. Note that if Exch10 is less than :math:`10^{-5}`, the scaling factor is
 set to :math:`1.0`.
 

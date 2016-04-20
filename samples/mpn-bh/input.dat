@@ -11,7 +11,7 @@ molecule bh {
     H 1 1.25386
 }
 
-set globals {
+set {
   basis aug-cc-pVDZ
   frozen_docc [1, 0, 0, 0]
 }

@@ -8,7 +8,7 @@ molecule h2o {
     h 1 0.97 2 103.0
 }
 
-set globals {
+set {
   basis 6-31G**
 
   r_convergence 10
