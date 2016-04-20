@@ -9,7 +9,7 @@ molecule bh {
 }
 
 # Get a reasonable guess, to save some iterations
-set globals = {
+set = {
     scf_type   pk
     basis      cc-pVQZ
     df_scf_guess false
@@ -17,7 +17,7 @@ set globals = {
 }
 energy('scf')
 
-set globals = {
+set = {
     scf_type   direct
     guess      read
     e_convergence 10

@@ -51,9 +51,11 @@ db('c4-mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 tota
 compare_values(ref_DB_CBS_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[3] Wrapper database(cbs())")  #TEST
 
 banner('Test [4] cbs(energy())')
+set mp2_type df
 # for h2 geom after optimization in [1]
-cbs('df-mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='c4-ccsd',delta_basis='3-21g',delta2_wfn='c4-ccsd(t)',delta2_wfn_lesser='c4-ccsd',delta2_basis='3-21g')
+cbs('mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='c4-ccsd',delta_basis='3-21g',delta2_wfn='c4-ccsd(t)',delta2_wfn_lesser='c4-ccsd',delta2_basis='3-21g')
 compare_values(ref_CBS_E_postopt, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper cbs()")  #TEST
+set mp2_type conv
 
 banner('Test [5] opt(energy())')
 # TODO switch to mp2 once gradients thoroughly working again

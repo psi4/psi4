@@ -575,7 +575,7 @@ reliability, accuracy, or suitability for any particular purpose. No
 obligation to provide technical support is expressed or implied. As time
 allows, the developers will attempt to answer inquiries on the `forum
 <http://forum.psicode.org>`_ or `GitHub
-<https://github.com/psi4/psi4public/issues/new>`_. For bug reports,
+<https://github.com/psi4/psi4/issues/new>`_. For bug reports,
 specific and detailed information, with example inputs, would be
 appreciated.
 
@@ -585,11 +585,11 @@ Where-to-post summary:[#f6]_
 
 * I got this error, why? -- `ask the forum <http://forum.psicode.org>`_
 
-* I got this error and I'm sure it's a bug -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+* I got this error and I'm sure it's a bug -- `file a GitHub issue <https://github.com/psi4/psi4/issues/new>`_
 
-* Can I open a discussion on this bit of code? -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+* Can I open a discussion on this bit of code? -- `file a GitHub issue <https://github.com/psi4/psi4/issues/new>`_
 
-* I have an idea/request and a plan -- `file a GitHub issue <https://github.com/psi4/psi4public/issues/new>`_
+* I have an idea/request and a plan -- `file a GitHub issue <https://github.com/psi4/psi4/issues/new>`_
 
 * I have an idea/request -- `ask the forum <http://forum.psicode.org>`_
 
@@ -597,7 +597,7 @@ Where-to-post summary:[#f6]_
 
 * When will you? -- `ask the forum <http://forum.psicode.org>`_
 
-* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or `post on the wiki itself <https://github.com/psi4/psi4public/wiki>`_
+* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or `post on the wiki itself <https://github.com/psi4/psi4/wiki>`_
 
 * Anything you want to share privately -- `crawdad@vt.edu <mailto:crawdad@vt.edu>`_ or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_
 

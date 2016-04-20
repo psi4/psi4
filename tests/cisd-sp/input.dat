@@ -14,7 +14,7 @@ molecule h2o {
 }
 
 # Perform a detci calc using helper function
-set globals {
+set {
   basis 6-31G**
   hd_avg hd_kave
   qc_module detci
@@ -30,7 +30,7 @@ compare_values(refcorr, get_variable("CISD CORRELATION ENERGY"), 7, "[1] CISD co
 clean()
 
 # Perform same detci calc setting all options explicitly
-set globals {
+set {
   wfn detci
   basis 6-31G**
 }

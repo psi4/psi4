@@ -18,7 +18,7 @@ O 1 R
 R = 1.230
 }
 
-set globals {
+set {
     e_convergence            8
     r_convergence            8
     basis                    cc-pvtz

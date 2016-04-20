@@ -8,7 +8,7 @@ molecule N2 {
   N 1 1.1
 }
 
-set globals {
+set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
   scf_type pk
@@ -26,7 +26,7 @@ molecule H2O {
  H 2 1.0 1 109.5
 }
 
-set globals {
+set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
 }
@@ -43,7 +43,7 @@ molecule nh3 {
   H          0.954195849480     0.254982462271     0.000000000000
 }
 
-set globals {
+set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
 }
@@ -62,7 +62,7 @@ molecule CH4 {
    r = 1.09
 }
 
-set globals {
+set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
 }

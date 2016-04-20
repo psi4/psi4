@@ -21,7 +21,7 @@ O 2.8186228 -0.6587208 3.2810031
 units angstrom
 }
 
-set globals {
+set {
   basis def2-tzvpp
 }
 

@@ -27,7 +27,7 @@ molecule barrier {
  He
 }
 
-set globals {
+set {
     basis         cc-pvdz
     guess         sad
     scf_type      df

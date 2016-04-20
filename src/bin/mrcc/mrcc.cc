@@ -730,7 +730,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
         outfile->Printf( "  WARNING: Integrals were not found on disk. Computing them now.\n");
         outfile->Printf( "           If you modified any of the integrals those modifications\n");
         outfile->Printf( "           will be lost. If you need them file an issue on GitHub:\n");
-        outfile->Printf( "               https://github.com/psi4/psi4public/issues\n\n");
+        outfile->Printf( "               https://github.com/psi4/psi4/issues\n\n");
 
         // Integrals do not exist on disk. Compute them.
         MintsHelper helper(wave->basisset(), options, 0);

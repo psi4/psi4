@@ -3,7 +3,7 @@
 HOOH_E_fixed_H_xyz = -150.7866490998188     # TEST
 HOOH_E_fixed_O_xyz = -150.7866389583059     # TEST
 
-set globals { basis cc-pvdz }
+set { basis cc-pvdz }
 
 # Freeze H xyz in HOOH.
 molecule {

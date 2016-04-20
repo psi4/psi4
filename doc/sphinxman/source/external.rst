@@ -32,19 +32,19 @@ Compiling and Installing from Source
 ====================================
 
 Detailed directions on 
-`obtaining <https://github.com/psi4/psi4public/wiki/1_Obtaining>`_, 
-`prerequisites <https://github.com/psi4/psi4public/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
-`building and installing <https://github.com/psi4/psi4public/wiki/3_Building>`_,
-and `FAQ <https://github.com/psi4/psi4public/wiki/0_FAQ>`_
-are maintained on the `GitHub Wiki <https://github.com/psi4/psi4public/wiki>`_. 
-If uncertain, `start here <https://github.com/psi4/psi4public/wiki/1_Obtaining#quiz>`_.
+`obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
+`prerequisites <https://github.com/psi4/psi4/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
+`building and installing <https://github.com/psi4/psi4/wiki/3_Building>`_,
+and `FAQ <https://github.com/psi4/psi4/wiki/0_FAQ>`_
+are maintained on the `GitHub Wiki <https://github.com/psi4/psi4/wiki>`_. 
+If uncertain, `start here <https://github.com/psi4/psi4/wiki/1_Obtaining#quiz>`_.
 
 
-.. index:: scratch files, psirc, psi4rc
-.. _`sec:psirc`:
+.. index:: scratch files, restart
+.. _`sec:Scratch`:
 
-Scratch Files, |psirc| File and Elementary Restart
-==================================================
+Scratch Files and Elementary Restart
+====================================
 
 One very important part of user configuration at the end of the
 installation process
@@ -60,13 +60,19 @@ you need to (a) make sure there is a sufficiently large directory on a
 locally attached disk drive (100GB–1TB or more, depending on the size of
 the molecules to be studied) and (b) tell |PSIfour| the path to this
 directory. Scratch file location can be specified through the 
-:envvar:`PSI_SCRATCH` environment variable or, more flexibly, through 
-a resource file, |psirc| (example :source:`samples/example_psi4rc_file`). 
+:envvar:`PSI_SCRATCH` environment variable or through the |psirc| file
+(see section :ref:`sec:psirc`). Most of the time, :envvar:`PSI_SCRATCH`
+is preferred, and it overrides any existing |psirc| setting. You can set up 
+:envvar:`PSI_SCRATCH` by issuing the following commands in a terminal,
+or including them in the appropriate ``rc`` file. For C shell (``~/.tcshrc`` file): ::
 
-For convenience, the Python interpreter will execute the contents of the
-|psirc| file in the current user's home area (if present) before performing any
-tasks in the input file. The primary use of the |psirc| file is to control the
-handling of scratch files.  |PSIfour| has a number of utilities that manage
+    setenv PSI_SCRATCH /scratch/user
+
+For Bash (``~/.bashrc`` file): ::
+
+    export PSI_SCRATCH=/scratch/user
+
+|PSIfour| has a number of utilities that manage
 input and output (I/O) of quantities to and from the hard disk.  Most
 quantities, such as molecular integrals, are intermediates that are not of
 interest to the user and can be deleted after the computation finishes, but
@@ -78,8 +84,8 @@ unless otherwise instructed by the user.
 
 A Python callable handle to the |PSIfour| I/O management routines is available,
 and is called ``psi4_io``.  To instruct the I/O manager to send all files to
-another location, say ``/scratch/user``, add the following command to the |psirc|
-file.::
+another location, say ``/scratch/user``, add the following command to your input
+file: ::
 
     psi4_io.set_default_path('/scratch/user')
 
@@ -109,7 +115,7 @@ A guide to the contents of individual scratch files may be found at :ref:`apdx:p
 To circumvent difficulties with running multiple jobs in the same scratch, the
 process ID (PID) of the |PSIfour| instance is incorporated into the full file
 name; therefore, it is safe to use the same scratch directory for calculations
-running simultaneously. This also means that if the user want |PSIfour| to use
+running simultaneously. This also means that if the user wants |PSIfour| to use
 information from a previous file, like molecular orbitals, he needs to provide the
 name of the file. This can be done through the ``restart_file`` option ::
 
@@ -123,22 +129,54 @@ are to be read, they need to be provided as a Python list ::
 
   energy('scf',restart_file=['./file1.filenumber','./file2.filenumber'])
 
-Note that the ``restart_file`` options is only available for energy procedures up to now.
+Note that the ``restart_file`` options is only available for energy procedures as of now.
 
-To override any of these defaults for selected jobs, simply place the
-appropriate commands from the snippets above in the input file itself.  During
-excecution, the |psirc| defaults will be loaded in first, but then the commands
-in the input file will be executed.  Executing |PSIfour| with the :option:`psi4 -m` (for
+Executing |PSIfour| with the :option:`psi4 -m` (for
 messy) flag will prevent files being deleted at the end of the run::
 
     psi4 -m
 
-Alternately, the scratch directory can be set through the environment
-variable :envvar:`PSI_SCRATCH` (overrides |psirc| settings). (First line
-for C shell; second line for bash.) ::
 
-     setenv PSI_SCRATCH /scratch/user
-     export PSI_SCRATCH=/scratch/user
+.. index:: psirc, psi4rc
+.. _`sec:psirc`:
+
+|psirc| File
+============
+
+If using the environment variable :envvar:`PSI_SCRATCH` is inconvenient,
+or if some ``psi4_io`` commands must be present in all input files,
+the |psirc| resource file can be used (example :source:`samples/example_psi4rc_file`). 
+
+All the commands mentioned in section :ref:`sec:Scratch` can be used in this file,
+namely: ::
+
+    psi4_io.set_default_path('/scratch/user')
+
+to set up the scratch path, ::
+
+    import os
+    scratch_dir = os.environ.get('MYSCRATCH')
+    if scratch_dir:
+        psi4_io.set_default_path(scratch_dir + '/')
+
+to set up the scratch path from a variable ``$MYSCRATCH``, ::
+
+    psi4_io.set_specific_path(32, './')
+    psi4_io.set_specific_retention(32, True)
+
+which is equivalent to ::
+
+    psi4_io.set_specific_path(PSIF_CHKPT, './')
+    psi4_io.set_specific_retention(PSIF_CHKPT, True)
+
+to set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it.
+
+The Python interpreter will execute the contents of the
+|psirc| file in the current user's home area (if present) before performing any
+tasks in the input file. As a consequence, the commands in the input files supersede
+any instructions in the |psirc| file. During
+excecution, the |psirc| defaults will be loaded in first, but then the commands
+in the input file will be executed.  
 
 The |psirc| file can also be used to define constants that are accessible
 in input files or to place any Python statements that should be executed
@@ -228,6 +266,110 @@ these integrals. For general DF algorithms, the user may specify::
 to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
 :py:func:`~p4util.util.set_num_threads` Psithon method or the default environmental variables.
+
+.. index:: PBS queueing system, threading
+.. _`sec:PBS`:
+
+PBS job file
+============
+
+To run a |PSIfour| job on a PBS queueing system, you need to properly set up
+all necessary variables in the PBS job file. Below is a minimal example of
+a PBS job file for a threaded job, and a short explanation for each section. ::
+
+    #!/bin/tcsh
+    #PBS -j oe
+    #PBS -l pmem=2120mb
+    #PBS -N jobname
+    #PBS -V
+    
+    
+    setenv OMP_NUM_THREADS 4
+    setenv MKL_NUM_THREADS 4
+    cd $PBS_O_WORKDIR
+    setenv myscratch /scratch/user/psi4.$PBS_JOBID
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Creating scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+        ssh $i mkdir -p $myscratch
+    end
+    
+    unsetenv PSI4DATADIR
+    unsetenv PSIDATADIR
+    setenv PSI_SCRATCH $myscratch
+    if ! ( $?PSIPATH ) setenv PSIPATH ""
+    setenv PSIPATH /path/to/external/modules:${PSIPATH}
+    setenv PSIPATH /path/to/python/modules:${PSIPATH}
+    /psi/install/directory/bin/psi4 -i input.in -o input.out
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Removing scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+    end
+
+The top section features PBS-specific commands. These depend on the 
+specific characteristics of your PBS queuing system but they may include: ::
+
+    #!/bin/tcsh
+    #PBS -j oe 
+    #PBS -l pmem=2120mb
+    #PBS -N jobname
+    #PBS -V
+    
+The ``PBS -j oe`` option instructs PBS to write any output or error message
+from the queuing system in dedicated files. ``PBS -l pmem=2120mb`` requests 
+2120 MB of memory for each thread on the node. The total memory requested for 
+the job by PBS should generally be slightly greater than what indicated 
+in the input file (see :ref:`memory setting <sec:memory>`).
+
+In the next section, we define :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
+to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
+
+    setenv OMP_NUM_THREADS 4
+    setenv MKL_NUM_THREADS 4
+
+Then, we move to the working directory using PBS variable ``$PBS_O_WORKDIR`` and 
+we create scratch directories on every node, using the ``$PBS_NODEFILE`` which 
+points to a file containing a list of the nodes attributed to the job. ::
+
+    cd $PBS_O_WORKDIR
+    setenv myscratch /scratch/user/psi4.$PBS_JOBID
+    
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Creating scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+        ssh $i mkdir -p $myscratch
+    end
+
+The next section is *very important* as it sets the environment variables needed
+by |PSIfour|: ::
+
+    unsetenv PSIDATADIR
+    setenv PSI_SCRATCH $myscratch
+    if ! ( $?PSIPATH ) setenv PSIPATH ""
+    setenv PSIPATH /path/to/external/modules:${PSIPATH}
+    setenv PSIPATH /path/to/python/modules:${PSIPATH}
+
+:envvar:`PSIDATADIR` does *not* need to be set if |PSIfour| has been *properly installed*.
+In the present example we unset it to make sure it does not interfere with the location
+of the installed directory. :envvar:`PSIPATH` is needed only if you are using external modules or 
+plugins in |PSIfour| and should point to the directories where they can be found. In the
+present example, we make sure the variable is set with ``if ! ( $?PSIPATH ) setenv PSIPATH ""``
+before adding more paths to it. Finally, :envvar:`PSI_SCRATCH` should point to a fast, 
+local disk for temporary file storage. The next step is then to actually run the computation: ::
+
+    /psi/install/directory/bin/psi4 -i input.in -o input.out
+
+And then to clean up the scratch directories previously created: ::
+
+    foreach i (`sort $PBS_NODEFILE | uniq`)
+        echo "Removing scratch directory " $myscratch " on " $i
+        ssh $i rm -rf $myscratch
+    end
+
+Note again that the specific commands for your PBS system may differ. Refer
+to your system administrator.
 
 .. _`sec:commandLineOptions`:
 
@@ -356,6 +498,20 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PSI_SCRATCH
 
    Directory where scratch files are written. Overrides settings in |psirc|.
+   It is very important to ensure that |PSIfour| is writing its scratch files 
+   to a disk drive physically attached to the computer running the computation. 
+   If it is not, it will significantly slow down the program and the network. 
+
+   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking ``psi4`` ::
+
+      # csh, tcsh
+      >>> setenv PSI_SCRATCH /scratch/user
+
+      # bash
+      >>> export PSI_SCRATCH=/scratch/user
+
+   You can also include the above commands in the respective ``rc`` file, i.e.
+   ``~/.tcshrc`` for csh and tcsh or ``~/.bashrc`` for Bash.
 
 .. envvar:: PSIPATH
 
@@ -381,7 +537,7 @@ These environment variables will influence |PSIfours| behavior.
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
 
-   Modify :envvar:`PSIPATH` though normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking ``psi4`` ::
 
       # csh, tcsh
       >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs

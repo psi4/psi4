@@ -13,7 +13,7 @@ refcisdt = -25.2134121049042   #TEST
 refmp3   = -25.2047480185847   #TEST
 refmp4   = -25.2109921859091   #TEST
 
-set globals {
+set {
   basis cc-pVDZ
   docc [3, 0, 0, 0]
 }

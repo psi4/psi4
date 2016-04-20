@@ -16,7 +16,7 @@ b1 = 1.0
 a1 = 60.0
 }
 
-set globals {
+set {
   reference uhf
   basis 6-31G(d,p)
   docc [2, 0, 0, 1]
