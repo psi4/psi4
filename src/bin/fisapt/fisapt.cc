@@ -1,3 +1,30 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
 #include <libmints/mints.h>
 #include <libmints/local.h>
 #include <libthce/thce.h>
@@ -636,7 +663,7 @@ void FISAPT::nuclear()
     //Zs->print();
     //Enucs->print();
 
-    outfile->Printf("    Nuclear Repulsion Tot: %24.16E [H]\n", Etot);
+    outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
     outfile->Printf("\n");
 }
 void FISAPT::coulomb()
@@ -1057,13 +1084,13 @@ void FISAPT::dHF()
 
     // => Print <= //
 
-    outfile->Printf("    E ABC = %24.16E [H]\n", EABC);
-    outfile->Printf("    E AC  = %24.16E [H]\n", EAC);
-    outfile->Printf("    E BC  = %24.16E [H]\n", EBC);
-    outfile->Printf("    E A   = %24.16E [H]\n", EA);
-    outfile->Printf("    E B   = %24.16E [H]\n", EB);
-    outfile->Printf("    E C   = %24.16E [H]\n", EC);
-    outfile->Printf("    E HF  = %24.16E [H]\n", EHF);
+    outfile->Printf("    E ABC = %24.16E [Eh]\n", EABC);
+    outfile->Printf("    E AC  = %24.16E [Eh]\n", EAC);
+    outfile->Printf("    E BC  = %24.16E [Eh]\n", EBC);
+    outfile->Printf("    E A   = %24.16E [Eh]\n", EA);
+    outfile->Printf("    E B   = %24.16E [Eh]\n", EB);
+    outfile->Printf("    E C   = %24.16E [Eh]\n", EC);
+    outfile->Printf("    E HF  = %24.16E [Eh]\n", EHF);
     outfile->Printf("\n");
 
     scalars_["HF"] = EHF;
@@ -1096,10 +1123,10 @@ void FISAPT::elst()
         Elst10 += Elst10_terms[k];
     }
     //for (int k = 0; k < Elst10_terms.size(); k++) {
-    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
+    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
     //}
     scalars_["Elst10,r"] = Elst10;
-    outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
+    outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n",Elst10);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -1158,11 +1185,11 @@ void FISAPT::exch()
         Exch10_2M += Exch10_2M_terms[k];
     }
     //for (int k = 0; k < Exch10_2M_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2M_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
-    //outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^2, DCBS only) <== //
@@ -1191,11 +1218,11 @@ void FISAPT::exch()
         Exch10_2 += Exch10_2_terms[k];
     }
     //for (int k = 0; k < Exch10_2_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
     //}
     scalars_["Exch10(S^2)"] = Exch10_2;
-    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
-    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
+    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^\infty, MCBS or DCBS) <== //
@@ -1285,11 +1312,11 @@ void FISAPT::exch()
         Exch10_n += Exch10_n_terms[k];
     }
     //for (int k = 0; k < Exch10_n_terms.size(); k++) {
-    //    outfile->Printf("    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
+    //    outfile->Printf("    Exch10 (%1d)          = %18.12lf [Eh]\n",k+1,Exch10_n_terms[k]);
     //}
     scalars_["Exch10"] = Exch10_n;
-    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
-    outfile->Printf("    Exch10              = %18.12lf H\n",Exch10_n);
+    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf [Eh]\n",Exch10_n);
+    outfile->Printf("    Exch10              = %18.12lf [Eh]\n",Exch10_n);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -1446,9 +1473,9 @@ void FISAPT::ind()
     scalars_["Ind20,u (A<-B)"] = Ind20u_AB;
     scalars_["Ind20,u (B<-A)"] = Ind20u_BA;
     scalars_["Ind20,u"] = Ind20u;
-    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
-    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf H\n",Ind20u_BA);
-    outfile->Printf("    Ind20,u             = %18.12lf H\n",Ind20u);
+    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf [Eh]\n",Ind20u_AB);
+    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf [Eh]\n",Ind20u_BA);
+    outfile->Printf("    Ind20,u             = %18.12lf [Eh]\n",Ind20u);
     //fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -1456,9 +1483,9 @@ void FISAPT::ind()
     double ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
     double ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
-    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
-    outfile->Printf("    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
+    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n",ExchInd20u_AB);
+    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n",ExchInd20u_BA);
+    outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n",ExchInd20u);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -1505,9 +1532,9 @@ void FISAPT::ind()
     scalars_["Ind20,r (A<-B)"] = Ind20r_AB;
     scalars_["Ind20,r (B<-A)"] = Ind20r_BA;
     scalars_["Ind20,r"] = Ind20r;
-    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
-    outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",Ind20r_AB);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",Ind20r_BA);
+    outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",Ind20r);
     //fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -1515,9 +1542,9 @@ void FISAPT::ind()
     double ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
     double ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
     double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-    outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",ExchInd20r_AB);
+    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",ExchInd20r_BA);
+    outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",ExchInd20r);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -2144,8 +2171,8 @@ void FISAPT::disp()
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    outfile->Printf("    Disp20              = %18.12lf H\n",Disp20);
-    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
+    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -2624,10 +2651,10 @@ void FISAPT::felst()
         Elst10 += Elst10_terms[k];
     }
     //for (int k = 0; k < Elst10_terms.size(); k++) {
-    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
+    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
     //}
     //scalars_["Elst10,r"] = Elst10;
-    outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
+    outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n",Elst10);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -2824,10 +2851,10 @@ void FISAPT::fexch()
         Exch10_2 += Exch10_2_terms[k];
     }
     //for (int k = 0; k < Exch10_2_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -3181,15 +3208,15 @@ void FISAPT::find()
     }
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
-    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
-    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf H\n",Ind20u_BA);
-    outfile->Printf("    Ind20,u             = %18.12lf H\n",Ind20u);
+    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf [Eh]\n",Ind20u_AB);
+    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf [Eh]\n",Ind20u_BA);
+    outfile->Printf("    Ind20,u             = %18.12lf [Eh]\n",Ind20u);
     //fflush(outfile);
 
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
-    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
-    outfile->Printf("    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
+    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n",ExchInd20u_AB);
+    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n",ExchInd20u_BA);
+    outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n",ExchInd20u);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -3327,15 +3354,15 @@ void FISAPT::find()
         }
 
         double Ind20r = Ind20r_AB + Ind20r_BA;
-        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-        outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
-        outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
+        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",Ind20r_AB);
+        outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",Ind20r_BA);
+        outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",Ind20r);
         //fflush(outfile);
 
         double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-        outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",ExchInd20r_AB);
+        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",ExchInd20r_BA);
+        outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",ExchInd20r);
         outfile->Printf("\n");
         //fflush(outfile);
 
@@ -3942,8 +3969,8 @@ void FISAPT::fdisp()
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    outfile->Printf("    Disp20              = %18.12lf H\n",Disp20);
-    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
+    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -4277,7 +4304,7 @@ void FISAPTSCF::compute_energy()
 
     // => Print Final Info <= //
 
-    outfile->Printf("    Final SCF Energy: %24.16E [H]\n\n", scalars_["E SCF"]);
+    outfile->Printf("    Final SCF Energy: %24.16E [Eh]\n\n", scalars_["E SCF"]);
 
     print_orbitals("Occupied Orbital Energies", 1, eps_occ);
     print_orbitals("Virtual Orbital Energies", nocc+1, eps_vir);

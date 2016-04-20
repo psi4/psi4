@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2.h"
@@ -31,7 +36,7 @@ void SAPT2::elst12()
     foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Elst120,r           = %18.12lf H\n",e_elst120);
+    outfile->Printf("    Elst120,r           = %18.12lf [Eh]\n",e_elst120);
   }
 
   double e_elst102 = elst120(wABB_,wASS_,CHFB_,PSIF_SAPT_AMPS,
@@ -39,13 +44,13 @@ void SAPT2::elst12()
     foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Elst102,r           = %18.12lf H\n\n",e_elst102);
+    outfile->Printf("    Elst102,r           = %18.12lf [Eh]\n\n",e_elst102);
   }
 
   e_elst12_ = e_elst120 + e_elst102;
 
   if (print_) {
-    outfile->Printf("    Elst12,r            = %18.12lf H\n",e_elst12_);
+    outfile->Printf("    Elst12,r            = %18.12lf [Eh]\n",e_elst12_);
     
   }
 }
@@ -82,9 +87,9 @@ double SAPT2::elst120(double **wBAA, double **wBRR, double **CHFA, int ampfile,
   free_block(yAR);
 
   if (debug_) {
-    outfile->Printf("\n    Elst12_1            = %18.12lf H\n",e1);
-    outfile->Printf("    Elst12_2            = %18.12lf H\n",e2);
-    outfile->Printf("    Elst12_3            = %18.12lf H\n",e3);
+    outfile->Printf("\n    Elst12_1            = %18.12lf [Eh]\n",e1);
+    outfile->Printf("    Elst12_2            = %18.12lf [Eh]\n",e2);
+    outfile->Printf("    Elst12_3            = %18.12lf [Eh]\n",e3);
   }
 
   return(e1+e2+e3);
