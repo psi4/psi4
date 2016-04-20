@@ -33,6 +33,12 @@ void export_oeprop()
         def(init<boost::shared_ptr<Wavefunction> >()).
         def("add", &OEProp::oepy_add, "docstring").
         def("compute", &OEProp::oepy_compute, "docstring").
+        def("set_Da_ao", &OEProp::set_Da_ao, "docstring").
+        def("set_Db_ao", &OEProp::set_Db_ao, "docstring").
+        def("set_Da_so", &OEProp::set_Da_so, "docstring").
+        def("set_Db_so", &OEProp::set_Db_so, "docstring").
+        def("set_Da_mo", &OEProp::set_Da_mo, "docstring").
+        def("set_Db_mo", &OEProp::set_Db_mo, "docstring").
         def("set_title", &OEProp::oepy_set_title, "docstring");
 
     //class_<GridProp, boost::shared_ptr<GridProp> >("GridProp", "docstring").
@@ -52,4 +58,3 @@ void export_oeprop()
     //    def("set_format", &GridProp::set_format, "docstring").
     //    def("compute", &GridProp::gridpy_compute, "docstring");
 }
-
