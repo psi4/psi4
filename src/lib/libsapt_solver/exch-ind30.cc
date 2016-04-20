@@ -82,14 +82,14 @@ void SAPT2p3::exch_ind30()
   e_exch_ind30_ = ex_1 + ex_2 + ex_3 + ex_4 + ex_5;
 
   if (debug_) {
-    outfile->Printf("\n    Exch-Ind_1          = %18.12lf H\n",ex_1);
-    outfile->Printf("    Exch-Ind_2          = %18.12lf H\n",ex_2);
-    outfile->Printf("    Exch-Ind_3          = %18.12lf H\n",ex_3);
-    outfile->Printf("    Exch-Ind_4          = %18.12lf H\n",ex_4);
-    outfile->Printf("    Exch-Ind_5          = %18.12lf H\n",ex_5);
+    outfile->Printf("\n    Exch-Ind_1          = %18.12lf [Eh]\n",ex_1);
+    outfile->Printf("    Exch-Ind_2          = %18.12lf [Eh]\n",ex_2);
+    outfile->Printf("    Exch-Ind_3          = %18.12lf [Eh]\n",ex_3);
+    outfile->Printf("    Exch-Ind_4          = %18.12lf [Eh]\n",ex_4);
+    outfile->Printf("    Exch-Ind_5          = %18.12lf [Eh]\n",ex_5);
   }
   if (print_) {
-    outfile->Printf("    Exch-Ind30          = %18.12lf H\n",e_exch_ind30_);
+    outfile->Printf("    Exch-Ind30          = %18.12lf [Eh]\n",e_exch_ind30_);
     
   }
 }

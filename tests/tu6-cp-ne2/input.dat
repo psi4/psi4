@@ -26,7 +26,7 @@ for R in Rvals:
 
 psi4.print_out("\n")
 psi4.print_out("CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n")
-psi4.print_out("        R (Ang)         E_int (kcal/mol)             \n")
+psi4.print_out("        R [Ang]         E_int [kcal/mol]             \n")
 psi4.print_out("-----------------------------------------------------\n")
 for R in Rvals:
   e = ecp[R] * psi_hartree2kcalmol

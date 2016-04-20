@@ -44,7 +44,7 @@ void CCMRCC::print_mrccsd_energy(int cycle)
     print_method("\tMultireference Coupled Cluster\n\t\tUsing the DPD Library");
     outfile->Printf("\n  ------------------------------------------------------------------------------");
     outfile->Printf("\n  @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS");
-    outfile->Printf("\n  @CC           (Hartree)       (Hartree)                           (Sec)");
+    outfile->Printf("\n  @CC             [Eh]            [Eh]                               (Sec)");
     outfile->Printf("\n  ------------------------------------------------------------------------------");
   }
   if(cycle>=0){

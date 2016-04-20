@@ -676,36 +676,36 @@ void EFP::compute() {
     outfile->Printf("\n");
     outfile->Printf("    EFP Results\n");
     outfile->Printf("  ------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics                %20.12f [H] %s\n", energy.electrostatic +
+    outfile->Printf("    Electrostatics                %20.12f [Eh] %s\n", energy.electrostatic +
                                                                           energy.charge_penetration +
                                                                           energy.electrostatic_point_charges,
                                                                           (elst_enabled_ || qm_elst_enabled_) ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.electrostatic + energy.charge_penetration,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.electrostatic + energy.charge_penetration,
                                                                           elst_enabled_ ? "*" : "");
-    outfile->Printf("      QM-Nuc/EFP                  %20.12f [H] %s\n", energy.electrostatic_point_charges,
+    outfile->Printf("      QM-Nuc/EFP                  %20.12f [Eh] %s\n", energy.electrostatic_point_charges,
                                                                           qm_elst_enabled_ ? "*" : "");
     outfile->Printf("\n");
-    outfile->Printf("    Exchange                      %20.12f [H] %s\n", energy.exchange_repulsion,
+    outfile->Printf("    Exchange                      %20.12f [Eh] %s\n", energy.exchange_repulsion,
                                                                           exch_enabled_ ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.exchange_repulsion,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.exchange_repulsion,
                                                                           exch_enabled_ ? "*" : "");
-    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+    outfile->Printf("      QM/EFP                      %20.12f [Eh] %s\n", 0.0,
                                                                           "");
     outfile->Printf("\n");
-    outfile->Printf("    Induction                     %20.12f [H] %s\n", energy.polarization,
+    outfile->Printf("    Induction                     %20.12f [Eh] %s\n", energy.polarization,
                                                                           (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
-    outfile->Printf(   "      %-7s                     %20.12f [H] %s\n", qm_pol_enabled_ ? "QM/EFP" : "EFP/EFP",
+    outfile->Printf(   "      %-7s                     %20.12f [Eh] %s\n", qm_pol_enabled_ ? "QM/EFP" : "EFP/EFP",
                                                                           energy.polarization,
                                                                           (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
     outfile->Printf("\n");
-    outfile->Printf("    Dispersion                    %20.12f [H] %s\n", energy.dispersion,
+    outfile->Printf("    Dispersion                    %20.12f [Eh] %s\n", energy.dispersion,
                                                                           disp_enabled_ ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.dispersion,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.dispersion,
                                                                           disp_enabled_ ? "*" : "");
-    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+    outfile->Printf("      QM/EFP                      %20.12f [Eh] %s\n", 0.0,
                                                                           "");
     outfile->Printf("\n");
-    outfile->Printf("    Total EFP                     %20.12f [H]\n",    energy.total);
+    outfile->Printf("    Total EFP                     %20.12f [Eh]\n",    energy.total);
 
 }
 

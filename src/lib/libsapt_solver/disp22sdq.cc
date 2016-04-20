@@ -34,7 +34,7 @@ void SAPT2p::disp22sdq()
   double e_disp211 = disp211();
 
   if (debug_) {
-    outfile->Printf("    Disp211             = %18.12lf H\n",e_disp211);
+    outfile->Printf("    Disp211             = %18.12lf [Eh]\n",e_disp211);
     
   }
 
@@ -43,7 +43,7 @@ void SAPT2p::disp22sdq()
     "RR RI Integrals",foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Disp220 (S)         = %18.12lf H\n",e_disp220s);
+    outfile->Printf("    Disp220 (S)         = %18.12lf [Eh]\n",e_disp220s);
     
   }
 
@@ -52,7 +52,7 @@ void SAPT2p::disp22sdq()
     "SS RI Integrals",foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Disp202 (S)         = %18.12lf H\n",e_disp202s);
+    outfile->Printf("    Disp202 (S)         = %18.12lf [Eh]\n",e_disp202s);
     
   }
 
@@ -64,7 +64,7 @@ void SAPT2p::disp22sdq()
     foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_,evalsA_,evalsB_,'N');
 
   if (debug_) {
-    outfile->Printf("    Disp220 (D)         = %18.12lf H\n",e_disp220d);
+    outfile->Printf("    Disp220 (D)         = %18.12lf [Eh]\n",e_disp220d);
     
   }
 
@@ -76,7 +76,7 @@ void SAPT2p::disp22sdq()
     foccB_,noccB_,nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_,'T');
 
   if (debug_) {
-    outfile->Printf("    Disp202 (D)         = %18.12lf H\n",e_disp202d);
+    outfile->Printf("    Disp202 (D)         = %18.12lf [Eh]\n",e_disp202d);
     
   }
 
@@ -93,7 +93,7 @@ void SAPT2p::disp22sdq()
     foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Disp220 (Q)         = %18.12lf H\n",e_disp220q);
+    outfile->Printf("    Disp220 (Q)         = %18.12lf [Eh]\n",e_disp220q);
     
   }
 
@@ -110,7 +110,7 @@ void SAPT2p::disp22sdq()
     foccB_,noccB_,nvirB_,foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Disp202 (Q)         = %18.12lf H\n\n",e_disp202q);
+    outfile->Printf("    Disp202 (Q)         = %18.12lf [Eh]\n\n",e_disp202q);
     
   }
 
@@ -118,7 +118,7 @@ void SAPT2p::disp22sdq()
     e_disp202d + e_disp220q + e_disp202q;
 
   if (print_) {
-    outfile->Printf("    Disp22 (SDQ)        = %18.12lf H\n",e_disp22sdq_);
+    outfile->Printf("    Disp22 (SDQ)        = %18.12lf [Eh]\n",e_disp22sdq_);
     
   }
 }
@@ -257,7 +257,7 @@ double SAPT2p::disp220d_1(int ampfile, const char *tlabel,
   free(xARAR);
 
   if (debug_) {
-    outfile->Printf("\n    Disp22d_1           = %18.12lf H\n",energy);
+    outfile->Printf("\n    Disp22d_1           = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -327,7 +327,7 @@ double SAPT2p::disp220d_2(int ampfile, const char *glabel,
   free_block(B_p_BS);
 
   if (debug_) {
-    outfile->Printf("    Disp22d_2           = %18.12lf H\n",energy);
+    outfile->Printf("    Disp22d_2           = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -366,7 +366,7 @@ double SAPT2p::disp220q_1(int ampfile, const char *tlabel,
   free_block(xARAR);
 
   if (debug_) {
-    outfile->Printf("\n    Disp22q_1           = %18.12lf H\n",energy);
+    outfile->Printf("\n    Disp22q_1           = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -415,7 +415,7 @@ double SAPT2p::disp220q_2(int ampfile, const char *pAAlabel,
   free_block(qRR);
 
   if (debug_) {
-    outfile->Printf("    Disp22q_2           = %18.12lf H\n",energy);
+    outfile->Printf("    Disp22q_2           = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -480,7 +480,7 @@ double SAPT2p::disp220q_3(int ampfile, const char *tARARlabel,
   free_block(B_p_AR);
 
   if (debug_) {
-    outfile->Printf("    Disp22q_3           = %18.12lf H\n",energy);
+    outfile->Printf("    Disp22q_3           = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -564,7 +564,7 @@ double SAPT2p::disp220q_4(int ampfile, const char *tARARlabel,
   free_block(sRR);
 
   if (debug_) {
-    outfile->Printf("    Disp22q_4           = %18.12lf H\n",energy);
+    outfile->Printf("    Disp22q_4           = %18.12lf [Eh]\n",energy);
     
   }
 

@@ -66,7 +66,7 @@ void SAPT2p3::disp30()
   }
 
   if (print_) {
-    outfile->Printf("    Disp30              = %18.12lf H\n",e_disp30_);
+    outfile->Printf("    Disp30              = %18.12lf [Eh]\n",e_disp30_);
     
   }
 }
