@@ -7,7 +7,7 @@ molecule bh {
 }
 
 
-set globals {
+set {
   basis cc-pVDZ
   docc [3, 0, 0, 0]
 }

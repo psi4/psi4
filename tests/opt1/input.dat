@@ -16,7 +16,7 @@ molecule h2o {
 #H           0.758081    0.000000   -0.497635
 }
 
-set globals {
+set {
   diis false
   basis sto-3g
   e_convergence 10

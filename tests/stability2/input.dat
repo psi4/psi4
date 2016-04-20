@@ -31,7 +31,7 @@ molecule cn {
    R = 1.175
 }
 
-set globals = {
+set = {
   reference = rohf
   scf_type pk
   docc = [4, 0, 1, 1]

@@ -22,7 +22,7 @@ molecule ne {
 }
 
 # Compute CISD and use CISD NO's
-set globals {
+set {
   wfn detci
   basis cc-pVQZ
   d_convergence 10
@@ -39,7 +39,7 @@ thisenergy, this_wfn = energy('detci', return_wfn=True)
 
 ## Now, run the RASCI
 
-set globals {
+set {
   wfn detci
   d_convergence 10
   docc            [2, 0, 0, 0, 0, 1, 1, 1]
