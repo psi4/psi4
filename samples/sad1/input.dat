@@ -12,7 +12,7 @@ molecule h2o {
     H 1 1.0 2 90
 }
 
-set globals {
+set {
     basis     cc-pvdz
     guess     sad
     scf_type  direct

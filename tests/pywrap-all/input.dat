@@ -22,7 +22,7 @@ molecule h2 {
     H 1 1.00
 }
 
-set globals {
+set {
     BASIS 3-21G
     REFERENCE RHF
     SCF_TYPE PK

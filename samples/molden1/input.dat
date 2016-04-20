@@ -44,7 +44,7 @@ molecule h2o {
     H 1 1.0 2 90
 }
 
-set globals {
+set {
     basis     6-31G
     frozen_docc     [1, 0, 0, 0]
     active          [3, 0, 1, 2]

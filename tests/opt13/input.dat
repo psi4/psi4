@@ -22,7 +22,7 @@ H          4.24594        4.99166       -2.95361
 
 memory 1 Gb
 
-set globals {
+set {
   guess sad
   basis cc-pVDZ
 }

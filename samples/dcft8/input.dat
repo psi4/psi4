@@ -21,7 +21,7 @@ H 1 r 2 TDA 4 120
 r = 1.09
 }
 
-set globals {
+set {
     r_convergence 12
     d_convergence 12
     ao_basis    disk

@@ -10,7 +10,7 @@ h 1 0.958
 h 1 0.958 2 104.4776 
 }
 
-set globals {
+set {
     basis cc-pvdz
 }
 

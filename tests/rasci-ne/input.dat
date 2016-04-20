@@ -26,7 +26,7 @@ molecule ne {
 }
 
 # Compute CISD and use CISD NO's
-set globals {
+set {
   wfn detci
   basis cc-pVQZ
   d_convergence 10
@@ -51,7 +51,7 @@ refscf   = -128.5434696591    #TEST
 refci    = -128.8398832876687 #TEST
 refcorr  = refci - refscf     #TEST
 
-set globals {
+set {
   wfn detci
   d_convergence 10
   docc            [2, 0, 0, 0, 0, 1, 1, 1]

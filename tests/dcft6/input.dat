@@ -26,7 +26,7 @@ units bohr
 R = 2.000
 }
 
-set globals {
+set {
     r_convergence 12
     d_convergence 12
     ao_basis    none

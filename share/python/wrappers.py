@@ -2100,7 +2100,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if 'name' in kwargs:
-        if not(lowername == ['scf', 'c4-scf']):
+        if lowername not in ['scf', 'c4-scf']:
             do_corl = True
             cbs_corl_wfn = kwargs['name'].lower()
     if 'corl_wfn' in kwargs:
