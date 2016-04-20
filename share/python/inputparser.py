@@ -659,8 +659,8 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(comment, '#', temp)
 
     # Check the brackets and parentheses match up, as long as this is not a pickle input file
-    if not re.search(r'pickle_kw', temp):
-        check_parentheses_and_brackets(temp, 1)
+    #if not re.search(r'pickle_kw', temp):
+    #    check_parentheses_and_brackets(temp, 1)
 
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')

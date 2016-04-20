@@ -181,11 +181,9 @@ procedures = {
         'property' : {
             'hf'       : run_scf_property,
             'scf'      : run_scf_property,
-            'hf'       : run_scf_property,
+            'mp2'      : select_mp2_property,
             'cc2'      : run_cc_property,
             'ccsd'     : run_cc_property,
-            'mp2'      : select_mp2_property,
-            'omp2'     : select_omp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
@@ -194,6 +192,8 @@ procedures = {
             'cisdtq'   : run_detci_property,
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
+            'rasscf'   : run_detci_property,
+            'casscf'   : run_detci_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -1071,8 +1071,6 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | ocepa(0)                | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ_oo>`                            |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:occ_oo>`                                           |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>` :ref:`[details] <tllccsd>`        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | fno-cepa(0)             | CEPA(0) with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                              |
@@ -1554,21 +1552,22 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | mp2                | MP2 ('mp2_type df' only)                      | RHF            | Listed :ref:`here <sec:oeprop>`                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
-    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | df-mp2             | MP2 with density fitting                      | RHF            | dipole, quadrupole, mulliken_charges, no_occupations          |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | cisd, cisdt,       | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
-    | cisdt, cisdtq,     |                                               |                |                                                               |
-    | ci5, etc...        |                                               |                |                                                               |
+    | cisd, cisdt,       | Configuration interaction                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
+    | cisdt, cisdtq,     |                                               |                | transition_quadrupole                                         |
+    | ci5, ..., fci      |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | fci                | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | casscf, rasscf     | Multi-configurational SCF                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
+    |                    |                                               |                | transition_quadrupole                                         |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: string

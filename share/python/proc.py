@@ -164,14 +164,14 @@ def select_mp2_property(name, **kwargs):
     func = None
     if reference == 'RHF':
         if mtd_type == 'DF':
-            if module == 'OCC':
-                func = run_dfocc_property
-            elif module in ['', 'DFMP2']:
+            #if module == 'OCC':
+            #    func = run_dfocc_property
+            if module in ['', 'DFMP2']:
                 func = run_dfmp2_property
-    elif reference == 'UHF':
-        if mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_property
+    #elif reference == 'UHF':
+    #    if mtd_type == 'DF':
+    #        if module in ['', 'OCC']:
+    #            func = run_dfocc_property
 
     if func is None:
         raise ManagedMethodError(['select_mp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
@@ -2255,6 +2255,7 @@ def run_dfmp2_property(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         kwargs["scf_do_dipole"] = False
+        kwargs['use_c1'] = True
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     psi4.print_out('\n')
@@ -2289,115 +2290,81 @@ def run_detci_property(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['DETCI', 'WFN'],
-        ['DETCI', 'MAX_NUM_VECS'],
-        ['DETCI', 'MPN_ORDER_SAVE'],
-        ['DETCI', 'MPN'],
-        ['DETCI', 'FCI'],
-        ['DETCI', 'EX_LEVEL'],
-        ['PRINT'],
         ['OPDM'],
         ['TDM'])
 
-    oneel_properties = ['dipole', 'quadrupole']
-    excited_properties = ['transition_dipole', 'transition_quadrupole']
 
-    one = []
-    excited = []
-    invalid = []
+    # Find valid properties
+    valid_transition = ['TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
 
-    if 'properties' in kwargs:
-        properties = kwargs.pop('properties')
-        properties = p4util.drop_duplicates(properties)
+    ci_prop = []
+    ci_trans = []
+    properties = kwargs.pop('properties')
+    for prop in properties:
+        if prop.upper() in valid_transition:
+            ci_trans.append(prop)
+        else:
+            ci_prop.append(prop)
 
-        for prop in properties:
-            if prop in oneel_properties:
-                one.append(prop)
-            elif prop in excited_properties:
-                excited.append(prop)
-            else:
-                invalid.append(prop)
-    else:
-        raise ValidationError("""The "properties" keyword is required with the property() function.""")
+    proc_util.oeprop_validator(ci_prop)
 
-    n_one = len(one)
-    n_excited = len(excited)
-    n_invalid = len(invalid)
-
-    if n_invalid > 0:
-        print("The following properties are not currently supported: %s" % invalid)
-
-    if ('quadrupole' in one) or ('transition_quadrupole' in excited):
-        psi4.set_global_option('PRINT', 2)
-
-    if n_one > 0:
-        psi4.set_global_option('OPDM', 'TRUE')
-
-    if n_excited > 0:
+    psi4.set_global_option('OPDM', 'TRUE')
+    if len(ci_trans) > 0:
         psi4.set_global_option('TDM', 'TRUE')
 
-    if psi4.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
-        raise ValidationError("""Reference %s for DETCI is not available.""" % 
-            psi4.get_option('DETCI', 'REFERENCE'))
+    # Compute
+    if name in ['mcscf', 'rasscf', 'casscf']:
+        ciwfn = run_detcas(name, **kwargs)
+    else:
+        ciwfn = run_detci(name, **kwargs) 
 
-    if name == 'zapt':
-        psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
-        level = kwargs['level']
-        maxnvect = int((level + 1) / 2) + (level + 1) % 2
-        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
-        if (level + 1) % 2:
-            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
-        else:
-            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif name in ['mp', 'mp2', 'mp3', 'mp4']:
-        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4.set_local_option('DETCI', 'MPN', 'TRUE')
-        if name == 'mp2':
-            level = 2
-        elif name == 'mp3':
-            level = 3
-        elif name == 'mp4':
-            level = 4
-        else:
-            level = kwargs['level']
-        maxnvect = int((level + 1) / 2) + (level + 1) % 2
-        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
-        if (level + 1) % 2:
-            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
-        else:
-            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif name == 'fci':
-            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-            psi4.set_local_option('DETCI', 'FCI', 'TRUE')
-    elif name == 'cisd':
-            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-            psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
-    elif name == 'cisdt':
-            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-            psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
-    elif name == 'cisdtq':
-            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-            psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
-    elif name == 'ci':
-        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
-        level = kwargs['level']
-        psi4.set_local_option('DETCI', 'EX_LEVEL', level)
-    # Call a plain energy('detci') and have full control over options
-    elif name == 'detci':
-        pass
+    # All property names are just CI
+    if 'CI' in name.upper():
+        name = 'CI'
 
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-            psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    states = psi4.get_global_option('avg_states')
+    nroots = psi4.get_global_option('num_roots')
+    if len(states) != nroots:
+        states = range(1, nroots + 1) 
 
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    # Run OEProp
+    oe = psi4.OEProp(ciwfn)
+    oe.set_title(name.upper())
+    for prop in ci_prop:
+        oe.add(prop.upper())
 
-    ciwfn = psi4.detci(ref_wfn)
+    # Compute "the" CI density
+    oe.compute()
+
+    # If we have more than one root, compute all data
+    if nroots > 1:
+        psi4.print_out("\n   ===> %s properties for all CI roots <=== \n\n" % name.upper())
+        for root in states:
+            oe.set_title("%s ROOT %d" % (name.upper(), root))
+            root = root - 1
+            if ciwfn.same_a_b_dens():
+                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True)) 
+            else:
+                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True)) 
+                oe.set_Db_mo(ciwfn.get_opdm(root, root, "B", True)) 
+            oe.compute()
+
+    # Transition density matrices
+    if (nroots > 1) and len(ci_trans):
+        oe.clear()
+        for tprop in ci_trans:
+            oe.add(tprop.upper())
+
+        psi4.print_out("\n   ===> %s properties for all CI transition density matrices <=== \n\n" % name.upper())
+        for root in states[1:]:
+            oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 1, root))
+            root = root - 1
+            if ciwfn.same_a_b_dens():
+                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True)) 
+            else:
+                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True)) 
+                oe.set_Db_mo(ciwfn.get_opdm(0, root, "B", True)) 
+            oe.compute()
 
     optstash.restore()
     return ciwfn
