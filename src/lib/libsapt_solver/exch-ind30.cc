@@ -333,8 +333,4 @@ double SAPT2p3::exch_ind30_3(double **sBS)
   return(energy);
 }
 
-<<<<<<< HEAD
 }}
-=======
-}}
->>>>>>> d4dd016eccc842167b25d1a26e163c99e78cbfd4
