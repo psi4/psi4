@@ -183,7 +183,7 @@ procedures = {
             'scf'      : run_scf_property,
             'cc2'      : run_cc_property,
             'ccsd'     : run_cc_property,
-            'df-mp2'   : run_dfmp2_property,
+            'mp2'      : run_dfmp2_property,
             'dfmp2'    : run_dfmp2_property,
             'ri-mp2'   : run_dfocc_property,
             'df-omp2'  : run_dfocc_property,
@@ -1967,6 +1967,8 @@ def hessian(name, **kwargs):
     finite difference of energies.
 
     """
+    lowername = name.lower()
+
     # Check if this is a CBS extrapolation
     if "/" in lowername:
         return _cbs_gufunc('hessian', lowername, **kwargs)

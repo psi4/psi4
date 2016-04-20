@@ -1786,7 +1786,7 @@ def run_dfmp2_gradient(name, **kwargs):
         psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     if psi4.get_option('SCF', 'SCF_TYPE') != 'DF':
-        raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
+        raise ValidationError('DF-MP2 gradients need DF-SCF reference.')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1800,8 +1800,6 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
     dfmp2_wfn.set_gradient(grad)
-    e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
-    e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
     return dfmp2_wfn
@@ -2185,27 +2183,28 @@ def run_dfmp2_property(name, **kwargs):
         psi4.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     if not psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
-        raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
+        raise ValidationError('DF-MP2 properties need DF-SCF reference.')
+
+    properties = kwargs.pop('properties')
+    proc_util.oeprop_validator(properties)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
+        kwargs["scf_do_dipole"] = False
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    psi4.print_out('\n')
-    p4util.banner('DFMP2')
-    psi4.print_out('\n')
-
-    dfmp2_wfn = psi4.dfmp2grad(ref_wfn)
-    e_dfmp2 = psi4.get_variable('MP2 TOTAL ENERGY')
-    e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
+    dfmp2_wfn = psi4.dfmp2(ref_wfn)
+    grad = dfmp2_wfn.compute_gradient()
 
     optstash.restore()
 
-    # TODO not nearly enough. E not set in wfn. CURR CORL not set. etc.
-    if name.upper() == 'SCS-MP2':
-        psi4.set_variable('CURRENT ENERGY', e_scs_dfmp2)
-    elif name.upper() in ['DF-MP2', 'DFMP2', 'MP2']:
-        psi4.set_variable('CURRENT ENERGY', e_dfmp2)
+    # Run OEProp
+    oe = psi4.OEProp(dfmp2_wfn)
+    oe.set_title(name.upper())
+    for prop in properties:
+        oe.add(prop.upper())
+    oe.compute()
+
     return dfmp2_wfn
 
 
