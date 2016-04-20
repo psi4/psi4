@@ -486,12 +486,12 @@ double HF::finalize_E()
                                             Process::environment.globals["EFP IND ENERGY"];
         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
-        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", E_);
 
         E_ += efp_wfn_independent_energy;
 
-        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
+        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", E_);
     }
 
 

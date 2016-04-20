@@ -96,7 +96,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
   print_method("  Second-order Mukherjee Multireference Perturbation Theory (Mk-MRPT2)\n    Using the DPD Library");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
   outfile->Printf("\n    @PT  Cycle         Energy           Delta E   ");
-  outfile->Printf("\n    @PT               (Hartree)        (Hartree)  ");
+  outfile->Printf("\n    @PT                 [Eh]             [Eh]  ");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
   
 

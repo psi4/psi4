@@ -75,12 +75,12 @@ void SAPT2p3::ind_disp30()
   e_ind_disp30_ = inddisp_1 + inddisp_2 + inddisp_3;
 
   if (debug_) {
-    outfile->Printf("\n    Ind-Disp30_1        = %18.12lf H\n",inddisp_1);
-    outfile->Printf("    Ind-Disp30_2        = %18.12lf H\n",inddisp_2);
-    outfile->Printf("    Ind-Disp30_3        = %18.12lf H\n",inddisp_3);
+    outfile->Printf("\n    Ind-Disp30_1        = %18.12lf [Eh]\n",inddisp_1);
+    outfile->Printf("    Ind-Disp30_2        = %18.12lf [Eh]\n",inddisp_2);
+    outfile->Printf("    Ind-Disp30_3        = %18.12lf [Eh]\n",inddisp_3);
   }
   if (print_) {
-    outfile->Printf("    Ind-Disp30          = %18.12lf H\n",e_ind_disp30_);
+    outfile->Printf("    Ind-Disp30          = %18.12lf [Eh]\n",e_ind_disp30_);
     
   }
 }

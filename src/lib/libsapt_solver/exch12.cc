@@ -34,35 +34,35 @@ void SAPT2::exch12()
   double e_exch111 = exch111();
 
   if (debug_) {
-    outfile->Printf("    Exch111             = %18.12lf H\n",e_exch111);
+    outfile->Printf("    Exch111             = %18.12lf [Eh]\n",e_exch111);
     
   }
 
   double e_exch120_k2u = exch110(PSIF_SAPT_AMPS,"Theta 2 AR Intermediates");
 
   if (debug_) {
-    outfile->Printf("    Exch120 K2u         = %18.12lf H\n",e_exch120_k2u);
+    outfile->Printf("    Exch120 K2u         = %18.12lf [Eh]\n",e_exch120_k2u);
     
   }
 
   double e_exch102_k2u = exch101(PSIF_SAPT_AMPS,"Theta 2 BS Intermediates");
 
   if (debug_) {
-    outfile->Printf("    Exch102 K2u         = %18.12lf H\n",e_exch102_k2u);
+    outfile->Printf("    Exch102 K2u         = %18.12lf [Eh]\n",e_exch102_k2u);
     
   }
 
   double e_exch120_k2f = exch120_k2f();
 
   if (debug_) {
-    outfile->Printf("    Exch120 K2f         = %18.12lf H\n",e_exch120_k2f);
+    outfile->Printf("    Exch120 K2f         = %18.12lf [Eh]\n",e_exch120_k2f);
     
   }
 
   double e_exch102_k2f = exch102_k2f();
 
   if (debug_) {
-    outfile->Printf("    Exch102 K2f         = %18.12lf H\n",e_exch102_k2f);
+    outfile->Printf("    Exch102 K2f         = %18.12lf [Eh]\n",e_exch102_k2f);
     
   }
 
@@ -74,7 +74,7 @@ void SAPT2::exch12()
   e_exch120_k11u += exch120_k11u_6();
 
   if (debug_) {
-    outfile->Printf("    Exch120 K11u        = %18.12lf H\n",e_exch120_k11u);
+    outfile->Printf("    Exch120 K11u        = %18.12lf [Eh]\n",e_exch120_k11u);
     
   }
 
@@ -86,7 +86,7 @@ void SAPT2::exch12()
   e_exch102_k11u += exch102_k11u_6();
 
   if (debug_) {
-    outfile->Printf("    Exch102 K11u        = %18.12lf H\n\n",e_exch102_k11u);
+    outfile->Printf("    Exch102 K11u        = %18.12lf [Eh]\n\n",e_exch102_k11u);
     
   }
 
@@ -94,7 +94,7 @@ void SAPT2::exch12()
     e_exch102_k2u + e_exch120_k11u + e_exch102_k11u; 
 
   if (print_) {
-    outfile->Printf("    Exch12              = %18.12lf H\n",e_exch12_);
+    outfile->Printf("    Exch12              = %18.12lf [Eh]\n",e_exch12_);
     
   }
 }
@@ -149,8 +149,8 @@ double SAPT2::exch111()
   free_block(C_p_BS);
 
   if (debug_) {
-    outfile->Printf("\n    Exch111_1           = %18.12lf H\n",e1);
-    outfile->Printf("    Exch111_2           = %18.12lf H\n",e2);
+    outfile->Printf("\n    Exch111_1           = %18.12lf [Eh]\n",e1);
+    outfile->Printf("    Exch111_2           = %18.12lf [Eh]\n",e2);
     
 
   }
@@ -261,13 +261,13 @@ double SAPT2::exch120_k2f()
   free_block(tAR);
 
   if (debug_) {
-    outfile->Printf("\n    Exch12_k2f_1        = %18.12lf H\n",e1);
-    outfile->Printf("    Exch12_k2f_2        = %18.12lf H\n",e2);
-    outfile->Printf("    Exch12_k2f_3        = %18.12lf H\n",e3);
-    outfile->Printf("    Exch12_k2f_4        = %18.12lf H\n",e4);
-    outfile->Printf("    Exch12_k2f_5        = %18.12lf H\n",e5);
-    outfile->Printf("    Exch12_k2f_6        = %18.12lf H\n",e6);
-    outfile->Printf("    Exch12_k2f_7        = %18.12lf H\n",e7);
+    outfile->Printf("\n    Exch12_k2f_1        = %18.12lf [Eh]\n",e1);
+    outfile->Printf("    Exch12_k2f_2        = %18.12lf [Eh]\n",e2);
+    outfile->Printf("    Exch12_k2f_3        = %18.12lf [Eh]\n",e3);
+    outfile->Printf("    Exch12_k2f_4        = %18.12lf [Eh]\n",e4);
+    outfile->Printf("    Exch12_k2f_5        = %18.12lf [Eh]\n",e5);
+    outfile->Printf("    Exch12_k2f_6        = %18.12lf [Eh]\n",e6);
+    outfile->Printf("    Exch12_k2f_7        = %18.12lf [Eh]\n",e7);
     
   }
 
@@ -384,13 +384,13 @@ double SAPT2::exch102_k2f()
   free_block(tBS);
 
   if (debug_) {
-    outfile->Printf("\n    Exch12_k2f_1        = %18.12lf H\n",e1);
-    outfile->Printf("    Exch12_k2f_2        = %18.12lf H\n",e2);
-    outfile->Printf("    Exch12_k2f_3        = %18.12lf H\n",e3);
-    outfile->Printf("    Exch12_k2f_4        = %18.12lf H\n",e4);
-    outfile->Printf("    Exch12_k2f_5        = %18.12lf H\n",e5);
-    outfile->Printf("    Exch12_k2f_6        = %18.12lf H\n",e6);
-    outfile->Printf("    Exch12_k2f_7        = %18.12lf H\n",e7);
+    outfile->Printf("\n    Exch12_k2f_1        = %18.12lf [Eh]\n",e1);
+    outfile->Printf("    Exch12_k2f_2        = %18.12lf [Eh]\n",e2);
+    outfile->Printf("    Exch12_k2f_3        = %18.12lf [Eh]\n",e3);
+    outfile->Printf("    Exch12_k2f_4        = %18.12lf [Eh]\n",e4);
+    outfile->Printf("    Exch12_k2f_5        = %18.12lf [Eh]\n",e5);
+    outfile->Printf("    Exch12_k2f_6        = %18.12lf [Eh]\n",e6);
+    outfile->Printf("    Exch12_k2f_7        = %18.12lf [Eh]\n",e7);
     
   }
 
@@ -577,7 +577,7 @@ double SAPT2::exch120_k11u_1()
   free_block(B_p_BB);
 
   if (debug_) {
-    outfile->Printf("\n    Exch12_k11u_1       = %18.12lf H\n",-energy);
+    outfile->Printf("\n    Exch12_k11u_1       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -760,7 +760,7 @@ double SAPT2::exch102_k11u_1()
   free_block(B_p_AA);
 
   if (debug_) {
-    outfile->Printf("\n    Exch12_k11u_1       = %18.12lf H\n",-energy);
+    outfile->Printf("\n    Exch12_k11u_1       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -929,7 +929,7 @@ double SAPT2::exch120_k11u_2()
   free_block(saB);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_2       = %18.12lf H\n",energy);
+    outfile->Printf("    Exch12_k11u_2       = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -1110,7 +1110,7 @@ double SAPT2::exch102_k11u_2()
   free_block(sAb);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_2       = %18.12lf H\n",energy);
+    outfile->Printf("    Exch12_k11u_2       = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -1241,7 +1241,7 @@ double SAPT2::exch120_k11u_3()
   free_block(zBB);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_3       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_3       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -1383,7 +1383,7 @@ double SAPT2::exch102_k11u_3()
   free_block(B_p_SS);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_3       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_3       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -1474,7 +1474,7 @@ double SAPT2::exch120_k11u_4()
   free_block(E_p_AA);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_4       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_4       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -1563,7 +1563,7 @@ double SAPT2::exch102_k11u_4()
   free_block(E_p_BB);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_4       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_4       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -1651,7 +1651,7 @@ double SAPT2::exch120_k11u_5()
   free_block(T_p_AR);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_5       = %18.12lf H\n",-2.0*energy);
+    outfile->Printf("    Exch12_k11u_5       = %18.12lf [Eh]\n",-2.0*energy);
     
   }
 
@@ -1739,7 +1739,7 @@ double SAPT2::exch102_k11u_5()
   free_block(T_p_BS);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_5       = %18.12lf H\n",-2.0*energy);
+    outfile->Printf("    Exch12_k11u_5       = %18.12lf [Eh]\n",-2.0*energy);
     
   }
 
@@ -1871,7 +1871,7 @@ double SAPT2::exch120_k11u_6()
   free_block(T_p_RR);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_6       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_6       = %18.12lf [Eh]\n",-energy);
     
   }
 
@@ -1996,7 +1996,7 @@ double SAPT2::exch102_k11u_6()
   free_block(T_p_SS);
 
   if (debug_) {
-    outfile->Printf("    Exch12_k11u_6       = %18.12lf H\n",-energy);
+    outfile->Printf("    Exch12_k11u_6       = %18.12lf [Eh]\n",-energy);
     
   }
 

@@ -415,7 +415,7 @@ void scatter(boost::shared_ptr<Molecule> molecule, Options &options, double step
       }
     }
 
-    // Generate mass-weighted Hessian matrix (Hartree/(bohr^2 amu)) //
+    // Generate mass-weighted Hessian matrix [Eh/(bohr^2 amu)] //
     M->zero();
     SharedMatrix T(new Matrix(natom*3,natom*3));
     for(i=0; i < natom; i++)

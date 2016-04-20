@@ -70,7 +70,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
 
   outfile->Printf("\n  ------------------------------------------------------------------------------");
   outfile->Printf("\n     MP2      Cycle        Energy            Delta E    DIIS");
-  outfile->Printf("\n     MP2                  (Hartree)         (Hartree)");
+  outfile->Printf("\n     MP2                    [Eh]              [Eh]  ");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
 
   // Start the MP2 cycle
@@ -113,7 +113,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
 
   outfile->Printf("\n  ------------------------------------------------------------------------------");
   outfile->Printf("\n     MP2-CCSD Cycle        Energy            Delta E    DIIS");
-  outfile->Printf("\n     MP2-CCSD             (Hartree)         (Hartree)");
+  outfile->Printf("\n     MP2-CCSD               [Eh]              [Eh]  ");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
 
   blas->diis_add("t1[o][v]{u}","t1_delta[o][v]{u}");

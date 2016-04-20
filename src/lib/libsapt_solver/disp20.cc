@@ -116,7 +116,7 @@ void SAPT0::disp20()
   free_block(T_p_BS);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 }
@@ -144,7 +144,7 @@ void SAPT2::disp20()
     tARBS[0],1);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 
@@ -178,7 +178,7 @@ void SAPT2::disp20()
     free_block(vARBS);
 
     if (print_) {
-      outfile->Printf("    Disp20 (NO)         = %18.12lf H\n",e_no_disp20_);
+      outfile->Printf("    Disp20 (NO)         = %18.12lf [Eh]\n",e_no_disp20_);
       
     }
   }
@@ -318,7 +318,7 @@ void SAPT0::disp20()
     double tval = C_DDOT(ndf_*ndf_,xPQ[0],1,yPQ[0],1);
     e_disp20_ -= tval;
     if (debug_)
-      outfile->Printf("    Disp %2d             = %18.12lf H\n",i+1,-tval);
+      outfile->Printf("    Disp %2d             = %18.12lf [Eh]\n",i+1,-tval);
   }
 
   if (debug_)
@@ -328,7 +328,7 @@ void SAPT0::disp20()
   free_block(yPQ);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 
