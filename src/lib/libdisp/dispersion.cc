@@ -245,7 +245,7 @@ std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
     s.setf(ios::scientific);
     s.precision(11);
 
-    s << "   " << name_ << " Dispersion Energy: " << e << " [H]" << endl;
+    s << "   " << name_ << " Dispersion Energy: " << e << " [Eh]" << endl;
 
     return s.str();
 }
