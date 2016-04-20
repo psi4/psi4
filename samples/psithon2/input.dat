@@ -18,7 +18,7 @@ energy('scf')
 clean()
 
 
-set globals {
+set {
     BASIS sto-3g
     DF_BASIS_SCF  cc-pVDZ-JKFIT
     DF_BASIS_SAPT cc-pVDZ-RI

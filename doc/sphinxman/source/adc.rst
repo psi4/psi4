@@ -28,7 +28,7 @@ excited state is treated at completely equivalent level to the
 M\ |o_slash|\ ller--Plesset perturbation expansion of the same order. 
 Hence the ADC(2)
 can be described as MP2 theory for the excited state and the relation
-to such other response theories as CC2-LR, CIS(D) and CIS(D:math:`_n`) has
+to such other response theories as CC2-LR, CIS(D) and CIS(D\ :math:`_n`) has
 been addressed [Haettig:2002]_ by Hattig et al.  In the ADC theory,
 the residue calculus of the propagator is translated into the eigenvalue
 problem with respect to the correlated response matrix, also known as the

@@ -87,7 +87,7 @@ As is apparent from the examples above, comments can span multiple lines
 see ``DOCC``), and can contain LaTeX notation (see ``AO_BASIS``). (To get
 the LaTeX subscript command, use "@@" instead of "_".)
 
-See `Best Practices <https://github.com/psi4/psi4public/wiki/BestPractices#how-to-name-keywords-in-srcbinpsi4read_optionscc>`_
+See `Best Practices <https://github.com/psi4/psi4/wiki/BestPractices#how-to-name-keywords-in-srcbinpsi4read_optionscc>`_
 for guidelines on naming options.
 
 What is *has_changed* ?

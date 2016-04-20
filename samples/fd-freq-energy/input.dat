@@ -9,7 +9,7 @@ molecule h2o {
   H 1 0.9894093 2 100.02688
 }
 
-set globals {
+set {
   basis sto-3g
   d_convergence 11
   scf_type pk
@@ -18,7 +18,7 @@ set globals {
 
 
 # Frequencies by 3-pt formula in C1 point group.
-set globals { points 3 }
+set { points 3 }
 set findif {print 3}
 
 scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
@@ -33,7 +33,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -47,7 +47,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 3 }
+#set { points 3 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -59,7 +59,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #frequencies('scf',dertype=1)
 #
@@ -71,7 +71,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #
 #frequencies('scf', dertype=1, irrep=1)
@@ -87,7 +87,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
 #  H 1 0.9894093 2 100.02688
 #}
 #
-#set globals { points 5 }
+#set { points 5 }
 #
 #
 #frequencies('scf', dertype=1, irrep=4)

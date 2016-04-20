@@ -8,8 +8,8 @@
 
 .. _`sec:db()`:
 
-Database
-========
+Database, :py:func:`~wrappers.database`
+=======================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
@@ -82,7 +82,7 @@ requests a couple variables through ``tabulate`` and then makes use of the
 resulting data structures, here, only to print. ::
    
    set basis 6-31g*
-   db('dfmp2','s22',subset='small',tabulate=['CURRENT ENERGY','DF-MP2 CORRELATION ENERGY'])
+   db('mp2','s22',subset='small',tabulate=['CURRENT ENERGY','MP2 CORRELATION ENERGY'])
 
    from pprint import pprint
 
@@ -92,7 +92,7 @@ resulting data structures, here, only to print. ::
    print_stdout('\nDB_RXN')
    pprint(DB_RXN)
 
-   print_stdout('\ndf-mp2 interaction energy of water dimer (S22-2)')
+   print_stdout('\nmp2 interaction energy of water dimer (S22-2)')
    print_stdout(DB_RXN['S22-2']['CURRENT ENERGY'])
 
 The output to the screen is as follows. ::
@@ -125,7 +125,7 @@ The output to the screen is as follows. ::
     'S22-8': {'CURRENT ENERGY': -0.0002623068456699684,
               'DF-MP2 CORRELATION ENERGY': -0.0006910051439986686}}
    
-   df-mp2 interaction energy of water dimer (S22-2)
+   mp2 interaction energy of water dimer (S22-2)
    -0.0115002693348
 
 

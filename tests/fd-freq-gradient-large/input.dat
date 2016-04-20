@@ -70,7 +70,7 @@ b2_freqs.set(0, 3, anal_freqs[9]) #TEST
 b2_freqs.set(0, 4, anal_freqs[20]) #TEST
 
 # Compute all frequencies by 3-pt formula.
-set globals {
+set {
   basis dz
   d_convergence 11
   scf_type pk

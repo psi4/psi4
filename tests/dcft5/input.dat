@@ -17,7 +17,7 @@ O 1 R
 R = 1.230
 }
 
-set globals {
+set {
     r_convergence            10
     algorithm                twostep
     response_algorithm       twostep

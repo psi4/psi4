@@ -1,0 +1,26 @@
+>>> grep ' S ' output.dat 
+
+    Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S      34.608 [cal/(mol K)]     144.801 [J/(mol K)]      0.05515186 [mEh/K] (mol. weight = 18.0106, P = 101325.00 [Pa])
+    Rotational S         10.673 [cal/(mol K)]      44.654 [J/(mol K)]      0.01700786 [mEh/K] (symmetry no. = 2)
+    Vibrational S         0.001 [cal/(mol K)]       0.003 [J/(mol K)]      0.00000103 [mEh/K]
+  Total S                45.282 [cal/(mol K)]     189.458 [J/(mol K)]      0.07216074 [mEh/K]
+
+    Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S      34.924 [cal/(mol K)]     146.122 [J/(mol K)]      0.05565504 [mEh/K] (mol. weight = 20.0231, P = 101325.00 [Pa])
+    Rotational S         12.592 [cal/(mol K)]      52.685 [J/(mol K)]      0.02006667 [mEh/K] (symmetry no. = 2)
+    Vibrational S         0.008 [cal/(mol K)]       0.034 [J/(mol K)]      0.00001311 [mEh/K]
+  Total S                47.524 [cal/(mol K)]     198.842 [J/(mol K)]      0.07573483 [mEh/K]
+
+    Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S      34.770 [cal/(mol K)]     145.479 [J/(mol K)]      0.05541011 [mEh/K] (mol. weight = 19.0168, P = 101325.00 [Pa])
+    Rotational S         13.055 [cal/(mol K)]      54.621 [J/(mol K)]      0.02080419 [mEh/K] (symmetry no. = 1)
+    Vibrational S         0.002 [cal/(mol K)]       0.009 [J/(mol K)]      0.00000336 [mEh/K]
+  Total S                47.827 [cal/(mol K)]     200.109 [J/(mol K)]      0.07621766 [mEh/K]
+
+    Electronic S          0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S      35.070 [cal/(mol K)]     146.731 [J/(mol K)]      0.05588699 [mEh/K] (mol. weight = 21.0251, P = 101325.00 [Pa])
+    Rotational S         14.519 [cal/(mol K)]      60.750 [J/(mol K)]      0.02313829 [mEh/K] (symmetry no. = 1)
+    Vibrational S         0.014 [cal/(mol K)]       0.058 [J/(mol K)]      0.00002209 [mEh/K]
+  Total S                49.603 [cal/(mol K)]     207.539 [J/(mol K)]      0.07904736 [mEh/K]
+

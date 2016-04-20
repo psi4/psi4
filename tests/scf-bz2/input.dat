@@ -46,7 +46,7 @@ molecule bz2 {
 
 memory 500 mb
 
-set globals {
+set {
   basis cc-pVDZ
   guess sad
   scf_type out_of_core

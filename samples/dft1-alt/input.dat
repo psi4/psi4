@@ -10,7 +10,7 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-set globals {
+set {
 print 2
 basis sto-3g
 

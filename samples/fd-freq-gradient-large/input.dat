@@ -22,7 +22,7 @@ molecule c4nh4 {
 
 
 # Compute all frequencies by 3-pt formula.
-set globals {
+set {
   basis dz
   d_convergence 11
   scf_type pk

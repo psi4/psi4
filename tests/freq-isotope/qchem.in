@@ -1,0 +1,49 @@
+$molecule
+  0  1
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+$end
+
+$rem
+   INPUT_BOHR    true
+   BASIS         STO-3G
+   JOBTYPE       opt
+   METHOD        hf
+$end
+
+@@@
+
+$molecule
+   read
+$end
+
+$rem
+   INPUT_BOHR    true
+   BASIS         STO-3G
+   JOBTYPE       freq
+   METHOD        hf
+   SCF_GUESS     read
+   ISOTOPES      1
+VIBMAN_PRINT       4
+THRESH             12
+SCF_CONVERGENCE    7
+!SYM_IGNORE         TRUE
+!SYMMETRY           FALSE
+MEM_TOTAL          1600
+MEM_STATIC         512
+INTEGRALS_BUFFER   512
+MAX_SCF_CYCLES     200
+$end
+
+$isotopes
+   3   0           ! three loops, both at std temp and pressure
+   2
+     2   2.014101779
+     3   2.014101779
+   1
+     2   2.014101779
+   2
+     2   2.014101779
+     3   3.01604927
+$end

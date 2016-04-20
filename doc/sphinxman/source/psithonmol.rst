@@ -178,7 +178,7 @@ calculation. For example, consider the following input file::
     
     set basis cc-pvdz
     set reference rhf
-    energy('scf')
+    energy('scf')  # on H2
     
     clean()
 
@@ -188,13 +188,15 @@ calculation. For example, consider the following input file::
     
     set basis cc-pvdz
     set reference uhf
-    energy('scf')
+    energy('scf')  # on H
 
 Here, two separate jobs are performed on two different molecules; the first is
 performed on H\ :sub:`2`, while the second is for H atom. The last molecule to be
 specified is the "active" molecule by default. To explicitly activate a named
-molecule, the activate command is provided. With it, the above input
-file can be equivalently written as follows::
+molecule, the activate command is provided. With it, the above input file can be
+equivalently written as follows. Alternatively, the molecule can be specified
+directly to the computing function. Below, the third calculation is the same as
+the first. ::
 
     molecule h2 {
       H
@@ -208,17 +210,24 @@ file can be equivalently written as follows::
     activate(h2)
     set basis cc-pvdz
     set reference rhf
-    energy('scf')
+    energy('scf')  # on H2
     
     clean()
 
     activate(h)
     set basis cc-pvdz
     set reference uhf
-    energy('scf')
+    energy('scf')  # on H
 
-Note that whenever the molecule is changed, the basis set must be specified
-again. :ref:`sec:jobControl` provides more details about the job control
+    # --------------------------------------
+    # equivalent to previous input ends here
+
+    clean()
+
+    set reference rhf
+    energy('scf', molecule=h2)  # on H2
+
+:ref:`sec:jobControl` provides more details about the job control
 and calculation keywords used in the above examples.
 
 .. index:: 
@@ -249,6 +258,15 @@ will generate a helium dimer with the second atom ghosted, *i.e.*, possessing
 basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2_1`
 and :srcsample:`ghosts` for a demonstration of both mechanisms for specifying
 ghost atoms.
+
+.. index:: 
+   single: Isotopes
+   single: molecule; isotope
+.. _`sec:isotope`:
+
+Isotopic Substitution
+=====================
+
 
 .. index:: 
    single: PubChem
@@ -495,7 +513,7 @@ complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
    energy('scf')
 
 If the molecule contains fragments but is not conveniently ordered for the
-``--`` marker, the auto_fragment function can be applied, as shoown in
+``--`` marker, the :py:func:`~wrappers.auto_fragments` function can be applied, as shown in
 :srcsample:`pywrap-basis`, to return as active molecule the previous
 active molecule, only fragmented.
 

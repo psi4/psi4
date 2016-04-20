@@ -9,7 +9,7 @@ molecule ch2 {
   H 1 1.1 2 109.0
 }
 
-set globals {
+set {
   reference uhf
   basis cc-pvdz
   dertype first

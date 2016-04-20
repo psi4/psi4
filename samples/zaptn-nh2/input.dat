@@ -10,7 +10,7 @@ molecule nh2 {
     H 1 1.013 2 103.2
 }
 
-set globals {
+set {
   reference rohf
   basis 6-31G
   frozen_docc [1, 0, 0, 0]

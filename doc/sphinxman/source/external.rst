@@ -12,8 +12,8 @@ The latest version of the |PSIfour| program package may be
 obtained at `www.psicode.org <http://www.psicode.org>`_. The
 package is available as a binary for Linux (:ref:`Installing
 from Binary <sec:conda>`) or as source code (zipped
-archive or git repository from `www.github.com/psi4/psi4public
-<http://www.github.com/psi4/psi4public>`_).
+archive or git repository from `www.github.com/psi4/psi4
+<http://www.github.com/psi4/psi4>`_).
 
 
 Installing from Binary
@@ -32,12 +32,12 @@ Compiling and Installing from Source
 ====================================
 
 Detailed directions on 
-`obtaining <https://github.com/psi4/psi4public/wiki/1_Obtaining>`_, 
-`prerequisites <https://github.com/psi4/psi4public/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
-`building and installing <https://github.com/psi4/psi4public/wiki/3_Building>`_,
-and `FAQ <https://github.com/psi4/psi4public/wiki/0_FAQ>`_
-are maintained on the `GitHub Wiki <https://github.com/psi4/psi4public/wiki>`_. 
-If uncertain, `start here <https://github.com/psi4/psi4public/wiki/1_Obtaining#quiz>`_.
+`obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
+`prerequisites <https://github.com/psi4/psi4/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
+`building and installing <https://github.com/psi4/psi4/wiki/3_Building>`_,
+and `FAQ <https://github.com/psi4/psi4/wiki/0_FAQ>`_
+are maintained on the `GitHub Wiki <https://github.com/psi4/psi4/wiki>`_. 
+If uncertain, `start here <https://github.com/psi4/psi4/wiki/1_Obtaining#quiz>`_.
 
 
 .. index:: scratch files, psirc, psi4rc
@@ -193,7 +193,7 @@ which will run on four threads.
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
-is accessed via the :py:func:`~util.set_num_threads` Psithon function, which controls
+is accessed via the :py:func:`~p4util.util.set_num_threads` Psithon function, which controls
 both MKL and OpenMP thread numbers. The number of threads may be changed
 multiple times in a |PSIfour| input file. An example input for this feature is::
 
@@ -227,7 +227,7 @@ these integrals. For general DF algorithms, the user may specify::
 
 to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
-:py:func:`~util.set_num_threads` Psithon method or the default environmental variables.
+:py:func:`~p4util.util.set_num_threads` Psithon method or the default environmental variables.
 
 .. _`sec:commandLineOptions`:
 
@@ -239,11 +239,11 @@ by default the file "input.dat" and directs output by default to "output.dat".
 The set of three commands below are completely equivalent, while the fourth is,
 perhaps, the most common usage. ::
 
-   psi4
-   psi4 -i input.dat -o output.dat
-   psi4 input.dat output.dat
-   
-   psi4 descriptive_filename.in descriptive_filename.out
+   >>> psi4
+   >>> psi4 -i input.dat -o output.dat
+   >>> psi4 input.dat output.dat
+
+   >>> psi4 descriptive_filename.in descriptive_filename.out
 
 Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help`.
 
@@ -309,7 +309,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
 .. option:: -V, --version
 
-   Print version information.
+   Print version information. ::
+
+     >>> psi4 --version
+     0.4.262
 
 .. option:: -w, --wipe
 
@@ -396,9 +399,11 @@ These environment variables will influence |PSIfours| behavior.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 
-   * Normal Linux shell commands. First line for C shell; second for bash. ::
+   * Normal Linux shell commands. ::
 
+        # csh/tcsh
         setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+        # sh/bash
         PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
 
    * Place the path in the |psirc| file so that it is available for 
@@ -415,7 +420,8 @@ These environment variables will influence |PSIfours| behavior.
 
    Path in which the |PSIfour| executable looks for its non-compiled
    dependencies (*i.e.*, Python driver, basis sets, databases, *etc.*).
-   Not used when running from an installed (``make install``) executable,
+   Not used when running from an installed (``make install``) executable
+   or when running from a conda binary,
    so this variable is relevant primarily to developers running the
    executable directly from the compilation directory. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
