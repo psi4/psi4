@@ -2474,7 +2474,7 @@ reinitialize
     def table_reactions(self, modelchem, benchmark='default', sset='default',
                         failoninc=True,
                         columnplan=['indx', 'tagl', 'bm', 'mc', 'e', 'pe'],
-                        title="""Reaction energies (kcal/mol) for {sset} $\subset$ {dbse} with {mc}""",
+                        title="""Reaction energies [kcal/mol] for {sset} $\subset$ {dbse} with {mc}""",
                         indextitle="""Detailed results for {sset} $\subset$ {dbse} with {mc}""",
                         plotpath='analysis/mols/',
                         standalone=True, theme='rxns', filename=None):
@@ -2881,7 +2881,7 @@ reinitialize
         footnotes = []
         landscape = False
         theme = 'summavg'
-        title = r"""Classification and Performance of model chemistries. Interaction energy (kcal/mol) {{err}} statistics.""".format()
+        title = r"""Classification and Performance of model chemistries. Interaction energy [kcal/mol] {{err}} statistics.""".format()
         return rowplan, columnplan, landscape, footnotes, title, theme
 
     def table_merge_abbr(self, plotpath, subjoin):
@@ -2909,7 +2909,7 @@ reinitialize
         footnotes = [fnreservoir['blankslat']]
         landscape = False
         theme = 'smmerge'
-        title = r"""Interaction energy (kcal/mol) {{err}} subset statistics with computed with {{opt}}{0}.""".format(
+        title = r"""Interaction energy [kcal/mol] {{err}} subset statistics with computed with {{opt}}{0}.""".format(
             '' if subjoin else r""" and {bas}""")
         return rowplan, columnplan, landscape, footnotes, title, theme
 
@@ -2946,7 +2946,7 @@ reinitialize
         footnotes = [fnreservoir['blankslat'], fnreservoir['5min']]
         landscape = True
         theme = 'lgmerge'
-        title = r"""Interaction energy (kcal/mol) {{err}} subset statistics with computed with {{opt}}{0}.""".format(
+        title = r"""Interaction energy [kcal/mol] {{err}} subset statistics with computed with {{opt}}{0}.""".format(
             '' if subjoin else r""" and {bas}""")
         return rowplan, columnplan, landscape, footnotes, title, theme
 

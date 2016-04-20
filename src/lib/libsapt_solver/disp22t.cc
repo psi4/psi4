@@ -51,7 +51,7 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf [Eh]\n\n",e_disp220t);
     
   }
 
@@ -71,14 +71,14 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf [Eh]\n\n",e_disp202t);
     
   }
 
   e_disp22t_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_);
+    outfile->Printf("    Disp22 (T)          = %18.12lf [Eh]\n",e_disp22t_);
     
   }
 
@@ -89,9 +89,9 @@ void SAPT2p::disp22t()
     e_est_disp22t_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf [Eh]\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf [Eh]\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf [Eh]\n",e_est_disp22t_);
       
     }
   }
@@ -124,7 +124,7 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf [Eh]\n\n",e_disp220t);
     
   }
 
@@ -144,14 +144,14 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf [Eh]\n\n",e_disp202t);
     
   }
 
   e_disp22t_ccd_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_ccd_);
+    outfile->Printf("    Disp22 (T)          = %18.12lf [Eh]\n",e_disp22t_ccd_);
     
   }
 
@@ -162,9 +162,9 @@ void SAPT2p::disp22tccd()
     e_est_disp22t_ccd_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_ccd_);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf [Eh]\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf [Eh]\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf [Eh]\n",e_est_disp22t_ccd_);
       
     }
   }

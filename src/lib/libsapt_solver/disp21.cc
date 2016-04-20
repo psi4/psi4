@@ -37,7 +37,7 @@ void SAPT2p::disp21()
     "Theta AR Intermediates",aoccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Disp210             = %18.12lf H\n",e_disp210);
+    outfile->Printf("    Disp210             = %18.12lf [Eh]\n",e_disp210);
     
   }
 
@@ -47,14 +47,14 @@ void SAPT2p::disp21()
     "Theta BS Intermediates",aoccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Disp201             = %18.12lf H\n\n",e_disp201);
+    outfile->Printf("    Disp201             = %18.12lf [Eh]\n\n",e_disp201);
     
   }
 
   e_disp21_ = e_disp210 + e_disp201;
 
   if (print_) {
-    outfile->Printf("    Disp21              = %18.12lf H\n",e_disp21_);
+    outfile->Printf("    Disp21              = %18.12lf [Eh]\n",e_disp21_);
     
   }
 }
@@ -77,7 +77,7 @@ double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel,
   free_block(gARBS);
 
   if (debug_) {
-    outfile->Printf("\n    Disp21_1            = %18.12lf H\n",energy);
+    outfile->Printf("\n    Disp21_1            = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -102,7 +102,7 @@ double SAPT2p::disp21_2(int ampfile, const char *tlabel,
   free_block(theta_p_AR);
 
   if (debug_) {
-    outfile->Printf("    Disp21_2            = %18.12lf H\n",energy);
+    outfile->Printf("    Disp21_2            = %18.12lf [Eh]\n",energy);
     
   }
 
