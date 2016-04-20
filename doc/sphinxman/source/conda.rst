@@ -177,7 +177,7 @@ The output for either of the installation commands above looks like the followin
         Website: www.psicode.org
         Inputs:  /path/to/miniconda/share/psi/samples
         Manual:  bit.ly/psi4manual
-        GitHub:  https://github.com/psi4/psi4public/wiki
+        GitHub:  https://github.com/psi4/psi4/wiki
         Binstar: https://binstar.org/psi4
         Runtime Environment Diagnostic: /path/to/miniconda/share/psi/scripts/setenv.py
     
