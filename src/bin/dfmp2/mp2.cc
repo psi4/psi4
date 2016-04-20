@@ -724,25 +724,25 @@ void DFMP2::print_energies()
     energies_["SCS Correlation Energy"] = energies_["SCS Opposite-Spin Energy"] + energies_["SCS Same-Spin Energy"] + energies_["Singles Energy"];
     energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
 
-    outfile->Printf( "\t----------------------------------------------------------\n");
-    outfile->Printf( "\t ==================> DF-MP2 Energies <=================== \n");
-    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t-----------------------------------------------------------\n");
+    outfile->Printf( "\t ==================> DF-MP2 Energies <==================== \n");
+    outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Reference Energy",         energies_["Reference Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Singles Energy",           energies_["Singles Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Correlation Energy",       energies_["Correlation Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Total Energy",             energies_["Total Energy"]);
-    outfile->Printf( "\t----------------------------------------------------------\n");
-    outfile->Printf( "\t ================> DF-SCS-MP2 Energies <================= \n");
-    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t-----------------------------------------------------------\n");
+    outfile->Printf( "\t ================> DF-SCS-MP2 Energies <================== \n");
+    outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
     outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
     outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
-    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\n");
 
 
