@@ -7,7 +7,7 @@ Li
 
 }
 
-set globals {
+set {
     reference rohf
     scf_type pk
     df_scf_guess false
@@ -27,7 +27,7 @@ H 1 R
 R = 1
 }
 
-set globals {
+set {
     reference rhf
     guess core
     mp2_type conv
@@ -45,7 +45,7 @@ molecule {
 He
 }
 
-set globals {
+set {
     reference rhf
     df_scf_guess false
 }

@@ -8,7 +8,7 @@ n
 o 1 1.158
 }
 
-set global {
+set {
   basis cc-pvdz
   guess gwh
   reference rohf

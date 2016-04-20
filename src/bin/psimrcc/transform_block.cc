@@ -41,7 +41,6 @@
 
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
-#include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include "psifiles.h"
 
@@ -154,46 +153,3 @@ double CCTransform::tei_block(int p, int q, int r, int s)
 }
 
 }} /* End Namespaces */
-
-
-//  Old algorthm for reading ints
-//  // Read all the (frozen + non-frozen) TEI in Pitzer order
-//  // and store them in a in-core block-matrix
-//  CCIndex* mo_indexing = blas->get_index("[n>=n]");
-//
-//  int last_irrep = allocate_tei_mo_block(first_irrep);
-//
-//  double value;
-//  size_t p,q,r,s,pq,rs,pqrs,irrep;
-//  size_t ilsti,nbuf,fi,index,elements;
-//  elements = 0;
-//  struct iwlbuf ERIIN;
-//  iwl_buf_init(&ERIIN,PSIF_MO_TEI,0.0,1,1);
-//    do{
-//      ilsti = ERIIN.lastbuf;
-//      nbuf  = ERIIN.inbuf;
-//      fi    = 0;
-//      for(index = 0; index < nbuf; index++){
-//        // Compute the [pq] index for this pqrs combination
-//        p = abs(ERIIN.labels[fi]);
-//        q = ERIIN.labels[fi+1];
-//        r = ERIIN.labels[fi+2];
-//        s = ERIIN.labels[fi+3];
-//        value = ERIIN.values[index];
-//        irrep = mo_indexing->get_tuple_irrep(p,q);
-//        // Fill in only the blocks that fit
-//        if((first_irrep<=irrep) && (irrep<last_irrep)){
-//          pq    = mo_indexing->get_tuple_rel_index(p,q);
-//          rs    = mo_indexing->get_tuple_rel_index(r,s);
-//          pqrs  = INDEX(pq,rs);
-//          tei_mo[irrep][pqrs]=value;
-//        }
-//        fi += 4;
-//        elements++;
-//      }
-//      if(!ilsti)
-//        iwl_buf_fetch(&ERIIN);
-//    } while(!ilsti);
-//  outfile->Printf("\n    Read %d non-zero integrals", elements);
-//  
-//  iwl_buf_close(&ERIIN,1);

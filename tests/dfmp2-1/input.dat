@@ -24,7 +24,7 @@ molecule formic_dim {
    no_reorient
 }
 
-set globals {
+set {
    basis cc-pvdz
    df_basis_scf cc-pvdz-jkfit
    df_basis_mp2 cc-pvdz-ri

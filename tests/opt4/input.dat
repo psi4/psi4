@@ -16,7 +16,7 @@ molecule h2o {
 #  H           0.751206    0.000000   -0.474387
 }
 
-set globals {
+set {
   basis cc-pvtz
   e_convergence 10
   d_convergence 10

@@ -59,7 +59,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. Now you need only specify a scratch directory
-(see :ref:`sec:psirc`) by replacing the placeholder in the following:
+(see :ref:`sec:Scratch`) by replacing the placeholder in the following:
 
 .. code-block:: bash
 
@@ -177,7 +177,7 @@ The output for either of the installation commands above looks like the followin
         Website: www.psicode.org
         Inputs:  /path/to/miniconda/share/psi/samples
         Manual:  bit.ly/psi4manual
-        GitHub:  https://github.com/psi4/psi4public/wiki
+        GitHub:  https://github.com/psi4/psi4/wiki
         Binstar: https://binstar.org/psi4
         Runtime Environment Diagnostic: /path/to/miniconda/share/psi/scripts/setenv.py
     
@@ -199,7 +199,7 @@ The output for either of the installation commands above looks like the followin
   #. activating the conda environment (p4env above) in shell, ``~/.bashrc``, or PBS ``cmd`` file
   #. supplying full path to executable (shell or PBS ``cmd`` file)
 
-Similarly, the scratch directory (see :ref:`sec:psirc`) must be specified through:
+Similarly, the scratch directory (see :ref:`sec:Scratch`) must be specified through:
 
   #. defining :envvar:`PSI_SCRATCH` in shell, ``~/.bashrc``, ``~/.tcshrc``, or PBS ``cmd`` file
 

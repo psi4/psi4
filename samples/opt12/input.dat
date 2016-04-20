@@ -11,7 +11,7 @@ molecule h2c2o {
  O 3 1.1 4 120.0 1 180.0
 }
 
-set globals basis cc-pVDZ
+set basis cc-pVDZ
 set g_convergence gau_tight
 
 thisenergy = optimize('scf')

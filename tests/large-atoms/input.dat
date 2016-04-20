@@ -9,13 +9,13 @@ Ba 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-sv_p_
   scf_type df
   DF_BASIS_SCF def2-sv_p_-jkfit
 }
 
-gradient('df-mp2')
+gradient('mp2')
 analytic_grad = psi4.get_gradient()
 clean()
 memory 250 mb
@@ -27,7 +27,7 @@ Ba 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-sv_p_
   scf_type df
   DF_BASIS_SCF def2-sv_p_-jkfit
@@ -45,7 +45,7 @@ In 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis STO-3G
   scf_type pk
 }
@@ -61,7 +61,7 @@ In 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis STO-3G
   scf_type pk
 }
@@ -77,13 +77,13 @@ Rn 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-svpd
   scf_type df
   DF_BASIS_SCF def2-svpd-ri
 }
 
-thisenergy = energy('df-mp2')
+thisenergy = energy('mp2')
 clean()
 memory 250 mb
 
@@ -94,7 +94,7 @@ Rn 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-svpd
   scf_type df
   DF_BASIS_SCF def2-svpd-ri
@@ -111,7 +111,7 @@ Sr 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-svp
   scf_type pk
 }
@@ -128,7 +128,7 @@ Sr 1 2.0
 units bohr
 }
 
-set globals {
+set {
   basis def2-svp
   scf_type pk
 }
