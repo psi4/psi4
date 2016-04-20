@@ -43,6 +43,7 @@ import warnings
 #CUfrom driver import *
 from wrappers import *
 from gaussian_n import * #CU
+from g3mp2 import *
 #from extend_Molecule import *
 #CUfrom molutil import *
 from wrappers_cfour import * #CU
