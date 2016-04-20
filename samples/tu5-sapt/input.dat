@@ -20,7 +20,7 @@ H   0.000000   0.000000   3.963929
 units angstrom
 }
 
-set globals {
+set {
     BASIS jun-cc-pVDZ
     SCF_TYPE DF
     FREEZE_CORE True

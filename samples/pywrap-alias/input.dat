@@ -8,7 +8,7 @@ He
 He 1 1.0
 }
 
-set globals {
+set {
     basis 6-31g
     g_convergence gau
     mp2_type conv  # no fitting bases for helium
@@ -82,7 +82,7 @@ cbs('scf',scf_basis='cc-pvdz')
 compare_values(-5.55609846, get_variable('CBS TOTAL ENERGY'), 7, "[10] cbs()")
 clean()
 
-set globals {
+set {
     basis sto-3g
     df_basis_scf cc-pVDZ-JKFIT
     scf_type df
@@ -94,7 +94,7 @@ banner('db()')
 database('scf','S22',subset=[2,8],benchmark='S22A')
 clean()
 
-set globals {
+set {
     basis 6-31g
     scf_type pk
 }

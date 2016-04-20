@@ -336,10 +336,10 @@ function. For example, in the following potential energy surface scan for water 
         h2o.R = R
         for A in Avals:
             h2o.A = A
-            energy('df-mp2')
+            energy('mp2')
             escf = get_variable('SCF TOTAL ENERGY')
-            edfmp2 = get_variable('DF-MP2 TOTAL ENERGY')
-            escsmp2 = get_variable('SCS-DF-MP2 TOTAL ENERGY')
+            edfmp2 = get_variable('MP2 TOTAL ENERGY')
+            escsmp2 = get_variable('SCS-MP2 TOTAL ENERGY')
             table[R][A] = [escf, escsmp2, edfmp2]
     
     print table
@@ -370,7 +370,7 @@ the :py:func:`~wrappers.cp` wrapper provides automatic computation of
 counterpoise-corrected interaction energies between two molecules.  For
 example,::
 
-  cp('df-mp2')
+  cp('mp2')
 
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
@@ -391,7 +391,7 @@ Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
 as provided by the :py:func:`~wrappers.database` wrapper.  For example,::
 
-  database('df-mp2','S22',cp=1,benchmark='S22B')
+  database('mp2','S22',cp=1,benchmark='S22B')
 
 will perform DF-MP2 counterpoise-corrected interaction energies
 (``cp=1``) on all members of Hobza's S22 database set of van der Waals

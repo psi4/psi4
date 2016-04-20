@@ -155,15 +155,15 @@ def return_energy_components():
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc3corl': 'CC3 CORRELATION ENERGY'}
-    VARH['fno-df-ccsd'] = {
+    VARH['fno-ccsd'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
-                   'fno-df-ccsdcorl': 'CCSD CORRELATION ENERGY'}
-    VARH['fno-df-ccsd(t)'] = {
+                      'fno-ccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['fno-ccsd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
-                'fno-df-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+                   'fno-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['qcisd(t)'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
@@ -1812,12 +1812,12 @@ def complete_basis_set(name, **kwargs):
            * qcisd
            * cc2
            * ccsd
-           * fno-df-ccsd
+           * fno-ccsd
            * bccd
            * cc3
            * qcisd(t)
            * ccsd(t)
-           * fno-df-ccsd(t)
+           * fno-ccsd(t)
            * bccd(t)
            * cisd
            * cisdt
@@ -2090,7 +2090,7 @@ def complete_basis_set(name, **kwargs):
     # Establish method for reference energy
     if 'scf_wfn' in kwargs:
         cbs_scf_wfn = kwargs['scf_wfn'].lower()
-    elif 'name' in kwargs and ((lowername == 'scf') or (lowername == 'df-scf') or (lowername == 'c4-scf')):
+    elif 'name' in kwargs and (lowername in ['scf', 'c4-scf']):
         cbs_scf_wfn = lowername
     else:
         cbs_scf_wfn = 'scf'
@@ -2100,7 +2100,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if 'name' in kwargs:
-        if not((lowername == 'scf') or (lowername == 'df-scf') or (lowername == 'c4-scf')):
+        if lowername not in ['scf', 'c4-scf']:
             do_corl = True
             cbs_corl_wfn = kwargs['name'].lower()
     if 'corl_wfn' in kwargs:

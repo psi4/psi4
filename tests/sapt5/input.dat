@@ -16,7 +16,7 @@ molecule water_dimer {
      units angstrom
 }
 
-set globals {
+set {
     basis         aug-cc-pvtz
     df_basis_scf  aug-cc-pvtz-jkfit
     df_basis_sapt aug-cc-pvtz-ri
