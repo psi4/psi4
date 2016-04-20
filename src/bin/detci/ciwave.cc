@@ -343,6 +343,9 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
       throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
     }
     double inact_value = (spin == "SUM") ? 2.0 : 1.0;
+    if (Iroot != Jroot){
+        inact_value = 0.0;
+    }
     SharedMatrix opdm;
 
     if ((Iroot == -1) && (Jroot == -1)){
