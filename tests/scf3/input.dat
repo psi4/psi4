@@ -1,5 +1,4 @@
-
-#! are specified explicitly.
+#! File retention, docc, socc, and bond distances specified explicitly.
 
 memory 250 mb
 
@@ -23,10 +22,6 @@ set globals {
     socc      [1, 0, 1, 0]
     scf_type  pk
 }
-
-# Delete file 32 for now, because UHF has a bug in reading old MOs right now
-psioh = psi4.IOManager.shared_object()
-psioh.set_specific_retention(32, False)
 
 thisenergy = energy('scf')
 

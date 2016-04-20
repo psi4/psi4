@@ -44,6 +44,7 @@ import math
 # Procedure lookup tables
 procedures = {
         'energy': {
+            'hf'            : run_scf,
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
@@ -121,7 +122,6 @@ procedures = {
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
-            'hf'            : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
             'mp4'           : select_mp4,
@@ -158,6 +158,7 @@ procedures = {
             #    encompass the new alias.
         },
         'gradient' : {
+            'hf'            : run_scf_gradient,
             'scf'           : run_scf_gradient,
             'ccsd'          : select_ccsd_gradient,
             'ccsd(t)'       : select_ccsd_t__gradient,
@@ -172,13 +173,13 @@ procedures = {
             'lccd'          : select_lccd_gradient,
             'olccd'         : select_olccd_gradient,
             'ccd'           : run_dfocc_gradient,
-            'hf'            : run_scf_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
         'property' : {
+            'hf'       : run_scf_property,
             'scf'      : run_scf_property,
             'cc2'      : run_cc_property,
             'ccsd'     : run_cc_property,
@@ -194,7 +195,6 @@ procedures = {
             'cisdtq'   : run_detci_property,
             'ci'       : run_detci_property,  # arbitrary order ci(n)
             'fci'      : run_detci_property,
-            'hf'       : run_scf_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -208,6 +208,8 @@ hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy',
 # Integrate DFT with driver routines
 for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
+    if not ssuper.is_c_hybrid():
+        procedures['property'][ssuper.name().lower()] = run_dft_property
 
 for ssuper in superfunctional_list():
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
@@ -348,7 +350,7 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
             start = 0
             grad = np.asarray(ptype_dict[(fragn, basisn)])
 
-            if vmfc: 
+            if vmfc:
                 sign = ((-1) ** (n - len(fragn)))
 
             for bas in basisn:
@@ -381,8 +383,8 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
 
 def _print_nbody_energy(energy_body_dict, header):
-        psi4.print_out("""\n   ==> N-Body: %s energies <==\n""" % header)
-        psi4.print_out("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]\n""")
+        print("""\n   ==> N-Body: %s  energies <==""" % header)
+        print("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]""")
         previous_e = energy_body_dict[1]
         nbody_range = energy_body_dict.keys()
         nbody_range.sort()
@@ -390,10 +392,10 @@ def _print_nbody_energy(energy_body_dict, header):
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * p4const.psi_hartree2kcalmol
             int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * p4const.psi_hartree2kcalmol
-            psi4.print_out("""     %4s        % 16.14f        % 16.14f        % 16.14f\n""" %
+            print("""     %4s        % 16.14f        % 16.14f        % 16.14f""" %
                                         (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
-        psi4.print_out("\n")
+        print("\n")
 
 def nCr(n, r):
     f = math.factorial
@@ -411,7 +413,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         Lowername to be passed to function
     molecule : psi4.Molecule (default: Global Molecule)
         Molecule to use in all computations
-    return_wfn : bool (default: False)    
+    return_wfn : bool (default: False)
         Return a wavefunction or not
     bsse_type : str or list (default: None, this function is not called)
         Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this list is returned by this function.
@@ -490,17 +492,9 @@ def _nbody_gufunc(func, method_string, **kwargs):
         psioh.set_specific_retention(97, True)
 
 
-    # Print out a header
-    psi4.print_out("\n\n")
-    psi4.print_out("   ===> N-Body Interaction Abacus <===\n\n")
-    psi4.print_out("        Called Methodology:               %s\n" % method_string.upper())
-    if len(bsse_type_list) > 1:
-        psi4.print_out("        BSSE Treatment:                   %s\n" % str(bsse_type_list))
-        psi4.print_out("        BSSE Return type:                 %s\n" % str(bsse_type_list)[0])
-    else:
-        psi4.print_out("        BSSE Treatment:                   %s\n" % str(bsse_type_list)[0])
-    psi4.print_out("        Max N-Body treatment:             %d\n\n" % max_nbody)
-    
+    print("\n\n")
+    print("   ===> N-Body Interaction Abacus <===\n")
+    print("        BSSE Treatment:          %s")
 
 
     cp_compute_list = {x:set() for x in nbody_range}
@@ -539,8 +533,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         compute_list[n] |= cp_compute_list[n]
         compute_list[n] |= nocp_compute_list[n]
         compute_list[n] |= vmfc_compute_list[n]
-        psi4.print_out("        Number of %d-body computations:    %d\n" % (n, len(compute_list[n])))
-    psi4.print_out("\n")
+        print("        Number of %d-body computations:          %d" % (n, len(compute_list[n])))
 
 
     # Build size and slices dictionaries
@@ -560,12 +553,9 @@ def _nbody_gufunc(func, method_string, **kwargs):
     ptype_dict = {}
     for n in compute_list.keys():
         print("\n   ==> N-Body: Now computing %d-body complexes <==\n" % n)
-        psi4.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
             print("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n" %
-                                                                    (num + 1, total, str(pair[0]), str(pair[1])))
-            psi4.print_out("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
                                                                     (num + 1, total, str(pair[0]), str(pair[1])))
             ghost = list(set(pair[1]) - set(pair[0]))
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
@@ -615,6 +605,10 @@ def _nbody_gufunc(func, method_string, **kwargs):
         cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in nbody_range}
         nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
         vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
+    else:
+        cp_ptype_by_level, cp_ptype_body_dict = None, None
+        nocp_ptype_by_level, nocp_ptype_body_dict = None, None
+        vmfc_ptype_by_level= None
 
 
     # Sum up all of the levels
@@ -628,7 +622,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         if n > 1:
             vmfc_energy_body_dict[n] = vmfc_energy_body_dict[n - 1]
         for tup in vmfc_level_list[n]:
-            vmfc_energy_body_dict[n] += ((-1) ** (n - len(tup[0]))) * energies_dict[tup] 
+            vmfc_energy_body_dict[n] += ((-1) ** (n - len(tup[0]))) * energies_dict[tup]
 
 
         # Do ptype
@@ -710,44 +704,40 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
     if return_method == 'cp':
         ret_energy = cp_final_energy
-        total_energy = cp_energy_body_dict[max_nbody]
-        if ptype != 'energy':
-            ptype_body_dict = cp_ptype_body_dict
+        ptype_body_dict = cp_ptype_body_dict
+        total_energy = cp_energy_body_dict[-1]
     elif return_method == 'nocp':
         ret_energy = nocp_final_energy
-        total_energy = nocp_energy_body_dict[max_nbody]
-        if ptype != 'energy':
-            ptype_body_dict = nocp_ptype_body_dict
+        ptype_body_dict = nocp_ptype_body_dict
+        total_energy = nocp_energy_body_dict[-1]
     elif return_method == 'vmfc':
         ret_energy = vmfc_final_energy
-        total_energy = vmfc_energy_body_dict[max_nbody]
-        if ptype != 'energy':
-            ptype_body_dict = vmfc_ptype_body_dict
+        ptype_body_dict = vmfc_ptype_body_dict
+        total_energy = vmfc_energy_body_dict[-1]
     else:
         raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
-    
+
+
     if ptype != 'energy':
         np_final_ptype = ptype_body_dict[max_nbody].copy()
         np_final_ptype -= ptype_body_dict[1]
 
-        ptype_value = psi4.Matrix(*np_cp_final_ptype.shape)
-        ptype_value_view = np.asarray(final_ptype)
-        ptype_value_view[:] = np_final_ptype
-    else:
-        ptype_value = ret_energy
+        ret_ptype = psi4.Matrix(*np_cp_final_ptype.shape)
+        ret_ptype_view = np.asarray(final_ptype)
+        ret_ptype_view[:] = np_final_ptype
 
+    # Build a wavefunction
+    wfn = psi4.new_wavefunction(molecule, 'sto-3g')
+    wfn.energy_dict = energies_dict
+    wfn.ptype_dict = ptype_dict
+    if ptype == 'gradient':
+        wfn.set_gradient(ret_ptype)
+    elif ptype == 'hessian':
+        wfn.set_hessian(ret_ptype)
+
+    psi4.set_variable("CURRENT ENERGY", ret_energy)
 
     if return_wfn:
-        # Build a wavefunction
-        wfn = psi4.new_wavefunction(molecule, 'sto-3g')
-        wfn.energy_dict = energies_dict
-        wfn.ptype_dict = ptype_dict
-        if ptype == 'gradient':
-            wfn.set_gradient(ret_ptype)
-        elif ptype == 'hessian':
-            wfn.set_hessian(ret_ptype)
-   
-        psi4.set_variable("CURRENT ENERGY", total_energy) 
         return (ptype_value, wfn)
     else:
         return ptype_value
@@ -767,7 +757,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-   
+
     # Same some global variables so we can reset them later
     optstash = p4util.OptionsState(
         ['BASIS'],
@@ -786,17 +776,17 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
     for method_str in total_method_name_list:
         if (method_str.count("[") > 1) or (method_str.count("]") > 1):
-            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str) 
-       
+            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
+
         if method_str.count('/') != 1:
-            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str) 
+            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
 
         # Find method and basis
         method, basis_str = method_str.split('/')
         isDelta = False
         if 'D:' in method:
             if 'D:' in method[2:]:
-                raise ValidationError("""CBS gufunc: Invalid Delta position. %s""" % method) 
+                raise ValidationError("""CBS gufunc: Invalid Delta position. %s""" % method)
             isDelta = True
             method = method[2:]
 
@@ -831,7 +821,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             elif len(basissets) == 3:
                 method_dict['extrapolation_type'] = driver_util.scf_xtpl_helgaker_3
             else:
-                raise ValidationError("CBS Gufunc: SCF-type method '%s' can only be supplied 1, 2, or" 
+                raise ValidationError("CBS Gufunc: SCF-type method '%s' can only be supplied 1, 2, or"
                                       " 3 basis sets (given %d)." % (method, len(basissets)))
         else:
             if len(basissets) == 1:
@@ -839,7 +829,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             elif len(basissets) == 2:
                 method_dict['extrapolation_type'] = driver_util.corl_xtpl_helgaker_2
             else:
-                raise ValidationError("CBS Gufunc: post-SCF-type method '%s' can only be supplied 1 or 2" 
+                raise ValidationError("CBS Gufunc: post-SCF-type method '%s' can only be supplied 1 or 2"
                                       " basis sets (given %d)." % (method, len(basissets)))
 
         method_list.append(method_dict)
@@ -854,7 +844,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     elif ptype == 'hessian':
         pfunc = hessian
     else:
-        raise ValidtionError("""CBS gufunc: ptype '%s' is not recognized""" % ptype) 
+        raise ValidtionError("""CBS gufunc: ptype '%s' is not recognized""" % ptype)
 
     # We also need energy for gradient and Hessian methods
     energy_list = []
@@ -862,11 +852,11 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
 
 
     ### DGAS compute loop
-    # Loop over methods 
+    # Loop over methods
     for method_dict in method_list:
         scf_ptype_list = []
         corr_ptype_list = []
-        
+
         scf_energy_list = []
         corr_energy_list = []
 
@@ -880,27 +870,27 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
             if method_dict['isSCF'] or (method_dict['extrapolation_type'] is None):
                 pvalue, pwfn = pfunc(method, molecule=molecule, return_wfn=True)
                 scf_ptype_list.append(pvalue)
-                scf_energy_list.append(psi4.get_variable('CURRENT ENERGY')) 
+                scf_energy_list.append(psi4.get_variable('CURRENT ENERGY'))
 
-            # Need to seperate into scf and corr values 
+            # Need to seperate into scf and corr values
             else:
                 scf_pvalue, scf_wfn = pfunc('SCF', molecule=molecule, return_wfn=True)
                 scf_energy = psi4.get_variable('CURRENT ENERGY')
 
                 scf_ptype_list.append(scf_pvalue)
-                scf_energy_list.append(scf_energy) 
+                scf_energy_list.append(scf_energy)
 
                 pvalue, pwfn = pfunc(method, ref_wfn=scf_wfn, return_wfn=True)
                 corr_energy = psi4.get_variable('CURRENT ENERGY')
-               
-                # Correlation only part 
+
+                # Correlation only part
                 if ptype == 'energy':
                     pvalue = pvalue - scf_pvalue
                 else:
                     pvalue.subtract(scf_pvalue)
 
                 corr_ptype_list.append(pvalue)
-                corr_energy_list.append(corr_energy - scf_energy) 
+                corr_energy_list.append(corr_energy - scf_energy)
 
             psi4.clean()
 
@@ -951,7 +941,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
                     method_ptype_data = xt_type(mt_name,
                                                 *extrap_data, verbose=cbs_verbose)
                 else:
-                    method_ptype_data = xt_type(mt_name, scf_ptype_list[-1],
+                    method_ptype_data = xt_type(mt_name, scf_type_list[-1],
                                                 *extrap_data, verbose=cbs_verbose)
 
 
@@ -969,7 +959,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         for val in ptype_list[1:]:
             ptype_value.add(val)
 
-    
+
     wfn = None
 
     # Reset modified global variables
@@ -1091,8 +1081,6 @@ def energy(name, **kwargs):
     | df-mp3                  | density-fitted MP3 from DFOCC module :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2.5                | density-fitted MP2.5 from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-ccsdl                | density-fitted CCSDL from DFOCC module :ref:`[manual] <sec:dfocc>`                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1239,11 +1227,11 @@ def energy(name, **kwargs):
     """
     lowername = name.lower()
 
-    # Do a cp thing 
+    # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
         return _nbody_gufunc(energy, lowername, **kwargs)
 
-    # Check if this is a CBS extrapolation 
+    # Check if this is a CBS extrapolation
     if "/" in lowername:
         return _cbs_gufunc('energy', lowername, **kwargs)
 
@@ -1324,7 +1312,7 @@ def gradient(name, **kwargs):
     """
     lowername = name.lower()
 
-    # Check if this is a CBS extrapolation 
+    # Check if this is a CBS extrapolation
     if "/" in lowername:
         return _cbs_gufunc('gradient', lowername, **kwargs)
 
@@ -1561,7 +1549,7 @@ def property(name, **kwargs):
     :type properties: array of strings
     :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
 
-        Indicates which properties should be computed.
+        Indicates which properties should be computed. Defaults to dipole and quadrupole.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -1592,6 +1580,8 @@ def property(name, **kwargs):
     if level:
         kwargs['level'] = level
 
+    properties = kwargs.get('properties', ['dipole', 'quadrupole'])
+    kwargs['properties'] = p4util.drop_duplicates(properties)
     _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
     wfn = procedures['property'][lowername](lowername, **kwargs)
 
@@ -1977,7 +1967,7 @@ def hessian(name, **kwargs):
     finite difference of energies.
 
     """
-    # Check if this is a CBS extrapolation 
+    # Check if this is a CBS extrapolation
     if "/" in lowername:
         return _cbs_gufunc('hessian', lowername, **kwargs)
 
