@@ -30,7 +30,7 @@ molecule benzene_methane {
      units angstrom
 }
 
-set globals {
+set {
     basis         aug-cc-pvdz
     df_basis_scf  aug-cc-pvdz-jkfit
     df_basis_sapt aug-cc-pvdz-ri

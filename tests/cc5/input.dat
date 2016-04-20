@@ -22,7 +22,7 @@ molecule C4NH4 {
   units bohr
 }
 
-set globals {
+set {
   docc        [10, 1, 4, 3]
   basis       aug-cc-pVTZ
   freeze_core true

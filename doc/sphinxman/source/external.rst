@@ -32,12 +32,12 @@ Compiling and Installing from Source
 ====================================
 
 Detailed directions on 
-`obtaining <https://github.com/psi4/psi4public/wiki/1_Obtaining>`_, 
-`prerequisites <https://github.com/psi4/psi4public/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
-`building and installing <https://github.com/psi4/psi4public/wiki/3_Building>`_,
-and `FAQ <https://github.com/psi4/psi4public/wiki/0_FAQ>`_
-are maintained on the `GitHub Wiki <https://github.com/psi4/psi4public/wiki>`_. 
-If uncertain, `start here <https://github.com/psi4/psi4public/wiki/1_Obtaining#quiz>`_.
+`obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
+`prerequisites <https://github.com/psi4/psi4/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
+`building and installing <https://github.com/psi4/psi4/wiki/3_Building>`_,
+and `FAQ <https://github.com/psi4/psi4/wiki/0_FAQ>`_
+are maintained on the `GitHub Wiki <https://github.com/psi4/psi4/wiki>`_. 
+If uncertain, `start here <https://github.com/psi4/psi4/wiki/1_Obtaining#quiz>`_.
 
 
 .. index:: scratch files, psirc, psi4rc

@@ -22,7 +22,7 @@ molecule formic_dim {
    units angstrom 
 }
 
-set globals {
+set {
    basis cc-pvdz
    scf_type df
    guess sad

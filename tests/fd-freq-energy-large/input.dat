@@ -95,7 +95,7 @@ b2_freqs.set(0, 4, ref_freqs[20])
 
 
 # *** Test all frequencies by 3-pt formula.
-set globals {
+set {
   basis dz
   d_convergence 11
   points 3
@@ -125,7 +125,7 @@ molecule c4nh4 {
     H         1.274488047821    -0.899961499592    -1.835960153318
 }
 
-set globals {
+set {
  basis dz
  points 5
  d_convergence 11    # necessary for guaranteeing accuracy down to 0.001 cm^-1
@@ -154,7 +154,7 @@ molecule c4nh4 {
     H         1.274488047821    -0.899961499592    -1.835960153318
 }
 
-set globals {
+set {
  basis dz
  points 5
  d_convergence 11    # necessary for guaranteeing accuracy down to 0.001 cm^-1
@@ -184,7 +184,7 @@ molecule c4nh4 {
     H         1.274488047821    -0.899961499592    -1.835960153318
 }
 
-set globals {
+set {
  basis dz
  points 5
  d_convergence 11    # necessary for guaranteeing accuracy down to 0.001 cm^-1
@@ -214,7 +214,7 @@ molecule c4nh4 {
     H         1.274488047821    -0.899961499592    -1.835960153318
 }
 
-set globals {
+set {
  basis dz
  points 5
  d_convergence 11    # necessary for guaranteeing accuracy down to 0.001 cm^-1

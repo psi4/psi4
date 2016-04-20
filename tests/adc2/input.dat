@@ -12,7 +12,7 @@ molecule h2ox2 {
  symmetry c1
 }
 
-set globals {
+set {
     reference rhf
     basis aug-cc-pvdz
     guess core

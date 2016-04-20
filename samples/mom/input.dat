@@ -34,7 +34,7 @@ water.update_geometry() # TEST
 #
 #  Total Energy -76.021418
 
-set globals {
+set {
 basis cc-pvdz
 e_convergence 12
 d_convergence 10
@@ -48,7 +48,7 @@ E = energy('scf')
 
 # Total Energy -75.277551
 
-set globals {
+set {
 reference rhf
 # Give the ground-state orbitals 10 iterations to settle
 mom_start 10
@@ -64,7 +64,7 @@ E = energy('scf')
 
 # Total Energy -75.091928
 
-set globals {
+set {
 reference rhf
 mom_start 10
 # Annihilate absolute orbital 4 (the HOMO - 1)
@@ -82,7 +82,7 @@ E = energy('scf')
 
 # Total Energy -75.792007 
 
-set globals {
+set {
 # Use UHF for spin-flip
 reference uhf
 mom_start 10

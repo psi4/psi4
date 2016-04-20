@@ -19,7 +19,7 @@ molecule {
   H             1    1.028270      2   96.767980
 }
 
-set globals {
+set {
   basis sto-3g
   scf_type pk
 }

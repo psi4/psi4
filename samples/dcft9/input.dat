@@ -16,7 +16,7 @@ H  -1.934259   0.762503   0.000000
 H  -0.599677   0.040712   0.000000
 }
 
-set globals {
+set {
     r_convergence 12
     d_convergence 12
     algorithm   simultaneous
