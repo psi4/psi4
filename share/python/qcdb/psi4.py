@@ -63,8 +63,8 @@ def harvest_output(outtext):
         print('matched sapt')
         for pv in mobj.group(0).split('\n'):
             submobj = re.search(r'^\s+' + r'(.+?)' + r'\s+' + 
-                NUMBER + r'\s+' + r'mH' + r'\s+' +
-                NUMBER + r'\s+' + r'kcal mol\^-1' + r'\s*$', pv)
+                NUMBER + r'\s+' + r'[mEh]' + r'\s+' +
+                NUMBER + r'\s+' + r'[kcal/mol]' + r'\s*$', pv)
             if submobj:
                 try:
                     key = ''.join(submobj.group(1).split())

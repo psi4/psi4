@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p.h"
@@ -46,7 +51,7 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf [Eh]\n\n",e_disp220t);
     
   }
 
@@ -66,14 +71,14 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf [Eh]\n\n",e_disp202t);
     
   }
 
   e_disp22t_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_);
+    outfile->Printf("    Disp22 (T)          = %18.12lf [Eh]\n",e_disp22t_);
     
   }
 
@@ -84,9 +89,9 @@ void SAPT2p::disp22t()
     e_est_disp22t_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf [Eh]\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf [Eh]\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf [Eh]\n",e_est_disp22t_);
       
     }
   }
@@ -119,7 +124,7 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf [Eh]\n\n",e_disp220t);
     
   }
 
@@ -139,14 +144,14 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf [Eh]\n\n",e_disp202t);
     
   }
 
   e_disp22t_ccd_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_ccd_);
+    outfile->Printf("    Disp22 (T)          = %18.12lf [Eh]\n",e_disp22t_ccd_);
     
   }
 
@@ -157,9 +162,9 @@ void SAPT2p::disp22tccd()
     e_est_disp22t_ccd_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_ccd_);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf [Eh]\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf [Eh]\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf [Eh]\n",e_est_disp22t_ccd_);
       
     }
   }

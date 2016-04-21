@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2.h"
@@ -31,14 +36,14 @@ void SAPT2::ind22()
   double e_ind220 = ind220();
 
   if (debug_) {
-    outfile->Printf("    Ind220              = %18.12lf H\n",e_ind220);
+    outfile->Printf("    Ind220              = %18.12lf [Eh]\n",e_ind220);
     
   }
 
   double e_ind202 = ind202();
 
   if (debug_) {
-    outfile->Printf("    Ind202              = %18.12lf H\n\n",e_ind202);
+    outfile->Printf("    Ind202              = %18.12lf [Eh]\n\n",e_ind202);
     
   }
 
@@ -46,7 +51,7 @@ void SAPT2::ind22()
   e_exch_ind22_ = e_ind22_*(e_exch_ind20_/e_ind20_);
 
   if (print_) {
-    outfile->Printf("    Ind22               = %18.12lf H\n",e_ind22_);
+    outfile->Printf("    Ind22               = %18.12lf [Eh]\n",e_ind22_);
     
   }
 }
@@ -215,7 +220,7 @@ double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
   free_block(yARAR);
 
   if (debug_) {
-    outfile->Printf("\n    Ind22_1             = %18.12lf H\n",energy);
+    outfile->Printf("\n    Ind22_1             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -244,7 +249,7 @@ double SAPT2::ind220_2(int ampfile, const char *tlabel, double **iAR,
   free_block(zAR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_2             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_2             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -283,7 +288,7 @@ double SAPT2::ind220_3(int ampfile, const char *AAlabel, const char *RRlabel,
   free_block(xRR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_3             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_3             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -328,7 +333,7 @@ double SAPT2::ind220_4(int ampfile, const char *thetalabel, int intfile,
   free_block(T_p_AR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_4             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_4             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -364,7 +369,7 @@ double SAPT2::ind220_5(int ampfile, const char *tlabel, double **iAR,
   free_block(tARAR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_5             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_5             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -421,7 +426,7 @@ double SAPT2::ind220_6(int intfile, const char *AAlabel, const char *ARlabel,
   free_block(yAR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_6             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_6             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -492,7 +497,7 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
   free_block(tAR);
 
   if (debug_) {
-    outfile->Printf("    Ind22_7             = %18.12lf H\n",energy);
+    outfile->Printf("    Ind22_7             = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -500,4 +505,3 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
 }
 
 }}
-

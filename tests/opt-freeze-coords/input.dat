@@ -27,6 +27,8 @@ set optking {
 opt_energy = optimize('scf')
 
 compare_values(opt_energy, -76.0270327834836, 6, "SCF Optimized energy") #TEST
+
+# Coords are in bohr
 compare_values( h2o.x(0), 1.88972613289, 6, "X Frozen coordinate") #TEST
 compare_values( h2o.y(0), 1.88972613289, 6, "Y Frozen coordinate") #TEST
 compare_values( h2o.z(0), 1.88972613289, 6, "Z Frozen coordinate") #TEST
