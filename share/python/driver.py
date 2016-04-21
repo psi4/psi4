@@ -261,7 +261,6 @@ def energy(name, **kwargs):
 
         Binary data files to be renamed for calculation restart.
 
-
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -997,6 +996,59 @@ def optimize(name, **kwargs):
 
        * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
+    :type name: string
+    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the database. May be any valid argument to
+        :py:func:`~driver.energy`.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element (after *float* energy) of a tuple.
+
+    :type func: :ref:`function <op_py_function>`
+    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
+
+        Indicates the type of calculation to be performed on the molecule.
+        The default dertype accesses ``'gradient'`` or ``'energy'``, while
+        ``'cbs'`` performs a multistage finite difference calculation.
+        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
+        use keyword ``opt_func`` instead of ``func``.
+
+    :type mode: string
+    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
+
+        For a finite difference of energies optimization, indicates whether
+        the calculations required to complete the
+        optimization are to be run in one file (``'continuous'``) or are to be
+        farmed out in an embarrassingly parallel fashion
+        (``'sow'``/``'reap'``). For the latter, run an initial job with
+        ``'sow'`` and follow instructions in its output file. For maximum
+        flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
+
+    :type dertype: :ref:`dertype <op_py_dertype>`
+    :param dertype: ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available) or finite difference
+        optimization is to be performed.
+
+    :type hessian_with: string
+    :param hessian_with: ``'scf'`` || ``'mp2'`` || etc.
+
+        Indicates the computational method with which to perform a hessian
+        analysis to guide the geometry optimization.
+
+    .. warning:: Optimizations where the molecule is specified in Z-matrix format
+       with dummy atoms will result in the geometry being converted to a Cartesian representation.
+
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
         by finite differences.
@@ -1046,52 +1098,6 @@ def optimize(name, **kwargs):
 
     .. include:: cfour_table_grad.rst
 
-    .. warning:: Optimizations where the molecule is specified in Z-matrix format
-       with dummy atoms will result in the geometry being converted to a Cartesian representation.
-
-    :type name: string
-    :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the database. May be any valid argument to
-        :py:func:`~driver.energy`.
-
-    :type func: :ref:`function <op_py_function>`
-    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
-
-        Indicates the type of calculation to be performed on the molecule.
-        The default dertype accesses ``'gradient'`` or ``'energy'``, while
-        ``'cbs'`` performs a multistage finite difference calculation.
-        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
-        use keyword ``opt_func`` instead of ``func``.
-
-    :type mode: string
-    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
-
-        For a finite difference of energies optimization, indicates whether
-        the calculations required to complete the
-        optimization are to be run in one file (``'continuous'``) or are to be
-        farmed out in an embarrassingly parallel fashion
-        (``'sow'``/``'reap'``). For the latter, run an initial job with
-        ``'sow'`` and follow instructions in its output file. For maximum
-        flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
-
-    :type dertype: :ref:`dertype <op_py_dertype>`
-    :param dertype: ``'gradient'`` || ``'energy'``
-
-        Indicates whether analytic (if available) or finite difference
-        optimization is to be performed.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    :type hessian_with: string
-    :param hessian_with: ``'scf'`` || ``'mp2'`` || etc.
-
-        Indicates the computational method with which to perform a hessian
-        analysis to guide the geometry optimization.
 
     :examples:
 
@@ -1802,11 +1808,6 @@ def frequency(name, **kwargs):
 
     :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    .. note:: Analytic hessians are not available. Frequencies will proceed through
-        finite differences according to availability of gradients or energies.
-
-    .. _`table:freq_gen`:
-
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
@@ -1825,12 +1826,14 @@ def frequency(name, **kwargs):
         calculation result as the second element (after *float* energy) of a tuple.
         Arrays of frequencies and the Hessian can be accessed through the wavefunction.
 
-    :type dertype: :ref:`dertype <op_py_dertype>`
-    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+    :type func: :ref:`function <op_py_function>`
+    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
-        Indicates whether analytic (if available- they're not), finite
-        difference of gradients (if available) or finite difference of
-        energies is to be performed.
+        Indicates the type of calculation to be performed on the molecule.
+        The default dertype accesses ``'gradient'`` or ``'energy'``, while
+        ``'cbs'`` performs a multistage finite difference calculation.
+        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
+        use keyword ``freq_func`` instead of ``func``.
 
     :type mode: string
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
@@ -1842,6 +1845,13 @@ def frequency(name, **kwargs):
         run an initial job with ``'sow'`` and follow instructions in its output file.
         For maximum flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
 
+    :type dertype: :ref:`dertype <op_py_dertype>`
+    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available- they're not), finite
+        difference of gradients (if available) or finite difference of
+        energies is to be performed.
+
     :type irrep: int or string
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
@@ -1849,6 +1859,11 @@ def frequency(name, **kwargs):
         frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
+
+    .. _`table:freq_gen`:
 
     :examples:
 
@@ -1901,20 +1916,20 @@ def frequency(name, **kwargs):
 
 
 def gdma(wfn, datafile=""):
-    """Function to write wavefunction information in *wfn* to *filename* in
-    molden format.
+    """Function to use wavefunction information in *wfn* and, if specified,
+    additional commands in *filename* to run GDMA analysis.
 
     .. versionadded:: 0.6
 
     :returns: None
 
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
+
     :type datafile: string
     :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
                      analyses.  If this option is used, the File keyword must be set to read
                      a filename.fchk, where filename is provided by |globals__writer_file_label| .
-
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
-    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
 
     :examples:
 
@@ -1998,11 +2013,11 @@ def molden(wfn, filename):
 
     :returns: None
 
-    :type filename: string
-    :param filename: destination file name for MOLDEN file
-
     :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file
 
     :examples:
 
