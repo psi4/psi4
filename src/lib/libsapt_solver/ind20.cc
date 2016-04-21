@@ -143,7 +143,7 @@ void SAPT0::ind20rA_B()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
   SAPTDFInts C_p_AA = set_C_AA();
   SAPTDFInts C_p_AR = set_C_AR();
@@ -338,7 +338,7 @@ void SAPT0::ind20rB_A()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
   SAPTDFInts C_p_BB = set_C_BB();
   SAPTDFInts C_p_BS = set_C_BS();
@@ -533,7 +533,7 @@ void SAPT0::ind20rA_B_aio()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
   SAPTDFInts C_p_AR = set_C_AR();
 
@@ -772,7 +772,7 @@ void SAPT0::ind20rB_A_aio()
   }
 
   if (print_)
-    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
   SAPTDFInts C_p_BS = set_C_BS();
 
