@@ -940,7 +940,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
                     method_ptype_data = xt_type(mt_name,
                                                 *extrap_data, verbose=cbs_verbose)
                 else:
-                    method_ptype_data = xt_type(mt_name, scf_type_list[-1],
+                    method_ptype_data = xt_type(mt_name, scf_ptype_list[-1],
                                                 *extrap_data, verbose=cbs_verbose)
 
 
@@ -1772,6 +1772,11 @@ def optimize(name, **kwargs):
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+
+    # If we are feezing cartesian, do not orient or COM
+    if psi4.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
+        molecule.fix_orientation(True)
+        molecule.fix_com(True)   
     molecule.update_geometry()
 
     # Shifting the geometry so need to copy the active molecule
