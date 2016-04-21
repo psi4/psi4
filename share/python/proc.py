@@ -2057,8 +2057,7 @@ def run_dft_property(name, **kwargs):
     properties = kwargs.pop('properties')
     proc_util.oeprop_validator(properties)
 
-    kwargs["scf_do_dipole"] = False
-    scf_wfn = run_scf(name, **kwargs)
+    scf_wfn = run_scf(name, scf_do_dipole=False, *kwargs)
 
     # Run OEProp
     oe = psi4.OEProp(scf_wfn)
@@ -2083,8 +2082,7 @@ def run_scf_property(name, **kwargs):
     properties = kwargs.pop('properties')
     proc_util.oeprop_validator(properties)
 
-    kwargs["scf_do_dipole"] = False
-    scf_wfn = run_scf(name, **kwargs)
+    scf_wfn = run_scf(name, scf_do_dipole=False, **kwargs)
 
     # Run OEProp
     oe = psi4.OEProp(scf_wfn)
@@ -2254,9 +2252,7 @@ def run_dfmp2_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        kwargs["scf_do_dipole"] = False
-        kwargs['use_c1'] = True
-        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+        ref_wfn = scf_helper(name, scf_do_dipole=False, use_c1=True, **kwargs)  # C1 certified
 
     psi4.print_out('\n')
     p4util.banner('DFMP2')

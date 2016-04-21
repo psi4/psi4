@@ -833,6 +833,18 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
 
         method_list.append(method_dict)
 
+    # SCF/cc-pv[DTQ]Z + D:MP2/cc-pv[DT]Z + D:CCSD(T)
+    # MP2/cc-pv[DT]Z + D:CCSD(T)
+
+    # SCF/cc-pv[DT]Z
+    # scf_basis = [...]
+    # corl_wfn
+    # corl_basis
+    # delta_wfn
+    # delta_basis 
+    # delta2_wfn
+    # delta2_basis 
+
     # Validate the method_list
 
     # Pick the correct functin to call
@@ -1241,6 +1253,10 @@ def energy(name, **kwargs):
     >>> energy('fci', ref_wfn=cisd_wfn)
 
     """
+
+    if hasattr(name, '__call__'):
+        return name(energy, **kwargs)
+
     lowername = name.lower()
 
     # Do a cp thing

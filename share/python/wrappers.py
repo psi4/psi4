@@ -1967,6 +1967,8 @@ def complete_basis_set(name, **kwargs):
 
     :examples:
 
+
+    >>> cbs(energy, lowername, ...)
     >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
     >>> cbs('scf', scf_basis='cc-pVDZ')
 
