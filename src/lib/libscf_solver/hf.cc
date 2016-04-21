@@ -1529,9 +1529,11 @@ void HF::load_orbitals()
 
     boost::shared_ptr<BasisSet> dual_basis;
     if (basisname != options_.get_str("BASIS")) {
-        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
-        molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-        dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        //boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+        //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
+        //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+        "BASIS", basisname, old_forced_puream);
     } else {
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
         "BASIS", options_.get_str("BASIS"));
