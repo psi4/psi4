@@ -199,8 +199,8 @@ Basis Sets
 
 .. _`sec:psiVariables`:
 
-PSI Variables & Return Values
-=============================
+PSI Variables
+=============
 
 To harness the power of Python, |PSIfour| makes the most pertinent results
 of each computation available to the Python interpreter for
@@ -252,13 +252,54 @@ So if you run in a single input file a STO-3G FCI followed by a
 aug-cc-pVQZ SCF followed by a :py:func:`~psi4.print_variables` command, the
 last will include :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` but not 
 :psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`.
+The entire dictionary of PSI variables can be obtained through
+:py:func:`~psi4.get_variables`.
+
+.. _`sec:returnvals`:
+
+Return Values
+=============
 
 Most of the usual user computation functions (*i.e.*,
 :py:func:`~driver.energy`, :py:func:`~driver.optimize`, and
 :py:func:`~driver.frequency`) return simply the current total energy.
 Consult the descriptions of other functions in :ref:`sec:psithonFunc` for
 what quantities they return and for what data structures they make
-available for post-processing.
+available for post-processing. Many users need only deal with the simple return
+form for the computation functions. ::
+
+    # E is total energy float
+    # G is gradient array
+    # H is hessian array
+    # wfn is class instance with many computational details
+
+    # simple returns
+    E = energy(...)
+    E = optimize(...)
+    E = frequency(...)
+    G = gradient(...)  # used by optimize()
+    H = hessian(...)  # used by frequency()
+
+For more elaborate post-processing of computations, adding
+``return_wfn=True`` keyword argument additionally returns
+:ref:`Wavefunction<sec:psimod_Wavefunction>`. ::
+
+    # power user returns
+    E, wfn = energy(..., return_wfn=True)
+    E, wfn = optimize(..., return_wfn=True)
+    E, wfn = frequency(..., return_wfn=True)
+    G, wfn = gradient(..., return_wfn=True)  # used by optimize()
+    H, wfn = hessian(..., return_wfn=True)  # used by frequency()
+
+    # print gradient array and its rms
+    wfn.gradient.print_out()
+    print wfn.gradient().rms()
+
+    # format output for other programs
+    molden(wfn, 'mycalc.molden')
+
+    # access array in another format
+    np.array(wfn.hessian())
 
 .. _`sec:loops`:
 
