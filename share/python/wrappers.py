@@ -1,7 +1,12 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 """Module with functions that call the four main :py:mod:`driver`
@@ -305,7 +310,7 @@ def auto_fragments(**kwargs):
     White = []
     Black = []
     F = geom.split('\n')
-    for f in range(0, numatoms):
+    for f in range(numatoms):
         A = F[f + 1].split()
         symbol[f] = A[0]
         X[f] = float(A[1])
@@ -341,10 +346,10 @@ def auto_fragments(**kwargs):
             White.remove(White[0])
         frag += 1
 
-    new_geom = """\n0 1\n"""
+    new_geom = """\n"""
     for i in Fragment[0]:
         new_geom = new_geom + F[i].lstrip() + """\n"""
-    new_geom = new_geom + """--\n0 1\n"""
+    new_geom = new_geom + """--\n"""
     for j in Fragment[1]:
         new_geom = new_geom + F[j].lstrip() + """\n"""
     new_geom = new_geom + """units angstrom\n"""

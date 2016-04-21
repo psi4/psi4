@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt0.h"
@@ -238,15 +243,15 @@ void SAPT0::exch_disp20_n5()
   e_exch_disp20_ = -2.0*(v_1+q_12);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
-    outfile->Printf("    Disp20 (SS)         = %18.12lf H\n",e_disp20_ss_);
-    outfile->Printf("    Disp20 (OS)         = %18.12lf H\n",e_disp20_os_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
+    outfile->Printf("    Disp20 (SS)         = %18.12lf [Eh]\n",e_disp20_ss_);
+    outfile->Printf("    Disp20 (OS)         = %18.12lf [Eh]\n",e_disp20_os_);
     
   }
 
   if (debug_) {
-    outfile->Printf("\n    V1 + H2 + H4 + Q9   = %18.12lf H\n",v_1);
-    outfile->Printf("    Q12                 = %18.12lf H\n",q_12);
+    outfile->Printf("\n    V1 + H2 + H4 + Q9   = %18.12lf [Eh]\n",v_1);
+    outfile->Printf("    Q12                 = %18.12lf [Eh]\n",q_12);
     
   }
 }
@@ -276,12 +281,12 @@ void SAPT0::exch_disp20_n4()
   q_14 = q14();
 
   if (debug_) {
-    outfile->Printf("    H2                  = %18.12lf H\n",h_2);
-    outfile->Printf("    H4                  = %18.12lf H\n",h_4);
-    outfile->Printf("    Q2                  = %18.12lf H\n",q_2);
-    outfile->Printf("    Q6                  = %18.12lf H\n",q_6);
-    outfile->Printf("    Q13                 = %18.12lf H\n",q_13);
-    outfile->Printf("    Q14                 = %18.12lf H\n",q_14);
+    outfile->Printf("    H2                  = %18.12lf [Eh]\n",h_2);
+    outfile->Printf("    H4                  = %18.12lf [Eh]\n",h_4);
+    outfile->Printf("    Q2                  = %18.12lf [Eh]\n",q_2);
+    outfile->Printf("    Q6                  = %18.12lf [Eh]\n",q_6);
+    outfile->Printf("    Q13                 = %18.12lf [Eh]\n",q_13);
+    outfile->Printf("    Q14                 = %18.12lf [Eh]\n",q_14);
     
   }
 
@@ -517,16 +522,16 @@ void SAPT0::exch_disp20_n4()
   }
 
   if (debug_) {
-    outfile->Printf("    H1                  = %18.12lf H\n",h_1);
-    outfile->Printf("    H3                  = %18.12lf H\n",h_3);
-    outfile->Printf("    Q1                  = %18.12lf H\n",q_1);
-    outfile->Printf("    Q3                  = %18.12lf H\n",q_3);
-    outfile->Printf("    Q4                  = %18.12lf H\n",q_4);
-    outfile->Printf("    Q5                  = %18.12lf H\n",q_5);
-    outfile->Printf("    Q7                  = %18.12lf H\n",q_7);
-    outfile->Printf("    Q8                  = %18.12lf H\n",q_8);
-    outfile->Printf("    Q10                 = %18.12lf H\n",q_10);
-    outfile->Printf("    Q11                 = %18.12lf H\n\n",q_11);
+    outfile->Printf("    H1                  = %18.12lf [Eh]\n",h_1);
+    outfile->Printf("    H3                  = %18.12lf [Eh]\n",h_3);
+    outfile->Printf("    Q1                  = %18.12lf [Eh]\n",q_1);
+    outfile->Printf("    Q3                  = %18.12lf [Eh]\n",q_3);
+    outfile->Printf("    Q4                  = %18.12lf [Eh]\n",q_4);
+    outfile->Printf("    Q5                  = %18.12lf [Eh]\n",q_5);
+    outfile->Printf("    Q7                  = %18.12lf [Eh]\n",q_7);
+    outfile->Printf("    Q8                  = %18.12lf [Eh]\n",q_8);
+    outfile->Printf("    Q10                 = %18.12lf [Eh]\n",q_10);
+    outfile->Printf("    Q11                 = %18.12lf [Eh]\n\n",q_11);
   }
 
   free_block(sAS);
@@ -559,9 +564,9 @@ void SAPT0::exch_disp20_n4()
   e_exch_disp20_ss_ = e_exch_disp20_ - e_exch_disp20_os_;
 
   if (print_) {
-    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
-    outfile->Printf("    Exch-Disp20 (SS)    = %18.12lf H\n",e_exch_disp20_ss_);
-    outfile->Printf("    Exch-Disp20 (OS)    = %18.12lf H\n",e_exch_disp20_os_);
+    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",e_exch_disp20_);
+    outfile->Printf("    Exch-Disp20 (SS)    = %18.12lf [Eh]\n",e_exch_disp20_ss_);
+    outfile->Printf("    Exch-Disp20 (OS)    = %18.12lf [Eh]\n",e_exch_disp20_os_);
     
   }
 }
@@ -917,9 +922,9 @@ void SAPT0::test_theta()
   free_block(xPQ); 
   free_block(yPQ);
 
-  outfile->Printf("    Disp20 (xPQ yPQ)    = %18.12lf H\n",disp_xy);
-//outfile->Printf("    Disp20 (Theta AR)   = %18.12lf H\n",disp_ar);
-//outfile->Printf("    Disp20 (Theta BS)   = %18.12lf H\n",disp_bs);
+  outfile->Printf("    Disp20 (xPQ yPQ)    = %18.12lf [Eh]\n",disp_xy);
+//outfile->Printf("    Disp20 (Theta AR)   = %18.12lf [Eh]\n",disp_ar);
+//outfile->Printf("    Disp20 (Theta BS)   = %18.12lf [Eh]\n",disp_bs);
 }
 
 void SAPT0::arbs()
@@ -2138,7 +2143,7 @@ void SAPT2::exch_disp20()
   free_block(X_RB);
 
   if (print_) {
-    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
+    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",e_exch_disp20_);
     
   }
 

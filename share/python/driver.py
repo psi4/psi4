@@ -1,8 +1,12 @@
-
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +22,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 from __future__ import print_function
@@ -65,7 +69,7 @@ procedures = {
             'sos-pi-omp3'   : run_occ,
             'olccd'         : select_olccd,
             'omp2.5'        : select_omp2p5,
-            'dfocc'         : run_dfocc,
+            'dfocc'         : run_dfocc,  # full control over dfocc
             'qchf'          : run_qchf,
             'ccd'           : run_dfocc,
             'sapt0'         : run_sapt,
@@ -1019,7 +1023,6 @@ def energy(name, **kwargs):
 
         Binary data files to be renamed for calculation restart.
 
-
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1033,15 +1036,13 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mcscf                   | multiconfigurational self consistent field (SCF)                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`       |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[details] <tlmp3>`                                   |
+    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tlmp3>`   |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | fno-mp3                 | MP3 with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mp2.5                   | average of MP2 and MP3 :ref:`[details] <tlmp25>`                                                              |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tlmp25>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1081,11 +1082,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ_oo>`                                                          |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ocepa(0)                | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ_oo>`                            |
+    | lccsd, cepa(0)          | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>` :ref:`[details] <tllccsd>`        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>` :ref:`[details] <tllccsd>`        |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | fno-cepa(0)             | CEPA(0) with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                              |
+    | fno-lccsd, fno-cepa(0)  | CEPA(0) with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | cepa(1)                 | coupled electron pair approximation variant 1 :ref:`[manual] <sec:fnocepa>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1107,19 +1106,19 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | fno-qcisd               | QCISD with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | cc2                     | approximate coupled cluster singles and doubles (CC2) :ref:`[manual] <sec:cc>`                                |
+    | lccd                    | Linear CCD :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tllccd>`                                          |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccd                     | coupled cluster doubles  (CCD) :ref:`[manual] <sec:cc>`                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>` :ref:`[details] <tllccsd>`                |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | bccd                    | Brueckner coupled cluster doubles (BCCD) :ref:`[manual] <sec:cc>`                                             |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | lccd                    | Linear CCD :ref:`[manual] <sec:cc>` :ref:`[details] <tllccd>`                                                 |
+    | fno-lccd                | LCCD with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | olccd                   | orbital optimized LCCD :ref:`[manual] <sec:occ_oo>`                                                           |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | fno-lccd                | LCCD with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                 |
+    | cc2                     | approximate coupled cluster singles and doubles (CC2) :ref:`[manual] <sec:cc>`                                |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | ccd                     | coupled cluster doubles  (CCD) :ref:`[manual] <sec:occ_nonoo>`                                                |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsd>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | bccd                    | Brueckner coupled cluster doubles (BCCD) :ref:`[manual] <sec:cc>`                                             |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | fno-ccsd                | CCSD with frozen natural orbitals :ref:`[manual] <sec:fnocc>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1139,7 +1138,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                                                  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dfocc                   | orbital optimized CC with density fitting :ref:`[manual] <sec:occ_oo>`                                        |
+    | dfocc                   | **expert** full control over dfocc module                                                                     |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | cisd                    | configuration interaction (CI) singles and doubles (CISD) :ref:`[manual] <sec:ci>` :ref:`[details] <tlcisd>`  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1158,6 +1157,14 @@ def energy(name, **kwargs):
     | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:ci>`                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:ci>`                              |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | mcscf                   | multiconfigurational self consistent field (SCF) :ref:`[manual] <sec:psimrcc>`                                |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | psimrcc                 | Mukherjee multireference coupled cluster (Mk-MRCC) :ref:`[manual] <sec:psimrcc>`                              |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | dmrgscf                 | density matrix renormalization group SCF :ref:`[manual] <sec:dmrg>`                                           |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | dmrgci                  | density matrix renormalization group CI :ref:`[manual] <sec:dmrg>`                                            |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT) :ref:`[manual] <sec:sapt>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1211,10 +1218,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                                           |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrgscf                 | density matrix renormalization group SCF :ref:`[manual] <sec:dmrg>`                                           |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrgci                  | density matrix renormalization group CI :ref:`[manual] <sec:dmrg>`                                            |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+
+    .. comment missing and why
+    .. comment a certain isapt --- marginally released
+    .. comment mrcc --- this is handled in its own table
+    .. comment psimrcc_scf --- convenience fn
 
     .. include:: autodoc_dft_energy.rst
 
@@ -1568,11 +1576,11 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | mp2                | MP2 ('mp2_type df' only)                      | RHF            | Listed :ref:`here <sec:oeprop>`                               |
+    | mp2                | MP2 with density fitting only (mp2_type df)   | RHF            | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
@@ -1655,62 +1663,23 @@ def optimize(name, **kwargs):
 
        * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
-    .. note:: Analytic gradients area available for all methods in the table
-        below. Optimizations with other methods in the energy table proceed
-        by finite differences.
-
-    .. _`table:grad_gen`:
-
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                                                  |
-    +=========================+===============================================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`                               |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | hf                      | Hartree--Fock (HF)  :ref:`[manual] <sec:scf>`                                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                                                 |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`       |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mp2.5                   | MP2.5 :ref:`[manual] <sec:convocc>`                                                                           |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:convocc>`                                              |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`                               |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ>`                                                             |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`                                |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`                               |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:convocc>`                                          |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                                           |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                                             |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                                                     |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | efp                     | efp-only optimizations                                                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-
-    .. _`table:grad_scf`:
-
-
-    .. include:: autodoc_dft_opt.rst
-
-    .. include:: cfour_table_grad.rst
-
-    .. warning:: Optimizations where the molecule is specified in Z-matrix format
-       with dummy atoms will result in the geometry being converted to a Cartesian representation.
-
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
         :py:func:`~driver.energy`.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element (after *float* energy) of a tuple.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
@@ -1738,16 +1707,64 @@ def optimize(name, **kwargs):
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
 
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
     :type hessian_with: string
     :param hessian_with: ``'scf'`` || ``'mp2'`` || etc.
 
         Indicates the computational method with which to perform a hessian
         analysis to guide the geometry optimization.
+
+    .. warning:: Optimizations where the molecule is specified in Z-matrix format
+       with dummy atoms will result in the geometry being converted to a Cartesian representation.
+
+    .. note:: Analytic gradients area available for all methods in the table
+        below. Optimizations with other methods in the energy table proceed
+        by finite differences.
+
+    .. _`table:grad_gen`:
+
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                                                  |
+    +=========================+===============================================================================================================+
+    | efp                     | efp-only optimizations                                                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`                               |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | hf                      | HF self consistent field (SCF) :ref:`[manual] <sec:scf>`                                                      |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`       |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tlmp3>`   |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tlmp25>`                              |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ_oo>`                            |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ_oo>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ_oo>`                                                          |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | lccd                    | Linear CCD :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tllccd>`                                          |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | olccd                   | orbital optimized LCCD :ref:`[manual] <sec:occ_oo>`                                                           |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | ccd                     | coupled cluster doubles  (CCD) :ref:`[manual] <sec:occ_nonoo>`                                                |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsd>`                 |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdt>`                  |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                                                     |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+
+    .. _`table:grad_scf`:
+
+
+    .. include:: autodoc_dft_opt.rst
+
+    .. include:: cfour_table_grad.rst
+
 
     :examples:
 
@@ -2392,11 +2409,6 @@ def frequency(name, **kwargs):
 
     :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    .. note:: Analytic hessians are not available. Frequencies will proceed through
-        finite differences according to availability of gradients or energies.
-
-    .. _`table:freq_gen`:
-
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
@@ -2415,12 +2427,14 @@ def frequency(name, **kwargs):
         calculation result as the second element (after *float* energy) of a tuple.
         Arrays of frequencies and the Hessian can be accessed through the wavefunction.
 
-    :type dertype: :ref:`dertype <op_py_dertype>`
-    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+    :type func: :ref:`function <op_py_function>`
+    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
-        Indicates whether analytic (if available- they're not), finite
-        difference of gradients (if available) or finite difference of
-        energies is to be performed.
+        Indicates the type of calculation to be performed on the molecule.
+        The default dertype accesses ``'gradient'`` or ``'energy'``, while
+        ``'cbs'`` performs a multistage finite difference calculation.
+        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
+        use keyword ``freq_func`` instead of ``func``.
 
     :type mode: string
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
@@ -2432,6 +2446,13 @@ def frequency(name, **kwargs):
         run an initial job with ``'sow'`` and follow instructions in its output file.
         For maximum flexibility, ``return_wfn`` is always on in ``'reap'`` mode.
 
+    :type dertype: :ref:`dertype <op_py_dertype>`
+    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available- they're not), finite
+        difference of gradients (if available) or finite difference of
+        energies is to be performed.
+
     :type irrep: int or string
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
@@ -2439,6 +2460,11 @@ def frequency(name, **kwargs):
         frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
+
+    .. _`table:freq_gen`:
 
     :examples:
 
@@ -2491,20 +2517,20 @@ def frequency(name, **kwargs):
 
 
 def gdma(wfn, datafile=""):
-    """Function to write wavefunction information in *wfn* to *filename* in
-    molden format.
+    """Function to use wavefunction information in *wfn* and, if specified,
+    additional commands in *filename* to run GDMA analysis.
 
     .. versionadded:: 0.6
 
     :returns: None
 
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
+
     :type datafile: string
     :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
                      analyses.  If this option is used, the File keyword must be set to read
                      a filename.fchk, where filename is provided by |globals__writer_file_label| .
-
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
-    :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
 
     :examples:
 
@@ -2588,11 +2614,11 @@ def molden(wfn, filename):
 
     :returns: None
 
-    :type filename: string
-    :param filename: destination file name for MOLDEN file
-
     :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file
 
     :examples:
 

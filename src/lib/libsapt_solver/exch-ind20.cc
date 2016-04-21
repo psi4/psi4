@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt0.h"
@@ -326,26 +331,26 @@ void SAPT0::exch_ind20A_B()
   e_exch_ind20_ = exind;
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
-    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
-    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
-    outfile->Printf("    Ex9                 = %18.12lf H\n",ex9);
-    outfile->Printf("    Ex10                = %18.12lf H\n",ex10);
-    outfile->Printf("    Ex11                = %18.12lf H\n",ex11);
-    outfile->Printf("    Ex12                = %18.12lf H\n",ex12);
-    outfile->Printf("    Ex13                = %18.12lf H\n\n",ex13);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf [Eh]\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf [Eh]\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf [Eh]\n",ex9);
+    outfile->Printf("    Ex10                = %18.12lf [Eh]\n",ex10);
+    outfile->Printf("    Ex11                = %18.12lf [Eh]\n",ex11);
+    outfile->Printf("    Ex12                = %18.12lf [Eh]\n",ex12);
+    outfile->Printf("    Ex13                = %18.12lf [Eh]\n\n",ex13);
   }
 
   if (print_) {
     if (no_response_) 
-      outfile->Printf("    Exch-Ind20 (A<-B)   = %18.12lf H\n",exind);
+      outfile->Printf("    Exch-Ind20 (A<-B)   = %18.12lf [Eh]\n",exind);
     else
-      outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",exind);
+      outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",exind);
     
   }
 }
@@ -648,29 +653,29 @@ void SAPT0::exch_ind20B_A()
   e_exch_ind20_ += exind;
 
   if (debug_) {
-    outfile->Printf("\n    Ex1                 = %18.12lf H\n",ex1);
-    outfile->Printf("    Ex2                 = %18.12lf H\n",ex2);
-    outfile->Printf("    Ex3                 = %18.12lf H\n",ex3);
-    outfile->Printf("    Ex4                 = %18.12lf H\n",ex4);
-    outfile->Printf("    Ex5                 = %18.12lf H\n",ex5);
-    outfile->Printf("    Ex6                 = %18.12lf H\n",ex6);
-    outfile->Printf("    Ex7                 = %18.12lf H\n",ex7);
-    outfile->Printf("    Ex8                 = %18.12lf H\n",ex8);
-    outfile->Printf("    Ex9                 = %18.12lf H\n",ex9);
-    outfile->Printf("    Ex10                = %18.12lf H\n",ex10);
-    outfile->Printf("    Ex11                = %18.12lf H\n",ex11);
-    outfile->Printf("    Ex12                = %18.12lf H\n",ex12);
-    outfile->Printf("    Ex13                = %18.12lf H\n\n",ex13);
+    outfile->Printf("\n    Ex1                 = %18.12lf [Eh]\n",ex1);
+    outfile->Printf("    Ex2                 = %18.12lf [Eh]\n",ex2);
+    outfile->Printf("    Ex3                 = %18.12lf [Eh]\n",ex3);
+    outfile->Printf("    Ex4                 = %18.12lf [Eh]\n",ex4);
+    outfile->Printf("    Ex5                 = %18.12lf [Eh]\n",ex5);
+    outfile->Printf("    Ex6                 = %18.12lf [Eh]\n",ex6);
+    outfile->Printf("    Ex7                 = %18.12lf [Eh]\n",ex7);
+    outfile->Printf("    Ex8                 = %18.12lf [Eh]\n",ex8);
+    outfile->Printf("    Ex9                 = %18.12lf [Eh]\n",ex9);
+    outfile->Printf("    Ex10                = %18.12lf [Eh]\n",ex10);
+    outfile->Printf("    Ex11                = %18.12lf [Eh]\n",ex11);
+    outfile->Printf("    Ex12                = %18.12lf [Eh]\n",ex12);
+    outfile->Printf("    Ex13                = %18.12lf [Eh]\n\n",ex13);
   }
 
   if (print_) {
     if (no_response_) {
-      outfile->Printf("    Exch-Ind20 (B<-A)   = %18.12lf H\n",exind);
-      outfile->Printf("    Exch-Ind20          = %18.12lf H\n",e_exch_ind20_);
+      outfile->Printf("    Exch-Ind20 (B<-A)   = %18.12lf [Eh]\n",exind);
+      outfile->Printf("    Exch-Ind20          = %18.12lf [Eh]\n",e_exch_ind20_);
     } 
     else {
-      outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
-      outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+      outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",exind);
+      outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",e_exch_ind20_);
     }
     
   }
@@ -695,9 +700,9 @@ void SAPT2::exch_ind20r()
   e_exch_ind20_ = exindAB + exindBA;
 
   if (print_) {
-    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",exindAB);
-    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",exindBA);
-    outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",exindAB);
+    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",exindBA);
+    outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",e_exch_ind20_);
     
   }
 
@@ -1277,4 +1282,3 @@ void SAPT2::exch_ind20rB_A()
 }
 
 }}
-

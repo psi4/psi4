@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <cstdlib>
@@ -481,12 +486,12 @@ double HF::finalize_E()
                                             Process::environment.globals["EFP IND ENERGY"];
         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
-        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", E_);
 
         E_ += efp_wfn_independent_energy;
 
-        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
+        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", E_);
     }
 
 
@@ -1493,9 +1498,11 @@ void HF::load_orbitals()
 
     boost::shared_ptr<BasisSet> dual_basis;
     if (basisname != options_.get_str("BASIS")) {
-        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
-        molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-        dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        //boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+        //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
+        //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+        "DUAL_BASIS_SCF", basisname, old_forced_puream);
     } else {
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
         "BASIS", options_.get_str("BASIS"));
@@ -1993,7 +2000,11 @@ void HF::print_energies()
     if (fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
-    outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
+
+    // Only print this alert if we are actually doing EFP or PCM
+    if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
+        outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
+    }
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
