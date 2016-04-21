@@ -1,5 +1,4 @@
 #! MP2 cc-pvDZ properties for Nitrogen oxide
-import numpy as np
 
 molecule nos {
    O 0 0 0
