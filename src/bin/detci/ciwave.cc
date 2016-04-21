@@ -158,7 +158,7 @@ double CIWavefunction::compute_energy()
      form_opdm();
    }
 
-   if (Parameters_->dipmom) opdm_properties();
+   // if (Parameters_->dipmom) opdm_properties();
    if (Parameters_->opdm_diag) ci_nat_orbs();
    if (Parameters_->tpdm) form_tpdm();
    if (Parameters_->print_lvl > 0){
@@ -343,9 +343,6 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
       throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
     }
     double inact_value = (spin == "SUM") ? 2.0 : 1.0;
-    if (Iroot != Jroot){
-        inact_value = 0.0;
-    }
     SharedMatrix opdm;
 
     if ((Iroot == -1) && (Jroot == -1)){
@@ -368,6 +365,10 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot, const std::string& s
         }
 
         opdm = opdm_map_[opdm_name.str()];
+    }
+
+    if (Iroot != Jroot){ // Transition densities
+        inact_value = 0.0;
     }
 
     if (full_space) {
