@@ -1533,7 +1533,7 @@ void HF::load_orbitals()
         //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
         //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
-        "BASIS", basisname, old_forced_puream);
+        "DUAL_BASIS_SCF", basisname, old_forced_puream);
     } else {
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
         "BASIS", options_.get_str("BASIS"));
