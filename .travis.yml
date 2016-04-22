@@ -12,6 +12,7 @@ matrix:
 #        - boost-latest
 #        - george-edison55-precise-backports
 #        packages:
+#        - python-numpy
 #        - cmake
 #        - cmake-data
 #        - liblapack-dev
@@ -38,6 +39,7 @@ matrix:
         - boost-latest
         - george-edison55-precise-backports
         packages:
+        - python-numpy
         - cmake
         - cmake-data
         - liblapack-dev
@@ -68,6 +70,7 @@ matrix:
 #        - boost-latest
 #        - george-edison55-precise-backports
 #        packages:
+#        - python-numpy
 #        - cmake
 #        - cmake-data
 #        - liblapack-dev
@@ -96,6 +99,7 @@ matrix:
         - boost-latest
         - george-edison55-precise-backports
         packages:
+        - python-numpy
         - cmake
         - cmake-data
         - liblapack-dev
@@ -124,6 +128,7 @@ matrix:
 #        - ubuntu-toolchain-r-test
 #        - george-edison55-precise-backports
 #        packages:
+#        - python-numpy
 #        - cmake
 #        - cmake-data
 #        - liblapack-dev
@@ -144,6 +149,7 @@ matrix:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
         packages:
+        - python-numpy
         - cmake
         - cmake-data
         - liblapack-dev
@@ -164,6 +170,7 @@ matrix:
 #        - ubuntu-toolchain-r-test
 #        - george-edison55-precise-backports
 #        packages:
+#        - python-numpy
 #        - cmake
 #        - cmake-data
 #        - liblapack-dev
@@ -183,6 +190,7 @@ matrix:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
         packages:
+        - python-numpy
         - cmake
         - cmake-data
         - libhdf5-serial-dev
@@ -234,8 +242,6 @@ before_install:
   - df -h
   - ulimit -a
   - python -V
-  - pip install --upgrade pip setuptools
-  - pip install numpy
 install:
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
@@ -246,6 +252,7 @@ install:
     brew install boost-python
   fi
 before_script:
+- python -c 'import numpy; print numpy.version.version'
 - cd ${TRAVIS_BUILD_DIR}
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
