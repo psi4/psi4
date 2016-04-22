@@ -129,7 +129,7 @@ def sherrill_gold_standard(name='mp2', **kwargs):
     kwargs['delta_basis'] = kwargs.get('delta_basis', 'aug-cc-pVTZ')
     kwargs['delta_scheme'] = kwargs.get('delta_scheme', highest_1)
 
-    return cbs(name, **kwargs)
+    return cbs(**kwargs)
 
 
 def allen_focal_point(name='mp2', **kwargs):
