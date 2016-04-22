@@ -35,9 +35,7 @@ nature of the modules. To overcome these problems, |PSIfour| now has a
 useful plugin feature. This allows codes to be developed as standalone
 entities, which are compiled independently of the Psi source, but can
 still link against Psi's vast library. The plugins can be loaded at
-run-time from any location. To be able to use plugins, you should compile
-your source code with the ``--with-plugins`` flag passed to configure;
-this will enable loading of plugins at runtime.
+run-time from any location.
 
 Creating a New Plugin
 ---------------------
@@ -64,6 +62,8 @@ one of the following commands that meets your needs::
    >>> psi4 --new-plugin myplugin +sointegrals
    >>> psi4 --new-plugin myplugin +wavefunction
    >>> psi4 --new-plugin myplugin +scf
+   >>> psi4 --new-plugin myplugin +ambit
+
 
 Several stable sample plugin directories are available to consult in the
 :source:`plugins` directory. Other plugin directories can be used as models
@@ -86,6 +86,33 @@ but are in active development. For documentation on plugin modules, see
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
 
+Creating a New Plugin Using a Conda Pre-compiled Binary
+-------------------------------------------------------
+
+|PSIfour| plugins can also be created using a Conda binary.  However, to
+To compile a plugin it is necessary to have a compiler (``gcc``) and blas libraries
+(``openblas``) installed in the Conda environment used to run |PSIfour|.
+It is recommended to create a new Conda environment with `gcc` and `openblas` installed.
+
+   >>> conda create -n psi4plugin psi4
+   >>> source activate psi4plugin
+   >>> cd $CONDA/envs/psi4plugin 
+   >>> conda install gcc
+   >>> conda install openblas
+
+where ``$CONDA`` is the path to Miniconda/Anaconda. 
+Once these packages are installed, plugins can be created and compiled.
+
+   >>> source activate psi4plugin # important: activate conda environment
+   >>> psi4 --new-plugin testplugin
+   >>> cd testplugin
+   >>> make -f Makefile.conda
+   >>> psi4 # run sample input.dat 
+
+
+Please note that the conda enviroment must be activated before compilation and execution of
+plugins created using this procedure.
+
 Files in a Plugin Directory
 ---------------------------
 
@@ -95,8 +122,12 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   only user of the plugin, this should not need editing. After any change to
   the plugin C++ code, ``make`` must be run in the plugin directory to
   recompile the ``myplugin.so`` executable, but recompiling the main
-  |PSIfour| code is not necessary. (|PSIfour| must have originally been
-  compiled with configure directive ``--with-plugins``.)
+  |PSIfour| code is not necessary.
+
+* **Makefile.conda** |w---w| Makefile for conda installations.  Use this
+  makefile if |PSIfour| was installed using conda.
+  To compile the ``myplugin.so`` executable run ``make -f Makefile.conda`` 
+  in the plugin directory. 
 
 * **input.dat** |w---w| Sample input file for the plugin.
   Since the ``__init__.py`` file makes the plugin directory look like a
