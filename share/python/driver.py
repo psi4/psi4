@@ -1089,13 +1089,13 @@ def energy(name, **kwargs):
     """
 
     if hasattr(name, '__call__'):
-        return name(energy, **kwargs)
+        return name(energy, ptype='energy', **kwargs)
 
     lowername = name.lower()
 
     # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
-        return _nbody_gufunc(energy, lowername, **kwargs)
+        return _nbody_gufunc(energy, lowername, ptype='energy', **kwargs)
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
@@ -1189,15 +1189,20 @@ def gradient(name, **kwargs):
     >>> np.array(G)
 
     """
+    kwargs = p4util.kwargs_lower(kwargs)
+    psi4.clean_variables()
+
+    # Check if this is a callable function
+    if hasattr(name, '__call__'):
+        return name(gradient, lowername, ptype='gradient', **kwargs)
+
     lowername = name.lower()
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
         return _cbs_gufunc('gradient', lowername, **kwargs)
 
-    kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
-    psi4.clean_variables()
     dertype = 1
 
     # Prevent methods that do not have associated energies
@@ -1607,9 +1612,17 @@ def optimize(name, **kwargs):
     >>> optimize('hf', dertype='energy', mode='sow')
 
     """
+
+    if hasattr(name, '__call__'):
+        raise ValidationError("Optimize: Must use custom function with keyword opt_func")
+
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
+
+    # For CBS wrapper, need to set retention on INTCO file
+    if "/" in name:
+        psi4.IOManager.shared_object().set_specific_retention(1, True)
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
@@ -1736,7 +1749,8 @@ def optimize(name, **kwargs):
                     fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
 
-            if opt_func.__name__ == 'complete_basis_set':
+            # Cleanup binary file 1
+            if opt_func.__name__ == 'complete_basis_set' or "/" in name:
                 psi4.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
