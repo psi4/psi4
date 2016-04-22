@@ -1907,63 +1907,63 @@ def complete_basis_set(name, **kwargs):
         Transformations of the energy through basis set extrapolation for each
         stage of the CBS definition. A complaint is generated if number of basis
         sets in stage_basis does not exactly satisfy requirements of stage_scheme.
-        An exception is the default, ``'highest_1'``, which uses the best basis
+        An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
         set available. See `Extrapolation Schemes`_ for all available schemes.
 
     :type scf_scheme: function
-    :param scf_scheme: |dl| ``highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
+    :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
         Defaults to :py:func:`~wrappers.scf_xtpl_helgaker_3` if three valid basis sets
         present in ``scf_basis``, :py:func:`~wrappers.scf_xtpl_helgaker_2` if two valid basis
-        sets present in ``scf_basis``, and :py:func:`~wrappers.highest_1` otherwise.
+        sets present in ``scf_basis``, and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type corl_scheme: function
-    :param corl_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``corl_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``corl_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type delta_scheme: function
-    :param delta_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``delta_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type delta2_scheme: function
-    :param delta2_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta2_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``delta2_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type delta3_scheme: function
-    :param delta3_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param delta3_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the third delta correction
         to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta3_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``delta3_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type delta4_scheme: function
-    :param delta4_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param delta4_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fourth delta correction
         to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta4_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``delta4_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type delta5_scheme: function
-    :param delta5_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :param delta5_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fifth delta correction
         to the correlation energy.
         Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta5_basis`` and :py:func:`~wrappers.highest_1` otherwise.
+        present in ``delta5_basis`` and :py:func:`~wrappers.xtpl_highest_1` otherwise.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -2204,7 +2204,7 @@ def complete_basis_set(name, **kwargs):
     elif (len(BSTR) == 2) and ('scf_basis' in kwargs):
         cbs_scf_scheme = scf_xtpl_helgaker_2
     else:
-        cbs_scf_scheme = highest_1
+        cbs_scf_scheme = xtpl_highest_1
     if 'scf_scheme' in kwargs:
         cbs_scf_scheme = kwargs['scf_scheme']
 
@@ -2213,7 +2213,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTC) == 2:
             cbs_corl_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_corl_scheme = highest_1
+            cbs_corl_scheme = xtpl_highest_1
         if 'corl_scheme' in kwargs:
             cbs_corl_scheme = kwargs['corl_scheme']
 
@@ -2222,7 +2222,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTD) == 2:
             cbs_delta_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta_scheme = highest_1
+            cbs_delta_scheme = xtpl_highest_1
         if 'delta_scheme' in kwargs:
             cbs_delta_scheme = kwargs['delta_scheme']
 
@@ -2231,7 +2231,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTD2) == 2:
             cbs_delta2_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta2_scheme = highest_1
+            cbs_delta2_scheme = xtpl_highest_1
         if 'delta2_scheme' in kwargs:
             cbs_delta2_scheme = kwargs['delta2_scheme']
 
@@ -2240,7 +2240,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTD3) == 2:
             cbs_delta3_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta3_scheme = highest_1
+            cbs_delta3_scheme = xtpl_highest_1
         if 'delta3_scheme' in kwargs:
             cbs_delta3_scheme = kwargs['delta3_scheme']
 
@@ -2249,7 +2249,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTD4) == 2:
             cbs_delta4_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta4_scheme = highest_1
+            cbs_delta4_scheme = xtpl_highest_1
         if 'delta4_scheme' in kwargs:
             cbs_delta4_scheme = kwargs['delta4_scheme']
 
@@ -2258,7 +2258,7 @@ def complete_basis_set(name, **kwargs):
         if len(BSTD5) == 2:
             cbs_delta5_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta5_scheme = highest_1
+            cbs_delta5_scheme = xtpl_highest_1
         if 'delta5_scheme' in kwargs:
             cbs_delta5_scheme = kwargs['delta5_scheme']
 
@@ -2602,7 +2602,7 @@ def reconstitute_bracketed_basis(needarray):
     return basisstring
 
 
-def highest_1(**largs):
+def xtpl_highest_1(**largs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 

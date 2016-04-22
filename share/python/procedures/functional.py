@@ -35,6 +35,12 @@ import sys
 import math
 import copy
 import psi4
+import sys
+
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 from qcdb.interface_dftd3 import *
 
 ## ==> Functionals <== ##

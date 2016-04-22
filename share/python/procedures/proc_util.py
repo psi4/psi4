@@ -22,6 +22,10 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 from p4util.exceptions import *
 import p4util
 import psi4
@@ -32,7 +36,6 @@ def scf_set_reference_local(name):
     """
 
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])

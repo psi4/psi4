@@ -25,16 +25,17 @@
 # @END LICENSE
 #
 
-## Force Python 3 print syntax, if this is python 2.X
-#if sys.hexversion < 0x03000000:
-from __future__ import print_function
-from __future__ import absolute_import
-
 """Module with functions to parse the input file and convert
 Psithon into standard Python. Particularly, forms psi4
 module calls that access the C++ side of Psi4.
 
 """
+
+## Force Python 3 print syntax, if this is python 2.X
+#if sys.hexversion < 0x03000000:
+from __future__ import print_function
+from __future__ import absolute_import
+
 import re
 import os
 import sys
@@ -749,12 +750,12 @@ def process_input(raw_input, print_level=1):
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
     imports += 'from diatomic import anharmonicity\n'
-#CU    imports += 'from driver import *\n'
+    imports += 'from driver import *\n'
 #CU    imports += 'from wrappers import *\n'
 #CU    imports += 'from wrappers_cfour import *\n'
-#CU    imports += 'from gaussian_n import *\n'
-    imports += 'from aliases import *\n'
-#CU    imports += 'from functional import *\n'
+    imports += 'from gaussian_n import *\n'
+#    imports += 'from aliases import *\n'
+    imports += 'from driver_util import scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n' 
 #    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
     imports += 'psi4.efp_init()\n'  # initialize EFP object before Molecule read in

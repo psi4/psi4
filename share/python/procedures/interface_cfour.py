@@ -37,8 +37,14 @@ import shutil
 import os
 import subprocess
 import re
+import sys
 import inspect
 import random
+
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 import p4util
 import qcdb
 from molutil import *

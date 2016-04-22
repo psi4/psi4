@@ -36,18 +36,23 @@ import shutil
 import os
 import subprocess
 import re
+
+# Relative hack for now
+import sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 import p4util
 from p4util.exceptions import *
 from molutil import *
-from functional import *
-from roa import *
-import proc_util
+
+from .functional import *
+from .roa import *
+from . import proc_util
+
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html
-
-
 
 def select_mp2(name, **kwargs):
     """Function selecting the algorithm for a MP2 energy call
@@ -164,7 +169,7 @@ def select_mp2_property(name, **kwargs):
     reference = psi4.get_option('SCF', 'REFERENCE')
     mtd_type = psi4.get_global_option('MP2_TYPE')
     module = psi4.get_global_option('QC_MODULE')
-    # Considering only [df]occ/dfmp2
+    # Considering only dfmp2 for now
 
     func = None
     if reference == 'RHF':
@@ -578,7 +583,6 @@ def select_lccd(name, **kwargs):
     else:
         return func(name, **kwargs)
 
-
 def select_lccd_gradient(name, **kwargs):
     """Function selecting the algorithm for a LCCD gradient call
     and directing to specified or best-performance default modules.
@@ -974,7 +978,6 @@ def select_mp4(name, **kwargs):
         return
     else:
         return func(name, **kwargs)
-
 
 def scf_helper(name, **kwargs):
     """Function serving as helper to SCF, choosing whether to cast
@@ -1663,72 +1666,13 @@ def run_occ_gradient(name, **kwargs):
     return occ_wfn
 
 
-def parse_scf_cases(name):
-    """Function to parse name string involving SCF family into proper
-    reference option.
-
-    """
-    if name == 'hf':
-        if psi4.get_option('SCF', 'REFERENCE') == 'RKS':
-            psi4.set_local_option('SCF', 'REFERENCE', 'RHF')
-        elif psi4.get_option('SCF', 'REFERENCE') == 'UKS':
-            psi4.set_local_option('SCF', 'REFERENCE', 'UHF')
-        else:
-            pass
-    elif name == 'rhf':
-        psi4.set_local_option('SCF', 'REFERENCE', 'RHF')
-    elif name == 'uhf':
-        psi4.set_local_option('SCF', 'REFERENCE', 'UHF')
-    elif name == 'rohf':
-        psi4.set_local_option('SCF', 'REFERENCE', 'ROHF')
-    elif name == 'rscf':
-        if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-            psi4.set_local_option('SCF', 'REFERENCE', 'RKS')
-        else:
-            psi4.set_local_option('SCF', 'REFERENCE', 'RHF')
-    elif name == 'uscf':
-        if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-            psi4.set_local_option('SCF', 'REFERENCE', 'UKS')
-        else:
-            psi4.set_local_option('SCF', 'REFERENCE', 'UHF')
-    elif name == 'roscf':
-        if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-            raise ValidationError('ROHF reference for DFT is not available.')
-        else:
-            psi4.set_local_option('SCF', 'REFERENCE', 'ROHF')
-
-
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
 
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    # set r/uks ==> r/uhf for run_scf('hf')
-    if name == 'hf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif name == 'scf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','UHF')
+    optstash = proc_util.scf_set_reference_local(name)
 
     scf_wfn = scf_helper(name, **kwargs)
 
@@ -1741,32 +1685,7 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
-    optstash = p4util.OptionsState(
-        ['DF_BASIS_SCF'],
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'])
-
-    # Alter default algorithm
-    if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    if name == 'hf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            psi4.set_local_option('SCF','REFERENCE','UHF')
-    elif name == 'scf':
-        if psi4.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi4.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                psi4.set_local_option('SCF','REFERENCE','UHF')
+    optstash = proc_util.scf_set_reference_local(name)
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
