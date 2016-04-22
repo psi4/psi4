@@ -39,6 +39,7 @@ import pickle
 import copy
 import collections
 from driver import *
+from procedures.interface_cfour import cfour_psivar_list
 # never import aliases into this file
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.

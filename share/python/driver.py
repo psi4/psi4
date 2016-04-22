@@ -26,7 +26,7 @@
 #
 
 from __future__ import print_function
-"""Module with a *pc.procedures* dictionary specifying available quantum
+"""Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
@@ -35,14 +35,19 @@ properties, and vibrational frequency calculations.
 from __future__ import absolute_import
 import sys
 import re
-#from proc import *
-import procedures as pc
-from procedures.interface_cfour import *
-import driver_util
+import math
+
+import psi4
+
 import numpy as np
 import itertools as it
-import math
+
+import driver_util
+import p4util
+
 from qmmm import *
+from procedures import *
+from p4util.exceptions import *
 # never import wrappers or aliases into this file
 
 ### Helper functions
@@ -50,10 +55,10 @@ def _method_exists(ptype, method_name):
     r"""
     Quick check to see if this method exists, if it does not exist we raise a convenient flag.
     """
-    if method_name not in pc.procedures[ptype].keys():
+    if method_name not in procedures[ptype].keys():
         alternatives = ""
         alt_method_name = p4util.text.find_approximate_string_matches(method_name,
-                                                                pc.procedures[ptype].keys(), 2)
+                                                                procedures[ptype].keys(), 2)
         if len(alt_method_name) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
         Cptype = ptype[0].upper() + ptype[1:]
@@ -83,20 +88,20 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
 
     # Set method-dependent scf convergence criteria, check against energy routines
     if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if pc.procedures['energy'][method_name] in [pc.proc.run_scf, pc.proc.run_dft]:
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
 
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if pc.procedures['energy'][method_name] in [pc.proc.run_scf, pc.proc.run_dft]:
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if pc.procedures['energy'][method_name] not in [pc.proc.run_scf, pc.proc.run_dft]:
+        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
             psi4.set_global_option('E_CONVERGENCE', gen_Ec)
 
     # We passed!
@@ -117,17 +122,17 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     # If user type is None, try to find the highest derivative
     if user_dertype is None:
-        if (ptype == 'hessian') and (method_name in pc.procedures['hessian']):
+        if (ptype == 'hessian') and (method_name in procedures['hessian']):
             dertype = 2
             # Will need special logic if we ever have managed Hessians
-        elif method_name in pc.procedures['gradient']:
+        elif method_name in procedures['gradient']:
             dertype = 1
-            if pc.procedures['gradient'][method_name].__name__.startswith('select_'):
+            if procedures['gradient'][method_name].__name__.startswith('select_'):
                 try:
-                    pc.procedures['gradient'][method_name](method_name, probe=True)
+                    procedures['gradient'][method_name](method_name, probe=True)
                 except ManagedMethodError:
                     dertype = 0
-        elif method_name in pc.procedures['energy']:
+        elif method_name in procedures['energy']:
             dertype = 0
     else:
         # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
@@ -136,15 +141,15 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         dertype = user_dertype
 
     # Summary validation
-    if (dertype == 2) and (method_name in pc.procedures['hessian']):
+    if (dertype == 2) and (method_name in procedures['hessian']):
         method = hessian
-    elif (dertype == 1) and (method_name in pc.procedures['gradient']):
+    elif (dertype == 1) and (method_name in procedures['gradient']):
         method = gradient
-    elif (dertype == 0) and (method_name in pc.procedures['energy']):
+    elif (dertype == 0) and (method_name in procedures['energy']):
         method = energy
     else:
         alternatives = ''
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, pc.procedures['energy'].keys(), 2)
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
         if len(alt_method_name) > 0:
             alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
@@ -619,7 +624,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         # check method, need to be careful with gradients
         _method_exists(ptype, method)
 
-        if (method in pc.energy_only_methods) and (len(bassisets) > 2):
+        if (method in energy_only_methods) and (len(bassisets) > 2):
             raise ValidationError("CBS gufunc: Method '%s' cannot be extrapolated" % method)
 
         # Build up dictionary of information
@@ -627,7 +632,7 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         method_dict['basissets'] = basissets
         method_dict['basis_zetas'] = dunning_num
         method_dict['method_name'] = method
-        method_dict['isSCF'] = (pc.procedures['energy'][method] in [pc.proc.run_scf, pc.proc.run_dft])
+        method_dict['isSCF'] = (procedures['energy'][method] in [proc.run_scf, proc.run_dft])
         method_dict['isDelta'] = isDelta
         method_dict['dertype'] = None
         if ptype != 'energy':
@@ -758,8 +763,9 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
                 method_total_energy = xt_type(mt_name,
                                               *extrap_data, verbose=cbs_verbose)
             else:
-                method_total_energy = xt_type(mt_name, scf_energy_list[-1],
+                method_total_energy = xt_type(mt_name,
                                               *extrap_data, verbose=cbs_verbose)
+                method_total_energy += scf_energy_list[-1]
 
             # Extrapolate the list of ptype data
             if ptype == 'energy':
@@ -775,8 +781,9 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
                     method_ptype_data = xt_type(mt_name,
                                                 *extrap_data, verbose=cbs_verbose)
                 else:
-                    method_ptype_data = xt_type(mt_name, scf_ptype_list[-1],
+                    method_ptype_data = xt_type(mt_name,
                                                 *extrap_data, verbose=cbs_verbose)
+                    method_ptype_data.add(scf_ptype_list[-1])
 
 
         # Append to total list
@@ -1112,7 +1119,7 @@ def energy(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    for precallback in pc.hooks['energy']['pre']:
+    for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
     _set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
@@ -1143,9 +1150,9 @@ def energy(name, **kwargs):
             targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
             shutil.copy(item, targetfile)
 
-    wfn = pc.procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
+    wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
 
-    for postcallback in pc.hooks['energy']['post']:
+    for postcallback in hooks['energy']['post']:
         postcallback(lowername, **kwargs)
 
     optstash.restore()
@@ -1194,7 +1201,7 @@ def gradient(name, **kwargs):
     dertype = 1
 
     # Prevent methods that do not have associated energies
-    if lowername in pc.energy_only_methods:
+    if lowername in energy_only_methods:
     	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
 
     optstash = p4util.OptionsState(
@@ -1232,7 +1239,7 @@ def gradient(name, **kwargs):
     else:
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
-    # Set method-dependent scf convergence criteria (test on pc.procedures['energy'] since that's guaranteed)
+    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
@@ -1240,7 +1247,7 @@ def gradient(name, **kwargs):
         psi4.print_out("""gradient() will perform analytic gradient computation.\n""")
 
         # Perform the gradient calculation
-        wfn = pc.procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
+        wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
         optstash.restore()
         if return_wfn:
@@ -1456,7 +1463,7 @@ def property(name, **kwargs):
     properties = kwargs.get('properties', ['dipole', 'quadrupole'])
     kwargs['properties'] = p4util.drop_duplicates(properties)
     _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
-    wfn = pc.procedures['property'][lowername](lowername, **kwargs)
+    wfn = procedures['property'][lowername](lowername, **kwargs)
 
     optstash.restore()
 
@@ -1719,7 +1726,7 @@ def optimize(name, **kwargs):
                     psi4.opt_clean()
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(moleculeclone.geometry())
-            for postcallback in pc.hooks['optimize']['post']:
+            for postcallback in hooks['optimize']['post']:
                 postcallback(lowername, **kwargs)
             psi4.clean()
 
@@ -1873,7 +1880,7 @@ def hessian(name, **kwargs):
     dertype = 2
 
     # Prevent methods that do not have associated energies
-    if lowername in pc.energy_only_methods:
+    if lowername in energy_only_methods:
 	    raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
@@ -1907,7 +1914,7 @@ def hessian(name, **kwargs):
     else:
         raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
 
-    # Set method-dependent scf convergence criteria (test on pc.procedures['energy'] since that's guaranteed)
+    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Select certain irreps
@@ -1915,7 +1922,7 @@ def hessian(name, **kwargs):
     if irrep == -1:
         pass  # do all irreps
     else:
-        irrep = parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
+        irrep = driver_util.parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
         irrep -= 1  # A1 irrep is externally 1, internally 0
 
     # Does an analytic procedure exist for the requested method?
@@ -1923,7 +1930,7 @@ def hessian(name, **kwargs):
         psi4.print_out("""hessian() will perform analytic frequency computation.\n""")
 
         # We have the desired method. Do it.
-        wfn = pc.procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
+        wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
         optstash.restore()
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
@@ -1937,7 +1944,7 @@ def hessian(name, **kwargs):
     elif dertype == 1:
         psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
-        func = pc.procedures['gradient'][lowername]
+        func = procedures['gradient'][lowername]
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -2075,7 +2082,7 @@ def hessian(name, **kwargs):
     else:
         psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic energies.\n""")
 
-        # Set method-dependent scf convergence criteria (test on pc.procedures['energy'] since that's guaranteed)
+        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
         _set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
@@ -2289,7 +2296,22 @@ def frequency(name, **kwargs):
     >>> thermo(wfn, wfn.frequencies())
 
     """
+
+    if hasattr(name, '__call__'):
+        raise ValidationError("Frequency: Cannot use custom function")
+
     lowername = name.lower()
+
+    old_global_basis = None
+    if "/" in lowername:
+        if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
+           raise ValidationError("Frequency: Cannot extrapolate or delta correction frequencies yet.")
+        else:
+            old_global_basis = psi4.get_global_option("BASIS")
+            lowername, new_basis = lowername.split('/')
+            psi4.set_global_option('BASIS', new_basis)
+                   
+
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
@@ -2312,8 +2334,12 @@ def frequency(name, **kwargs):
     wfn.frequencies().print_out()
     psi4.thermo(wfn, wfn.frequencies())
 
-    for postcallback in pc.hooks['frequency']['post']:
+    for postcallback in hooks['frequency']['post']:
         postcallback(lowername, **kwargs)
+
+    # Reset old global basis if needed
+    if not old_global_basis is None:
+        psi4.set_global_option("BASIS", old_global_basis)
 
     if return_wfn:
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
@@ -2444,89 +2470,6 @@ def molden(wfn, filename):
     # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
     mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
-
-def parse_cotton_irreps(irrep, point_group):
-    r"""Function to return validated Cotton ordering index for molecular
-    *point_group* from string or integer irreducible representation *irrep*.
-
-    """
-    cotton = {
-        'c1': {
-            'a': 1,
-            '1': 1
-        },
-        'ci': {
-            'ag': 1,
-            'au': 2,
-            '1': 1,
-            '2': 2
-        },
-        'c2': {
-            'a': 1,
-            'b': 2,
-            '1': 1,
-            '2': 2
-        },
-        'cs': {
-            'ap': 1,
-            'app': 2,
-            '1': 1,
-            '2': 2
-        },
-        'd2': {
-            'a': 1,
-            'b1': 2,
-            'b2': 3,
-            'b3': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2v': {
-            'a1': 1,
-            'a2': 2,
-            'b1': 3,
-            'b2': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2h': {
-            'ag': 1,
-            'bg': 2,
-            'au': 3,
-            'bu': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-        },
-        'd2h': {
-            'ag': 1,
-            'b1g': 2,
-            'b2g': 3,
-            'b3g': 4,
-            'au': 5,
-            'b1u': 6,
-            'b2u': 7,
-            'b3u': 8,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
-            '8': 8
-        }
-    }
-
-    try:
-        return cotton[point_group.lower()][str(irrep).lower()]
-    except KeyError:
-        raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))
 
 
 # Aliases
