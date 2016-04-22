@@ -78,6 +78,56 @@ def expand_bracketed_basis(basisstring, molecule=None):
     return (BSET, ZSET)
 
 
+def contract_bracketed_basis(basisarray, isHighest1):
+    r"""Function to reform a bracketed basis set string from a sequential series
+    of basis sets *basisarray* (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]).
+    Used to print a nicely formatted basis set string in the results table.
+
+    """
+    if len(basisarray) == 1:
+        return basisarray[0]
+
+    elif isHighest1:
+        return basisarray[-1]
+
+    else:
+        zetaindx = [i for i in xrange(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
+        ZSET = [bas[zetaindx] for bas in basisarray]
+
+        pre = basisarray[0][:zetaindx]
+        post = basisarray[0][zetaindx + 1:]
+        basisstring = pre + '[' + ''.join(ZSET) + ']' + post
+        return basisstring
+
+
+def highest_1(functionname, zHI, valueHI, verbose=True):
+    r"""Scheme for total or correlation energies with a single basis or the highest
+    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
+
+    .. math:: E_{total}^X = E_{total}^X
+
+    """
+    if isinstance(valueHI, float):
+
+        if verbose:
+            # Output string with extrapolation parameters
+            cbsscheme = '' 
+            cbsscheme += """\n   ==> %s <==\n\n""" % (functionname.upper())
+            cbsscheme += """   HI-zeta (%s) Total Energy:        %16.8f\n""" % (str(zHI), valueHI)
+            psi4.print_out(cbsscheme)
+
+        return valueHI
+
+    elif isinstance(valueHI, (psi4.Matrix, psi4.Vector)):
+
+        if verbose > 2:
+            psi4.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
+            valueHI.print_out()
+
+        return valueHI
+
+
+#def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
     r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
@@ -211,7 +261,8 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
+#def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
+def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
 
@@ -227,11 +278,12 @@ def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, ver
         value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
         beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
 
-        final = valueSCF + value
+#        final = valueSCF + value
+        final = value
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme  = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (functionname.upper())
-            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.14f\n""" % (str(zHI), valueSCF)
+#            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.14f\n""" % (str(zHI), valueSCF)
             cbsscheme += """   LO-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Beta (coefficient) Value:         % 16.14f\n""" % beta
