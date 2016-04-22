@@ -90,7 +90,7 @@ def run_gaussian_2(name, **kwargs):
     psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
     psi4.set_global_option('FREEZE_CORE',"TRUE")
     psi4.set_global_option('BASIS',"6-311G(D_P)")
-    ref = driver.pc.proc.run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
+    ref = driver.proc.run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
 
     # HLC: high-level correction based on number of valence electrons
     nirrep = ref.nirrep()
@@ -201,5 +201,5 @@ def run_gaussian_2(name, **kwargs):
     return eg2_0k
 
 # aliases for g2
-driver.pc.procedures['energy']['gaussian-2'] = run_gaussian_2
-driver.pc.procedures['energy']['g2']         = run_gaussian_2
+driver.procedures['energy']['gaussian-2'] = run_gaussian_2
+driver.procedures['energy']['g2']         = run_gaussian_2

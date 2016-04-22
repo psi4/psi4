@@ -330,9 +330,90 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
             beta.print_out()
        
 
-        value.add(valueSCF) 
         return value
 
     else:
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
+def parse_cotton_irreps(irrep, point_group):
+    r"""Function to return validated Cotton ordering index for molecular
+    *point_group* from string or integer irreducible representation *irrep*.
+
+    """
+    cotton = {
+        'c1': {
+            'a': 1,
+            '1': 1
+        },
+        'ci': {
+            'ag': 1,
+            'au': 2,
+            '1': 1,
+            '2': 2
+        },
+        'c2': {
+            'a': 1,
+            'b': 2,
+            '1': 1,
+            '2': 2
+        },
+        'cs': {
+            'ap': 1,
+            'app': 2,
+            '1': 1,
+            '2': 2
+        },
+        'd2': {
+            'a': 1,
+            'b1': 2,
+            'b2': 3,
+            'b3': 4,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
+        },
+        'c2v': {
+            'a1': 1,
+            'a2': 2,
+            'b1': 3,
+            'b2': 4,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4
+        },
+        'c2h': {
+            'ag': 1,
+            'bg': 2,
+            'au': 3,
+            'bu': 4,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+        },
+        'd2h': {
+            'ag': 1,
+            'b1g': 2,
+            'b2g': 3,
+            'b3g': 4,
+            'au': 5,
+            'b1u': 6,
+            'b2u': 7,
+            'b3u': 8,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8
+        }
+    }
+
+    try:
+        return cotton[point_group.lower()][str(irrep).lower()]
+    except KeyError:
+        raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))
