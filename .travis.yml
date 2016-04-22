@@ -228,6 +228,14 @@ matrix:
 #    osx_image: xcode7
 #    compiler: gcc
 #    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
+before_install:
+  - uname -a
+  - free -m
+  - df -h
+  - ulimit -a
+  - python -V
+  - pip install --upgrade pip setuptools
+  - pip install numpy
 install:
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
