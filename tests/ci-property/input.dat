@@ -34,6 +34,7 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
 
 fci_energy = prop('FCI', properties=props)
+
 compare_values(fci_energy, -278.7924561878957, 6, 'FCI Energy')    #TEST
 compare_values(psi4.get_variable('CI DIPOLE Y'), 0.000000000000, 4, "FCI DIPOLE Y")    #TEST
 compare_values(psi4.get_variable('CI DIPOLE Z'), 1.908946764853, 4, "FCI DIPOLE Z")    #TEST

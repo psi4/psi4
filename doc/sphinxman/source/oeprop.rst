@@ -109,7 +109,7 @@ Properties evaluated on a grid
 
 Certain properties may be evaluated a user-specified grid points.  The grid
 points are completely arbitrary and are specified by providing a file called
-grid.dat containing the x,y,z values seperated with spacesfor each point in order::
+grid.dat containing the x,y,z values seperated with spaces for each point in order::
 
     x1 y1 z1
     x2 y2 z2

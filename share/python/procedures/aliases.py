@@ -38,10 +38,10 @@ import re
 import os
 import math
 import warnings
-from wrappers import *
-from gaussian_n import *  # CU
-from wrappers_cfour import *  # CU
-from qmmm import *  # CU
+#from wrappers import *
+#from gaussian_n import *  # CU
+#from wrappers_cfour import *  # CU
+#from qmmm import *  # CU
 
 # Import plugin add-ons here for now
 try:
@@ -193,6 +193,3 @@ def allen_focal_point(name='mp2', **kwargs):
 
     return cbs(name, **kwargs)
 
-# Integration with driver routines
-procedures['energy']['sherrill_gold_standard'] = sherrill_gold_standard
-procedures['energy']['allen_focal_point'] = allen_focal_point
