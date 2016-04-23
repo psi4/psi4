@@ -38,6 +38,7 @@ import warnings
 import pickle
 import copy
 import collections
+import p4const
 from driver import *
 from procedures.interface_cfour import cfour_psivar_list
 # never import aliases into this file
