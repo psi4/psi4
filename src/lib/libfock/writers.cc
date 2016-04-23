@@ -1006,7 +1006,9 @@ void PK_integrals_old::batch_sizing() {
             if (nintbatch > memory_) {
                 batch_index_max_.push_back(old_max);
                 batch_pq_max_.push_back(old_pq);
+                batch_for_pq_.pop_back();
                 ++batch;
+                batch_for_pq_.push_back(batch);
                 batch_index_min_.push_back(old_max);
                 batch_pq_min_.push_back(old_pq);
                 nintbatch = nintpq;
@@ -1439,8 +1441,9 @@ void PK_integrals::open_iwlf(bool old) {
     AIO_->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,iwlsize);
 
     // And we do the same for the file containing K buckets
+    // integrals can potentially go in 2 buckets for K
     psio_->open(iwl_file_K_, old ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
-    AIO_->zero_disk(iwl_file_K_,IWL_KEY_BUF,1,iwlsize);
+    AIO_->zero_disk(iwl_file_K_,IWL_KEY_BUF,1,2 * iwlsize);
 }
 
 char* PK_integrals_old::get_label_J(size_t i) {

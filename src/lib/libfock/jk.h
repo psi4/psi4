@@ -599,7 +599,7 @@ class PKJK : public JK {
     size_t pk_pairs_;
 
     /// Class handling the PK integrals
-    boost::shared_ptr<PK_integrals> PKmanager_;
+    boost::shared_ptr<PKManager> PKmanager_;
 
     /// The index of the first pair in each batch
     std::vector<size_t> batch_pq_min_;

@@ -1170,7 +1170,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Deactivate in core algorithm. For debug purposes. !expert -*/
     options.add_bool("PK_NO_INCORE", false);
     /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
-    options.add_int("MAX_MEM_BUF",  8940);
+    options.add_int("MAX_MEM_BUF",  0);
     /*- JK Independent options
      -*/
     options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
