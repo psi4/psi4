@@ -755,6 +755,7 @@ def process_input(raw_input, print_level=1):
 #CU    imports += 'from wrappers_cfour import *\n'
     imports += 'from gaussian_n import *\n'
 #    imports += 'from aliases import *\n'
+    imports += 'from wrappers import cbs, complete_basis_set\n'
     imports += 'from driver_util import scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n' 
 #    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
