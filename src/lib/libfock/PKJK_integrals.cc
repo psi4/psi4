@@ -56,12 +56,11 @@ namespace psi {
 void PKJK::integrals_reorder() {
 
     outfile->Printf(" Computing reordered integrals for PK\n\n");
-    int max_buckets = Process::environment.options.get_int("MAX_BUCKETS");
 
-    bool noincore = Process::environment.options.get_bool("PK_NO_INCORE");
+    PKmanager_->initialize();
 
-    // New PK integrals object now
-    PKmanager_ = boost::shared_ptr<PK_integrals>(new PK_integrals(primary_, psio_, max_buckets, memory_,cutoff_));
+    PKmanager_->form_PK();
+
     if (PKmanager_->in_core() && noincore) {
         PKmanager_->set_in_core(!noincore);
     }
@@ -110,13 +109,6 @@ void PKJK::integrals_reorder() {
     //TODO: integrate integral computation directly in the PKmanager_
     //TODO: Have derived versions of PK manager implementing the different algorithms
     if (algo_ == "REORDER" || PKmanager_->in_core()) {
-        // Loop over buffer-filling tasks. Initially, we fill a buffer using multiple
-        // threads, then write it asynchronously to disk while filling the next buffer.
-        //
-        // TODO (maybe): Other possibility: each thread has its own buffer, and writes it to disk
-        // as the job is complete. We need a signaling mechanism for the end of the task
-        // as integrals may be stored at random places in the buffer. We also need
-        // to pre-stripe the PK file in this case.
 
         // This whole piece of code should be in the PKmanager itself, very probably.
         size_t nshqu = 0;

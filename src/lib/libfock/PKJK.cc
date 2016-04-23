@@ -41,6 +41,7 @@
 #include "cubature.h"
 #include "points.h"
 #include "yoshimine.h"
+#include "PKmanagers.h"
 
 #include<lib3index/cholesky.h>
 
@@ -102,10 +103,15 @@ void PKJK::print_header() const
 
 void PKJK::preiterations()
 {
-    // We need to access the option object to just get a few values
 
+    //Build PKManager to get proper algorithm set up
     Options& options = Process::environment.options;
+
     psio_ = _default_psio_lib_;
+
+    PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options);
+
+    // We need to access the option object to just get a few values
 
     algo_ = options.get_str("PK_ALGO");
 
@@ -576,15 +582,6 @@ void PKJK::preiterations()
 void PKJK::compute_JK()
 {
     if (algo_ == "REORDER" || algo_ == "INTBUCK") {
-        // For now we are not handling asymmetric density matrices
-        // Keep files open for asym I/O
-        if (PKmanager_->writing()) {
-            PKmanager_->deallocate_buffers();
-            PKmanager_->set_writing(false);
-        } else {
-            PKmanager_->open_files(true);
-        }
-
         // We form the vector containing the density matrix triangular elements
         for(int N = 0; N < D_ao_.size(); ++N) {
             if(C_left_[N] != C_right_[N]) {
@@ -592,18 +589,18 @@ void PKJK::compute_JK()
                 throw PSIEXCEPTION("Only symmetric density matrices implemented for now\n");
             }
         }
-        PKmanager_->form_D_vec(D_ao_);
 
-        // Now we actually compute J and K as needed
-        if(J_.size()) {
+        PKmanager_->prepare_JK(D_ao_);
+
+        if(J_ao_.size()) {
             PKmanager_->form_J(J_ao_);
         }
-        if(K_.size()) {
+        if(K_ao_.size()) {
             PKmanager_->form_K(K_ao_);
         }
-        PKmanager_->finalize_D();
-        // Everything done, we close the files
-        PKmanager_->close_files();
+
+        PKmanager_->finalize_JK();
+
 
         return;
 
