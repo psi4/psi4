@@ -106,7 +106,7 @@ def contract_bracketed_basis(basisarray, isHighest1):
 
 def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
     r"""Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
+    zeta-level among an array of bases. Used by :py:func:`~driver_cbs.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -134,7 +134,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
 #def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
     r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
+    Used by :py:func:`~driver_cbs.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
@@ -203,7 +203,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
+    Used by :py:func:`~driver_cbs.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
     """
@@ -268,7 +268,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
 def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
+    Used by :py:func:`~driver_cbs.complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
 
@@ -870,26 +870,16 @@ def complete_basis_set(func, label, **kwargs):
     natom = molecule.natom()
 
     # Establish method for reference energy
-    if 'scf_wfn' in kwargs:
-        cbs_scf_wfn = kwargs['scf_wfn'].lower()
-    elif 'name' in kwargs and (kwargs['name'].lower() in ['hf', 'scf', 'c4-scf']):
-        cbs_scf_wfn = kwargs['name'].lower()
-    else:
-        cbs_scf_wfn = 'hf'
+    cbs_scf_wfn = kwargs.pop('scf_wfn', 'hf').lower()
 
     if do_scf:
         if cbs_scf_wfn not in VARH.keys():
             raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_scf_wfn))
 
     # Establish method for correlation energy
-    if 'corl_wfn' in kwargs:
+    cbs_corl_wfn = kwargs.pop('corl_wfn', '').lower()
+    if cbs_corl_wfn:
         do_corl = True
-        cbs_corl_wfn = kwargs['corl_wfn'].lower()
-    elif 'name' in kwargs and (kwargs['name'].lower() not in ['hf', 'scf', 'c4-scf']):
-        do_corl = True
-        cbs_corl_wfn = kwargs['name'].lower()
-    else:
-        pass
 
     if do_corl:
         if cbs_corl_wfn not in VARH.keys():
@@ -1486,3 +1476,98 @@ def contract_scheme_orders(needdict, datakey='f_energy'):
 
 ##  Aliases  ##
 cbs = complete_basis_set
+
+def _cbs_gufunc(func, total_method_name, **kwargs):
+    """
+    Text based wrapper of the CBS function.
+    """
+
+    # Catch kwarg issues
+    kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
+    psi4.clean_variables()
+    user_dertype = kwargs.pop('dertype', None)
+    cbs_verbose = kwargs.pop('cbs_verbose', True)
+    ptype = kwargs.pop('ptype', None)
+
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+    molecule.update_geometry()
+
+    # Sanitize total_method_name
+    total_method_name = total_method_name.lower()
+    replacement_list = [(' ', ''), ('D-', 'D:'), ('{', '['), ('}', ']')]
+    for char, rep in replacement_list:
+        total_method_name = total_method_name.replace(char, rep)
+
+    # Split into components
+    total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
+
+    # Single energy call?    
+    single_call = len(total_method_name_list) == 1
+    single_call &= '[' not in total_method_name
+    single_call &= ']' not in total_method_name
+    single_call &= total_method_name.count('/') == 1
+
+    if single_call:
+        method_name, basis = total_method_name.split('/')
+
+        # Save some global variables so we can reset them later
+        optstash = p4util.OptionsState(['BASIS'])
+        psi4.set_global_option('BASIS', basis)
+
+        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+        psi4.clean()
+
+        optstash.restore()
+
+        if return_wfn:
+            return (ptype_value, wfn)
+        else:
+            return ptype_value
+
+    # If we are not a single call, let CBS wrapper handle it!
+    cbs_kwargs = {}
+    cbs_kwargs['ptype'] = ptype
+    cbs_kwargs['return_wfn'] = True
+    cbs_kwargs['molecule'] = molecule
+
+    if len(total_method_name_list) > 1:
+        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
+
+    for method_str in total_method_name_list:
+        if (method_str.count("[") > 1) or (method_str.count("]") > 1):
+            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
+
+        if method_str.count('/') != 1:
+            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
+
+    # Find method and basis
+    method1, basis_str1 = total_method_name_list[0].split('/')
+    if method1 in ['scf', 'hf']:
+        cbs_kwargs['scf_wfn'] = method1
+        cbs_kwargs['scf_basis'] = basis_str1
+    else:
+        cbs_kwargs['corl_wfn'] = method1
+        cbs_kwargs['corl_basis'] = basis_str1
+
+    ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs) 
+        
+
+    # SCF/cc-pv[DTQ]Z + D:MP2/cc-pv[DT]Z + D:CCSD(T)
+    # MP2/cc-pv[DT]Z + D:CCSD(T)
+
+    # SCF/cc-pv[DT]Z
+    # scf_basis = [...]
+    # corl_wfn
+    # corl_basis
+    # delta_wfn
+    # delta_basis 
+    # delta2_wfn
+    # delta2_basis 
+
+    if return_wfn:
+        return (ptype_value, wfn)
+    else:
+        return ptype_value
+

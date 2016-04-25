@@ -42,8 +42,10 @@ import psi4
 import numpy as np
 import itertools as it
 
+# Import driver helpers
 import driver_util
-from driver_cbs import cbs
+import driver_cbs
+import driver_nbody
 import p4util
 
 from qmmm import *
@@ -575,100 +577,6 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
 
 # End CBS gufunc data
-
-def _cbs_gufunc(func, total_method_name, **kwargs):
-
-    # Catch kwarg issues
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    psi4.clean_variables()
-    user_dertype = kwargs.pop('dertype', None)
-    cbs_verbose = kwargs.pop('cbs_verbose', True)
-    ptype = kwargs.pop('ptype', None)
-
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
-    molecule.update_geometry()
-
-    # Sanitize total_method_name
-    total_method_name = total_method_name.lower()
-    replacement_list = [(' ', ''), ('D-', 'D:'), ('{', '['), ('}', ']')]
-    for char, rep in replacement_list:
-        total_method_name = total_method_name.replace(char, rep)
-
-    # Generate list of list [[method_name, [bas1, bas2, ...], ...]
-    method_list = []
-
-    # Split into components
-    total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
-
-    # Single energy call?    
-    single_call = len(total_method_name_list) == 1
-    single_call &= '[' not in total_method_name
-    single_call &= ']' not in total_method_name
-    single_call &= total_method_name.count('/') == 1
-
-    if single_call:
-        method_name, basis = total_method_name.split('/')
-
-        # Save some global variables so we can reset them later
-        optstash = p4util.OptionsState(['BASIS'])
-        psi4.set_global_option('BASIS', basis)
-
-        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        psi4.clean()
-
-        optstash.restore()
-
-        if return_wfn:
-            return (ptype_value, wfn)
-        else:
-            return ptype_value
-
-    # If we are not a single call, let CBS wrapper handle it!
-    cbs_kwargs = {}
-    cbs_kwargs['ptype'] = ptype
-    cbs_kwargs['return_wfn'] = True
-    cbs_kwargs['molecule'] = molecule
-
-    if len(total_method_name_list) > 1:
-        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
-
-    for method_str in total_method_name_list:
-        if (method_str.count("[") > 1) or (method_str.count("]") > 1):
-            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
-
-        if method_str.count('/') != 1:
-            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
-
-    # Find method and basis
-    method1, basis_str1 = total_method_name_list[0].split('/')
-    cbs_kwargs['name'] = method1
-    if method1 in ['scf', 'hf']:
-        cbs_kwargs['scf_basis'] = basis_str1
-    else:
-        cbs_kwargs['corl_basis'] = basis_str1
-
-    ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs) 
-        
-
-    # SCF/cc-pv[DTQ]Z + D:MP2/cc-pv[DT]Z + D:CCSD(T)
-    # MP2/cc-pv[DT]Z + D:CCSD(T)
-
-    # SCF/cc-pv[DT]Z
-    # scf_basis = [...]
-    # corl_wfn
-    # corl_basis
-    # delta_wfn
-    # delta_basis 
-    # delta2_wfn
-    # delta2_basis 
-
-    if return_wfn:
-        return (ptype_value, wfn)
-    else:
-        return ptype_value
-
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -957,16 +865,11 @@ def energy(name, **kwargs):
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return _cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
+        return driver_cbs._cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
 
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
@@ -1060,7 +963,7 @@ def gradient(name, **kwargs):
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return _cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+        return driver_cbs._cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
 
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
@@ -1737,7 +1640,7 @@ def hessian(name, **kwargs):
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return _cbs_gufunc('hessian', lowername, **kwargs)
+        return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
 
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
