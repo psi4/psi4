@@ -100,7 +100,7 @@ def contract_bracketed_basis(basisarray, isHighest1):
         return basisstring
 
 
-def highest_1(functionname, zHI, valueHI, verbose=True):
+def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 
@@ -330,6 +330,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
             beta.print_out()
        
 
+#        value.add(valueSCF) 
         return value
 
     else:
