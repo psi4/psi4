@@ -496,6 +496,7 @@ def gradient(name, **kwargs):
     # Figure out lowername, dertype, and func
     # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
     # finite-diference energy or cbs energies
+    # TODO MP5/cc-pv[DT]Z behavior unkown
     user_dertype = kwargs.pop('dertype', None)
     if gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)

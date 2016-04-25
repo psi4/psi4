@@ -1490,7 +1490,7 @@ def _cbs_wrapper_methods(**kwargs):
     cbs_methods = []
     for method in cbs_method_kwargs:
         if method in kwargs:
-            cbs_methods.append(kwargs[methood])
+            cbs_methods.append(kwargs[method])
     return cbs_methods
 
 
