@@ -406,7 +406,6 @@ def energy(name, **kwargs):
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
-
     for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
@@ -892,24 +891,32 @@ def optimize(name, **kwargs):
     >>> optimize('hf', dertype='energy', mode='sow')
 
     """
-
+    
     if hasattr(name, '__call__'):
-        raise ValidationError("Optimize: Must use custom function with keyword opt_func")
+        lowername = name
+        custom_gradient = True
+    else:
+        lowername = name.lower()
+        custom_gradient = False
 
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
     # For CBS wrapper, need to set retention on INTCO file
-    if "/" in name:
+    if custom_gradient or ('/' in lowername):
         psi4.IOManager.shared_object().set_specific_retention(1, True)
 
     if kwargs.get('bsse_type', None) is not None:
-        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")                   
+        raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")                   
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    hessian_with_method = kwargs.get('hessian_with', lowername)
+
+
+    if custom_gradient and psi4.has_option_changed('OPTKING', 'FULL_HESS_EVERY'):
+        raise ValidationError("Optimize: Does not support custom Hessian's yet.")
+    else:
+        hessian_with_method = kwargs.get('hessian_with', lowername)
 
     # are we in sow/reap mode?
     opt_mode = kwargs.get('mode', 'continuous').lower()
@@ -980,9 +987,9 @@ def optimize(name, **kwargs):
                 #if psi4.me() == 0:  TODO ask Ryan
                 shutil.copy(restartfile, p4util.get_psifile(1))
 
-        opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
-        if opt_func.__name__ == 'complete_basis_set':
-            psi4.IOManager.shared_object().set_specific_retention(1, True)
+        # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
+        # if opt_func.__name__ == 'complete_basis_set':
+        #     psi4.IOManager.shared_object().set_specific_retention(1, True)
 
         if full_hess_every > -1:
             psi4.set_global_option('HESSIAN_WRITE', True)
@@ -1033,7 +1040,7 @@ def optimize(name, **kwargs):
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
 
             # Cleanup binary file 1
-            if opt_func.__name__ == 'complete_basis_set' or "/" in name:
+            if custom_gradient or ('/' in lowername):
                 psi4.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
