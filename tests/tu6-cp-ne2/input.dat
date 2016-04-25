@@ -20,15 +20,15 @@ set freeze_core True
 ecp = {}
 
 for R in Rvals:
-  dimer.R = R
-  ecp[R] = cp('ccsd(t)')
-  compare_values(ecp[R]*psi_hartree2kcalmol, ecp_ref[R], 4, "CP-CCSD(T) [%3.1f]" % R) #TEST
+   dimer.R = R
+   ecp[R] = energy('ccsd(t)', bsse_type = 'cp')
+   compare_values(ecp[R]*psi_hartree2kcalmol, ecp_ref[R], 4, "CP-CCSD(T) [%3.1f]" % R) #TEST
 
 psi4.print_out("\n")
 psi4.print_out("CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n")
 psi4.print_out("        R [Ang]         E_int [kcal/mol]             \n")
 psi4.print_out("-----------------------------------------------------\n")
 for R in Rvals:
-  e = ecp[R] * psi_hartree2kcalmol
-  psi4.print_out("        %3.1f            %10.6f\n" % (R, e))
+   e = ecp[R] * psi_hartree2kcalmol
+   psi4.print_out("        %3.1f            %10.6f\n" % (R, e))
 

@@ -25,16 +25,21 @@ from __future__ import absolute_import
 
 import psi4
 
+import math
 import numpy as np
 import itertools as it
 
 # Import driver helpers
-import driver_util
 import p4util
+import p4const
 
-from qmmm import *
-from procedures import *
 from p4util.exceptions import *
+
+### Math helper functions
+
+def nCr(n, r):
+    f = math.factorial
+    return f(n) / f(r) / f(n-r)
 
 ### Begin CBS gufunc data
 
@@ -88,8 +93,8 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
 
 def _print_nbody_energy(energy_body_dict, header):
-        print("""\n   ==> N-Body: %s  energies <==""" % header)
-        print("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]""")
+        psi4.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
+        psi4.print_out("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
         nbody_range = energy_body_dict.keys()
         nbody_range.sort()
@@ -97,14 +102,10 @@ def _print_nbody_energy(energy_body_dict, header):
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * p4const.psi_hartree2kcalmol
             int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * p4const.psi_hartree2kcalmol
-            print("""     %4s        % 16.14f        % 16.14f        % 16.14f""" %
+            psi4.print_out("""     %4s        % 16.14f        % 16.14f        % 16.14f\n""" %
                                         (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
-        print("\n")
-
-def nCr(n, r):
-    f = math.factorial
-    return f(n) / f(r) / f(n-r)
+        psi4.print_out("\n")
 
 def _nbody_gufunc(func, method_string, **kwargs):
     """
@@ -124,13 +125,17 @@ def _nbody_gufunc(func, method_string, **kwargs):
         Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this list is returned by this function.
     max_nbody : int
         Maximum n-body to compute, cannot exceede the number of fragments in the moleucle
+    ptype : str
+        Type of the procedure passed in
+    return_total_data : bool (default: False)
+        If True returns the total data (energy/gradient/etc) of the system otherwise returns interaction data
 
     Returns
     -------
     data : return type of func
         The interaction data
     wfn : psi4.Wavefunction (optional)
-        A wavefunction with... something in it?
+        A wavefunction with energy/gradient/hessian set appropriotely. This wavefunction also contains 
 
     Notes
     -----
@@ -143,7 +148,8 @@ def _nbody_gufunc(func, method_string, **kwargs):
     ### ==> Parse some kwargs <==
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
-    ptype = kwars.pop('ptype', None)
+    ptype = kwargs.pop('ptype', None)
+    return_total_data = kwargs.pop('return_total_data', False)
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
     psi4.clean_variables()
@@ -199,9 +205,12 @@ def _nbody_gufunc(func, method_string, **kwargs):
         psioh.set_specific_retention(97, True)
 
 
-    print("\n\n")
-    print("   ===> N-Body Interaction Abacus <===\n")
-    print("        BSSE Treatment:          %s")
+    bsse_str = bsse_type_list[0]
+    if len(bsse_type_list) >1:
+        bsse_str =  str(bsse_type_list)
+    psi4.print_out("\n\n")
+    psi4.print_out("   ===> N-Body Interaction Abacus <===\n")
+    psi4.print_out("        BSSE Treatment:          %s\n" % bsse_str)
 
 
     cp_compute_list = {x:set() for x in nbody_range}
@@ -240,7 +249,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         compute_list[n] |= cp_compute_list[n]
         compute_list[n] |= nocp_compute_list[n]
         compute_list[n] |= vmfc_compute_list[n]
-        print("        Number of %d-body computations:          %d" % (n, len(compute_list[n])))
+        psi4.print_out("        Number of %d-body computations:          %d\n" % (n, len(compute_list[n])))
 
 
     # Build size and slices dictionaries
@@ -259,35 +268,22 @@ def _nbody_gufunc(func, method_string, **kwargs):
     energies_dict = {}
     ptype_dict = {}
     for n in compute_list.keys():
+        psi4.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         print("\n   ==> N-Body: Now computing %d-body complexes <==\n" % n)
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
-            print("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n" %
+            psi4.print_out("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
                                                                     (num + 1, total, str(pair[0]), str(pair[1])))
             ghost = list(set(pair[1]) - set(pair[0]))
+
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = psi4.get_variable("CURRENT ENERGY")
+
+            if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
+                psi4.set_global_option('DF_INTS_IO', 'LOAD')
+
             psi4.clean()
-
-    # Figure out if we are dealing with a matrix or an array
-    ptype = None
-    try:
-        shape = ptype_dict[ptype_dict.keys()[0]].__array_interface__['shape']
-        if len(shape) > 2:
-            raise ValueError("N-Body: Return type of passed function has too many dimensions!")
-        elif shape[1] == 3:
-            ptype = 'gradient'
-        elif shape[0] == shape[1]:
-            ptype = 'hessian'
-        else:
-            raise ValueError("N-Body: Return type of passed function has incorrect dimensions.")
-    except:
-        if not isinstance(ptype_dict[ptype_dict.keys()[0]], float):
-            raise ValueError("N-Body: Return type of passed function is not understood: '%s'." %
-                             type(ptype_dict[ptype_dict.keys()[0]]))
-        ptype = 'energy'
-
 
     # Final dictionaries
     cp_energy_by_level   = {n: 0.0 for n in nbody_range}
@@ -363,8 +359,9 @@ def _nbody_gufunc(func, method_string, **kwargs):
                     cp_ptype_body_dict[n] += take_nk * sign * value
 
         _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
-        cp_final_energy = cp_energy_body_dict[n] - cp_energy_body_dict[1]
-        psi4.set_variable('Counterpoise Corrected Interaction Energy', cp_final_energy)
+        cp_interaction_energy = cp_energy_body_dict[max_nbody] - cp_energy_body_dict[1]
+        psi4.set_variable('Counterpoise Corrected Total Energy', cp_energy_body_dict[max_nbody])
+        psi4.set_variable('Counterpoise Corrected Interaction Energy', cp_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
@@ -390,8 +387,9 @@ def _nbody_gufunc(func, method_string, **kwargs):
                     nocp_ptype_body_dict[n] += take_nk * sign * value
 
         _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
-        nocp_final_energy = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
-        psi4.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_final_energy)
+        nocp_interaction_energy = nocp_energy_body_dict[max_nbody] - nocp_energy_body_dict[1]
+        psi4.set_variable('Non-Counterpoise Corrected Total Energy', nocp_energy_body_dict[max_nbody])
+        psi4.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
@@ -401,42 +399,55 @@ def _nbody_gufunc(func, method_string, **kwargs):
     # Compute vmfc energy and ptype
     if do_vmfc:
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
-        vmfc_final_energy = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
-        psi4.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_final_energy)
+        vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
+        psi4.set_variable('Valiron-Mayer Function Couterpoise Total Energy', vmfc_energy_body_dict[max_nbody])
+        psi4.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
             psi4.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
 
-
     if return_method == 'cp':
-        ret_energy = cp_final_energy
         ptype_body_dict = cp_ptype_body_dict
-        total_energy = cp_energy_body_dict[-1]
+        energy_body_dict = cp_energy_body_dict
     elif return_method == 'nocp':
-        ret_energy = nocp_final_energy
         ptype_body_dict = nocp_ptype_body_dict
-        total_energy = nocp_energy_body_dict[-1]
+        energy_body_dict = nocp_energy_body_dict
     elif return_method == 'vmfc':
-        ret_energy = vmfc_final_energy
         ptype_body_dict = vmfc_ptype_body_dict
-        total_energy = vmfc_energy_body_dict[-1]
+        energy_body_dict = vmfc_energy_body_dict
     else:
         raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
 
 
+    # Figure out and build return types
+    if return_total_data:
+        ret_energy = energy_body_dict[max_nbody]
+    else:
+        ret_energy = energy_body_dict[max_nbody]
+        ret_energy -= energy_body_dict[1]
+
+
     if ptype != 'energy':
-        np_final_ptype = ptype_body_dict[max_nbody].copy()
-        np_final_ptype -= ptype_body_dict[1]
+        if return_total_data:
+            np_final_ptype = ptype_body_dict[max_nbody].copy()
+        else:
+            np_final_ptype = ptype_body_dict[max_nbody].copy()
+            np_final_ptype -= ptype_body_dict[1]
 
-        ret_ptype = psi4.Matrix(*np_cp_final_ptype.shape)
-        ret_ptype_view = np.asarray(final_ptype)
-        ret_ptype_view[:] = np_final_ptype
+            ret_ptype = psi4.Matrix(*np_cp_final_ptype.shape)
+            ret_ptype_view = np.asarray(final_ptype)
+            ret_ptype_view[:] = np_final_ptype
+    else:
+        ret_ptype = ret_energy
 
-    # Build a wavefunction
+    # Build and set a wavefunction
     wfn = psi4.new_wavefunction(molecule, 'sto-3g')
-    wfn.energy_dict = energies_dict
-    wfn.ptype_dict = ptype_dict
+    wfn.nbody_energy = energies_dict
+    wfn.nbody_ptype = ptype_dict
+    wfn.nbody_body_energy = energy_body_dict
+    wfn.nbody_body_ptype = ptype_body_dict
+
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
     elif ptype == 'hessian':
@@ -445,8 +456,8 @@ def _nbody_gufunc(func, method_string, **kwargs):
     psi4.set_variable("CURRENT ENERGY", ret_energy)
 
     if return_wfn:
-        return (ptype_value, wfn)
+        return (ret_ptype, wfn)
     else:
-        return ptype_value
+        return ret_ptype
 
 
