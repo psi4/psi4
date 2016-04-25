@@ -36,6 +36,7 @@ from __future__ import absolute_import
 import sys
 import re
 import math
+import os
 
 import psi4
 
@@ -490,7 +491,6 @@ def gradient(name, **kwargs):
     # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
-#        return _nbody_gufunc(gradient, lowername, ptype='gradient', **kwargs)
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
@@ -904,6 +904,9 @@ def optimize(name, **kwargs):
     if "/" in name:
         psi4.IOManager.shared_object().set_specific_retention(1, True)
 
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")                   
+
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
     hessian_with_method = kwargs.get('hessian_with', lowername)
@@ -1090,12 +1093,12 @@ def hessian(name, **kwargs):
 
     """
     lowername = name.lower()
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
         return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
 
-    kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 2
@@ -1306,6 +1309,7 @@ def hessian(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
+        optstash_conv.restore()
         optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
         # Shifting the geometry so need to copy the active molecule
@@ -1534,7 +1538,9 @@ def frequency(name, **kwargs):
             old_global_basis = psi4.get_global_option("BASIS")
             lowername, new_basis = lowername.split('/')
             psi4.set_global_option('BASIS', new_basis)
-                   
+
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")                   
 
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)

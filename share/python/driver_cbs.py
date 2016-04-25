@@ -839,6 +839,7 @@ def complete_basis_set(func, label, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
+    verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
 
     # Establish function to call (only energy makes sense for cbs)
@@ -1086,7 +1087,7 @@ def complete_basis_set(func, label, **kwargs):
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """psi4.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Setup ')\n"""
+    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
     cbsbanners += """psi4.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
@@ -1253,13 +1254,16 @@ def complete_basis_set(func, label, **kwargs):
         elif ptype == 'gradient':
             mc['f_gradient'] = response
             mc['f_energy'] = psi4.get_variable('CURRENT ENERGY')
+            if verbose > 1:
+                mc['f_gradient'].print_out()
         elif ptype == 'hessian':
             mc['f_hessian'] = response
             mc['f_energy'] = psi4.get_variable('CURRENT ENERGY')
+            if verbose > 1:
+                mc['f_hessian'].print_out()
         Njobs += 1
-        psi4.print_out(str(mc['f_energy']))
-        mc['f_gradient'].print_out()
-        mc['f_hessian'].print_out()
+        if verbose > 1:
+            psi4.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
 
         # Fill in energies for subsumed methods
         if ptype == 'energy':
@@ -1268,7 +1272,8 @@ def complete_basis_set(func, label, **kwargs):
                     if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']):
                         job['f_energy'] = psi4.get_variable(VARH[wfn][wfn])
 
-        psi4.print_variables()
+        if verbose > 1:
+            psi4.print_variables()
         psi4.clean_variables()
         psi4.clean()
 
@@ -1284,7 +1289,7 @@ def complete_basis_set(func, label, **kwargs):
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """psi4.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Results ')\n"""
+    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
     cbsbanners += """psi4.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
@@ -1407,15 +1412,17 @@ def complete_basis_set(func, label, **kwargs):
     if ptype == 'energy':
         finalquantity = finalenergy
     elif ptype == 'gradient':
-        psi4.print_out('CURRENT GRADIENT')
         finalquantity = finalgradient
         wfn.set_gradient(finalquantity)
-        finalquantity.print_out()
+        if finalquantity.rows(0) < 20:
+            psi4.print_out('CURRENT GRADIENT')
+            finalquantity.print_out()
     elif ptype == 'hessian':
-        psi4.print_out('CURRENT HESSIAN')
         finalquantity = finalhessian
         wfn.set_hessian(finalquantity)
-        finalquantity.print_out()
+        if finalquantity.rows(0) < 20:
+            psi4.print_out('CURRENT HESSIAN')
+            finalquantity.print_out()
 
     if return_wfn:
         return (finalquantity, wfn)
@@ -1486,7 +1493,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     user_dertype = kwargs.pop('dertype', None)
-    cbs_verbose = kwargs.pop('cbs_verbose', True)
+    cbs_verbose = kwargs.pop('cbs_verbose', False)
     ptype = kwargs.pop('ptype', None)
 
     # Make sure the molecule the user provided is the active one
@@ -1530,6 +1537,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['ptype'] = ptype
     cbs_kwargs['return_wfn'] = True
     cbs_kwargs['molecule'] = molecule
+    cbs_kwargs['verbose'] = cbs_verbose
 
     if len(total_method_name_list) > 1:
         raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
