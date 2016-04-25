@@ -53,6 +53,8 @@ using namespace psi;
 
 namespace psi {
 
+//TODO Deprecated
+#if 0
 void PKJK::integrals_reorder() {
 
     outfile->Printf(" Computing reordered integrals for PK\n\n");
@@ -267,7 +269,7 @@ void PKJK::integrals_reorder() {
     }
 #endif
 }
-
+#endif
 
 void PKJK::integrals(){
     // We want to get the SO integrals in parallel

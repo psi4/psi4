@@ -246,6 +246,77 @@ public:
     virtual void form_J(std::vector<SharedMatrix> J, bool exch);
 };
 
+class PKMgrReorder : public PKMgrDisk {
+private:
+    std::vector<char*> label_J_;
+    std::vector<char*> label_K_;
+
+    size_t max_mem_buf_;
+
+public:
+    /// Constructor
+    PKMgrReorder(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+                 size_t memory, Options &options);
+    /// Destructor
+    virtual ~PKMgrReorder() {}
+
+    /// Pre-striping the PK file
+    virtual void prestripe_files();
+
+    /// Allocating the buffers for each thread
+    void allocate_buffers();
+    /// Finalize PK: synchronize AIO writing, delete thread
+    /// buffers, keep PK file open since we are going to
+    /// use it immediately
+    virtual void finalize_PK();
+
+};
+
+class PKMgrYoshimine : public PKMgrDisk {
+private:
+    /// Files of pre-sorted IWL integral buckets
+    int iwl_file_J_;
+    int iwl_file_K_;
+    /// Number of integrals per buckets
+    //TODO: change the name of all variables for buckets
+    size_t ints_per_buf_;
+
+    /// Total size of one IWL buffer on disk in bytes
+    size_t iwl_int_size_;
+
+public:
+    /// Constructor
+    PKMgrYoshimine(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+                   size_t memory, Options &options);
+    /// Destructor
+    virtual ~PKMgrYoshimine() {}
+
+    /// Pre-striping the IWL pre-sorted bucket files
+    //TODO: Optimize the vastly excessive amount of pre-striping for the K file
+    virtual void prestripe_files();
+
+    /// Gather all steps to form PK
+    virtual void form_PK();
+
+    /// Computing the integrals
+    virtual void compute_integrals();
+
+    /// Writing of the last partially filled buffers
+    virtual void write();
+
+    /// Reading and sorting integrals to generate PK file
+    void sort_ints();
+
+    /// Close the IWL bucket files
+    void close_iwl_buckets();
+
+    /// Generate the J PK supermatrix from IWL integrals
+    void generate_J_PK(double* twoel_ints, size_t max_size);
+    /// Generate the K PK supermatrix from IWL integrals
+    void generate_K_PK(double* twoel_ints, size_t max_size);
+
+};
+
 /* PKMgrInCore: Class to manage in-core PK algorithm */
 
 class PKMgrInCore : public PKManager {
@@ -268,34 +339,6 @@ public:
     virtual void allocate_buffers();
     /// Finalize PK, i.e. deallocate buffers
     virtual void finalize_PK();
-
-};
-
-class PKMgrReorder : public PKMgrDisk {
-private:
-    std::vector<char*> label_J_;
-    std::vector<char*> label_K_;
-
-    size_t max_mem_buf_;
-
-public:
-    /// Constructor
-    PKMgrReorder(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
-                 size_t memory, Options &options); :
-        PKMgrDisk(psio,primary,memory,options);
-    /// Destructor
-    virtual ~PKMgrReorder() {}
-
-    /// Allocating the buffers for each thread
-    void allocate_buffers();
-    /// Finalize PK: synchronize AIO writing, delete thread
-    /// buffers, keep PK file open since we are going to
-    /// use it immediately
-    virtual void finalize_PK();
-
-};
-
-class PKMgrYoshimine : public PKMgrDisk {
 
 };
 
