@@ -87,11 +87,11 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):
-        method = hessian
+        pass
     elif (dertype == 1) and (method_name in procedures['gradient']):
-        method = gradient
+        pass
     elif (dertype == 0) and (method_name in procedures['energy']):
-        method = energy
+        pass
     else:
         alternatives = ''
         alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
@@ -101,7 +101,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
             % (method_name, str(dertype), alternatives))
 
-    return (dertype, method)
+    return dertype
 
 # End CBS gufunc data
 def energy(name, **kwargs):
@@ -477,32 +477,67 @@ def gradient(name, **kwargs):
 
     """
 
-    kwargs = p4util.kwargs_lower(kwargs)
-    if hasattr(name, '__call__'):
-        return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
-
-    # Allow specification of methods to arbitrary order
-    lowername = name.lower()
-    lowername, level = driver_util.parse_arbitrary_order(lowername)
-    if level:
-        kwargs['level'] = level
-
     # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
 
-    # Check if this is a CBS extrapolation
-    if "/" in lowername:
-        return driver_cbs._cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+    # Figure out what kind of gradient this is
+    if hasattr(name, '__call__'):
+        if name.__name__ in ['cbs', 'complete_basis_set']:
+            gradient_type = 'cbs_wrapper'
+        else:
+            # Custom function we, just pass it along
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+    elif '/' in name:
+        gradient_type = 'cbs_gufunc'
+    else:
+        gradient_type = 'conventional'
+
+    # Figure out lowername, dertype, and func
+    # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
+    # finite-diference energy or cbs energies
+    user_dertype = kwargs.pop('dertype', None)
+    if gradient_type == 'cbs_wrapper':
+        cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
+        dertypes = [_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods]
+        dertype = min(dertypes)
+        if dertype == 1:
+            name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+        else:
+            # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+            lowername = name
+
+    elif gradient_type == 'cbs_gufunc':
+        cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
+        dertypes = [_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods]
+        dertype = min(dertypes)
+        lowername = name.lower()
+        if dertype == 1:
+            return driver_cbs._cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+        else:
+            # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+
+    else:
+        # Allow specification of methods to arbitrary order
+        lowername = name.lower()
+        lowername, level = driver_util.parse_arbitrary_order(lowername)
+        if level:
+            kwargs['level'] = level
+
+        # Prevent methods that do not have associated energies
+        if lowername in energy_only_methods:
+        	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
+
+        dertype = _find_derivative_type('gradient', lowername, user_dertype)
+
+        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+        optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
 
-    # Prevent methods that do not have associated energies
-    if lowername in energy_only_methods:
-    	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
-
-    dertype, func = _find_derivative_type('gradient', lowername, kwargs.pop('dertype', None))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -527,8 +562,6 @@ def gradient(name, **kwargs):
     else:
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
-    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -621,7 +654,7 @@ def gradient(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
             # S/R: Write each displaced geometry to an input file
@@ -1123,7 +1156,7 @@ def hessian(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    dertype, func = _find_derivative_type('hessian', lowername, kwargs.pop('dertype', None))
+    dertype = _find_derivative_type('hessian', lowername, kwargs.pop('dertype', None))
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
@@ -1173,8 +1206,6 @@ def hessian(name, **kwargs):
 
     elif dertype == 1:
         psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
-
-        func = procedures['gradient'][lowername]
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -1247,7 +1278,7 @@ def hessian(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the gradient calculation
-                wfn = func(lowername, molecule=moleculeclone, **kwargs)
+                wfn = gradient(lowername, molecule=moleculeclone, **kwargs)
                 gradients.append(wfn.gradient())
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
@@ -1265,7 +1296,7 @@ def hessian(name, **kwargs):
                     freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""wfn = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                    freagent.write("""wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
@@ -1391,7 +1422,7 @@ def hessian(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
                 # clean may be necessary when changing irreps of displacements
@@ -1407,7 +1438,7 @@ def hessian(name, **kwargs):
                     freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                    freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (energy.__name__, lowername))
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
 

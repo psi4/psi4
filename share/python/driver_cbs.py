@@ -1483,6 +1483,36 @@ def contract_scheme_orders(needdict, datakey='f_energy'):
 ##  Aliases  ##
 cbs = complete_basis_set
 
+def _cbs_wrapper_methods(**kwargs):
+    cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
+    cbs_method_kwargs += ['delta%d_wfn' % x for x in range(2, 6)]
+
+    cbs_methods = []
+    for method in cbs_method_kwargs:
+        if method in kwargs:
+            cbs_methods.append(kwargs[methood])
+    return cbs_methods
+
+
+def _parse_cbs_gufunc_string(method_name):
+    method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', method_name)
+
+    if len(method_name_list) > 1:
+        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
+
+    method_list = []
+    basis_list = []
+    for method_str in method_name_list:
+        if (method_str.count("[") > 1) or (method_str.count("]") > 1):
+            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
+
+        if method_str.count('/') != 1:
+            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
+        method, basis = method_str.split('/')
+        method_list.append(method)
+        basis_list.append(basis)
+    return method_list, basis_list
+
 def _cbs_gufunc(func, total_method_name, **kwargs):
     """
     Text based wrapper of the CBS function.
@@ -1507,16 +1537,17 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         total_method_name = total_method_name.replace(char, rep)
 
     # Split into components
+    method_list, basis_list = _parse_cbs_gufunc_string(total_method_name)
     total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
 
     # Single energy call?    
-    single_call = len(total_method_name_list) == 1
-    single_call &= '[' not in total_method_name
-    single_call &= ']' not in total_method_name
-    single_call &= total_method_name.count('/') == 1
+    single_call = len(method_list) == 1
+    single_call &= '[' not in basis_list[0] 
+    single_call &= ']' not in basis_list[0]
 
     if single_call:
-        method_name, basis = total_method_name.split('/')
+        method_name = method_list[0]
+        basis = basis_list[0] 
 
         # Save some global variables so we can reset them later
         optstash = p4util.OptionsState(['BASIS'])
@@ -1539,24 +1570,14 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
 
-    if len(total_method_name_list) > 1:
-        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
-
-    for method_str in total_method_name_list:
-        if (method_str.count("[") > 1) or (method_str.count("]") > 1):
-            raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
-
-        if method_str.count('/') != 1:
-            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
-
     # Find method and basis
     method1, basis_str1 = total_method_name_list[0].split('/')
     if method1 in ['scf', 'hf']:
-        cbs_kwargs['scf_wfn'] = method1
-        cbs_kwargs['scf_basis'] = basis_str1
+        cbs_kwargs['scf_wfn'] = method_list[0]
+        cbs_kwargs['scf_basis'] = basis_list[0]
     else:
-        cbs_kwargs['corl_wfn'] = method1
-        cbs_kwargs['corl_basis'] = basis_str1
+        cbs_kwargs['corl_wfn'] = method_list[0]
+        cbs_kwargs['corl_basis'] = basis_list[0]
 
     ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs) 
         
