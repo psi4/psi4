@@ -38,6 +38,7 @@ import re
 import os
 import math
 import warnings
+import driver_cbs
 #from wrappers import *
 #from gaussian_n import *  # CU
 #from wrappers_cfour import *  # CU
@@ -92,7 +93,7 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
                 '', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
 
 
-def sherrill_gold_standard(name='mp2', **kwargs):
+def sherrill_gold_standard(func, label, **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
@@ -110,29 +111,24 @@ def sherrill_gold_standard(name='mp2', **kwargs):
     >>> optimize('sherrill_gold_standard', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 
     """
-    lowername = name.lower()
-    kwargs = p4util.kwargs_lower(kwargs)
-
-    kwargs['func_cbs'] = kwargs.get('func_cbs', energy)
-
     kwargs['scf_basis'] = kwargs.get('scf_basis', 'aug-cc-pVQZ')
-    kwargs['scf_scheme'] = kwargs.get('scf_scheme', highest_1)
+    kwargs['scf_scheme'] = kwargs.get('scf_scheme', driver_cbs.cbs_xtpl_highest_1)
 
-    if 'corl_wfn' not in kwargs:
-        kwargs['corl_wfn'] = 'mp2'
-        name = 'mp2'
+    kwargs['corl_wfn'] = kwargs.get('corl_wfn', 'mp2')
     kwargs['corl_basis'] = kwargs.get('corl_basis', 'aug-cc-pV[TQ]Z')
-    kwargs['corl_scheme'] = kwargs.get('corl_scheme', corl_xtpl_helgaker_2)
+    kwargs['corl_scheme'] = kwargs.get('corl_scheme', driver_cbs.corl_xtpl_helgaker_2)
 
     kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'ccsd(t)')
     kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
     kwargs['delta_basis'] = kwargs.get('delta_basis', 'aug-cc-pVTZ')
-    kwargs['delta_scheme'] = kwargs.get('delta_scheme', highest_1)
+    kwargs['delta_scheme'] = kwargs.get('delta_scheme', driver_cbs.cbs_xtpl_highest_1)
 
-    return cbs(**kwargs)
+    if label == 'custom_function':
+        label = 'Sherrill Group Gold Standard'
+    return driver_cbs.cbs(func, label, **kwargs)
 
 
-def allen_focal_point(name='mp2', **kwargs):
+def allen_focal_point(func, label, **kwargs):
     r"""Function to call Wes Allen-style Focal
     Point Analysis. JCP 127 014306.  Uses
     :py:func:`~wrappers.complete_basis_set` to evaluate the following
@@ -151,45 +147,41 @@ def allen_focal_point(name='mp2', **kwargs):
     >>> optimize('allen_focal_point', mode='sow')
 
     """
-    lowername = name.lower()
-    kwargs = p4util.kwargs_lower(kwargs)
-
-    kwargs['func_cbs'] = kwargs.get('func_cbs', energy)
 
     # SCF
     kwargs['scf_basis'] = kwargs.get('scf_basis', 'cc-pV[Q56]Z')
-    kwargs['scf_scheme'] = kwargs.get('scf_scheme', scf_xtpl_helgaker_3)
+    kwargs['scf_scheme'] = kwargs.get('scf_scheme', driver_cbs.scf_xtpl_helgaker_3)
 
     # delta MP2 - SCF
-    if 'corl_wfn' not in kwargs:
-        kwargs['corl_wfn'] = 'mp2'
-        name = 'mp2'
+    kwargs['corl_wfn'] = kwargs.get('corl_wfn', 'mp2')
     kwargs['corl_basis'] = kwargs.get('corl_basis', 'cc-pV[56]Z')
-    kwargs['corl_scheme'] = kwargs.get('corl_scheme', corl_xtpl_helgaker_2)
+    kwargs['corl_scheme'] = kwargs.get('corl_scheme', driver_cbs.corl_xtpl_helgaker_2)
 
     # delta CCSD - MP2
     kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'mrccsd')
     kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
     kwargs['delta_basis'] = kwargs.get('delta_basis', 'cc-pV[56]Z')
-    kwargs['delta_scheme'] = kwargs.get('delta_scheme', corl_xtpl_helgaker_2)
+    kwargs['delta_scheme'] = kwargs.get('delta_scheme', driver_cbs.corl_xtpl_helgaker_2)
 
     # delta CCSD(T) - CCSD
     kwargs['delta2_wfn'] = kwargs.get('delta2_wfn', 'mrccsd(t)')
     kwargs['delta2_wfn_lesser'] = kwargs.get('delta2_wfn_lesser', 'mrccsd')
     kwargs['delta2_basis'] = kwargs.get('delta2_basis', 'cc-pV[56]Z')
-    kwargs['delta2_scheme'] = kwargs.get('delta2_scheme', corl_xtpl_helgaker_2)
+    kwargs['delta2_scheme'] = kwargs.get('delta2_scheme', driver_cbs.corl_xtpl_helgaker_2)
 
     # delta CCSDT - CCSD(T)
     kwargs['delta3_wfn'] = kwargs.get('delta3_wfn', 'mrccsdt')
     kwargs['delta3_wfn_lesser'] = kwargs.get('delta3_wfn_lesser', 'mrccsd(t)')
     kwargs['delta3_basis'] = kwargs.get('delta3_basis', 'cc-pVTZ')
-    kwargs['delta3_scheme'] = kwargs.get('delta3_scheme', highest_1)
+    kwargs['delta3_scheme'] = kwargs.get('delta3_scheme', driver_cbs.cbs_xtp_highest_1)
 
     # delta CCSDT(Q) - CCSDT
     kwargs['delta4_wfn'] = kwargs.get('delta4_wfn', 'mrccsdt(q)')
     kwargs['delta4_wfn_lesser'] = kwargs.get('delta4_wfn_lesser', 'mrccsdt')
     kwargs['delta4_basis'] = kwargs.get('delta4_basis', 'cc-pVDZ')
-    kwargs['delta4_scheme'] = kwargs.get('delta4_scheme', highest_1)
+    kwargs['delta4_scheme'] = kwargs.get('delta4_scheme', driver_cbs.cbs_xtp_highest_1)
 
-    return cbs(name, **kwargs)
+    if label == 'custom_function':
+        label = 'Allen Focal Point'
+    return driver_cbs.cbs(func, label, **kwargs)
 

@@ -24,7 +24,7 @@ set scf {
 set occ do_scs on
 
 banner('gold standard')
-energy('sherrill_gold_standard')
+energy(sherrill_gold_standard)
 compare_values(-5.66406119, get_variable('CBS TOTAL ENERGY'), 7, "[1]  Au std")
 clean()
 

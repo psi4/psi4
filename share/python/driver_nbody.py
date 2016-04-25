@@ -94,7 +94,7 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
 
 def _print_nbody_energy(energy_body_dict, header):
         psi4.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
-        psi4.print_out("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]\n""")
+        psi4.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
         nbody_range = energy_body_dict.keys()
         nbody_range.sort()
@@ -102,7 +102,7 @@ def _print_nbody_energy(energy_body_dict, header):
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * p4const.psi_hartree2kcalmol
             int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * p4const.psi_hartree2kcalmol
-            psi4.print_out("""     %4s        % 16.14f        % 16.14f        % 16.14f\n""" %
+            psi4.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" %
                                         (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
         psi4.print_out("\n")
