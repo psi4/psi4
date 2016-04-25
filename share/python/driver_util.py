@@ -22,319 +22,150 @@
 
 import math
 import re
-from p4util.exceptions import *
 import psi4
 import qcdb
-import numpy as np
+import p4util
+from p4util.exceptions import *
+from procedures import *
 
-zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
-zeta_val2sym = {k+2:v for k, v in zip(range(7), zeta_values)}
-zeta_sym2val = {v:k for k, v in zeta_val2sym.items()}
+def _method_exists(ptype, method_name):
+    r"""
+    Quick check to see if this method exists, if it does not exist we raise a convenient flag.
+    """
+    if method_name not in procedures[ptype].keys():
+        alternatives = ""
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name,
+                                                                procedures[ptype].keys(), 2)
+        if len(alt_method_name) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
+        Cptype = ptype[0].upper() + ptype[1:]
+        raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
 
-def expand_bracketed_basis(basisstring, molecule=None):
-    r"""Function to transform and validate basis series specification
-    *basisstring* for cbs(). A basis set with no paired square brackets is
-    passed through with zeta level 0 (e.g., '6-31+G(d,p)' is returned as
-    [6-31+G(d,p)] and [0]). A basis set with square brackets is checked
-    for sensible sequence and Dunning-ness and returned as separate basis
-    sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4,
-    5]). This function checks that the basis is valid by trying to build
-    the qcdb.BasisSet object for *molecule* or for H2 if None. Allows
-    out-of-order zeta specification (e.g., [qtd]) and numeral for number
-    (e.g., [23]) but not skipped zetas (e.g., [dq]) or zetas outside [2,
-    8] or non-Dunning sets or non-findable .gbs sets.
+def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec):
+    r"""
+
+    This function will set local SCF and global energy convergence criterion
+    to the defaults listed at:
+    http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
+    algorithm-defaults. SCF will be convergence more tightly if a post-SCF
+    method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
+    scf_Dc convergence criterion will be used).
+
+    ptype -         Procedure type (energy, gradient, etc)
+    method_name -   Name of the method
+    scf_Ec -        SCF E convergence criterion
+    pscf_Ec -       Post-SCF E convergence criterion
+    scf_Dc -        SCF D convergence criterion
+    pscf_Dc -       Post-SCF D convergence criterion
+    gen_Ec -        General E convergence for all methods
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
+
+    # Kind of want to move this out of here
+    _method_exists(ptype, method_name)
+
+    # Set method-dependent scf convergence criteria, check against energy routines
+    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
+        else:
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
+
+    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
+        else:
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
+
+    # Set post-scf convergence criteria (global will cover all correlated modules)
+    if not psi4.has_global_option_changed('E_CONVERGENCE'):
+        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
+            psi4.set_global_option('E_CONVERGENCE', gen_Ec)
+
+    return optstash
+
+
+
+def parse_arbitrary_order(name):
+    r"""Function to parse name string into a method family like CI or MRCC and specific
+    level information like 4 for CISDTQ or MRCCSDTQ.
 
     """
-    BSET = []
-    ZSET = []
-    legit_compound_basis = re.compile(r'^(?P<pre>.*cc-.*)\[(?P<zeta>[dtq2345678,]*)\](?P<post>.*z)$', re.IGNORECASE)
 
-    if legit_compound_basis.match(basisstring):
-        basisname = legit_compound_basis.match(basisstring)
-        # filter out commas and be forgiving of e.g., t5q or 3q
-        bn_gz = basisname.group('zeta')
-        zetas = [z for z in zeta_values if (z in bn_gz or str(zeta_values.index(z) + 2) in bn_gz)]
-        for b in zetas:
-            if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
-                    raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" % (basisstring, b))
-            BSET.append(basisname.group('pre') + b + basisname.group('post'))
-            ZSET.append(zeta_values.index(b) + 2)
-    elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
-        raise ValidationError("""Basis series '%s' invalid. Specify a basis series matching"""
-                              """ '*cc-*[dtq2345678,]*z'.""" % (basisstring))
+    name = name.lower()
+
+    # matches 'mrccsdt(q)'
+    if name.startswith('mrcc'):
+
+        # avoid undoing fn's good work when called twice
+        if name == 'mrcc':
+            return name, None
+
+        # grabs 'sdt(q)'
+        ccfullname = name[4:]
+
+        # A negative order indicates perturbative method
+        methods = {
+            'sd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },
+            'sdt'         : { 'method': 1, 'order':  3, 'fullname': 'CCSDT'        },
+            'sdtq'        : { 'method': 1, 'order':  4, 'fullname': 'CCSDTQ'       },
+            'sdtqp'       : { 'method': 1, 'order':  5, 'fullname': 'CCSDTQP'      },
+            'sdtqph'      : { 'method': 1, 'order':  6, 'fullname': 'CCSDTQPH'     },
+            'sd(t)'       : { 'method': 3, 'order': -3, 'fullname': 'CCSD(T)'      },
+            'sdt(q)'      : { 'method': 3, 'order': -4, 'fullname': 'CCSDT(Q)'     },
+            'sdtq(p)'     : { 'method': 3, 'order': -5, 'fullname': 'CCSDTQ(P)'    },
+            'sdtqp(h)'    : { 'method': 3, 'order': -6, 'fullname': 'CCSDTQP(H)'   },
+            'sd(t)_l'     : { 'method': 4, 'order': -3, 'fullname': 'CCSD(T)_L'    },
+            'sdt(q)_l'    : { 'method': 4, 'order': -4, 'fullname': 'CCSDT(Q)_L'   },
+            'sdtq(p)_l'   : { 'method': 4, 'order': -5, 'fullname': 'CCSDTQ(P)_L'  },
+            'sdtqp(h)_l'  : { 'method': 4, 'order': -6, 'fullname': 'CCSDTQP(H)_L' },
+            'sdt-1a'      : { 'method': 5, 'order':  3, 'fullname': 'CCSDT-1a'     },
+            'sdtq-1a'     : { 'method': 5, 'order':  4, 'fullname': 'CCSDTQ-1a'    },
+            'sdtqp-1a'    : { 'method': 5, 'order':  5, 'fullname': 'CCSDTQP-1a'   },
+            'sdtqph-1a'   : { 'method': 5, 'order':  6, 'fullname': 'CCSDTQPH-1a'  },
+            'sdt-1b'      : { 'method': 6, 'order':  3, 'fullname': 'CCSDT-1b'     },
+            'sdtq-1b'     : { 'method': 6, 'order':  4, 'fullname': 'CCSDTQ-1b'    },
+            'sdtqp-1b'    : { 'method': 6, 'order':  5, 'fullname': 'CCSDTQP-1b'   },
+            'sdtqph-1b'   : { 'method': 6, 'order':  6, 'fullname': 'CCSDTQPH-1b'  },
+            '2'           : { 'method': 7, 'order':  2, 'fullname': 'CC2'          },
+            '3'           : { 'method': 7, 'order':  3, 'fullname': 'CC3'          },
+            '4'           : { 'method': 7, 'order':  4, 'fullname': 'CC4'          },
+            '5'           : { 'method': 7, 'order':  5, 'fullname': 'CC5'          },
+            '6'           : { 'method': 7, 'order':  6, 'fullname': 'CC6'          },
+            'sdt-3'       : { 'method': 8, 'order':  3, 'fullname': 'CCSDT-3'      },
+            'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
+            'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
+            'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
+        }
+
+        # looks for 'sdt(q)' in dictionary
+        if ccfullname in methods:
+            return 'mrcc', methods[ccfullname]
+        else:
+            raise ValidationError('MRCC method \'%s\' invalid.' % (name))
+
+    elif re.match(r'^[a-z]+\d+$', name):
+        decompose = re.compile(r'^([a-z]+)(\d+)$').match(name)
+        namestump = decompose.group(1)
+        namelevel = int(decompose.group(2))
+
+        if namestump in ['mp', 'zapt', 'ci']:
+            # Let mp2, mp3, mp4 pass through to select functions
+            if namestump == 'mp' and namelevel in [2, 3, 4]:
+                return name, None
+            # Otherwise return method and order
+            else:
+                return namestump, namelevel
+        else:
+            return name, None
     else:
-        BSET.append(basisstring)
-        ZSET.append(0)
-
-    if molecule is None:
-        molecule = """\nH\nH 1 1.00\n"""
-
-    for basis in BSET:
-        try:
-            qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
-        except qcdb.BasisSetNotFound, e:
-            raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
-
-    return (BSET, ZSET)
+        return name, None
 
 
-def contract_bracketed_basis(basisarray, isHighest1):
-    r"""Function to reform a bracketed basis set string from a sequential series
-    of basis sets *basisarray* (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]).
-    Used to print a nicely formatted basis set string in the results table.
-
-    """
-    if len(basisarray) == 1:
-        return basisarray[0]
-
-    elif isHighest1:
-        return basisarray[-1]
-
-    else:
-        zetaindx = [i for i in xrange(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
-        ZSET = [bas[zetaindx] for bas in basisarray]
-
-        pre = basisarray[0][:zetaindx]
-        post = basisarray[0][zetaindx + 1:]
-        basisstring = pre + '[' + ''.join(ZSET) + ']' + post
-        return basisstring
-
-
-def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
-    r"""Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
-
-    .. math:: E_{total}^X = E_{total}^X
-
-    """
-    if isinstance(valueHI, float):
-
-        if verbose:
-            # Output string with extrapolation parameters
-            cbsscheme = '' 
-            cbsscheme += """\n   ==> %s <==\n\n""" % (functionname.upper())
-            cbsscheme += """   HI-zeta (%s) Total Energy:        %16.8f\n""" % (str(zHI), valueHI)
-            psi4.print_out(cbsscheme)
-
-        return valueHI
-
-    elif isinstance(valueHI, (psi4.Matrix, psi4.Vector)):
-
-        if verbose > 2:
-            psi4.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
-            valueHI.print_out()
-
-        return valueHI
-
-
-#def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
-def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
-    r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
-
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
-
-    """
-
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
-
-    beta_division = 1 / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
-    beta_mult = math.exp(-1 * alpha * zHI)
-
-
-    if isinstance(valueLO, float):
-        beta = (valueHI - valueLO) / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
-        value = valueHI - beta * math.exp(-1 * alpha * zHI)
-
-        if verbose:
-            # Output string with extrapolation parameters
-            cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
-            cbsscheme += """   LO-zeta (%s) Energy:             % 16.14f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   HI-zeta (%s) Energy:             % 16.14f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Alpha (exponent) Value:          % 16.14f\n""" % (alpha)
-            cbsscheme += """   Beta (coefficient) Value:        % 16.14f\n\n""" % (beta)
-
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
-            cbsscheme += """  @Extrapolated """
-            cbsscheme += name_str + ':'
-            cbsscheme += " " * (18 - len(name_str))
-            cbsscheme += """% 16.14f\n\n""" % value
-            psi4.print_out(cbsscheme)
-
-        return value
-
-    elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
-        beta = valueHI.clone()
-        beta.set_name('Helgaker SCF (%s, %s) beta' % (zLO, zHI))
-        beta.subtract(valueLO)
-        beta.scale(beta_division)
-        beta.scale(beta_mult)
-
-        value = valueHI.clone()
-        value.subtract(beta)        
-        value.set_name('Helgaker SCF (%s, %s) data' % (zLO, zHI))
-
-        if verbose > 2:
-            psi4.print_out( """\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
-            psi4.print_out( """   LO-zeta (%s)""" % str(zLO))
-            psi4.print_out( """   LO-zeta Data""")
-            valueLO.print_out()
-            psi4.print_out( """   HI-zeta (%s)""" % str(zHI))
-            psi4.print_out( """   HI-zeta Data""")
-            valueHI.print_out()
-            psi4.print_out( """   Extrapolated Data:\n""")
-            value.print_out()
-            psi4.print_out( """   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
-            psi4.print_out( """   Beta Data:\n""")
-            beta.print_out()
-        
-        return value
-
-    else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
-
-
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
-    r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
-
-    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
-    """
-
-    if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
-        raise ValidationError("scf_xtpl_helgaker_3: Inputs must be of the same datatype! (%s, %s, %s)"
-                              % (type(valueLO), type(valueMD), type(valueHI)))
-
-    if isinstance(valueLO, float):
-
-        ratio = (valueHI - valueMD) / (valueMD - valueLO)
-        alpha = -1 * math.log(ratio)
-        beta = (valueHI - valueMD) / (math.exp(-1 * alpha * zMD) * (ratio - 1))
-        value = valueHI - beta * math.exp(-1 * alpha * zHI)
-
-        if verbose:
-            # Output string with extrapolation parameters
-            cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper())
-            cbsscheme += """   LO-zeta (%s) Energy:             % 16.14f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   MD-zeta (%s) Energy:             % 16.14f\n""" % (str(zMD), valueMD)
-            cbsscheme += """   HI-zeta (%s) Energy:             % 16.14f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Alpha (exponent) Value:          % 16.14f\n""" % (alpha)
-            cbsscheme += """   Beta (coefficient) Value:        % 16.14f\n\n""" % (beta)
-
-            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zMD].upper(),
-                                                             zeta_val2sym[zHI].upper())
-            cbsscheme += """  @Extrapolated """
-            cbsscheme += name_str + ':'
-            cbsscheme += " " * (18 - len(name_str))
-            cbsscheme += """% 16.14f\n\n""" % value
-            psi4.print_out(cbsscheme)
-
-        return value
-
-    elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
-        valueLO = np.array(valueLO)
-        valueMD = np.array(valueMD)
-        valueHI = np.array(valueHI)
-
-        nonzero_mask = np.abs(valueHI) > 1.e-14
-        top = (valueHI - valueMD)[nonzero_mask]
-        bot = (valueMD - valueLO)[nonzero_mask]
-
-        ratio = top/bot
-        alpha = -1 * np.log(np.abs(ratio))
-        beta = top / (np.exp(-1 * alpha * zMD) * (ratio - 1))
-        np_value = valueHI.copy()
-        np_value[nonzero_mask] -= beta * np.exp(-1 * alpha * zHI)
-        np_value[~nonzero_mask] = 0.0
-
-        # Build and set from numpy routines
-        value = psi4.Matrix(*valueHI.shape)
-        value_view = np.asarray(value)
-        value_view[:] = np_value 
-        return value
-
-    else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
-
-
-#def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
-    r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~wrappers.complete_basis_set`.
-
-    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
-
-    """
-
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)"
-                              % (type(valueLO), type(valueHI)))
-
-    if isinstance(valueLO, float):
-        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
-        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
-
-#        final = valueSCF + value
-        final = value
-        if verbose:
-            # Output string with extrapolation parameters
-            cbsscheme  = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (functionname.upper())
-#            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.14f\n""" % (str(zHI), valueSCF)
-            cbsscheme += """   LO-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   HI-zeta (%1s) Correlation Energy:   % 16.14f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Beta (coefficient) Value:         % 16.14f\n""" % beta
-            cbsscheme += """   Extrapolated Correlation Energy:  % 16.14f\n\n""" % value
-        
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
-            cbsscheme += """  @Extrapolated """
-            cbsscheme += name_str + ':'
-            cbsscheme += " " * (19 - len(name_str))
-            cbsscheme += """% 16.14f\n\n""" % final
-            psi4.print_out(cbsscheme)
-
-        return final
-
-    elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
-
-        beta = valueHI.clone()
-        beta.subtract(valueLO)
-        beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
-        beta.set_name('Helgaker SCF (%s, %s) beta' % (zLO, zHI))
-
-        value = valueHI.clone()
-        value.scale(zHI ** 3)
-        
-        tmp = valueLO.clone()
-        tmp.scale(zLO ** 3)
-        value.subtract(tmp)
-
-        value.scale(1 / (zHI ** 3 - zLO ** 3))
-        value.set_name('Helgaker Corr (%s, %s) data' % (zLO, zHI))
-
-        if verbose > 2:
-            psi4.print_out( """\n   ==> Helgaker 2-point correlated extrapolation for """
-                            """method: %s <==\n\n""" % (functionname.upper()))
-            psi4.print_out( """   LO-zeta (%s)\n""" % str(zLO))
-            psi4.print_out( """   LO-zeta Data\n""" % str(zLO))
-            valueLO.print_out()
-            psi4.print_out( """   HI-zeta (%s)\n""" % str(zHI))
-            valueHI.print_out()
-            psi4.print_out( """   Extrapolated Data:\n""")
-            value.print_out()
-            psi4.print_out( """   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
-            psi4.print_out( """   Beta Data:\n""")
-            beta.print_out()
-       
-
-#        value.add(valueSCF) 
-        return value
-
-    else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 def parse_cotton_irreps(irrep, point_group):
     r"""Function to return validated Cotton ordering index for molecular

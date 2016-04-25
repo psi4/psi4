@@ -751,12 +751,9 @@ def process_input(raw_input, print_level=1):
     imports += 'from molutil import *\n'
     imports += 'from diatomic import anharmonicity\n'
     imports += 'from driver import *\n'
-#CU    imports += 'from wrappers import *\n'
-#CU    imports += 'from wrappers_cfour import *\n'
     imports += 'from gaussian_n import *\n'
+    imports += 'from qmm import *\n'
 #    imports += 'from aliases import *\n'
-    imports += 'from driver_cbs import cbs, complete_basis_set\n'
-    imports += 'from driver_util import scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n' 
 #    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
     imports += 'psi4.efp_init()\n'  # initialize EFP object before Molecule read in

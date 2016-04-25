@@ -104,7 +104,7 @@ def contract_bracketed_basis(basisarray, isHighest1):
         return basisstring
 
 
-def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
+def cbs_xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~driver_cbs.complete_basis_set`.
 
@@ -131,7 +131,6 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
         return valueHI
 
 
-#def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
     r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~driver_cbs.complete_basis_set`.
@@ -753,56 +752,56 @@ def complete_basis_set(func, label, **kwargs):
     :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
-        Defaults to :py:func:`~driver_util.scf_xtpl_helgaker_3` if three valid basis sets
-        present in ``scf_basis``, :py:func:`~driver_util.scf_xtpl_helgaker_2` if two valid basis
-        sets present in ``scf_basis``, and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~scf_xtpl_helgaker_3` if three valid basis sets
+        present in ``scf_basis``, :py:func:`~scf_xtpl_helgaker_2` if two valid basis
+        sets present in ``scf_basis``, and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type corl_scheme: function
     :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``corl_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``corl_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type delta_scheme: function
     :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type delta2_scheme: function
     :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta2_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta2_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type delta3_scheme: function
     :param delta3_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the third delta correction
         to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta3_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta3_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type delta4_scheme: function
     :param delta4_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fourth delta correction
         to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta4_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta4_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type delta5_scheme: function
     :param delta5_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fifth delta correction
         to the correlation energy.
-        Defaults to :py:func:`~driver_util.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta5_basis`` and :py:func:`~driver_util.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta5_basis`` and :py:func:`~cbs_xtpl_highest_1` otherwise.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -972,13 +971,13 @@ def complete_basis_set(func, label, **kwargs):
     # Establish list of valid basis sets for correlation energy
     if do_corl:
         if 'corl_basis' in kwargs:
-            BSTC, ZETC = driver_util.expand_bracketed_basis(kwargs['corl_basis'].lower(), molecule=molstr)
+            BSTC, ZETC = expand_bracketed_basis(kwargs['corl_basis'].lower(), molecule=molstr)
         else:
             raise ValidationError("""CORL basis sets through keyword '%s' are required.""" % ('corl_basis'))
 
     # Establish list of valid basis sets for scf energy
     if 'scf_basis' in kwargs:
-        BSTR, ZETR = driver_util.expand_bracketed_basis(kwargs['scf_basis'].lower(), molecule=molstr)
+        BSTR, ZETR = expand_bracketed_basis(kwargs['scf_basis'].lower(), molecule=molstr)
     elif do_corl:
         BSTR = BSTC[:]
         ZETR = ZETC[:]
@@ -988,14 +987,14 @@ def complete_basis_set(func, label, **kwargs):
     # Establish list of valid basis sets for delta correction energy
     if do_delta:
         if 'delta_basis' in kwargs:
-            BSTD, ZETD = driver_util.expand_bracketed_basis(kwargs['delta_basis'].lower(), molecule=molstr)
+            BSTD, ZETD = expand_bracketed_basis(kwargs['delta_basis'].lower(), molecule=molstr)
         else:
             raise ValidationError("""DELTA basis sets through keyword '%s' are required.""" % ('delta_basis'))
 
     # Establish list of valid basis sets for second delta correction energy
     if do_delta2:
         if 'delta2_basis' in kwargs:
-            BSTD2, ZETD2 = driver_util.expand_bracketed_basis(kwargs['delta2_basis'].lower(), molecule=molstr)
+            BSTD2, ZETD2 = expand_bracketed_basis(kwargs['delta2_basis'].lower(), molecule=molstr)
         else:
             raise ValidationError("""DELTA2 basis sets through keyword '%s' are required.""" % ('delta2_basis'))
 
@@ -1022,38 +1021,38 @@ def complete_basis_set(func, label, **kwargs):
 
     # Establish treatment for scf energy (validity check useless since python will catch it long before here)
     if (len(BSTR) == 3) and ('scf_basis' in kwargs):
-        cbs_scf_scheme = driver_util.scf_xtpl_helgaker_3
+        cbs_scf_scheme = scf_xtpl_helgaker_3
     elif (len(BSTR) == 2) and ('scf_basis' in kwargs):
-        cbs_scf_scheme = driver_util.scf_xtpl_helgaker_2
+        cbs_scf_scheme = scf_xtpl_helgaker_2
     else:
-        cbs_scf_scheme = driver_util.xtpl_highest_1
+        cbs_scf_scheme = cbs_xtpl_highest_1
     if 'scf_scheme' in kwargs:
         cbs_scf_scheme = kwargs['scf_scheme']
 
     # Establish treatment for correlation energy
     if do_corl:
         if len(BSTC) == 2:
-            cbs_corl_scheme = driver_util.corl_xtpl_helgaker_2
+            cbs_corl_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_corl_scheme = driver_util.xtpl_highest_1
+            cbs_corl_scheme = cbs_xtpl_highest_1
         if 'corl_scheme' in kwargs:
             cbs_corl_scheme = kwargs['corl_scheme']
 
     # Establish treatment for delta correction energy
     if do_delta:
         if len(BSTD) == 2:
-            cbs_delta_scheme = driver_util.corl_xtpl_helgaker_2
+            cbs_delta_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta_scheme = driver_util.xtpl_highest_1
+            cbs_delta_scheme = cbs_xtpl_highest_1
         if 'delta_scheme' in kwargs:
             cbs_delta_scheme = kwargs['delta_scheme']
 
     # Establish treatment for delta2 correction energy
     if do_delta2:
         if len(BSTD2) == 2:
-            cbs_delta2_scheme = driver_util.corl_xtpl_helgaker_2
+            cbs_delta2_scheme = corl_xtpl_helgaker_2
         else:
-            cbs_delta2_scheme = driver_util.xtpl_highest_1
+            cbs_delta2_scheme = cbs_xtpl_highest_1
         if 'delta2_scheme' in kwargs:
             cbs_delta2_scheme = kwargs['delta2_scheme']
 
@@ -1099,40 +1098,40 @@ def complete_basis_set(func, label, **kwargs):
     if do_scf:
         NEED = expand_scheme_orders(cbs_scf_scheme, BSTR, ZETR, cbs_scf_wfn, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['scf', cbs_scf_scheme,
-            driver_util.contract_bracketed_basis(BSTR, True if cbs_scf_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTR, True if cbs_scf_scheme == cbs_xtpl_highest_1 else False),
             cbs_scf_wfn, NEED, +1, 0.0, None, None])))
 
     if do_corl:
         NEED = expand_scheme_orders(cbs_corl_scheme, BSTC, ZETC, cbs_corl_wfn, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme,
-            driver_util.contract_bracketed_basis(BSTC, True if cbs_corl_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTC, True if cbs_corl_scheme == cbs_xtpl_highest_1 else False),
             cbs_corl_wfn, NEED, +1, 0.0, None, None])))
 
         NEED = expand_scheme_orders(cbs_corl_scheme, BSTC, ZETC, cbs_corl_wfn_lesser, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme,
-            driver_util.contract_bracketed_basis(BSTC, True if cbs_corl_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTC, True if cbs_corl_scheme == cbs_xtpl_highest_1 else False),
             cbs_corl_wfn_lesser, NEED, -1, 0.0, None, None])))
 
     if do_delta:
         NEED = expand_scheme_orders(cbs_delta_scheme, BSTD, ZETD, cbs_delta_wfn, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme,
-            driver_util.contract_bracketed_basis(BSTD, True if cbs_delta_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTD, True if cbs_delta_scheme == cbs_xtpl_highest_1 else False),
             cbs_delta_wfn, NEED, +1, 0.0, None, None])))
 
         NEED = expand_scheme_orders(cbs_delta_scheme, BSTD, ZETD, cbs_delta_wfn_lesser, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme,
-            driver_util.contract_bracketed_basis(BSTD, True if cbs_delta_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTD, True if cbs_delta_scheme == cbs_xtpl_highest_1 else False),
             cbs_delta_wfn_lesser, NEED, -1, 0.0, None, None])))
 
     if do_delta2:
         NEED = expand_scheme_orders(cbs_delta2_scheme, BSTD2, ZETD2, cbs_delta2_wfn, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme,
-            driver_util.contract_bracketed_basis(BSTD2, True if cbs_delta2_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTD2, True if cbs_delta2_scheme == cbs_xtpl_highest_1 else False),
             cbs_delta2_wfn, NEED, +1, 0.0, None, None])))
 
         NEED = expand_scheme_orders(cbs_delta2_scheme, BSTD2, ZETD2, cbs_delta2_wfn_lesser, natom)
         GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme,
-            driver_util.contract_bracketed_basis(BSTD2, True if cbs_delta2_scheme == driver_util.xtpl_highest_1 else False),
+            contract_bracketed_basis(BSTD2, True if cbs_delta2_scheme == cbs_xtpl_highest_1 else False),
             cbs_delta2_wfn_lesser, NEED, -1, 0.0, None, None])))
 
 #    if do_delta3:
@@ -1437,7 +1436,7 @@ def expand_scheme_orders(scheme, basisname, basiszeta, wfnname, natom):
     basiszeta, with *basisname* and *basiszeta* distributed therein.
 
     """
-    if scheme == driver_util.xtpl_highest_1:
+    if scheme == cbs_xtpl_highest_1:
         basisname = [basisname[-1]]
         basiszeta = [basiszeta[-1]]
     Nxtpl = len(basiszeta)

@@ -25,13 +25,13 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
+from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import re
@@ -39,81 +39,18 @@ import math
 
 import psi4
 
-import numpy as np
-import itertools as it
-
 # Import driver helpers
 import driver_util
 import driver_cbs
 import driver_nbody
-import p4util
+from driver_cbs import cbs
 
-from qmmm import *
 from procedures import *
+import p4util
 from p4util.exceptions import *
 # never import wrappers or aliases into this file
 
 ### Helper functions
-def _method_exists(ptype, method_name):
-    r"""
-    Quick check to see if this method exists, if it does not exist we raise a convenient flag.
-    """
-    if method_name not in procedures[ptype].keys():
-        alternatives = ""
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name,
-                                                                procedures[ptype].keys(), 2)
-        if len(alt_method_name) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
-        Cptype = ptype[0].upper() + ptype[1:]
-        raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
-
-def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec):
-    r"""
-
-    This function will set local SCF and global energy convergence criterion
-    to the defaults listed at:
-    http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
-    algorithm-defaults. SCF will be convergence more tightly if a post-SCF
-    method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
-    scf_Dc convergence criterion will be used).
-
-    ptype -         Procedure type (energy, gradient, etc)
-    method_name -   Name of the method
-    scf_Ec -        SCF E convergence criterion
-    pscf_Ec -       Post-SCF E convergence criterion
-    scf_Dc -        SCF D convergence criterion
-    pscf_Dc -       Post-SCF D convergence criterion
-    gen_Ec -        General E convergence for all methods
-    """
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
-
-    # Kind of want to move this out of here
-    _method_exists(ptype, method_name)
-
-    # Set method-dependent scf convergence criteria, check against energy routines
-    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
-        else:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
-
-    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
-        else:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
-
-    # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
-            psi4.set_global_option('E_CONVERGENCE', gen_Ec)
-
-    return optstash
-
 
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""
@@ -164,417 +101,6 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             % (method_name, str(dertype), alternatives))
 
     return (dertype, method)
-
-### Begin CBS gufunc data
-
-def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict, fragment_size_dict, ret, vmfc=False):
-    """
-    Sums gradient and hessian data from compute_list.
-
-    compute_list comes in as a tuple(frag, basis)
-    """
-
-    if len(compute_list) == 0:
-        return
-
-    sign = 1
-    # Do ptype
-    if ptype == 'gradient':
-        for fragn, basisn in compute_list:
-            start = 0
-            grad = np.asarray(ptype_dict[(fragn, basisn)])
-
-            if vmfc:
-                sign = ((-1) ** (n - len(fragn)))
-
-            for bas in basisn:
-                end = start + fragment_size_dict[bas]
-                ret[fragment_slice_dict[bas]] += sign * grad[start:end]
-                start += fragment_size_dict[bas]
-
-    elif ptype == 'hessian':
-        for fragn, basisn in compute_list:
-            hess = np.asarray(ptype_dict[(fragn, basisn)])
-            if vmfc:
-                raise Exception("VMFC for hessian NYI")
-
-            # Build up start and end slices
-            abs_start, rel_start = 0, 0
-            abs_slices, rel_slices = [], []
-            for bas in basisn:
-                rel_end = rel_start + 3 * fragment_size_dict[bas]
-                rel_slices.append(slice(rel_start, rel_end))
-                rel_start += 3 * fragment_size_dict[bas]
-
-                tmp_slice = fragment_slice_dict[bas]
-                abs_slices.append(slice(tmp_slice.start * 3, tmp_slice.end * 3))
-
-            for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
-                for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
-                    ret[abs_sl1, abs_sl2] += hess[rel_sl1, rel_sl2]
-
-    else:
-        raise KeyError("ptype can only be gradient or hessian How did you end up here?")
-
-def _print_nbody_energy(energy_body_dict, header):
-        print("""\n   ==> N-Body: %s  energies <==""" % header)
-        print("""   n-Body        Total Energy [Eh]          I.E. [kcal/mol]         Delta [kcal/mol]""")
-        previous_e = energy_body_dict[1]
-        nbody_range = energy_body_dict.keys()
-        nbody_range.sort()
-        for n in nbody_range:
-            delta_e = (energy_body_dict[n] - previous_e)
-            delta_e_kcal = delta_e * p4const.psi_hartree2kcalmol
-            int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * p4const.psi_hartree2kcalmol
-            print("""     %4s        % 16.14f        % 16.14f        % 16.14f""" %
-                                        (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
-            previous_e = energy_body_dict[n]
-        print("\n")
-
-def nCr(n, r):
-    f = math.factorial
-    return f(n) / f(r) / f(n-r)
-
-def _nbody_gufunc(func, method_string, **kwargs):
-    """
-    Computes the nbody interaction energy, gradient, or Hessian depending on input.
-
-    Parameters
-    ----------
-    func : python function
-        Python function that accepts method_string and a molecule and returns a energy, gradient, or Hessian.
-    method_string : str
-        Lowername to be passed to function
-    molecule : psi4.Molecule (default: Global Molecule)
-        Molecule to use in all computations
-    return_wfn : bool (default: False)
-        Return a wavefunction or not
-    bsse_type : str or list (default: None, this function is not called)
-        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this list is returned by this function.
-    max_nbody : int
-        Maximum n-body to compute, cannot exceede the number of fragments in the moleucle
-
-    Returns
-    -------
-    data : return type of func
-        The interaction data
-    wfn : psi4.Wavefunction (optional)
-        A wavefunction with... something in it?
-
-    Notes
-    -----
-    This is a generalized univeral function for compute interaction quantities.
-
-    Examples
-    --------
-    """
-
-    ### ==> Parse some kwargs <==
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    psi4.clean_variables()
-
-    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
-    molecule.update_geometry()
-
-    # Figure out BSSE types
-    do_cp = False
-    do_nocp = False
-    do_vmfc = False
-    return_method = False
-
-    # Must be passed bsse_type
-    bsse_type_list = kwargs.pop('bsse_type')
-    if bsse_type_list is None:
-        raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
-    if not isinstance(bsse_type_list, list):
-        bsse_type_list = [bsse_type_list]
-
-    for num, btype in enumerate(bsse_type_list):
-        if btype.lower() == 'cp':
-            do_cp = True
-            if (num == 0): return_method = 'cp'
-        elif btype.lower() == 'nocp':
-            do_nocp = True
-            if (num == 0): return_method = 'nocp'
-        elif btype.lower() == 'vmfc':
-            do_vmfc = True
-            if (num == 0): return_method = 'vmfc'
-        else:
-            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
-    max_nbody = kwargs.get('max_nbody', -1)
-    max_frag = molecule.nfragments()
-    if max_nbody == -1:
-        max_nbody = molecule.nfragments()
-    else:
-        max_nbody = min(max_nbody, max_frag)
-
-    # What levels do we need?
-    nbody_range = range(1, max_nbody + 1)
-    fragment_range = range(1, max_frag + 1)
-
-    # If we are doing CP lets save them integrals
-    if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-        # Set to save RI integrals for repeated full-basis computations
-        ri_ints_io = psi4.get_global_option('DF_INTS_IO')
-
-        # inquire if above at all applies to dfmp2 or just scf
-        psi4.set_global_option('DF_INTS_IO', 'SAVE')
-        psioh = psi4.IOManager.shared_object()
-        psioh.set_specific_retention(97, True)
-
-
-    print("\n\n")
-    print("   ===> N-Body Interaction Abacus <===\n")
-    print("        BSSE Treatment:          %s")
-
-
-    cp_compute_list = {x:set() for x in nbody_range}
-    nocp_compute_list = {x:set() for x in nbody_range}
-    vmfc_compute_list = {x:set() for x in nbody_range}
-    vmfc_level_list = {x:set() for x in nbody_range} # Need to sum something slightly different
-
-    # Build up compute sets
-    if do_cp:
-        # Everything is in dimer basis
-        basis_tuple = tuple(fragment_range)
-        for nbody in nbody_range:
-            for x in it.combinations(fragment_range, nbody):
-                cp_compute_list[nbody].add( (x, basis_tuple) )
-
-    if do_nocp:
-        # Everything in monomer basis
-        for nbody in nbody_range:
-            for x in it.combinations(fragment_range, nbody):
-                nocp_compute_list[nbody].add( (x, x) )
-
-    if do_vmfc:
-        # Like a CP for all combinations of pairs or greater
-        for nbody in nbody_range:
-            for cp_combos in it.combinations(fragment_range, nbody):
-                basis_tuple = tuple(cp_combos)
-                for interior_nbody in nbody_range:
-                    for x in it.combinations(cp_combos, interior_nbody):
-                        combo_tuple = (x, basis_tuple)
-                        vmfc_compute_list[interior_nbody].add( combo_tuple )
-                        vmfc_level_list[len(basis_tuple)].add( combo_tuple )
-
-    # Build a comprehensive compute_range
-    compute_list = {x:set() for x in nbody_range}
-    for n in nbody_range:
-        compute_list[n] |= cp_compute_list[n]
-        compute_list[n] |= nocp_compute_list[n]
-        compute_list[n] |= vmfc_compute_list[n]
-        print("        Number of %d-body computations:          %d" % (n, len(compute_list[n])))
-
-
-    # Build size and slices dictionaries
-    fragment_size_dict = {frag: molecule.extract_subsets(frag).natom() for
-                                           frag in range(1, max_frag+1)}
-
-    start = 0
-    fragment_slice_dict = {}
-    for k, v in fragment_size_dict.items():
-        fragment_slice_dict[k] = slice(start, start + v)
-        start += v
-
-    molecule_total_atoms = sum(fragment_size_dict.values())
-
-    # Now compute the energies
-    energies_dict = {}
-    ptype_dict = {}
-    for n in compute_list.keys():
-        print("\n   ==> N-Body: Now computing %d-body complexes <==\n" % n)
-        total = len(compute_list[n])
-        for num, pair in enumerate(compute_list[n]):
-            print("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n" %
-                                                                    (num + 1, total, str(pair[0]), str(pair[1])))
-            ghost = list(set(pair[1]) - set(pair[0]))
-            current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
-            energies_dict[pair] = psi4.get_variable("CURRENT ENERGY")
-            psi4.clean()
-
-    # Figure out if we are dealing with a matrix or an array
-    ptype = None
-    try:
-        shape = ptype_dict[ptype_dict.keys()[0]].__array_interface__['shape']
-        if len(shape) > 2:
-            raise ValueError("N-Body: Return type of passed function has too many dimensions!")
-        elif shape[1] == 3:
-            ptype = 'gradient'
-        elif shape[0] == shape[1]:
-            ptype = 'hessian'
-        else:
-            raise ValueError("N-Body: Return type of passed function has incorrect dimensions.")
-    except:
-        if not isinstance(ptype_dict[ptype_dict.keys()[0]], float):
-            raise ValueError("N-Body: Return type of passed function is not understood: '%s'." %
-                             type(ptype_dict[ptype_dict.keys()[0]]))
-        ptype = 'energy'
-
-
-    # Final dictionaries
-    cp_energy_by_level   = {n: 0.0 for n in nbody_range}
-    nocp_energy_by_level = {n: 0.0 for n in nbody_range}
-
-    cp_energy_body_dict =   {n: 0.0 for n in nbody_range}
-    nocp_energy_body_dict = {n: 0.0 for n in nbody_range}
-    vmfc_energy_body_dict = {n: 0.0 for n in nbody_range}
-
-    # Build out ptype dictionaries if needed
-    if ptype != 'energy':
-        if ptype == 'gradient':
-            arr_shape = (molecule_total_atoms, 3)
-        elif ptype == 'hessian':
-            arr_shape = (molecule_total_atoms * 3, molecule_total_atoms * 3)
-        else:
-            raise KeyError("N-Body: ptype '%s' not recognized" % ptype)
-
-        cp_ptype_by_level   =  {n: np.zeros(arr_shape) for n in nbody_range}
-        nocp_ptype_by_level =  {n: np.zeros(arr_shape) for n in nbody_range}
-
-        cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in nbody_range}
-        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
-        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
-    else:
-        cp_ptype_by_level, cp_ptype_body_dict = None, None
-        nocp_ptype_by_level, nocp_ptype_body_dict = None, None
-        vmfc_ptype_by_level= None
-
-
-    # Sum up all of the levels
-    for n in nbody_range:
-
-        # Energy
-        cp_energy_by_level[n]   = sum(energies_dict[v] for v in cp_compute_list[n])
-        nocp_energy_by_level[n] = sum(energies_dict[v] for v in nocp_compute_list[n])
-
-        # Special vmfc case
-        if n > 1:
-            vmfc_energy_body_dict[n] = vmfc_energy_body_dict[n - 1]
-        for tup in vmfc_level_list[n]:
-            vmfc_energy_body_dict[n] += ((-1) ** (n - len(tup[0]))) * energies_dict[tup]
-
-
-        # Do ptype
-        if ptype != 'energy':
-            _sum_cluster_ptype_data(ptype, ptype_dict, cp_compute_list[n],
-                                      fragment_slice_dict, fragment_size_dict,
-                                      cp_ptype_by_level[n])
-            _sum_cluster_ptype_data(ptype, ptype_dict, nocp_compute_list[n],
-                                      fragment_slice_dict, fragment_size_dict,
-                                      nocp_ptype_by_level[n])
-            _sum_cluster_ptype_data(ptype, ptype_dict, vmfc_level_list[n],
-                                      fragment_slice_dict, fragment_size_dict,
-                                      vmfc_ptype_by_level[n], vmfc=True)
-    # Compute cp energy and ptype
-    if do_cp:
-        for n in nbody_range:
-            if n == max_frag:
-                cp_energy_body_dict[n] = cp_energy_by_level[n]
-                if ptype != 'energy':
-                    cp_ptype_body_dict[n][:] = cp_ptype_by_level[n]
-                continue
-
-            for k in range(1, n + 1):
-                take_nk =  nCr(max_frag - k - 1, n - k)
-                sign = ((-1) ** (n - k))
-                value = cp_energy_by_level[k]
-                cp_energy_body_dict[n] += take_nk * sign * value
-
-                if ptype != 'energy':
-                    value = cp_ptype_by_level[k]
-                    cp_ptype_body_dict[n] += take_nk * sign * value
-
-        _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
-        cp_final_energy = cp_energy_body_dict[n] - cp_energy_body_dict[1]
-        psi4.set_variable('Counterpoise Corrected Interaction Energy', cp_final_energy)
-
-        for n in nbody_range[1:]:
-            var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4.set_variable(var_key, cp_energy_body_dict[n] - cp_energy_body_dict[1])
-
-    # Compute nocp energy and ptype
-    if do_nocp:
-        for n in nbody_range:
-            if n == max_frag:
-                nocp_energy_body_dict[n] = nocp_energy_by_level[n]
-                if ptype != 'energy':
-                    nocp_ptype_body_dict[n][:] = nocp_ptype_by_level[n]
-                continue
-
-            for k in range(1, n + 1):
-                take_nk =  nCr(max_frag - k - 1, n - k)
-                sign = ((-1) ** (n - k))
-                value = nocp_energy_by_level[k]
-                nocp_energy_body_dict[n] += take_nk * sign * value
-
-                if ptype != 'energy':
-                    value = nocp_ptype_by_level[k]
-                    nocp_ptype_body_dict[n] += take_nk * sign * value
-
-        _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
-        nocp_final_energy = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
-        psi4.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_final_energy)
-
-        for n in nbody_range[1:]:
-            var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4.set_variable(var_key, nocp_energy_body_dict[n] - nocp_energy_body_dict[1])
-
-
-    # Compute vmfc energy and ptype
-    if do_vmfc:
-        _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
-        vmfc_final_energy = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
-        psi4.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_final_energy)
-
-        for n in nbody_range[1:]:
-            var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
-
-
-    if return_method == 'cp':
-        ret_energy = cp_final_energy
-        ptype_body_dict = cp_ptype_body_dict
-        total_energy = cp_energy_body_dict[-1]
-    elif return_method == 'nocp':
-        ret_energy = nocp_final_energy
-        ptype_body_dict = nocp_ptype_body_dict
-        total_energy = nocp_energy_body_dict[-1]
-    elif return_method == 'vmfc':
-        ret_energy = vmfc_final_energy
-        ptype_body_dict = vmfc_ptype_body_dict
-        total_energy = vmfc_energy_body_dict[-1]
-    else:
-        raise ValidationError("N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
-
-
-    if ptype != 'energy':
-        np_final_ptype = ptype_body_dict[max_nbody].copy()
-        np_final_ptype -= ptype_body_dict[1]
-
-        ret_ptype = psi4.Matrix(*np_cp_final_ptype.shape)
-        ret_ptype_view = np.asarray(final_ptype)
-        ret_ptype_view[:] = np_final_ptype
-
-    # Build a wavefunction
-    wfn = psi4.new_wavefunction(molecule, 'sto-3g')
-    wfn.energy_dict = energies_dict
-    wfn.ptype_dict = ptype_dict
-    if ptype == 'gradient':
-        wfn.set_gradient(ret_ptype)
-    elif ptype == 'hessian':
-        wfn.set_hessian(ret_ptype)
-
-    psi4.set_variable("CURRENT ENERGY", ret_energy)
-
-    if return_wfn:
-        return (ptype_value, wfn)
-    else:
-        return ptype_value
-
 
 # End CBS gufunc data
 def energy(name, **kwargs):
@@ -853,21 +379,25 @@ def energy(name, **kwargs):
     >>> energy('fci', ref_wfn=cisd_wfn)
 
     """
+    kwargs = p4util.kwargs_lower(kwargs)
 
     if hasattr(name, '__call__'):
         return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
 
+    # Allow specification of methods to arbitrary order
     lowername = name.lower()
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
-        return _nbody_gufunc(energy, lowername, ptype='energy', **kwargs)
+        return driver_nbody._nbody_gufunc(energy, lowername, ptype='energy', **kwargs)
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
 
-    kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
 
@@ -875,15 +405,11 @@ def energy(name, **kwargs):
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
-    # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
-    if level:
-        kwargs['level'] = level
 
     for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
-    optstash = _set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
 
     # Before invoking the procedure, we rename any file that should be read.
     # This is a workaround to do restarts with the current PSI4 capabilities
@@ -955,11 +481,16 @@ def gradient(name, **kwargs):
     if hasattr(name, '__call__'):
         return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
 
+    # Allow specification of methods to arbitrary order
     lowername = name.lower()
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     # Do a cp thing
     if kwargs.get('bsse_type', None) is not None:
-        return _nbody_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+        raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
+#        return _nbody_gufunc(gradient, lowername, ptype='gradient', **kwargs)
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
@@ -971,11 +502,6 @@ def gradient(name, **kwargs):
     # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
     	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
-
-    # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
-    if level:
-        kwargs['level'] = level
 
     dertype, func = _find_derivative_type('gradient', lowername, kwargs.pop('dertype', None))
 
@@ -1003,7 +529,7 @@ def gradient(name, **kwargs):
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    optstash = _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -1214,14 +740,14 @@ def property(name, **kwargs):
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
     properties = kwargs.get('properties', ['dipole', 'quadrupole'])
     kwargs['properties'] = p4util.drop_duplicates(properties)
 
-    optstash = _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
+    optstash = driver_util._set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
     wfn = procedures['property'][lowername](lowername, **kwargs)
 
     optstash.restore()
@@ -1541,79 +1067,6 @@ def optimize(name, **kwargs):
     optstash.restore()
 
 
-def parse_arbitrary_order(name):
-    r"""Function to parse name string into a method family like CI or MRCC and specific
-    level information like 4 for CISDTQ or MRCCSDTQ.
-
-    """
-    # matches 'mrccsdt(q)'
-    if name.startswith('mrcc'):
-
-        # avoid undoing fn's good work when called twice
-        if name == 'mrcc':
-            return name, None
-
-        # grabs 'sdt(q)'
-        ccfullname = name[4:]
-
-        # A negative order indicates perturbative method
-        methods = {
-            'sd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },
-            'sdt'         : { 'method': 1, 'order':  3, 'fullname': 'CCSDT'        },
-            'sdtq'        : { 'method': 1, 'order':  4, 'fullname': 'CCSDTQ'       },
-            'sdtqp'       : { 'method': 1, 'order':  5, 'fullname': 'CCSDTQP'      },
-            'sdtqph'      : { 'method': 1, 'order':  6, 'fullname': 'CCSDTQPH'     },
-            'sd(t)'       : { 'method': 3, 'order': -3, 'fullname': 'CCSD(T)'      },
-            'sdt(q)'      : { 'method': 3, 'order': -4, 'fullname': 'CCSDT(Q)'     },
-            'sdtq(p)'     : { 'method': 3, 'order': -5, 'fullname': 'CCSDTQ(P)'    },
-            'sdtqp(h)'    : { 'method': 3, 'order': -6, 'fullname': 'CCSDTQP(H)'   },
-            'sd(t)_l'     : { 'method': 4, 'order': -3, 'fullname': 'CCSD(T)_L'    },
-            'sdt(q)_l'    : { 'method': 4, 'order': -4, 'fullname': 'CCSDT(Q)_L'   },
-            'sdtq(p)_l'   : { 'method': 4, 'order': -5, 'fullname': 'CCSDTQ(P)_L'  },
-            'sdtqp(h)_l'  : { 'method': 4, 'order': -6, 'fullname': 'CCSDTQP(H)_L' },
-            'sdt-1a'      : { 'method': 5, 'order':  3, 'fullname': 'CCSDT-1a'     },
-            'sdtq-1a'     : { 'method': 5, 'order':  4, 'fullname': 'CCSDTQ-1a'    },
-            'sdtqp-1a'    : { 'method': 5, 'order':  5, 'fullname': 'CCSDTQP-1a'   },
-            'sdtqph-1a'   : { 'method': 5, 'order':  6, 'fullname': 'CCSDTQPH-1a'  },
-            'sdt-1b'      : { 'method': 6, 'order':  3, 'fullname': 'CCSDT-1b'     },
-            'sdtq-1b'     : { 'method': 6, 'order':  4, 'fullname': 'CCSDTQ-1b'    },
-            'sdtqp-1b'    : { 'method': 6, 'order':  5, 'fullname': 'CCSDTQP-1b'   },
-            'sdtqph-1b'   : { 'method': 6, 'order':  6, 'fullname': 'CCSDTQPH-1b'  },
-            '2'           : { 'method': 7, 'order':  2, 'fullname': 'CC2'          },
-            '3'           : { 'method': 7, 'order':  3, 'fullname': 'CC3'          },
-            '4'           : { 'method': 7, 'order':  4, 'fullname': 'CC4'          },
-            '5'           : { 'method': 7, 'order':  5, 'fullname': 'CC5'          },
-            '6'           : { 'method': 7, 'order':  6, 'fullname': 'CC6'          },
-            'sdt-3'       : { 'method': 8, 'order':  3, 'fullname': 'CCSDT-3'      },
-            'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
-            'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
-            'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
-        }
-
-        # looks for 'sdt(q)' in dictionary
-        if ccfullname in methods:
-            return 'mrcc', methods[ccfullname]
-        else:
-            raise ValidationError('MRCC method \'%s\' invalid.' % (name))
-
-    elif re.match(r'^[a-z]+\d+$', name):
-        decompose = re.compile(r'^([a-z]+)(\d+)$').match(name)
-        namestump = decompose.group(1)
-        namelevel = int(decompose.group(2))
-
-        if namestump in ['mp', 'zapt', 'ci']:
-            # Let mp2, mp3, mp4 pass through to select functions
-            if namestump == 'mp' and namelevel in [2, 3, 4]:
-                return name, None
-            # Otherwise return method and order
-            else:
-                return namestump, namelevel
-        else:
-            return name, None
-    else:
-        return name, None
-
-
 def hessian(name, **kwargs):
     r"""Function complementary to :py:func:`~frequency`. Computes force
     constants, deciding analytic, finite difference of gradients, or
@@ -1652,13 +1105,11 @@ def hessian(name, **kwargs):
 	    raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
         ['FINDIF', 'HESSIAN_WRITE'],
-        ['E_CONVERGENCE'])
+        )
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
@@ -1683,7 +1134,7 @@ def hessian(name, **kwargs):
         raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Select certain irreps
     irrep = kwargs.get('irrep', -1)
@@ -1700,6 +1151,7 @@ def hessian(name, **kwargs):
         # We have the desired method. Do it.
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
         optstash.restore()
+        optstash_conv.restore()
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         psi4.set_variable('CURRENT ENERGY', wfn.energy())
@@ -1823,6 +1275,7 @@ def hessian(name, **kwargs):
         # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
         if freq_mode == 'sow':
             optstash.restore()
+            optstash_conv.restore()
             if return_wfn:
                 return (None, None)
             else:
@@ -1841,6 +1294,7 @@ def hessian(name, **kwargs):
 
         psi4.set_parent_symmetry('')
         optstash.restore()
+        optstash_conv.restore()
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1852,7 +1306,7 @@ def hessian(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
-        _set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
+        optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -1955,6 +1409,7 @@ def hessian(name, **kwargs):
         # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
         if freq_mode == 'sow':
             optstash.restore()
+            optstash_conv.restore()
             if return_wfn:
                 return (None, None)
             else:
@@ -1973,6 +1428,7 @@ def hessian(name, **kwargs):
 
         psi4.set_parent_symmetry('')
         optstash.restore()
+        optstash_conv.restore()
 
         if return_wfn:
             return (wfn.hessian(), wfn)
