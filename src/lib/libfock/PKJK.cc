@@ -40,7 +40,6 @@
 #include "direct_screening.h"
 #include "cubature.h"
 #include "points.h"
-#include "yoshimine.h"
 #include "PKmanagers.h"
 
 #include<lib3index/cholesky.h>
@@ -109,8 +108,6 @@ void PKJK::preiterations()
 
     psio_ = _default_psio_lib_;
 
-    PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options);
-
     // We need to access the option object to just get a few values
 
     algo_ = options.get_str("PK_ALGO");
@@ -121,7 +118,16 @@ void PKJK::preiterations()
     // We compute the integrals so that we can directly write the
     // PK file to disk. Also, do everything in the AO basis
     // like the modern JK algos, for adding sieving later
-      integrals_reorder();
+
+        PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options);
+
+        outfile->Printf(" Computing reordered integrals for PK\n\n");
+
+        PKmanager_->initialize();
+
+        PKmanager_->form_PK();
+
+//      integrals_reorder();
     // PK files are written at this point. We are done.
       timer_off("Total PK formation time");
       return;
