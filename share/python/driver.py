@@ -43,6 +43,7 @@ import numpy as np
 import itertools as it
 
 import driver_util
+from driver_cbs import cbs
 import p4util
 
 from qmmm import *
@@ -83,6 +84,11 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     gen_Ec -        General E convergence for all methods
     """
 
+    optstash = p4util.OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
+
     # Kind of want to move this out of here
     _method_exists(ptype, method_name)
 
@@ -104,8 +110,7 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
         if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
             psi4.set_global_option('E_CONVERGENCE', gen_Ec)
 
-    # We passed!
-    return True
+    return optstash
 
 
 def _find_derivative_type(ptype, method_name, user_dertype):
@@ -269,7 +274,6 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-#    moleucle.
 
     # Figure out BSSE types
     do_cp = False
@@ -572,7 +576,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
 # End CBS gufunc data
 
-def _cbs_gufunc(ptype, total_method_name, **kwargs):
+def _cbs_gufunc(func, total_method_name, **kwargs):
 
     # Catch kwarg issues
     kwargs = p4util.kwargs_lower(kwargs)
@@ -580,15 +584,11 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     psi4.clean_variables()
     user_dertype = kwargs.pop('dertype', None)
     cbs_verbose = kwargs.pop('cbs_verbose', True)
+    ptype = kwargs.pop('ptype', None)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
-
-    # Same some global variables so we can reset them later
-    optstash = p4util.OptionsState(
-        ['BASIS'],
-    )
 
     # Sanitize total_method_name
     total_method_name = total_method_name.lower()
@@ -601,6 +601,39 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
 
     # Split into components
     total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
+
+    # Single energy call?    
+    single_call = len(total_method_name_list) == 1
+    single_call &= '[' not in total_method_name
+    single_call &= ']' not in total_method_name
+    single_call &= total_method_name.count('/') == 1
+
+    if single_call:
+        method_name, basis = total_method_name.split('/')
+
+        # Save some global variables so we can reset them later
+        optstash = p4util.OptionsState(['BASIS'])
+        psi4.set_global_option('BASIS', basis)
+
+        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+        psi4.clean()
+
+        optstash.restore()
+
+        if return_wfn:
+            return (ptype_value, wfn)
+        else:
+            return ptype_value
+
+    # If we are not a single call, let CBS wrapper handle it!
+    cbs_kwargs = {}
+    cbs_kwargs['ptype'] = ptype
+    cbs_kwargs['return_wfn'] = True
+    cbs_kwargs['molecule'] = molecule
+
+    if len(total_method_name_list) > 1:
+        raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
+
     for method_str in total_method_name_list:
         if (method_str.count("[") > 1) or (method_str.count("]") > 1):
             raise ValidationError("""CBS gufunc: Too many brakcets given! %s """ % method_str)
@@ -608,58 +641,16 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
         if method_str.count('/') != 1:
             raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
 
-        # Find method and basis
-        method, basis_str = method_str.split('/')
-        isDelta = False
-        if 'D:' in method:
-            if 'D:' in method[2:]:
-                raise ValidationError("""CBS gufunc: Invalid Delta position. %s""" % method)
-            isDelta = True
-            method = method[2:]
+    # Find method and basis
+    method1, basis_str1 = total_method_name_list[0].split('/')
+    cbs_kwargs['name'] = method1
+    if method1 in ['scf', 'hf']:
+        cbs_kwargs['scf_basis'] = basis_str1
+    else:
+        cbs_kwargs['corl_basis'] = basis_str1
 
-        # Expand basis set (aug-cc-pv[d,t]z -> [aug-cc-pvdz, aug-cc-pvtz])
-        molstr = molecule.create_psi4_string_from_molecule()
-        basissets, dunning_num = driver_util.expand_bracketed_basis(basis_str, molecule=molstr)
-
-        # check method, need to be careful with gradients
-        _method_exists(ptype, method)
-
-        if (method in energy_only_methods) and (len(bassisets) > 2):
-            raise ValidationError("CBS gufunc: Method '%s' cannot be extrapolated" % method)
-
-        # Build up dictionary of information
-        method_dict = {}
-        method_dict['basissets'] = basissets
-        method_dict['basis_zetas'] = dunning_num
-        method_dict['method_name'] = method
-        method_dict['isSCF'] = (procedures['energy'][method] in [proc.run_scf, proc.run_dft])
-        method_dict['isDelta'] = isDelta
-        method_dict['dertype'] = None
-        if ptype != 'energy':
-            method_dict['dertype'] =  _find_derivative_type(ptype, method, user_dertype)[0]
-
-        # Figure out extrapolation method
-        method_dict['extrapolation_type'] = None
-        if method_dict['isSCF']:
-            if len(basissets) == 1:
-                method_dict['extrapolation_type'] = None
-            elif len(basissets) == 2:
-                method_dict['extrapolation_type'] = driver_util.scf_xtpl_helgaker_2
-            elif len(basissets) == 3:
-                method_dict['extrapolation_type'] = driver_util.scf_xtpl_helgaker_3
-            else:
-                raise ValidationError("CBS Gufunc: SCF-type method '%s' can only be supplied 1, 2, or"
-                                      " 3 basis sets (given %d)." % (method, len(basissets)))
-        else:
-            if len(basissets) == 1:
-                method_dict['extrapolation_type'] = None
-            elif len(basissets) == 2:
-                method_dict['extrapolation_type'] = driver_util.corl_xtpl_helgaker_2
-            else:
-                raise ValidationError("CBS Gufunc: post-SCF-type method '%s' can only be supplied 1 or 2"
-                                      " basis sets (given %d)." % (method, len(basissets)))
-
-        method_list.append(method_dict)
+    ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs) 
+        
 
     # SCF/cc-pv[DTQ]Z + D:MP2/cc-pv[DT]Z + D:CCSD(T)
     # MP2/cc-pv[DT]Z + D:CCSD(T)
@@ -672,139 +663,6 @@ def _cbs_gufunc(ptype, total_method_name, **kwargs):
     # delta_basis 
     # delta2_wfn
     # delta2_basis 
-
-    # Validate the method_list
-
-    # Pick the correct functin to call
-    if ptype == 'energy':
-        pfunc = energy
-    elif ptype == 'gradient':
-        pfunc = gradient
-    elif ptype == 'hessian':
-        pfunc = hessian
-    else:
-        raise ValidtionError("""CBS gufunc: ptype '%s' is not recognized""" % ptype)
-
-    # We also need energy for gradient and Hessian methods
-    energy_list = []
-    ptype_list = []
-
-
-    ### DGAS compute loop
-    # Loop over methods
-    for method_dict in method_list:
-        scf_ptype_list = []
-        corr_ptype_list = []
-
-        scf_energy_list = []
-        corr_energy_list = []
-
-        # Loop over basis sets
-        method_name = method_dict['method_name']
-        for basis in method_dict['basissets']:
-            #print(ptype, method_name, basis)
-            psi4.set_global_option('BASIS', basis)
-
-            # Just need a single energy list
-            if method_dict['isSCF'] or (method_dict['extrapolation_type'] is None):
-                pvalue, pwfn = pfunc(method, molecule=molecule, return_wfn=True)
-                scf_ptype_list.append(pvalue)
-                scf_energy_list.append(psi4.get_variable('CURRENT ENERGY'))
-
-            # Need to seperate into scf and corr values
-            else:
-                scf_pvalue, scf_wfn = pfunc('SCF', molecule=molecule, return_wfn=True)
-                scf_energy = psi4.get_variable('CURRENT ENERGY')
-
-                scf_ptype_list.append(scf_pvalue)
-                scf_energy_list.append(scf_energy)
-
-                pvalue, pwfn = pfunc(method, ref_wfn=scf_wfn, return_wfn=True)
-                corr_energy = psi4.get_variable('CURRENT ENERGY')
-
-                # Correlation only part
-                if ptype == 'energy':
-                    pvalue = pvalue - scf_pvalue
-                else:
-                    pvalue.subtract(scf_pvalue)
-
-                corr_ptype_list.append(pvalue)
-                corr_energy_list.append(corr_energy - scf_energy)
-
-            psi4.clean()
-
-        # Now build final values
-        method_total_energy = 0
-        method_ptype_data = None
-
-        if method_dict['extrapolation_type'] is None:
-            method_total_energy = scf_energy_list[0]
-            method_ptype_data = scf_ptype_list[0]
-
-        else:
-            xt_type = method_dict['extrapolation_type']
-            mt_name = method_dict['method_name']
-
-            # Pick which list to extrapolate
-            if method_dict['isSCF']:
-                e_list = scf_energy_list
-                p_list = scf_ptype_list
-            else:
-                e_list = corr_energy_list
-                p_list = corr_ptype_list
-
-            # Extrapolate the list for energy
-            extrap_data = []
-            for z, data in zip(method_dict['basis_zetas'], e_list):
-                extrap_data.append(z)
-                extrap_data.append(data)
-
-            if method_dict['isSCF']:
-                method_total_energy = xt_type(mt_name,
-                                              *extrap_data, verbose=cbs_verbose)
-            else:
-                method_total_energy = xt_type(mt_name,
-                                              *extrap_data, verbose=cbs_verbose)
-                method_total_energy += scf_energy_list[-1]
-
-            # Extrapolate the list of ptype data
-            if ptype == 'energy':
-                # We already have energy, skip extrapolation
-                method_ptype_data = method_total_energy
-            else:
-                extrap_data = []
-                for z, data in zip(method_dict['basis_zetas'], p_list):
-                    extrap_data.append(z)
-                    extrap_data.append(data)
-
-                if method_dict['isSCF']:
-                    method_ptype_data = xt_type(mt_name,
-                                                *extrap_data, verbose=cbs_verbose)
-                else:
-                    method_ptype_data = xt_type(mt_name,
-                                                *extrap_data, verbose=cbs_verbose)
-                    method_ptype_data.add(scf_ptype_list[-1])
-
-
-        # Append to total list
-        energy_list.append(method_total_energy)
-        ptype_list.append(method_ptype_data)
-
-
-    total_energy = sum(energy_list)
-    psi4.set_variable('CURRENT ENERGY', total_energy)
-    if ptype == 'energy':
-        ptype_value = sum(ptype_list)
-    else:
-        ptype_value = ptype_list[0].clone()
-        for val in ptype_list[1:]:
-            ptype_value.add(val)
-
-
-    wfn = None
-
-    # Reset modified global variables
-    optstash.restore()
 
     if return_wfn:
         return (ptype_value, wfn)
@@ -1089,7 +947,7 @@ def energy(name, **kwargs):
     """
 
     if hasattr(name, '__call__'):
-        return name(energy, ptype='energy', **kwargs)
+        return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
 
     lowername = name.lower()
 
@@ -1099,7 +957,7 @@ def energy(name, **kwargs):
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return _cbs_gufunc('energy', lowername, **kwargs)
+        return _cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
 
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
@@ -1122,7 +980,7 @@ def energy(name, **kwargs):
     for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
-    _set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    optstash = _set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
 
     # Before invoking the procedure, we rename any file that should be read.
     # This is a workaround to do restarts with the current PSI4 capabilities
@@ -1189,30 +1047,27 @@ def gradient(name, **kwargs):
     >>> np.array(G)
 
     """
-    kwargs = p4util.kwargs_lower(kwargs)
-    psi4.clean_variables()
 
-    # Check if this is a callable function
+    kwargs = p4util.kwargs_lower(kwargs)
     if hasattr(name, '__call__'):
-        return name(gradient, lowername, ptype='gradient', **kwargs)
+        return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
 
     lowername = name.lower()
 
+    # Do a cp thing
+    if kwargs.get('bsse_type', None) is not None:
+        return _nbody_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+
     # Check if this is a CBS extrapolation
     if "/" in lowername:
-        return _cbs_gufunc('gradient', lowername, **kwargs)
+        return _cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
 
     return_wfn = kwargs.pop('return_wfn', False)
-    dertype = 1
+    psi4.clean_variables()
 
     # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
     	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -1245,7 +1100,7 @@ def gradient(name, **kwargs):
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    optstash = _set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -1451,11 +1306,6 @@ def property(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
-
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
@@ -1467,7 +1317,8 @@ def property(name, **kwargs):
 
     properties = kwargs.get('properties', ['dipole', 'quadrupole'])
     kwargs['properties'] = p4util.drop_duplicates(properties)
-    _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
+
+    optstash = _set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
     wfn = procedures['property'][lowername](lowername, **kwargs)
 
     optstash.restore()
@@ -2319,7 +2170,7 @@ def frequency(name, **kwargs):
     old_global_basis = None
     if "/" in lowername:
         if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
-           raise ValidationError("Frequency: Cannot extrapolate or delta correction frequencies yet.")
+           raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
         else:
             old_global_basis = psi4.get_global_option("BASIS")
             lowername, new_basis = lowername.split('/')
