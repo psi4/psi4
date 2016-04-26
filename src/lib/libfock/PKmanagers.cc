@@ -25,7 +25,7 @@
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
 #include "PKmanagers.h"
-#include "writers.h"
+#include "PK_workers.h"
 #include <liboptions/liboptions.h>
 #include <libmints/integral.h>
 #include <libmints/twobody.h>
@@ -117,7 +117,7 @@ PKManager::PKManager(boost::shared_ptr<BasisSet> primary, size_t memory, Options
 #endif
 }
 
-SharedIOBuffer PKManager::get_buffer() {
+SharedPKWrkr PKManager::get_buffer() {
     int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
@@ -160,7 +160,7 @@ void PKManager::compute_integrals() {
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
-        SharedIOBuffer buf = get_buffer();
+        SharedPKWrkr buf = get_buffer();
         for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
             unsigned int P = buf->P();
             unsigned int Q = buf->Q();
@@ -530,7 +530,7 @@ void PKMgrReorder::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new IOBuffer_PK(primary_,AIO_,buf_size,buf_per_thread,pk_file_));
+        iobuffers_.push_back(new PKWrkrReord(primary,AIO_,pk_file_,buf_size,buf_per_thread));
     }
 
 }
@@ -611,8 +611,7 @@ void PKMgrYoshimine::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new IOBuffer_IWL(primary_,AIO_,buf_per_thread,
-                                 ints_per_buf_,iwl_file_J_,iwl_file_K_,current_pos,&batch_for_pq_));
+        iobuffers_.push_back(new PKWrkrIWL(primary,AIO_,iwl_file_J_,iwl_file_K_,ints_per_buf_,batch_for_pq_));
     }
 
 }
@@ -719,8 +718,8 @@ void PKMgrYoshimine::write() {
     // Concatenate all internal buckets to the ones of thread buffer 0.
     double val;
     size_t i, j, k, l;
-    IOBuffer_PK* buf0 = iobuffers_[0];
-    IOBuffer_PK* buftarget;
+    PKWorker* buf0 = iobuffers_[0];
+    PKWorker* buftarget;
     //TODO Man if that loop actually works I'll be lucky
     for(int t = 1; t < nthreads_; ++t) {
         buftarget = iobuffers_[t];
@@ -955,11 +954,11 @@ void PKMgrInCore::allocate_buffers() {
     for(size_t i = 0; i < nthreads_; ++i) {
         start = i * buffer_size;
 //DEBUG        outfile->Printf("start is %lu\n",start);
-        SharedIOBuffer buf;
+        SharedPKWrkr buf;
         if(i < nthreads_ - 1) {
-            buf = new InCoreBufferPK(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
+            buf = new PKWrkrInCore(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
         } else {
-            buf = new InCoreBufferPK(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
+            buf = new PKWrkrInCore(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
         }
         iobuffers_.push_back(buf);
         ntasks_ = nthreads_;

@@ -36,7 +36,7 @@ class AIOHandler {
 private:
     /// What is the job type?
     std::queue<unsigned int> job_;
-    /// Unique job ID to check for job completion
+    /// Unique job ID to check for job completion. Should NEVER be 0.
     std::deque<unsigned long int> jobID_;
     /// Unit number argument
     std::queue<unsigned int> unit_;
