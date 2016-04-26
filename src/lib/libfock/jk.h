@@ -31,8 +31,8 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <libmints/typedefs.h>
-#include "writers.h"
 
+#include "writers.h"
 
 namespace psi {
 class MinimalInterface;
@@ -45,6 +45,10 @@ class TwoBodyAOInt;
 class Options;
 class FittingMetric;
 class PSIO;
+
+namespace pk {
+class PKManager;
+}
 
 // => BASE CLASS <= //
 
@@ -599,7 +603,7 @@ class PKJK : public JK {
     size_t pk_pairs_;
 
     /// Class handling the PK integrals
-    boost::shared_ptr<PKManager> PKmanager_;
+    boost::shared_ptr<pk::PKManager> PKmanager_;
 
     /// The index of the first pair in each batch
     std::vector<size_t> batch_pq_min_;

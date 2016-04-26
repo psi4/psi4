@@ -31,11 +31,12 @@ namespace psi {
 // Forward declarations for Psi4
 class Options;
 class ERISieve;
-class IOBuffer_PK;
 
 namespace pk {
 
-typedef std::shared_ptr<IOBuffer_PK> SharedIOBuffer;
+class PKWorker;
+
+typedef std::shared_ptr<PKWorker> SharedPKWrkr;
 
 /*-
   ijklBasisIterator: Iterator that goes through all two-electron integral
@@ -103,7 +104,7 @@ private:
     size_t memory_;
 
     /// Array of IOBuffer_PK for task handling
-    std::vector<SharedIOBuffer> iobuffers_;
+    std::vector<SharedPKWrkr> iobuffers_;
 
     /// Vector of triangular D matrices
     std::vector<double*> D_vec_;
@@ -129,7 +130,7 @@ public:
     size_t memory()   const { return memory_; }
 
     /// Accessor that returns buffer corresponding to current thread
-    SharedIOBuffer buffer();
+    SharedPKWrkr buffer();
 
 
     /**
@@ -162,7 +163,7 @@ public:
     /// Deallocating the thread buffers
     virtual void finalize_PK()=0;
     /// Get the buffer for the current thread
-    SharedIOBuffer get_buffer();
+    SharedPKWrkr get_buffer();
 
 
     /// Store the computed integrals in the appropriate buffers
@@ -173,8 +174,8 @@ public:
     virtual void write();
 
     /// Get TOC labels for J or K
-    char* get_label_J(const int batch);
-    char* get_label_K(const int batch);
+    static char* get_label_J(const int batch);
+    static char* get_label_K(const int batch);
 
     /// Actual computation of J and K
     /// Prepare the density matrix
