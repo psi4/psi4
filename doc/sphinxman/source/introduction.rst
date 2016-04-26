@@ -149,6 +149,15 @@ and reaction energies, is discussed in
   and a T1-Transformed Hamiltonian," A. E. DePrince and C. D. Sherrill,
   *J. Chem. Theory Comput.* **9**, 2687-2696 (2013).
   (doi: `10.1021/ct400250u <http://dx.doi.org/10.1021/ct400250u>`_).
+
+Implementation of the asymmetric triples correction for the density-fitted 
+and cholesky-decomposed coupled-cluster singles and doubles method
+
+* "A noniterative asymmetric triple excitation correction for the density-fitted
+  coupled-cluster singles and doubles method: Preliminary applications," 
+  U. Bozkaya,   *J. Chem. Phys.* **144**, 144108 (2016).
+  (doi: `10.1063/1.4945706 <http://dx.doi.org/10.1063/1.4945706>`_).
+
  
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -320,7 +329,7 @@ Orbital-optimized third-order perturbation theory (OMP3)
   *J. Chem. Phys.* **139**, 104116 (2013).
   (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
 
-Orbital-optimized coupled electron pair approximation (OCEPA)
+Orbital-optimized linearized coupled-cluster doubles method (OLCCD)
 
 * "Orbital-optimized coupled-electron pair theory and its analytic gradients: 
   Accurate equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer 
@@ -346,7 +355,7 @@ Extended Koopmans' Theorem
   U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2041 (2014).
   (doi: `10.1021/ct500186j <http://dx.doi.org/10.1021/ct500186j>`_).
 
-Density-Fitted Orbital-optimized second-order perturbation theory (DF-OMP2)
+Density-Fitted and Cholesky-Decomposed Orbital-optimized second-order perturbation theory (DF-OMP2)
 
 * "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting 
   and Cholesky Decomposition Approximations: An Efficient Implementation," 
@@ -357,6 +366,21 @@ Density-Fitted Orbital-optimized second-order perturbation theory (DF-OMP2)
   Second-Order Perturbation Theory with Density-Fitting Approximation: An 
   Efficient Implementation," U. Bozkaya, *J. Chem. Theory Comput.* **10**, 4389 (2014).
   (doi: `10.1021/ct500634s <http://dx.doi.org/10.1021/ct500634s>`_).
+
+Density-Fitted and Cholesky-Decomposed Orbital-optimized MP3 and MP2.5 (DF-OMP3 and DF-OMP2.5)
+
+* "Orbital-Optimized MP3 and MP2.5 with Density-Fitting 
+  and Cholesky Decomposition Approximations," 
+  U. Bozkaya,   *J. Chem. Theory Comput.* **12**, 1179 (2016).
+  (doi: `10.1021/acs.jctc.5b01128 <http://dx.doi.org/10.1021/acs.jctc.5b01128>`_).
+
+Density-Fitted and Cholesky-Decomposed Orbital-Optimized Linearized Coupled-Cluster Doubles Method (DF-OLCCD)
+
+* "Orbital-optimized linearized coupled-cluster doubles with density-fitting 
+  and Cholesky decomposition approximations: an efficient implementation," 
+  U. Bozkaya,   *Phys. Chem. Chem. Phys.* **18**, 11362 (2016).
+  (doi: `10.1039/c6cp00164e <http://dx.doi.org/10.1039/c6cp00164e>`_).
+
 
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
