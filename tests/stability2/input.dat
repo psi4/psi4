@@ -1,28 +1,28 @@
-#! ROHF stability analysis check for CN with cc-pVDZ.  
+#! ROHF stability analysis check for CN with cc-pVDZ.
 #! This test corresponds to the rohf-stab test from Psi3.
 
 
-ref_vals_sym = [ 0.094068, 0.213961, 0.213961, 0.359135,   #TEST
-                 0.022220, 0.194516, 0.022220, 0.194516 ]  #TEST 
+ref_vals_sym = [ 0.094068, 0.213961, 0.213961, 0.359135,
+                 0.022220, 0.194516, 0.022220, 0.194516 ]
 
-nirrep = 4                                                 #TEST
-rows = psi4.Dimension(nirrep)                              #TEST
-col = psi4.Dimension(nirrep)                               #TEST
+nirrep = 4
+rows = psi4.Dimension(nirrep)
+col = psi4.Dimension(nirrep)
 
-for i in range(0,nirrep):                                  #TEST
-    col[i] = 1                                             #TEST  
-    rows[i] = 2                                            #TEST 
+for i in range(0,nirrep):
+    col[i] = 1
+    rows[i] = 2
 
-ref = psi4.Matrix("Refs values",rows,col)                  #TEST
+ref = psi4.Matrix("Refs values",rows,col)
 
-for h in range(0,nirrep):                                  #TEST
-    for i in range(0,2):                                   #TEST
-      ref.set(h,i,0,ref_vals_sym[h * 2 + i])               #TEST
+for h in range(0,nirrep):
+    for i in range(0,2):
+      ref.set(h,i,0,ref_vals_sym[h * 2 + i])
 
 memory 500 mb
 
-nucenergy =   18.91527043470638  #TEST
-refenergy =  -92.19555660616885  #TEST
+nucenergy =   18.91527043470638
+refenergy =  -92.19555660616885
 
 molecule cn {
    C
@@ -46,6 +46,6 @@ thisenergy = energy('scf')
 
 stab = get_array_variable("SCF STABILITY EIGENVALUES")
 
-compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
+compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+compare_values(refenergy, thisenergy, 9, "Reference energy")
+compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")

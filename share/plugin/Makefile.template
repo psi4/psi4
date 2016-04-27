@@ -39,6 +39,9 @@ NAME = $(shell basename `pwd`)
 # C++ source files for your plugin. By default we grab all *.cc files.
 CXXSRC = $(notdir $(wildcard *.cc))
 
+# miniconda environment ("conda install gcc" package expected)
+MCONDA = /opt/anaconda1anaconda2anaconda3
+
 # Flags that were used to compile Psi4.
 CXX = @PLUGIN_CXX@
 CXXDEFS = @PLUGIN_DEFINES@
