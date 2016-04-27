@@ -89,26 +89,29 @@ but are in active development. For documentation on plugin modules, see
 Creating a New Plugin Using a Conda Pre-compiled Binary
 -------------------------------------------------------
 
-|PSIfour| plugins can also be created using a Conda binary.  However, to
-To compile a plugin it is necessary to have a compiler (``gcc``) and blas libraries
-(``openblas``) installed in the Conda environment used to run |PSIfour|.
-It is recommended to create a new Conda environment with `gcc` and `openblas` installed.
+|PSIfour| plugins can also be created using Conda for both |PSIfour| binary and 
+development environment.
+To compile a plugin it is necessary to have a compiler (*e.g.*, ``gcc``) and blas libraries
+(*e.g.*, ``openblas``) installed in the Conda environment used to run |PSIfour|.
+It is recommended to create a new Conda environment with packages `gcc` and `openblas` installed. ::
 
-   >>> conda create -n psi4plugin psi4
-   >>> source activate psi4plugin
-   >>> cd $CONDA/envs/psi4plugin 
-   >>> conda install gcc
+   >>> conda create -n p4plugenv psi4     # makes environment named p4plugenv with psi4 binary installed
+   >>> source activate p4plugenv          # activate the env so its contents are first in your PATH
+   >>> cd "$(dirname $(which psi4))"/..   # move into env directory
+   >>> #cd $CONDA/envs/p4plugenv          # same effect as line above where $CONDA is path to Miniconda/Anaconda
+   >>> conda install gcc                  # place compilers into expected place
+   # Linux
    >>> conda install openblas
+   # Mac
+   >>> conda install boost=1.57
 
-where ``$CONDA`` is the path to Miniconda/Anaconda. 
-Once these packages are installed, plugins can be created and compiled.
+Once these packages are installed, plugins can be created and compiled. ::
 
-   >>> source activate psi4plugin # important: activate conda environment
-   >>> psi4 --new-plugin testplugin
-   >>> cd testplugin
-   >>> make -f Makefile.conda
-   >>> psi4 # run sample input.dat 
-
+   >>> source activate p4plugenv          # important: activate conda environment
+   >>> psi4 --new-plugin testplugin       # generate new plugin
+   >>> cd testplugin                      # move into plugin directory
+   >>> make                               # compile the plugin to produce testplugin.so
+   >>> psi4                               # run sample input.dat 
 
 Please note that the conda enviroment must be activated before compilation and execution of
 plugins created using this procedure.
@@ -123,11 +126,6 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   the plugin C++ code, ``make`` must be run in the plugin directory to
   recompile the ``myplugin.so`` executable, but recompiling the main
   |PSIfour| code is not necessary.
-
-* **Makefile.conda** |w---w| Makefile for conda installations.  Use this
-  makefile if |PSIfour| was installed using conda.
-  To compile the ``myplugin.so`` executable run ``make -f Makefile.conda`` 
-  in the plugin directory. 
 
 * **input.dat** |w---w| Sample input file for the plugin.
   Since the ``__init__.py`` file makes the plugin directory look like a
@@ -155,8 +153,9 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   directory (add additional lines to the ``# Load Python modules`` section)
   or the plugin depends on .so codes in other plugin directories (add
   additional plugin_load lines relative to the current plugin directory to
-  the ``# Load C++ plugin`` section as modeled in
-  :source:`tests/plugin_libcim/__init__.py`).
+  the ``# Load C++ plugin`` section).
+
+.. comment  as modeled in :source:`tests/plugin_libcim/__init__.py`).
 
   .. literalinclude:: @SFNX_INCLUDE@share/plugin/__init__.py.template
 
