@@ -69,7 +69,7 @@ procedures = {
             'olccd'         : select_olccd,
             'omp2.5'        : select_omp2p5,
             'dfocc'         : run_dfocc,  # full control over dfocc
-            'qchf'          : run_qchf,
+#            'qchf'          : run_qchf,
             'ccd'           : run_dfocc,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
@@ -319,8 +319,6 @@ def energy(name, **kwargs):
     | sos-pi-omp3             | A special version of SOS-OMP3 for pi systems :ref:`[manual] <sec:occ_oo>`                                     |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ_oo>`                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | qchf                    | density-fitted QC-HF from DFOCC module :ref:`[manual] <sec:occ_oo>`                                           |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | lccsd, cepa(0)          | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>` :ref:`[details] <tllccsd>`        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
