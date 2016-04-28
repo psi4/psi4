@@ -32,8 +32,6 @@
 #include <boost/shared_ptr.hpp>
 #include <libmints/typedefs.h>
 
-#include "writers.h"
-
 namespace psi {
 class MinimalInterface;
 class GPUDFJKHelper;
@@ -577,19 +575,8 @@ public:
  */
 class PKJK : public JK {
 
-    /// Which algorithm are we using for PK?
-    std::string algo_;
-
     /// The PSIO instance to use for I/O
     boost::shared_ptr<PSIO> psio_;
-
-    /// Options object
-    Options& options_;
-
-    /// Absolute AO index to relative SO index
-    int* so2index_;
-    /// Absolute AO index to irrep
-    int* so2symblk_;
 
     /// The pk file to use for storing the pk batches
     int pk_file_;
@@ -597,22 +584,8 @@ class PKJK : public JK {
     /// The number of threads to be used for integral computation
     int nthreads_;
 
-    /// The number of integrals in the P and K arrays
-    size_t pk_size_;
-    /// The number of totally symmetric pairs that contribute
-    size_t pk_pairs_;
-
     /// Class handling the PK integrals
-    boost::shared_ptr<pk::PKManager> PKmanager_;
-
-    /// The index of the first pair in each batch
-    std::vector<size_t> batch_pq_min_;
-    /// The index of the last pair in each batch
-    std::vector<size_t> batch_pq_max_;
-    /// The index of the first integral in each batch
-    std::vector<size_t> batch_index_min_;
-    /// The index of the last integral in each batch
-    std::vector<size_t> batch_index_max_;
+    std::shared_ptr<pk::PKManager> PKmanager_;
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const;
@@ -625,10 +598,6 @@ class PKJK : public JK {
 
     /// Common initialization
     void common_init();
-    /// Reordered integral computation
-    void integrals_reorder();
-    /// Integral computation
-    void integrals();
 
     /// Total number of SOs
     int nso_;

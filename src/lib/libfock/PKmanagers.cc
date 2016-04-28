@@ -29,6 +29,10 @@
 #include <liboptions/liboptions.h>
 #include <libmints/integral.h>
 #include <libmints/twobody.h>
+#include <libmints/basisset.h>
+#include <libmints/typedefs.h>
+#include <libmints/matrix.h>
+#include <libqt/qt.h>
 #include <libpsio/aiohandler.h>
 
 #ifdef _OPENMP
@@ -93,13 +97,10 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
 
 }
 
-PKManager::PKManager(boost::shared_ptr<BasisSet> primary, size_t memory, Options &options) {
+PKManager::PKManager(boost::shared_ptr<BasisSet> primary, size_t memory, Options& options) :
+primary_(primary), memory_(memory), options_(options) {
 
-    options_ = options;
-
-    primary_ = primary;
     nbf_ = primary_->nbf();
-    memory_ = memory;
 
     pk_pairs_ = (size_t) nbf_ * ((size_t) nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
@@ -161,11 +162,14 @@ void PKManager::compute_integrals() {
         thread = omp_get_thread_num();
 #endif
         SharedPKWrkr buf = get_buffer();
+//DEBUG        outfile->Printf("Starting task %d\n", i);
         for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
             unsigned int P = buf->P();
             unsigned int Q = buf->Q();
             unsigned int R = buf->R();
             unsigned int S = buf->S();
+//DEBUG#pragma omp critical
+//DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
             tb[thread]->compute_shell(P,Q,R,S);
             integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
             ++nshqu;
@@ -197,19 +201,17 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        if(val > cutoff_) {
+        if(fabs(val) > cutoff_) {
+//DEBUG#pragma omp critical 
+//DEBUG{
+//DEBUG            if(INDEX2(k,l) == 0) {
+//DEBUG              outfile->Printf("Integral <%d %d|%d %d> = %16.12f\n",i,j,k,l,val);
+//DEBUG            }
+//DEBUG}
             iobuffers_[thread]->fill_values(val, i, j, k, l);
         }
     }
 
-}
-
-void PKManager::write() {
-    int thread = 0;
-#ifdef _OPENMP
-    thread = omp_get_thread_num();
-#endif
-    iobuffers_[thread]->write(batch_index_min_,batch_index_max_,pk_pairs_);
 }
 
 void PKManager::form_D_vec(std::vector<SharedMatrix> D) {
@@ -254,6 +256,7 @@ void PKManager::get_results(std::vector<SharedMatrix> J) {
         J[N]->copy_lower_to_upper();
         delete [] JK_vec_[N];
     }
+    JK_vec_.clear();
 
 }
 
@@ -272,20 +275,20 @@ void PKManager::finalize_D() {
 
 char* PKManager::get_label_J(const int batch) {
     char* label = new char[100];
-    sprintf(label, "J Block (Batch %d)", i);
+    sprintf(label, "J Block (Batch %d)", batch);
     return label;
 }
 
 char* PKManager::get_label_K(const int batch) {
     char* label = new char[100];
-    sprintf(label, "K Block (Batch %d)", i);
+    sprintf(label, "K Block (Batch %d)", batch);
     return label;
 }
 
 PKMgrDisk::PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
           size_t memory, Options &options) : PKManager(primary,memory,options) {
     psio_ = psio;
-    AIO_ = new AIOHandler(psio_);
+    AIO_ = std::shared_ptr<AIOHandler>(new AIOHandler(psio_));
     max_batches_ = options.get_int("MAX_BUCKETS");
     pk_file_ = PSIF_SO_PK;
 
@@ -305,7 +308,7 @@ void PKMgrDisk::batch_sizing() {
 
     double batch_thresh = 0.1;
 
-    ijklBasisIterator AOintsiter(nbf_,sieve_);
+    ijklBasisIterator AOintsiter(nbf(),sieve());
 
     size_t old_pq = 0;
     size_t old_max = 0;
@@ -331,7 +334,7 @@ void PKMgrDisk::batch_sizing() {
         } else {
             size_t pqrs = INDEX2(pq, INDEX2(rb, sb));
             nintbatch += nintpq;
-            if (nintbatch > memory_) {
+            if (nintbatch > memory()) {
                 batch_index_max_.push_back(old_max);
                 batch_pq_max_.push_back(old_pq);
                 batch_for_pq_.pop_back();
@@ -356,7 +359,7 @@ void PKMgrDisk::batch_sizing() {
     int lastb = batch_index_max_.size() - 1;
     if (lastb > 0) {
     size_t size_lastb = batch_index_max_[lastb] - batch_index_min_[lastb];
-        if (((double) size_lastb / memory_) < batch_thresh) {
+        if (((double) size_lastb / memory()) < batch_thresh) {
             batch_index_max_[lastb - 1] = batch_index_max_[lastb];
             batch_pq_max_[lastb - 1] = batch_pq_max_[lastb];
             batch_pq_max_.pop_back();
@@ -369,7 +372,9 @@ void PKMgrDisk::batch_sizing() {
     int nbatches = batch_pq_min_.size();
     if (nbatches > max_batches_) {
       outfile->Printf( "  PKJK: maximum number of batches exceeded\n") ;
-      throw PSIEXCEPTION( "  PK computation needs %d batches, max. number: %d\n", nbatches, max_batches_);
+      outfile->Printf( "  PK computation needs %d batches, max. number: %d\n", nbatches, max_batches_);
+      throw PSIEXCEPTION("  PK Failure: max batches exceeded\n");
+
     }
 
 
@@ -388,6 +393,10 @@ void PKMgrDisk::print_batches() {
 
 }
 
+void PKMgrDisk::write() {
+    get_buffer()->write(batch_index_min_,batch_index_max_,pk_pairs());
+}
+
 void PKMgrDisk::open_PK_file() {
     psio_->open(pk_file_, PSIO_OPEN_OLD);
 }
@@ -401,7 +410,7 @@ void PKMgrDisk::prepare_JK(std::vector<SharedMatrix> D) {
         finalize_PK();
         set_writing(false);
     } else {
-        open_PK_file(true);
+        open_PK_file();
     }
     form_D_vec(D);
 }
@@ -422,8 +431,8 @@ void PKMgrDisk::finalize_PK() {
 //          delete [] label_K_[0][i];
 //      }
 //      label_K_[0].clear();
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_[i].reset();
+    for(int i = 0; i < nthreads(); ++i) {
+        buffer(i).reset();
     }
 
 }
@@ -450,8 +459,8 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch) {
 
         // Read one entry, use it for all density matrices
         for(int N = 0; N < J.size(); ++N) {
-            double* D_vec = D_vec_[N];
-            double* J_vec = JK_vec_[N];
+            double* D_vec = D_glob_vecs(N);
+            double* J_vec = JK_glob_vecs(N);
             double* j_ptr = j_block;
         //TODO Could consider parallelizing this loop
             for(size_t pq = min_pq; pq < max_pq; ++pq) {
@@ -492,45 +501,45 @@ PKMgrReorder::PKMgrReorder(boost::shared_ptr<PSIO> psio, boost::shared_ptr<Basis
 
 // Pre-striping the PK file
 void PKMgrReorder::prestripe_files() {
-    psio_->open(pk_file_, PSIO_OPEN_NEW);
+    psio()->open(pk_file(), PSIO_OPEN_NEW);
     // Create the files ? Pre-stripe them.
-    for(int batch = 0; batch < batch_index_min_.size(); ++batch) {
-        size_t batch_size = batch_index_max_[batch] - batch_index_min_[batch];
+    for(int batch = 0; batch < batch_ind_min().size(); ++batch) {
+        size_t batch_size = batch_ind_max()[batch] - batch_ind_min()[batch];
         // We need to keep the labels around in a vector
         label_J_.push_back(get_label_J(batch));
-        AIO_->zero_disk(pk_file_,label_J_[batch],1,batch_size);
+        AIO()->zero_disk(pk_file(),label_J_[batch],1,batch_size);
         label_K_.push_back(get_label_K(batch));
-        AIO_->zero_disk(pk_file_,label_K_[batch],1,batch_size);
+        AIO()->zero_disk(pk_file(),label_K_[batch],1,batch_size);
     }
 
 }
 
 void PKMgrReorder::allocate_buffers() {
     // Factor 2 because we need memory for J and K buffers
-    size_t mem_per_thread = memory_ / (2 * nthreads_);
+    size_t mem_per_thread = memory() / (2 * nthreads());
     // Factor 2 because we need 2 buffers for asynchronous I/O
     size_t buf_size = mem_per_thread / 2;
     if (max_mem_buf_ != 0) buf_size = std::min(buf_size, max_mem_buf_);
 
     // Number of tasks needed with this buffer size
-    ntasks_ = pk_size_ / buf_size + 1;
+    set_ntasks(pk_size() / buf_size + 1);
     // Is there less tasks than threads ?
-    if(ntasks_ < nthreads_) {
-        ntasks_ = ntasks_ * nthreads_;
-        size_t tmp_size = pk_size_ / ntasks_ + 1;
+    if(ntasks() < nthreads()) {
+        set_ntasks(ntasks() * nthreads());
+        size_t tmp_size = pk_size() / ntasks() + 1;
         buf_size = tmp_size;
-        ntasks_ = pk_size_ / buf_size + 1;
+        set_ntasks(pk_size() / buf_size + 1);
     }
-    size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks_ / nthreads_);
+    size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks() / nthreads());
     // Some printing for us
-    outfile->Printf("  Task number: %lu\n",ntasks_);
+    outfile->Printf("  Task number: %lu\n",ntasks());
     outfile->Printf("  Buffer size: %lu\n",buf_size);
     outfile->Printf("  Buffer per thread: %lu\n",buf_per_thread);
 
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new PKWrkrReord(primary,AIO_,pk_file_,buf_size,buf_per_thread));
+    for(int i = 0; i < nthreads(); ++i) {
+        fill_buffer(SharedPKWrkr(new PKWrkrReord(primary(),AIO(),pk_file(),buf_size,buf_per_thread)));
     }
 
 }
@@ -542,7 +551,7 @@ void PKMgrReorder::form_PK() {
 
 void PKMgrReorder::finalize_PK() {
     timer_on("AIO synchronize");
-    AIO_->synchronize();
+    AIO()->synchronize();
     timer_off("AIO synchronize");
 
     // Can get rid of the pre-striping labels
@@ -554,8 +563,8 @@ void PKMgrReorder::finalize_PK() {
         delete [] label_K_[i];
     }
     label_K_.clear();
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_[i].reset();
+    for(int i = 0; i < nthreads(); ++i) {
+        buffer(i).reset();
     }
 }
 
@@ -570,30 +579,32 @@ PKMgrYoshimine::PKMgrYoshimine(boost::shared_ptr<PSIO> psio, boost::shared_ptr<B
 
 void PKMgrYoshimine::prestripe_files() {
 
-    psio_->open(iwl_file_J_, PSIO_OPEN_NEW);
+    psio()->open(iwl_file_J_, PSIO_OPEN_NEW);
     // Pre-stripe the new file
     // Number of IWL buffers necessary to write all integrals
-    size_t num_iwlbuf = pk_size_ / ints_per_buf_ + 1;
+    size_t num_iwlbuf = pk_size() / ints_per_buf_ + 1;
     // The last buffer of each batch may be partially filled only
-    num_iwlbuf += batch_index_min_.size();
-    size_t iwlsize_bytes = num_iwlbuf * iwlintsize_;
+    num_iwlbuf += batch_ind_min().size();
+    size_t iwlsize_bytes = num_iwlbuf * iwl_int_size_;
     size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
-    AIO_->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,iwlsize);
+    AIO()->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,iwlsize);
 
     // And we do the same for the file containing K buckets
     // We need at most twice as much IWL buffers since integrals can be
     // pre-sorted in two different buckets for K
-    psio_->open(iwl_file_K_, PSIO_OPEN_NEW);
-    AIO_->zero_disk(iwl_file_K_, IWL_KEY_BUF, 1, 2*iwlsize);
+    psio()->open(iwl_file_K_, PSIO_OPEN_NEW);
+    AIO()->zero_disk(iwl_file_K_, IWL_KEY_BUF, 1, 2*iwlsize);
 }
 
 void PKMgrYoshimine::allocate_buffers() {
-    int buf_per_thread = batch_index_min_.size();
+    int buf_per_thread = batch_ind_min().size();
     // Factor 2 because we need an address for J and an address for K
     // J and K addresses for the same buckets are stored contiguously, i.e.
     // element [0] is J address for first bucket and element [1] the
     // K address for the first bucket
-    size_t* current_pos = new size_t[2 * buf_per_thread];
+    // we actually need the boost shared_ptr, the std::shared_ptr does
+    // not support array syntax
+    boost::shared_ptr<size_t []> current_pos(new size_t[2 * buf_per_thread]);
 
     current_pos[0] = 0;
     current_pos[1] = 0;
@@ -602,16 +613,16 @@ void PKMgrYoshimine::allocate_buffers() {
     // give each bucket twice the J bucket's size. It's wasting quite a bit
     // of space, other solution is to explicitly count integrals.
     for(int i = 1; i < buf_per_thread; ++i) {
-        size_t batchsize = batch_index_max_[i - 1] - batch_index_min_[i - 1];
+        size_t batchsize = batch_ind_max()[i - 1] - batch_ind_min()[i - 1];
         size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
-        current_pos[2 * i] = iwlperbatch * iwlintsize_ + current_pos[2 * i - 2];
-        current_pos[2 * i + 1] = 2 * (iwlperbatch * iwlintsize_) + current_pos[2 * i - 1];
+        current_pos[2 * i] = iwlperbatch * iwl_int_size_ + current_pos[2 * i - 2];
+        current_pos[2 * i + 1] = 2 * (iwlperbatch * iwl_int_size_) + current_pos[2 * i - 1];
     }
 
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_.push_back(new PKWrkrIWL(primary,AIO_,iwl_file_J_,iwl_file_K_,ints_per_buf_,batch_for_pq_));
+    for(int i = 0; i < nthreads(); ++i) {
+        fill_buffer(SharedPKWrkr(new PKWrkrIWL(primary(),AIO(),iwl_file_J_,iwl_file_K_,ints_per_buf_,batch_for_pq(),current_pos)));
     }
 
 }
@@ -628,8 +639,18 @@ void PKMgrYoshimine::form_PK() {
 }
 
 void PKMgrYoshimine::compute_integrals() {
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
-    for(int i = 0; i < primary_->nshell(); ++i) {
+
+    // Get an AO integral factory
+    boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary()));
+
+    // Get ERI object, one per thread
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for(int i = 0; i < nthreads(); ++i) {
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads())
+    for(int i = 0; i < primary()->nshell(); ++i) {
       int num_uniq_pk;
       int P_arr[3];
       int Q_arr[3];
@@ -687,18 +708,18 @@ void PKMgrYoshimine::compute_integrals() {
               R = R_arr[npk];
               S = S_arr[npk];
               //Sort shells based on AM to save ERI some work doing permutation resorting
-              if (primary_->shell(P).am() < primary_->shell(Q).am()) {
+              if (primary()->shell(P).am() < primary()->shell(Q).am()) {
                   std::swap(P,Q);
               }
-              if (primary_->shell(R).am() < primary_->shell(S).am()) {
+              if (primary()->shell(R).am() < primary()->shell(S).am()) {
                   std::swap(R,S);
               }
-              if (primary_->shell(P).am() + primary_->shell(Q).am() >
-                      primary_->shell(R).am() + primary_->shell(S).am()) {
+              if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                      primary()->shell(R).am() + primary()->shell(S).am()) {
                   std::swap(P, R);
                   std::swap(Q, S);
               }
-    //          printf("Computing integral <%i %i|%i %i>\n", p, q, r, s);
+//              outfile->Printf(printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S));
               tb[thread]->compute_shell(P, Q, R, S);
               integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
             }
@@ -718,11 +739,10 @@ void PKMgrYoshimine::write() {
     // Concatenate all internal buckets to the ones of thread buffer 0.
     double val;
     size_t i, j, k, l;
-    PKWorker* buf0 = iobuffers_[0];
-    PKWorker* buftarget;
-    //TODO Man if that loop actually works I'll be lucky
-    for(int t = 1; t < nthreads_; ++t) {
-        buftarget = iobuffers_[t];
+    SharedPKWrkr buf0 = buffer(0);
+    SharedPKWrkr buftarget;
+    for(int t = 1; t < nthreads(); ++t) {
+        buftarget = buffer(t);
         unsigned int nbufs = buftarget->nbuf();
         // Factor 2 to get buffers for J and K
         for(int buf = 0; buf < 2 * nbufs; ++buf) {
@@ -742,10 +762,10 @@ void PKMgrYoshimine::sort_ints() {
     // compute max batch size
     size_t max_size = 0;
     size_t batch_size;
-    int nbatches = batch_index_min_.size();
+    int nbatches = batch_ind_min().size();
 
     for(int i = 0; i < nbatches; ++i) {
-        batch_size = batch_index_max_[i] - batch_index_min_[i];
+        batch_size = batch_ind_max()[i] - batch_ind_min()[i];
         if(batch_size > max_size) max_size = batch_size;
     }
 
@@ -757,7 +777,7 @@ void PKMgrYoshimine::sort_ints() {
     // At this point we need to close the IWL file to create
     // an IWL object which will open it. Dumb but minor inconvenience (hopefully)
     // We also open the PK file
-    psio_->open(pk_file_, PSIO_OPEN_NEW);
+    psio()->open(pk_file(), PSIO_OPEN_NEW);
     //TODO: this function may need renaming
     finalize_PK();
     set_writing(false);
@@ -771,18 +791,18 @@ void PKMgrYoshimine::sort_ints() {
     //delete two-el int array
     delete [] twoel_ints;
 
-    psio_->close(pk_file_,1);
+    psio()->close(pk_file(),1);
 
 }
 
 void PKMgrYoshimine::close_iwl_buckets() {
-    psio_->close(iwl_file_J_, 1);
-    psio_->close(iwl_file_K_, 1);
+    psio()->close(iwl_file_J_, 1);
+    psio()->close(iwl_file_K_, 1);
 }
 
 void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
 
-    IWL inbuf(psio_.get(),iwl_file_J_,0.0, 1, 0);
+    IWL inbuf(psio().get(),iwl_file_J_,0.0, 1, 0);
 
     int idx, id;
     size_t p, q, r, s;
@@ -794,25 +814,26 @@ void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
     size_t pqrs;
 
     int batch = 0;
-    int nbatches = batch_index_min_.size();
+    int nbatches = batch_ind_min().size();
     while(batch < nbatches) {
         inbuf.fetch();
-        offset = batch_index_min_[batch];
-        maxind = batch_index_max_[batch];
-        nintegrals = batch_index_max_[batch] - batch_index_min_[batch];
+        offset = batch_ind_min()[batch];
+        maxind = batch_ind_max()[batch];
+        nintegrals = batch_ind_max()[batch] - batch_ind_min()[batch];
 
         for(idx = 0; idx < inbuf.buffer_count(); ++idx) {
-            id = idx;
+            id = 4 * idx;
             p = lblptr[id++];
             q = lblptr[id++];
             r = lblptr[id++];
             s = lblptr[id];
 
+//DEBUG            size_t pqd = INDEX2(p,q);
+//DEBUG            size_t rsd = INDEX2(r,s);
+//DEBUG            if (rsd == 0) {
+//DEBUG              outfile->Printf("Integral <%d |%d> = %16.12f added\n",pqd,rsd,valptr[idx]);
+//DEBUG            }
             pqrs = INDEX4(p,q,r,s);
-            //TODO: remove the check, for debug only
-            if(pqrs < offset || pqrs > maxind) {
-                throw PSIEXCEPTION("Integrals not written properly \n");
-            }
             twoel_ints[pqrs - offset] += valptr[idx];
         }
 
@@ -821,11 +842,11 @@ void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
             // We just completed a batch, write it to disk
             char* label = get_label_J(batch);
             // Divide diagonal elements by two
-            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq) {
+            for(size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq,pq);
                 twoel_ints[pqrs - offset] *= 0.5;
             }
-            psio_->write_entry(pk_file_, label, (char*)twoel_ints, nintegrals * sizeof(double));
+            psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
             delete [] label;
             ++batch;
             if(batch < nbatches) {
@@ -841,7 +862,7 @@ void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
 
 void PKMgrYoshimine::generate_K_PK(double *twoel_ints, size_t max_size) {
 
-    IWL inbuf(psio_.get(),iwl_file_K_,0.0, 1, 0);
+    IWL inbuf(psio().get(),iwl_file_K_,0.0, 1, 0);
 
     int idx,id;
     size_t p, q, r, s;
@@ -853,15 +874,16 @@ void PKMgrYoshimine::generate_K_PK(double *twoel_ints, size_t max_size) {
     size_t pqrs;
 
     int batch = 0;
-    int nbatches = batch_index_min_.size();
+    int nbatches = batch_ind_min().size();
     while(batch < nbatches) {
+//DEBUG        outfile->Printf("fetching for batch %d\n",batch);
         inbuf.fetch();
-        offset = batch_index_min_[batch];
-        maxind = batch_index_max_[batch];
-        nintegrals = batch_index_max_[batch] - batch_index_min_[batch];
+        offset = batch_ind_min()[batch];
+        maxind = batch_ind_max()[batch];
+        nintegrals = batch_ind_max()[batch] - batch_ind_min()[batch];
 
         for(idx = 0; idx < inbuf.buffer_count(); ++idx) {
-            id = idx;
+            id = 4 * idx;
             p = lblptr[id++];
             q = lblptr[id++];
             r = lblptr[id++];
@@ -905,11 +927,11 @@ void PKMgrYoshimine::generate_K_PK(double *twoel_ints, size_t max_size) {
             // We just completed a batch, write it to disk
             char* label = get_label_K(batch);
             // Divide by two diagonal elements
-            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq) {
+            for(size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq,pq);
                 twoel_ints[pqrs - offset] *= 0.5;
             }
-            psio_->write_entry(pk_file_, label, (char*)twoel_ints, nintegrals * sizeof(double));
+            psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
             delete [] label;
             ++batch;
             if(batch < nbatches) {
@@ -936,10 +958,10 @@ void PKMgrInCore::print_batches() {
 
 void PKMgrInCore::allocate_buffers() {
     // Need to allocate two big arrays
-    J_ints_ = new double[pk_size_];
-    K_ints_ = new double[pk_size_];
-    ::memset((void*) J_ints_.get(), '\0', pk_size_ * sizeof(double));
-    ::memset((void*) K_ints_.get(), '\0', pk_size_ * sizeof(double));
+    J_ints_ = std::unique_ptr< double [] >(new double[pk_size()]);
+    K_ints_ = std::unique_ptr< double [] >(new double[pk_size()]);
+    ::memset((void*) J_ints_.get(), '\0', pk_size() * sizeof(double));
+    ::memset((void*) K_ints_.get(), '\0', pk_size() * sizeof(double));
 
     // Now we allocate a derived class of IOBuffer_PK that takes care of
     // giving the tasks to the threads and storing results properly.
@@ -947,21 +969,19 @@ void PKMgrInCore::allocate_buffers() {
     // probably more expensive
 
     //TODO We probably need more buffer for more tasks for better load balancing
-    size_t buffer_size = pk_size_ / nthreads_;
-    size_t lastbuf = pk_size_ % nthreads_;
-    size_t start = 0;
+    size_t buffer_size = pk_size() / nthreads();
+    size_t lastbuf = pk_size() % nthreads();
 
-    for(size_t i = 0; i < nthreads_; ++i) {
-        start = i * buffer_size;
+    for(size_t i = 0; i < nthreads(); ++i) {
 //DEBUG        outfile->Printf("start is %lu\n",start);
         SharedPKWrkr buf;
-        if(i < nthreads_ - 1) {
-            buf = new PKWrkrInCore(primary_,buffer_size,0,&J_ints_[start],&K_ints_[start]);
+        if(i < nthreads() - 1) {
+            buf = SharedPKWrkr(new PKWrkrInCore(primary(),buffer_size,0,J_ints_.get(),K_ints_.get()));
         } else {
-            buf = new PKWrkrInCore(primary_,buffer_size,lastbuf,&J_ints_[start],&K_ints_[start]);
+            buf = SharedPKWrkr(new PKWrkrInCore(primary(),buffer_size,lastbuf,J_ints_.get(),K_ints_.get()));
         }
-        iobuffers_.push_back(buf);
-        ntasks_ = nthreads_;
+        fill_buffer(buf);
+        set_ntasks(nthreads());
     }
 }
 
@@ -970,9 +990,13 @@ void PKMgrInCore::form_PK() {
     finalize_PK();
 }
 
+void PKMgrInCore::write() {
+    get_buffer()->finalize_ints(pk_pairs());
+}
+
 void PKMgrInCore::finalize_PK() {
-    for(int i = 0; i < nthreads_; ++i) {
-        iobuffers_[i].reset();
+    for(int i = 0; i < nthreads(); ++i) {
+        buffer(i).reset();
     }
 }
 
@@ -985,8 +1009,8 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch) {
     make_J_vec(J);
 
     for(int N = 0; N < J.size(); ++N) {
-        double* D_vec = D_vec_[N];
-        double* J_vec = JK_vec_[N];
+        double* D_vec = D_glob_vecs(N);
+        double* J_vec = JK_glob_vecs(N);
         double* j_ptr;
         if(exch) {
             j_ptr = K_ints_.get();
@@ -994,15 +1018,15 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch) {
             j_ptr = J_ints_.get();
         }
 //TODO We should totally parallelize this loop now.
-        for(size_t pq = 0; pq < pk_pairs_; ++pq) {
+        for(size_t pq = 0; pq < pk_pairs(); ++pq) {
             double D_pq = D_vec[pq];
             double *D_rs = D_vec;
             double J_pq = 0.0;
             double *J_rs = J_vec;
             for(size_t rs = 0; rs <= pq; ++rs) {
-//DEBUG                    if(exch) { // && rs == 0) {
+//DEBUG                    if(!exch && rs == 0) {
 //DEBUG                      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
-//DEBUG
+//DEBUG                    }
                 J_pq += *j_ptr * (*D_rs);
                 *J_rs += *j_ptr * D_pq;
                 ++D_rs;
