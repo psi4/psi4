@@ -25,12 +25,14 @@
 
 #include <libmints/typedefs.h>
 
+//TODO Const correctness of everything
 
 namespace psi {
 
 // Forward declarations for Psi4
 class Options;
 class ERISieve;
+class AIOHandler;
 
 namespace pk {
 
@@ -50,10 +52,10 @@ private:
     int nbas_;
     int i_, j_, k_, l_;
     bool done_;
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 public:
     // Constructor
-    ijklBasisIterator(int nbas, boost::shared_ptr<ERISieve> sieve) : nbas_(nbas),
+    ijklBasisIterator(int nbas, std::shared_ptr<ERISieve> sieve) : nbas_(nbas),
         done_(false), sieve_(sieve) {}
 
     // Iterator functions
@@ -116,22 +118,29 @@ public:
     /// Base constructor
     PKManager(boost::shared_ptr<BasisSet> primary, size_t memory,
               Options& options);
-    /// Base destructor
-    virtual ~PKManager();
+    /// Base destructor, does nothing
+    virtual ~PKManager() {}
 
     /// Accessor functions for simple data
-    double cutoff() const { return cutoff_; }
-    int nthreads()  const { return nthreads_; }
-    int nbf()       const { return nbf_; }
-    int pk_file()   const { return pk_file_; }
-    size_t pk_pairs() const { return pk_pairs_; }
-    size_t pk_size()  const { return pk_size_; }
-    size_t ntasks()   const { return ntasks_; }
-    size_t memory()   const { return memory_; }
+    double cutoff() { return cutoff_; }
+    int nthreads()  { return nthreads_; }
+    int nbf()       { return nbf_; }
+    std::shared_ptr< ERISieve > sieve() { return sieve_; }
+    size_t pk_pairs() { return pk_pairs_; }
+    size_t pk_size()  { return pk_size_; }
+    size_t ntasks()   { return ntasks_; }
+    size_t memory()   { return memory_; }
+    SharedPKWrkr buffer(int i) { return iobuffers_[i]; }
+    double* D_glob_vecs(int i) { return D_vec_[i]; }
+    double* JK_glob_vecs(int i) { return JK_vec_[i]; }
+    boost::shared_ptr< BasisSet > primary() { return primary_; }
 
     /// Accessor that returns buffer corresponding to current thread
-    SharedPKWrkr buffer();
+    SharedPKWrkr get_buffer();
+    void set_ntasks(size_t tmp) { ntasks_ = tmp; }
 
+    /// Setter objects for internal data
+    void fill_buffer(SharedPKWrkr tmp) { iobuffers_.push_back(tmp); }
 
     /**
      * @brief build_PKManager
@@ -152,7 +161,7 @@ public:
     /// Preparing JK computation
     virtual void prepare_JK(std::vector<SharedMatrix> D)=0;
     /// Cleaning up after JK computation
-    virtual void finalize_JK();
+    virtual void finalize_JK() = 0;
 
     /// Function to print batch sizing information
     virtual void print_batches();
@@ -162,8 +171,6 @@ public:
     virtual void compute_integrals();
     /// Deallocating the thread buffers
     virtual void finalize_PK()=0;
-    /// Get the buffer for the current thread
-    SharedPKWrkr get_buffer();
 
 
     /// Store the computed integrals in the appropriate buffers
@@ -171,7 +178,7 @@ public:
                              unsigned int R, unsigned int S);
 
     /// Write the buffers of integrals to PK storage
-    virtual void write();
+    virtual void write() = 0;
 
     /// Get TOC labels for J or K
     static char* get_label_J(const int batch);
@@ -181,7 +188,7 @@ public:
     /// Prepare the density matrix
     void form_D_vec(std::vector<SharedMatrix> D);
     /// Forming J
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch = false);
+    virtual void form_J(std::vector<SharedMatrix> J, bool exch = false)=0;
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
@@ -224,12 +231,28 @@ public:
     /// Constructor for PKMgrDisk
     PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
               size_t memory, Options &options);
-    /// Destructor for PKMgrDisk
-    virtual ~PKMgrDisk();
+    /// Destructor for PKMgrDisk, does nothing
+    virtual ~PKMgrDisk() {}
 
     /// Setter/Getter functions
     void set_writing(bool tmp) { writing_ = tmp; }
     bool writing()  const { return writing_; }
+    int pk_file() { return pk_file_; }
+    std::vector< size_t >& batch_ind_min() { return batch_index_min_;}
+    std::vector< size_t >& batch_ind_max() { return batch_index_max_;}
+    std::vector< size_t >& batch_pq_min() { return batch_pq_min_;}
+    std::vector< size_t >& batch_pq_max() { return batch_pq_max_;}
+    std::vector< int >& batch_for_pq() { return batch_for_pq_; }
+    std::shared_ptr< AIOHandler > AIO() { return AIO_; }
+    boost::shared_ptr< PSIO > psio() { return psio_; }
+
+    /// Finalize the PK file formation
+    virtual void finalize_PK();
+
+    /// Initialize sequence for Disk algorithms
+    virtual void initialize();
+    /// Prepare the JK formation for disk algorithms
+    virtual void prepare_JK(std::vector<SharedMatrix> D);
 
     /// Determining the batch sizes
     void batch_sizing();
@@ -238,6 +261,10 @@ public:
 
     /// Opening files for integral storage
     virtual void prestripe_files()=0;
+
+    /// Write integrals on disk
+    virtual void write();
+
     /// Opening the PK file
     void open_PK_file();
     /// Closing the files
@@ -245,6 +272,9 @@ public:
 
     /// Form J from PK supermatrix
     virtual void form_J(std::vector<SharedMatrix> J, bool exch);
+
+    /// Finalize JK matrix formation
+    virtual void finalize_JK();
 };
 
 class PKMgrReorder : public PKMgrDisk {
@@ -261,11 +291,14 @@ public:
     /// Destructor
     virtual ~PKMgrReorder() {}
 
+    /// Sequence of operations to form PK for reorder algo
+    virtual void form_PK();
+
     /// Pre-striping the PK file
     virtual void prestripe_files();
 
     /// Allocating the buffers for each thread
-    void allocate_buffers();
+    virtual void allocate_buffers();
     /// Finalize PK: synchronize AIO writing, delete thread
     /// buffers, keep PK file open since we are going to
     /// use it immediately
@@ -299,6 +332,9 @@ public:
     /// Gather all steps to form PK
     virtual void form_PK();
 
+    /// Allocating the buffers for each thread
+    virtual void allocate_buffers();
+
     /// Computing the integrals
     virtual void compute_integrals();
 
@@ -315,7 +351,6 @@ public:
     void generate_J_PK(double* twoel_ints, size_t max_size);
     /// Generate the K PK supermatrix from IWL integrals
     void generate_K_PK(double* twoel_ints, size_t max_size);
-
 };
 
 /* PKMgrInCore: Class to manage in-core PK algorithm */
@@ -323,8 +358,8 @@ public:
 class PKMgrInCore : public PKManager {
 private:
     /// Large in core arrays for integral storage
-    std::unique_ptr<double> J_ints_;
-    std::unique_ptr<double> K_ints_;
+    std::unique_ptr<double []> J_ints_;
+    std::unique_ptr<double []> K_ints_;
 
 public:
     /// Constructor for in-core class
@@ -332,6 +367,21 @@ public:
                 Options &options) : PKManager(primary,memory,options) {}
     /// Destructor for in-core class
     virtual ~PKMgrInCore() {}
+
+    /// Initialize sequence for in-core algorithm
+    virtual void initialize();
+    /// Sequence of steps to form PK matrix
+    virtual void form_PK();
+    /// Steps to prepare JK formation
+    virtual void prepare_JK(std::vector<SharedMatrix> D);
+
+    /// Form J matrix
+    virtual void form_J(std::vector<SharedMatrix> J, bool exch);
+    /// Finalize JK formation
+    virtual void finalize_JK();
+
+    /// No disk write, only finalizes integral arrays
+    virtual void write();
 
     /// Printing the algorithm header
     virtual void print_batches();

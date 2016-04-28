@@ -23,6 +23,10 @@
 #ifndef PKWRKR_H
 #define PKWRKR_H
 
+#if !defined( EXPLICIT_IOFF )
+#   define EXPLICIT_IOFF(i) ( (i) * ((i) + 1) / 2 )
+#endif
+
 #if !defined( INDEX2 )
 #   define INDEX2(i, j) ( (i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i) )
 #endif
@@ -32,6 +36,7 @@
 #endif
 
 #include<libiwl/config.h>
+#include <libpsio/config.h>
 
 namespace boost {
 template <class T>
@@ -43,6 +48,8 @@ namespace psi {
 class AIOHandler;
 class BasisSet;
 class AOShellCombinationsIterator;
+
+typedef std::unique_ptr<AOShellCombinationsIterator> UniqueAOShellIt;
 
 namespace pk {
 
@@ -74,11 +81,11 @@ private:
     /// Are we using buffer 1 or 2?
     int idx_;
     /// The AIO Handler
-    boost::shared_ptr<AIOHandler> AIO_;
+    std::shared_ptr<AIOHandler> AIO_;
 
 public:
     /// Constructor, also allocates the arrays
-    IWLAsync_PK(size_t* address, boost::shared_ptr<AIOHandler> AIO, int itap);
+    IWLAsync_PK(size_t* address, std::shared_ptr<AIOHandler> AIO, int itap);
     /// Destructor, also deallocates the arrays
     ~IWLAsync_PK();
 
@@ -112,12 +119,12 @@ private:
     boost::shared_ptr<BasisSet> primary_;
 
     /// AIOHandler
-    boost::shared_ptr<AIOHandler> AIO_;
+    std::shared_ptr<AIOHandler> AIO_;
     /// File to write to
     int target_file_;
 
     /// Iterator over basis functions within a shell quartet
-    AOShellCombinationsIterator shelliter_;
+    UniqueAOShellIt shelliter_;
     /// Current global index of the buffer
     unsigned int bufidx_;
     /// Current offset
@@ -144,21 +151,33 @@ private:
 protected:
     /// Setter function for nbuf_
     void set_nbuf(unsigned int tmp) {nbuf_ = tmp; }
+    /// Setter function for max_idx
+    void set_max_idx(size_t tmp) { max_idx_ = tmp; }
 
 public:
     /// Constructor for PKWorker
-    PKWorker(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<AIOHandler> AIO,
+    PKWorker(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
              int target_file, size_t buf_size);
-    /// Destructor for PKWorker
-    virtual ~PKWorker();
+    /// Destructor for PKWorker, does nothing
+    virtual ~PKWorker() {}
 
     /// Accessor functions
+    std::shared_ptr< AIOHandler > AIO() { return AIO_; }
     size_t nbuf() { return nbuf_; }
+    size_t buf_size() { return buf_size_; }
+    size_t max_idx()  { return max_idx_; }
+    size_t offset()   { return offset_; }
+    int target_file() { return target_file_; }
+    unsigned int bufidx() { return bufidx_; }
+    unsigned int P() { return P_; }
+    unsigned int Q() { return Q_; }
+    unsigned int R() { return R_; }
+    unsigned int S() { return S_; }
 
 
     /// Get max ijkl index included in current buffer
     /// Overloaded by specific derived classes
-    virtual size_t get_max_idx() = 0;
+    virtual void initialize_task()=0;
 
     /// Set up the first shell quartet to be computed
     void first_quartet(size_t i);
@@ -173,12 +192,24 @@ public:
     /// Writing integral arrays for storage
     virtual void write(std::vector< size_t > min_ind, std::vector< size_t > max_ind,
                        size_t pk_pairs) = 0;
+    /// For in-core: only finalize the integral array
+    virtual void finalize_ints(size_t pk_pairs) {
+        throw PSIEXCEPTION("Function not implemented for this PK algorithm.\n");
+    }
 
     /// Functions specific to disk pre-sorting of integrals
-    virtual void pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) = 0;
-    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l)=0;
+    virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+        throw PSIEXCEPTION("Function pop_value not implemented for this class\n");
+    }
+
+    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+        throw PSIEXCEPTION("Function insert_value not implemented for this class\n");
+    }
+
     /// Flush a buffer to disk
-    virtual void flush();
+    virtual void flush() {
+        throw PSIEXCEPTION("Function flush not implemented for this class\n");
+    }
 };
 
 /** class PKWrkReord: This worker class is associated with the
@@ -210,15 +241,18 @@ private:
     std::vector< double* > J_bufs_;
     std::vector< double* > K_bufs_;
 
+    /// Dummy psio_address for storage of write return value
+    psio_address dummy_;
+
     /// Internal buffer index
     unsigned int buf_;
 
-    virtual size_t get_max_idx();
+    virtual void initialize_task();
 
 public:
     /// Constructor
-    PKWrkrReord(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<AIOHandler> AIO,
-                int target_file, size_t buf_size, unsigned int nbuf);
+    PKWrkrReord(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
+                int target_file, size_t buffer_size, unsigned int nbuffer);
     /// Destructor
     ~PKWrkrReord();
 
@@ -246,7 +280,7 @@ private:
     double* J_bufp_;
     double* K_bufp_;
 
-    virtual size_t get_max_idx();
+    virtual void initialize_task();
 
 public:
     PKWrkrInCore(boost::shared_ptr<BasisSet> primary, size_t buf_size, size_t lastbuf,
@@ -256,11 +290,12 @@ public:
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
 
     /// Finalize the buffer: divide by two diagonal elements
-    /// We do not use the min_ind and max_ind vectors but that allows us
-    /// to use the same call for both functions
-    //TODO: Fix the above
-    virtual void write(std::vector<size_t> min_ind,
-                       std::vector<size_t> max_ind, size_t pk_pairs);
+    virtual void finalize_ints(size_t pk_pairs);
+
+    /// Function write is never used
+    virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) {
+        throw PSIEXCEPTION("Function not implemented for in-core");
+    }
 };
 
 /** Class for Yoshimine pre-sorting to obtain the PK supermatrix.
@@ -280,12 +315,12 @@ private:
     std::vector< IWLAsync_PK* > IWL_K_;
     /// Pointer to array with addresses in bytes where the next write
     /// should go for each bucket on file.
-    size_t * addresses_;
+    boost::shared_ptr< size_t [] > addresses_;
 
 public:
     /// Constructor
-    PKWrkrIWL(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<AIOHandler> AIO,
-              int target_file, int K_file, size_t buf_size, std::vector< int > &bufforpq);
+    PKWrkrIWL(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIOp,
+              int targetfile, int K_file, size_t buf_size, std::vector< int > &bufforpq, boost::shared_ptr<size_t []> pos);
     /// Destructor
     ~PKWrkrIWL();
 
@@ -298,6 +333,14 @@ public:
     /// Flushing all buffers for current worker
     virtual void flush();
 
+    /// Functions that are not used here
+    virtual void initialize_task() {
+        throw PSIEXCEPTION("initialize_task not implemented for this class\n");
+    }
+    virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind,
+                       size_t pk_pairs) {
+        throw PSIEXCEPTION("write not implemented for this class\n");
+    }
 
 
 };
