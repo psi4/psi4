@@ -78,7 +78,7 @@ clean()
 
 banner('cbs()')
 set scf_type pk
-cbs('scf',scf_basis='cc-pvdz')
+energy(cbs, scf_type='scf', scf_basis='cc-pvdz')
 compare_values(-5.55609846, get_variable('CBS TOTAL ENERGY'), 7, "[10] cbs()")
 clean()
 

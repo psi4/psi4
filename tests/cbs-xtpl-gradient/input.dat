@@ -11,8 +11,8 @@ lref_scf_dtz =  [[ 0.0,  0.0,   0.01249265],  #TEST
 lref_scf_dtqz = [[ 0.0,  0.0,   0.01244412],  #TEST
                  [ 0.0,  0.0,  -0.01244412]]  #TEST
 
-lref_mp2_dtz =  [[ 0.0,  0.0,   0.01246097],  #TEST
-                 [ 0.0,  0.0,  -0.01246097]]  #TEST
+lref_mp2_dtz =  [[ 0.0,  0.0,   0.01155124],  #TEST
+                 [ 0.0,  0.0,  -0.01155124]]  #TEST
 ref_scf_dz =  psi4.Matrix(2, 3)                                                #TEST
 ref_scf_dz.set(lref_scf_dz)                                                    #TEST
 ref_scf_tz =  psi4.Matrix(2, 3)                                                #TEST
@@ -62,3 +62,6 @@ compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "SCF/cc-pV[DTQ]Z Gradient")  #TEST
 # MP2 TESTS
 mp2_dtz = gradient('MP2/cc-pV[DT]Z')
 compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "MP2/cc-pV[DT]Z Gradient")  #TEST
+
+mp2_dtz = gradient('MP2/cc-pV[DT]Z', dertype='energy')
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "MP2/cc-pV[DT]Z Gradient, dertype=0")  #TEST
