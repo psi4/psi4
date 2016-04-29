@@ -1,0 +1,50 @@
+# NOTE: gradient calcs accessed through an alias to cbs (e.g., sherrill_gold_standard) aren't matching direct calls to cbs
+
+
+molecule mol {
+O
+H 1 R
+H 1 R 2 A
+}
+
+mol.R = 1.0
+mol.A = 90.0
+
+set g_convergence gau_verytight
+
+
+# THIS WORKS
+E1 = energy(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+E2 = energy(sherrill_gold_standard, corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+compare_values(E1, E2, 5, 'mathch E')  # PASS
+
+# THIS DOESN'T
+G1 = gradient(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+G2 = gradient(sherrill_gold_standard, corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+compare_matrices(G1, G2, 5, 'match G')  # FAIL
+
+# new, through cbs THIS WORKS (CALLING CBS DIRECTLY)
+E = optimize(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+
+# old master branch cbs results from: E = optimize('mp2', corl_basis='cc-pV[DT]Z', func=cbs, delta_wfn='ccsd(t)', delta_basis='3-21g')
+compare_values(-76.3707500218, E, 5, '[1a] opt(sherrill) energy')  # PASS
+compare_values(0.960940174888, mol.R, 3, '[1b] opt(sherrill) bond')  # PASS
+compare_values(103.436972667, mol.A, 2, '[1c] opt(sherrill) angle')  # PASS
+
+# new, through func THIS DOESN'T (CALLING CBS INDIRECTLY)
+#E = optimize(sherrill_gold_standard, corl_basis='cc-pV[DT]Z', delta_basis='3-21g', dertype=0)
+E = optimize(sherrill_gold_standard, corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+#-76.3698026034
+#0.960929843709
+#103.45655747
+
+
+print E
+print mol.R
+print mol.A
+
+# old master branch cbs results from: E = optimize('mp2', corl_basis='cc-pV[DT]Z', func=cbs, delta_wfn='ccsd(t)', delta_basis='3-21g')
+compare_values(-76.3707500218, E, 5, '[1a] opt(sherrill) energy')  # FAIL
+compare_values(0.960940174888, mol.R, 3, '[1b] opt(sherrill) bond')  # FAIL
+compare_values(103.436972667, mol.A, 2, '[1c] opt(sherrill) angle')  # FAIL
+
