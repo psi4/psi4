@@ -32,6 +32,7 @@
 #include <libmints/basisset.h>
 #include <libmints/typedefs.h>
 #include <libmints/matrix.h>
+#include <libmints/sieve.h>
 #include <libqt/qt.h>
 #include <libpsio/aiohandler.h>
 
@@ -73,7 +74,6 @@ void ijklBasisIterator::next() {
     }
 }
 
-
 std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> psio,
                   boost::shared_ptr<BasisSet> primary, size_t memory, Options &options) {
 
@@ -104,8 +104,12 @@ primary_(primary), memory_(memory), options_(options) {
 
     pk_pairs_ = (size_t) nbf_ * ((size_t) nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
-    cutoff_ = options.get_double("INTS_TOLERANCE");
+    cutoff_ = 1.0e-12;
+    if(options["INTS_TOLERANCE"].has_changed()) {
+        cutoff_ = options.get_double("INTS_TOLERANCE");
+    }
     ntasks_ = 0;
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 
     if(memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
@@ -168,6 +172,18 @@ void PKManager::compute_integrals() {
             unsigned int Q = buf->Q();
             unsigned int R = buf->R();
             unsigned int S = buf->S();
+            //Sort shells based on AM to save ERI some work doing permutation resorting
+            if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                std::swap(P,Q);
+            }
+            if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                std::swap(R,S);
+            }
+            if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                    primary()->shell(R).am() + primary()->shell(S).am()) {
+                std::swap(P, R);
+                std::swap(Q, S);
+            }
 //DEBUG#pragma omp critical
 //DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
             tb[thread]->compute_shell(P,Q,R,S);
@@ -181,7 +197,9 @@ void PKManager::compute_integrals() {
     size_t nsh_u = nsh * (nsh + 1) / 2;
     nsh_u = nsh_u * (nsh_u + 1) / 2;
     outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
-    outfile->Printf("  %7.2f percent of shell quartets recomputed.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
+    if (nshqu > nsh_u) {
+        outfile->Printf("  %7.2f percent of shell quartets recomputed by reordering.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
+    }
 
 }
 
@@ -202,9 +220,10 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
 
         double val = buffer[idx];
         if(fabs(val) > cutoff_) {
-//DEBUG#pragma omp critical 
+//DEBUG#pragma omp critical
 //DEBUG{
 //DEBUG            if(INDEX2(k,l) == 0) {
+//DEBUG              outfile->Printf("Integral <%d %d|%d %d>,<%d|%d> = %16.12f\n",i,j,k,l,INDEX2(i,j),INDEX2(k,l),val);
 //DEBUG              outfile->Printf("Integral <%d %d|%d %d> = %16.12f\n",i,j,k,l,val);
 //DEBUG            }
 //DEBUG}
@@ -271,18 +290,6 @@ void PKManager::finalize_D() {
         delete [] D_vec_[N];
     }
     D_vec_.clear();
-}
-
-char* PKManager::get_label_J(const int batch) {
-    char* label = new char[100];
-    sprintf(label, "J Block (Batch %d)", batch);
-    return label;
-}
-
-char* PKManager::get_label_K(const int batch) {
-    char* label = new char[100];
-    sprintf(label, "K Block (Batch %d)", batch);
-    return label;
 }
 
 PKMgrDisk::PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
@@ -451,9 +458,9 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch) {
 
         char* label;
         if (exch) {
-            label = get_label_K(batch);
+            label = PKWorker::get_label_K(batch);
         } else {
-            label = get_label_J(batch);
+            label = PKWorker::get_label_J(batch);
         }
         psio_->read_entry(pk_file_, label, (char *) j_block, batch_size * sizeof(double));
 
@@ -469,7 +476,7 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch) {
                 double J_pq = 0.0;
                 double *J_rs = J_vec;
                 for(size_t rs = 0; rs <= pq; ++rs) {
-//DEBUG                    if(exch) { // && rs == 0) {
+//DEBUG                    if(!exch && rs == 0) {
 //DEBUG                      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
 //DEBUG                    }
                     J_pq += *j_ptr * (*D_rs);
@@ -506,9 +513,9 @@ void PKMgrReorder::prestripe_files() {
     for(int batch = 0; batch < batch_ind_min().size(); ++batch) {
         size_t batch_size = batch_ind_max()[batch] - batch_ind_min()[batch];
         // We need to keep the labels around in a vector
-        label_J_.push_back(get_label_J(batch));
+        label_J_.push_back(PKWorker::get_label_J(batch));
         AIO()->zero_disk(pk_file(),label_J_[batch],1,batch_size);
-        label_K_.push_back(get_label_K(batch));
+        label_K_.push_back(PKWorker::get_label_K(batch));
         AIO()->zero_disk(pk_file(),label_K_[batch],1,batch_size);
     }
 
@@ -539,7 +546,7 @@ void PKMgrReorder::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads(); ++i) {
-        fill_buffer(SharedPKWrkr(new PKWrkrReord(primary(),AIO(),pk_file(),buf_size,buf_per_thread)));
+        fill_buffer(SharedPKWrkr(new PKWrkrReord(primary(),sieve(),AIO(),pk_file(),buf_size,buf_per_thread)));
     }
 
 }
@@ -622,7 +629,7 @@ void PKMgrYoshimine::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for(int i = 0; i < nthreads(); ++i) {
-        fill_buffer(SharedPKWrkr(new PKWrkrIWL(primary(),AIO(),iwl_file_J_,iwl_file_K_,ints_per_buf_,batch_for_pq(),current_pos)));
+        fill_buffer(SharedPKWrkr(new PKWrkrIWL(primary(),sieve(),AIO(),iwl_file_J_,iwl_file_K_,ints_per_buf_,batch_for_pq(),current_pos)));
     }
 
 }
@@ -649,84 +656,43 @@ void PKMgrYoshimine::compute_integrals() {
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
     }
 
+    // Loop over significant shell pairs from ERISieve
+    const std::vector< std::pair<int, int> >& sh_pairs = sieve()->shell_pairs();
+    size_t npairs = sh_pairs.size();
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads())
-    for(int i = 0; i < primary()->nshell(); ++i) {
-      int num_uniq_pk;
-      int P_arr[3];
-      int Q_arr[3];
-      int R_arr[3];
-      int S_arr[3];
-      int P, Q, R, S;
-      int thread = 0;
+    for(size_t i = 0; i < npairs; ++i) {
+        int PP = sh_pairs[i].first;
+        int QQ = sh_pairs[i].second;
+        int thread = 0;
       #ifdef _OPENMP
         thread = omp_get_thread_num();
       #endif
-      for(int j = 0; j <= i; ++j) {
-        for (int k = 0; k <= j; ++k) {
-          for(int l = 0; l <= k; ++l) {
-            P_arr[0] = i;
-            Q_arr[0] = j;
-            R_arr[0] = k;
-            S_arr[0] = l;
-            // Now we take care of all symmetry cases
-            if((i == j && i == k) || (j == k && j == l)) {
-                num_uniq_pk = 1;
-            } else if (i == k || j == l) {
-                num_uniq_pk = 2;
-                P_arr[1] = i;
-                Q_arr[1] = k;
-                R_arr[1] = j;
-                S_arr[1] = l;
-            } else if (j == k) {
-                num_uniq_pk = 2;
-                P_arr[1] = i;
-                Q_arr[1] = l;
-                R_arr[1] = j;
-                S_arr[1] = k;
-            } else if (i == j || k == l) {
-                num_uniq_pk = 2;
-                P_arr[1] = i;
-                Q_arr[1] = k;
-                R_arr[1] = j;
-                S_arr[1] = l;
-            } else {
-                num_uniq_pk = 3;
-                P_arr[1] = i;
-                Q_arr[1] = k;
-                R_arr[1] = j;
-                S_arr[1] = l;
 
-                P_arr[2] = i;
-                Q_arr[2] = l;
-                R_arr[2] = j;
-                S_arr[2] = k;
+        for(size_t j = 0; j <= i; ++j) {
+            int RR = sh_pairs[j].first;
+            int SS = sh_pairs[j].second;
+            if(sieve()->shell_significant(PP,QQ,RR,SS)) {
+                int P = PP;
+                int Q = QQ;
+                int R = RR;
+                int S = SS;
+                //Sort shells based on AM to save ERI some work doing permutation resorting
+                if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                    std::swap(P,Q);
+                }
+                if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                    std::swap(R,S);
+                }
+                if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                        primary()->shell(R).am() + primary()->shell(S).am()) {
+                    std::swap(P, R);
+                    std::swap(Q, S);
+                }
+//DEBUG                outfile->Printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S);
+                tb[thread]->compute_shell(P, Q, R, S);
+                integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
             }
-
-            for(int npk = 0; npk < num_uniq_pk; ++npk) {
-              P = P_arr[npk];
-              Q = Q_arr[npk];
-              R = R_arr[npk];
-              S = S_arr[npk];
-              //Sort shells based on AM to save ERI some work doing permutation resorting
-              if (primary()->shell(P).am() < primary()->shell(Q).am()) {
-                  std::swap(P,Q);
-              }
-              if (primary()->shell(R).am() < primary()->shell(S).am()) {
-                  std::swap(R,S);
-              }
-              if (primary()->shell(P).am() + primary()->shell(Q).am() >
-                      primary()->shell(R).am() + primary()->shell(S).am()) {
-                  std::swap(P, R);
-                  std::swap(Q, S);
-              }
-//              outfile->Printf(printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S));
-              tb[thread]->compute_shell(P, Q, R, S);
-              integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
-            }
-
-          }
         }
-      }
     } // end of parallelized loop
 
     // We write all remaining buffers to disk.
@@ -840,7 +806,7 @@ void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
         lastbuf = inbuf.last_buffer();
         if(lastbuf) {
             // We just completed a batch, write it to disk
-            char* label = get_label_J(batch);
+            char* label = PKWorker::get_label_J(batch);
             // Divide diagonal elements by two
             for(size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq,pq);
@@ -925,7 +891,7 @@ void PKMgrYoshimine::generate_K_PK(double *twoel_ints, size_t max_size) {
         lastbuf = inbuf.last_buffer();
         if(lastbuf) {
             // We just completed a batch, write it to disk
-            char* label = get_label_K(batch);
+            char* label = PKWorker::get_label_K(batch);
             // Divide by two diagonal elements
             for(size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq,pq);
@@ -976,9 +942,9 @@ void PKMgrInCore::allocate_buffers() {
 //DEBUG        outfile->Printf("start is %lu\n",start);
         SharedPKWrkr buf;
         if(i < nthreads() - 1) {
-            buf = SharedPKWrkr(new PKWrkrInCore(primary(),buffer_size,0,J_ints_.get(),K_ints_.get()));
+            buf = SharedPKWrkr(new PKWrkrInCore(primary(),sieve(),buffer_size,0,J_ints_.get(),K_ints_.get()));
         } else {
-            buf = SharedPKWrkr(new PKWrkrInCore(primary(),buffer_size,lastbuf,J_ints_.get(),K_ints_.get()));
+            buf = SharedPKWrkr(new PKWrkrInCore(primary(),sieve(),buffer_size,lastbuf,J_ints_.get(),K_ints_.get()));
         }
         fill_buffer(buf);
         set_ntasks(nthreads());

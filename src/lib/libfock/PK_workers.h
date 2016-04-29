@@ -46,12 +46,116 @@ class shared_ptr;
 namespace psi {
 
 class AIOHandler;
+class ERISieve;
 class BasisSet;
+class GaussianShell;
 class AOShellCombinationsIterator;
 
-typedef std::unique_ptr<AOShellCombinationsIterator> UniqueAOShellIt;
-
 namespace pk {
+
+// Forward declarations just before definitions
+class AOShellSieveIterator;
+class AOFctSieveIterator;
+
+typedef std::unique_ptr<AOShellSieveIterator> UniqueAOShellIt;
+typedef std::shared_ptr<ERISieve> SharedSieve;
+
+/** AOShellSieveIterator provides an iterator over significant shell
+ * quartets using an ERISieve object.
+ */
+
+class AOShellSieveIterator {
+   private:
+    // Basis set
+    boost::shared_ptr<BasisSet> bs_;
+    // Sieve object
+    SharedSieve sieve_;
+    // Vector of significant shell pairs
+    const std::vector< std::pair<int, int> >& shell_pairs_;
+    // Number of shell pairs
+    size_t npairs_;
+    // Shell triangular indices
+    size_t PQ_, RS_;
+    // Shell indices
+    int P_, Q_, R_, S_;
+    // Are we there yet?
+    bool done_;
+
+    // Populate indices from shell_pairs
+    void populate_indices();
+public:
+    /// Constructor
+    AOShellSieveIterator(boost::shared_ptr< BasisSet > prim, SharedSieve sieve_input);
+
+    /// Iterator functions
+    void first();
+    void next();
+    bool is_done() { return done_; }
+
+    /// Accessor functions
+    int p() const { return P_; }
+    int q() const { return Q_; }
+    int r() const { return R_; }
+    int s() const { return S_; }
+
+    /// Sieved iterator over the basis functions of a given shell
+    AOFctSieveIterator integrals_iterator();
+};
+
+/** AOFctSieveIterator: provides an iterator over significant functions for
+ * a specific shell quartet, using an ERISieve object.
+ */
+
+class AOFctSieveIterator {
+private:
+    // Sieve
+    std::shared_ptr<ERISieve> sieve_;
+    // Integral indices
+    int i_, j_, k_, l_;
+    // Relative integral indices within shells
+    int irel_, jrel_, krel_, lrel_;
+    // Gaussian shells of interest
+    const GaussianShell& usi_;
+    const GaussianShell& usj_;
+    const GaussianShell& usk_;
+    const GaussianShell& usl_;
+    // Number of functions for each shell
+    int ni_, nj_, nk_, nl_;
+    // First index for each shell
+    int fi_, fj_, fk_, fl_;
+    // Max index for each shell
+    int maxi_, maxj_, maxk_, maxl_;
+    // Are we there yet ?
+    bool done_;
+
+    // Do we have the same shells in the quartets?
+    bool sh_aaaa_;
+    bool sh_abab_;
+    //Populate the integral indices, and reorder them
+    void populate_indices();
+    // Increment the integral indices to the next ones for ij
+    void increment_bra();
+    // Increment integral indices to the next ones for l,k,j,i (in this order)
+    void increment_ket();
+    // Reorder indices in canonical order
+    void reorder_inds();
+public:
+    /// Constructor
+    AOFctSieveIterator(const GaussianShell& s1, const GaussianShell& s2,
+                       const GaussianShell& s3, const GaussianShell& s4,
+                       std::shared_ptr<ERISieve> siev);
+
+    /// Iterator functions
+    void first();
+    void next();
+    bool is_done() { return done_; }
+
+    int i() const { return i_; }
+    int j() const { return j_; }
+    int k() const { return k_; }
+    int l() const { return l_; }
+};
+
 
 /** IWLAsync_PK: buffer class for pre-sorted PK integrals. Each buffer class
  * has one IWL bucket for each PK bucket. We pass integrals with their labels
@@ -117,6 +221,8 @@ private:
 
     /// Current basis set
     boost::shared_ptr<BasisSet> primary_;
+    /// Current sieve
+    SharedSieve sieve_;
 
     /// AIOHandler
     std::shared_ptr<AIOHandler> AIO_;
@@ -156,8 +262,9 @@ protected:
 
 public:
     /// Constructor for PKWorker
-    PKWorker(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
-             int target_file, size_t buf_size);
+    PKWorker(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+             std::shared_ptr<AIOHandler> AIO, int target_file,
+             size_t buf_size);
     /// Destructor for PKWorker, does nothing
     virtual ~PKWorker() {}
 
@@ -174,6 +281,9 @@ public:
     unsigned int R() { return R_; }
     unsigned int S() { return S_; }
 
+    /// Get TOC labels for J or K
+    static char* get_label_J(const int batch);
+    static char* get_label_K(const int batch);
 
     /// Get max ijkl index included in current buffer
     /// Overloaded by specific derived classes
@@ -251,8 +361,9 @@ private:
 
 public:
     /// Constructor
-    PKWrkrReord(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
-                int target_file, size_t buffer_size, unsigned int nbuffer);
+    PKWrkrReord(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+                std::shared_ptr<AIOHandler> AIO, int target_file,
+                size_t buffer_size, unsigned int nbuffer);
     /// Destructor
     ~PKWrkrReord();
 
@@ -283,8 +394,9 @@ private:
     virtual void initialize_task();
 
 public:
-    PKWrkrInCore(boost::shared_ptr<BasisSet> primary, size_t buf_size, size_t lastbuf,
-                 double* Jbuf, double* Kbuf);
+    PKWrkrInCore(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+                 size_t buf_size, size_t lastbuf, double* Jbuf,
+                 double* Kbuf);
 
     /// Filling values in the relevant part of the buffer
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
@@ -319,8 +431,10 @@ private:
 
 public:
     /// Constructor
-    PKWrkrIWL(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIOp,
-              int targetfile, int K_file, size_t buf_size, std::vector< int > &bufforpq, boost::shared_ptr<size_t []> pos);
+    PKWrkrIWL(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+              std::shared_ptr<AIOHandler> AIOp, int targetfile, int K_file,
+              size_t buf_size, std::vector< int > &bufforpq,
+              boost::shared_ptr<size_t []> pos);
     /// Destructor
     ~PKWrkrIWL();
 
