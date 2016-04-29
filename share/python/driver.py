@@ -982,10 +982,11 @@ def optimize(name, **kwargs):
     while n <= psi4.get_option('OPTKING', 'GEOM_MAXITER'):
         current_sym = moleculeclone.schoenflies_symbol()
         if initial_sym != current_sym:
-            raise ValidationError("""Point group changed! You should restart """
+            raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
                                   """using the last geometry in the output, after """
                                   """carefully making sure all symmetry-dependent """
-                                  """input, such as DOCC, is correct.""")
+                                  """input, such as DOCC, is correct.""" %
+                                  (current_sym, initial_sym))
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
