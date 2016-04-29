@@ -42,138 +42,6 @@ import p4const
 from driver import *
 # never import aliases into this file
 
-def _autofragment_convert(p, symbol):
-    # Finding radii for auto-fragmenter
-    if symbol[p] == 'H':
-        d = 1.001
-    if symbol[p] == 'He':
-        d = 1.012
-    if symbol[p] == 'Li':
-        d = 0.825
-    if symbol[p] == 'Be':
-        d = 1.408
-    if symbol[p] == 'B':
-        d = 1.485
-    if symbol[p] == 'C':
-        d = 1.452
-    if symbol[p] == 'N':
-        d = 1.397
-    if symbol[p] == 'O':
-        d = 1.342
-    if symbol[p] == 'F':
-        d = 1.287
-    if symbol[p] == 'Ne':
-        d = 1.243
-    if symbol[p] == 'Na':
-        d = 1.144
-    if symbol[p] == 'Mg':
-        d = 1.364
-    if symbol[p] == 'Al':
-        d = 1.639
-    if symbol[p] == 'Si':
-        d = 1.716
-    if symbol[p] == 'P':
-        d = 1.705
-    if symbol[p] == 'S':
-        d = 1.683
-    if symbol[p] == 'Cl':
-        d = 1.639
-    if symbol[p] == 'Ar':
-        d = 1.595
-
-    return d / 1.5
-
-
-def auto_fragments(**kwargs):
-    r"""Detects fragments if the user does not supply them.
-    Currently only used for the WebMO implementation of SAPT.
-
-    :returns: :ref:`Molecule<sec:psimod_Molecule>`) |w--w| fragmented molecule.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    :examples:
-
-    >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
-    >>> molecule mol {\nH 0.0 0.0 0.0\nH 2.0 0.0 0.0\nF 0.0 1.0 0.0\nF 2.0 1.0 0.0\n}
-    >>> print mol.nfragments()  # 1
-    >>> fragmol = auto_fragments()
-    >>> print fragmol.nfragments()  # 2
-
-    """
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', psi4.get_active_molecule())
-    molecule.update_geometry()
-    molname = molecule.name()
-
-    geom = molecule.save_string_xyz()
-
-    numatoms = molecule.natom()
-    VdW = [1.2, 1.7, 1.5, 1.55, 1.52, 1.9, 1.85, 1.8]
-
-    symbol = list(range(numatoms))
-    X = [0.0] * numatoms
-    Y = [0.0] * numatoms
-    Z = [0.0] * numatoms
-
-    Queue = []
-    White = []
-    Black = []
-    F = geom.split('\n')
-    for f in range(numatoms):
-        A = F[f + 1].split()
-        symbol[f] = A[0]
-        X[f] = float(A[1])
-        Y[f] = float(A[2])
-        Z[f] = float(A[3])
-        White.append(f)
-    Fragment = [[] for i in range(numatoms)]  # stores fragments
-
-    start = 0  # starts with the first atom in the list
-    Queue.append(start)
-    White.remove(start)
-
-    frag = 0
-
-    while((len(White) > 0) or (len(Queue) > 0)):  # Iterates to the next fragment
-        while(len(Queue) > 0):  # BFS within a fragment
-            for u in Queue:  # find all nearest Neighbors
-                             #   (still coloured white) to vertex u
-                for i in White:
-                    Distance = math.sqrt((X[i] - X[u]) * (X[i] - X[u]) +
-                                         (Y[i] - Y[u]) * (Y[i] - Y[u]) +
-                                         (Z[i] - Z[u]) * (Z[i] - Z[u]))
-                    if Distance < _autofragment_convert(u, symbol) + _autofragment_convert(i, symbol):
-                        Queue.append(i)  # if you find you, put it in the que
-                        White.remove(i)  # and remove it from the untouched list
-            Queue.remove(u)  # remove focus from Queue
-            Black.append(u)
-            Fragment[frag].append(int(u + 1))  # add to group (adding 1 to start
-                                           #   list at one instead of zero)
-
-        if(len(White) != 0):  # cant move White->Queue if no more exist
-            Queue.append(White[0])
-            White.remove(White[0])
-        frag += 1
-
-    new_geom = """\n"""
-    for i in Fragment[0]:
-        new_geom = new_geom + F[i].lstrip() + """\n"""
-    new_geom = new_geom + """--\n"""
-    for j in Fragment[1]:
-        new_geom = new_geom + F[j].lstrip() + """\n"""
-    new_geom = new_geom + """units angstrom\n"""
-
-    moleculenew = psi4.Molecule.create_molecule_from_string(new_geom)
-    moleculenew.set_name(molname)
-    moleculenew.update_geometry()
-    moleculenew.print_cluster()
-    psi4.print_out("""  Exiting auto_fragments\n""")
-
-    return moleculenew
 
 #########################
 ##  Start of Database  ##
@@ -202,7 +70,7 @@ def database(name, db_name, **kwargs):
        * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
-        using the script :source:`share/scripts/ixyz2database.pl`.
+        using the script :source:`share/scripts/ixyz2database.py`.
         See :ref:`sec:createDatabase` for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.
@@ -335,20 +203,21 @@ def database(name, db_name, **kwargs):
     >>> database('ccsd','HTBH',subset='small', tabulate=['ccsd total energy', 'mp2 total energy'])
 
     """
-    lowername = name.lower()
+    lowername = name  #TODO
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
-        kwargs['name'] = name.lower()
+        kwargs['name'] = name #.lower()
     if not('db_name' in kwargs) and db_name:
         kwargs['db_name'] = db_name
 
     # Establish function to call
     func = kwargs.pop('db_func', kwargs.pop('func', energy))
     kwargs['db_func'] = func
-    if func is cp:
-        raise ValidationError("""Wrapper database is unhappy to be calling function '%s'. Use the cp keyword within database instead'.""" % (func.__name__))
+    # Bounce to CP if bsse kwarg (someday)
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValidationError("""Database: Cannot specify bsse_type for database. Use the cp keyword withing database instead.""")
 
     optstash = p4util.OptionsState(
         ['WRITER_FILE_LABEL'],
@@ -392,7 +261,7 @@ def database(name, db_name, **kwargs):
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
-    if re.match(r'^sapt', lowername) or re.match(r'^.*sapt', lowername):
+    if not hasattr(lowername, '__call__') and re.match(r'^.*sapt', lowername):
         try:
             database.ACTV_SA
         except AttributeError:
@@ -401,7 +270,7 @@ def database(name, db_name, **kwargs):
             ACTV = database.ACTV_SA
     #   Force open-shell if needed
     openshell_override = 0
-    if (user_reference == 'RHF') or (user_reference == 'RKS'):
+    if user_reference in ['RHF', 'RKS']:
         try:
             database.isOS
         except AttributeError:
@@ -413,17 +282,15 @@ def database(name, db_name, **kwargs):
 
     # Configuration based upon database keyword options
     #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2 & dft)
-    db_symm = 'yes'
-    if 'symm' in kwargs:
-        db_symm = kwargs['symm']
+    db_symm = kwargs.get('symm', True)
 
     symmetry_override = 0
-    if no.match(str(db_symm)):
+    if db_symm is False:
         symmetry_override = 1
-    elif yes.match(str(db_symm)):
+    elif db_symm is True:
         pass
     else:
-        raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
+        raise ValidationError("""Symmetry mode '%s' not valid.""" % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
     db_mode = kwargs.pop('db_mode', kwargs.pop('mode', 'continuous')).lower()
@@ -441,29 +308,25 @@ def database(name, db_name, **kwargs):
         raise ValidationError("""Database execution mode '%s' not valid.""" % (db_mode))
 
     #   Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
-    db_cp = 'no'
-    if 'cp' in kwargs:
-        db_cp = kwargs['cp']
+    db_cp = kwargs.get('cp', False)
 
-    if yes.match(str(db_cp)):
+    if db_cp is True:
         try:
             database.ACTV_CP
         except AttributeError:
-            raise ValidationError('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+            raise ValidationError("""Counterpoise correction mode 'yes' invalid for database %s.""" % (db_name))
         else:
             ACTV = database.ACTV_CP
-    elif no.match(str(db_cp)):
+    elif db_cp is False:
         pass
     else:
-        raise ValidationError('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
+        raise ValidationError("""Counterpoise correction mode '%s' not valid.""" % (db_cp))
 
     #   Option relaxed- whether for non-frozen-monomer interaction energy databases include deformation correction or not?
-    db_rlxd = 'no'
-    if 'rlxd' in kwargs:
-        db_rlxd = kwargs['rlxd']
+    db_rlxd = kwargs.get('rlxd', False)
 
-    if yes.match(str(db_rlxd)):
-        if yes.match(str(db_cp)):
+    if db_rlxd is True:
+        if db_cp is True:
             try:
                 database.ACTV_CPRLX
                 database.RXNM_CPRLX
@@ -472,26 +335,25 @@ def database(name, db_name, **kwargs):
             else:
                 ACTV = database.ACTV_CPRLX
                 RXNM = database.RXNM_CPRLX
-        elif no.match(str(db_cp)):
+        elif db_cp is False:
             try:
                 database.ACTV_RLX
             except AttributeError:
                 raise ValidationError('Deformation correction mode \'yes\' invalid for database %s.' % (db_name))
             else:
                 ACTV = database.ACTV_RLX
-    elif no.match(str(db_rlxd)):
+    elif db_rlxd is False:
+    #elif no.match(str(db_rlxd)):
         pass
     else:
         raise ValidationError('Deformation correction mode \'%s\' not valid.' % (db_rlxd))
 
     #   Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
-    db_zpe = 'no'
-    if 'zpe' in kwargs:
-        db_zpe = kwargs['zpe']
+    db_zpe = kwargs.get('zpe', False)
 
-    if yes.match(str(db_zpe)):
+    if db_zpe is True:
         raise ValidationError('Zero-point-correction mode \'yes\' not yet implemented.')
-    elif no.match(str(db_zpe)):
+    elif db_zpe is False:
         pass
     else:
         raise ValidationError('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
@@ -501,7 +363,7 @@ def database(name, db_name, **kwargs):
     if 'benchmark' in kwargs:
         db_benchmark = kwargs['benchmark']
 
-        if (db_benchmark.lower() == 'default'):
+        if db_benchmark.lower() == 'default':
             pass
         else:
             BIND = p4util.getattr_ignorecase(database, 'BIND_' + db_benchmark)
@@ -520,25 +382,25 @@ def database(name, db_name, **kwargs):
         db_subset = kwargs['subset']
 
     if isinstance(db_subset, basestring):
-        if (db_subset.lower() == 'small'):
+        if db_subset.lower() == 'small':
             try:
                 database.HRXN_SM
             except AttributeError:
-                raise ValidationError('Special subset \'small\' not available for database %s.' % (db_name))
+                raise ValidationError("""Special subset 'small' not available for database %s.""" % (db_name))
             else:
                 HRXN = database.HRXN_SM
-        elif (db_subset.lower() == 'large'):
+        elif db_subset.lower() == 'large':
             try:
                 database.HRXN_LG
             except AttributeError:
-                raise ValidationError('Special subset \'large\' not available for database %s.' % (db_name))
+                raise ValidationError("""Special subset 'large' not available for database %s.""" % (db_name))
             else:
                 HRXN = database.HRXN_LG
-        elif (db_subset.lower() == 'equilibrium'):
+        elif db_subset.lower() == 'equilibrium':
             try:
                 database.HRXN_EQ
             except AttributeError:
-                raise ValidationError('Special subset \'equilibrium\' not available for database %s.' % (db_name))
+                raise ValidationError("""Special subset 'equilibrium' not available for database %s.""" % (db_name))
             else:
                 HRXN = database.HRXN_EQ
         else:
@@ -546,14 +408,14 @@ def database(name, db_name, **kwargs):
             if HRXN is None:
                 HRXN = p4util.getattr_ignorecase(database, 'HRXN_' + db_subset)
                 if HRXN is None:
-                    raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+                    raise ValidationError("""Special subset '%s' not available for database %s.""" % (db_subset, db_name))
     else:
         temp = []
         for rxn in db_subset:
             if rxn in HRXN:
                 temp.append(rxn)
             else:
-                raise ValidationError('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
+                raise ValidationError("""Subset element '%s' not a member of database %s.""" % (str(rxn), db_name))
         HRXN = temp
 
     temp = []
@@ -779,7 +641,7 @@ def database(name, db_name, **kwargs):
     for envv in db_tabulate:
         envv = envv.upper()
         tables += """\n   ==> %s <==\n\n""" % (envv.title())
-        tables += tblhead(maxrgt, table_delimit, 2)
+        tables += _tblhead(maxrgt, table_delimit, 2)
 
         for rxn in HRXN:
             db_rxn = dbse + '-' + str(rxn)
@@ -808,7 +670,7 @@ def database(name, db_name, **kwargs):
     RMSDerror = 0.0
 
     tables += """\n   ==> %s <==\n\n""" % ('Requested Energy')
-    tables += tblhead(maxrgt, table_delimit, 1)
+    tables += _tblhead(maxrgt, table_delimit, 1)
     for rxn in HRXN:
         db_rxn = dbse + '-' + str(rxn)
 
@@ -870,7 +732,7 @@ def database(name, db_name, **kwargs):
     return finalenergy
 
 
-def tblhead(tbl_maxrgt, tbl_delimit, ttype):
+def _tblhead(tbl_maxrgt, tbl_delimit, ttype):
     r"""Function that prints the header for the changable-width results tables in db().
     *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*
     is a string of dashes of the correct length to set off the table. *ttype* is 1 for
@@ -922,7 +784,3 @@ else:
     bytes = str
     basestring = basestring
 
-
-#################################
-##  End of Complete Basis Set  ##
-#################################
