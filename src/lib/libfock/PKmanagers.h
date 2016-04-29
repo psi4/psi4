@@ -122,18 +122,18 @@ public:
     virtual ~PKManager() {}
 
     /// Accessor functions for simple data
-    double cutoff() { return cutoff_; }
-    int nthreads()  { return nthreads_; }
-    int nbf()       { return nbf_; }
-    std::shared_ptr< ERISieve > sieve() { return sieve_; }
-    size_t pk_pairs() { return pk_pairs_; }
-    size_t pk_size()  { return pk_size_; }
-    size_t ntasks()   { return ntasks_; }
-    size_t memory()   { return memory_; }
-    SharedPKWrkr buffer(int i) { return iobuffers_[i]; }
-    double* D_glob_vecs(int i) { return D_vec_[i]; }
-    double* JK_glob_vecs(int i) { return JK_vec_[i]; }
-    boost::shared_ptr< BasisSet > primary() { return primary_; }
+    double cutoff() const { return cutoff_; }
+    int nthreads()  const { return nthreads_; }
+    int nbf()       const { return nbf_; }
+    std::shared_ptr< ERISieve > sieve() const { return sieve_; }
+    size_t pk_pairs() const { return pk_pairs_; }
+    size_t pk_size()  const { return pk_size_; }
+    size_t ntasks()   const { return ntasks_; }
+    size_t memory()   const { return memory_; }
+    SharedPKWrkr buffer(int i) const { return iobuffers_[i]; }
+    double* D_glob_vecs(int i) const { return D_vec_[i]; }
+    double* JK_glob_vecs(int i) const { return JK_vec_[i]; }
+    boost::shared_ptr< BasisSet > primary() const { return primary_; }
 
     /// Accessor that returns buffer corresponding to current thread
     SharedPKWrkr get_buffer();
@@ -179,10 +179,6 @@ public:
 
     /// Write the buffers of integrals to PK storage
     virtual void write() = 0;
-
-    /// Get TOC labels for J or K
-    static char* get_label_J(const int batch);
-    static char* get_label_K(const int batch);
 
     /// Actual computation of J and K
     /// Prepare the density matrix
@@ -237,14 +233,14 @@ public:
     /// Setter/Getter functions
     void set_writing(bool tmp) { writing_ = tmp; }
     bool writing()  const { return writing_; }
-    int pk_file() { return pk_file_; }
+    int pk_file() const { return pk_file_; }
     std::vector< size_t >& batch_ind_min() { return batch_index_min_;}
     std::vector< size_t >& batch_ind_max() { return batch_index_max_;}
     std::vector< size_t >& batch_pq_min() { return batch_pq_min_;}
     std::vector< size_t >& batch_pq_max() { return batch_pq_max_;}
     std::vector< int >& batch_for_pq() { return batch_for_pq_; }
-    std::shared_ptr< AIOHandler > AIO() { return AIO_; }
-    boost::shared_ptr< PSIO > psio() { return psio_; }
+    std::shared_ptr< AIOHandler > AIO() const { return AIO_; }
+    boost::shared_ptr< PSIO > psio() const { return psio_; }
 
     /// Finalize the PK file formation
     virtual void finalize_PK();

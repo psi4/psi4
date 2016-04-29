@@ -22,21 +22,312 @@
 
 #include <libmints/integral.h>
 #include <libmints/basisset.h>
+#include <libmints/gshell.h>
+#include <libmints/sieve.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/aiohandler.h>
 #include <libiwl/config.h>
-#include "PKmanagers.h"
 #include "PK_workers.h"
 
 namespace psi {
 
 namespace pk {
 
-//TODO Finish this constructor, of course
-PKWorker::PKWorker(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
-                   int target_file, size_t buf_size) {
+AOShellSieveIterator::AOShellSieveIterator(boost::shared_ptr<BasisSet> prim,
+                                           SharedSieve sieve_input) :
+shell_pairs_(sieve_input->shell_pairs()) {
+    bs_ = prim;
+    sieve_ = sieve_input;
+    npairs_ = shell_pairs_.size();
+    PQ_ = 0;
+    RS_ = 0;
+    done_ = false;
+}
+
+void AOShellSieveIterator::populate_indices() {
+    P_ = shell_pairs_[PQ_].first;
+    Q_ = shell_pairs_[PQ_].second;
+    R_ = shell_pairs_[RS_].first;
+    S_ = shell_pairs_[RS_].second;
+}
+
+void AOShellSieveIterator::first() {
+
+    PQ_ = 0;
+    RS_ = 0;
+    populate_indices();
+    while(!sieve_->shell_significant(P_,Q_,R_,S_)) {
+        // We do not use a function to increment so we can directly
+        // return when needed
+        ++RS_;
+        if(RS_ > PQ_) {
+            RS_ = 0;
+            ++PQ_;
+            if(PQ_ >= npairs_) {
+                done_ = true;
+                return;
+            }
+        }
+        populate_indices();
+    }
+
+}
+
+void AOShellSieveIterator::next() {
+    ++RS_;
+    if(RS_ > PQ_) {
+        RS_ = 0;
+        ++PQ_;
+        if(PQ_ >= npairs_) {
+            done_ = true;
+            return;
+        }
+    }
+    populate_indices();
+    while(!sieve_->shell_significant(P_,Q_,R_,S_)) {
+        // We do not use a function to increment so we can directly
+        // return when needed
+        ++RS_;
+        if(RS_ > PQ_) {
+            RS_ = 0;
+            ++PQ_;
+            if(PQ_ >= npairs_) {
+                done_ = true;
+                return;
+            }
+        }
+        populate_indices();
+    }
+}
+
+AOFctSieveIterator AOShellSieveIterator::integrals_iterator() {
+    return AOFctSieveIterator(bs_->shell(P_),bs_->shell(Q_),
+                              bs_->shell(R_),bs_->shell(S_),sieve_);
+
+}
+
+AOFctSieveIterator::AOFctSieveIterator(const GaussianShell &s1, const GaussianShell &s2,
+                    const GaussianShell &s3, const GaussianShell &s4,
+                    std::shared_ptr<ERISieve> siev) : usi_(s1), usj_(s2), usk_(s3), usl_(s4) {
+    sieve_ = siev;
+    done_ = false;
+
+    ni_ = usi_.nfunction();
+    nj_ = usj_.nfunction();
+    nk_ = usk_.nfunction();
+    nl_ = usl_.nfunction();
+
+    fi_ = usi_.function_index();
+    fj_ = usj_.function_index();
+    fk_ = usk_.function_index();
+    fl_ = usl_.function_index();
+
+    sh_aaaa_ = (&usi_ == &usj_ && &usk_ == &usl_ && &usi_ == &usk_);
+    sh_abab_ = (&usi_ == &usk_ && &usj_ == &usl_);
+    maxi_ = ni_ - 1;
+}
+
+void AOFctSieveIterator::populate_indices() {
+    i_ = irel_ + fi_;
+    j_ = jrel_ + fj_;
+    k_ = krel_ + fk_;
+    l_ = lrel_ + fl_;
+}
+
+void AOFctSieveIterator::increment_bra() {
+    lrel_ = 0;
+    krel_ = 0;
+    ++jrel_;
+    if(jrel_ > maxj_) {
+        jrel_ = 0;
+        ++irel_;
+        if(irel_ > maxi_) {
+            done_ = true;
+        }
+        if(sh_aaaa_) {
+            maxj_ = irel_;
+        } else if(!sh_abab_) {
+            maxj_ = (&usi_ == &usj_) ? irel_ : nj_ - 1;
+        }
+    }
+
+    if(sh_aaaa_) {
+        maxk_ = irel_;
+        maxl_ = (krel_ == irel_) ? jrel_ : krel_;
+    } else if(sh_abab_) {
+        maxk_ = irel_;
+        maxl_ = (krel_ == irel_) ? jrel_ : nl_ - 1;
+    } else {
+        maxl_ = (&usk_ == &usl_) ? krel_ : nl_ - 1;
+    }
+    populate_indices();
+}
+
+void AOFctSieveIterator::increment_ket() {
+    // Here we adopt the original implementation, might be more efficient
+    if (sh_aaaa_) {
+        ++lrel_;
+        if(lrel_ > maxl_){
+            ++krel_;
+            lrel_ = 0;
+            if(krel_ > maxk_){
+                krel_ = 0;
+                ++jrel_;
+                if(jrel_ > maxj_){
+                    jrel_ = 0;
+                    ++irel_;
+                    if(irel_ > maxi_){
+                        done_ = true;
+                    }
+                    maxj_ = irel_;
+                }
+                maxk_ = irel_;
+
+            }
+            maxl_ = (krel_==irel_) ? jrel_ : krel_;
+        }
+    } else if(sh_abab_){
+        ++lrel_;
+        if(lrel_ > maxl_){
+            ++krel_;
+            lrel_ = 0;
+            if(krel_ > maxk_){
+                krel_ = 0;
+                ++jrel_;
+                if(jrel_ > maxj_){
+                    jrel_ = 0;
+                    ++irel_;
+                    if(irel_ > maxi_){
+                        done_ = true;
+                    }
+                }
+                maxk_ = irel_;
+            }
+            maxl_ = (krel_ == irel_) ? jrel_ : nl_ - 1;
+        }
+    } else {
+        ++lrel_;
+        if(lrel_ > maxl_){
+            ++krel_;
+            lrel_ = 0;
+            if(krel_ > maxk_){
+                krel_ = 0;
+                ++jrel_;
+                if(jrel_ > maxj_){
+                    jrel_ = 0;
+                    ++irel_;
+                    if(irel_ > maxi_){
+                        done_ = true;
+                    }
+                    maxj_ = (&usi_ == &usj_) ? irel_ : nj_ - 1;
+                }
+            }
+            maxl_ = (&usk_ == &usl_) ? krel_ : nl_ - 1;
+        }
+    }
+    populate_indices();
+
+}
+
+void AOFctSieveIterator::reorder_inds() {
+    if(!sh_aaaa_) {
+        if(sh_abab_) {
+            if(i_ < j_) {
+                std::swap(i_,j_);
+                std::swap(k_,l_);
+            }
+            if(i_ < k_) {
+                std::swap(i_,k_);
+                std::swap(j_,l_);
+            }
+        } else {
+            if(i_ < j_) {
+                std::swap(i_,j_);
+            }
+            if(k_ < l_) {
+                std::swap(k_,l_);
+            }
+            if((i_ < k_) || (i_ == k_ && j_ < l_)) {
+                std::swap(i_,k_);
+                std::swap(j_,l_);
+
+            }
+        }
+    }
+
+}
+
+// Could be more efficient to include increment steps
+// explicitly to be able to return directly and avoid
+// the if(done_) conditional (much more ugly though)
+void AOFctSieveIterator::first() {
+    if (sh_aaaa_) {
+        maxk_ = 0;
+        maxl_ = 0;
+        maxj_ = 0;
+    } else if (sh_abab_) {
+        maxk_ = 0;
+        maxl_ = 0;
+        maxj_ = nj_ - 1;
+    } else {
+        maxk_ = nk_ - 1;
+        maxj_ = (&usi_ == &usj_) ? 0 : nj_ - 1;
+        maxl_ = (&usk_ == &usl_) ? 0 : nl_ - 1;
+    }
+
+    irel_ = 0;
+    jrel_ = 0;
+    krel_ = 0;
+    lrel_ = 0;
+    populate_indices();
+    // find a significant ij
+    while(!sieve_->function_pair_significant(i_,j_)) {
+        increment_bra();
+        if(done_) return;
+    }
+    // find a significant integral
+    while(!sieve_->function_significant(i_,j_,k_,l_)) {
+        increment_ket();
+        if(done_) return;
+        // If ij changes, find next significant pair
+        while(!sieve_->function_pair_significant(i_,j_)) {
+            increment_bra();
+            if(done_) return;
+        }
+    }
+
+    reorder_inds();
+}
+
+void AOFctSieveIterator::next() {
+    increment_ket();
+    if(done_) return;
+    while(!sieve_->function_pair_significant(i_,j_)) {
+        increment_bra();
+        if(done_) return;
+    }
+    // find a significant integral
+    while(!sieve_->function_significant(i_,j_,k_,l_)) {
+        increment_ket();
+        if(done_) return;
+        // If ij changes, find next significant pair
+        while(!sieve_->function_pair_significant(i_,j_)) {
+            increment_bra();
+            if(done_) return;
+        }
+    }
+
+    reorder_inds();
+}
+
+
+
+PKWorker::PKWorker(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+                   std::shared_ptr<AIOHandler> AIO, int target_file,
+                   size_t buf_size) {
     AIO_ = AIO;
+    sieve_ = sieve;
     target_file_ = target_file;
     primary_ = primary;
     buf_size_ = buf_size;
@@ -45,8 +336,20 @@ PKWorker::PKWorker(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandl
 
 }
 
+char* PKWorker::get_label_J(const int batch) {
+    char* label = new char[100];
+    sprintf(label, "J Block (Batch %d)", batch);
+    return label;
+}
+
+char* PKWorker::get_label_K(const int batch) {
+    char* label = new char[100];
+    sprintf(label, "K Block (Batch %d)", batch);
+    return label;
+}
+
 void PKWorker::first_quartet(size_t i) {
-    shelliter_ = UniqueAOShellIt(new AOShellCombinationsIterator(primary_,primary_,primary_,primary_));
+    shelliter_ = UniqueAOShellIt(new AOShellSieveIterator(primary_,sieve_)) ;
     bufidx_ = i;
     offset_ = bufidx_ * buf_size_;
     initialize_task();
@@ -78,7 +381,7 @@ bool PKWorker::is_shell_relevant() {
     // indices are too high ?
 
     if (low_ijkl > max_idx_ && low_ikjl > max_idx_ && low_iljk > max_idx_) {
-//DEBUG        outfile->Printf("Rejecting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+//DEBUG        outfile->Printf("Rejecting1 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
@@ -102,12 +405,12 @@ bool PKWorker::is_shell_relevant() {
     // indices are too low ?
 
     if (hi_ijkl < offset_ && hi_ikjl < offset_ && hi_iljk < offset_) {
-//DEBUG        outfile->Printf("Rejecting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+//DEBUG        outfile->Printf("Rejecting2 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
     // Now we loop over unique basis function quartets in the shell quartet
-    AOIntegralsIterator bfiter = shelliter_->integrals_iterator();
+    AOFctSieveIterator bfiter = shelliter_->integrals_iterator();
     for(bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
         size_t i = bfiter.i();
         size_t j = bfiter.j();
@@ -129,7 +432,7 @@ bool PKWorker::is_shell_relevant() {
         }
     }
 
-//DEBUG    outfile->Printf("Rejecting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+//DEBUG    outfile->Printf("Rejecting shell3 <%d %d|%d %d>\n",P_,Q_,R_,S_);
     return false;
 
 }
@@ -152,9 +455,9 @@ void PKWorker::next_quartet() {
     shells_left_ = shell_found;
 }
 
-PKWrkrReord::PKWrkrReord(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIO,
+PKWrkrReord::PKWrkrReord(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
                          int target_file, size_t buffer_size, unsigned int nbuffer) :
-    PKWorker(primary,AIO,target_file,buffer_size) {
+    PKWorker(primary,sieve,AIO,target_file,buffer_size) {
 
     set_nbuf(nbuffer);
     buf_ = 0;
@@ -275,14 +578,14 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
     // And now we write to the file in the appropriate entries
     for (int i = 0; i < target_batches.size(); ++i) {
         unsigned int b = target_batches[i];
-        labels_J_[buf_].push_back(PKManager::get_label_J(b));
+        labels_J_[buf_].push_back(get_label_J(b));
         size_t start = std::max(offset(), min_ind[b]);
         size_t stop = std::min(max_idx() + 1, max_ind[b]);
         psio_address adr = psio_get_address(PSIO_ZERO, (start - min_ind[b]) * sizeof(double));
         size_t nints = stop - start;
         jobID_J_[buf_].push_back(AIO()->write(target_file(), labels_J_[buf_][i], (char *)(&J_bufs_[buf_][start - offset()]),
                     nints * sizeof(double), adr, &dummy_));
-        labels_K_[buf_].push_back(PKManager::get_label_K(b));
+        labels_K_[buf_].push_back(get_label_K(b));
         jobID_K_[buf_].push_back(AIO()->write(target_file(), labels_K_[buf_][i], (char *)(&K_bufs_[buf_][start - offset()]),
                     nints * sizeof(double), adr, &dummy_));
     }
@@ -314,9 +617,9 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
 
 }
 
-PKWrkrInCore::PKWrkrInCore(boost::shared_ptr<BasisSet> primary, size_t buf_size,
+PKWrkrInCore::PKWrkrInCore(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size,
                            size_t lastbuf, double *Jbuf, double *Kbuf) :
-    PKWorker(primary,NULL,0,buf_size) {
+    PKWorker(primary,sieve,NULL,0,buf_size) {
 
     last_buf_ = lastbuf;
     J_bufp_ = Jbuf;
@@ -378,10 +681,10 @@ void PKWrkrInCore::finalize_ints(size_t pk_pairs) {
 
 }
 
-PKWrkrIWL::PKWrkrIWL(boost::shared_ptr<BasisSet> primary, std::shared_ptr<AIOHandler> AIOp,
+PKWrkrIWL::PKWrkrIWL(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp,
                      int targetfile, int K_file, size_t buf_size, std::vector<int> &bufforpq,
                      boost::shared_ptr<size_t[]> pos) :
-    PKWorker(primary,AIOp,targetfile,buf_size) {
+    PKWorker(primary,sieve,AIOp,targetfile,buf_size) {
     K_file_ = K_file;
     buf_for_pq_ = bufforpq;
     size_t lastpq = buf_for_pq_.size() - 1;
