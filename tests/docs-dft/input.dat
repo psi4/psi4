@@ -1,6 +1,8 @@
 #! This test is used to construct the documentation;
 #! it is not suitable for emulation by users. !nosample
 
+from procedures.functional import superfunctional_list
+
 funcdict = {}
 
 for super in superfunctional_list():
