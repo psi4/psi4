@@ -112,7 +112,7 @@ def sherrill_gold_standard(func, label, **kwargs):
 
     """
     kwargs['scf_basis'] = kwargs.get('scf_basis', 'aug-cc-pVQZ')
-    kwargs['scf_scheme'] = kwargs.get('scf_scheme', driver_cbs.cbs_xtpl_highest_1)
+    kwargs['scf_scheme'] = kwargs.get('scf_scheme', driver_cbs.xtpl_highest_1)
 
     kwargs['corl_wfn'] = kwargs.get('corl_wfn', 'mp2')
     kwargs['corl_basis'] = kwargs.get('corl_basis', 'aug-cc-pV[TQ]Z')
@@ -121,7 +121,7 @@ def sherrill_gold_standard(func, label, **kwargs):
     kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'ccsd(t)')
     kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
     kwargs['delta_basis'] = kwargs.get('delta_basis', 'aug-cc-pVTZ')
-    kwargs['delta_scheme'] = kwargs.get('delta_scheme', driver_cbs.cbs_xtpl_highest_1)
+    kwargs['delta_scheme'] = kwargs.get('delta_scheme', driver_cbs.xtpl_highest_1)
 
     if label == 'custom_function':
         label = 'Sherrill Group Gold Standard'
@@ -173,13 +173,13 @@ def allen_focal_point(func, label, **kwargs):
     kwargs['delta3_wfn'] = kwargs.get('delta3_wfn', 'mrccsdt')
     kwargs['delta3_wfn_lesser'] = kwargs.get('delta3_wfn_lesser', 'mrccsd(t)')
     kwargs['delta3_basis'] = kwargs.get('delta3_basis', 'cc-pVTZ')
-    kwargs['delta3_scheme'] = kwargs.get('delta3_scheme', driver_cbs.cbs_xtp_highest_1)
+    kwargs['delta3_scheme'] = kwargs.get('delta3_scheme', driver_cbs.xtpl_highest_1)
 
     # delta CCSDT(Q) - CCSDT
     kwargs['delta4_wfn'] = kwargs.get('delta4_wfn', 'mrccsdt(q)')
     kwargs['delta4_wfn_lesser'] = kwargs.get('delta4_wfn_lesser', 'mrccsdt')
     kwargs['delta4_basis'] = kwargs.get('delta4_basis', 'cc-pVDZ')
-    kwargs['delta4_scheme'] = kwargs.get('delta4_scheme', driver_cbs.cbs_xtp_highest_1)
+    kwargs['delta4_scheme'] = kwargs.get('delta4_scheme', driver_cbs.xtpl_highest_1)
 
     if label == 'custom_function':
         label = 'Allen Focal Point'
