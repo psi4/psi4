@@ -28,6 +28,7 @@ import p4util
 from p4util.exceptions import *
 from procedures import *
 
+
 def _method_exists(ptype, method_name):
     r"""
     Quick check to see if this method exists, if it does not exist we raise a convenient flag.
@@ -41,25 +42,26 @@ def _method_exists(ptype, method_name):
         Cptype = ptype[0].upper() + ptype[1:]
         raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
 
-def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec):
-    r"""
 
+def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec, verbose=1):
+    r"""
     This function will set local SCF and global energy convergence criterion
     to the defaults listed at:
     http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
-    algorithm-defaults. SCF will be convergence more tightly if a post-SCF
+    algorithm-defaults. SCF will be converged more tightly if a post-SCF
     method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
     scf_Dc convergence criterion will be used).
 
-    ptype -         Procedure type (energy, gradient, etc)
+    ptype -         Procedure type (energy, gradient, etc). Nearly always test on
+                    procedures['energy'] since that's guaranteed to exist for a method.
     method_name -   Name of the method
-    scf_Ec -        SCF E convergence criterion
-    pscf_Ec -       Post-SCF E convergence criterion
-    scf_Dc -        SCF D convergence criterion
-    pscf_Dc -       Post-SCF D convergence criterion
-    gen_Ec -        General E convergence for all methods
-    """
+    scf_Ec -        E convergence criterion for scf target method
+    pscf_Ec -       E convergence criterion for scf of post-scf target method
+    scf_Dc -        D convergence criterion for scf target method
+    pscf_Dc -       D convergence criterion for scf of post-scf target method
+    gen_Ec -        E convergence criterion for post-scf target method
 
+    """
     optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
@@ -68,26 +70,49 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     # Kind of want to move this out of here
     _method_exists(ptype, method_name)
 
+    if verbose >= 2:
+        print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
     if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
         if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
+            if verbose >= 2:
+                print(scf_Ec, end=' ')
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
+            if verbose >= 2:
+                print(pscf_Ec, end=' ')
+    else:
+        if verbose >= 2:
+            print('CUSTOM', psi4.get_option('SCF', 'E_CONVERGENCE'), end=' ')
 
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
+            if verbose >= 2:
+                print(scf_Dc, end=' ')
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
+            if verbose >= 2:
+                print(pscf_Dc, end=' ')
+    else:
+        if verbose >= 2:
+            print('CUSTOM', psi4.get_option('SCF', 'D_CONVERGENCE'), end=' ')
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
             psi4.set_global_option('E_CONVERGENCE', gen_Ec)
+            if verbose >= 2:
+                print(gen_Ec, end=' ')
+    else:
+        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
+            if verbose >= 2:
+                print('CUSTOM', psi4.get_global_option('E_CONVERGENCE'), end=' ')
 
+    if verbose >= 2:
+        print('')
     return optstash
-
 
 
 def parse_arbitrary_order(name):
@@ -164,7 +189,6 @@ def parse_arbitrary_order(name):
             return name, None
     else:
         return name, None
-
 
 
 def parse_cotton_irreps(irrep, point_group):
