@@ -44,24 +44,22 @@ import psi4
 import driver_util
 import driver_cbs
 import driver_nbody
-from driver_cbs import cbs
 
 from procedures import *
 import p4util
 from p4util.exceptions import *
 # never import wrappers or aliases into this file
 
-### Helper functions
 
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""
-    Figures out the derivate type (0, 1, 2) for a given method_name. Will
+    Figures out the derivative type (0, 1, 2) for a given method_name. Will
     first use user default and then the highest available derivative type for
     a given method.
     """
 
     if ptype not in ['gradient', 'hessian']:
-        raise KeyError("_find_derivative_type: ptype must either be gradient or hessian.")
+        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
 
     dertype = "(auto)"
 
@@ -82,7 +80,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
     else:
         # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
         if not isinstance(user_dertype, int):
-            raise TypeError("_find_derivative_type: user_dertype should only be None or int!")
+            raise ValidationError("_find_derivative_type: user_dertype should only be None or int!")
         dertype = user_dertype
 
     # Summary validation
@@ -103,7 +101,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
     return dertype
 
-# End CBS gufunc data
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -382,6 +380,7 @@ def energy(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
+    # Bounce if name is function
     if hasattr(name, '__call__'):
         return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
 
@@ -391,14 +390,15 @@ def energy(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    # Do a cp thing
+    # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
         return driver_nbody._nbody_gufunc(energy, lowername, ptype='energy', **kwargs)
 
-    # Check if this is a CBS extrapolation
+    # Bounce to CBS if "method/basis" name
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
 
+    # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
 
@@ -476,8 +476,9 @@ def gradient(name, **kwargs):
     >>> np.array(G)
 
     """
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    # Do a cp thing
+    # Bounce to CP if bsse kwarg (someday)
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
 
@@ -486,7 +487,7 @@ def gradient(name, **kwargs):
         if name.__name__ in ['cbs', 'complete_basis_set']:
             gradient_type = 'cbs_wrapper'
         else:
-            # Custom function we, just pass it along
+            # Bounce to name if name is non-CBS function
             return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
     elif '/' in name:
         gradient_type = 'cbs_gufunc'
@@ -500,21 +501,21 @@ def gradient(name, **kwargs):
     user_dertype = kwargs.pop('dertype', None)
     if gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
-        dertypes = [_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods]
-        dertype = min(dertypes)
+        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         if dertype == 1:
-            name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+            # Bounce to CBS (directly) in pure-gradient mode if name is CBS and all parts have analytic grad. avail.
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
         else:
-            # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
             optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
             lowername = name
+            # Pass through to G by E
 
     elif gradient_type == 'cbs_gufunc':
         cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
-        dertypes = [_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods]
-        dertype = min(dertypes)
+        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
+            # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
             return driver_cbs._cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
         else:
             # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
@@ -527,18 +528,18 @@ def gradient(name, **kwargs):
         if level:
             kwargs['level'] = level
 
-        # Prevent methods that do not have associated energies
+        # Prevent methods that do not have associated gradients
         if lowername in energy_only_methods:
-        	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
+            raise ValidationError("gradient('%s') does not have an associated gradient" % name)
 
         dertype = _find_derivative_type('gradient', lowername, user_dertype)
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
+    # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
-
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -562,7 +563,6 @@ def gradient(name, **kwargs):
             raise ValidationError("""Optimize execution mode 'reap' requires a linkage option.""")
     else:
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
-
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -925,7 +925,8 @@ def optimize(name, **kwargs):
     >>> optimize('hf', dertype='energy', mode='sow')
 
     """
-    
+    kwargs = p4util.kwargs_lower(kwargs)
+
     if hasattr(name, '__call__'):
         lowername = name
         custom_gradient = True
@@ -933,7 +934,6 @@ def optimize(name, **kwargs):
         lowername = name.lower()
         custom_gradient = False
 
-    kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
     # For CBS wrapper, need to set retention on INTCO file
@@ -941,11 +941,10 @@ def optimize(name, **kwargs):
         psi4.IOManager.shared_object().set_specific_retention(1, True)
 
     if kwargs.get('bsse_type', None) is not None:
-        raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")                   
+        raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-
 
     if custom_gradient and psi4.has_option_changed('OPTKING', 'FULL_HESS_EVERY'):
         raise ValidationError("Optimize: Does not support custom Hessian's yet.")
@@ -972,7 +971,7 @@ def optimize(name, **kwargs):
     # If we are feezing cartesian, do not orient or COM
     if psi4.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
         molecule.fix_orientation(True)
-        molecule.fix_com(True)   
+        molecule.fix_com(True)
     molecule.update_geometry()
 
     # Shifting the geometry so need to copy the active molecule
@@ -1006,7 +1005,7 @@ def optimize(name, **kwargs):
         # thisenergy below should ultimately be testing on wfn.energy()
 
         # S/R: Quit after getting new displacements or if forming gradient fails
-        if opt_mode  == 'sow':
+        if opt_mode == 'sow':
             return (0.0, None)
         elif opt_mode == 'reap' and thisenergy == 0.0:
             return (0.0, None)
@@ -1147,7 +1146,7 @@ def hessian(name, **kwargs):
 
     # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
-	    raise ValidationError("hessian('%s') does not have an associated hessian" % name)
+        raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
         ['FINDIF', 'HESSIAN_WRITE'],
@@ -1158,14 +1157,14 @@ def hessian(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    dertype = _find_derivative_type('hessian', lowername, kwargs.pop('dertype', None))
+    dertype = _find_derivative_type('hessian', lowername, kwargs.pop('freq_dertype', kwargs.pop('dertype', None)))
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
     # S/R: Mode of operation- whether finite difference freq run in one job or files farmed out
-    freq_mode = kwargs.get('mode', 'continuous').lower()
+    freq_mode = kwargs.pop('mode', 'continuous').lower()
     if freq_mode == 'continuous':
         pass
     elif freq_mode == 'sow':
@@ -1564,7 +1563,9 @@ def frequency(name, **kwargs):
     >>> thermo(wfn, wfn.frequencies())
 
     """
+    kwargs = p4util.kwargs_lower(kwargs)
 
+    # Bounce (someday) if name is function
     if hasattr(name, '__call__'):
         raise ValidationError("Frequency: Cannot use custom function")
 
@@ -1573,16 +1574,15 @@ def frequency(name, **kwargs):
     old_global_basis = None
     if "/" in lowername:
         if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
-           raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
+            raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
         else:
             old_global_basis = psi4.get_global_option("BASIS")
             lowername, new_basis = lowername.split('/')
             psi4.set_global_option('BASIS', new_basis)
 
     if kwargs.get('bsse_type', None) is not None:
-        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")                   
+        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
 
-    kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
     # are we in sow/reap mode?
@@ -1640,7 +1640,6 @@ def gdma(wfn, datafile=""):
     >>> gdma(wfn)
 
     """
-
     # Start by writing a G* checkpoint file, for the GDMA code to read in
     fw = psi4.FCHKWriter(wfn)
     molname = wfn.molecule().name()
@@ -1670,7 +1669,7 @@ def gdma(wfn, datafile=""):
             f.write("Switch %f\n" % psi4.get_option('GDMA', 'GDMA_SWITCH'))
             if radii:
                 f.write("Radius %s\n" % " ".join([str(r) for r in radii]))
-            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT') )
+            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT'))
             f.write("Start\n")
             f.write("Finish\n")
     psi4.run_gdma(wfn, commands)
