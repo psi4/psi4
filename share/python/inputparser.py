@@ -754,6 +754,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from gaussian_n import *\n'
     imports += 'from qmmm import *\n'
     imports += 'from aliases import *\n'
+    imports += 'from driver_cbs import *\n'
     imports += 'from wrapper_database import database, db, DB_RGT, DB_RXN\n'
     imports += 'from wrapper_autofrag import auto_fragments\n'
 #    imports += 'from qmmm import *\n'
