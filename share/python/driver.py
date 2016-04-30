@@ -1253,7 +1253,7 @@ def hessian(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=1, **kwargs)
                 fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             psi4.print_out(instructionsM)
@@ -1279,7 +1279,7 @@ def hessian(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the gradient calculation
-                wfn = gradient(lowername, molecule=moleculeclone, **kwargs)
+                G, wfn = gradient(lowername, molecule=moleculeclone, return_wfn=True, **kwargs)
                 gradients.append(wfn.gradient())
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
@@ -1296,8 +1296,9 @@ def hessian(name, **kwargs):
                     freagent.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
                     freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
+                    kwargs['return_wfn'] = True
                     p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
+                    freagent.write("""G, wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
@@ -1397,7 +1398,7 @@ def hessian(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=0, **kwargs)
                 fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             psi4.print_out(instructionsM)
