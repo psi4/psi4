@@ -110,6 +110,10 @@ private:
 
     /// Vector of triangular D matrices
     std::vector<double*> D_vec_;
+    /// Vector of booleans, true if corresponding density matrix is symmetric
+    std::vector< bool > symmetric_;
+    /// Are all density matrices symmetric?
+    bool all_sym_;
     /// Vector of triangular result J/K matrices
     std::vector<double*> JK_vec_;
 
@@ -122,18 +126,20 @@ public:
     virtual ~PKManager() {}
 
     /// Accessor functions for simple data
-    double cutoff() const { return cutoff_; }
-    int nthreads()  const { return nthreads_; }
-    int nbf()       const { return nbf_; }
-    std::shared_ptr< ERISieve > sieve() const { return sieve_; }
-    size_t pk_pairs() const { return pk_pairs_; }
-    size_t pk_size()  const { return pk_size_; }
-    size_t ntasks()   const { return ntasks_; }
-    size_t memory()   const { return memory_; }
-    SharedPKWrkr buffer(int i) const { return iobuffers_[i]; }
-    double* D_glob_vecs(int i) const { return D_vec_[i]; }
-    double* JK_glob_vecs(int i) const { return JK_vec_[i]; }
+    double cutoff()                         const { return cutoff_; }
+    int nthreads()                          const { return nthreads_; }
+    int nbf()                               const { return nbf_; }
+    std::shared_ptr< ERISieve > sieve()     const { return sieve_; }
+    size_t pk_pairs()                       const { return pk_pairs_; }
+    size_t pk_size()                        const { return pk_size_; }
+    size_t ntasks()                         const { return ntasks_; }
+    size_t memory()                         const { return memory_; }
+    SharedPKWrkr buffer(int i)              const { return iobuffers_[i]; }
+    double* D_glob_vecs(int i)              const { return D_vec_[i]; }
+    double* JK_glob_vecs(int i)             const { return JK_vec_[i]; }
     boost::shared_ptr< BasisSet > primary() const { return primary_; }
+    bool is_sym(int i)                      const { return symmetric_[i]; }
+    bool all_sym()                          const { return all_sym_; }
 
     /// Accessor that returns buffer corresponding to current thread
     SharedPKWrkr get_buffer();
@@ -159,7 +165,8 @@ public:
     /// Forming the PK supermatrices
     virtual void form_PK() = 0;
     /// Preparing JK computation
-    virtual void prepare_JK(std::vector<SharedMatrix> D)=0;
+    virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
+                            std::vector<SharedMatrix> Cr)=0;
     /// Cleaning up after JK computation
     virtual void finalize_JK() = 0;
 
@@ -182,9 +189,10 @@ public:
 
     /// Actual computation of J and K
     /// Prepare the density matrix
-    void form_D_vec(std::vector<SharedMatrix> D);
+    void form_D_vec(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl, std::vector<SharedMatrix> Cr);
     /// Forming J
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch = false)=0;
+    virtual void form_J(std::vector<SharedMatrix> J, bool exch = false,
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL))=0;
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
@@ -210,6 +218,9 @@ private:
     std::vector<size_t> batch_index_max_;
     /// Mapping pq indices to the correct batch
     std::vector<int> batch_for_pq_;
+
+    /// Mapping the min and max pq's to p,q pairs
+    std::map< size_t, std::pair< int, int> > ind_for_pq_;
 
     /// Maximum number of batches
     int max_batches_;
@@ -248,7 +259,8 @@ public:
     /// Initialize sequence for Disk algorithms
     virtual void initialize();
     /// Prepare the JK formation for disk algorithms
-    virtual void prepare_JK(std::vector<SharedMatrix> D);
+    virtual void prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
+                            std::vector<SharedMatrix> Cr);
 
     /// Determining the batch sizes
     void batch_sizing();
@@ -267,7 +279,8 @@ public:
     virtual void close_PK_file(bool keep);
 
     /// Form J from PK supermatrix
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch);
+    virtual void form_J(std::vector<SharedMatrix> J, bool exch,
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
 
     /// Finalize JK matrix formation
     virtual void finalize_JK();
@@ -369,10 +382,12 @@ public:
     /// Sequence of steps to form PK matrix
     virtual void form_PK();
     /// Steps to prepare JK formation
-    virtual void prepare_JK(std::vector<SharedMatrix> D);
+    virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
+                            std::vector<SharedMatrix> Cr);
 
     /// Form J matrix
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch);
+    virtual void form_J(std::vector<SharedMatrix> J, bool exch,
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
     /// Finalize JK formation
     virtual void finalize_JK();
 

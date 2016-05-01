@@ -233,23 +233,61 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
 
 }
 
-void PKManager::form_D_vec(std::vector<SharedMatrix> D) {
+// use the vectors of Cleft and Cright to determine which of these densities,
+// if any, are symmetric matrices.
+void PKManager::form_D_vec(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl, std::vector<SharedMatrix> Cr) {
 
-    // Assume symmetric density matrix for now.
+    all_sym_ = true;
+    // Check which density matrices are asymmetric, if any
+    for(int N = 0; N < D.size(); ++N) {
+        symmetric_.push_back(Cl[N] == Cr[N]);
+        all_sym_ = all_sym_ && (Cl[N] == Cr[N]);
+    }
+
+    // For debugging
+    if(options_.get_bool("PK_ALL_NONSYM")) {
+        all_sym_ = false;
+        for(int N = 0; N < D.size(); ++N) {
+            symmetric_[N] = false;
+        }
+        outfile->Printf("  All matrices considered asymmetric.\n");
+    }
+
     for (int N = 0; N < D.size(); ++N) {
-        double* Dvec = new double[pk_pairs_];
-        ::memset((void *)Dvec,'\0',pk_pairs_ * sizeof(double));
-        D_vec_.push_back(Dvec);
-        size_t pqval = 0;
-        for(int p = 0; p < nbf_; ++p) {
-            for(int q = 0; q <= p; ++q) {
-                if(p != q) {
-                    Dvec[pqval] = 2.0 * D[N]->get(0,p,q);
-                } else {
-                    Dvec[pqval] = D[N]->get(0,p,q);
+        // Symmetric density matrix: store triangular form
+        if(is_sym(N)) {
+            double* Dvec = new double[pk_pairs_];
+// All elements are filled, don't need memset
+            //::memset((void *)Dvec,'\0',pk_pairs_ * sizeof(double));
+            D_vec_.push_back(Dvec);
+            size_t pqval = 0;
+            for(int p = 0; p < nbf_; ++p) {
+                for(int q = 0; q <= p; ++q) {
+                    if(p != q) {
+                        Dvec[pqval] = 2.0 * D[N]->get(0,p,q);
+                    } else {
+                        Dvec[pqval] = D[N]->get(0,p,q);
+                    }
+                    ++pqval;
                 }
-                ++pqval;
             }
+        // Non-symmetric density matrix: store the whole thing with
+        // appropriate factors
+        } else {
+            double* Dvec = new double[nbf_ * nbf_];
+            D_vec_.push_back(Dvec);
+            size_t pqval = 0;
+            for (int p = 0; p < nbf_; ++p) {
+                for(int q = 0; q < nbf_; ++q) {
+                    if(p != q) {
+                        Dvec[pqval] = D[N]->get(0,p,q);
+                    } else {
+                        Dvec[pqval] = 0.5 * D[N]->get(0,p,q);
+                    }
+                    ++pqval;
+                }
+            }
+
         }
     }
 
@@ -257,31 +295,50 @@ void PKManager::form_D_vec(std::vector<SharedMatrix> D) {
 
 void PKManager::make_J_vec(std::vector<SharedMatrix> J) {
     for(int N = 0; N < J.size(); ++N) {
-        double* Jvec = new double[pk_pairs_];
-        ::memset((void*)Jvec,'\0',pk_pairs_ * sizeof(double));
-        JK_vec_.push_back(Jvec);
+        // Symmetric density matrix: stores triangular J
+        if(is_sym(N)) {
+            double* Jvec = new double[pk_pairs_];
+            ::memset((void*)Jvec,'\0',pk_pairs_ * sizeof(double));
+            JK_vec_.push_back(Jvec);
+        // Non-symmetric density matrix: stores NULL pointer
+        // as we will use full J.
+        //TODO Could actually store triangle since J is always symmetric
+        } else {
+            JK_vec_.push_back(NULL);
+        }
     }
 }
 
 void PKManager::get_results(std::vector<SharedMatrix> J) {
     // Now, directly transfer data to resulting matrices
     for(int N = 0; N < J.size(); ++N) {
-        double *Jp = JK_vec_[N];
-        for(int p = 0; p < nbf_; ++p) {
-            for(int q = 0; q <= p; ++q) {
-                J[N]->set(0,p,q,*Jp++);
+        // Symmetric density matrix: copy triangle and build full matrix
+        if(is_sym(N)) {
+            double *Jp = JK_vec_[N];
+            for(int p = 0; p < nbf_; ++p) {
+                for(int q = 0; q <= p; ++q) {
+                    J[N]->set(0,p,q,*Jp++);
+                }
             }
+            J[N]->copy_lower_to_upper();
+            delete [] JK_vec_[N];
+        // Non-symmetric density matrix: result is already in the target
+        //TODO: if we store the triangle only, change that.
+        } else {
+          double** Jp = J[N]->pointer();
+          for(int p = 0; p < nbf_; ++p) {
+            Jp[p][p] *= 0.5;
+          }
         }
-        J[N]->copy_lower_to_upper();
-        delete [] JK_vec_[N];
     }
     JK_vec_.clear();
 
 }
 
 void PKManager::form_K(std::vector<SharedMatrix> K) {
-    // For symmetric densities, we do exactly the same than for J
-    // but we read another PK entry
+    // Right now, this supports both J and K. K asym is
+    // formed at the same time than J asym for convenience.
+    // The following call only forms K sym.
     form_J(K,true);
 }
 
@@ -384,6 +441,21 @@ void PKMgrDisk::batch_sizing() {
 
     }
 
+    // Finally, we want to store the pairs of indices p,q corresponding
+    // to min pq and max pq for each batch (useful for non-sym. density matrices)
+    // We go beyond the number of pq to make sure we include the last one.
+    ind_for_pq_[0] = std::make_pair(0,0);
+    int nb = 0;
+    for(int p = 0; p <= nbf(); ++p) {
+        for(int q = 0; q <= p; ++q) {
+            pq = INDEX2(p,q);
+            if(batch_pq_max_[nb] == pq) {
+                ind_for_pq_[pq] = std::make_pair(p,q);
+                ++nb;
+            }
+        }
+    }
+
 
 }
 
@@ -412,14 +484,15 @@ void PKMgrDisk::close_PK_file(bool keep) {
     psio_->close(pk_file_,keep);
 }
 
-void PKMgrDisk::prepare_JK(std::vector<SharedMatrix> D) {
+void PKMgrDisk::prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
+                           std::vector<SharedMatrix> Cr) {
     if (writing()) {
         finalize_PK();
         set_writing(false);
     } else {
         open_PK_file();
     }
-    form_D_vec(D);
+    form_D_vec(D,Cl,Cr);
 }
 
 
@@ -444,7 +517,8 @@ void PKMgrDisk::finalize_PK() {
 
 }
 
-void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch) {
+void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch,
+                       std::vector<SharedMatrix> K) {
     make_J_vec(J);
 
     // Now loop over batches
@@ -466,32 +540,114 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch) {
 
         // Read one entry, use it for all density matrices
         for(int N = 0; N < J.size(); ++N) {
-            double* D_vec = D_glob_vecs(N);
-            double* J_vec = JK_glob_vecs(N);
-            double* j_ptr = j_block;
-        //TODO Could consider parallelizing this loop
-            for(size_t pq = min_pq; pq < max_pq; ++pq) {
-                double D_pq = D_vec[pq];
-                double *D_rs = D_vec;
-                double J_pq = 0.0;
-                double *J_rs = J_vec;
-                for(size_t rs = 0; rs <= pq; ++rs) {
-//DEBUG                    if(!exch && rs == 0) {
-//DEBUG                      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
-//DEBUG                    }
-                    J_pq += *j_ptr * (*D_rs);
-                    *J_rs += *j_ptr * D_pq;
-                    ++D_rs;
-                    ++J_rs;
-                    ++j_ptr;
+            // Symmetric density matrix, pure triangular
+            if(is_sym(N)) {
+                double* D_vec = D_glob_vecs(N);
+                double* J_vec = JK_glob_vecs(N);
+                double* j_ptr = j_block;
+            //TODO Could consider parallelizing this loop
+                for(size_t pq = min_pq; pq < max_pq; ++pq) {
+                    double D_pq = D_vec[pq];
+                    double *D_rs = D_vec;
+                    double J_pq = 0.0;
+                    double *J_rs = J_vec;
+                    for(size_t rs = 0; rs <= pq; ++rs) {
+//DEBUG                        if(!exch && rs == 0) {
+//DEBUG                          outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
+//DEBUG                        }
+                        J_pq += *j_ptr * (*D_rs);
+                        *J_rs += *j_ptr * D_pq;
+                        ++D_rs;
+                        ++J_rs;
+                        ++j_ptr;
+                    }
+                    J_vec[pq] += J_pq;
                 }
-                J_vec[pq] += J_pq;
-            }
-        }
+            // Non-symmetric density matrix case
+            } else if (!exch) {
+                double* D_vec = D_glob_vecs(N);
+                double** J_vec = J[N]->pointer();
+                double* j_ptr = j_block;
+                int fp = ind_for_pq_[min_pq].first;
+                int fq = ind_for_pq_[min_pq].second;
+                int maxp = ind_for_pq_[max_pq].first;
+                for(int p = fp; p <= maxp; ++p) {
+                  int maxq = (p == maxp) ? ind_for_pq_[max_pq].second : p + 1;
+                  int poffs = p * nbf();
+                  int q = (p == fp) ? fq : 0;
+                  for(;q < maxq; ++q) {
+                    int qoffs = q * nbf();
+                    for(int r = 0; r <= p; ++r) {
+                      int roffs = r * nbf();
+                      int maxs = (r == p) ? q : r;
+                      for(int s = 0; s <= maxs; ++s) {
+                        if(!exch && INDEX2(r,s) == 0) {
+                          outfile->Printf("PK int (%lu|%lu) = %20.16f\n",INDEX2(p,q),INDEX2(r,s),*j_ptr);
+                        }
+                          J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                          J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                          J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + r]);
+                          J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + r]);
+                          ++j_ptr;
+                      }
+
+                    }
+                  }
+                }
+                // Since we just read a batch, might as well compute K
+                // Primitive algorithm, just contract integrals with appropriate
+                // element on the fly. Might be faster than reading/writing the appropriate
+                // PK supermatrix
+                if(K.size()) {
+                    double* D_vec = D_glob_vecs(N);
+                    double** K_vec = K[N]->pointer();
+                    double* j_ptr = j_block;
+                    fp = ind_for_pq_[min_pq].first;
+                    fq = ind_for_pq_[min_pq].second;
+                    for(int p = fp; p <= maxp; ++p) {
+                      int maxq = (p == maxp) ? ind_for_pq_[max_pq].second : p + 1;
+                      int poffs = p * nbf();
+                      int q = (p == fp) ? fq : 0;
+                      for(;q < maxq; ++q) {
+                        int qoffs = q * nbf();
+                        for(int r = 0; r <= p; ++r) {
+                          int roffs = r * nbf();
+                          int maxs = (r == p) ? q : r;
+                          for(int s = 0; s <= maxs; ++s) {
+                          // Need ugly factors for now. A better solution would be great.
+                            int fac = 1.0;
+                            int soffs = s * nbf();
+                            if (p == q && r == s && p == r) {
+                                fac = 0.25; // Divide only be 4, PK stores integral with a
+                                // factor 0.5 on the (pq|pq) diagonal.
+                            } else if ( (p == q && q == r) || (q == r && r == s) ) {
+                                fac = 0.5;
+                            } else if ( p == q && r == s) {
+                                fac = 0.25;
+                            } else if (p == q || r == s) {
+                                fac = 0.5;
+                            }
+                            K_vec[p][r] = *j_ptr * fac * D_vec[qoffs + s];
+                            K_vec[r][p] = *j_ptr * fac * D_vec[soffs + q];
+                            K_vec[q][r] = *j_ptr * fac * D_vec[poffs + s];
+                            K_vec[p][s] = *j_ptr * fac * D_vec[qoffs + r];
+                            K_vec[s][p] = *j_ptr * fac * D_vec[roffs + q];
+                            K_vec[r][q] = *j_ptr * fac * D_vec[soffs + p];
+                            K_vec[s][q] = *j_ptr * fac * D_vec[roffs + p];
+                            K_vec[q][s] = *j_ptr * fac * D_vec[poffs + r];
+                            ++j_ptr;
+                          }
+                        }
+                      }
+                    }
+
+                }
+            }  // end of non-symmetric case
+        }  // End of loop over J matrices
 
         delete [] label;
         delete [] j_block;
-    }
+    }  // End of batch loop
     get_results(J);
 }
 
@@ -966,17 +1122,17 @@ void PKMgrInCore::finalize_PK() {
     }
 }
 
-void PKMgrInCore::prepare_JK(std::vector<SharedMatrix> D) {
-    form_D_vec(D);
+void PKMgrInCore::prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
+                             std::vector<SharedMatrix> Cr) {
+    form_D_vec(D,Cl,Cr);
 }
 
-void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch) {
+void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch, std::vector<SharedMatrix> K) {
 
     make_J_vec(J);
 
     for(int N = 0; N < J.size(); ++N) {
         double* D_vec = D_glob_vecs(N);
-        double* J_vec = JK_glob_vecs(N);
         double* j_ptr;
         if(exch) {
             j_ptr = K_ints_.get();
@@ -984,24 +1140,97 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch) {
             j_ptr = J_ints_.get();
         }
 //TODO We should totally parallelize this loop now.
-        for(size_t pq = 0; pq < pk_pairs(); ++pq) {
-            double D_pq = D_vec[pq];
-            double *D_rs = D_vec;
-            double J_pq = 0.0;
-            double *J_rs = J_vec;
-            for(size_t rs = 0; rs <= pq; ++rs) {
-//DEBUG                    if(!exch && rs == 0) {
-//DEBUG                      outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
-//DEBUG                    }
-                J_pq += *j_ptr * (*D_rs);
-                *J_rs += *j_ptr * D_pq;
-                ++D_rs;
-                ++J_rs;
-                ++j_ptr;
+        // Symmetric density matrix case
+        if(is_sym(N)) {
+            double* J_vec = JK_glob_vecs(N);
+            for(size_t pq = 0; pq < pk_pairs(); ++pq) {
+                double D_pq = D_vec[pq];
+                double *D_rs = D_vec;
+                double J_pq = 0.0;
+                double *J_rs = J_vec;
+                for(size_t rs = 0; rs <= pq; ++rs) {
+        //DEBUG               if(!exch && rs == 0) {
+        //DEBUG                 outfile->Printf("PK int (%lu|%lu) = %20.16f\n",pq,rs,*j_ptr);
+        //DEBUG               }
+                    J_pq += *j_ptr * (*D_rs);
+                    *J_rs += *j_ptr * D_pq;
+                    ++D_rs;
+                    ++J_rs;
+                    ++j_ptr;
+                }
+                J_vec[pq] += J_pq;
             }
-            J_vec[pq] += J_pq;
-        }
-    }
+
+        //TODO ? Fuse J and K loops ?
+        // Non-symmetric density matrix
+        } else if (!exch) {
+            double** J_vec = J[N]->pointer();
+            for(int p = 0;p < nbf(); ++p) {
+              int poffs = p * nbf();
+              for(int q = 0;q <= p; ++q) {
+                int qoffs = q * nbf();
+                for(int r = 0; r <= p; ++r) {
+                  int roffs = r * nbf();
+                  int maxs = (r == p) ? q : r;
+                  for(int s = 0; s <= maxs; ++s) {
+                      J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                      J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                      J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + r]);
+                      J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + r]);
+                      ++j_ptr;
+                  }
+
+                }
+              }
+            }
+            // Since we just read a batch, might as well compute K
+            // Primitive algorithm, just contract integrals with appropriate
+            // element on the fly. Might be faster than reading/writing the appropriate
+            // PK supermatrix
+            if(K.size()) {
+                double** K_vec = K[N]->pointer();
+                // We use J supermatrix because it contains every unique integral
+                // K supermatrix has summed some integrals that we need separately
+                j_ptr = J_ints_.get();
+                for(int p = 0;p < nbf(); ++p) {
+                  int poffs = p * nbf();
+                  for(int q = 0;q <= p; ++q) {
+                    int qoffs = q * nbf();
+                    for(int r = 0; r <= p; ++r) {
+                      int roffs = r * nbf();
+                      int maxs = (r == p) ? q : r;
+                      for(int s = 0; s <= maxs; ++s) {
+                      // Need ugly factors for now. A better solution would be great.
+                        int fac = 1.0;
+                        int soffs = s * nbf();
+                        if (p == q && r == s && p == r) {
+                            fac = 0.25; // Divide only be 4, PK stores integral with a
+                            // factor 0.5 on the (pq|pq) diagonal.
+                        } else if ( (p == q && q == r) || (q == r && r == s) ) {
+                            fac = 0.5;
+                        } else if ( p == q && r == s) {
+                            fac = 0.25;
+                        } else if (p == q || r == s) {
+                            fac = 0.5;
+                        }
+                        K_vec[p][r] = *j_ptr * fac * D_vec[qoffs + s];
+                        K_vec[r][p] = *j_ptr * fac * D_vec[soffs + q];
+                        K_vec[q][r] = *j_ptr * fac * D_vec[poffs + s];
+                        K_vec[p][s] = *j_ptr * fac * D_vec[qoffs + r];
+                        K_vec[s][p] = *j_ptr * fac * D_vec[roffs + q];
+                        K_vec[r][q] = *j_ptr * fac * D_vec[soffs + p];
+                        K_vec[s][q] = *j_ptr * fac * D_vec[roffs + p];
+                        K_vec[q][s] = *j_ptr * fac * D_vec[poffs + r];
+                        ++j_ptr;
+                        }
+                    }
+                  }
+                }
+
+            }
+
+        } // End of non-symmetric condition
+    } // End of loop over J/K matrices
 
     get_results(J);
 

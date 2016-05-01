@@ -207,17 +207,12 @@ void PKJK::preiterations()
 void PKJK::compute_JK()
 {
     // We form the vector containing the density matrix triangular elements
-    for(int N = 0; N < D_ao_.size(); ++N) {
-        if(C_left_[N] != C_right_[N]) {
-            outfile->Printf("ERROR: REORDER algorithm does not support this computation\n");
-            throw PSIEXCEPTION("Only symmetric density matrices implemented for now\n");
-        }
-    }
-
-    PKmanager_->prepare_JK(D_ao_);
+    PKmanager_->prepare_JK(D_ao_,C_left_ao_,C_right_ao_);
 
     if(J_ao_.size()) {
-        PKmanager_->form_J(J_ao_);
+        // We can safely pass K here since its size is checked within
+        // the routine
+        PKmanager_->form_J(J_ao_,false,K_ao_);
     }
     if(K_ao_.size()) {
         PKmanager_->form_K(K_ao_);
