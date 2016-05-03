@@ -110,6 +110,9 @@ private:
 
     /// Vector of triangular D matrices
     std::vector<double*> D_vec_;
+    /// Vector of original D matrices. We keep it around for building exchange
+    /// in non-symmetric cases.
+    std::vector<SharedMatrix> D_;
     /// Vector of booleans, true if corresponding density matrix is symmetric
     std::vector< bool > symmetric_;
     /// Are all density matrices symmetric?
@@ -140,6 +143,7 @@ public:
     boost::shared_ptr< BasisSet > primary() const { return primary_; }
     bool is_sym(int i)                      const { return symmetric_[i]; }
     bool all_sym()                          const { return all_sym_; }
+    SharedMatrix original_D(int N)          const { return D_[N]; }
 
     /// Accessor that returns buffer corresponding to current thread
     SharedPKWrkr get_buffer();
@@ -196,7 +200,7 @@ public:
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
-    void get_results(std::vector<SharedMatrix> J);
+    void get_results(std::vector<SharedMatrix> J,bool exch);
     /// Forming K
     void form_K(std::vector<SharedMatrix> K);
     /// Finalize and delete the density matrix vectors
