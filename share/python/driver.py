@@ -488,7 +488,7 @@ def gradient(name, **kwargs):
             gradient_type = 'cbs_wrapper'
         else:
             # Bounce to name if name is non-CBS function
-            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+            gradient_type = 'custom_function'
     elif '/' in name:
         gradient_type = 'cbs_gufunc'
     else:
@@ -497,9 +497,23 @@ def gradient(name, **kwargs):
     # Figure out lowername, dertype, and func
     # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
     # finite-diference energy or cbs energies
-    # TODO MP5/cc-pv[DT]Z behavior unkown
+    # TODO MP5/cc-pv[DT]Z behavior unkown due to "levels"
     user_dertype = kwargs.pop('dertype', None)
-    if gradient_type == 'cbs_wrapper':
+    if gradient_type == 'custom_function':
+        if user_dertype is None:
+            dertype = 0
+            psi4.print_out("\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n")
+        else:
+            psi4.print_out("\nGradient: Custom function passed in with a dertype of %d\n" % user_dertype)
+            dertype = user_dertype
+
+        if dertype == 1:
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+        else:
+            optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
+            lowername = name
+
+    elif gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         if dertype == 1:
