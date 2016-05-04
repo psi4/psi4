@@ -55,8 +55,9 @@ compare_matrices(ref_scf_dtz, scf_dtz, 6, "SCF/cc-pV[DT]Z Gradient, dertype=0") 
 scf_dtz = gradient('SCF/cc-pV[23]Z')
 compare_matrices(ref_scf_dtz, scf_dtz, 6, "SCF/cc-pV[DT]Z Gradient, dertype=1")  #TEST
 
-scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
-compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "SCF/cc-pV[DTQ]Z Gradient")  #TEST
+# We do not currently test at this high of angular momentum
+# scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
+# compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "SCF/cc-pV[DTQ]Z Gradient")  #TEST
 
 
 # MP2 TESTS

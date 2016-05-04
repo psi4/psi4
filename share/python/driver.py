@@ -376,6 +376,9 @@ def energy(name, **kwargs):
     >>> cisd_e, cisd_wfn = energy('cisd', return_wfn = True)
     >>> energy('fci', ref_wfn=cisd_wfn)
 
+    >>> # [6] Can automatically perform complete basis set extrapolations
+    >>> energy("MP2/cc-pV[DT]Z")
+
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
@@ -594,6 +597,8 @@ def gradient(name, **kwargs):
         psi4.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
 
         opt_iter = kwargs.get('opt_iter', 1)
+        if opt_iter is True:
+            opt_iter = 1
 
         if opt_iter == 1:
             print('Performing finite difference calculations')
@@ -648,8 +653,6 @@ def gradient(name, **kwargs):
                 fmaster.write(instructionsM.encode('utf-8'))
 
         for n, displacement in enumerate(displacements):
-            if opt_iter is True:
-                opt_iter = 1
             rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
 
             # Build string of title banner

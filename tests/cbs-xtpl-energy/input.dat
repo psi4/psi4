@@ -42,8 +42,8 @@ scf_adtz = energy('SCF/aug-cc-pV[23]Z')
 compare_values(scf_adtz_ref, scf_adtz, 6, "SCF/a[DT]Z Energy Check")
 
 # Three point extrapolation
-scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
-compare_values(scf_adtqz_ref, scf_adtqz, 6, "SCF/a[DTQ]Z Energy Check")
+# scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
+# compare_values(scf_adtqz_ref, scf_adtqz, 6, "SCF/a[DTQ]Z Energy Check")
 
 
 # MP2 TESTS
@@ -57,7 +57,7 @@ compare_values(mp2_atz_ref, mp2_atz, 6, "MP2/aTZ Energy Check")
 mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
 compare_values(mp2_adtz_ref, mp2_adtz, 6, "MP2/a[DT]Z Energy Check")
 
-mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
-compare_values(mp2_atqz_ref, mp2_atqz, 6, "MP2/a[TQ]Z Energy Check")
+# mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
+# compare_values(mp2_atqz_ref, mp2_atqz, 6, "MP2/a[TQ]Z Energy Check")
 
 
