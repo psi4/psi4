@@ -165,7 +165,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_dhybrid.rst
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
-        DEPENDS ${CMAKE_SOURCE_DIR}/share/python/functional.py
+        DEPENDS ${CMAKE_SOURCE_DIR}/share/python/procedures/functional.py
                 ${CMAKE_SOURCE_DIR}/tests/docs-dft/input.dat
                 ${CMAKE_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
