@@ -47,15 +47,20 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
 
 .. code-block:: bash
 
+    # Linux or Mac: select between next two lines
+    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh"
+    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh"
+
+.. code-block:: bash
+
     >>> bash
-    >>> curl -O "http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh"
-    >>> bash Miniconda-latest-Linux-x86_64.sh -b -p $HOME/miniconda  # agrees to conda's license terms
+    >>> bash Miniconda-latest.sh -b -p $HOME/miniconda  # agrees to conda's license terms
     >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bashrc
     # log out, log back in so conda in path
     >>> conda update --yes --all
     >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
-    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/scf1/input.dat -o stdout  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/stability2/input.dat  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. Now you need only specify a scratch directory
@@ -152,46 +157,59 @@ The output for either of the installation commands above looks like the followin
 .. code-block:: bash
 
     >>> conda install psi4
+    Using Anaconda Cloud api site https://api.anaconda.org
     Fetching package metadata: ......
-    Solving package specifications: .
-    Package plan for installation in environment /path/to/miniconda:
+    Solving package specifications: .........
+    
+    Package plan for installation in environment /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4:
     
     The following packages will be downloaded:
     
         package                    |            build
         ---------------------------|-----------------
-        psi4-0.1.12                |    py27_g60a9afd        31.4 MB
+        psi4-0.4.322               |    py27_g84b3aa1        44.4 MB  http://conda.anaconda.org/psi4/linux-64/
     
     The following NEW packages will be INSTALLED:
     
-        psi4: 0.1.12-py27_g60a9afd
+        psi4: 0.4.322-py27_g84b3aa1 http://conda.anaconda.org/psi4/linux-64/
+    
+    Proceed ([y]/n)? y
     
     Fetching packages ...
-    psi4-0.1.12-py 100% |################################################################################| Time: 0:00:01  32.49 MB/s
+    psi4-0.4.322-p 100% |####################################################################################| Time: 0:00:08   5.77 MB/s
     Extracting packages ...
-    [      COMPLETE      ] |##################################################################################################| 100%
+    [      COMPLETE      ]|#######################################################################################################| 100%
     Linking packages ...
     
     
       Thank you for installing psi4. Additional resources:
         Website: www.psicode.org
-        Inputs:  /path/to/miniconda/share/psi/samples
-        Manual:  bit.ly/psi4manual
+        Inputs:  /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/share/psi4/samples
+        Manual:  http://psicode.org/psi4manual/master/index.html
         GitHub:  https://github.com/psi4/psi4/wiki
-        Binstar: https://binstar.org/psi4
-        Runtime Environment Diagnostic: /path/to/miniconda/share/psi/scripts/setenv.py
+        Binary:  https://anaconda.org/psi4
+        Runtime Environment Diagnostic: /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/share/psi4/scripts/setenv.py
+        Youtube: https://www.youtube.com/user/psitutorials
     
       For csh/tcsh command-line use, add to shell or ~/.tcshrc file:
-        setenv PATH /path/to/miniconda/bin:$PATH
+        setenv PATH /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/bin:$PATH
         setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
     
       For sh/bash command-line use, add to shell or ~/.bashrc file:
-        export PATH=/path/to/miniconda/bin:$PATH
+        export PATH=/theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/bin:$PATH
         export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
     
-    Nuclear Repulsion Energy..........................................PASSED SAPT0 Eelst.......................................................PASSED SAPT0 Eexch.......................................................PASSED SAPT0 Eind........................................................PASSED SAPT0 Edisp.......................................................PASSED SAPT0 Etotal......................................................PASSED
+      Report problems at http://forum.psicode.org/t/report-conda-update-psi4-oddities-here/32
     
-    [      COMPLETE      ] |##################################################################################################| 100%
+    
+        Nuclear Repulsion Energy..........................................PASSED
+        SAPT0 Eelst.......................................................PASSED
+        SAPT0 Eexch.......................................................PASSED
+        SAPT0 Eind........................................................PASSED
+        SAPT0 Edisp.......................................................PASSED
+        SAPT0 Etotal......................................................PASSED
+    
+    [      COMPLETE      ]|#######################################################################################################| 100%
 
 7. Configure environment. Preceeding steps have placed ``conda`` and ``psi4`` in your :envvar:`PATH`, either permanently through rc-files or temporarily in this terminal session. You can keep or undo these changes. For general psi4 use, you must enable the ``psi4`` executable to be found through any of:
 
