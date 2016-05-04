@@ -551,7 +551,6 @@ def gradient(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
-    print(name, lowername, dertype, user_dertype)
 
     # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
@@ -1151,8 +1150,28 @@ def hessian(name, **kwargs):
     >>> np.array(H)
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce to CP if bsse kwarg (someday)
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValidationError("Hessian: Cannot specify bsse_type for hessian yet.")
+
+    # Figure out what kind of gradient this is
+    if hasattr(name, '__call__'):
+        if name.__name__ in ['cbs', 'complete_basis_set']:
+            gradient_type = 'cbs_wrapper'
+        else:
+            # Bounce to name if name is non-CBS function
+            gradient_type = 'custom_function'
+    elif '/' in name:
+        gradient_type = 'cbs_gufunc'
+    else:
+        gradient_type = 'conventional'
+
+    if gradient_type != 'conventional':
+        raise ValidationError("Hessian: Does not yet support more advanced input or custom functions.")
+
+    lowername = name.lower()
 
     # Check if this is a CBS extrapolation
     if "/" in lowername:
