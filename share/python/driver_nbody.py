@@ -210,7 +210,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         bsse_str =  str(bsse_type_list)
     psi4.print_out("\n\n")
     psi4.print_out("   ===> N-Body Interaction Abacus <===\n")
-    psi4.print_out("        BSSE Treatment:          %s\n" % bsse_str)
+    psi4.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
 
 
     cp_compute_list = {x:set() for x in nbody_range}
@@ -249,7 +249,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
         compute_list[n] |= cp_compute_list[n]
         compute_list[n] |= nocp_compute_list[n]
         compute_list[n] |= vmfc_compute_list[n]
-        psi4.print_out("        Number of %d-body computations:          %d\n" % (n, len(compute_list[n])))
+        psi4.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
 
 
     # Build size and slices dictionaries
@@ -279,6 +279,8 @@ def _nbody_gufunc(func, method_string, **kwargs):
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = psi4.get_variable("CURRENT ENERGY")
+            psi4.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % 
+                                                                (str(pair[0]), str(pair[1]), energies_dict[pair]))
 
             if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
                 psi4.set_global_option('DF_INTS_IO', 'LOAD')
