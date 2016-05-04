@@ -51,7 +51,6 @@ import p4util
 from p4util.exceptions import *
 # never import wrappers or aliases into this file
 
-
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""
     Figures out the derivative type (0, 1, 2) for a given method_name. Will
@@ -101,7 +100,6 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             % (method_name, str(dertype), alternatives))
 
     return dertype
-
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
