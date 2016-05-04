@@ -11,7 +11,7 @@ molecule h2o {
 }
 
 # Conventional to keep angular momentum low
-set globals = {
+set {
     scf_type      df
 }
 
@@ -24,10 +24,10 @@ compare_values(wfn_dz.frequencies().get(0), 1809.2345729, 4, "SCF/cc-pVDZ Freque
 compare_values(wfn_dz.frequencies().get(1), 3923.1569958, 4, "SCF/cc-pVDZ Frequency 2")            #TEST
 compare_values(wfn_dz.frequencies().get(2), 4020.1821381, 4, "SCF/cc-pVDZ Frequency 3")            #TEST
 
-scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
-compare_values(wfn_tz.frequencies().get(0), 1813.8360744, 4, "SCF/cc-pVTZ Frequency 1")            #TEST
-compare_values(wfn_tz.frequencies().get(1), 3867.8213943, 4, "SCF/cc-pVTZ Frequency 2")            #TEST
-compare_values(wfn_tz.frequencies().get(2), 3952.4994821, 4, "SCF/cc-pVTZ Frequency 3")            #TEST
+# scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
+# compare_values(wfn_tz.frequencies().get(0), 1813.8360744, 4, "SCF/cc-pVTZ Frequency 1")            #TEST
+# compare_values(wfn_tz.frequencies().get(1), 3867.8213943, 4, "SCF/cc-pVTZ Frequency 2")            #TEST
+# compare_values(wfn_tz.frequencies().get(2), 3952.4994821, 4, "SCF/cc-pVTZ Frequency 3")            #TEST
 
 
 # Not yet implemented #TEST
