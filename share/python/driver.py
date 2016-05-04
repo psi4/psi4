@@ -37,6 +37,7 @@ import sys
 import re
 import math
 import os
+import shutil
 
 import psi4
 
@@ -550,6 +551,7 @@ def gradient(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    print(name, lowername, dertype, user_dertype)
 
     # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
@@ -644,11 +646,13 @@ def gradient(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input().encode('utf-8'))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername)).encode('utf-8'))
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, dertype=dertype, **kwargs)
+                fmaster.write(("""retE, retwfn = optimize('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
 
         for n, displacement in enumerate(displacements):
+            if opt_iter is True:
+                opt_iter = 1
             rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
 
             # Build string of title banner
@@ -684,7 +688,7 @@ def gradient(name, **kwargs):
                     p4util.format_kwargs_for_input(freagent, **kwargs)
 
                     # S/R: Prepare function call and energy save
-                    freagent.write(("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername)).encode('utf-8'))
+                    freagent.write(("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
                     freagent.write(("""psi4.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1)).encode('utf-8'))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
 
