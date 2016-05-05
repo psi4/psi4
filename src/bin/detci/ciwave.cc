@@ -150,7 +150,7 @@ double CIWavefunction::compute_energy() {
         form_opdm();
     }
 
-    if (Parameters_->dipmom) opdm_properties();
+//    if (Parameters_->dipmom) opdm_properties();
     if (Parameters_->opdm_diag) ci_nat_orbs();
     if (Parameters_->tpdm) form_tpdm();
     if (Parameters_->print_lvl > 0) {
@@ -441,7 +441,7 @@ void CIWavefunction::cleanup(void) {
     free(CIblks_->last_iablk);
     delete CIblks_;
 
-    delete Parameters_;
+    //delete Parameters_;
     delete H0block_;
 
     // CalcInfo free
@@ -449,8 +449,8 @@ void CIWavefunction::cleanup(void) {
     for (int i = 0, cnt = 0; i < 4; i++) {
         free_int_matrix(CalcInfo_->ras_orbs[i]);
     };
-    delete CalcInfo_;
-    delete MCSCF_Parameters_;
+    // delete CalcInfo_;
+    // delete MCSCF_Parameters_;
 
 }
 

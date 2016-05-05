@@ -128,15 +128,6 @@ void CIWavefunction::form_opdm(void) {
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
 
-    // OPDM's
-    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
-                     Parameters_->d_filenum, false);
-    for (int i=0; i<Parameters_->num_roots; i++){
-        opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
-        opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
-        opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
-    }
-
     // Figure out which OPDM should be current
     if (Parameters_->opdm_ave){
         Dimension act_dim = get_dimension("ACT");
