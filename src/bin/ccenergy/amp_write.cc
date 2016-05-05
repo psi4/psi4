@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! 
@@ -61,48 +66,48 @@ void CCEnergyWavefunction::amp_write(void)
 
   if(params_.ref == 0) { /** RHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n    Largest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
   else if(params_.ref == 1) { /** ROHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n    Largest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
-    amp_write_T1(&T1, params_.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n    Largest Tia Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest TIJAB Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest Tijab Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
   else if(params_.ref == 2) { /** UHF **/
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    amp_write_T1(&T1, params_.num_amps, "\n\tLargest TIA Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n    Largest TIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    amp_write_T1(&T1, params_.num_amps, "\n\tLargest Tia Amplitudes:\n", "outfile");
+    amp_write_T1(&T1, params_.num_amps, "\n    Largest Tia Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIJAB Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest TIJAB Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest Tijab Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest Tijab Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    amp_write_T2(&T2, params_.num_amps, "\n\tLargest TIjAb Amplitudes:\n", "outfile");
+    amp_write_T2(&T2, params_.num_amps, "\n    Largest TIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
 }
@@ -155,7 +160,7 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8)
-      printer->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
+      printer->Printf( "            %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
 }
@@ -243,7 +248,7 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
     if(fabs(t2stack[m].value) > 1e-8)
-      printer->Printf( "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j,
+      printer->Printf( "    %3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j,
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 
   free(t2stack);

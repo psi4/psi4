@@ -24,6 +24,7 @@
 Module to hold and distribute the -D dispersion correction parameters.
 """
 from __future__ import absolute_import
+from __future__ import print_function
 try:
     from .p4regex import *
 except ImportError:
@@ -36,8 +37,9 @@ except ImportError:
 dash_alias = {
     '-d': '-d2p4',     # means -D aliases to a -D2 level dispersion correction, as opposed to -D3
     '-d2': '-d2p4',    # means -D2 uses psi4's internal -D2 correction, as opposed to calling dftd3
-    '-d3': '-d3zero'}  # means -D3 uses the original zero-damping fn, as opposed to bj-damping
-
+    '-d3': '-d3zero',  # means -D3 uses the original zero-damping fn, as opposed to bj-damping
+    '-d3m': '-d3mzero',  # means -D3 uses the 3-param zero-damping fn, refit for short-range
+    }
 
 # The dashcoeff dict below defines the -D parameters for all of psi4. 'd2p4' are
 #   taken from already defined functionals in psi4. The remainder of the parameters are
@@ -158,7 +160,27 @@ dashcoeff = {
         'rpw86pbe'    : {'s6': 1.000, 's8':  1.3845, 'a1':  0.4613, 'a2': 4.5062},
         'tpss0'       : {'s6': 1.000, 's8':  1.2576, 'a1':  0.3768, 'a2': 4.5865},
         'tpss'        : {'s6': 1.000, 's8':  1.9435, 'a1':  0.4535, 'a2': 4.4752},
-    }
+    },
+    'd3mzero': {  # alpha6 = 14.0
+        'b2plyp'      : {'s6': 0.640, 's8':  0.717543, 'sr6': 1.313134, 'beta': 0.016035},
+        'b3lyp'       : {'s6': 1.000, 's8':  1.532981, 'sr6': 1.338153, 'beta': 0.013988},
+        'b97-d'       : {'s6': 1.000, 's8':  1.020078, 'sr6': 1.151808, 'beta': 0.035964},
+        'blyp'        : {'s6': 1.000, 's8':  1.841686, 'sr6': 1.279637, 'beta': 0.014370},
+        'bp86'        : {'s6': 1.000, 's8':  1.945174, 'sr6': 1.233460, 'beta': 0.000000},
+        'pbe'         : {'s6': 1.000, 's8':  0.000000, 'sr6': 2.340218, 'beta': 0.129434},
+        'pbe0'        : {'s6': 1.000, 's8':  0.000081, 'sr6': 2.077949, 'beta': 0.116755},
+        'lcwpbe'      : {'s6': 1.000, 's8':  1.280619, 'sr6': 1.366361, 'beta': 0.003160},
+    },
+    'd3mbj': {
+        'b2plyp'      : {'s6': 0.640, 's8': 0.672820, 'a1': 0.486434, 'a2': 3.656466},
+        'b3lyp'       : {'s6': 1.000, 's8': 1.466677, 'a1': 0.278672, 'a2': 4.606311},
+        'b97-d'       : {'s6': 1.000, 's8': 1.206988, 'a1': 0.240184, 'a2': 3.864426},
+        'blyp'        : {'s6': 1.000, 's8': 1.875007, 'a1': 0.448486, 'a2': 3.610679},
+        'bp86'        : {'s6': 1.000, 's8': 3.140281, 'a1': 0.821850, 'a2': 2.728151},
+        'pbe'         : {'s6': 1.000, 's8': 0.358940, 'a1': 0.012092, 'a2': 5.938951},
+        'pbe0'        : {'s6': 1.000, 's8': 0.528823, 'a1': 0.007912, 'a2': 6.162326},
+        'lcwpbe'      : {'s6': 1.000, 's8': 0.906564, 'a1': 0.563761, 'a2': 3.593680},
+    },
 }
 
 
@@ -185,10 +207,14 @@ def dash_server(func, dashlvl, mode='psi4'):
         raise ValidationError("""Functional %s is not available for -D level %s.""" % (func, dashlvl))
 
     # Return strings for dftd3 program parameter file
+    #            s6 rs6 s18 rs8 alpha6 version
     #   d2p4:    s6 sr6=1.1 s8=0.0 a2=None alpha6=20.0 version=2
     #   d2gr:    s6 sr6=1.1 s8=0.0 a2=None alpha6 version=2
     #   d3zero:  s6 sr6 s8 a2=None alpha6 version=3
     #   d3bj:    s6 a1 s8 a2 alpha6=None version=4
+    #   d3mzero: s6 sr6 s8 beta alpha6=14.0 version=5
+    #   d3mbj:   s6 a1 s8 a2 alpha6=None version=6
+
     if mode.lower() == 'dftd3':
         if dashlvleff.lower() == 'd2p4':
             returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
@@ -215,6 +241,20 @@ def dash_server(func, dashlvl, mode='psi4'):
                  dashcoeff[dashlvleff][func]['s8'],
                  dashcoeff[dashlvleff][func]['a2'],
                  0.0, 4)
+        elif dashlvleff.lower() == 'd3mzero':
+            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+                (dashcoeff[dashlvleff][func]['s6'],
+                 dashcoeff[dashlvleff][func]['sr6'],
+                 dashcoeff[dashlvleff][func]['s8'],
+                 dashcoeff[dashlvleff][func]['beta'],
+                 14.0, 5)
+        elif dashlvleff.lower() == 'd3mbj':
+            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+                (dashcoeff[dashlvleff][func]['s6'],
+                 dashcoeff[dashlvleff][func]['a1'],
+                 dashcoeff[dashlvleff][func]['s8'],
+                 dashcoeff[dashlvleff][func]['a2'],
+                 0.0, 6)
         else:
             raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
         return returnstring
@@ -224,6 +264,9 @@ def dash_server(func, dashlvl, mode='psi4'):
     #   d2gr:    name=-D2GR   s6=s6 p1=alpha6 p2=None p3=None
     #   d3zero:  name=-D3ZERO s6=s6 p1=sr6 p2=s8 p3=alpha6
     #   d3bj:    name=-D3BJ   s6=s6 p1=a1 p2=s8 p3=a2
+
+    #   d3mzero: name=-D3M    s6=s6 p1=sr6 p2=s8 beta alpha6=14.0 version=5
+    #   d3mbj:   name=-D3MBJ  s6=s6 p1=a1 p2=s8 p3=a2
     elif mode.lower() == 'psi4':
         if dashlvleff == 'd2p4':
             return '-D2', \
@@ -242,6 +285,18 @@ def dash_server(func, dashlvl, mode='psi4'):
                 dashcoeff[dashlvleff][func]['alpha6']
         elif dashlvleff == 'd3bj':
             return '-D3BJ', \
+                dashcoeff[dashlvleff][func]['s6'], \
+                dashcoeff[dashlvleff][func]['s8'], \
+                dashcoeff[dashlvleff][func]['a1'], \
+                dashcoeff[dashlvleff][func]['a2']
+        elif dashlvleff == 'd3mzero':
+            return '-D3MZERO', \
+                dashcoeff[dashlvleff][func]['s6'], \
+                dashcoeff[dashlvleff][func]['s8'], \
+                dashcoeff[dashlvleff][func]['sr6'], \
+                dashcoeff[dashlvleff][func]['beta']
+        elif dashlvleff == 'd3mbj':
+            return '-D3MBJ', \
                 dashcoeff[dashlvleff][func]['s6'], \
                 dashcoeff[dashlvleff][func]['s8'], \
                 dashcoeff[dashlvleff][func]['a1'], \

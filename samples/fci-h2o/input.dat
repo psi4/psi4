@@ -10,7 +10,7 @@ molecule h2o {
 units bohr
 }
 
-set globals {
+set {
   basis 6-31G
 }
 

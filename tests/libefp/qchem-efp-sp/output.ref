@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} fdb9578f5cb0074d552ae8944aabc354df928483
+                          Git: Rev {master} ad94c93
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   6402
-    PSI4DATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib
+
+    Psi4 started on: Fri Mar 18 13:36:42 2016
+
+    Process ID:    430
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -45,12 +48,8 @@ compare_values( 0.018202051938, get_variable('current energy'), 6, 'EFP-EFP Tota
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds4
-*** at Tue Feb  3 12:24:33 2015
-
-
   Memory set to 200.000 MiB by Python script.
-  EFP fragment c6h6 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/c6h6.efp
+  EFP fragment c6h6 read from /home/dsmith/Gits/dgas_psi/share/efpfrag/c6h6.efp
 Warning: There are no quantum mechanical atoms in this molecule.
 
 
@@ -126,5 +125,11 @@ Project web site: http://www.libefp.org/
       QM/EFP                            0.000000000000 [H] 
 
     Total EFP                           0.018202193573 [H]
+	NRE...............................................................PASSED
+	EFP-EFP Elst......................................................PASSED
+	EFP-EFP Exch......................................................PASSED
+	EFP-EFP Ind.......................................................PASSED
+	EFP-EFP Disp......................................................PASSED
+	EFP-EFP Total.....................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

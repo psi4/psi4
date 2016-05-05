@@ -35,9 +35,7 @@ nature of the modules. To overcome these problems, |PSIfour| now has a
 useful plugin feature. This allows codes to be developed as standalone
 entities, which are compiled independently of the Psi source, but can
 still link against Psi's vast library. The plugins can be loaded at
-run-time from any location. To be able to use plugins, you should compile
-your source code with the ``--with-plugins`` flag passed to configure;
-this will enable loading of plugins at runtime.
+run-time from any location.
 
 Creating a New Plugin
 ---------------------
@@ -64,6 +62,8 @@ one of the following commands that meets your needs::
    >>> psi4 --new-plugin myplugin +sointegrals
    >>> psi4 --new-plugin myplugin +wavefunction
    >>> psi4 --new-plugin myplugin +scf
+   >>> psi4 --new-plugin myplugin +ambit
+
 
 Several stable sample plugin directories are available to consult in the
 :source:`plugins` directory. Other plugin directories can be used as models
@@ -86,6 +86,36 @@ but are in active development. For documentation on plugin modules, see
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
 
+Creating a New Plugin Using a Conda Pre-compiled Binary
+-------------------------------------------------------
+
+|PSIfour| plugins can also be created using Conda for both |PSIfour| binary and 
+development environment.
+To compile a plugin it is necessary to have a compiler (*e.g.*, ``gcc``) and blas libraries
+(*e.g.*, ``openblas``) installed in the Conda environment used to run |PSIfour|.
+It is recommended to create a new Conda environment with packages `gcc` and `openblas` installed. ::
+
+   >>> conda create -n p4plugenv psi4     # makes environment named p4plugenv with psi4 binary installed
+   >>> source activate p4plugenv          # activate the env so its contents are first in your PATH
+   >>> cd "$(dirname $(which psi4))"/..   # move into env directory
+   >>> #cd $CONDA/envs/p4plugenv          # same effect as line above where $CONDA is path to Miniconda/Anaconda
+   >>> conda install gcc                  # place compilers into expected place
+   # Linux
+   >>> conda install openblas
+   # Mac
+   >>> conda install boost=1.57
+
+Once these packages are installed, plugins can be created and compiled. ::
+
+   >>> source activate p4plugenv          # important: activate conda environment
+   >>> psi4 --new-plugin testplugin       # generate new plugin
+   >>> cd testplugin                      # move into plugin directory
+   >>> make                               # compile the plugin to produce testplugin.so
+   >>> psi4                               # run sample input.dat 
+
+Please note that the conda enviroment must be activated before compilation and execution of
+plugins created using this procedure.
+
 Files in a Plugin Directory
 ---------------------------
 
@@ -95,8 +125,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   only user of the plugin, this should not need editing. After any change to
   the plugin C++ code, ``make`` must be run in the plugin directory to
   recompile the ``myplugin.so`` executable, but recompiling the main
-  |PSIfour| code is not necessary. (|PSIfour| must have originally been
-  compiled with configure directive ``--with-plugins``.)
+  |PSIfour| code is not necessary.
 
 * **input.dat** |w---w| Sample input file for the plugin.
   Since the ``__init__.py`` file makes the plugin directory look like a
@@ -124,8 +153,9 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   directory (add additional lines to the ``# Load Python modules`` section)
   or the plugin depends on .so codes in other plugin directories (add
   additional plugin_load lines relative to the current plugin directory to
-  the ``# Load C++ plugin`` section as modeled in
-  :source:`tests/plugin_libcim/__init__.py`).
+  the ``# Load C++ plugin`` section).
+
+.. comment  as modeled in :source:`tests/plugin_libcim/__init__.py`).
 
   .. literalinclude:: @SFNX_INCLUDE@share/plugin/__init__.py.template
 

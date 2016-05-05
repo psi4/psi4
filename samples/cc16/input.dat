@@ -1,4 +1,4 @@
-#! UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
+#! ROHF and UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
 
 memory 250 mb
 
@@ -12,10 +12,19 @@ molecule ch2 {
 }
 
 set {
-   reference = uhf
-   basis cc-pVDZ
-   freeze_core true
+   reference    uhf
+   basis        cc-pVDZ
+   freeze_core  true
 }
 
 energy("bccd(t)")
 
+
+
+# We should obtain the same result as above, but start with different orbitals
+# Energy will be slightly different as the core is frozen 
+set {
+   reference    rohf
+}
+
+energy("bccd(t)")

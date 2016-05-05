@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file    bend.cc : Class for bending coordinate.
@@ -67,8 +72,10 @@ BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(ben
 
 void BEND::compute_axes(GeomType geom) const {
   double u[3], v[3], w2[3], tv1[3], tv2[3];
-  tv1[0] =  1; tv1[1] = -1; tv1[2] = 1; // arbitrary search vectors
-  tv2[0] = -1; tv2[1] =  1; tv2[2] = 1;
+  //tv1[0] =  1; tv1[1] = -1; tv1[2] = 1; // arbitrary search vectors
+  //tv2[0] = -1; tv2[1] =  1; tv2[2] = 1;
+  tv1[0] = 1; tv1[1] = 0; tv1[2] = 0; // more likely not to create 2 bends
+  tv2[0] = 0; tv2[1] = 0; tv2[2] = 1; // that both break a symmetry plane
   v3d_normalize(tv1);
   v3d_normalize(tv2);
 
@@ -358,4 +365,3 @@ bool BEND::operator==(const SIMPLE_COORDINATE & s2) const {
 }
 
 }
-

@@ -1,7 +1,9 @@
 /*
- * PSI4: an ab initio quantum chemistry software package
+ * @BEGIN LICENSE
  *
- * Copyright (c) 2007-2015 The PSI4 Developers.
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -19,6 +21,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
  */
 
 #include <psi4-dec.h>
@@ -83,7 +87,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   else if(options.get_str("REFERENCE") =="ROHF" &&
           (options.get_str("WFN")=="MP2" || options.get_str("WFN")=="CCSD_T" || options.get_str("WFN")=="CCSD_AT" ||
            options.get_str("WFN")=="CC3" || options.get_str("WFN")=="EOM_CC3" ||
-           options.get_str("WFN")=="CC2" || options.get_str("WFN")=="EOM_CC2")) {
+           options.get_str("WFN")=="CC2" || options.get_str("WFN")=="EOM_CC2" ||
+           options.get_str("WFN")=="BCCD" || options.get_str("WFN")=="BCCD_T")) {
     reference = 2;
     semicanonical = true;
   }
@@ -97,7 +102,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   // Allow user to force semicanonical
   if(options["SEMICANONICAL"].has_changed()) {
    semicanonical = options.get_bool("SEMICANONICAL");
-   reference = 2;
+   if (semicanonical) reference = 2;
   }
 
   int nirreps = ref->nirrep();
@@ -718,4 +723,3 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 }
 
 }} // End namespaces
-

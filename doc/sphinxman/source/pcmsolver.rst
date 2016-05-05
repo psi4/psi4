@@ -83,5 +83,7 @@ A typical input for a Hartree-Fock calculation with PCM would look like the foll
     }
 
 More examples can be found in the directories with PCM tests
-:source:`pcm_scf <samples/pcmsolver/pcm_scf/input.dat>`, :source:`pcm_dft <samples/pcmsolver/pcm_dft/input.dat>`
-and :source:`pcm_dipole <samples/pcmsolver/pcm_dipole/input.dat>`
+:srcsample:`pcmsolver/pcm_scf`, 
+:srcsample:`pcmsolver/pcm_dft`, and
+:srcsample:`pcmsolver/pcm_dipole`. 
+

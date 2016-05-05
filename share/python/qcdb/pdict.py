@@ -19,11 +19,10 @@
 #
 #@END LICENSE
 #
-
 from __future__ import absolute_import
 from __future__ import print_function
 from decimal import Decimal, ROUND_FLOOR, ROUND_CEILING
-import qcdb.exceptions
+from .exceptions import *
 
 
 class PreservingDict(dict):
@@ -56,11 +55,12 @@ class PreservingDict(dict):
                 places = Decimal(10) ** (candidate_exp + 1)
                 best_value = self[key]
             # Validate values are the same
+            places = max(places, Decimal('1E-11'))  # for computed psivars
             #print('FLOOR: ', self[key].quantize(places, rounding=ROUND_FLOOR) - value.quantize(places, rounding=ROUND_FLOOR))
             #print('CEIL:  ', self[key].quantize(places, rounding=ROUND_CEILING) - value.quantize(places, rounding=ROUND_CEILING))
             if (self[key].quantize(places, rounding=ROUND_CEILING).compare(value.quantize(places, rounding=ROUND_CEILING)) != 0) and \
                (self[key].quantize(places, rounding=ROUND_FLOOR).compare(value.quantize(places, rounding=ROUND_FLOOR)) != 0):
-                raise qcdb.exceptions.ParsingValidationError(
+                raise ParsingValidationError(
                     """Output file yielded both %s and %s as values for quantity %s.""" %
                     (self[key].to_eng_string(), value.to_eng_string(), key))
             #print 'Resetting variable %s to %s' % (key, best_value.to_eng_string())

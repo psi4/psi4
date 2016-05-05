@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "writer.h"
@@ -25,6 +30,7 @@
 #include <libmints/mints.h>
 #include <psi4-dec.h>
 #include <physconst.h>
+#include <masses.h>
 
 #include <cstdio>
 #include <utility>
@@ -440,6 +446,388 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
 
 }
+
+FCHKWriter::FCHKWriter(boost::shared_ptr<Wavefunction> wavefunction)
+    : wavefunction_(wavefunction)
+{
+}
+
+
+void FCHKWriter::write_number(const char *label, double value)
+{
+    fprintf(chk_, "%-43sR%27.15e\n", label, value);
+}
+
+
+void FCHKWriter::write_number(const char *label, int value)
+{
+    fprintf(chk_, "%-43sI%17d\n", label, value);
+}
+
+void FCHKWriter::write_sym_matrix(const char *label, const SharedMatrix &mat)
+{
+    int dim = mat->rowdim();
+    fprintf(chk_, "%-43s%-3s N=%12d\n", label, "R", (dim*dim+dim)/2);
+
+    int count = 0;
+    for(int i = 0; i < dim; ++i){
+        for(int j = 0; j <= i; ++j){
+            fprintf(chk_, "%16.8e", mat->get(i, j));
+            if(count % 5 == 4)
+                fprintf(chk_, "\n");
+            ++count;
+        }
+    }
+    if(count % 5)
+        fprintf(chk_, "\n");
+}
+
+void FCHKWriter::write_matrix(const char *label, const SharedVector &mat)
+{
+    int dim = mat->dim();
+    fprintf(chk_, "%-43s%-3s N=%12d\n", label, "R", dim);
+
+    int count = 0;
+    for(int i = 0; i < dim; ++i){
+        fprintf(chk_, "%16.8e", mat->get(count));
+        if(count % 5 == 4)
+            fprintf(chk_, "\n");
+        ++count;
+    }
+    if(count % 5)
+        fprintf(chk_, "\n");
+}
+
+
+void FCHKWriter::write_matrix(const char *label, const SharedMatrix &mat)
+{
+    int rowdim = mat->rowdim();
+    int coldim = mat->coldim();
+    fprintf(chk_, "%-43s%-3s N=%12d\n", label, "R", rowdim*coldim);
+
+    int count = 0;
+    for(int i = 0; i < rowdim; ++i){
+        for(int j = 0; j < coldim; ++j){
+            fprintf(chk_, "%16.8e", mat->get(i, j));
+            if(count % 5 == 4)
+                fprintf(chk_, "\n");
+            ++count;
+        }
+    }
+    if(count % 5)
+        fprintf(chk_, "\n");
+}
+
+void FCHKWriter::write_matrix(const char *label, const std::vector<double> &mat)
+{
+    int dim = mat.size();
+    fprintf(chk_, "%-43s%-3s N=%12d\n", label, "R", dim);
+
+    int count = 0;
+    for(int i = 0; i < dim; ++i){
+        fprintf(chk_, "%16.8e", mat[count]);
+        if(count % 5 == 4)
+            fprintf(chk_, "\n");
+        ++count;
+    }
+    if(count % 5)
+        fprintf(chk_, "\n");
+}
+
+void FCHKWriter::write_matrix(const char *label, const std::vector<int> &mat)
+{
+    int dim = mat.size();
+    fprintf(chk_, "%-43s%-3s N=%12d\n", label, "I", dim);
+
+    int count = 0;
+    for(int i = 0; i < dim; ++i){
+        fprintf(chk_, "%12d", mat[count]);
+        if(count % 6 == 5)
+            fprintf(chk_, "\n");
+        ++count;
+    }
+    if(count % 6)
+        fprintf(chk_, "\n");
+}
+
+void FCHKWriter::write(const std::string &filename)
+{
+    chk_ = fopen(filename.c_str(), "w");
+    boost::shared_ptr<BasisSet> basis = wavefunction_->basisset();
+    int maxam = basis->max_am();
+    if(maxam > 4)
+        throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G functions");
+    boost::shared_ptr<Molecule> mol = wavefunction_->molecule();
+    SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
+    SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
+    SharedMatrix Da_ao = wavefunction_->Da_subset("AO");
+    SharedMatrix Db_ao = wavefunction_->Db_subset("AO");
+    SharedMatrix Dtot_ao(Da_ao->clone());
+    SharedMatrix Dspin_ao(Da_ao->clone());
+    const std::string& name = wavefunction_->name();
+    const std::string& basisname = basis->name();
+    Dtot_ao->add(Db_ao);
+    Dspin_ao->subtract(Db_ao);
+    int nbf = basis->nbf();
+    int nalpha = wavefunction_->nalpha();
+    int nbeta = wavefunction_->nbeta();
+    int natoms = mol->natom();
+    int nprimitive = basis->nprimitive();
+
+    std::vector<double> coords;
+    std::vector<double> nuc_charges;
+    std::vector<int> atomic_numbers;
+    std::vector<int> int_atomic_weights;
+    std::vector<double> atomic_weights;
+    double to_bohr = mol->units() == Molecule::Angstrom ? 1.0 / pc_bohr2angstroms : 1.0;
+    for(int atom = 0; atom < natoms; ++atom){
+        double Z = mol->Z(atom);
+        int intZ = static_cast<int>(Z);
+        double mass = an2masses[intZ];
+        int intmass = static_cast<int>(mass);
+        atomic_weights.push_back(mass);
+        int_atomic_weights.push_back(intmass);
+        nuc_charges.push_back(Z);
+        atomic_numbers.push_back(intZ);
+        const Vector3 &xyz = mol->xyz(atom);
+        coords.push_back(xyz[0]);
+        coords.push_back(xyz[1]);
+        coords.push_back(xyz[2]);
+    }
+    // For Cartesian functions we need to add a basis function normalization
+    // constant of
+    //      _______________________________
+    //     / (2lx-1)!! (2ly-1)!! (2lz-1)!!
+    //    /  -----------------------------
+    //  \/             (2l-1)!!
+    //
+    // which is omitted in the CCA standard, adopted by Psi4.  We also need to
+    // order basis functions to the Gaussian / GAMESS convention.  Spherical
+    // harmonics are already defined appropriately, with the exception of
+    // the fact that p functions are ordered 0 +1 -1, which is Z X Y, but
+    // the FCHK format calls for X Y Z; this is a simple reordering operation.
+
+    const double pureP[3][3] = {
+        //           0    1    2
+        // Psi4:     Z    X    Y
+        // Expected: X    Y    Z
+          /* 0 */ { 0.0, 1.0, 0.0 },
+          /* 1 */ { 0.0, 0.0, 1.0 },
+          /* 2 */ { 1.0, 0.0, 0.0 },
+    };
+    double pf1, pf2, pf3, pf4;
+    pf1 = 1.0;            // aa
+    pf2 = sqrt(1.0/3.0);  // ab
+    const double cartD[6][6] = {
+        //             0    1    2    3    4    5
+        // Psi4:      XX   XY   XZ   YY   YZ   ZZ
+        // Expected:  XX   YY   ZZ   XY   XZ   YZ 
+         /* 0 */   { pf1, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 1 */   { 0.0, 0.0, 0.0, pf1, 0.0, 0.0 },
+         /* 2 */   { 0.0, 0.0, 0.0, 0.0, 0.0, pf1 },
+         /* 3 */   { 0.0, pf2, 0.0, 0.0, 0.0, 0.0 },
+         /* 4 */   { 0.0, 0.0, pf2, 0.0, 0.0, 0.0 },
+         /* 5 */   { 0.0, 0.0, 0.0, 0.0, pf2, 0.0 },
+    };
+
+
+    pf1 = 1.0;            // aaa
+    pf2 = sqrt(1.0/5.0);  // aab
+    pf3 = sqrt(1.0/15.0); // abc
+    const double cartF[10][10] = {
+        //            0    1    2    3    4    5    6    7    8    9
+        // Psi4:     XXX  XXY  XXZ  XYY  XYZ  XZZ  YYY  YYZ  YZZ  ZZZ
+        // Expected: XXX  YYY  ZZZ  XYY  XXY  XXZ  XZZ  YZZ  YYZ  XYZ
+         /* 0 */   { pf1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 1 */   { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1, 0.0, 0.0, 0.0 },
+         /* 2 */   { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1 },
+         /* 3 */   { 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 4 */   { 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 5 */   { 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 6 */   { 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0 },
+         /* 7 */   { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0 },
+         /* 8 */   { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0 },
+         /* 9 */   { 0.0, 0.0, 0.0, 0.0, pf3, 0.0, 0.0, 0.0, 0.0, 0.0 },
+    };
+    pf1 = 1.0;             // aaaa
+    pf2 = sqrt(1.0/7.0);   // aaab
+    pf3 = sqrt(3.0/35.0);  // aabb
+    pf4 = sqrt(1.0/35.0);  // abcc
+    const double cartG[15][15] = {
+        //             0    1    2    3    4    5    6    7    8    9   10   11   12   13   14
+        // Psi4:     XXXX XXXY XXXZ XXYY XXYZ XXZZ XYYY XYYZ XYZZ XZZZ YYYY YYYZ YYZZ YZZZ ZZZZ
+        // Expected: XXXX YYYY ZZZZ XXXY XXXZ XYYY YYYZ XZZZ YZZZ XXYY XXZZ YYZZ XXYZ XYYZ XYZZ
+        // This is the ordering that I would expect to generate...
+         /*  0 */  { pf1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /*  1 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1, 0.0, 0.0, 0.0, 0.0 },
+         /*  2 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1 },
+         /*  3 */  { 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /*  4 */  { 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /*  5 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /*  6 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0 },
+         /*  7 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /*  8 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0 },
+         /*  9 */  { 0.0, 0.0, 0.0, pf3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 10 */  { 0.0, 0.0, 0.0, 0.0, 0.0, pf3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 11 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf3, 0.0, 0.0 },
+         /* 12 */  { 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 13 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         /* 14 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+        // ... however, I need to use the following ordering to match a FCHK file that I found for
+        // QZ water. We will go with the former, because that's the order expected by GDMA.
+        // I doubt anybody will ever use a Cartesian basis set with G functions, so this is
+        // most likely a non-issue.  I'll leave this here in case anybody has problems in future (ACS).
+         ///*  2 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1 },
+         ///*  8 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0 },
+         ///* 11 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf3, 0.0, 0.0 },
+         ///*  6 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0 },
+         ///*  1 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf1, 0.0, 0.0, 0.0, 0.0 },
+         ///*  7 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///* 14 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///* 13 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///*  5 */  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///* 10 */  { 0.0, 0.0, 0.0, 0.0, 0.0, pf3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///* 12 */  { 0.0, 0.0, 0.0, 0.0, pf4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///*  9 */  { 0.0, 0.0, 0.0, pf3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///*  4 */  { 0.0, 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///*  3 */  { 0.0, pf2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+         ///*  0 */  { pf1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+    };
+
+    SharedMatrix transmat(new Matrix("Reorder", nbf, nbf));
+    transmat->identity();
+    int offset = 0;
+    for(int nshell = 0; nshell < basis->nshell(); ++nshell){
+        const GaussianShell &shell = basis->shell(nshell);
+        int am = shell.am();
+        int nfunc = shell.nfunction();
+        if(basis->has_puream()){
+            // Spherical harmonics - everything is fine, apart from P orbitals
+            if(am == 1){
+                for(int row = 0; row < 3; ++row)
+                    for(int col = 0; col < 3; ++col)
+                        transmat->set(offset+row, offset+col, pureP[row][col]);
+            }
+        }else{
+            // Cartesians - P orbitals are fine, but higher terms need reordering
+            if(am == 2){
+                for(int row = 0; row < 6; ++row)
+                    for(int col = 0; col < 6; ++col)
+                        transmat->set(offset+row, offset+col, cartD[row][col]);
+            }
+            if(am == 3){
+                for(int row = 0; row < 10; ++row)
+                    for(int col = 0; col < 10; ++col)
+                        transmat->set(offset+row, offset+col, cartF[row][col]);
+            }
+            if(am == 4){
+                for(int row = 0; row < 15; ++row)
+                    for(int col = 0; col < 15; ++col)
+                        transmat->set(offset+row, offset+col, cartG[row][col]);
+            }
+        }
+        offset += nfunc;
+    }
+
+    SharedMatrix reorderedDt(Dtot_ao->clone());
+    SharedMatrix reorderedDs(Dtot_ao->clone());
+    reorderedDt->back_transform(Dtot_ao, transmat);
+    reorderedDs->back_transform(Dspin_ao, transmat);
+    SharedMatrix reorderedCa(new Matrix("Reordered Ca", Ca_ao->ncol(), Ca_ao->nrow()));
+    SharedMatrix reorderedCb(new Matrix("Reordered Cb", Cb_ao->ncol(), Cb_ao->nrow()));
+    reorderedCa->gemm(true, true, 1.0, Ca_ao, transmat, 0.0);
+    reorderedCb->gemm(true, true, 1.0, Cb_ao, transmat, 0.0);
+    for(int i = 0; i < reorderedDt->nrow(); ++i)
+        for(int j = 0; j < reorderedDt->ncol(); ++j)
+            if(fabs(reorderedDt->get(i,j)) < 1E-12)
+                reorderedDt->set(i,j,0.0);
+    for(int i = 0; i < reorderedCa->nrow(); ++i)
+        for(int j = 0; j < reorderedCa->ncol(); ++j)
+            if(fabs(reorderedCa->get(i,j)) < 1E-12)
+                reorderedCa->set(i,j,0.0);
+    for(int i = 0; i < reorderedCb->nrow(); ++i)
+        for(int j = 0; j < reorderedCb->ncol(); ++j)
+            if(fabs(reorderedCb->get(i,j)) < 1E-12)
+                reorderedCb->set(i,j,0.0);
+    std::vector<double> shell_coords;
+    std::vector<double> coefficients;
+    std::vector<double> exponents;
+    std::vector<int> prim_per_shell;
+    std::vector<int> shell_to_atom;
+    std::vector<int> shell_am;
+    int nshell = basis->nshell();
+    for(int shell = 0; shell < nshell; ++shell){
+        const GaussianShell &s = basis->shell(shell);
+        int am = s.am();
+        int nprim = s.nprimitive();
+        prim_per_shell.push_back(nprim);
+        int center = basis->shell_to_center(shell);
+        shell_to_atom.push_back(center+1);
+        const Vector3 &xyz = mol->xyz(center);
+        shell_coords.push_back(xyz[0]);
+        shell_coords.push_back(xyz[1]);
+        shell_coords.push_back(xyz[2]);
+        int shell_type_fac = s.am()>1 && s.is_pure() ? -1 : 1;
+        shell_am.push_back(shell_type_fac * am);
+        double normfac = 1.0;
+        if(am > 1)
+            // Undo the angular momentum normalization, applied by the ERD code
+            normfac = sqrt(df[2*am]/pow(2.0, 2.0*am));
+        for(int prim = 0; prim < nprim; ++prim){
+            exponents.push_back(s.exp(prim));
+            coefficients.push_back(normfac*s.erd_coef(prim));
+        }
+    }
+
+
+    fprintf(chk_, "Generated by Psi4\n");
+    std::string jobtype = wavefunction_->gradient() ? "FORCE" :"SP";
+    fprintf(chk_, "%10s%30s%30s\n", jobtype.c_str(), name.c_str(), basisname.c_str());
+    write_number("Number of atoms", natoms);
+    write_number("Charge", mol->molecular_charge());
+    write_number("Multiplicity", mol->multiplicity());
+    write_number("Number of electrons", nalpha + nbeta);
+    write_number("Number of alpha electrons", nalpha);
+    write_number("Number of beta electrons", nbeta);
+    write_number("Number of basis functions", nbf);
+    write_number("Number of independent functions", nbf);
+    write_matrix("Atomic numbers", atomic_numbers);
+    write_matrix("Nuclear charges", nuc_charges);
+    write_matrix("Current cartesian coordinates", coords);
+    write_matrix("Integer atomic weights", int_atomic_weights);
+    write_matrix("Real atomic weights", atomic_weights);
+    write_number("Number of primitive shells", nprimitive);
+    write_number("Number of contracted shells", nshell);
+    write_number("Pure/Cartesian d shells", !basis->has_puream());
+    write_number("Pure/Cartesian f shells", !basis->has_puream());
+    write_number("Highest angular momentum", maxam);
+    write_number("Largest degree of contraction", basis->max_nprimitive());
+    write_matrix("Shell types", shell_am);
+    write_matrix("Number of primitives per shell", prim_per_shell);
+    write_matrix("Shell to atom map", shell_to_atom);
+    write_matrix("Primitive exponents", exponents);
+    write_matrix("Contraction coefficients", coefficients);
+    write_matrix("Coordinates of each shell", shell_coords);
+    write_number("Total Energy", wavefunction_->reference_energy());
+    write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
+    write_matrix("Alpha MO coefficients", reorderedCa);
+    write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+    write_matrix("Beta MO coefficients", reorderedCb);
+    char* label = new char[256];
+    std::string type = name == "DFT" ? "SCF" : name;
+    sprintf(label, "Total %s Density", type.c_str());
+    write_sym_matrix(label, reorderedDt);
+    sprintf(label, "Spin %s Density", type.c_str());
+    write_sym_matrix(label, reorderedDs);
+    delete [] label;
+    SharedMatrix gradient = wavefunction_->gradient();
+    if(gradient)
+        write_matrix("Cartesian Gradient", gradient);
+
+    fclose(chk_);
+    chk_ = 0;
+}
+
 
 NBOWriter::NBOWriter(boost::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
@@ -1112,4 +1500,3 @@ void MOWriter::write_mos(Molecule & mol){
 
     }
 }
-

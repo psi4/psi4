@@ -9,10 +9,10 @@ n
 o 1 1.158
 }
 
-set global {
+set {
   basis cc-pcvdz
   reference rohf
   guess gwh
 }
-energy('ocepa(0)')
+energy('olccd')
 

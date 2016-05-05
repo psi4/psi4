@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <libmints/mints.h>
@@ -417,6 +422,11 @@ SharedMatrix SOMCSCF::H_approx_diag()
             double** IFp = matrices_["IFock"]->pointer(h);
             double** OPDMp = matrices_["OPDM"]->pointer(h);
 
+            // We need to do these completely flat, some compilers vectorize this incorrectly
+            double* actMO_fp = matrices_["actMO"]->pointer()[0];
+            double* TPDM_fp = matrices_["TPDM"]->pointer()[0];
+
+            int nact2 = nact_ * nact_;
             int offset_col = 0;
             int offset_row = 0;
 
@@ -450,20 +460,21 @@ SharedMatrix SOMCSCF::H_approx_diag()
                     int pp = p * nact_ + p;
                     int pq = p * nact_ + q;
                     int qq = q * nact_ + q;
-                    // int end = offset_act + nactpi_[h];
                     for (int u=0; u<nact_; u++){
                         int pu = p * nact_ + u;
                         int qu = q * nact_ + u;
+
+                        // Unrolling this to prevent some strange vectorization error
                         for (int v=0; v<nact_; v++){
                             int pv = p * nact_ + v;
                             int qv = q * nact_ + v;
                             int uv = u * nact_ + v;
-                            value += 2.0 * TPDMp[pu][pv] * actMOp[qu][qv];
-                            value += 2.0 * TPDMp[qu][qv] * actMOp[pu][pv];
-                            value += TPDMp[pp][uv] * actMOp[qq][uv];
-                            value += TPDMp[qq][uv] * actMOp[pp][uv];
-                            value -= 4.0 * TPDMp[pv][qu] * actMOp[pu][qv];
-                            value -= 2.0 * TPDMp[pq][uv] * actMOp[pq][uv];
+                            value += 2.0 * TPDM_fp[pu * nact2 + pv] * actMO_fp[qu * nact2 + qv];
+                            value += 2.0 * TPDM_fp[qu * nact2 + qv] * actMO_fp[pu * nact2 + pv];
+                            value +=       TPDM_fp[pp * nact2 + uv] * actMO_fp[qq * nact2 + uv];
+                            value +=       TPDM_fp[qq * nact2 + uv] * actMO_fp[pp * nact2 + uv];
+                            value -= 4.0 * TPDM_fp[pv * nact2 + qu] * actMO_fp[pu * nact2 + qv];
+                            value -= 2.0 * TPDM_fp[pq * nact2 + uv] * actMO_fp[pq * nact2 + uv];
                         }
                     }
                     // outfile->Printf("%d %d | %d %d : %lf %lf\n", h, nras, i, a, Hp[oi][a], value);

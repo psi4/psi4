@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p3.h"
@@ -392,149 +397,288 @@ void SAPT2p3::print_results()
         outfile->Printf("\n    Scaling factor (Exch10/Exch10(S^2))^{Alpha} = %12.6f\n", *scal_it);
         outfile->Printf("    with Alpha = %12.6f \n", exch_scale_alpha_);
     }
-    std::string scaled = (scal_it != Xscal.begin() ? "scal." : "     ");
-    outfile->Printf("  --------------------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics          %16.8lf mH %16.8lf kcal mol^-1\n",
-      tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
-    outfile->Printf("      Elst10,r              %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_elst10_*1000.0,e_elst10_*pc_hartree2kcalmol);
-    outfile->Printf("      Elst12,r              %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_elst12_*1000.0,e_elst12_*pc_hartree2kcalmol);
-    outfile->Printf("      Elst13,r              %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_elst13_*1000.0,e_elst13_*pc_hartree2kcalmol);
-    outfile->Printf("\n    Exchange %5s          %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), tot_exch*1000.0,tot_exch*pc_hartree2kcalmol);
-    outfile->Printf("      Exch10                %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch10_*1000.0,e_exch10_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch10(S^2)           %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch10_s2_*1000.0,e_exch10_s2_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch11(S^2) %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), *scal_it * e_exch11_*1000.0,*scal_it * e_exch11_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch12(S^2) %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), *scal_it * e_exch12_*1000.0,*scal_it * e_exch12_*pc_hartree2kcalmol);
-    outfile->Printf("\n    Induction %5s         %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), tot_ind*1000.0,tot_ind*pc_hartree2kcalmol);
-    outfile->Printf("      Ind20,r               %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind20_*1000.0,e_ind20_*pc_hartree2kcalmol);
+    std::string scaled = (scal_it != Xscal.begin() ? "sc." : "   ");
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      tot_elst * 1000.0,
+      tot_elst * pc_hartree2kcalmol,
+      tot_elst * pc_hartree2kJmol);
+    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_elst10_ * 1000.0,
+      e_elst10_ * pc_hartree2kcalmol,
+      e_elst10_ * pc_hartree2kJmol);
+    outfile->Printf("      Elst12,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_elst12_ * 1000.0,
+      e_elst12_ * pc_hartree2kcalmol,
+      e_elst12_ * pc_hartree2kJmol);
+    outfile->Printf("      Elst13,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_elst13_ * 1000.0,
+      e_elst13_ * pc_hartree2kcalmol,
+      e_elst13_ * pc_hartree2kJmol);
+    outfile->Printf("\n    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      tot_exch * 1000.0,
+      tot_exch * pc_hartree2kcalmol,
+      tot_exch * pc_hartree2kJmol);
+    outfile->Printf("      Exch10                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_exch10_ * 1000.0,
+      e_exch10_ * pc_hartree2kcalmol,
+      e_exch10_ * pc_hartree2kJmol);
+    outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_exch10_s2_ * 1000.0,
+      e_exch10_s2_ * pc_hartree2kcalmol,
+      e_exch10_s2_ * pc_hartree2kJmol);
+    outfile->Printf("      Exch11(S^2) %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * e_exch11_ * 1000.0,
+      *scal_it * e_exch11_ * pc_hartree2kcalmol,
+      *scal_it * e_exch11_ * pc_hartree2kJmol);
+    outfile->Printf("      Exch12(S^2) %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * e_exch12_ * 1000.0,
+      *scal_it * e_exch12_ * pc_hartree2kcalmol,
+      *scal_it * e_exch12_ * pc_hartree2kJmol);
+    outfile->Printf("\n    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      tot_ind * 1000.0,
+      tot_ind * pc_hartree2kcalmol,
+      tot_ind * pc_hartree2kJmol);
+    outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_ind20_ * 1000.0,
+      e_ind20_ * pc_hartree2kcalmol,
+      e_ind20_ * pc_hartree2kJmol);
     if (third_order_)
-      outfile->Printf("      Ind30,r               %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_ind30r_*1000.0,e_ind30r_*pc_hartree2kcalmol);
-    outfile->Printf("      Ind22                 %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind22_*1000.0,e_ind22_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Ind20,r %5s    %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), *scal_it * e_exch_ind20_*1000.0,*scal_it * e_exch_ind20_*pc_hartree2kcalmol);
+      outfile->Printf("      Ind30,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_ind30r_ * 1000.0,
+        e_ind30r_ * pc_hartree2kcalmol,
+        e_ind30r_ * pc_hartree2kJmol);
+    outfile->Printf("      Ind22                   %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_ind22_ * 1000.0,
+      e_ind22_ * pc_hartree2kcalmol,
+      e_ind22_ * pc_hartree2kJmol);
+    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * e_exch_ind20_ * 1000.0,
+      *scal_it * e_exch_ind20_ * pc_hartree2kcalmol,
+      *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
     if (third_order_)
-      outfile->Printf("      Exch-Ind30,r %5s    %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), *scal_it * e_exch_ind30r_*1000.0,*scal_it * e_exch_ind30r_*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Ind22 %5s      %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), *scal_it * e_exch_ind22_*1000.0,*scal_it * e_exch_ind22_*pc_hartree2kcalmol);
-    outfile->Printf("      delta HF,r (2) %5s  %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), dHF2*1000.0,dHF2*pc_hartree2kcalmol);
+      outfile->Printf("      Exch-Ind30,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        *scal_it * e_exch_ind30r_ * 1000.0,
+        *scal_it * e_exch_ind30r_ * pc_hartree2kcalmol,
+        *scal_it * e_exch_ind30r_ * pc_hartree2kJmol);
+    outfile->Printf("      Exch-Ind22 %3s          %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * e_exch_ind22_ * 1000.0,
+      *scal_it * e_exch_ind22_ * pc_hartree2kcalmol,
+      *scal_it * e_exch_ind22_ * pc_hartree2kJmol);
+    outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      dHF2 * 1000.0,
+      dHF2 * pc_hartree2kcalmol,
+      dHF2 * pc_hartree2kJmol);
     if (third_order_)
-      outfile->Printf("      delta HF,r (3) %5s  %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), dHF3*1000.0,dHF3*pc_hartree2kcalmol);
+      outfile->Printf("      delta HF,r (3) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        dHF3 * 1000.0,
+        dHF3 * pc_hartree2kcalmol,
+        dHF3 * pc_hartree2kJmol);
     if(e_MP2 != 0.0) {
-        outfile->Printf("      delta MP2,r (2) %5s %16.8lf mH %16.8lf kcal mol^-1\n",
-          scaled.c_str(), dMP2_2*1000.0,dMP2_2*pc_hartree2kcalmol);
+        outfile->Printf("      delta MP2,r (2) %3s     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          dMP2_2 * 1000.0,
+          dMP2_2 * pc_hartree2kcalmol,
+          dMP2_2 * pc_hartree2kJmol);
         if (third_order_)
-          outfile->Printf("      delta MP2,r (3) %5s %16.8lf mH %16.8lf kcal mol^-1\n",
-            scaled.c_str(), dMP2_3*1000.0,dMP2_3*pc_hartree2kcalmol);
+          outfile->Printf("      delta MP2,r (3) %3s     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            scaled.c_str(),
+            dMP2_3 * 1000.0,
+            dMP2_3 * pc_hartree2kcalmol,
+            dMP2_3 * pc_hartree2kJmol);
     }
-    outfile->Printf("\n    Dispersion %5s        %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), tot_disp*1000.0,tot_disp*pc_hartree2kcalmol);
-    outfile->Printf("      Disp20                %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
-    outfile->Printf("      Disp30                %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_disp30_*1000.0,e_disp30_*pc_hartree2kcalmol);
-    outfile->Printf("      Disp21                %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_disp21_*1000.0,e_disp21_*pc_hartree2kcalmol);
+    outfile->Printf("\n    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      tot_disp * 1000.0,
+      tot_disp * pc_hartree2kcalmol,
+      tot_disp * pc_hartree2kJmol);
+    outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_disp20_ * 1000.0,
+      e_disp20_ * pc_hartree2kcalmol,
+      e_disp20_ * pc_hartree2kJmol);
+    outfile->Printf("      Disp30                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_disp30_ * 1000.0,
+      e_disp30_ * pc_hartree2kcalmol,
+      e_disp30_ * pc_hartree2kJmol);
+    outfile->Printf("      Disp21                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      e_disp21_ * 1000.0,
+      e_disp21_ * pc_hartree2kcalmol,
+      e_disp21_ * pc_hartree2kJmol);
     if (mbpt_disp_) {
-      outfile->Printf("      Disp22 (SDQ)          %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
-      outfile->Printf("      Disp22 (T)            %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
+      outfile->Printf("      Disp22 (SDQ)            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_disp22sdq_ * 1000.0,
+        e_disp22sdq_ * pc_hartree2kcalmol,
+        e_disp22sdq_ * pc_hartree2kJmol);
+      outfile->Printf("      Disp22 (T)              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_disp22t_ * 1000.0,
+        e_disp22t_ * pc_hartree2kcalmol,
+        e_disp22t_ * pc_hartree2kJmol);
       if (nat_orbs_t3_)
-        outfile->Printf("      Est. Disp22 (T)       %16.8lf mH %16.8lf kcal mol^-1\n",
-          e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
+        outfile->Printf("      Est. Disp22 (T)         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          e_est_disp22t_ * 1000.0,
+          e_est_disp22t_ * pc_hartree2kcalmol,
+          e_est_disp22t_ * pc_hartree2kJmol);
     }
     if (ccd_disp_) {
-      outfile->Printf("      Disp2 (CCD)           %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_disp2d_ccd_*1000.0,e_disp2d_ccd_*pc_hartree2kcalmol);
-      outfile->Printf("      Disp22 (S) (CCD)      %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
-      outfile->Printf("      Disp22 (T) (CCD)      %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
+      outfile->Printf("      Disp2 (CCD)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_disp2d_ccd_ * 1000.0,
+        e_disp2d_ccd_ * pc_hartree2kcalmol,
+        e_disp2d_ccd_ * pc_hartree2kJmol);
+      outfile->Printf("      Disp22 (S) (CCD)        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_disp22s_ccd_ * 1000.0,
+        e_disp22s_ccd_ * pc_hartree2kcalmol,
+        e_disp22s_ccd_ * pc_hartree2kJmol);
+      outfile->Printf("      Disp22 (T) (CCD)        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_disp22t_ccd_ * 1000.0,
+        e_disp22t_ccd_ * pc_hartree2kcalmol,
+        e_disp22t_ccd_ * pc_hartree2kJmol);
       if (nat_orbs_t3_)
-        outfile->Printf("      Est. Disp22 (T) (CCD) %16.8lf mH %16.8lf kcal mol^-1\n",
-          e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
+        outfile->Printf("      Est. Disp22 (T) (CCD)   %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          e_est_disp22t_ccd_ * 1000.0,
+          e_est_disp22t_ccd_ * pc_hartree2kcalmol,
+          e_est_disp22t_ccd_ * pc_hartree2kJmol);
     }
-    outfile->Printf("      Exch-Disp20 %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), *scal_it * e_exch_disp20_*1000.0,*scal_it * e_exch_disp20_*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * e_exch_disp20_ * 1000.0,
+      *scal_it * e_exch_disp20_ * pc_hartree2kcalmol,
+      *scal_it * e_exch_disp20_ * pc_hartree2kJmol);
     if (third_order_) {
-      outfile->Printf("      Exch-Disp30 %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), *scal_it * e_exch_disp30_*1000.0,*scal_it * e_exch_disp30_*pc_hartree2kcalmol);
-      outfile->Printf("      Ind-Disp30            %16.8lf mH %16.8lf kcal mol^-1\n",
-        e_ind_disp30_*1000.0,e_ind_disp30_*pc_hartree2kcalmol);
-      outfile->Printf("      Exch-Ind-Disp30 %5s %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), *scal_it * e_exch_ind_disp30_*1000.0,*scal_it * e_exch_ind_disp30_*pc_hartree2kcalmol);
+      outfile->Printf("      Exch-Disp30 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        *scal_it * e_exch_disp30_ * 1000.0,
+        *scal_it * e_exch_disp30_ * pc_hartree2kcalmol,
+        *scal_it * e_exch_disp30_ * pc_hartree2kJmol);
+      outfile->Printf("      Ind-Disp30              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        e_ind_disp30_ * 1000.0,
+        e_ind_disp30_ * pc_hartree2kcalmol,
+        e_ind_disp30_ * pc_hartree2kJmol);
+      outfile->Printf("      Exch-Ind-Disp30 %3s     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        *scal_it * e_exch_ind_disp30_ * 1000.0,
+        *scal_it * e_exch_ind_disp30_ * pc_hartree2kcalmol,
+        *scal_it * e_exch_ind_disp30_ * pc_hartree2kJmol);
     }
-  
-    outfile->Printf("\n  Total HF                      %16.8lf mH %16.8lf kcal mol^-1\n",
-      eHF_*1000.0,eHF_*pc_hartree2kcalmol);
-    outfile->Printf("  Total SAPT0 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-    outfile->Printf("  Total SAPT2 %5s             %16.8lf mH %16.8lf kcal mol^-1\n",
-      scaled.c_str(), e_sapt2_*1000.0,e_sapt2_*pc_hartree2kcalmol);
+
+    outfile->Printf("\n  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      eHF_ * 1000.0,
+      eHF_ * pc_hartree2kcalmol,
+      eHF_ * pc_hartree2kJmol);
+    outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      e_sapt0_ * 1000.0,
+      e_sapt0_ * pc_hartree2kcalmol,
+      e_sapt0_ * pc_hartree2kJmol);
+    outfile->Printf("  Total SAPT2 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      e_sapt2_ * 1000.0,
+      e_sapt2_ * pc_hartree2kcalmol,
+      e_sapt2_ * pc_hartree2kJmol);
     if (mbpt_disp_) {
-      outfile->Printf("  Total SAPT2+ %5s            %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), e_sapt2p_*1000.0,e_sapt2p_*pc_hartree2kcalmol);
-      outfile->Printf("  Total SAPT2+(3) %5s         %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), e_sapt2pp3_*1000.0,e_sapt2pp3_*pc_hartree2kcalmol);
+      outfile->Printf("  Total SAPT2+ %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        e_sapt2p_ * 1000.0,
+        e_sapt2p_ * pc_hartree2kcalmol,
+        e_sapt2p_ * pc_hartree2kJmol);
+      outfile->Printf("  Total SAPT2+(3) %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        e_sapt2pp3_ * 1000.0,
+        e_sapt2pp3_ * pc_hartree2kcalmol,
+        e_sapt2pp3_ * pc_hartree2kJmol);
       if (third_order_)
-        outfile->Printf("  Total SAPT2+3 %5s           %16.8lf mH %16.8lf kcal mol^-1\n",
-          scaled.c_str(), e_sapt2p3_*1000.0,e_sapt2p3_*pc_hartree2kcalmol);
+        outfile->Printf("  Total SAPT2+3 %3s           %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          e_sapt2p3_ * 1000.0,
+          e_sapt2p3_ * pc_hartree2kcalmol,
+          e_sapt2p3_ * pc_hartree2kJmol);
       if(e_MP2 != 0.0) {
-          outfile->Printf("  Total SAPT2+dMP2 %5s        %16.8lf mH %16.8lf kcal mol^-1\n",
-            scaled.c_str(), e_sapt2p_dmp2*1000.0,e_sapt2p_dmp2*pc_hartree2kcalmol);
-          outfile->Printf("  Total SAPT2+(3)dMP2   %5s   %16.8lf mH %16.8lf kcal mol^-1\n",
-            scaled.c_str(), e_sapt_2pp3_dmp2*1000.0,e_sapt_2pp3_dmp2*pc_hartree2kcalmol);
+          outfile->Printf("  Total SAPT2+dMP2 %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            scaled.c_str(),
+            e_sapt2p_dmp2 * 1000.0,
+            e_sapt2p_dmp2 * pc_hartree2kcalmol,
+            e_sapt2p_dmp2 * pc_hartree2kJmol);
+          outfile->Printf("  Total SAPT2+(3)dMP2 %3s     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            scaled.c_str(),
+            e_sapt_2pp3_dmp2 * 1000.0,
+            e_sapt_2pp3_dmp2 * pc_hartree2kcalmol,
+            e_sapt_2pp3_dmp2 * pc_hartree2kJmol);
           if (third_order_)
-            outfile->Printf("  Total SAPT2+3dMP2   %5s     %16.8lf mH %16.8lf kcal mol^-1\n",
-              scaled.c_str(), e_sapt2p3_dmp2*1000.0,e_sapt2p3_dmp2*pc_hartree2kcalmol);
+            outfile->Printf("  Total SAPT2+3dMP2   %3s     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+              scaled.c_str(),
+              e_sapt2p3_dmp2 * 1000.0,
+              e_sapt2p3_dmp2 * pc_hartree2kcalmol,
+              e_sapt2p3_dmp2 * pc_hartree2kJmol);
       }
     }
     if (ccd_disp_) {
-      outfile->Printf("  Total SAPT2+(CCD) %5s       %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), e_sapt2p_ccd_*1000.0,e_sapt2p_ccd_*pc_hartree2kcalmol);
-      outfile->Printf("  Total SAPT2+(3)(CCD) %5s    %16.8lf mH %16.8lf kcal mol^-1\n",
-        scaled.c_str(), e_sapt2pp3_ccd_*1000.0,e_sapt2pp3_ccd_*pc_hartree2kcalmol);
+      outfile->Printf("  Total SAPT2+(CCD) %3s       %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        e_sapt2p_ccd_ * 1000.0,
+        e_sapt2p_ccd_ * pc_hartree2kcalmol,
+        e_sapt2p_ccd_ * pc_hartree2kJmol);
+      outfile->Printf("  Total SAPT2+(3)(CCD) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
+        e_sapt2pp3_ccd_ * 1000.0,
+        e_sapt2pp3_ccd_ * pc_hartree2kcalmol,
+        e_sapt2pp3_ccd_ * pc_hartree2kJmol);
       if (third_order_)
-        outfile->Printf("  Total SAPT2+3(CCD) %5s      %16.8lf mH %16.8lf kcal mol^-1\n",
-          scaled.c_str(), e_sapt2p3_ccd_*1000.0,e_sapt2p3_ccd_*pc_hartree2kcalmol);
+        outfile->Printf("  Total SAPT2+3(CCD) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          e_sapt2p3_ccd_ * 1000.0,
+          e_sapt2p3_ccd_ * pc_hartree2kcalmol,
+          e_sapt2p3_ccd_ * pc_hartree2kJmol);
       if(e_MP2 != 0.0) {
-          outfile->Printf("  Total SAPT2+(CCD)dMP2 %5s   %16.8lf mH %16.8lf kcal mol^-1\n",
-            scaled.c_str(), e_sapt2p_ccd_dmp2*1000.0,e_sapt2p_ccd_dmp2*pc_hartree2kcalmol);
-          outfile->Printf("  Total SAPT2+(3)(CCD)dMP2 %5s%16.8lf mH %16.8lf kcal mol^-1\n",
-            scaled.c_str(), e_sapt2pp3_ccd_dmp2*1000.0,e_sapt2pp3_ccd_dmp2*pc_hartree2kcalmol);
+          outfile->Printf("  Total SAPT2+(CCD)dMP2 %3s   %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            scaled.c_str(),
+            e_sapt2p_ccd_dmp2 * 1000.0,
+            e_sapt2p_ccd_dmp2 * pc_hartree2kcalmol,
+            e_sapt2p_ccd_dmp2 * pc_hartree2kJmol);
+          outfile->Printf("  Total SAPT2+(3)(CCD)dMP2 %3s%16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            scaled.c_str(),
+            e_sapt2pp3_ccd_dmp2 * 1000.0,
+            e_sapt2pp3_ccd_dmp2 * pc_hartree2kcalmol,
+            e_sapt2pp3_ccd_dmp2 * pc_hartree2kJmol);
           if (third_order_)
-            outfile->Printf("  Total SAPT2+3(CCD)dMP2 %5s  %16.8lf mH %16.8lf kcal mol^-1\n",
-              scaled.c_str(), e_sapt2p3_ccd_dmp2*1000.0,e_sapt2p3_ccd_dmp2*pc_hartree2kcalmol);
+            outfile->Printf("  Total SAPT2+3(CCD)dMP2 %3s  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+              scaled.c_str(),
+              e_sapt2p3_ccd_dmp2 * 1000.0,
+              e_sapt2p3_ccd_dmp2 * pc_hartree2kcalmol,
+              e_sapt2p3_ccd_dmp2 * pc_hartree2kJmol);
       }
     }
     if(scal_it == Xscal.begin())  {
           outfile->Printf("\n  Special recipe for scaled SAPT0 (see Manual):\n");
-          outfile->Printf("    Electrostatics sSAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
-            elst_sSAPT0*1000.0,elst_sSAPT0*pc_hartree2kcalmol);
-          outfile->Printf("    Exchange sSAPT0         %16.8lf mH %16.8lf kcal mol^-1\n",
-            exch_sSAPT0*1000.0,exch_sSAPT0*pc_hartree2kcalmol);
-          outfile->Printf("    Induction sSAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
-            ind_sSAPT0*1000.0,ind_sSAPT0*pc_hartree2kcalmol);
-          outfile->Printf("    Dispersion sSAPT0       %16.8lf mH %16.8lf kcal mol^-1\n",
-            disp_sSAPT0*1000.0,disp_sSAPT0*pc_hartree2kcalmol);
-          outfile->Printf("  Total sSAPT0                  %16.8lf mH %16.8lf kcal mol^-1\n\n",
-          e_sSAPT0*1000.0,e_sSAPT0*pc_hartree2kcalmol);
+          outfile->Printf("    Electrostatics sSAPT0     %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            elst_sSAPT0 * 1000.0,
+            elst_sSAPT0 * pc_hartree2kcalmol,
+            elst_sSAPT0 * pc_hartree2kJmol);
+          outfile->Printf("    Exchange sSAPT0           %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            exch_sSAPT0 * 1000.0,
+            exch_sSAPT0 * pc_hartree2kcalmol,
+            exch_sSAPT0 * pc_hartree2kJmol);
+          outfile->Printf("    Induction sSAPT0          %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            ind_sSAPT0 * 1000.0,
+            ind_sSAPT0 * pc_hartree2kcalmol,
+            ind_sSAPT0 * pc_hartree2kJmol);
+          outfile->Printf("    Dispersion sSAPT0         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            disp_sSAPT0 * 1000.0,
+            disp_sSAPT0 * pc_hartree2kcalmol,
+            disp_sSAPT0 * pc_hartree2kJmol);
+          outfile->Printf("  Total sSAPT0                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            e_sSAPT0 * 1000.0,
+            e_sSAPT0 * pc_hartree2kcalmol,
+            e_sSAPT0 * pc_hartree2kJmol);
     }
-    outfile->Printf("  --------------------------------------------------------------------------\n");
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
 
     // Only export if not scaled.
     if(scal_it == Xscal.begin()) {

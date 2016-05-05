@@ -2,6 +2,7 @@
 
 """
 from __future__ import absolute_import
+from __future__ import print_function
 import math
 
 #MAX_IOFF = 30000
@@ -54,7 +55,7 @@ import math
 
 
 def df(n):
-    """Gives the double factorial of *i*"""
+    """Gives the double factorial of *n*"""
     return 1.0 if n <= 0 else 1.0 * n * df(n - 2)
 
 
@@ -118,18 +119,18 @@ class ShellInfo(object):
     """This class has the same behavior as GaussianShell, but implements everything using
     slower data structures, which are easier to construct. These are used to build the
     basis set, which builds more efficient pointer-based GaussianShell objects.
-    *  @param e An array of exponent values.
-    *  @param am Angular momentum.
-    *  @param pure Pure spherical harmonics, or Cartesian.
-    *  @param c An array of contraction coefficients.
-    *  @param nc The atomic center that this shell is located on. Must map
-        back to the correct atom in the owning BasisSet molecule_. Used
-        in integral derivatives for indexing.
-    *  @param center The x, y, z position of the shell. This is passed to
-        reduce the number of calls to the molecule.
-    *  @param start The starting index of the first function this shell
-        provides. Used to provide starting positions in matrices.
-    *  @param pt Is the shell already normalized?
+    @param e An array of exponent values.
+    @param am Angular momentum.
+    @param pure Pure spherical harmonics, or Cartesian.
+    @param c An array of contraction coefficients.
+    @param nc The atomic center that this shell is located on. Must map
+    back to the correct atom in the owning BasisSet molecule. Used
+    in integral derivatives for indexing.
+    @param center The x, y, z position of the shell. This is passed to
+    reduce the number of calls to the molecule.
+    @param start The starting index of the first function this shell
+    provides. Used to provide starting positions in matrices.
+    @param pt Is the shell already normalized?
 
     """
 
@@ -314,6 +315,18 @@ class ShellInfo(object):
         text = """    %c %3d 1.00\n""" % (self.AMCHAR(), self.nprimitive())
         for K in range(self.nprimitive()):
             text += """               %20.8f %20.8f\n""" % (self.PYexp[K], self.PYoriginal_coef[K])
+
+        if outfile is None:
+            return text
+        else:
+            with open(outfile, mode='w') as handle:
+                handle.write(text)
+
+    def pyprint_gamess(self, outfile=None):
+        """Print out the shell in Gamess format"""
+        text = """%c %3d\n""" % (self.AMCHAR(), self.nprimitive())
+        for K in range(self.nprimitive()):
+            text += """%3d %15.8f %15.8f\n""" % (K + 1, self.PYexp[K], self.PYoriginal_coef[K])
 
         if outfile is None:
             return text

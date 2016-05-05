@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -123,28 +128,41 @@ void CIWavefunction::form_opdm(void) {
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
 
+    // OPDM's
+    opdm_list = opdm(0, Parameters_->num_roots, Parameters_->d_filenum,
+                     Parameters_->d_filenum, false);
+    for (int i=0; i<Parameters_->num_roots; i++){
+        opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
+        opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
+        opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
+    }
+
     // Figure out which OPDM should be current
-    if (Parameters_->opdm_ave) {
+    if (Parameters_->opdm_ave){
         Dimension act_dim = get_dimension("ACT");
         opdm_a_ = SharedMatrix(new Matrix("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim));
         opdm_b_ = SharedMatrix(new Matrix("MO-basis Beta OPDM", nirrep_, act_dim, act_dim));
-        opdm_ = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
+        opdm_   = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
 
-        for (int i = 0; i < Parameters_->average_num; i++) {
+        for(int i=0; i<Parameters_->average_num; i++) {
             int croot = Parameters_->average_states[i];
             double weight = Parameters_->average_weights[i];
             opdm_a_->axpy(weight, opdm_list[croot][0]);
             opdm_b_->axpy(weight, opdm_list[croot][1]);
             opdm_->axpy(weight, opdm_list[croot][2]);
         }
-    } else {
+    }
+    else{
         int croot = Parameters_->root;
         opdm_a_ = opdm_list[croot][0]->clone();
         opdm_b_ = opdm_list[croot][1]->clone();
         opdm_ = opdm_list[croot][2]->clone();
     }
-    Da_ = opdm_add_inactive(opdm_a_, 1.0, true);
-    Db_ = opdm_add_inactive(opdm_b_, 1.0, true);
+
+    SharedMatrix MO_Da = opdm_add_inactive(opdm_a_, 1.0, true);
+    SharedMatrix MO_Db = opdm_add_inactive(opdm_b_, 1.0, true);
+    Da_ = Matrix::triplet(Ca_, MO_Da, Ca_, false, false, true);
+    Db_ = Matrix::triplet(Cb_, MO_Db, Cb_, false, false, true);
 
     opdm_called_ = true;
 }

@@ -46,6 +46,6 @@ energy_scf2 = energy('scf')
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
-set reference uhf 
+set reference uhf
 print('UHF-PCM, total algorithm')
 energy_scf3 = energy('scf')

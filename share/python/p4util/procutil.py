@@ -1,7 +1,12 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,20 +22,19 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 """Module with utility functions used by several Python functions."""
 from __future__ import print_function
 import os
+import ast
 import sys
 import pickle
 import collections
 import inspect
-#CUimport psi4
-#CUimport inputparser
-from p4xcpt import *
-from p4regex import *
+from .exceptions import *
+from . import p4regex
 
 
 if sys.version_info[0] > 2:
@@ -41,18 +45,42 @@ def kwargs_lower(kwargs):
     with all keys made lowercase. Should be called by every
     function that could be called directly by the user.
     Also turns boolean-like values into actual booleans.
+    Also turns values lowercase if sensible.
 
     """
     caseless_kwargs = {}
     # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.iteritems():
         lkey = key.lower()
-        if yes.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
-            caseless_kwargs[lkey] = True
-        elif no.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
-            caseless_kwargs[lkey] = False
+        if lkey in ['subset']:  # only kw for which case matters
+            lvalue = value
         else:
-            caseless_kwargs[lkey] = value
+            try:
+                lvalue = value.lower()
+            except AttributeError:
+                lvalue = value
+
+        if lkey in ['irrep', 'check_bsse', 'linkage']:
+            caseless_kwargs[lkey] = lvalue
+
+        elif 'dertype' in lkey:
+            if p4regex.der0th.match(str(lvalue)):
+                caseless_kwargs[lkey] = 0
+            elif p4regex.der1st.match(str(lvalue)):
+                caseless_kwargs[lkey] = 1
+            elif p4regex.der2nd.match(str(lvalue)):
+                caseless_kwargs[lkey] = 2
+            else:
+                raise KeyError('Derivative type key %s was not recognized' % str(key))
+
+        elif p4regex.yes.match(str(lvalue)):
+            caseless_kwargs[lkey] = True
+
+        elif p4regex.no.match(str(lvalue)):
+            caseless_kwargs[lkey] = False
+
+        else:
+            caseless_kwargs[lkey] = lvalue
     return caseless_kwargs
 
 
@@ -69,7 +97,7 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
     return targetfile
 
 
-def format_molecule_for_input(mol, name=''):
+def format_molecule_for_input(mol, name='', forcexyz=False):
     """Function to return a string of the output of
     :py:func:`inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
@@ -90,18 +118,15 @@ def format_molecule_for_input(mol, name=''):
         #   for qcdb Molecules. Since save_string_xyz was added to libmints just
         #   for the sow/reap purpose, may want to unify these fns sometime.
         # the time for unification is nigh
-        mol_string = mol.create_psi4_string_from_molecule()
-        #try:
-        #    mol_string = mol.save_string_for_psi4()
-        #except AttributeError:
-        #    mol_string = mol.save_string_xyz()
+        if forcexyz:
+            mol_string = mol.save_string_xyz()
+        else:
+            mol_string = mol.create_psi4_string_from_molecule()
+        mol_name = mol.name() if name == '' else name
 
-        mol_name = mol.name()
-
-    commands = """\nmolecule %s {\n%s\n}\n""" % (mol_name, mol_string)
+    commands = """\nmolecule %s {\n%s%s\n}\n""" % (mol_name, mol_string,
+               '\nno_com\nno_reorient' if forcexyz else '')
     return commands
-    #commands = 'inputparser.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
-    #return eval(commands)
 
 
 def format_options_for_input(molecule=None, **kwargs):
@@ -222,7 +247,7 @@ def import_ignorecase(module):
     return modobj
 
 
-def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=False):
+def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=False, label='electronic energy'):
     """Function to examine file *sowout* from a sow/reap distributed job
     for formatted line with electronic energy information about index
     *sownum* to be used for construction of *quantity* computations as
@@ -254,7 +279,7 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
                     else:
                         ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                 break
-            s = line.split()
+            s = line.strip().split(None, 10)
             if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):
                 if int(s[3]) != linkage:
                     raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
@@ -262,11 +287,15 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
                 if s[6] != str(sownum + 1):
                     raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
                         % (sowout, s[6], str(sownum + 1)))
-                if (s[8:10] == ['electronic', 'energy']):
-                    E = float(s[10])
-                    psi4.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+                if label == 'electronic energy' and s[8:10] == ['electronic', 'energy']:
+                        E = float(s[10])
+                        psi4.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+                if label == 'electronic gradient' and s[8:10] == ['electronic', 'gradient']:
+                        E = ast.literal_eval(s[-1])
+                        psi4.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
         freagent.close()
     return E
+
 
 def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
     """Function to return a string of commands to replicate the

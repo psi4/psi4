@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 // This tells us the Python version number
@@ -81,7 +86,6 @@ void export_psio();
 void export_mints();
 void export_functional();
 void export_oeprop();
-void export_cubefile();
 void export_libparallel();
 void export_efp();
 void export_cubeprop();
@@ -101,9 +105,10 @@ namespace opt {
 psi::PsiReturnType optking(psi::Options&);
 void opt_clean(void);
 }
-
 // Forward declare /src/bin/ methods
 namespace psi {
+
+std::string get_writer_file_prefix(std::string molecule_name);
 
 // Wavefunction returns
 namespace adc { SharedWavefunction     adc(SharedWavefunction, Options&); }
@@ -116,6 +121,9 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+#ifdef HAVE_GDMA
+namespace gdma { SharedWavefunction     gdma(SharedWavefunction, Options&, const std::string &datfilename); }
+#endif
 
 // Matrix returns
 namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
@@ -491,6 +499,20 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
     py_psi_prepare_options_for_module("DETCI");
     return detci::detci(ref_wfn, Process::environment.options);
 }
+
+#ifdef HAVE_GDMA
+double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
+{
+    py_psi_prepare_options_for_module("GDMA");
+    gdma::gdma(ref_wfn, Process::environment.options, datfilename);
+    return 0.0;
+}
+#else
+double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
+{
+    throw PSIEXCEPTION("GDMA not enabled. Recompile with it enabled.");
+}
+#endif
 
 #ifdef ENABLE_CHEMPS2
 double py_psi_dmrg(SharedWavefunction ref_wfn)
@@ -1308,6 +1330,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
+    def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
     // Benchmarks
     export_benchmarks();
 
@@ -1319,9 +1342,6 @@ BOOST_PYTHON_MODULE (psi4)
 
     // OEProp/GridProp
     export_oeprop();
-
-    // CubeFile
-    export_cubefile();
 
     // EFP
     export_efp();
@@ -1521,6 +1541,7 @@ BOOST_PYTHON_MODULE (psi4)
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
+    def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
@@ -1568,6 +1589,27 @@ void Python::initialize()
 void Python::finalize()
 {
 //    Py_Finalize();
+}
+
+std::string handle_pyerror()
+{
+    using namespace boost::python;
+    using namespace boost;
+
+    PyObject *exc,*val,*tb;
+    object formatted_list, formatted;
+    PyErr_Fetch(&exc,&val,&tb);
+    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb)); 
+    object traceback(import("traceback"));
+    if (!tb) {
+        object format_exception_only(traceback.attr("format_exception_only"));
+        formatted_list = format_exception_only(hexc,hval);
+    } else {
+        object format_exception(traceback.attr("format_exception"));
+        formatted_list = format_exception(hexc,hval,htb);
+    }
+    formatted = str("\n").join(formatted_list);
+    return extract<std::string>(formatted);
 }
 
 void Python::run(FILE *input)
@@ -1716,45 +1758,11 @@ void Python::run(FILE *input)
         }
         catch (error_already_set const& e) {
 
-            //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred Py-side" << endl << "Traceback:" << endl;
+            whole << "An error has occurred python-side. ";
+            whole << handle_pyerror();
+            cout << whole.str();
 
-            PyObject *pExcType , *pExcValue , *pExcTraceback;
-            PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);
-
-            if (pExcType != NULL) {
-                boost::python::handle<> h_type(pExcType);
-                boost::python::str type_pstr(h_type);
-                boost::python::extract<std::string> e_type_pstr(type_pstr);
-                if(e_type_pstr.check())
-                    whole << e_type_pstr();
-                else
-                    whole << "Unknown exception type";
-            }
-            if (pExcValue != NULL) {
-                boost::python::handle<> h_val(pExcValue);
-                boost::python::str a(h_val);
-                boost::python::extract<std::string> returned(a);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << std::string(": Unparseable Python error: ");
-            }
-            if (pExcTraceback != NULL) {
-                boost::python::handle<> h_tb(pExcTraceback);
-                boost::python::object tb(boost::python::import("traceback"));
-                boost::python::object fmt_tb(tb.attr("format_tb"));
-                boost::python::object tb_list(fmt_tb(h_tb));
-                boost::python::object tb_str(boost::python::str("\n").join(tb_list));
-                boost::python::extract<std::string> returned(tb_str);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << ": Unparseable Python traceback";
-            }
-
-            cout << whole.str() << endl << endl;
             outfile->Printf("%s\n\n", whole.str().c_str());
             exit(1);
         }

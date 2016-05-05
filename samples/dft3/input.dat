@@ -13,7 +13,7 @@ molecule h2o {
     H 1 1.0 2 104.5
 }
 
-set globals {
+set {
   basis sto-3g
   dft_spherical_points 302
   dft_radial_points 99

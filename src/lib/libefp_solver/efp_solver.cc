@@ -1,5 +1,28 @@
 /*
- * EFP solver
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
  */
 
 #include <boost/regex.hpp>
@@ -653,36 +676,36 @@ void EFP::compute() {
     outfile->Printf("\n");
     outfile->Printf("    EFP Results\n");
     outfile->Printf("  ------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics                %20.12f [H] %s\n", energy.electrostatic +
+    outfile->Printf("    Electrostatics                %20.12f [Eh] %s\n", energy.electrostatic +
                                                                           energy.charge_penetration +
                                                                           energy.electrostatic_point_charges,
                                                                           (elst_enabled_ || qm_elst_enabled_) ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.electrostatic + energy.charge_penetration,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.electrostatic + energy.charge_penetration,
                                                                           elst_enabled_ ? "*" : "");
-    outfile->Printf("      QM-Nuc/EFP                  %20.12f [H] %s\n", energy.electrostatic_point_charges,
+    outfile->Printf("      QM-Nuc/EFP                  %20.12f [Eh] %s\n", energy.electrostatic_point_charges,
                                                                           qm_elst_enabled_ ? "*" : "");
     outfile->Printf("\n");
-    outfile->Printf("    Exchange                      %20.12f [H] %s\n", energy.exchange_repulsion,
+    outfile->Printf("    Exchange                      %20.12f [Eh] %s\n", energy.exchange_repulsion,
                                                                           exch_enabled_ ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.exchange_repulsion,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.exchange_repulsion,
                                                                           exch_enabled_ ? "*" : "");
-    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+    outfile->Printf("      QM/EFP                      %20.12f [Eh] %s\n", 0.0,
                                                                           "");
     outfile->Printf("\n");
-    outfile->Printf("    Induction                     %20.12f [H] %s\n", energy.polarization,
+    outfile->Printf("    Induction                     %20.12f [Eh] %s\n", energy.polarization,
                                                                           (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
-    outfile->Printf(   "      %-7s                     %20.12f [H] %s\n", qm_pol_enabled_ ? "QM/EFP" : "EFP/EFP",
+    outfile->Printf(   "      %-7s                     %20.12f [Eh] %s\n", qm_pol_enabled_ ? "QM/EFP" : "EFP/EFP",
                                                                           energy.polarization,
                                                                           (pol_enabled_ || qm_pol_enabled_) ? "*" : "");
     outfile->Printf("\n");
-    outfile->Printf("    Dispersion                    %20.12f [H] %s\n", energy.dispersion,
+    outfile->Printf("    Dispersion                    %20.12f [Eh] %s\n", energy.dispersion,
                                                                           disp_enabled_ ? "*" : "");
-    outfile->Printf("      EFP/EFP                     %20.12f [H] %s\n", energy.dispersion,
+    outfile->Printf("      EFP/EFP                     %20.12f [Eh] %s\n", energy.dispersion,
                                                                           disp_enabled_ ? "*" : "");
-    outfile->Printf("      QM/EFP                      %20.12f [H] %s\n", 0.0,
+    outfile->Printf("      QM/EFP                      %20.12f [Eh] %s\n", 0.0,
                                                                           "");
     outfile->Printf("\n");
-    outfile->Printf("    Total EFP                     %20.12f [H]\n",    energy.total);
+    outfile->Printf("    Total EFP                     %20.12f [Eh]\n",    energy.total);
 
 }
 
@@ -949,4 +972,3 @@ void EFP::print_out() {
 //    }
 //    return nu;
 //}
-

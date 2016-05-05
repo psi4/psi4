@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta5+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} 22aabcd6baba56ef2bc3627bb1ec5787a50da437
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,11 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   3133
-    PSI4DATADIR: /home/ugur/psi4/lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:12:42 2016
 
+    Process ID:   7274
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -49,26 +49,28 @@ set {
   scf_type df
   guess sad
   reference uhf
-  orb_opt false
   freeze_core true
+  mp2_type df
+  qc_module occ
 }
-gradient('df-omp2')
 
-grad = psi4.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+grad = gradient('mp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 --------------------------------------------------------------------------
 
   Memory set to 256.000 MiB by Python script.
+gradient() will perform analytic gradient computation.
 
-*** tstart() called on bozkaya
-*** at Wed Jul  2 21:17:50 2014
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:42 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -78,20 +80,16 @@ compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
     Geometry (in Angstrom), charge = 0, multiplicity = 2:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           N          0.000000000000     0.000000000000    -0.617445101450
-           O          0.000000000000     0.000000000000     0.540554898550
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           N          0.000000000000     0.000000000000    -0.617445101450    14.003074004780
+           O          0.000000000000     0.000000000000     0.540554898550    15.994914619560
 
   Running in c1 symmetry.
 
-
-	Rotational constants (cm^-1):
-	A = **********    B =    1.68371   C =    1.68371
-
-	Rotational constants (MHz):
-	A = **********    B = 50476.22913   C = 50476.22913
-  Nuclear repulsion =   25.590607669291881
+  Rotational constants: A = ************  B =      1.68371  C =      1.68371 [cm^-1]
+  Rotational constants: A = ************  B =  50476.22913  C =  50476.22913 [MHz]
+  Nuclear repulsion =   25.590607669291888
 
   Charge       = 0
   Multiplicity = 2
@@ -129,23 +127,6 @@ compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
     Total      28      28       8       7       7       1
    -------------------------------------------------------
 
- OEINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   2
-      Number of AO shells:              12
-      Number of SO shells:              12
-      Number of primitives:             44
-      Number of atomic orbitals:        30
-      Number of basis functions:        28
-
-      Number of irreps:                  1
-      Number of functions per irrep: [  28 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -153,8 +134,8 @@ compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           SAVE
@@ -163,7 +144,7 @@ compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
    => Auxiliary Basis Set <=
 
-  Basis Set: cc-pvdz-jkfit
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 48
     Number of basis function: 140
     Number of Cartesian functions: 162
@@ -178,93 +159,96 @@ compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   0:  -129.74089514895340   -1.29741e+02   8.86996e-02 
-   @DF-UHF iter   1:  -129.20643229037606    5.34463e-01   1.15872e-02 
-   @DF-UHF iter   2:  -129.24976475205142   -4.33325e-02   3.84296e-03 DIIS
-   @DF-UHF iter   3:  -129.25581336900188   -6.04862e-03   2.30562e-03 DIIS
-   @DF-UHF iter   4:  -129.25760727376260   -1.79390e-03   7.57853e-04 DIIS
-   @DF-UHF iter   5:  -129.25827786514228   -6.70591e-04   3.41750e-04 DIIS
-   @DF-UHF iter   6:  -129.25843826022216   -1.60395e-04   1.75814e-04 DIIS
-   @DF-UHF iter   7:  -129.25851679042202   -7.85302e-05   1.33050e-04 DIIS
-   @DF-UHF iter   8:  -129.25860373031190   -8.69399e-05   1.09321e-04 DIIS
-   @DF-UHF iter   9:  -129.25866231021436   -5.85799e-05   1.02621e-04 DIIS
-   @DF-UHF iter  10:  -129.25876053219247   -9.82220e-05   9.40317e-05 DIIS
-   @DF-UHF iter  11:  -129.25907394716842   -3.13415e-04   8.62276e-05 DIIS
-   @DF-UHF iter  12:  -129.25910053262268   -2.65855e-05   3.80356e-05 DIIS
-   @DF-UHF iter  13:  -129.25910485560559   -4.32298e-06   8.70898e-06 DIIS
-   @DF-UHF iter  14:  -129.25910520636984   -3.50764e-07   6.82205e-06 DIIS
-   @DF-UHF iter  15:  -129.25910483906165    3.67308e-07   1.20009e-05 DIIS
-   @DF-UHF iter  16:  -129.25910529601015   -4.56948e-07   3.75920e-06 DIIS
-   @DF-UHF iter  17:  -129.25910534883573   -5.28256e-08   4.69899e-07 DIIS
-   @DF-UHF iter  18:  -129.25910534863195    2.03784e-10   3.83506e-07 DIIS
-   @DF-UHF iter  19:  -129.25910534911682   -4.84874e-10   2.47503e-08 DIIS
-   @DF-UHF iter  20:  -129.25910534911733   -5.11591e-13   9.51231e-09 DIIS
-   @DF-UHF iter  21:  -129.25910534911782   -4.83169e-13   7.57930e-10 DIIS
-   @DF-UHF iter  22:  -129.25910534911773    8.52651e-14   4.16931e-10 DIIS
-   @DF-UHF iter  23:  -129.25910534911782   -8.52651e-14   5.02561e-11 DIIS
+   @DF-UHF iter   0:  -129.55731796592539   -1.29557e+02   8.10319e-02 
+   @DF-UHF iter   1:  -129.21670600059738    3.40612e-01   1.01137e-02 
+   @DF-UHF iter   2:  -129.25247903124512   -3.57730e-02   2.94456e-03 DIIS
+   @DF-UHF iter   3:  -129.25679531266650   -4.31628e-03   1.53658e-03 DIIS
+   @DF-UHF iter   4:  -129.25797623163902   -1.18092e-03   7.61793e-04 DIIS
+   @DF-UHF iter   5:  -129.25841451714936   -4.38286e-04   3.04590e-04 DIIS
+   @DF-UHF iter   6:  -129.25854449186676   -1.29975e-04   1.44732e-04 DIIS
+   @DF-UHF iter   7:  -129.25859471369702   -5.02218e-05   1.14182e-04 DIIS
+   @DF-UHF iter   8:  -129.25864006072544   -4.53470e-05   1.05228e-04 DIIS
+   @DF-UHF iter   9:  -129.25870089631570   -6.08356e-05   9.87191e-05 DIIS
+   @DF-UHF iter  10:  -129.25888956701937   -1.88671e-04   7.95177e-05 DIIS
+   @DF-UHF iter  11:  -129.25905714527883   -1.67578e-04   5.93079e-05 DIIS
+   @DF-UHF iter  12:  -129.25906761928363   -1.04740e-05   4.49824e-05 DIIS
+   @DF-UHF iter  13:  -129.25910201301051   -3.43937e-05   4.91589e-05 DIIS
+   @DF-UHF iter  14:  -129.25910348956131   -1.47655e-06   1.46392e-05 DIIS
+   @DF-UHF iter  15:  -129.25910490137437   -1.41181e-06   1.12027e-05 DIIS
+   @DF-UHF iter  16:  -129.25910534021003   -4.38836e-07   1.35914e-06 DIIS
+   @DF-UHF iter  17:  -129.25910534419046   -3.98043e-09   1.34132e-06 DIIS
+   @DF-UHF iter  18:  -129.25910534906578   -4.87532e-09   7.12909e-08 DIIS
+   @DF-UHF iter  19:  -129.25910534907140   -5.62750e-12   1.22743e-07 DIIS
+   @DF-UHF iter  20:  -129.25910534911557   -4.41673e-11   8.90454e-09 DIIS
+   @DF-UHF iter  21:  -129.25910534911577   -1.98952e-13   1.73598e-09 DIIS
+   @DF-UHF iter  22:  -129.25910534911583   -5.68434e-14   4.26061e-10 DIIS
+   @DF-UHF iter  23:  -129.25910534911586   -2.84217e-14   1.25831e-10 DIIS
+   @DF-UHF iter  24:  -129.25910534911574    1.13687e-13   4.24410e-11 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   6.749259439E-02
+   @Spin Contamination Metric:   6.749258779E-02
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                8.174925944E-01
+   @S^2 Observed:                8.174925878E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Alpha Occupied:                                                       
+    Alpha Occupied:                                                       
 
-	   1A    -20.696259     2A    -15.735086     3A     -1.606104  
-	   4A     -0.966174     5A     -0.780007     6A     -0.690670  
-	   7A     -0.634234     8A     -0.422073  
+       1A    -20.696259     2A    -15.735086     3A     -1.606104  
+       4A     -0.966174     5A     -0.780007     6A     -0.690670  
+       7A     -0.634234     8A     -0.422073  
 
-	Alpha Virtual:                                                        
+    Alpha Virtual:                                                        
 
-	   9A      0.096516    10A      0.506775    11A      0.864721  
-	  12A      0.909605    13A      0.954089    14A      0.998791  
-	  15A      1.119036    16A      1.170662    17A      1.232183  
-	  18A      1.897893    19A      1.898040    20A      1.938940  
-	  21A      1.967331    22A      1.984610    23A      2.811976  
-	  24A      2.916501    25A      2.917078    26A      3.486471  
-	  27A      3.503084    28A      3.873180  
+       9A      0.096516    10A      0.506775    11A      0.864721  
+      12A      0.909605    13A      0.954089    14A      0.998791  
+      15A      1.119036    16A      1.170662    17A      1.232183  
+      18A      1.897893    19A      1.898040    20A      1.938940  
+      21A      1.967331    22A      1.984610    23A      2.811976  
+      24A      2.916501    25A      2.917078    26A      3.486471  
+      27A      3.503084    28A      3.873180  
 
-	Beta Occupied:                                                        
+    Beta Occupied:                                                        
 
-	   1A    -20.691315     2A    -15.698671     3A     -1.573759  
-	   4A     -0.883234     5A     -0.658035     6A     -0.644681  
-	   7A     -0.606673  
+       1A    -20.691315     2A    -15.698671     3A     -1.573759  
+       4A     -0.883234     5A     -0.658035     6A     -0.644681  
+       7A     -0.606673  
 
-	Beta Virtual:                                                         
+    Beta Virtual:                                                         
 
-	   8A      0.126727     9A      0.172855    10A      0.530204  
-	  11A      0.957874    12A      0.974386    13A      0.990731  
-	  14A      1.037911    15A      1.127757    16A      1.198965  
-	  17A      1.234715    18A      1.981518    19A      1.989508  
-	  20A      1.990999    21A      1.992666    22A      2.018865  
-	  23A      2.844382    24A      2.931514    25A      2.931658  
-	  26A      3.492001    27A      3.531779    28A      3.881286  
+       8A      0.126727     9A      0.172855    10A      0.530204  
+      11A      0.957874    12A      0.974386    13A      0.990731  
+      14A      1.037911    15A      1.127757    16A      1.198965  
+      17A      1.234715    18A      1.981518    19A      1.989508  
+      20A      1.990999    21A      1.992666    22A      2.018865  
+      23A      2.844382    24A      2.931514    25A      2.931658  
+      26A      3.492001    27A      3.531779    28A      3.881286  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     7 ]
-	SOCC [     1 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     7 ]
+    SOCC [     1 ]
 
   Energy converged.
 
-  @DF-UHF Final Energy:  -129.25910534911782
+  @DF-UHF Final Energy:  -129.25910534911574
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.4124523440264625
-    Two-Electron Energy =                  72.5627393256167750
+    Nuclear Repulsion Energy =             25.5906076692918880
+    One-Electron Energy =                -227.4124523437912444
+    Two-Electron Energy =                  72.5627393253836033
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.2591053491178172
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -129.2591053491157425
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -287,38 +271,50 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Wed Jul  2 21:17:52 2014
-Module time:
-	user time   =       2.37 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-Total time:
-	user time   =       2.37 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+  UHF NO Occupations:
+  HONO-2 :    6  A 1.9973824
+  HONO-1 :    7  A 1.9706499
+  HONO-0 :    8  A 1.0000000
+  LUNO+0 :    9  A 0.0293501
+  LUNO+1 :   10  A 0.0026176
+  LUNO+2 :   11  A 0.0018946
+  LUNO+3 :   12  A 0.0001982
 
-*** tstart() called on bozkaya
-*** at Wed Jul  2 21:17:52 2014
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:42 2016
+Module time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:42 2016
 
 
 
   Options:
   ----------------------------------------------------------------------------
+  ACTIVE                      => [  ]             
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
+  CC_LAMBDA                   => FALSE            
   CC_MAXITER                  => 50               
-  CC_TYPE                     => CONVENTIONAL     
-  CEPA_OS_SCALE               => 1.27             
-  CEPA_SOS_SCALE              => 1.3              
-  CEPA_SS_SCALE               => 1.13             
-  CEPA_TYPE                   => CEPA(0)          
+  CC_TYPE                     => CONV             
+  CHOLESKY                    => FALSE            
   CHOLESKY_TOLERANCE          => 0.0001           
+  CI_TYPE                     => CONV             
   COMPUT_S2                   => FALSE            
-  CONV_TEI_TYPE               => DIRECT           
+  CUBEPROP_BASIS_FUNCTIONS    => [  ]             
+  CUBEPROP_FILEPATH           => .                
+  CUBEPROP_ORBITALS           => [  ]             
+  CUBEPROP_TASKS              => [  ]             
   CUBIC_BASIS_TOLERANCE       => 1e-12            
   CUBIC_BLOCK_MAX_POINTS      => 1000             
-  CUBIC_GRID_FILEPATH         => .                
   CUBIC_GRID_OVERAGE          => [  ]             
   CUBIC_GRID_SPACING          => [  ]             
   CUTOFF                      => 8                
@@ -326,13 +322,13 @@ Total time:
   DERTYPE                     => FIRST           !
   DF_BASIS_CC                 => CC-PVDZ-RI      !
   DIE_IF_NOT_CONVERGED        => TRUE             
+  DKH_ORDER                   => 2                
   DOCC                        => [  ]             
   DO_DIIS                     => TRUE             
   DO_LEVEL_SHIFT              => TRUE             
-  DO_SCS                      => FALSE            
-  DO_SOS                      => FALSE            
+  DO_SCS                      => FALSE           !
+  DO_SOS                      => FALSE           !
   E3_SCALE                    => 0.25             
-  EKT_EA                      => FALSE            
   EKT_IP                      => FALSE            
   EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
   E_CONVERGENCE               => 1e-08           !
@@ -340,12 +336,14 @@ Total time:
   FROZEN_DOCC                 => [  ]             
   FROZEN_UOCC                 => [  ]             
   HESS_TYPE                   => HF               
+  INTEGRAL_CUTOFF             => 9                
   INTEGRAL_PACKAGE            => ERD              
   LEVEL_SHIFT                 => 0.02             
   LINEQ_SOLVER                => CDGESV           
   LITERAL_CFOUR               => (empty)          
   MAT_NUM_COLUMN_PRINT        => 5                
   MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOLDEN_WRITE                => FALSE            
   MO_DIIS_NUM_VECS            => 6                
   MO_MAXITER                  => 50               
   MO_STEP_MAX                 => 0.5              
@@ -354,6 +352,8 @@ Total time:
   MP2_SOS_SCALE               => 1.3              
   MP2_SOS_SCALE2              => 1.2              
   MP2_SS_SCALE                => 0.333333         
+  MP2_TYPE                    => DF              !
+  MP_TYPE                     => CONV             
   NAT_ORBS                    => FALSE            
   NUM_FROZEN_DOCC             => 0                
   NUM_FROZEN_UOCC             => 0                
@@ -367,21 +367,37 @@ Total time:
   PCG_BETA_TYPE               => FLETCHER_REEVES  
   PCG_CONVERGENCE             => 1e-06            
   PCG_MAXITER                 => 50               
+  PCM                         => FALSE            
+  PCM_SCF_TYPE                => TOTAL            
   PRINT                       => 1                
+  PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
+  QCHF                        => FALSE            
+  QC_MODULE                   => OCC             !
+  RAS1                        => [  ]             
+  RAS2                        => [  ]             
+  RAS3                        => [  ]             
+  RAS4                        => [  ]             
   READ_SCF_3INDEX             => TRUE             
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.4              
+  RELATIVISTIC                => NO               
+  REL_BASIS                   => (empty)          
+  RESTRICTED_DOCC             => [  ]             
+  RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
+  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
   SOS_TYPE                    => SOS              
+  TRIPLES_IABC_TYPE           => DISK             
   UNITS                       => ANGSTROMS        
+  WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
-  WFN_TYPE                    => DF-OMP2          
+  WFN_TYPE                    => DF-OMP2         !
   WRITER_FILE_LABEL           => (empty)          
 
 
@@ -391,46 +407,44 @@ Total time:
 
                        DF-MP2   
               Program Written by Ugur Bozkaya
-              Latest Revision July 02, 2014
+              Latest Revision February 19, 2016
 
  ============================================================================== 
  ============================================================================== 
  ============================================================================== 
 
-	RMS orbital gradient is changed to :     2.51e-06
-	MAX orbital gradient is changed to :     1.05e-04
 	MO Hessian type is changed to 'APPROX_DIAG'
-
 	MO spaces... 
 
 	 FC   AOCC   BOCC  AVIR   BVIR   FV 
 	------------------------------------------
 	  2     6     5    20     21     0
-
-	Available memory is:    256 MB 
-	Minimum required memory for the DFOCC module is:      0 MB 
 	Reading DF integrals from disk ...
 	Number of basis functions in the DF-HF basis: 140
 	Number of basis functions in the DF-CC basis: 112
 
+	Available memory                      :    244.14 MB 
+	Minimum required memory for amplitudes:      0.59 MB 
+
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
-	DF-HF Energy (a.u.)                :  -129.25910534911782
-	REF Energy (a.u.)                  :  -129.25910534911782
-	Alpha-Alpha Contribution (a.u.)    :    -0.04364302337708
-	Alpha-Beta Contribution (a.u.)     :    -0.22855804173184
-	Beta-Beta Contribution (a.u.)      :    -0.04280493594728
-	Scaled_SS Correlation Energy (a.u.):    -0.02881598644145
-	Scaled_OS Correlation Energy (a.u.):    -0.27426965007821
-	DF-SCS-MP2 Total Energy (a.u.)     :  -129.56219098563747
-	DF-SOS-MP2 Total Energy (a.u.)     :  -129.55623080336920
-	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41125375752867
-	DF-MP2 Correlation Energy (a.u.)   :    -0.31500600105620
-	DF-MP2 Total Energy (a.u.)         :  -129.57411135017401
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
+	DF-HF Energy (a.u.)                :  -129.25910534911574
+	REF Energy (a.u.)                  :  -129.25910534911574
+	Alpha-Alpha Contribution (a.u.)    :    -0.04364302337346
+	Alpha-Beta Contribution (a.u.)     :    -0.22855804233257
+	Beta-Beta Contribution (a.u.)      :    -0.04280493616994
+	Scaled_SS Correlation Energy (a.u.):    -0.02881598651447
+	Scaled_OS Correlation Energy (a.u.):    -0.27426965079908
+	DF-SCS-MP2 Total Energy (a.u.)     :  -129.56219098642930
+	DF-SOS-MP2 Total Energy (a.u.)     :  -129.55623080414807
+	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41125375791214
+	DF-MP2 Correlation Energy (a.u.)   :    -0.31500600187597
+	DF-MP2 Total Energy (a.u.)         :  -129.57411135099170
 	======================================================================= 
 
 	Computing unrelaxed response density matrices...
+
 	Forming independent-pairs...
 	Number of alpha independent-pairs:160
 	Number of beta independent-pairs :147
@@ -458,6 +472,20 @@ Total time:
 
 	Computing the relaxed PDMs and GFM...
 
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:43 2016
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:43 2016
+
+
  ============================================================================== 
  ============================================================================== 
  ============================================================================== 
@@ -466,7 +494,7 @@ Total time:
             A General Analytic Gradients Code   
                for Density-Fitted Methods       
                    by Ugur Bozkaya
-              Latest Revision July 02, 2014
+              Latest Revision October 7, 2015
 
  ============================================================================== 
  ============================================================================== 
@@ -487,53 +515,54 @@ Total time:
   -Kinetic Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000017    -0.000000000028     1.946240348099
-       2        0.000000000017     0.000000000028    -1.946240348099
+       1       -0.000000000057    -0.000000000008     1.946240337223
+       2        0.000000000057     0.000000000008    -1.946240337223
 
 
   -Potential Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000141     0.000000000233   -30.937234848270
-       2       -0.000000000141    -0.000000000233    30.937234848270
+       1        0.000000000438     0.000000000063   -30.937234742426
+       2       -0.000000000438    -0.000000000063    30.937234742426
 
 
   -Overlap Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000    -0.000000000001     0.974216364402
-       2        0.000000000000     0.000000000001    -0.974216364402
+       1       -0.000000000015    -0.000000000002     0.974216358318
+       2        0.000000000015     0.000000000002    -0.974216358318
 
 
   -One-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000124     0.000000000205   -28.990994500171
-       2       -0.000000000124    -0.000000000205    28.990994500170
+       1        0.000000000381     0.000000000055   -28.990994405203
+       2       -0.000000000381    -0.000000000055    28.990994405204
 
 
   -Two-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000109    -0.000000000180    16.127150454118
-       2        0.000000000109     0.000000000180   -16.127150454118
+       1       -0.000000000326    -0.000000000047    16.127150373360
+       2        0.000000000326     0.000000000047   -16.127150373361
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000015     0.000000000025    -0.195356237301
-       2       -0.000000000015    -0.000000000025     0.195356237300
+       1        0.000000000039     0.000000000006    -0.195356229174
+       2       -0.000000000039    -0.000000000006     0.195356229175
 
 
-*** tstop() called on bozkaya at Wed Jul  2 21:17:54 2014
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:43 2016
 Module time:
-	user time   =       3.03 seconds =       0.05 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.20 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.40 seconds =       0.09 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	Analytic gradients................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

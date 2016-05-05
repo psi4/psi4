@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <cmath>
@@ -40,18 +45,22 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.h>
+#include <libdpd/dpd.h>
+#include "libtrans/integraltransform.h"
 #include "psifiles.h"
 
 extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
+extern MOInfo *moinfo;
+
 using namespace std;
 
-void CCTransform::read_integrals_mrpt2()
+void CCTransform::read_integrals_mrpt2(IntegralTransform *ints)
 {
-  read_oei_mo_integrals_mrpt2();
-  read_tei_mo_integrals_mrpt2();
+    read_oei_mo_integrals_mrpt2();
+    read_tei_mo_integrals_mrpt2(ints);
 }
 
 /**
@@ -59,60 +68,111 @@ void CCTransform::read_integrals_mrpt2()
  */
 void CCTransform::read_oei_mo_integrals_mrpt2()
 {
-  read_oei_so_integrals();
-  transform_oei_so_integrals();
+    read_oei_so_integrals();
+    transform_oei_so_integrals();
 }
 
 /**
  * Read the two electron MO integrals from an iwl buffer assuming Pitzer ordering and store them in the packed array tei_mo
  */
-void CCTransform::read_tei_mo_integrals_mrpt2()
+void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
 {
-  // Read all the (frozen + non-frozen) TEI in Pitzer order
-  // and store them in a in-core block-matrix
-//   CCIndex* mo_indexing = blas->get_index("[n>=n]");
+#define ID(x) ints->DPD_ID(x)
+    // Read all the (frozen + non-frozen) TEI in Pitzer order
+    // and store them in a in-core block-matrix
+    //   CCIndex* mo_indexing = blas->get_index("[n>=n]");
 
-  double value;
-  size_t p,q,r,s,pq,rs,pqrs,irrep;
-  size_t ilsti,nbuf,fi,index,elements;
-  elements = 0;
-  struct iwlbuf ERIIN;
-  iwl_buf_init(&ERIIN,PSIF_MO_TEI,0.0,1,1);
-    do{
-      ilsti = ERIIN.lastbuf;
-      nbuf  = ERIIN.inbuf;
-      fi    = 0;
-      for(index = 0; index < nbuf; index++){
-        // Compute the [pq] index for this pqrs combination
-        p = abs(ERIIN.labels[fi]);
-        q = ERIIN.labels[fi+1];
-        r = ERIIN.labels[fi+2];
-        s = ERIIN.labels[fi+3];
-        value = ERIIN.values[index];
+    dpdbuf4 I;
 
-//         outfile->Printf("\n  (%2d %2d|%2d %2d) = %20.12f",p,q,r,s,value);
+    dpd_set_default(ints->get_dpd_id());
+    boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+    psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-        integral_map[four(p,q,r,s)]=value;
-//         irrep = mo_indexing->get_tuple_irrep(p,q);
-//         pq    = mo_indexing->get_tuple_rel_index(p,q);
-//         rs    = mo_indexing->get_tuple_rel_index(r,s);
-//         pqrs  = INDEX(pq,rs);
-//         tei_mo[irrep][pqrs]=value;
-        fi += 4;
-        elements++;
-      }
-      if(!ilsti)
-        iwl_buf_fetch(&ERIIN);
-    } while(!ilsti);
-  outfile->Printf("\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
-  
-  iwl_buf_close(&ERIIN,1);
+    std::vector<int> mopi   = moinfo->get_mopi();
+    std::vector<int> doccpi = moinfo->get_docc();
+    std::vector<int> foccpi = moinfo->get_focc();
+    int nirreps = moinfo->get_nirreps();
+    std::vector<int> offsets(nirreps, 0);
+    int offset = 0;
+    for(int h = 1; h < nirreps; ++h){
+        offset += mopi[h-1];
+        offsets[h] = offset;
+    }
+    size_t elements = 0;
+
+    // Loop over the DPD buffers for the two integral classes (exchange and then coulomb).
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M,A]"), ID("[M,A]"),
+                           ID("[M,A]"),  ID("[M,A]"), 0, "MO Ints (MA|MA)");
+    for(int h = 0; h < I.params->nirreps; ++h){
+        global_dpd_->buf4_mat_irrep_init(&I, h);
+        global_dpd_->buf4_mat_irrep_rd(&I, h);
+        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+            int p = I.params->roworb[h][pq][0];
+            int q = I.params->roworb[h][pq][1];
+            int psym = I.params->psym[p];
+            int qsym = I.params->qsym[q];
+            int prel = p - I.params->poff[psym];
+            int qrel = q - I.params->qoff[qsym];
+            for(int rs = 0; rs <= pq; ++rs){
+                int r = I.params->colorb[h][rs][0];
+                int s = I.params->colorb[h][rs][1];
+                int rsym = I.params->rsym[r];
+                int ssym = I.params->ssym[s];
+                int rrel = r - I.params->roff[rsym];
+                int srel = s - I.params->soff[ssym];
+                int pidx = offsets[psym] + prel;
+                int qidx = offsets[qsym] + qrel;
+                int ridx = offsets[rsym] + rrel;
+                int sidx = offsets[ssym] + srel;
+                integral_map[four(pidx,qidx,ridx,sidx)] = I.matrix[h][pq][rs];
+                ++elements;
+            }
+        }
+        global_dpd_->buf4_mat_irrep_close(&I, h);
+    }
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[M>=M]+"), ID("[E>=E]+"),
+                           ID("[M>=M]+"),  ID("[E>=E]+"), 0, "MO Ints (MM|EE)");
+    for(int h = 0; h < I.params->nirreps; ++h){
+        global_dpd_->buf4_mat_irrep_init(&I, h);
+        global_dpd_->buf4_mat_irrep_rd(&I, h);
+        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+            int p = I.params->roworb[h][pq][0];
+            int q = I.params->roworb[h][pq][1];
+            int psym = I.params->psym[p];
+            int qsym = I.params->qsym[q];
+            int prel = p - I.params->poff[psym];
+            int qrel = q - I.params->qoff[qsym];
+            for(int rs = 0; rs < I.params->coltot[h]; ++rs){
+                int r = I.params->colorb[h][rs][0];
+                int s = I.params->colorb[h][rs][1];
+                int rsym = I.params->rsym[r];
+                int ssym = I.params->ssym[s];
+                int rrel = r - I.params->roff[rsym];
+                int srel = s - I.params->soff[ssym];
+                int pidx = offsets[psym] + prel;
+                int qidx = offsets[qsym] + qrel;
+                int ridx = offsets[rsym] + foccpi[rsym] + doccpi[rsym] + rrel;
+                int sidx = offsets[ssym] + foccpi[ssym] + doccpi[ssym] + srel;
+                integral_map[four(pidx,qidx,ridx,sidx)] = I.matrix[h][pq][rs];
+                ++elements;
+            }
+        }
+        global_dpd_->buf4_mat_irrep_close(&I, h);
+    }
+    global_dpd_->buf4_close(&I);
+
+    psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    outfile->Printf("\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
 }
 
 double CCTransform::tei_mrpt2(int p, int q, int r, int s)
 {
-//   outfile->Printf("\n  (%2d %2d|%2d %2d) = %20.15f",p,q,r,s,integral_map[four(p,q,r,s)]);
-  return(integral_map[four(p,q,r,s)]);
+    //   outfile->Printf("\n  (%2d %2d|%2d %2d) = %20.15f",p,q,r,s,integral_map[four(p,q,r,s)]);
+    return(integral_map[four(p,q,r,s)]);
 }
 
 }} /* End Namespaces */

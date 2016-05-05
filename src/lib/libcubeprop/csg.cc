@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <boost/filesystem.hpp>
@@ -43,10 +48,11 @@ using namespace std;
 namespace psi {
 
 CubicScalarGrid::CubicScalarGrid(
-        boost::shared_ptr<BasisSet> primary) :
+        boost::shared_ptr<BasisSet> primary,
+        Options& options) :
         primary_(primary),
         mol_(primary->molecule()),
-        options_(Process::environment.options)
+        options_(options)
 {
     filepath_ = "";
     npoints_ = 0L;
@@ -163,6 +169,7 @@ void CubicScalarGrid::populate_grid()
     double xyz = pow((double) max_points, 1.0/3.0);
     nxyz_ = (size_t) pow((double) max_points, 1.0/3.0);
 
+    blocks_.clear();
     size_t offset = 0L;
     for (int istart = 0L; istart <= N_[0]; istart+=nxyz_) {
         int ni = (istart + nxyz_ > N_[0] ? (N_[0] + 1) - istart : nxyz_);
@@ -224,6 +231,7 @@ void CubicScalarGrid::print_header()
     outfile->Printf("    Z Maximum    = %16.3E\n", O_[2] + D_[2] * N_[2]);
     outfile->Printf("\n");
 
+    primary_->print();
     outfile->Flush();
 }
 void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type)
@@ -313,15 +321,13 @@ void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
         offset += npoints;
     }
 }
-void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
+void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights)
 {
-    // => Auxiliary Basis Set (TODO: Get appropriate default) <= //
+    // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
-    
-    // => DF Options (TODO: Should these be in here?) <= //
-
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+        options_.get_str("BASIS"), primary_->has_puream());
     double cutoff    = options_.get_double("INTS_TOLERANCE");
     double condition = options_.get_double("DF_FITTING_CONDITION");
 
@@ -485,13 +491,13 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
         VintT[thread]->compute(VtempT[thread]);
 
         // Contraction 
-        v[P] += C_DDOT(naux,dp,1,VtempTp[0],1);
+        v[P] += C_DDOT(naux,dp,1,VtempTp[0],1); // Potential integrals are negative definite already
     }
     
     // => Nuclear Part <= //
 
     for (int A = 0; A < mol_->natom(); A++) {
-        double Z = mol_->Z(A);
+        double Z = mol_->Z(A) * (nuc_weights.size() ? nuc_weights[A] : 1.0);
         double x = mol_->x(A);
         double y = mol_->y(A);
         double z = mol_->z(A);
@@ -617,11 +623,11 @@ void CubicScalarGrid::compute_density(boost::shared_ptr<Matrix> D, const std::st
     write_gen_file(v,name,type);
     delete[] v;
 }
-void CubicScalarGrid::compute_esp(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_esp(boost::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name, const std::string& type)
 {
     double* v = new double[npoints_];
     memset(v,'\0',npoints_*sizeof(double));
-    add_esp(v,D);
+    add_esp(v,D,w);
     write_gen_file(v,name,type);
     delete[] v;
 }

@@ -25,7 +25,6 @@ if(NOT PCMSolver_FOUND)
   list(APPEND PCMSolverCMakeArgs
     -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
-    -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
     -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -33,8 +32,8 @@ if(NOT PCMSolver_FOUND)
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
     -DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
-    -DBOOST_INCLUDEDIR=${BOOST_INCLUDE_DIRS}
-    -DBOOST_LIBRARYDIR=${BOOST_LIBRARIES}
+    -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
+    -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DENABLE_TESTS=OFF
     -DENABLE_LOGGER=OFF
@@ -48,13 +47,25 @@ if(NOT PCMSolver_FOUND)
     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     -DCMAKE_INSTALL_LIBDIR=lib
     )
-  ExternalProject_Add(interface_pcmsolver
-    PREFIX ${CUSTOM_PCMSolver_LOCATION}
-    GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-    GIT_TAG v1.1.0
-    CMAKE_ARGS "${PCMSolverCMakeArgs}"
-    INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
-    )
+  # Make sure PCMSolver gets exact same Boost as Psi4
+  if(BUILD_CUSTOM_BOOST)
+    ExternalProject_Add(interface_pcmsolver
+      DEPENDS custom_boost
+      PREFIX ${CUSTOM_PCMSolver_LOCATION}
+      GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
+      GIT_TAG v1.1.1
+      CMAKE_ARGS "${PCMSolverCMakeArgs}"
+      INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
+      )
+  else()
+    ExternalProject_Add(interface_pcmsolver
+      PREFIX ${CUSTOM_PCMSolver_LOCATION}
+      GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
+      GIT_TAG v1.1.1
+      CMAKE_ARGS "${PCMSolverCMakeArgs}"
+      INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
+      )
+  endif()
 
   # Set also variables usually set by find_package
   ExternalProject_Get_Property(interface_pcmsolver INSTALL_DIR)

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p3.h"
@@ -31,7 +36,7 @@ void SAPT2p3::elst13()
     foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Elst130,r           = %18.12lf H\n",e_elst130);
+    outfile->Printf("    Elst130,r           = %18.12lf [Eh]\n",e_elst130);
   }
 
   double e_elst103 = elst130(wABB_,wASS_,CHFB_,PSIF_SAPT_AMPS,
@@ -39,13 +44,13 @@ void SAPT2p3::elst13()
     foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Elst103,r           = %18.12lf H\n\n",e_elst103);
+    outfile->Printf("    Elst103,r           = %18.12lf [Eh]\n\n",e_elst103);
   }
 
   e_elst13_ = e_elst130 + e_elst103;
 
   if (print_) {
-    outfile->Printf("    Elst13,r            = %18.12lf H\n",e_elst13_);
+    outfile->Printf("    Elst13,r            = %18.12lf [Eh]\n",e_elst13_);
     
   }
 }
@@ -82,9 +87,9 @@ double SAPT2p3::elst130(double **wBAA, double **wBRR, double **CHFA,
   free_block(yAR);
 
   if (debug_) {
-    outfile->Printf("\n    Elst13_1            = %18.12lf H\n",e1);
-    outfile->Printf("    Elst13_2            = %18.12lf H\n",e2);
-    outfile->Printf("    Elst13_3            = %18.12lf H\n",e3);
+    outfile->Printf("\n    Elst13_1            = %18.12lf [Eh]\n",e1);
+    outfile->Printf("    Elst13_2            = %18.12lf [Eh]\n",e2);
+    outfile->Printf("    Elst13_3            = %18.12lf [Eh]\n",e3);
   }
 
   return(e1+e2+e3);

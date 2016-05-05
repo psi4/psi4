@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -74,7 +79,7 @@ void count_ijk(void)
       }
     }
 
-    outfile->Printf( "\n\tNumber of ijk index combinations: %d\n", nijk);
+    outfile->Printf( "\n    Number of ijk index combinations:   %14d\n", nijk);
 
     if(params.dertype == 1) {
       virtpi = moinfo.virtpi;
@@ -93,7 +98,7 @@ void count_ijk(void)
           }
         }
       }
-      outfile->Printf( "\n\tNumber of abc index combinations: %d\n", nabc);
+      outfile->Printf( "\n    Number of abc index combinations:   %14d\n", nabc);
     } // dertype==1
 
   }
@@ -104,7 +109,7 @@ void count_ijk(void)
     boccpi = moinfo.boccpi;
     bocc_off = moinfo.bocc_off;
 
-    outfile->Printf( "\n\tNumber of ijk index combinations:\n");
+    outfile->Printf( "\n    Number of ijk index combinations:\n");
 
     /** AAA **/
     nijk = 0;
@@ -127,7 +132,7 @@ void count_ijk(void)
       }
     }
 
-    outfile->Printf( "\tSpin Case AAA: %d\n", nijk);
+    outfile->Printf( "    Spin Case AAA:                      %14d\n", nijk);
 
     /** BBB **/
     nijk = 0;
@@ -150,7 +155,7 @@ void count_ijk(void)
       }
     }
 
-    outfile->Printf( "\tSpin Case BBB: %d\n", nijk);
+    outfile->Printf( "    Spin Case BBB:                      %14d\n", nijk);
 
     /** AAB **/
     nijk = 0;
@@ -173,7 +178,7 @@ void count_ijk(void)
       }
     }
 
-    outfile->Printf( "\tSpin Case AAB: %d\n", nijk);
+    outfile->Printf( "    Spin Case AAB:                      %14d\n", nijk);
 
     /** ABB **/
     nijk = 0;
@@ -196,7 +201,7 @@ void count_ijk(void)
       }
     }
 
-    outfile->Printf( "\tSpin Case ABB: %d\n", nijk);
+    outfile->Printf( "    Spin Case ABB:                      %14d\n", nijk);
 
     if(params.dertype == 1) {
       avirtpi = moinfo.avirtpi;
@@ -204,7 +209,7 @@ void count_ijk(void)
       bvirtpi = moinfo.bvirtpi;
       bvir_off = moinfo.bvir_off;
 
-      outfile->Printf( "\n\tNumber of abc index combinations:\n");
+      outfile->Printf( "\n    Number of abc index combinations:\n");
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
         for (a=0; a < avirtpi[Ga]; ++a)
@@ -212,7 +217,7 @@ void count_ijk(void)
             for (b=0; b < avirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < avirtpi[Gc]; ++c) nabc++;
-      outfile->Printf( "\tSpin Case AAA: %d\n", nabc);
+      outfile->Printf( "    Spin Case AAA:                      %14d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -221,7 +226,7 @@ void count_ijk(void)
             for (b=0; b < bvirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      outfile->Printf( "\tSpin Case BBB: %d\n", nabc);
+      outfile->Printf( "    Spin Case BBB:                      %14d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -230,7 +235,7 @@ void count_ijk(void)
             for (b=0; b < avirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      outfile->Printf( "\tSpin Case AAB: %d\n", nabc);
+      outfile->Printf( "    Spin Case AAB:                      %14d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -239,7 +244,7 @@ void count_ijk(void)
             for (b=0; b < bvirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      outfile->Printf( "\tSpin Case ABB: %d\n", nabc);
+      outfile->Printf( "    Spin Case ABB:                      %14d\n", nabc);
 
     } // dertype == 1
 

@@ -1,0 +1,42 @@
+start  h2o
+title Water 
+
+memory total 1600 mb noverify
+
+geometry units au autosym
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+end
+basis noprint
+  H library sto-3g 
+  O library sto-3g
+end
+scf; thresh 1e-6; end
+driver; tight; end
+task scf optimize
+
+scf; thresh 1e-8; print none; end
+task scf freq 
+
+freq
+ reuse; temp 4 298.15 300.0 350.0 400.0
+end
+task scf freq
+
+freq 
+ reuse; mass H 2.014101779
+ temp 1 298.15
+end
+task scf freq
+
+freq
+ reuse; mass 2 2.014101779
+end
+task scf freq
+
+freq
+ reuse; mass 2 2.014101779 ; mass 3 3.01604927
+end
+task scf freq
+

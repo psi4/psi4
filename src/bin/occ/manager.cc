@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <libqt/qt.h>
@@ -1025,16 +1030,16 @@ void OCCWave::ocepa_manager()
 	
 	
 	// Set the global variables with the energies
-	Process::environment.globals["OCEPA(0) TOTAL ENERGY"] = EcepaL;
-	Process::environment.globals["SCS-OCEPA(0) TOTAL ENERGY"] =  Escscepa;
-	Process::environment.globals["SOS-OCEPA(0) TOTAL ENERGY"] =  Esoscepa;
+	Process::environment.globals["OLCCD TOTAL ENERGY"] = EcepaL;
+	Process::environment.globals["SCS-OLCCD TOTAL ENERGY"] =  Escscepa;
+	Process::environment.globals["SOS-OLCCD TOTAL ENERGY"] =  Esoscepa;
 	Process::environment.globals["CURRENT ENERGY"] = EcepaL;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = EcepaL-Escf;
 
-	Process::environment.globals["OCEPA(0) CORRELATION ENERGY"] = EcepaL - Escf;
-	Process::environment.globals["SCS-OCEPA(0) CORRELATION ENERGY"] =  Escscepa - Escf;
-	Process::environment.globals["SOS-OCEPA(0) CORRELATION ENERGY"] =  Esoscepa - Escf;
+	Process::environment.globals["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
+	Process::environment.globals["SCS-OLCCD CORRELATION ENERGY"] =  Escscepa - Escf;
+	Process::environment.globals["SOS-OLCCD CORRELATION ENERGY"] =  Esoscepa - Escf;
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -1139,7 +1144,8 @@ void OCCWave::cepa_manager()
 	
 	
 	// Set the global variables with the energies
-	Process::environment.globals["CEPA(0) TOTAL ENERGY"] = Ecepa;
+	Process::environment.globals["LCCD TOTAL ENERGY"] = Ecepa;
+	Process::environment.globals["LCCD CORRELATION ENERGY"] = Ecorr;
 	Process::environment.globals["CURRENT ENERGY"] = Ecepa;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Ecorr;
@@ -1537,5 +1543,3 @@ void OCCWave::mp2_5_manager()
 
 
 }} // End Namespaces
-
-

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! 
@@ -360,7 +365,7 @@ OptReturnType optking(void) {
           oprintf_out("\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
-          double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+          double *x = p_irc_data->g_x();
           mol1->set_geom_array(x);
           oprintf_out("\tFinal (previous) structure:\n");
           mol1->print_geom_out();  // write geometry -> output file
@@ -614,4 +619,3 @@ void init_ioff(void)
 }
 
 }
-
