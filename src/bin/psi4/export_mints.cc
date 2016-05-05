@@ -953,6 +953,7 @@ void export_mints()
 
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).
+            def("writeNO", &MoldenWriter::writeNO, "docstring"),
             def("write", &MoldenWriter::write, "docstring");
 
     class_<NBOWriter, boost::shared_ptr<NBOWriter> >("NBOWriter", "docstring", no_init).
