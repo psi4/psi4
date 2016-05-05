@@ -275,8 +275,10 @@ private:
     boost::shared_ptr<JK> jk_;
 
     /// General transforms
-    void tf_onel_ints();
-    void form_gmat();
+    // void tf_onel_ints();
+    // void form_gmat();
+    void tf_onel_ints(SharedVector onel, SharedVector twoel, SharedVector output);
+    void form_gmat(SharedVector onel, SharedVector twoel, SharedVector output);
     void onel_ints_from_jk();
     double get_twoel(int i, int j, int k, int l);
     double get_onel(int i, int j);

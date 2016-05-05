@@ -1917,10 +1917,10 @@ int CIvect::write(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   timer_on("CIWave: CIvect write");
-
+   // If we are just an incore buffer
    if (nunits_ < 1) return(1);
 
+   timer_on("CIWave: CIvect write");
 
    if (ivect >= maxvect_) throw PSIEXCEPTION("(CIvect::write): ivect >= maxvect");
    if (ivect > nvect_) throw PSIEXCEPTION("(CIvect::write): ivect > nvect");

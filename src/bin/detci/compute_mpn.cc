@@ -214,7 +214,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
 
   /* oei = CalcInfo_->tf_onel_ints; */
   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
-  else oei = CalcInfo_->gmat->pointer()[0];
+  else oei = CalcInfo_->gmat->pointer();
   tei = CalcInfo_->twoel_ints->pointer();
 
   outfile->Printf("   CalcInfo_->escf = %25.15f\n", CalcInfo_->escf);

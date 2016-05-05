@@ -111,8 +111,8 @@ void CIWavefunction::transform_ci_integrals() {
     read_dpd_ci_ints();
 
     // Form auxiliary matrices
-    tf_onel_ints();
-    form_gmat();
+    tf_onel_ints(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->tf_onel_ints);
+    form_gmat(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->gmat);
 
     // This is a build and burn call
     ints_.reset();
@@ -155,36 +155,58 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
     Dimension zero_dim(nirrep_, "Zero_dim");
     Dimension av_dim = CalcInfo_->ci_orbs + CalcInfo_->rstr_uocc;
     Dimension oa_dim = CalcInfo_->ci_orbs + CalcInfo_->rstr_docc;
+    Dimension rot_dim = get_dimension("ROT");
 
     if ((k->rowspi() != oa_dim) || (k->colspi() != av_dim)){
         throw PSIEXCEPTION("CIWavefunction::rotate_dfmcscf_ints: Rotation matrix k is not of the correct shape");
     }
 
+    // Build up Uact (act x nmo)
+    SharedMatrix Uact(new Matrix("Active U", CalcInfo_->ci_orbs, rot_dim));
+    for (int h=0; h<nirrep_; h++){
+
+        for (int i=0; i<CalcInfo_->ci_orbs[h]; i++){
+            for (int j=0; j<CalcInfo_->rstr_docc[h]; j++){
+                Uact->set(h, i, j, -1 * k->get(h, j, i));
+            }
+
+            for (int j=0; j<av_dim[h]; j++){
+                Uact->set(h, i, j + CalcInfo_->rstr_docc[h], k->get(h, i + CalcInfo_->rstr_docc[h], j));
+            }
+        }
+
+    }
+    Uact->print();
+
+
     // => Setup <= //
     SharedMatrix Cact = get_orbitals("ACT");
-    SharedMatrix Cvir = get_orbitals("VIR");
+    SharedMatrix Crot = get_orbitals("ROT");
 
-    std::vector<SharedMatrix> av_stack;
-    av_stack.push_back(Cact);
-    av_stack.push_back(Cvir);
-    SharedMatrix Cav = Matrix::horzcat(av_stack);
-
-    SharedMatrix H_av_a = Matrix::triplet(Cav, CalcInfo_->so_onel_ints, Cact, true, false, false);
-
-    // Incoming rotation matrix should be oa x av, we only want a x av
-    View vk_a(k, CalcInfo_->ci_orbs, av_dim, CalcInfo_->rstr_docc, zero_dim);
-    SharedMatrix k_a = vk_a();
+    SharedMatrix H_rot_a = Matrix::triplet(Crot, CalcInfo_->so_onel_ints, Cact, true, false, false);
 
     // => Rotate onel ints <= //
-    SharedMatrix rot_onel = Matrix::doublet(k_a, H_av_a);
-    rot_onel->gemm(true, true, 1.0, H_av_a, k_a, 1.0);
-    pitzer_to_ci_order_onel(rot_onel, onel_out);
+    SharedMatrix rot_onel = Matrix::doublet(Uact, H_rot_a);
+    rot_onel->gemm(true, true, 1.0, H_rot_a, Uact, 1.0);
+
+    SharedVector tmponel(new Vector("Temporary onel storage", CalcInfo_->num_ci_tri));
+
+    pitzer_to_ci_order_onel(rot_onel, tmponel);
 
     if (MCSCF_Parameters_->mcscf_type == "DF") {
-        rotate_dfmcscf_twoel_ints(k_a, twoel_out);
+        rotate_dfmcscf_twoel_ints(Uact, twoel_out);
     } else {
-        rotate_mcscf_twoel_ints(k_a, twoel_out);
+        rotate_mcscf_twoel_ints(Uact, twoel_out);
     }
+
+    // Transform the onel ints
+    if (Parameters_->fci){
+        tf_onel_ints(tmponel, twoel_out, onel_out);
+    }
+    else{
+        form_gmat(tmponel, twoel_out, onel_out);
+    }
+
 }
 void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     if (!df_ints_init_) setup_dfmcscf_ints();
@@ -276,8 +298,8 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     pitzer_to_ci_order_twoel(actMO, CalcInfo_->twoel_ints);
     actMO.reset();
 
-    tf_onel_ints();
-    form_gmat();
+    tf_onel_ints(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->tf_onel_ints);
+    form_gmat(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->gmat);
     timer_off("CIWave: DFMCSCF integral transform");
 }
 void CIWavefunction::setup_mcscf_ints() {
@@ -385,8 +407,8 @@ void CIWavefunction::transform_mcscf_ints(bool approx_only) {
     onel_ints_from_jk();
 
     // Form auxiliary matrices
-    tf_onel_ints();
-    form_gmat();
+    tf_onel_ints(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->tf_onel_ints);
+    form_gmat(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->gmat);
     timer_off("CIWave: MCSCF integral transform");
 }
 
@@ -468,7 +490,7 @@ void CIWavefunction::read_dpd_ci_ints() {
     global_dpd_->buf4_close(&I);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
-void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix k_a,
+void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
                                                SharedVector twoel_out) {
     // => Rotate twoel ints <= //
     int nQ = dferi_->size_Q();
@@ -485,30 +507,17 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix k_a,
     fseek(RaQF, 0L, SEEK_SET);
     fread(RaQp, sizeof(double), nrot * nact * nQ, RaQF);
 
-    // Read aaQ
-    boost::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
-    SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
-
-    double* aaQp = aaQ->pointer()[0];
-    FILE* aaQF = aaQT->file_pointer();
-    fseek(aaQF, 0L, SEEK_SET);
-    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
-
     // We could slice it or... I like my raw GEMM
-    // k_a_av DFERI_R_a_Q - > DFERI_a_aQ
+    // Uact_av DFERI_R_a_Q - > DFERI_a_aQ
 
-    SharedMatrix tmp_rot_aaQ(new Matrix("Temp", nact * nact, nQ));
-    SharedMatrix dense_k_a = k_a->to_block_sharedmatrix();
-    double* tmp_rot_aaQp = tmp_rot_aaQ->pointer()[0];
-    double** kappap = dense_k_a->pointer();
-    double** dferip = RaQ->pointer();
-    C_DGEMM('N', 'N', nact, nact*nQ, nav,
-            1.0, kappap[0], nav,
-            (dferip[CalcInfo_->num_rsc_orbs]), nact*nQ,
-            0.0, tmp_rot_aaQp, nact*nQ);
+    SharedMatrix dense_Uact = Uact->to_block_sharedmatrix();
+    SharedMatrix tmp_rot_aaQ = Matrix::doublet(dense_Uact, RaQ);
     RaQ.reset();
 
+
+    // Quv += Qvu
     SharedMatrix rot_aaQ(new Matrix("Rotated aaQ Matrix", nact * nact, nQ));
+    double* tmp_rot_aaQp = tmp_rot_aaQ->pointer()[0];
     double* rot_aaQp = rot_aaQ->pointer()[0];
     for (size_t u = 0; u < nact; ++u) {
         for (size_t v = 0; v < nact; ++v) {
@@ -523,17 +532,29 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix k_a,
         }
     }
 
+    // Read aaQ
+    boost::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
+    SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
+
+    double* aaQp = aaQ->pointer()[0];
+    FILE* aaQF = aaQT->file_pointer();
+    fseek(aaQF, 0L, SEEK_SET);
+    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+
+
+    // Form ERI's
     SharedMatrix rot_twoel = Matrix::doublet(rot_aaQ, aaQ, false, true);
 
     rot_aaQ.reset();
     aaQ.reset();
 
+    // Add final symmetry
     rot_twoel->add(rot_twoel->transpose());
 
     pitzer_to_ci_order_twoel(rot_twoel, twoel_out);
 
 }
-void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix k_a,
+void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix Uact,
                                              SharedVector twoel_out) {
 
 
@@ -555,7 +576,7 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix k_a,
     int nact = CalcInfo_->num_ci_orbs;
     int nav = nact + CalcInfo_->num_rsv_orbs;
 
-    SharedMatrix aaar(new Matrix("Tmp (aa|ar) Matrix", nact*nact*nact, nav));
+    SharedMatrix aaar(new Matrix("Tmp (aa|ar) Matrix", nact*nact*nact, nrot));
 
     double* aaarp = aaar->pointer()[0];
     for (size_t p = 0; p < nact; p++) {
@@ -565,24 +586,23 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix k_a,
             size_t q_sym = I.params->qsym[q];
             size_t pq = I.params->rowidx[p][q];
             size_t pq_sym = p_sym ^ q_sym;
-            size_t left_idx = (p * nact + q) * nact * nav;
+            size_t left_idx = (p * nact + q) * nact * nrot;
 
             for (size_t r = 0; r < nact; r++) {
                 size_t r_sym = I.params->rsym[r];
                 size_t pqr_sym = p_sym ^ q_sym ^ r_sym;
 
-                for (size_t s = 0; s < nav; s++) {
-                    size_t rel_s = s + CalcInfo_->num_rsc_orbs;
-                    size_t s_sym = I.params->ssym[rel_s];
+                for (size_t s = 0; s < nrot; s++) {
+                    size_t s_sym = I.params->ssym[s];
                     size_t rs_sym = r_sym ^ s_sym;
                     if (pq_sym != rs_sym) continue;
-                    size_t rs = I.params->colidx[r][rel_s];
+                    size_t rs = I.params->colidx[r][s];
 
                     double value = I.matrix[pq_sym][pq][rs];
-                    size_t right_idx = r * nav + s;
+                    size_t right_idx = r * nrot + s;
 
-                    outfile->Printf("%zd %zd %zd %zd | %zd %zd %zd %zd | %lf\n",
-                                    p, q, r, rel_s, pq_sym, pq, rs, left_idx + right_idx, value);
+                    // outfile->Printf("%zd %zd %zd %zd | %zd %zd %zd %zd | %lf\n",
+                    //                 p, q, r, rel_s, pq_sym, pq, rs, left_idx + right_idx, value);
                     aaarp[left_idx + right_idx] = value;
                 }
             }
@@ -599,8 +619,8 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix k_a,
 
     // aaar->print();
     // Rotate the integrals
-    SharedMatrix dense_k_a = k_a->to_block_sharedmatrix();
-    SharedMatrix half_rot_aaaa = Matrix::doublet(aaar, dense_k_a, false, true);
+    SharedMatrix dense_Uact = Uact->to_block_sharedmatrix();
+    SharedMatrix half_rot_aaaa = Matrix::doublet(aaar, dense_Uact, false, true);
 
     aaar.reset();
 
@@ -623,9 +643,11 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix k_a,
             }
         }
     }
-    rot_twoel->print();
+    // rot_twoel->print();
 
     rot_twoel->add(rot_twoel->transpose());
+    // rot_twoel->print();
+
 
     pitzer_to_ci_order_twoel(rot_twoel, twoel_out);
 
@@ -659,10 +681,14 @@ double CIWavefunction::get_twoel(int i, int j, int k, int l) {
 **    equation (20) of Olsen, Roos, et. al. JCP 1988
 **
 */
-void CIWavefunction::tf_onel_ints() {
-    /* set up some shorthand notation (speed up access) */
+void CIWavefunction::tf_onel_ints(SharedVector onel, SharedVector twoel, SharedVector output) {
+
+    /* set up some shorthand notation */
     size_t nbf = CalcInfo_->num_ci_orbs;
-    double* tf_onel = CalcInfo_->tf_onel_ints->pointer();
+
+    if ((output->dim(0) != CalcInfo_->num_ci_tri) || (output->nirrep() != 1)){
+        throw PSIEXCEPTION("CIWavefunction::tf_onel_ints: output is not of the correct shape.");
+    }
 
     /* ok, new special thing for CASSCF...if there are *no* excitations
        size_to restricted orbitals, and if Parameters_->fci=TRUE, then we
@@ -670,24 +696,24 @@ void CIWavefunction::tf_onel_ints() {
        we would need to account for RAS-out-of-space contributions
        (requiring fci=false).
      */
-    if (Parameters_->fci && (nbf > Parameters_->ras3_lvl) &&
-        Parameters_->ras34_max == 0)
+    if (Parameters_->fci && (nbf > Parameters_->ras3_lvl) && (Parameters_->ras34_max == 0)){
         nbf = Parameters_->ras3_lvl;
+    }
 
     /* fill up the new array */
     double tval;
     for (size_t i = 0, ij = 0; i < nbf; i++) {
         for (size_t j = 0; j <= i; j++) {
-            tval = CalcInfo_->onel_ints->get(ij);
+            tval = onel->get(ij);
 
             for (size_t k = 0; k < nbf; k++) {
                 size_t ik = ioff[MAX0(i, k)] + MIN0(i, k);
                 size_t kj = ioff[MAX0(k, j)] + MIN0(k, j);
                 size_t ikkj = ioff[ik] + kj;
-                tval -= 0.5 * CalcInfo_->twoel_ints->get(ikkj);
+                tval -= 0.5 * twoel->get(ikkj);
             }
 
-            tf_onel[ij++] = tval;
+            output->set(ij++, tval);
         }
     }
 }
@@ -698,45 +724,48 @@ void CIWavefunction::tf_onel_ints() {
 **    See equations (28-29) in Olsen, Roos, et. al. JCP 1988
 **
 */
-void CIWavefunction::form_gmat() {
+void CIWavefunction::form_gmat(SharedVector onel, SharedVector twoel, SharedVector output) {
 
-    /* set up some shorthand notation (speed up access) */
+    /* set up some shorthand notation */
     double tval;
     size_t i, j, k, ij, ii, ik, kj, ikkj, iiij;
     size_t nbf = CalcInfo_->num_ci_orbs;
-    double** gmat = CalcInfo_->gmat->pointer();
+
+    if ((output->dim(0) != (nbf * nbf)) || (output->nirrep() != 1)){
+        throw PSIEXCEPTION("CIWavefunction::form_gmat: output is not of the correct shape.");
+    }
 
     /* fill up the new array */
     for (i = 0; i < nbf; i++) {
         for (j = i + 1; j < nbf; j++) {
             ij = ioff[j] + i;
-            tval = CalcInfo_->onel_ints->get(ij);
+            tval = onel->get(ij);
             for (k = 0; k < i; k++) {
                 ik = ioff[i] + k;
                 kj = ioff[j] + k;
                 ikkj = ioff[kj] + ik;
-                tval -= CalcInfo_->twoel_ints->get(ikkj);
+                tval -= twoel->get(ikkj);
             }
-            gmat[i][j] = tval;
+            output->set(i * nbf + j, tval);
         }
     }
 
     for (i = 0, ij = 0; i < nbf; i++) {
         for (j = 0; j <= i; j++, ij++) {
-            tval = CalcInfo_->onel_ints->get(ij);
+            tval = onel->get(ij);
             for (k = 0; k < i; k++) {
                 ik = ioff[i] + k;
                 kj = ioff[MAX0(k, j)] + MIN0(k, j);
                 ikkj = ioff[ik] + kj;
-                tval -= CalcInfo_->twoel_ints->get(ikkj);
+                tval -= twoel->get(ikkj);
             }
             ii = ioff[i] + i;
             iiij = ioff[ii] + ij;
             if (i == j)
-                tval -= 0.5 * CalcInfo_->twoel_ints->get(iiij);
+                tval -= 0.5 * twoel->get(iiij);
             else
-                tval -= CalcInfo_->twoel_ints->get(iiij);
-            gmat[i][j] = tval;
+                tval -= twoel->get(iiij);
+            output->set(i * nbf + j, tval);
         }
     }
 }
@@ -779,8 +808,8 @@ void CIWavefunction::pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel irreps are not of the correct size.");
     }
 
-    size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
-    if (dest->dim(0) != ncitri){
+    // size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
+    if (dest->dim(0) != CalcInfo_->num_ci_tri){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel: Destination vector must be of size ncitri.");
     }
 
@@ -806,9 +835,9 @@ void CIWavefunction::pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector des
     if ((src->nirrep() != 1) || dest->nirrep() != 1){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_twoel irreped matrices are not supported.");
     }
-    size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
-    size_t ncitri2 = (ncitri * (ncitri + 1)) / 2;
-    if (dest->dim(0) != ncitri2){
+    // size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
+    // size_t ncitri2 = (ncitri * (ncitri + 1)) / 2;
+    if (dest->dim(0) != CalcInfo_->num_ci_tri2){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel: Destination vector must be of size ncitri2.");
     }
 

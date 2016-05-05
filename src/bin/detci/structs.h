@@ -325,7 +325,7 @@ struct calcinfo {
    SharedMatrix so_onel_ints; /* Pitzer-order one-electron integrals */
    SharedVector onel_ints;    /* CI-order one-electron integrals */
    SharedVector tf_onel_ints; /* CI-order transformed (avg) one-electron integrals */
-   SharedMatrix gmat;         /* CI-order onel ints in RAS g matrix form, not symmetry packed */
+   SharedVector gmat;         /* CI-order onel ints in RAS g matrix form, not symmetry packed */
    SharedVector twoel_ints;   /* CI-order two-electron integrals */
    int num_fzc_orbs;     /* number of frozen core orbitals */
    int num_rsc_orbs;     /* number of restricted core orbitals */
@@ -347,6 +347,8 @@ struct calcinfo {
    int num_alp_str;      /* number of alpha strings */
    int num_bet_str;      /* number of beta strings */
    int num_ci_orbs;      /* nmo - num orbs frozen */
+   size_t num_ci_tri;    /* number of upper triangular ci orbs */
+   size_t num_ci_tri2;   /* number of doubly upper triangular ci orbs (example: two-el integrals) */
    int ref_alp;          /* address of reference alpha string */
    int ref_bet;          /* address of reference beta string */
    int ref_alp_list;     /* string list containing reference alpha string */

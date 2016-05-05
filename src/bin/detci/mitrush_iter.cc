@@ -129,7 +129,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    num_alp_str = CalcInfo_->num_alp_str;
    num_bet_str = CalcInfo_->num_bet_str;
    if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
-   else oei = CalcInfo_->gmat->pointer()[0];
+   else oei = CalcInfo_->gmat->pointer();
    tei = CalcInfo_->twoel_ints->pointer();
 
    /* small arrays to hold most important config information */
