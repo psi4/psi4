@@ -304,9 +304,6 @@ void CIWavefunction::get_parameters(Options &options)
       Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
     else if (line1 == "DFILE")
       Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
- /* else if (Parameters_->mpn) Parameters_->guess_vector = PARM_GUESS_VEC_UNIT; */
-    else if (line1 == "IMPORT")
-      Parameters_->guess_vector = PARM_GUESS_VEC_IMPORT;
     else Parameters_->guess_vector = PARM_GUESS_VEC_UNIT;
   }
 
@@ -832,9 +829,6 @@ void CIWavefunction::print_parameters(void)
          break;
       case PARM_GUESS_VEC_DFILE:
          outfile->Printf( "%7s", "D FILE");
-         break;
-      case PARM_GUESS_VEC_IMPORT:
-         outfile->Printf( "%7s", "IMPORT");
          break;
       default:
          outfile->Printf( "%7s", "???");

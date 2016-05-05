@@ -409,51 +409,6 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      k = 1;
    }
 
-   /* import a previously exported CI vector */
-   else if (Parameters_->guess_vector == PARM_GUESS_VEC_IMPORT) {
-
-     SlaterDetSet *dets;
-     int *import_alplist, *import_alpidx, *import_betlist, *import_betidx;
-     int *import_blknums;
-
-     slaterdetset_read(PSIF_CIVECT, "CI vector", &dets);
-
-     // store the alpha graph, relative alpha index, beta graph, relative
-     // beta index, and CI block number for each imported determinant
-     import_alplist = init_int_array(dets->size);
-     import_alpidx  = init_int_array(dets->size);
-     import_betlist = init_int_array(dets->size);
-     import_betidx  = init_int_array(dets->size);
-     import_blknums = init_int_array(dets->size);
-
-     parse_import_vector(dets, import_alplist, import_alpidx, import_betlist,
-       import_betidx, import_blknums);
-
-     k=0;
-     for (i=0; i<nroots; i++) {
-
-       zero_arr(buffer2, dets->size);
-       slaterdetset_read_vect(PSIF_CIVECT, "CI vector", buffer2,
-         dets->size, i);
-
-       // initialize the values in Cvec
-       Cvec.buf_lock(buffer1);
-       Cvec.init_vals(i, dets->size, import_alplist, import_alpidx,
-         import_betlist, import_betidx, import_blknums, buffer2);
-       Cvec.buf_unlock();
-       k++; // increment number of vectors
-     }
-
-     Cvec.write_num_vecs(k);
-     Sigma.set_zero_blocks_all();
-
-     // when we're done, free the memory
-     slaterdetset_delete_full(dets);
-     free(import_alplist);  free(import_alpidx);
-     free(import_betlist);  free(import_betidx);
-     free(import_blknums);
-   }
-
    else { /* use H0BLOCK eigenvector guess */
       if (Parameters_->precon == PRECON_GEN_DAVIDSON) L = H0block_->size;
       else L = H0block_->guess_size;
