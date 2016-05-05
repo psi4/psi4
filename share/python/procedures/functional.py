@@ -29,14 +29,18 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
-#CUimport psi4
 import re
 import os
 import sys
 import math
 import copy
-#CUfrom psiexceptions import *
-#CUfrom dashparam import *
+import psi4
+import sys
+
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 from qcdb.interface_dftd3 import *
 
 ## ==> Functionals <== ##

@@ -38,6 +38,9 @@ except ImportError:
 from .dashparam import *
 from .molecule import Molecule
 
+# DGAS This should be removed!
+import psi4
+
 
 def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=False):
     """Function to call Grimme's dftd3 program (http://toc.uni-muenster.de/DFTD3/)

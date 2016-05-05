@@ -31,8 +31,12 @@ import collections
 import shelve
 import copy
 import os
-import p4util
 import psi4
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
+import p4util
 from p4const import *
 
 def run_roa(name, **kwargs):

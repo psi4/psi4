@@ -35,7 +35,7 @@ set {
 set scf d_convergence 10
 set detci e_convergence 8
 
-thisenergy = energy('fci')
+thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
 
 compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST

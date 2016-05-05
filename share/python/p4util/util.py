@@ -26,11 +26,10 @@
 #
 
 """Module with utility functions for use in input files."""
-#CUimport psi4
 import sys
 import os
 import math
-from p4xcpt import *
+from .exceptions import *
 
 
 def oeprop(wfn, *args, **kwargs):

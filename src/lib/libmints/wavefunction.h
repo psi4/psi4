@@ -209,7 +209,6 @@ protected:
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
-    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
     SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
@@ -429,6 +428,16 @@ public:
     * @return the matrix in the desired basis
     **/
     SharedMatrix Db_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the D matrix in the desired basis
+    * @param D matrix in the SO basis to transform
+    * @param C matrix in the SO basis to use as a transformer
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO, CartAO
+    * @return the D matrix in the desired basis
+    **/
+    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
 
     /**
     * Return the alpha orbital eigenvalues in the desired basis

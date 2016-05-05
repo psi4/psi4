@@ -2376,19 +2376,6 @@ void RDFMP2::form_Z()
         psio_->close(PSIF_DFMP2_AIA,1);
         cphf->postiterations();
 
-        // Compute one-electron properties
-        boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
-        oe->set_Da_so(Da_);
-
-        oe->add("DIPOLE");
-        oe->add("QUADRUPOLE");
-        oe->add("MULLIKEN_CHARGES");
-        oe->add("NO_OCCUPATIONS");
-
-        oe->set_title("DF-MP2");
-
-        oe->compute();
-
         return;
     }
     //Zia->print();

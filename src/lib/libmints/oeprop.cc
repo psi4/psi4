@@ -925,11 +925,11 @@ void OEProp::compute_multipoles(int order, bool transition)
         aompOBI->compute(mp_ints);
 
         if (same_dens_) {
-            Da = wfn_->Da_subset("CartAO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
             Db = Da;
         } else {
-            Da = wfn_->Da_subset("CartAO");
-            Db = wfn_->Db_subset("CartAO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
+            Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO");
         }
     }
 
@@ -1039,11 +1039,11 @@ void OEProp::compute_esp_over_grid()
 
     outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
 
-    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
+    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(wfn_->Db_subset("CartAO"));
+        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO"));
     }
 
     int nao = basisset_->nao();
@@ -1082,11 +1082,11 @@ void OEProp::compute_field_over_grid()
 
     outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
 
-    SharedMatrix Dtot = wfn_->Da_subset("CartAO");
+    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(wfn_->Db_subset("CartAO"));
+        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO"));
     }
 
     boost::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
@@ -1128,11 +1128,11 @@ void OEProp::compute_esp_at_nuclei()
     int nbf = basisset_->nbf();
     int natoms = mol->natom();
 
-    SharedMatrix Dtot = wfn_->Da_subset("AO");
+    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(wfn_->Db_subset("AO"));
+        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "AO"));
     }
 
     Matrix dist = mol->distance_matrix();
@@ -1170,11 +1170,11 @@ void OEProp::compute_dipole(bool transition)
     SharedMatrix Da;
     SharedMatrix Db;
     std::vector<SharedMatrix> dipole_ints;
-    if(origin_preserves_symmetry_){
+    if (origin_preserves_symmetry_) {
         // Use symmetry
-        OperatorSymmetry dipsymm (1, mol, integral_, factory_);
+        OperatorSymmetry dipsymm(1, mol, integral_, factory_);
         dipole_ints = dipsymm.create_matrices("SO Dipole");
-        boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
+        boost::shared_ptr<OneBodySOInt> sodOBI(integral_->so_dipole());
         sodOBI->ob()->set_origin(origin_);
         sodOBI->compute(dipole_ints);
         if (same_dens_) {
@@ -1183,28 +1183,30 @@ void OEProp::compute_dipole(bool transition)
         } else {
             Da = Da_so_;
             Db = Db_so_;
-        }    }else{
+        }
+    } else {
         // Don't use symmetry
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
-        boost::shared_ptr<OneBodyAOInt> aodOBI (integral_->ao_dipole());
+        dipole_ints.push_back(SharedMatrix(
+            new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(
+            new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(
+            new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
+        boost::shared_ptr<OneBodyAOInt> aodOBI(integral_->ao_dipole());
         aodOBI->set_origin(origin_);
         aodOBI->compute(dipole_ints);
         if (same_dens_) {
-            Da = wfn_->Da_subset("AO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
             Db = Da;
         } else {
-            Da = wfn_->Da_subset("AO");
-            Db = wfn_->Db_subset("AO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+            Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
         }
     }
 
-
-    if(print_ > 4)
-        for(int n = 0; n < 3; ++n)
-            dipole_ints[n]->print();
-
+    if (print_ > 4){
+        for (int n = 0; n < 3; ++n) dipole_ints[n]->print();
+    }
 
     de[0] = Da->vector_dot(dipole_ints[0]) + Db->vector_dot(dipole_ints[0]);
     de[1] = Da->vector_dot(dipole_ints[1]) + Db->vector_dot(dipole_ints[1]);
@@ -1284,11 +1286,11 @@ void OEProp::compute_quadrupole(bool transition)
         aoqOBI->set_origin(origin_);
         aoqOBI->compute(qpole_ints);
         if (same_dens_) {
-            Da = wfn_->Da_subset("AO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
             Db = Da;
         } else {
-            Da = wfn_->Da_subset("AO");
-            Db = wfn_->Db_subset("AO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+            Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
         }
     }
 
@@ -1520,13 +1522,12 @@ void OEProp::compute_mulliken_charges()
     SharedMatrix Db;
 
 //    Get the Density Matrices for alpha and beta spins
-
     if (same_dens_) {
-        Da = wfn_->Da_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
         Db = Da;
     } else {
-        Da = wfn_->Da_subset("AO");
-        Db = wfn_->Db_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+        Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
     }
 
 //    Compute the overlap matrix
@@ -1607,13 +1608,12 @@ void OEProp::compute_lowdin_charges()
     boost::shared_ptr<Vector> evals(new Vector(basisset_->nbf()));
 
 //    Get the Density Matrices for alpha and beta spins
-
     if (same_dens_) {
-        Da = wfn_->Da_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
         Db = Da;
     } else {
-        Da = wfn_->Da_subset("AO");
-        Db = wfn_->Db_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+        Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
     }
 
 //    Compute the overlap matrix
@@ -1682,13 +1682,12 @@ void OEProp::compute_mayer_indices()
     SharedMatrix DSb(new Matrix("D * S beta matrix",nbf,nbf));
 
 //    Get the Density Matrices for alpha and beta spins
-
     if (same_dens_) {
-        Da = wfn_->Da_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
         Db = Da;
     } else {
-        Da = wfn_->Da_subset("AO");
-        Db = wfn_->Db_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+        Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
     }
 
 //    Compute the overlap matrix
@@ -1796,13 +1795,12 @@ void OEProp::compute_wiberg_lowdin_indices()
     boost::shared_ptr<Vector> evals(new Vector(nbf));
 
 //    Get the Density Matrices for alpha and beta spins
-
     if (same_dens_) {
-        Da = wfn_->Da_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
         Db = Da;
     } else {
-        Da = wfn_->Da_subset("AO");
-        Db = wfn_->Db_subset("AO");
+        Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+        Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
     }
 
 //    Compute the overlap matrix

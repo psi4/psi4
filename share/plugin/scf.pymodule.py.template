@@ -33,7 +33,7 @@ import os
 import inputparser
 import math
 import warnings
-from driver import *
+import driver
 from wrappers import *
 from molutil import *
 import p4util
@@ -73,7 +73,7 @@ def run_@plugin@(name, **kwargs):
         return @plugin@_wfn.energy()
 
 # Integration with driver routines
-procedures['energy']['@plugin@'] = run_@plugin@
+driver.procedures['energy']['@plugin@'] = run_@plugin@
 
 
 def exampleFN():

@@ -88,7 +88,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& ali
         try {
             // Grab the SuperFunctional off of the Python plane
             PyObject *functional;
-            PY_TRY(functional, PyImport_ImportModule("functional") );
+            PY_TRY(functional, PyImport_ImportModule("procedures.functional") );
             PyObject *function;
             PY_TRY(function, PyObject_GetAttrString(functional, "build_superfunctional"));
             PyObject *pargs;

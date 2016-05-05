@@ -22,16 +22,15 @@ symmetry c2v
 }
 
 set {
-reference rohf
-basis cc-pVDZ 
-docc [1,0,0,0]
-socc [1,0,0,0]
-dipmom true
-num_roots 2
-df_scf_guess false
+    reference       rohf
+    basis           cc-pVDZ 
+    docc            [1,0,0,0]
+    socc            [1,0,0,0]
+    dipmom          true
+    num_roots       2
 }
 
-thisenergy = energy('fci')
+thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
 
 compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST

@@ -25,203 +25,81 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
+from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import re
-#CUimport psi4
-#CUimport p4util
-#CUimport p4const
-from proc import *
-from interface_cfour import *
-#CUfrom functional import *
-#CUfrom p4regex import *
+import math
+import os
+import shutil
+
+import psi4
+
+# Import driver helpers
+import driver_util
+import driver_cbs
+import driver_nbody
+
+from procedures import *
+import p4util
+from p4util.exceptions import *
 # never import wrappers or aliases into this file
 
+def _find_derivative_type(ptype, method_name, user_dertype):
+    r"""
+    Figures out the derivative type (0, 1, 2) for a given method_name. Will
+    first use user default and then the highest available derivative type for
+    a given method.
+    """
 
-# Procedure lookup tables
-procedures = {
-        'energy': {
-            'scf'           : run_scf,
-            'mcscf'         : run_mcscf,
-            'dcft'          : run_dcft,
-            'mp3'           : select_mp3,
-            'mp2.5'         : select_mp2p5,
-            'mp2'           : select_mp2,
-            'omp2'          : select_omp2,
-            'scs-omp2'      : run_occ,
-            'scs(n)-omp2'   : run_occ,
-            'scs-omp2-vdw'  : run_occ,
-            'sos-omp2'      : run_occ,
-            'sos-pi-omp2'   : run_occ,
-            'omp3'          : select_omp3,
-            'scs-omp3'      : run_occ,
-            'scs(n)-omp3'   : run_occ,
-            'scs-omp3-vdw'  : run_occ,
-            'sos-omp3'      : run_occ,
-            'sos-pi-omp3'   : run_occ,
-            'olccd'         : select_olccd,
-            'omp2.5'        : select_omp2p5,
-            'dfocc'         : run_dfocc,  # full control over dfocc
-#            'qchf'          : run_qchf,
-            'ccd'           : run_dfocc,
-            'sapt0'         : run_sapt,
-            'sapt2'         : run_sapt,
-            'sapt2+'        : run_sapt,
-            'sapt2+(3)'     : run_sapt,
-            'sapt2+3'       : run_sapt,
-            'sapt2+(ccd)'   : run_sapt,
-            'sapt2+(3)(ccd)': run_sapt,
-            'sapt2+3(ccd)'  : run_sapt,
-            'sapt2+dmp2'    : run_sapt,
-            'sapt2+(3)dmp2' : run_sapt,
-            'sapt2+3dmp2'   : run_sapt,
-            'sapt2+(ccd)dmp2' : run_sapt,
-            'sapt2+(3)(ccd)dmp2' : run_sapt,
-            'sapt2+3(ccd)dmp2' : run_sapt,
-            'sapt0-ct'      : run_sapt_ct,
-            'sapt2-ct'      : run_sapt_ct,
-            'sapt2+-ct'     : run_sapt_ct,
-            'sapt2+(3)-ct'  : run_sapt_ct,
-            'sapt2+3-ct'    : run_sapt_ct,
-            'sapt2+(ccd)-ct'     : run_sapt_ct,
-            'sapt2+(3)(ccd)-ct'  : run_sapt_ct,
-            'sapt2+3(ccd)-ct'    : run_sapt_ct,
-            'fisapt0'       : run_fisapt,
-            'ccenergy'      : run_ccenergy,  # full control over ccenergy
-            'ccsd'          : select_ccsd,
-            'ccsd(t)'       : select_ccsd_t_,
-            'ccsd(at)'      : select_ccsd_at_,
-            'cc2'           : run_ccenergy,
-            'cc3'           : run_ccenergy,
-            'mrcc'          : run_mrcc,  # interface to Kallay's MRCC program
-            'bccd'          : run_bccd,
-            'bccd(t)'       : run_bccd,
-            'eom-ccsd'      : run_eom_cc,
-            'eom-cc2'       : run_eom_cc,
-            'eom-cc3'       : run_eom_cc,
-            'detci'         : run_detci,  # full control over detci
-            'mp'            : run_detci,  # arbitrary order mp(n)
-            'zapt'          : run_detci,  # arbitrary order zapt(n)
-            'cisd'          : select_cisd,
-            'cisdt'         : run_detci,
-            'cisdtq'        : run_detci,
-            'ci'            : run_detci,  # arbitrary order ci(n)
-            'fci'           : run_detci,
-            'casscf'        : run_detcas,
-            'rasscf'        : run_detcas,
-            'adc'           : run_adc,
-#            'cphf'          : run_libfock,
-#            'cis'           : run_libfock,
-#            'tdhf'          : run_libfock,
-#            'cpks'          : run_libfock,
-#            'tda'           : run_libfock,
-#            'tddft'         : run_libfock,
-            'psimrcc'       : run_psimrcc,
-            'psimrcc_scf'   : run_psimrcc_scf,
-            'hf'            : run_scf,
-            'qcisd'         : run_fnocc,
-            'qcisd(t)'      : run_fnocc,
-            'mp4'           : select_mp4,
-            'mp4(sdq)'      : run_fnocc,
-            'fno-ccsd'      : select_fnoccsd,
-            'fno-ccsd(t)'   : select_fnoccsd_t_,
-            'fno-qcisd'     : run_fnocc,
-            'fno-qcisd(t)'  : run_fnocc,
-            'fno-mp3'       : run_fnocc,
-            'fno-mp4(sdq)'  : run_fnocc,
-            'fno-mp4'       : run_fnocc,
-            'fno-lccd'      : run_cepa,
-            'fno-lccsd'     : run_cepa,
-            'fno-cepa(0)'   : run_cepa,
-            'fno-cepa(1)'   : run_cepa,
-            'fno-cepa(3)'   : run_cepa,
-            'fno-acpf'      : run_cepa,
-            'fno-aqcc'      : run_cepa,
-            'fno-cisd'      : run_cepa,
-            'lccd'          : select_lccd,
-            'lccsd'         : run_cepa,
-            'cepa(0)'       : run_cepa,
-            'cepa(1)'       : run_cepa,
-            'cepa(3)'       : run_cepa,
-            'acpf'          : run_cepa,
-            'aqcc'          : run_cepa,
-            'efp'           : run_efp,
-            'dmrgscf'       : run_dmrgscf,
-            'dmrgci'        : run_dmrgci,
-            # Upon adding a method to this list, add it to the docstring in energy() below
-            # Aliases are discouraged. If you must add an alias to this list (e.g.,
-            #    lccsd/cepa(0)), please search the whole driver to find uses of
-            #    name in return values and psi variables and extend the logic to
-            #    encompass the new alias.
-        },
-        'gradient' : {
-            'scf'           : run_scf_gradient,
-            'ccsd'          : select_ccsd_gradient,
-            'ccsd(t)'       : select_ccsd_t__gradient,
-            'mp2'           : select_mp2_gradient,
-            'eom-ccsd'      : run_eom_cc_gradient,
-            'dcft'          : run_dcft_gradient,
-            'omp2'          : select_omp2_gradient,
-            'omp3'          : select_omp3_gradient,
-            'mp3'           : select_mp3_gradient,
-            'mp2.5'         : select_mp2p5_gradient,
-            'omp2.5'        : select_omp2p5_gradient,
-            'lccd'          : select_lccd_gradient,
-            'olccd'         : select_olccd_gradient,
-            'ccd'           : run_dfocc_gradient,
-            'hf'            : run_scf_gradient,
-            # Upon adding a method to this list, add it to the docstring in optimize() below
-        },
-        'hessian' : {
-            # Upon adding a method to this list, add it to the docstring in frequency() below
-        },
-        'property' : {
-            'scf'      : run_scf_property,
-            'hf'       : run_scf_property,
-            'cc2'      : run_cc_property,
-            'ccsd'     : run_cc_property,
-            'mp2'      : select_mp2_property,
-            'omp2'     : select_omp2_property,
-            'eom-cc2'  : run_cc_property,
-            'eom-ccsd' : run_cc_property,
-            'detci'    : run_detci_property,  # full control over detci
-            'cisd'     : run_detci_property,
-            'cisdt'    : run_detci_property,
-            'cisdtq'   : run_detci_property,
-            'ci'       : run_detci_property,  # arbitrary order ci(n)
-            'fci'      : run_detci_property,
-            # Upon adding a method to this list, add it to the docstring in property() below
-        }}
+    if ptype not in ['gradient', 'hessian']:
+        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
 
-# Will only allow energy to be run for the following methods
-energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
-energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis'] 
+    dertype = "(auto)"
 
-# dictionary to register pre- and post-compute hooks for driver routines
-hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])
+    # If user type is None, try to find the highest derivative
+    if user_dertype is None:
+        if (ptype == 'hessian') and (method_name in procedures['hessian']):
+            dertype = 2
+            # Will need special logic if we ever have managed Hessians
+        elif method_name in procedures['gradient']:
+            dertype = 1
+            if procedures['gradient'][method_name].__name__.startswith('select_'):
+                try:
+                    procedures['gradient'][method_name](method_name, probe=True)
+                except ManagedMethodError:
+                    dertype = 0
+        elif method_name in procedures['energy']:
+            dertype = 0
+    else:
+        # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
+        if not isinstance(user_dertype, int):
+            raise ValidationError("_find_derivative_type: user_dertype should only be None or int!")
+        dertype = user_dertype
 
-# Integrate DFT with driver routines
-for ssuper in superfunctional_list():
-    procedures['energy'][ssuper.name().lower()] = run_dft
+    # Summary validation
+    if (dertype == 2) and (method_name in procedures['hessian']):
+        pass
+    elif (dertype == 1) and (method_name in procedures['gradient']):
+        pass
+    elif (dertype == 0) and (method_name in procedures['energy']):
+        pass
+    else:
+        alternatives = ''
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
+        if len(alt_method_name) > 0:
+            alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
-for ssuper in superfunctional_list():
-    if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
-        procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
+        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
+            % (method_name, str(dertype), alternatives))
 
-# Integrate CFOUR with driver routines
-for ssuper in cfour_list():
-    procedures['energy'][ssuper.lower()] = run_cfour
-
-for ssuper in cfour_gradient_list():
-    procedures['gradient'][ssuper.lower()] = run_cfour
-
+    return dertype
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -498,81 +376,70 @@ def energy(name, **kwargs):
     >>> cisd_e, cisd_wfn = energy('cisd', return_wfn = True)
     >>> energy('fci', ref_wfn=cisd_wfn)
 
+    >>> # [6] Can automatically perform complete basis set extrapolations
+    >>> energy("MP2/cc-pV[DT]Z")
+
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce if name is function
+    if hasattr(name, '__call__'):
+        return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
+
+    # Allow specification of methods to arbitrary order
+    lowername = name.lower()
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
+    # Bounce to CP if bsse kwarg
+    if kwargs.get('bsse_type', None) is not None:
+        return driver_nbody._nbody_gufunc(energy, lowername, ptype='energy', **kwargs)
+
+    # Bounce to CBS if "method/basis" name
+    if "/" in lowername:
+        return driver_cbs._cbs_gufunc(energy, lowername, ptype='energy', **kwargs)
+
+    # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
-    # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
-    if level:
-        kwargs['level'] = level
-
     for precallback in hooks['energy']['pre']:
         precallback(lowername, **kwargs)
 
-    try:
-        # Set method-dependent scf convergence criteria
-        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
+    optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
 
-        # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if procedures['energy'][lowername] not in [run_scf, run_dft]:
-                psi4.set_global_option('E_CONVERGENCE', 6)
+    # Before invoking the procedure, we rename any file that should be read.
+    # This is a workaround to do restarts with the current PSI4 capabilities
+    # before actual, clean restarts are put in there
+    # Restartfile is always converted to a single-element list if
+    # it contains a single string
+    if 'restart_file' in kwargs:
+        restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
+        if restartfile != list(restartfile):
+            restartfile = [restartfile]
+        # Rename the files to be read to be consistent with psi4's file system
+        for item in restartfile:
+            name_split = re.split(r'\.', item)
+            filenum = name_split[len(name_split) - 1]
+            try:
+                filenum = int(filenum)
+            except ValueError:
+                filenum = 32  # Default file number is the checkpoint one
+            psioh = psi4.IOManager.shared_object()
+            psio = psi4.IO.shared_object()
+            filepath = psioh.get_file_path(filenum)
+            namespace = psio.get_default_namespace()
+            pid = str(os.getpid())
+            prefix = 'psi'
+            targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+            shutil.copy(item, targetfile)
 
-# Before invoking the procedure, we rename any file that should be read.
-# This is a workaround to do restarts with the current PSI4 capabilities
-# before actual, clean restarts are put in there
-# Restartfile is always converted to a single-element list if
-# it contains a single string
-        if 'restart_file' in kwargs:
-            restartfile = kwargs['restart_file']  # Option still available for procedure-specific action
-            if restartfile != list(restartfile):
-                restartfile = [restartfile]
-            # Rename the files to be read to be consistent with psi4's file system
-            for item in restartfile:
-                name_split = re.split(r'\.', item)
-                filenum = name_split[len(name_split) - 1]
-                try:
-                    filenum = int(filenum)
-                except ValueError:
-                    filenum = 32  # Default file number is the checkpoint one
-                psioh = psi4.IOManager.shared_object()
-                psio = psi4.IO.shared_object()
-                filepath = psioh.get_file_path(filenum)
-                namespace = psio.get_default_namespace()
-                pid = str(os.getpid())
-                prefix = 'psi'
-                targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
-                shutil.copy(item, targetfile)
-
-        wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
-
-    except KeyError:
-        alternatives = ""
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError('Energy method %s not available.%s' % (lowername, alternatives))
+    wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
 
     for postcallback in hooks['energy']['post']:
         postcallback(lowername, **kwargs)
@@ -611,78 +478,84 @@ def gradient(name, **kwargs):
     >>> np.array(G)
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce to CP if bsse kwarg (someday)
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValidationError("Gradient: Cannot specify bsse_type for gradient yet.")
+
+    # Figure out what kind of gradient this is
+    if hasattr(name, '__call__'):
+        if name.__name__ in ['cbs', 'complete_basis_set']:
+            gradient_type = 'cbs_wrapper'
+        else:
+            # Bounce to name if name is non-CBS function
+            gradient_type = 'custom_function'
+    elif '/' in name:
+        gradient_type = 'cbs_gufunc'
+    else:
+        gradient_type = 'conventional'
+
+    # Figure out lowername, dertype, and func
+    # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
+    # finite-diference energy or cbs energies
+    # TODO MP5/cc-pv[DT]Z behavior unkown due to "levels"
+    user_dertype = kwargs.pop('dertype', None)
+    if gradient_type == 'custom_function':
+        if user_dertype is None:
+            dertype = 0
+            psi4.print_out("\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n")
+        else:
+            psi4.print_out("\nGradient: Custom function passed in with a dertype of %d\n" % user_dertype)
+            dertype = user_dertype
+
+        if dertype == 1:
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+        else:
+            optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
+            lowername = name
+
+    elif gradient_type == 'cbs_wrapper':
+        cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
+        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
+        if dertype == 1:
+            # Bounce to CBS (directly) in pure-gradient mode if name is CBS and all parts have analytic grad. avail.
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+        else:
+            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+            lowername = name
+            # Pass through to G by E
+
+    elif gradient_type == 'cbs_gufunc':
+        cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
+        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
+        lowername = name.lower()
+        if dertype == 1:
+            # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
+            return driver_cbs._cbs_gufunc(gradient, lowername, ptype='gradient', **kwargs)
+        else:
+            # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+
+    else:
+        # Allow specification of methods to arbitrary order
+        lowername = name.lower()
+        lowername, level = driver_util.parse_arbitrary_order(lowername)
+        if level:
+            kwargs['level'] = level
+
+        # Prevent methods that do not have associated gradients
+        if lowername in energy_only_methods:
+            raise ValidationError("gradient('%s') does not have an associated gradient" % name)
+
+        dertype = _find_derivative_type('gradient', lowername, user_dertype)
+
+        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+        optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+
+    # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
-    dertype = 1
-
-    # Prevent methods that do not have associated energies 
-    if lowername in energy_only_methods:
-	raise ValidationError("gradient('%s') does not have an associated gradient" % name)
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
-
-    # Order of precedence:
-    #    1. Default for wavefunction
-    #    2. Value obtained from kwargs, if user changed it
-    #    3. If user provides a custom 'func' use that
-
-    # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
-    if level:
-        kwargs['level'] = level
-
-    # 1. set the default to that of the provided name
-    if lowername in procedures['gradient']:
-        dertype = 1
-        if procedures['gradient'][lowername].__name__.startswith('select_'):
-            try:
-                procedures['gradient'][lowername](lowername, probe=True)
-            except ManagedMethodError:
-                dertype = 0
-                func = energy
-    elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    # 2. Check if the user passes dertype into this function
-    if 'dertype' in kwargs:
-        opt_dertype = kwargs['dertype']
-
-        if der0th.match(str(opt_dertype)):
-            dertype = 0
-            func = energy
-        elif der1st.match(str(opt_dertype)):
-            dertype = 1
-        else:
-            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function optimize.""" % (opt_dertype))
-
-    # 3. if the user provides a custom function THAT takes precendence
-    if ('opt_func' in kwargs) or ('func' in kwargs):
-        if ('func' in kwargs):
-            kwargs['opt_func'] = kwargs['func']
-            del kwargs['func']
-        dertype = 0
-        func = kwargs['opt_func']
-
-    # Summary validation
-    if (dertype == 1) and (lowername in procedures['gradient']):
-        pass
-    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
-        pass
-    elif (dertype == 0) and not(func is energy):
-        pass
-    else:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['gradient'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (lowername, dertype, alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -707,23 +580,6 @@ def gradient(name, **kwargs):
     else:
         raise ValidationError("""Optimize execution mode '%s' not valid.""" % (opt_mode))
 
-    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-
-    # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            psi4.set_global_option('E_CONVERGENCE', 8)
-
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
         psi4.print_out("""gradient() will perform analytic gradient computation.\n""")
@@ -741,6 +597,8 @@ def gradient(name, **kwargs):
         psi4.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
 
         opt_iter = kwargs.get('opt_iter', 1)
+        if opt_iter is True:
+            opt_iter = 1
 
         if opt_iter == 1:
             print('Performing finite difference calculations')
@@ -790,8 +648,8 @@ def gradient(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input().encode('utf-8'))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername)).encode('utf-8'))
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, dertype=dertype, **kwargs)
+                fmaster.write(("""retE, retwfn = optimize('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
 
         for n, displacement in enumerate(displacements):
@@ -815,7 +673,7 @@ def gradient(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
             # S/R: Write each displaced geometry to an input file
@@ -830,7 +688,7 @@ def gradient(name, **kwargs):
                     p4util.format_kwargs_for_input(freagent, **kwargs)
 
                     # S/R: Prepare function call and energy save
-                    freagent.write(("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername)).encode('utf-8'))
+                    freagent.write(("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
                     freagent.write(("""psi4.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1)).encode('utf-8'))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
 
@@ -884,21 +742,22 @@ def property(name, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | hf                 | HF Self-consistent field method(s)            | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | mp2                | MP2 with density fitting only (mp2_type df)   | RHF            | Listed :ref:`here <sec:oeprop>`                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
-    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | mp2                | MP2 with density fitting only (mp2_type df)   | RHF            | dipole, quadrupole, mulliken_charges, no_occupations          |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | cisd, cisdt,       | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
-    | cisdt, cisdtq,     |                                               |                |                                                               |
-    | ci5, etc...        |                                               |                |                                                               |
+    | cisd, cisdt,       | Configuration interaction                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
+    | cisdt, cisdtq,     |                                               |                | transition_quadrupole                                         |
+    | ci5, ..., fci      |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | fci                | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | casscf, rasscf     | Multi-configurational SCF                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
+    |                    |                                               |                | transition_quadrupole                                         |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: string
@@ -910,7 +769,7 @@ def property(name, **kwargs):
     :type properties: array of strings
     :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
 
-        Indicates which properties should be computed.
+        Indicates which properties should be computed. Defaults to dipole and quadrupole.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -927,48 +786,20 @@ def property(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
-
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
-    try:
-        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-        #   SCF properties have been set as 6/5 so as to match those
-        #       run normally through OEProp so subject to change
-        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
-            else:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
+    properties = kwargs.get('properties', ['dipole', 'quadrupole'])
+    kwargs['properties'] = p4util.drop_duplicates(properties)
 
-        # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if procedures['energy'][lowername] not in [run_scf, run_dft]:
-                psi4.set_global_option('E_CONVERGENCE', 8)
-
-        wfn = procedures['property'][lowername](lowername, **kwargs)
-
-    except KeyError:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['property'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
-        raise ValidationError("""Property method %s not available.%s""" % (lowername, alternatives))
+    optstash = driver_util._set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
+    wfn = procedures['property'][lowername](lowername, **kwargs)
 
     optstash.restore()
 
@@ -1112,13 +943,31 @@ def optimize(name, **kwargs):
     >>> optimize('hf', dertype='energy', mode='sow')
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    if hasattr(name, '__call__'):
+        lowername = name
+        custom_gradient = True
+    else:
+        lowername = name.lower()
+        custom_gradient = False
+
     return_wfn = kwargs.pop('return_wfn', False)
+
+    # For CBS wrapper, need to set retention on INTCO file
+    if custom_gradient or ('/' in lowername):
+        psi4.IOManager.shared_object().set_specific_retention(1, True)
+
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValidationError("Optimize: Does not currently support 'bsse_type' arguements")
 
     full_hess_every = psi4.get_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    hessian_with_method = kwargs.get('hessian_with', lowername)
+
+    if custom_gradient and psi4.has_option_changed('OPTKING', 'FULL_HESS_EVERY'):
+        raise ValidationError("Optimize: Does not support custom Hessian's yet.")
+    else:
+        hessian_with_method = kwargs.get('hessian_with', lowername)
 
     # are we in sow/reap mode?
     opt_mode = kwargs.get('mode', 'continuous').lower()
@@ -1136,6 +985,11 @@ def optimize(name, **kwargs):
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
+
+    # If we are feezing cartesian, do not orient or COM
+    if psi4.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
+        molecule.fix_orientation(True)
+        molecule.fix_com(True)
     molecule.update_geometry()
 
     # Shifting the geometry so need to copy the active molecule
@@ -1145,10 +999,11 @@ def optimize(name, **kwargs):
     while n <= psi4.get_option('OPTKING', 'GEOM_MAXITER'):
         current_sym = moleculeclone.schoenflies_symbol()
         if initial_sym != current_sym:
-            raise ValidationError("""Point group changed! You should restart """
+            raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
                                   """using the last geometry in the output, after """
                                   """carefully making sure all symmetry-dependent """
-                                  """input, such as DOCC, is correct.""")
+                                  """input, such as DOCC, is correct.""" %
+                                  (current_sym, initial_sym))
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1168,7 +1023,7 @@ def optimize(name, **kwargs):
         # thisenergy below should ultimately be testing on wfn.energy()
 
         # S/R: Quit after getting new displacements or if forming gradient fails
-        if opt_mode  == 'sow':
+        if opt_mode == 'sow':
             return (0.0, None)
         elif opt_mode == 'reap' and thisenergy == 0.0:
             return (0.0, None)
@@ -1184,9 +1039,9 @@ def optimize(name, **kwargs):
                 #if psi4.me() == 0:  TODO ask Ryan
                 shutil.copy(restartfile, p4util.get_psifile(1))
 
-        opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
-        if opt_func.__name__ == 'complete_basis_set':
-            psi4.IOManager.shared_object().set_specific_retention(1, True)
+        # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
+        # if opt_func.__name__ == 'complete_basis_set':
+        #     psi4.IOManager.shared_object().set_specific_retention(1, True)
 
         if full_hess_every > -1:
             psi4.set_global_option('HESSIAN_WRITE', True)
@@ -1236,7 +1091,8 @@ def optimize(name, **kwargs):
                     fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
 
-            if opt_func.__name__ == 'complete_basis_set':
+            # Cleanup binary file 1
+            if custom_gradient or ('/' in lowername):
                 psi4.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
@@ -1273,79 +1129,6 @@ def optimize(name, **kwargs):
     optstash.restore()
 
 
-def parse_arbitrary_order(name):
-    r"""Function to parse name string into a method family like CI or MRCC and specific
-    level information like 4 for CISDTQ or MRCCSDTQ.
-
-    """
-    # matches 'mrccsdt(q)'
-    if name.startswith('mrcc'):
-
-        # avoid undoing fn's good work when called twice
-        if name == 'mrcc':
-            return name, None
-
-        # grabs 'sdt(q)'
-        ccfullname = name[4:]
-
-        # A negative order indicates perturbative method
-        methods = {
-            'sd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },
-            'sdt'         : { 'method': 1, 'order':  3, 'fullname': 'CCSDT'        },
-            'sdtq'        : { 'method': 1, 'order':  4, 'fullname': 'CCSDTQ'       },
-            'sdtqp'       : { 'method': 1, 'order':  5, 'fullname': 'CCSDTQP'      },
-            'sdtqph'      : { 'method': 1, 'order':  6, 'fullname': 'CCSDTQPH'     },
-            'sd(t)'       : { 'method': 3, 'order': -3, 'fullname': 'CCSD(T)'      },
-            'sdt(q)'      : { 'method': 3, 'order': -4, 'fullname': 'CCSDT(Q)'     },
-            'sdtq(p)'     : { 'method': 3, 'order': -5, 'fullname': 'CCSDTQ(P)'    },
-            'sdtqp(h)'    : { 'method': 3, 'order': -6, 'fullname': 'CCSDTQP(H)'   },
-            'sd(t)_l'     : { 'method': 4, 'order': -3, 'fullname': 'CCSD(T)_L'    },
-            'sdt(q)_l'    : { 'method': 4, 'order': -4, 'fullname': 'CCSDT(Q)_L'   },
-            'sdtq(p)_l'   : { 'method': 4, 'order': -5, 'fullname': 'CCSDTQ(P)_L'  },
-            'sdtqp(h)_l'  : { 'method': 4, 'order': -6, 'fullname': 'CCSDTQP(H)_L' },
-            'sdt-1a'      : { 'method': 5, 'order':  3, 'fullname': 'CCSDT-1a'     },
-            'sdtq-1a'     : { 'method': 5, 'order':  4, 'fullname': 'CCSDTQ-1a'    },
-            'sdtqp-1a'    : { 'method': 5, 'order':  5, 'fullname': 'CCSDTQP-1a'   },
-            'sdtqph-1a'   : { 'method': 5, 'order':  6, 'fullname': 'CCSDTQPH-1a'  },
-            'sdt-1b'      : { 'method': 6, 'order':  3, 'fullname': 'CCSDT-1b'     },
-            'sdtq-1b'     : { 'method': 6, 'order':  4, 'fullname': 'CCSDTQ-1b'    },
-            'sdtqp-1b'    : { 'method': 6, 'order':  5, 'fullname': 'CCSDTQP-1b'   },
-            'sdtqph-1b'   : { 'method': 6, 'order':  6, 'fullname': 'CCSDTQPH-1b'  },
-            '2'           : { 'method': 7, 'order':  2, 'fullname': 'CC2'          },
-            '3'           : { 'method': 7, 'order':  3, 'fullname': 'CC3'          },
-            '4'           : { 'method': 7, 'order':  4, 'fullname': 'CC4'          },
-            '5'           : { 'method': 7, 'order':  5, 'fullname': 'CC5'          },
-            '6'           : { 'method': 7, 'order':  6, 'fullname': 'CC6'          },
-            'sdt-3'       : { 'method': 8, 'order':  3, 'fullname': 'CCSDT-3'      },
-            'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
-            'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
-            'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
-        }
-
-        # looks for 'sdt(q)' in dictionary
-        if ccfullname in methods:
-            return 'mrcc', methods[ccfullname]
-        else:
-            raise ValidationError('MRCC method \'%s\' invalid.' % (name))
-
-    elif re.match(r'^[a-z]+\d+$', name):
-        decompose = re.compile(r'^([a-z]+)(\d+)$').match(name)
-        namestump = decompose.group(1)
-        namelevel = int(decompose.group(2))
-
-        if namestump in ['mp', 'zapt', 'ci']:
-            # Let mp2, mp3, mp4 pass through to select functions
-            if namestump == 'mp' and namelevel in [2, 3, 4]:
-                return name, None
-            # Otherwise return method and order
-            else:
-                return namestump, namelevel
-        else:
-            return name, None
-    else:
-        return name, None
-
-
 def hessian(name, **kwargs):
     r"""Function complementary to :py:func:`~frequency`. Computes force
     constants, deciding analytic, finite difference of gradients, or
@@ -1368,97 +1151,58 @@ def hessian(name, **kwargs):
     >>> np.array(H)
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce to CP if bsse kwarg (someday)
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValidationError("Hessian: Cannot specify bsse_type for hessian yet.")
+
+    # Figure out what kind of gradient this is
+    if hasattr(name, '__call__'):
+        if name.__name__ in ['cbs', 'complete_basis_set']:
+            gradient_type = 'cbs_wrapper'
+        else:
+            # Bounce to name if name is non-CBS function
+            gradient_type = 'custom_function'
+    elif '/' in name:
+        gradient_type = 'cbs_gufunc'
+    else:
+        gradient_type = 'conventional'
+
+    if gradient_type != 'conventional':
+        raise ValidationError("Hessian: Does not yet support more advanced input or custom functions.")
+
+    lowername = name.lower()
+
+    # Check if this is a CBS extrapolation
+    if "/" in lowername:
+        return driver_cbs._cbs_gufunc('hessian', lowername, **kwargs)
+
     return_wfn = kwargs.pop('return_wfn', False)
     psi4.clean_variables()
     dertype = 2
 
-    # Prevent methods that do not have associated energies 
+    # Prevent methods that do not have associated energies
     if lowername in energy_only_methods:
-	    raise ValidationError("hessian('%s') does not have an associated hessian" % name)
+        raise ValidationError("hessian('%s') does not have an associated hessian" % name)
 
     optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
         ['FINDIF', 'HESSIAN_WRITE'],
-        ['E_CONVERGENCE'])
-
-    # Order of precedence:
-    #    1. Default for wavefunction
-    #    2. Value obtained from kwargs, if user changed it
-    #    3. If user provides a custom 'func' use that
+        )
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
-    # 1. set the default to that of the provided name
-    if lowername in procedures['hessian']:
-        dertype = 2
-    elif lowername in procedures['gradient']:
-        dertype = 1
-        func = gradient
-        if procedures['gradient'][lowername].__name__.startswith('select_'):
-            try:
-                procedures['gradient'][lowername](lowername, probe=True)
-            except ManagedMethodError:
-                dertype = 0
-                func = energy
-    elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    # 2. Check if the user passes dertype into this function
-    if 'dertype' in kwargs:
-        freq_dertype = kwargs['dertype']
-
-        if der0th.match(str(freq_dertype)):
-            dertype = 0
-            func = energy
-        elif der1st.match(str(freq_dertype)):
-            dertype = 1
-            func = gradient
-        elif der2nd.match(str(freq_dertype)):
-            dertype = 2
-        else:
-            raise ValidationError("""Derivative level 'dertype' %s not valid for helper function frequency.""" % (freq_dertype))
-
-    # 3. if the user provides a custom function THAT takes precedence
-    if ('freq_func' in kwargs) or ('func' in kwargs):
-        if 'func' in kwargs:
-            kwargs['freq_func'] = kwargs['func']
-            del kwargs['func']
-        dertype = 0
-        func = kwargs['freq_func']
-
-    # Summary validation
-    if (dertype == 2) and (lowername in procedures['hessian']):
-        pass
-    elif (dertype == 1) and (func is gradient) and (lowername in procedures['gradient']):
-        pass
-    elif (dertype == 1) and not(func is gradient):
-        pass
-    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
-        pass
-    elif (dertype == 0) and not(func is energy):
-        pass
-    else:
-        alternatives = ''
-        alt_lowername = p4util.text.find_approximate_string_matches(lowername, procedures['energy'].keys(), 2)
-        if len(alt_lowername) > 0:
-            alternatives = """ Did you mean? %s""" % (' '.join(alt_lowername))
-
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (lowername, dertype, alternatives))
+    dertype = _find_derivative_type('hessian', lowername, kwargs.pop('freq_dertype', kwargs.pop('dertype', None)))
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
     # S/R: Mode of operation- whether finite difference freq run in one job or files farmed out
-    freq_mode = kwargs.get('mode', 'continuous').lower()
+    freq_mode = kwargs.pop('mode', 'continuous').lower()
     if freq_mode == 'continuous':
         pass
     elif freq_mode == 'sow':
@@ -1472,28 +1216,14 @@ def hessian(name, **kwargs):
         raise ValidationError("""Frequency execution mode '%s' not valid.""" % (freq_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][lowername] in [run_scf, run_dft]:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        else:
-            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-
-    # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][lowername] not in [run_scf, run_dft]:
-            psi4.set_global_option('E_CONVERGENCE', 8)
+    optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
     # Select certain irreps
     irrep = kwargs.get('irrep', -1)
     if irrep == -1:
         pass  # do all irreps
     else:
-        irrep = parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
+        irrep = driver_util.parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
         irrep -= 1  # A1 irrep is externally 1, internally 0
 
     # Does an analytic procedure exist for the requested method?
@@ -1503,6 +1233,7 @@ def hessian(name, **kwargs):
         # We have the desired method. Do it.
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
         optstash.restore()
+        optstash_conv.restore()
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         psi4.set_variable('CURRENT ENERGY', wfn.energy())
@@ -1514,8 +1245,6 @@ def hessian(name, **kwargs):
 
     elif dertype == 1:
         psi4.print_out("""hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
-
-        func = procedures['gradient'][lowername]
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -1562,7 +1291,7 @@ def hessian(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=1, **kwargs)
                 fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             psi4.print_out(instructionsM)
@@ -1588,7 +1317,7 @@ def hessian(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the gradient calculation
-                wfn = func(lowername, molecule=moleculeclone, **kwargs)
+                G, wfn = gradient(lowername, molecule=moleculeclone, return_wfn=True, **kwargs)
                 gradients.append(wfn.gradient())
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
@@ -1605,8 +1334,9 @@ def hessian(name, **kwargs):
                     freagent.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
                     freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
+                    kwargs['return_wfn'] = True
                     p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""wfn = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                    freagent.write("""G, wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
@@ -1626,6 +1356,7 @@ def hessian(name, **kwargs):
         # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
         if freq_mode == 'sow':
             optstash.restore()
+            optstash_conv.restore()
             if return_wfn:
                 return (None, None)
             else:
@@ -1644,6 +1375,7 @@ def hessian(name, **kwargs):
 
         psi4.set_parent_symmetry('')
         optstash.restore()
+        optstash_conv.restore()
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1655,21 +1387,8 @@ def hessian(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
-        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-            else:
-                psi4.set_local_option('SCF', 'E_CONVERGENCE', 11)
-        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
-            if procedures['energy'][lowername] in [run_scf, run_dft]:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-            else:
-                psi4.set_local_option('SCF', 'D_CONVERGENCE', 11)
-
-        # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not psi4.has_global_option_changed('E_CONVERGENCE'):
-            if procedures['energy'][lowername] not in [run_scf, run_dft]:
-                psi4.set_global_option('E_CONVERGENCE', 10)
+        optstash_conv.restore()
+        optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
         # Shifting the geometry so need to copy the active molecule
         moleculeclone = molecule.clone()
@@ -1717,7 +1436,7 @@ def hessian(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
-                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, **kwargs)
+                p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=0, **kwargs)
                 fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             psi4.print_out(instructionsM)
@@ -1743,7 +1462,7 @@ def hessian(name, **kwargs):
                 moleculeclone.set_geometry(displacement)
 
                 # Perform the energy calculation
-                E, wfn = func(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+                E, wfn = energy(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
                 energies.append(psi4.get_variable('CURRENT ENERGY'))
 
                 # clean may be necessary when changing irreps of displacements
@@ -1759,7 +1478,7 @@ def hessian(name, **kwargs):
                     freagent.write(p4util.format_molecule_for_input(moleculeclone, forcexyz=True).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
-                    freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                    freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (energy.__name__, lowername))
                     freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
 
@@ -1772,6 +1491,7 @@ def hessian(name, **kwargs):
         # S/R: Quit sow after writing files. Initialize skeleton wfn to receive grad for reap
         if freq_mode == 'sow':
             optstash.restore()
+            optstash_conv.restore()
             if return_wfn:
                 return (None, None)
             else:
@@ -1790,6 +1510,7 @@ def hessian(name, **kwargs):
 
         psi4.set_parent_symmetry('')
         optstash.restore()
+        optstash_conv.restore()
 
         if return_wfn:
             return (wfn.hessian(), wfn)
@@ -1881,8 +1602,26 @@ def frequency(name, **kwargs):
     >>> thermo(wfn, wfn.frequencies())
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce (someday) if name is function
+    if hasattr(name, '__call__'):
+        raise ValidationError("Frequency: Cannot use custom function")
+
+    lowername = name.lower()
+
+    old_global_basis = None
+    if "/" in lowername:
+        if ("+" in lowername) or ("[" in lowername) or (lowername.count('/') > 1):
+            raise ValidationError("Frequency: Cannot extrapolate or delta correct frequencies yet.")
+        else:
+            old_global_basis = psi4.get_global_option("BASIS")
+            lowername, new_basis = lowername.split('/')
+            psi4.set_global_option('BASIS', new_basis)
+
+    if kwargs.get('bsse_type', None) is not None:
+        raise ValdiationError("Frequency: Does not currently support 'bsse_type' arguements")
+
     return_wfn = kwargs.pop('return_wfn', False)
 
     # are we in sow/reap mode?
@@ -1906,6 +1645,10 @@ def frequency(name, **kwargs):
 
     for postcallback in hooks['frequency']['post']:
         postcallback(lowername, **kwargs)
+
+    # Reset old global basis if needed
+    if not old_global_basis is None:
+        psi4.set_global_option("BASIS", old_global_basis)
 
     if return_wfn:
         return (psi4.get_variable('CURRENT ENERGY'), wfn)
@@ -1936,7 +1679,6 @@ def gdma(wfn, datafile=""):
     >>> gdma(wfn)
 
     """
-
     # Start by writing a G* checkpoint file, for the GDMA code to read in
     fw = psi4.FCHKWriter(wfn)
     molname = wfn.molecule().name()
@@ -1966,7 +1708,7 @@ def gdma(wfn, datafile=""):
             f.write("Switch %f\n" % psi4.get_option('GDMA', 'GDMA_SWITCH'))
             if radii:
                 f.write("Radius %s\n" % " ".join([str(r) for r in radii]))
-            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT') )
+            f.write("Limit %d\n" % psi4.get_option('GDMA', 'GDMA_LIMIT'))
             f.write("Start\n")
             f.write("Finish\n")
     psi4.run_gdma(wfn, commands)
@@ -2036,89 +1778,6 @@ def molden(wfn, filename):
     # At this point occupation number will be difficult to build, lets set them to zero
     mw = psi4.MoldenWriter(wfn)
     mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
-
-def parse_cotton_irreps(irrep, point_group):
-    r"""Function to return validated Cotton ordering index for molecular
-    *point_group* from string or integer irreducible representation *irrep*.
-
-    """
-    cotton = {
-        'c1': {
-            'a': 1,
-            '1': 1
-        },
-        'ci': {
-            'ag': 1,
-            'au': 2,
-            '1': 1,
-            '2': 2
-        },
-        'c2': {
-            'a': 1,
-            'b': 2,
-            '1': 1,
-            '2': 2
-        },
-        'cs': {
-            'ap': 1,
-            'app': 2,
-            '1': 1,
-            '2': 2
-        },
-        'd2': {
-            'a': 1,
-            'b1': 2,
-            'b2': 3,
-            'b3': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2v': {
-            'a1': 1,
-            'a2': 2,
-            'b1': 3,
-            'b2': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2h': {
-            'ag': 1,
-            'bg': 2,
-            'au': 3,
-            'bu': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-        },
-        'd2h': {
-            'ag': 1,
-            'b1g': 2,
-            'b2g': 3,
-            'b3g': 4,
-            'au': 5,
-            'b1u': 6,
-            'b2u': 7,
-            'b3u': 8,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
-            '8': 8
-        }
-    }
-
-    try:
-        return cotton[point_group.lower()][str(irrep).lower()]
-    except KeyError:
-        raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))
 
 
 # Aliases

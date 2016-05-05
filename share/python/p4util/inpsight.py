@@ -32,7 +32,6 @@ import sys, os
 import math
 from math import *
 from datetime import date
-from p4xcpt import *
 
 class InPsight:
 
