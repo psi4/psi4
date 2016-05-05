@@ -46,7 +46,7 @@ molecule bz2 {
 
 }
 
-set globals {
+set {
   basis cc-pVDZ
   scf_type df
   guess sad

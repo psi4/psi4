@@ -1,24 +1,25 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta2+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev 35a99d94e312ddfef970e401f8de899948c66316
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  59953
-    PSI4DATADIR: /Users/loriab/linux/psi4_efp_nowcurrent/psi4/lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:18:10 2016
 
+    Process ID:  11278
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==

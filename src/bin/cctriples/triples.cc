@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -142,8 +147,8 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
 
     if(params.wfn=="CCSD_T" || params.wfn=="BCCD_T") {
       ET = ET_RHF();
-      outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
-      outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
+      outfile->Printf( "    (T) energy                                = %20.15f\n", ET);
+      outfile->Printf( "      * CCSD(T) total energy                  = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
 
       Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
@@ -152,8 +157,8 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
     }
     else if(params.wfn=="CCSD_AT") {
       ET = EaT_RHF();
-      outfile->Printf( "\t(aT) energy                    = %20.15f\n", ET);
-      outfile->Printf( "      * CCSD(aT) total energy          = %20.15f\n",
+      outfile->Printf( "    (aT) energy                                = %20.15f\n", ET);
+      outfile->Printf( "      * CCSD(aT) total energy                  = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
 
       Process::environment.globals["(AT) CORRECTION ENERGY"] = ET;
@@ -171,16 +176,16 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
     throw PsiException("ROHF-CCSD(T) is not yet available",__FILE__,__LINE__);
 
     ETAAA = ET_AAA();
-    outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
+    outfile->Printf( "    AAA (T) energy                             = %20.15f\n", ETAAA);
     ETAAB = ET_AAB();
-    outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
+    outfile->Printf( "    AAB (T) energy                             = %20.15f\n", ETAAB);
     ETABB = ET_ABB();
-    outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
+    outfile->Printf( "    ABB (T) energy                             = %20.15f\n", ETABB);
     ETBBB = ET_BBB();
-    outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
+    outfile->Printf( "    BBB (T) energy                             = %20.15f\n", ETBBB);
     ET = ETAAA + ETAAB + ETABB + ETBBB;
-    outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
-    outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
+    outfile->Printf( "    (T) energy                                 = %20.15f\n", ET);
+    outfile->Printf( "      * CCSD(T) total energy                   = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
 
     Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
@@ -195,46 +200,46 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
 
     if(params.dertype == 0) {
       ETAAA = ET_UHF_AAA();
-      outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      outfile->Printf( "    AAA (T) energy                             = %20.15f\n", ETAAA);
       
 
       ETBBB = ET_UHF_BBB();
-      outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      outfile->Printf( "    BBB (T) energy                             = %20.15f\n", ETBBB);
       
 
       ETAAB = ET_UHF_AAB();
-      outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      outfile->Printf( "    AAB (T) energy                             = %20.15f\n", ETAAB);
       
 
       ETABB = ET_UHF_ABB();
-      outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
+      outfile->Printf( "    ABB (T) energy                             = %20.15f\n", ETABB);
       
     }
     else if(params.dertype==1) {
       transpose_integrals();
-      outfile->Printf( "\n\tComputing (T) contributions to CC density...\n");
+      outfile->Printf( "\n    Computing (T) contributions to CC density...\n");
       
 
       ETAAA = T3_grad_UHF_AAA();
-      outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      outfile->Printf( "    AAA (T) energy                             = %20.15f\n", ETAAA);
       
 
       ETBBB = T3_grad_UHF_BBB();
-      outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      outfile->Printf( "    BBB (T) energy                             = %20.15f\n", ETBBB);
       
 
       ETAAB = T3_grad_UHF_AAB();
-      outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      outfile->Printf( "    AAB (T) energy                             = %20.15f\n", ETAAB);
       
 
       ETABB = T3_grad_UHF_BBA();
-      outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
+      outfile->Printf( "    ABB (T) energy                             = %20.15f\n", ETABB);
       
     }
 
     ET = ETAAA + ETAAB + ETABB + ETBBB;
-    outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
-    outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
+    outfile->Printf( "    (T) energy                                   = %20.15f\n", ET);
+    outfile->Printf( "      * CCSD(T) total energy                     = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
 
     Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
@@ -278,11 +283,11 @@ void init_io()
 
 void title(void)
 {
-  outfile->Printf( "\t\t\t**************************\n");
-  outfile->Printf( "\t\t\t*                        *\n");
-  outfile->Printf( "\t\t\t*        CCTRIPLES       *\n");
-  outfile->Printf( "\t\t\t*                        *\n");
-  outfile->Printf( "\t\t\t**************************\n");
+  outfile->Printf( "            **************************\n");
+  outfile->Printf( "            *                        *\n");
+  outfile->Printf( "            *        CCTRIPLES       *\n");
+  outfile->Printf( "            *                        *\n");
+  outfile->Printf( "            **************************\n");
 }
 
 void exit_io(void)

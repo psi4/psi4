@@ -36,8 +36,8 @@ which would make the variable ``UGC`` available in all |PSIfour| input files.
 For convenience, the physical constants used within the |PSIfour| code (which
 are obtained from the 3rd edition of the IUPAC Green
 book [Cohen:GreenBook:2008]_) are also automatically loaded as Psithon
-variables (before |psirc| is loaded, so that |psirc| values can be overridden by
-the user).
+variables (before |psirc| is loaded, so that the user's |psirc| values can
+override the builtins (in the input file, not in the C++ code).
 
 .. _`table:physconst`:
 
@@ -199,8 +199,8 @@ Basis Sets
 
 .. _`sec:psiVariables`:
 
-PSI Variables & Return Values
-=============================
+PSI Variables
+=============
 
 To harness the power of Python, |PSIfour| makes the most pertinent results
 of each computation available to the Python interpreter for
@@ -235,7 +235,8 @@ energy and printed to the output file using standard Python notation.
 Generally, there are multiple quantities of interest. Appendix
 :ref:`apdx:psivariables_module` lists PSI variables variables set by each
 module, and :ref:`apdx:psivariables_alpha` defines them.  These can be
-accessed through the ``get_variable()`` function.  For example, after
+
+accessed through the :py:func:`~psi4.get_variable` function. For example, after
 performing a density fitted MP2 computation, both the spin component
 scaled energy and the unscaled MP2 energy are made available::
 
@@ -244,20 +245,61 @@ scaled energy and the unscaled MP2 energy are made available::
 
 Each module and the Python driver set PSI variables over the course of a
 calculation.  The values for all can be printed in the output file with
-the input file command ``print_variables()``. Note that PSI variables
-accumulate over a |PSIfour| instance unless cleared by ``clean_variables()``.
+the input file command :py:func:`~psi4.print_variables`. Note that PSI variables
+are cleared at the start of each :py:func:`~driver.energy`, etc. in an input
+file by :py:func:`~psi4.clean_variables()`.
 So if you run in a single input file a STO-3G FCI followed by a
-aug-cc-pVQZ SCF followed by a ``print_variables()`` command, the last will
-include both :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` and :psivar:`FCI
-TOTAL ENERGY <FCITOTALENERGY>`. Don't get excited that you got a
-high-quality calculation cheaply.
+aug-cc-pVQZ SCF followed by a :py:func:`~psi4.print_variables` command, the
+last will include :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` but not 
+:psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`.
+The entire dictionary of PSI variables can be obtained through
+:py:func:`~psi4.get_variables`.
+
+.. _`sec:returnvals`:
+
+Return Values
+=============
 
 Most of the usual user computation functions (*i.e.*,
 :py:func:`~driver.energy`, :py:func:`~driver.optimize`, and
 :py:func:`~driver.frequency`) return simply the current total energy.
 Consult the descriptions of other functions in :ref:`sec:psithonFunc` for
 what quantities they return and for what data structures they make
-available for post-processing.
+available for post-processing. Many users need only deal with the simple return
+form for the computation functions. ::
+
+    # E is total energy float
+    # G is gradient array
+    # H is hessian array
+    # wfn is class instance with many computational details
+
+    # simple returns
+    E = energy(...)
+    E = optimize(...)
+    E = frequency(...)
+    G = gradient(...)  # used by optimize()
+    H = hessian(...)  # used by frequency()
+
+For more elaborate post-processing of computations, adding
+``return_wfn=True`` keyword argument additionally returns
+:ref:`Wavefunction<sec:psimod_Wavefunction>`. ::
+
+    # power user returns
+    E, wfn = energy(..., return_wfn=True)
+    E, wfn = optimize(..., return_wfn=True)
+    E, wfn = frequency(..., return_wfn=True)
+    G, wfn = gradient(..., return_wfn=True)  # used by optimize()
+    H, wfn = hessian(..., return_wfn=True)  # used by frequency()
+
+    # print gradient array and its rms
+    wfn.gradient.print_out()
+    print wfn.gradient().rms()
+
+    # format output for other programs
+    molden(wfn, 'mycalc.molden')
+
+    # access array in another format
+    np.array(wfn.hessian())
 
 .. _`sec:loops`:
 
@@ -315,7 +357,7 @@ and Cartiesian scans.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~text.Table` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~p4util.text.Table` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {
@@ -335,10 +377,10 @@ function. For example, in the following potential energy surface scan for water 
         h2o.R = R
         for A in Avals:
             h2o.A = A
-            energy('df-mp2')
+            energy('mp2')
             escf = get_variable('SCF TOTAL ENERGY')
-            edfmp2 = get_variable('DF-MP2 TOTAL ENERGY')
-            escsmp2 = get_variable('SCS-DF-MP2 TOTAL ENERGY')
+            edfmp2 = get_variable('MP2 TOTAL ENERGY')
+            escsmp2 = get_variable('SCS-MP2 TOTAL ENERGY')
             table[R][A] = [escf, escsmp2, edfmp2]
     
     print table
@@ -369,7 +411,7 @@ the :py:func:`~wrappers.cp` wrapper provides automatic computation of
 counterpoise-corrected interaction energies between two molecules.  For
 example,::
 
-  cp('df-mp2')
+  cp('mp2')
 
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
@@ -390,7 +432,7 @@ Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
 as provided by the :py:func:`~wrappers.database` wrapper.  For example,::
 
-  database('df-mp2','S22',cp=1,benchmark='S22B')
+  database('mp2','S22',cp=1,benchmark='S22B')
 
 will perform DF-MP2 counterpoise-corrected interaction energies
 (``cp=1``) on all members of Hobza's S22 database set of van der Waals

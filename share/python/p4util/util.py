@@ -1,7 +1,12 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,27 +22,36 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 """Module with utility functions for use in input files."""
-#CUimport psi4
 import sys
 import os
 import math
-from p4xcpt import *
+from .exceptions import *
 
-def cubefile(filename='psi4.cube', nptsx=50, nptsy=50, nptsz=50, buffer_size=5.0, prop='density',**kwargs):
-    cube = psi4.CubeFile()
-    cube.set_filename(filename)
-    cube.set_npts(nptsx, nptsy, nptsz)
-    cube.set_buffer(buffer_size)
-    if prop.upper() == 'DENSITY':
-        cube.process_density();
-    else:
-        raise ValidationError('%s is not a valid property')
 
 def oeprop(wfn, *args, **kwargs):
+    """Evaluate one-electron properties.
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to compute properties
+
+    How to specify args, which are actually the most important
+
+    :type title: string
+    :param title: label prepended to all psivars computed
+
+    :examples:
+
+    >>> # [1] Moments with specific label
+    >>> E, wfn = energy('hf', return_wfn=True)
+    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
+
+    """
     oe = psi4.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
@@ -45,8 +59,30 @@ def oeprop(wfn, *args, **kwargs):
         oe.add(prop)
     oe.compute()
 
-def cubeprop(wfn, *args, **kwargs):
+
+def cubeprop(wfn, **kwargs):
     """Evaluate properties on a grid and generate cube files.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :param wfn: set of molecule, basis, orbitals from which to generate cube files
+
+    :examples:
+
+    >>> # [1] Cube files for all orbitals
+    >>> E, wfn = energy('b3lyp', return_wfn=True)
+    >>> cubeprop(wfn)
+
+    >>> # [2] Cube files for density (alpha, beta, total, spin) and four orbitals 
+    >>> #     (two alpha, two beta)
+    >>> set cubeprop_tasks ['orbitals', 'density']
+    >>> set cubeprop_orbitals [5, 6, -5, -6]
+    >>> E, wfn = energy('scf', return_wfn=True)
+    >>> cubeprop(wfn)
 
     """
     # By default compute the orbitals
@@ -55,6 +91,7 @@ def cubeprop(wfn, *args, **kwargs):
 
     cp = psi4.CubeProperties(wfn)
     cp.compute_properties()
+
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""

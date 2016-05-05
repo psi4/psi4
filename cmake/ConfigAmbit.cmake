@@ -1,9 +1,11 @@
 
+# User signal to try pre-built Ambit (and HDF5)
 if (AMBIT_ROOT)
     find_package(Ambit)
     add_definitions(-DHAVE_AMBIT)
 endif ()
 
+# Build Ambit as external package if pre-built failed or not signaled
 if (NOT Ambit_FOUND)
     message(STATUS "Ambit not found. The pre-packaged version will be build.")
 
@@ -11,6 +13,9 @@ if (NOT Ambit_FOUND)
     include(ExternalProject)
 
     find_package(HDF5 REQUIRED)
+    if (NOT HDF5_FOUND)
+        message(FATAL_ERROR "No HDF5, no Ambit. Build against existing with -DAMBIT_ROOT=$CONDAENV or skip with -DENABLE_AMBIT=OFF")
+    endif()
 
     set(Ambit_OPENMP OFF)
     if (ENABLE_OPENMP)
@@ -35,6 +40,8 @@ if (NOT Ambit_FOUND)
             -DEXTRA_CXX_FLAGS=${CMAKE_EXTRA_CXX_FLAGS}
             -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
             -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
+            -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
+            -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
             -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
             -DENABLE_STATIC=ON
             -DENABLE_PSI4=ON

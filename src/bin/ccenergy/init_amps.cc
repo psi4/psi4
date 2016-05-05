@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -44,7 +49,7 @@ void CCEnergyWavefunction::init_amps(void)
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA"))
       global_dpd_->file2_scm(&tIA, 0);
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
     global_dpd_->file2_close(&tIA);
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb")) {
@@ -63,7 +68,7 @@ void CCEnergyWavefunction::init_amps(void)
       }
       global_dpd_->buf4_close(&tIjAb);
     }
-    else outfile->Printf( "\tUsing old T2 amplitudes.\n\n");
+    else outfile->Printf( "    Using old T2 amplitudes.\n\n");
   }
   else if(params_.ref == 1) { /*** ROHF ***/
     if(!params_.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
@@ -95,7 +100,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -128,7 +133,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->buf4_close(&dIjAb);
     }
     else 
-      outfile->Printf( "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "    Using old T2 amplitudes.\n");
   }
   else if(params_.ref == 2) { /*** UHF ***/
 
@@ -161,7 +166,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "    Using old T1 amplitudes.\n");
 
     if(!params_.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") ||
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -194,7 +199,7 @@ void CCEnergyWavefunction::init_amps(void)
       global_dpd_->buf4_close(&dIJAB);
     }
     else 
-      outfile->Printf( "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "    Using old T2 amplitudes.\n");
   }
   else {  /*** RHF/ROHF ***/
 

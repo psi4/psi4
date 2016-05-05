@@ -285,6 +285,13 @@ def parse_input():
             default=None,
             help="""Enable distributed J and K builds (requires Fortran). If this is left blank,
             JKFactory will not be included.""")
+    # GDMA package
+    group.add_argument('--gdma',
+            action='store',
+            choices=('on', 'off'),
+            default=None,
+            help="""Add support for the GDMA distributed multipole analysis package (requires Fortran). If this is left blank,
+            LibGDMA will not be included.""")
     # GPU_DFCC package
     group.add_argument('--gpu-dfcc',
             action='store',
@@ -471,6 +478,7 @@ def gen_cmake_command(args):
     command += translate_cmake('ENABLE_STATIC_LINKING', args.static)
     command += translate_cmake('ENABLE_PLUGINS',        args.plugins)
     command += translate_cmake('ENABLE_LIBERD',         args.erd)
+    command += translate_cmake('ENABLE_GDMA',           args.gdma)
     command += translate_cmake('ENABLE_JKFACTORY',      args.jkfactory)
     command += translate_cmake('ENABLE_GPU_DFCC',       args.gpu_dfcc)
     command += translate_cmake('ENABLE_DUMMY_PLUGIN',   args.dummy_plugin)
@@ -742,10 +750,15 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.cc:
-        args.cc = 'gcc'
-    if not args.cxx:
-        args.cxx = 'g++'
+    if not args.cc and 'CC' in os.environ:
+        args.cc = os.environ['CC']
+
+    if not args.cxx and 'CXX' in os.environ:
+        args.cxx = os.environ['CXX']
+
+    if not args.fc and 'FC' in os.environ:
+        args.fc = os.environ['FC']
+
 
 
 configure_ubuntu = configure_default_compilers

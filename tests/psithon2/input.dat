@@ -23,7 +23,7 @@ refS22BmadSAPT0 = 2.063857730160                                                
 refNBCmadDFMP2  = 0.117344794875                                                            #TEST
 refNBCmadSCF    = 0.149827452337                                                            #TEST
 
-set globals {
+set {
     BASIS sto-3g
     DF_BASIS_SCF  cc-pVDZ-JKFIT
     DF_BASIS_SAPT cc-pVDZ-RI

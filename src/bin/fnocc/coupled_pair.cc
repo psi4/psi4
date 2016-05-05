@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include"psi4-dec.h"
@@ -155,10 +160,21 @@ double CoupledPair::compute_energy() {
   // cepa energy
   char*cepatype = (char*)malloc(100*sizeof(char));
   if (cepa_level == 0){
-     Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = eccsd;
-     Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
-     Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
-     Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = eccsd + escf;
+     if (options_.get_bool("CEPA_NO_SINGLES")) {
+        Process::environment.globals["LCCD CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["LCCD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["LCCD SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["LCCD TOTAL ENERGY"]                     = eccsd + escf;
+     } else {
+        Process::environment.globals["LCCSD CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["LCCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["LCCSD SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["LCCSD TOTAL ENERGY"]                     = eccsd + escf;
+        Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = eccsd;
+        Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+        Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+        Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = eccsd + escf;
+     }
   }
   if (cepa_level == 1){
      Process::environment.globals["CEPA(1) CORRELATION ENERGY"]               = eccsd;

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef _psi_src_bin_psimrcc_ccsort_h
@@ -33,7 +38,11 @@
 #include <vector>
 
 
-namespace psi{ namespace psimrcc{
+namespace psi{
+
+class IntegralTransform;
+
+namespace psimrcc{
 
 class CCMatrix;
 
@@ -78,7 +87,7 @@ private:
   void   dump_integrals_to_disk(MatrixBlks& to_be_processed);
 
   // MRPT2 algorithm
-  void   build_integrals_mrpt2();
+  void   build_integrals_mrpt2(IntegralTransform *ints);
   void   frozen_core_energy_mrpt2();
   void   allocate_and_sort_integrals_mrpt2();
   void   allocate_amplitudes_mrpt2();

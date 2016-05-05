@@ -8,14 +8,18 @@
 
 .. _`sec:oeprop`:
 
-Evaluation of One-Electron Properties
-=====================================
+:py:func:`~p4util.oeprop` Evaluation of One-Electron Properties
+===============================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
+.. autofunction:: p4util.oeprop(wfn, \*args[, title])
+
 |PSIfour| is capable of computing a number of one-electron properties
 summarized in the table below. 
+
+.. _`table:oe_features`:
 
 .. table:: Current one-electron property capabilities of |PSIfour|
 
@@ -27,10 +31,6 @@ summarized in the table below.
    | Electric quadrupole moment         | QUADRUPOLE            | Raw (traced) moments and traceless multipoles                                     |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | All moments up order N             | MULTIPOLE(N)          | Only raw (traced) moments. Sets global variables e.g. "DIPOLE X", "32-POLE XYYZZ" |
-   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | Transition dipole moment           | TRANSITION_DIPOLE     |                                                                                   |
-   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | Transition quadrupole moment       | TRANSITION_QUADRUPOLE |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electrostatic potential, at nuclei | ESP_AT_NUCLEI         | Sets global variables "ESP AT CENTER n", n = 1 to natoms                          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
@@ -86,6 +86,8 @@ Multipole moments may be computed at any origin, which is controlled by the
 global |globals__properties_origin| keyword.  The keyword takes an array with
 the following possible values:
 
+.. _`table:oe_origin`:
+
 .. table:: Allowed origin specifications
 
    +-------------------------------+-------------------------------------------------------------------------------+
@@ -107,12 +109,12 @@ Properties evaluated on a grid
 
 Certain properties may be evaluated a user-specified grid points.  The grid
 points are completely arbitrary and are specified by providing a file called
-grid.dat containing the x,y,z values for each point in order::
+grid.dat containing the x,y,z values seperated with spaces for each point in order::
 
-    x1, y1, z1
-    x2, y2, z2
+    x1 y1 z1
+    x2 y2 z2
     ..........
-    xn, yn, zn
+    xn yn zn
 
 The grid.dat file is completely free form; any number of spaces and/or newlines
 between entries is permitted.  The units of the coordinates in grid.dat are the

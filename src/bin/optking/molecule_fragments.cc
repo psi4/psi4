@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file molecule_fragments.cc
@@ -108,17 +113,26 @@ void MOLECULE::fragmentize(void) {
     }
   }
 
+  // make vector list of atoms in each fragment
+  std::vector< std::vector<int> > fatoms;
+  std::vector<int> onef;
   for (i=0; i<nfrag; ++i) {
-    oprintf_out( "\tDetected frag with atoms: ");
+    fatoms.push_back(onef);
+    for (j=0; j<natom; ++j)
+      if (frag_atoms[i][j])
+        fatoms[i].push_back(j);
+  }
+
+  // print out fragment information
+  for (i=0; i<fatoms.size(); ++i) {
+    oprintf_out( "\tDetected frag %d with atoms: ", i+1);
     int cnt = 0;
-    for (j=0; j<natom; ++j) {
-      if (frag_atoms[i][j]) {
-        oprintf_out(" %d", j+1);
-        ++cnt;
-        if (cnt == 20 && (j != natom-1)) {
-          cnt = 0;
-          oprintf_out("\n\t");
-        }
+    for (j=0; j<fatoms[i].size(); ++j) {
+      oprintf_out(" %d", fatoms[i][j]+1);
+      ++cnt;
+      if (cnt == 20 && (j != natom-1)) {
+        cnt = 0;
+        oprintf_out("\n\t");
       }
     }
     oprintf_out("\n");
@@ -130,24 +144,14 @@ void MOLECULE::fragmentize(void) {
   }
   else { // either connect fragment or split it up
 
-    // make array of number of atoms in each fragment
-    int *frag_natom = init_int_array(nfrag);
-    for (i=0; i<nfrag; ++i)
-      for (j=0; j<natom; ++j)
-        if (frag_atoms[i][j]) ++frag_natom[i];
-
-    // make lookup array of first atom of each fragment
-    int *frag_offset = init_int_array(nfrag);
-    for (i=1; i<nfrag; ++i)
-      frag_offset[i] = frag_offset[i-1] + frag_natom[i-1];
-
-    // add connectivity between the closest atoms of disconnected fragments
+    oprintf_out("\tUnifying fragments since fragment_mode == SINGLE\n");
+    // Add connectivity between the closest atoms of disconnected fragments
     // to make one complete superfragment
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       GeomType geom = fragments[0]->g_geom_const_pointer();
       double tval, min;
 
-      // this matrix will keep track of which fragments are connected
+      // this matrix will keep track of which fragments have been connected
       bool **frag_connectivity = init_bool_matrix(nfrag,nfrag);
       for (int f1=0; f1<nfrag; ++f1)
         frag_connectivity[f1][f1] = true;
@@ -157,19 +161,19 @@ void MOLECULE::fragmentize(void) {
 
       double *Zs = fragments[0]->g_Z_pointer();
 
-     while (!all_connected) {
+      while (!all_connected) {
       for (int f2=0; f2<nfrag; ++f2) {
         for (int f1=0; f1<f2; ++f1) {
           if (frag_connectivity[f1][f2]) continue; // already connected
           min = 1.0e12;
 
-          for (int f1_atom=0; f1_atom<frag_natom[f1]; ++f1_atom) {
-            for (int f2_atom=0; f2_atom<frag_natom[f2]; ++f2_atom) {
-              tval = v3d_dist(geom[frag_offset[f1]+f1_atom], geom[frag_offset[f2]+f2_atom]);
+          for (int f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
+            for (int f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
+              tval = v3d_dist(geom[fatoms[f1][f1_atom]], geom[fatoms[f2][f2_atom]]);
               if (tval < min) {
                 min = tval;
-                i = frag_offset[f1]+f1_atom;
-                j = frag_offset[f2]+f2_atom;
+                i = fatoms[f1][f1_atom];
+                j = fatoms[f2][f2_atom];
               }
             }
           }
@@ -181,22 +185,21 @@ void MOLECULE::fragmentize(void) {
             continue;
 
           fragments[0]->connect(i,j); // connect closest atoms
+          oprintf_out("\tConnecting fragments %d and %d\n", f1+1, f2+1);
+          frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
+
           // Now check for possibly symmetry related atoms which are just as close
-          // we need them all to avoid symmetry breaking.
-          for (int f1_atom=0; f1_atom<frag_natom[f1]; ++f1_atom) {
-            for (int f2_atom=0; f2_atom<frag_natom[f2]; ++f2_atom) {
-              tval = v3d_dist(geom[frag_offset[f1]+f1_atom], geom[frag_offset[f2]+f2_atom]);
+          // We need them all to avoid symmetry breaking.
+          for (int f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
+            for (int f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
+              tval = v3d_dist(geom[fatoms[f1][f1_atom]], geom[fatoms[f2][f2_atom]]);
               if (fabs(tval - min) < 1.0e-14) {
-                i = frag_offset[f1]+f1_atom;
-                j = frag_offset[f2]+f2_atom;
+                i = fatoms[f1][f1_atom];
+                j = fatoms[f2][f2_atom];
                 fragments[0]->connect(i,j);
-                frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
               }
             }
           }
-          // keep track of which fragments have now been connected
-          oprintf_out("\tConnecting fragments %d and %d\n", f1+1, f2+1);
-          frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
         }
       }
 
@@ -245,19 +248,19 @@ void MOLECULE::fragmentize(void) {
   
       for (ifrag=0; ifrag<nfrag; ++ifrag) {
     
-        double *Z_frag = init_array(frag_natom[ifrag]);
-        double **geom_frag = init_matrix(frag_natom[ifrag], 3);
-        double **grad_frag = init_matrix(frag_natom[ifrag], 3);
+        double *Z_frag = init_array(fatoms[ifrag].size());
+        double **geom_frag = init_matrix(fatoms[ifrag].size(), 3);
+        double **grad_frag = init_matrix(fatoms[ifrag].size(), 3);
   
-        for (i=0; i<frag_natom[ifrag]; ++i) {
-          Z_frag[i] = Z[frag_offset[ifrag] + i];
+        for (i=0; i<fatoms[ifrag].size(); ++i) {
+          Z_frag[i] = Z[fatoms[ifrag][i]];
           for (xyz=0; xyz<3; ++xyz) {
-            geom_frag[i][xyz] = geom[frag_offset[ifrag] + i][xyz];
-            grad_frag[i][xyz] = grad[frag_offset[ifrag] + i][xyz];
+            geom_frag[i][xyz] = geom[fatoms[ifrag][i]][xyz];
+            grad_frag[i][xyz] = grad[fatoms[ifrag][i]][xyz];
           }
         }
   
-        FRAG * one_frag = new FRAG(frag_natom[ifrag], Z_frag, geom_frag);
+        FRAG * one_frag = new FRAG(fatoms[ifrag].size(), Z_frag, geom_frag);
         one_frag->set_grad(grad_frag);
         free_matrix(grad_frag);
 
@@ -274,9 +277,10 @@ void MOLECULE::fragmentize(void) {
       free_matrix(geom);
       free_matrix(grad);
     }
-    free_int_array(frag_natom);
-    free_int_array(frag_offset);
   }
+  for (int i=0; i<nfrag; ++i)
+    fatoms[i].clear();
+  fatoms.clear();
   free_bool_matrix(frag_atoms);
   return;
 }
@@ -537,4 +541,3 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 }
 
 } // namespace opt
-

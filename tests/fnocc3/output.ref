@@ -1,24 +1,25 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta3+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} cc4956f5858ef015f76ad516e10025119ad553c8
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   7561
-    PSI4DATADIR: /Users/deprince/psi4-devel/lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:16:21 2016
 
+    Process ID:  10914
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -50,8 +51,8 @@ compare_values(refqcisdt, get_variable("QCISD(T) TOTAL ENERGY"), 9, "FNO-QCISD(T
 clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:11 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:21 2016
 
 
          ---------------------------------------------------------
@@ -63,20 +64,22 @@ clean()
 
   ==> Geometry <==
 
-    Molecular point group: c1
+    Molecular point group: c2v
     Full point group: C2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
 
-  Running in c1 symmetry.
+  Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801465529972068
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -109,142 +112,137 @@ clean()
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A         41      41       0       0       0       0
+     A1        18      18       0       0       0       0
+     A2         4       4       0       0       0       0
+     B1         7       7       0       0       0       0
+     B2        12      12       0       0       0       0
    -------------------------------------------------------
     Total      41      41       5       5       5       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:              19
-      Number of SO shells:              19
-      Number of primitives:             39
-      Number of atomic orbitals:        43
-      Number of basis functions:        41
-
-      Number of irreps:                  1
-      Number of functions per irrep: [  41 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 175960 non-zero two-electron integrals.
-        Stored in file 33.
-
-	Batch   1 pq = [       0,     861] index = [             0,371091]
+	Batch   1 pq = [       0,     287] index = [             0,41328]
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     Memory (MB):               183
-    Schwarz Cutoff:          0E+00
+    Schwarz Cutoff:          1E-12
 
   Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.75572137110480
-
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   1:   -68.60316188068886   -9.84744e+00   0.00000e+00 
-   @RHF iter   2:   -66.44621896710406    2.15694e+00   5.93159e-01 DIIS
-   @RHF iter   3:   -75.27642589336736   -8.83021e+00   5.90701e-01 DIIS
-   @RHF iter   4:   -75.87161965921680   -5.95194e-01   7.80311e-03 DIIS
-   @RHF iter   5:   -76.03443574474470   -1.62816e-01   7.50791e-03 DIIS
-   @RHF iter   6:   -76.03532461741632   -8.88873e-04   1.26802e-03 DIIS
-   @RHF iter   7:   -76.03567394743951   -3.49330e-04   2.82310e-04 DIIS
-   @RHF iter   8:   -76.03568892611585   -1.49787e-05   8.71560e-05 DIIS
-   @RHF iter   9:   -76.03568942669193   -5.00576e-07   2.22455e-05 DIIS
-   @RHF iter  10:   -76.03568944703872   -2.03468e-08   3.44291e-06 DIIS
-   @RHF iter  11:   -76.03568944757558   -5.36858e-10   4.87323e-07 DIIS
-   @RHF iter  12:   -76.03568944758555   -9.97602e-12   6.68826e-08 DIIS
-   @RHF iter  13:   -76.03568944758584   -2.84217e-13   1.99960e-08 DIIS
-   @RHF iter  14:   -76.03568944758584    0.00000e+00   2.39688e-09 DIIS
-   @RHF iter  15:   -76.03568944758594   -9.94760e-14   3.74984e-10 DIIS
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    0,    2 ]
+
+   @RHF iter   1:   -68.60316188068875   -6.86032e+01   1.39794e-01 
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+   @RHF iter   2:   -66.44621896710407    2.15694e+00   1.14550e-01 DIIS
+   @RHF iter   3:   -75.27642589336749   -8.83021e+00   6.00670e-02 DIIS
+   @RHF iter   4:   -75.87161965921692   -5.95194e-01   2.68969e-02 DIIS
+   @RHF iter   5:   -76.03443574474474   -1.62816e-01   1.47186e-03 DIIS
+   @RHF iter   6:   -76.03532461741641   -8.88873e-04   1.34124e-03 DIIS
+   @RHF iter   7:   -76.03567394743963   -3.49330e-04   2.20125e-04 DIIS
+   @RHF iter   8:   -76.03568892611577   -1.49787e-05   2.59966e-05 DIIS
+   @RHF iter   9:   -76.03568942669197   -5.00576e-07   8.47361e-06 DIIS
+   @RHF iter  10:   -76.03568944703883   -2.03469e-08   1.02679e-06 DIIS
+   @RHF iter  11:   -76.03568944757565   -5.36815e-10   1.29495e-07 DIIS
+   @RHF iter  12:   -76.03568944758557   -9.91918e-12   1.85488e-08 DIIS
+   @RHF iter  13:   -76.03568944758582   -2.55795e-13   3.32528e-09 DIIS
+   @RHF iter  14:   -76.03568944758582    0.00000e+00   5.18107e-10 DIIS
+   @RHF iter  15:   -76.03568944758588   -5.68434e-14   5.26066e-11 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.584242     2A     -1.335644     3A     -0.696477  
-	   4A     -0.577441     5A     -0.506115  
+       1A1   -20.584242     2A1    -1.335644     1B2    -0.696477  
+       3A1    -0.577441     1B1    -0.506115  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.034638     7A      0.057685     8A      0.174873  
-	   9A      0.198741    10A      0.218991    11A      0.232717  
-	  12A      0.278530    13A      0.326042    14A      0.382596  
-	  15A      0.397838    16A      0.427440    17A      0.532830  
-	  18A      0.636757    19A      0.654113    20A      0.794630  
-	  21A      0.917421    22A      1.105329    23A      1.117326  
-	  24A      1.145003    25A      1.291882    26A      1.454162  
-	  27A      1.469924    28A      1.572034    29A      1.970895  
-	  30A      1.987693    31A      2.082183    32A      2.345806  
-	  33A      2.398639    34A      2.533727    35A      2.701071  
-	  36A      2.959052    37A      3.670709    38A      3.682736  
-	  39A      3.693890    40A      3.973957    41A      4.218940  
+       4A1     0.034638     2B2     0.057685     5A1     0.174873  
+       2B1     0.198741     6A1     0.218991     3B2     0.232717  
+       4B2     0.278530     7A1     0.326042     1A2     0.382596  
+       8A1     0.397838     3B1     0.427440     5B2     0.532830  
+       9A1     0.636757     6B2     0.654113     7B2     0.794630  
+      10A1     0.917421     4B1     1.105329    11A1     1.117326  
+       2A2     1.145003    12A1     1.291882     8B2     1.454162  
+       5B1     1.469924    13A1     1.572034     9B2     1.970895  
+       3A2     1.987693     6B1     2.082183    14A1     2.345806  
+      10B2     2.398639    15A1     2.533727    11B2     2.701071  
+      16A1     2.959052     7B1     3.670709    17A1     3.682736  
+       4A2     3.693890    18A1     3.973957    12B2     4.218940  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.03568944758594
+  @RHF Final Energy:   -76.03568944758588
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720683
-    One-Electron Energy =                -122.2744713068759097
-    Two-Electron Energy =                  37.4373163293179800
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.2744713068758529
+    Two-Electron Energy =                  37.4373163293179090
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.0356894475858667
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0356894475858809
 
-
-Properties computed using the SCF density matrix
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
+
+
+Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.2197
+     X:     0.0000      Y:     0.0000      Z:    -0.2197
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+     X:     0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+     X:     0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:11 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:21 2016
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:21 2016
+
 
 
         *******************************************************
@@ -253,10 +251,6 @@ Total time:
         *                                                     *
         *******************************************************
 
-
-
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:11 2013
 
         ==> Transform (OV|OV) integrals <==
 
@@ -269,43 +263,33 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-        CC integral sort will use    0.16 mb
-        Sort (IA|JB)........done.
-
-
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:11 2013
-Module time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:11 2013
-
         ==> Build MP2 amplitudes, OPDM, and NOs <==
+
+        OS MP2 correlation energy:            -0.166478414245
+        SS MP2 correlation energy:            -0.056669079827
+        MP2 correlation energy:               -0.223147494072
+      * MP2 total energy:                    -76.258836941658
 
         Cutoff for significant NO occupancy: 1.000e-04
 
-        Number of virtual orbitals in original space:     36
-        Number of virtual orbitals in truncated space:    24
+        No. virtuals per irrep (original):  [  15   4   6  11 ]
+        No. virtuals per irrep (truncated): [  10   3   5   6 ]
+
+        Retaining 24 of 36 virtual orbitals.
 
 
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:11 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:21 2016
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:11 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:21 2016
 
         ==> Transform all two-electron integrals <==
 
@@ -318,23 +302,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:12 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:21 2016
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-  available memory =                            244.14 mb
-  minimum memory requirements for QCISD =         0.22 mb
-  memory requirements for QCISD(T) =              0.47 mb
-
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:12 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:21 2016
 
 
         **********************************************************
@@ -348,7 +327,7 @@ Total time:
 
         Number of (ab|cd) temporary files:                2
         Number of (ab|ci) temporary files:                3
-        Starting temporary file number:                 150
+        Starting temporary file number:                 270
 
         Initial sort........done.
 
@@ -364,18 +343,18 @@ Total time:
         Sort (AB|CD) 2/2....done.
 
 
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:12 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:21 2016
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =      -0.00 seconds =      -0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:12 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:21 2016
 
 
 
@@ -388,7 +367,25 @@ Total time:
 
 
 
-  Define tiling:
+  ==> Input parameters <==
+
+        Freeze core orbitals?                 yes
+        Use frozen natural orbitals?          yes
+        r_convergence:                  1.000e-10
+        e_convergence:                  1.000e-10
+        Number of DIIS vectors:                 8
+        Number of frozen core orbitals:         1
+        Number of active occupied orbitals:     4
+        Number of active virtual orbitals:     24
+        Number of frozen virtual orbitals:     12
+
+  ==> Memory <==
+
+        available memory =                            244.14 mb
+        minimum memory requirements for QCISD =         0.22 mb
+        memory requirements for QCISD(T) =              0.47 mb
+
+  ==> Define tiling <==
 
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
@@ -410,10 +407,10 @@ Total time:
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
       0   0 1   -0.2293541551   -0.2293541551    0.0121742534        0
-      1   1 1   -0.2298025539   -0.0004483989    0.0054140428        0
+      1   1 1   -0.2298025539   -0.0004483989    0.0054140428        1
       2   2 1   -0.2304166874   -0.0006141335    0.0023587658        0
       3   3 1   -0.2305404649   -0.0001237775    0.0009489883        0
-      4   4 1   -0.2305188159    0.0000216489    0.0001419531        1
+      4   4 1   -0.2305188159    0.0000216489    0.0001419531        0
       5   5 1   -0.2305201584   -0.0000013425    0.0000245576        0
       6   6 1   -0.2305203870   -0.0000002285    0.0000076107        0
       7   7 1   -0.2305202704    0.0000001166    0.0000013484        0
@@ -421,11 +418,14 @@ Total time:
       9   8 2   -0.2305202690    0.0000000049    0.0000000674        0
      10   8 3   -0.2305202715   -0.0000000024    0.0000000187        0
      11   8 4   -0.2305202715    0.0000000000    0.0000000041        0
-     12   8 5   -0.2305202715   -0.0000000001    0.0000000013        1
+     12   8 5   -0.2305202715   -0.0000000001    0.0000000013        0
      13   8 6   -0.2305202716   -0.0000000000    0.0000000004        0
      14   8 7   -0.2305202716   -0.0000000000    0.0000000001        0
 
   QCISD iterations converged!
+
+        T1 diagnostic:                         0.013112180613
+        D1 diagnostic:                         0.029039426956
 
         OS MP2 FNO correction:                -0.000819116338
         SS MP2 FNO correction:                -0.000092278158
@@ -439,7 +439,7 @@ Total time:
         OS MP2.5 correlation energy:          -0.171225850256
         SS MP2.5 correlation energy:          -0.054028401038
         MP2.5 correlation energy:             -0.225254251294
-      * MP2.5 total energy:                  -76.260943698880
+      * MP2.5 total energy:                  -76.260943698879
 
         OS MP3 correlation energy:            -0.175973286267
         SS MP3 correlation energy:            -0.051387722248
@@ -456,26 +456,26 @@ Total time:
         QCISD correlation energy:             -0.231431666069
       * QCISD total energy:                  -76.267121113654
 
-  Total time for QCISD iterations:       0.16 s (user)
-                                         0.18 s (system)
-                                            2 s (total)
+  Total time for QCISD iterations:       0.05 s (user)
+                                         0.11 s (system)
+                                            1 s (total)
 
-  Time per iteration:                    0.01 s (user)
+  Time per iteration:                    0.00 s (user)
                                          0.01 s (system)
-                                         0.14 s (total)
+                                         0.07 s (total)
 
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:14 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:22 2016
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on lawn-128-61-121-51.lawn.gatech.edu
-*** at Fri Feb 22 13:47:14 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:16:22 2016
 
 
         *******************************************************
@@ -484,9 +484,9 @@ Total time:
         *                                                     *
         *******************************************************
 
-        num_threads =                     1
-        available memory =        243.67 mb
-        memory requirements =       0.47 mb
+        num_threads:                      1
+        available memory:         244.14 mb
+        memory requirements:        0.47 mb
 
         Number of ijk combinations: 20
 
@@ -509,14 +509,16 @@ Total time:
       * QCISD(T) total energy                 -76.272102955182
 
 
-*** tstop() called on lawn-128-61-121-51.lawn.gatech.edu at Fri Feb 22 13:47:14 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:16:22 2016
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	FNO-QCISD total energy............................................PASSED
+	FNO-QCISD(T) total energy.........................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

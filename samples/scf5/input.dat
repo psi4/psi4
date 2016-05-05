@@ -25,7 +25,7 @@ triplet_o2.update_geometry()
 
 
 activate(singlet_o2)
-set globals {
+set {
     basis cc-pvtz
     df_basis_scf cc-pvtz-jkfit
     guess core
@@ -75,7 +75,7 @@ set scf scf_type df
 E = energy('scf')
 
 activate(triplet_o2)
-set globals {
+set {
     basis cc-pvtz
     df_basis_scf cc-pvtz-jkfit
     guess core

@@ -16,14 +16,15 @@ molecule h2o {
 #H           0.758081    0.000000   -0.497635
 }
 
-set globals {
+set {
   diis false
   basis sto-3g
   e_convergence 10
   d_convergence 10
+  scf_type pk
 }
 
 thisenergy = optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
-compare_values(refenergy, thisenergy, 3, "Reference energy")                                #TEST
+compare_values(refenergy, thisenergy, 6, "Reference energy")                                #TEST

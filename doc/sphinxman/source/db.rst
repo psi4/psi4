@@ -8,8 +8,8 @@
 
 .. _`sec:db()`:
 
-Database
-========
+Database, :py:func:`~wrappers.database`
+=======================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
@@ -46,44 +46,31 @@ printed for error.) The other two tables tabulate the PSI variables requested
 through keyword ``tabulate``, in this case the total SCF energy and the number
 of atoms in each reagent. ::
 
-    ==> Scf Total Energy <==
-    
-    -----------------------------------------------------------------------------------
-             Reaction          Reaction Value              Reagent 1       Reagent 2
-                                                            Value Wt        Value Wt
-    -----------------------------------------------------------------------------------
-       RGC1-HeHe-0.85              0.00011520         -5.71020576  1  -2.85516048 -2
-        RGC1-HeHe-1.0              0.00000153         -5.71031943  1  -2.85516048 -2
-        RGC1-HeHe-1.5             -0.00000000         -5.71032096  1  -2.85516048 -2
-    -----------------------------------------------------------------------------------
-    
-    ==> Natom <==
-    
-    -----------------------------------------------------------------------------------
-             Reaction          Reaction Value              Reagent 1       Reagent 2
-                                                            Value Wt        Value Wt
-    -----------------------------------------------------------------------------------
-       RGC1-HeHe-0.85              0.00000000          2.00000000  1   1.00000000 -2
-        RGC1-HeHe-1.0              0.00000000          2.00000000  1   1.00000000 -2
-        RGC1-HeHe-1.5              0.00000000          2.00000000  1   1.00000000 -2
-    -----------------------------------------------------------------------------------
-    
-    ==> Requested Energy <==
-    
-    -----------------------------------------------------------------------------------
-             Reaction     Reaction Energy      Error       Reagent 1       Reagent 2
-                             Ref     Calc [kcal/mol]          [H] Wt          [H] Wt
-    -----------------------------------------------------------------------------------
-       RGC1-HeHe-0.85     0.0376   0.0723     0.0347  -5.71020576  1  -2.85516048 -2
-        RGC1-HeHe-1.0    -0.0219   0.0010     0.0228  -5.71031943  1  -2.85516048 -2
-        RGC1-HeHe-1.5    -0.0029  -0.0000     0.0029  -5.71032096  1  -2.85516048 -2
-    -----------------------------------------------------------------------------------
-          Minimal Dev                         0.0029
-          Maximal Dev                         0.0347
-      Mean Signed Dev                         0.0201
-    Mean Absolute Dev                         0.0201
-              RMS Dev                         0.0240
-    -----------------------------------------------------------------------------------
+   ==> Mp2 Total Energy <==
+
+   ------------------------------------------------------------------------------------------------------
+               Reaction          Reaction Value                             Reagent 1           Reagent 2
+                                                                             Value Wt            Value Wt
+   ------------------------------------------------------------------------------------------------------
+         RGC1-HeHe-0.85              0.00004802                        -5.69430495  1      -2.84717649 -2
+          RGC1-HeHe-1.0             -0.00000064                        -5.69435362  1      -2.84717649 -2
+   ------------------------------------------------------------------------------------------------------
+
+   ==> Requested Energy <==
+
+   ------------------------------------------------------------------------------------------------------
+               Reaction     Reaction Energy        Reaction Error           Reagent 1           Reagent 2
+                               Ref     Calc [kcal/mol]   [kJ/mol]             [Eh] Wt             [Eh] Wt
+   ------------------------------------------------------------------------------------------------------
+         RGC1-HeHe-0.85     0.0376   0.0301    -0.0075    -0.0312      -5.69430495  1      -2.84717649 -2
+          RGC1-HeHe-1.0    -0.0219  -0.0004     0.0215     0.0899      -5.69435362  1      -2.84717649 -2
+   ------------------------------------------------------------------------------------------------------
+            Minimal Dev                        -0.0075    -0.0312
+            Maximal Dev                         0.0215     0.0899
+        Mean Signed Dev                         0.0070     0.0293
+      Mean Absolute Dev                         0.0145     0.0605
+                RMS Dev                         0.0161     0.0673
+   ------------------------------------------------------------------------------------------------------
 
 As well as being printed in the output file, database results from the
 ``tabulate`` option are available in the input file as ordinary Python
@@ -95,7 +82,7 @@ requests a couple variables through ``tabulate`` and then makes use of the
 resulting data structures, here, only to print. ::
    
    set basis 6-31g*
-   db('dfmp2','s22',subset='small',tabulate=['CURRENT ENERGY','DF-MP2 CORRELATION ENERGY'])
+   db('mp2','s22',subset='small',tabulate=['CURRENT ENERGY','MP2 CORRELATION ENERGY'])
 
    from pprint import pprint
 
@@ -105,7 +92,7 @@ resulting data structures, here, only to print. ::
    print_stdout('\nDB_RXN')
    pprint(DB_RXN)
 
-   print_stdout('\ndf-mp2 interaction energy of water dimer (S22-2)')
+   print_stdout('\nmp2 interaction energy of water dimer (S22-2)')
    print_stdout(DB_RXN['S22-2']['CURRENT ENERGY'])
 
 The output to the screen is as follows. ::
@@ -138,7 +125,7 @@ The output to the screen is as follows. ::
     'S22-8': {'CURRENT ENERGY': -0.0002623068456699684,
               'DF-MP2 CORRELATION ENERGY': -0.0006910051439986686}}
    
-   df-mp2 interaction energy of water dimer (S22-2)
+   mp2 interaction energy of water dimer (S22-2)
    -0.0115002693348
 
 

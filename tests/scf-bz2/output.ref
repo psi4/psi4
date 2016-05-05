@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.1.189 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} eb54861 
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: 06-06-2015  01:12:57 PM EDT
+    Psi4 started on: Mon Mar 14 15:13:48 2016
 
-    Process ID:  26869
-    PSI4DATADIR: /theoryfs2/ds/sherrill/psi4-private/lib
+    Process ID:   9173
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -87,21 +87,20 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
 --------------------------------------------------------------------------
 
   Memory set to 500.000 MiB by Python script.
-
-*** tstart() called on ds9.sherrill.chemistry.gatech.edu
-*** at Sat Jun  6 13:12:57 2015
-
    => Loading Basis Set <=
 
     Role: BASIS
     Keyword: BASIS
     Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
+    atoms 1-6, 13-18  entry C          line   130 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
+    atoms 7-12, 19-24 entry H          line    20 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
 
     There are an even number of electrons - assuming singlet.
-    Specify the multiplicity with the MULTP option in the
-    input if this is incorrect
+    Specify the multiplicity in the molecule input block.
+
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:48 2016
 
 
          ---------------------------------------------------------
@@ -118,38 +117,38 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           C         -0.000000000000     1.950000000000    -1.391500000000
-           C          1.205074349366     1.950000000000    -0.695750000000
-           C          1.205074349366     1.950000000000     0.695750000000
-           C         -0.000000000000     1.950000000000     1.391500000000
-           C         -1.205074349366     1.950000000000     0.695750000000
-           C         -1.205074349366     1.950000000000    -0.695750000000
-           H         -0.000000000000     1.950000000000    -2.471500000000
-           H          2.140381785453     1.950000000000    -1.235750000000
-           H          2.140381785453     1.950000000000     1.235750000000
-           H         -0.000000000000     1.950000000000     2.471500000000
-           H         -2.140381785453     1.950000000000     1.235750000000
-           H         -2.140381785453     1.950000000000    -1.235750000000
-           C          0.000000000000    -1.950000000000    -1.391500000000
-           C         -1.205074349366    -1.950000000000    -0.695750000000
-           C         -1.205074349366    -1.950000000000     0.695750000000
-           C          0.000000000000    -1.950000000000     1.391500000000
-           C          1.205074349366    -1.950000000000     0.695750000000
-           C          1.205074349366    -1.950000000000    -0.695750000000
-           H          0.000000000000    -1.950000000000    -2.471500000000
-           H         -2.140381785453    -1.950000000000    -1.235750000000
-           H         -2.140381785453    -1.950000000000     1.235750000000
-           H          0.000000000000    -1.950000000000     2.471500000000
-           H          2.140381785453    -1.950000000000     1.235750000000
-           H          2.140381785453    -1.950000000000    -1.235750000000
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C         -0.000000000000     1.950000000000    -1.391500000000    12.000000000000
+           C          1.205074349366     1.950000000000    -0.695750000000    12.000000000000
+           C          1.205074349366     1.950000000000     0.695750000000    12.000000000000
+           C         -0.000000000000     1.950000000000     1.391500000000    12.000000000000
+           C         -1.205074349366     1.950000000000     0.695750000000    12.000000000000
+           C         -1.205074349366     1.950000000000    -0.695750000000    12.000000000000
+           H         -0.000000000000     1.950000000000    -2.471500000000     1.007825032070
+           H          2.140381785453     1.950000000000    -1.235750000000     1.007825032070
+           H          2.140381785453     1.950000000000     1.235750000000     1.007825032070
+           H         -0.000000000000     1.950000000000     2.471500000000     1.007825032070
+           H         -2.140381785453     1.950000000000     1.235750000000     1.007825032070
+           H         -2.140381785453     1.950000000000    -1.235750000000     1.007825032070
+           C          0.000000000000    -1.950000000000    -1.391500000000    12.000000000000
+           C         -1.205074349366    -1.950000000000    -0.695750000000    12.000000000000
+           C         -1.205074349366    -1.950000000000     0.695750000000    12.000000000000
+           C          0.000000000000    -1.950000000000     1.391500000000    12.000000000000
+           C          1.205074349366    -1.950000000000     0.695750000000    12.000000000000
+           C          1.205074349366    -1.950000000000    -0.695750000000    12.000000000000
+           H          0.000000000000    -1.950000000000    -2.471500000000     1.007825032070
+           H         -2.140381785453    -1.950000000000    -1.235750000000     1.007825032070
+           H         -2.140381785453    -1.950000000000     1.235750000000     1.007825032070
+           H          0.000000000000    -1.950000000000     2.471500000000     1.007825032070
+           H          2.140381785453    -1.950000000000     1.235750000000     1.007825032070
+           H          2.140381785453    -1.950000000000    -1.235750000000     1.007825032070
 
   Running in d2h symmetry.
 
   Rotational constants: A =      0.04780  B =      0.02190  C =      0.02190 [cm^-1]
   Rotational constants: A =   1432.90044  B =    656.42561  C =    656.42561 [MHz]
-  Nuclear repulsion =  618.289643086473006
+  Nuclear repulsion =  618.289643086472893
 
   Charge       = 0
   Multiplicity = 1
@@ -224,148 +223,7 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
     Total     228     228      42      42      42       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
-   => Loading Basis Set <=
-
-    Role: BASIS
-    Keyword: BASIS
-    Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
-
-   => Loading Basis Set <=
-
-    Role: BASIS
-    Keyword: BASIS
-    Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-
-   => Loading Basis Set <=
-
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    Name: 
-    atoms 1-6, 13-18  entry C          line   120 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz-jkfit.gbs
-    atoms 7-12, 19-24 entry H          line    50 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz-jkfit.gbs
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               357
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  -AO BASIS SET INFORMATION:
-    Name                   = 
-    Total number of shells = 396
-    Number of primitives   = 396
-    Number of AO           = 1272
-    Number of SO           = 1116
-    Maximum AM             = 3
-    Spherical Harmonics    = TRUE
-
-  -Contraction Scheme:
-    Atom   Type   All Primitives // Shells:
-   ------ ------ --------------------------
-       1     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       2     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       3     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       4     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       5     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       6     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-       7     H     4s 3p 2d // 4s 3p 2d 
-       8     H     4s 3p 2d // 4s 3p 2d 
-       9     H     4s 3p 2d // 4s 3p 2d 
-      10     H     4s 3p 2d // 4s 3p 2d 
-      11     H     4s 3p 2d // 4s 3p 2d 
-      12     H     4s 3p 2d // 4s 3p 2d 
-      13     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      14     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      15     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      16     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      17     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      18     C     10s 7p 5d 2f // 10s 7p 5d 2f 
-      19     H     4s 3p 2d // 4s 3p 2d 
-      20     H     4s 3p 2d // 4s 3p 2d 
-      21     H     4s 3p 2d // 4s 3p 2d 
-      22     H     4s 3p 2d // 4s 3p 2d 
-      23     H     4s 3p 2d // 4s 3p 2d 
-      24     H     4s 3p 2d // 4s 3p 2d 
-
-  Minimum eigenvalue in the overlap matrix is 3.1466917847E-04.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   @DF-RHF iter   0:  -465.48033270674841   -4.65480e+02   7.61917e-02 
-   @DF-RHF iter   1:  -461.17488073404706    4.30545e+00   6.99700e-03 
-   @DF-RHF iter   2:  -461.41518652883929   -2.40306e-01   2.06870e-03 DIIS
-   @DF-RHF iter   3:  -461.43643721200556   -2.12507e-02   8.39508e-04 DIIS
-   @DF-RHF iter   4:  -461.43935590145520   -2.91869e-03   1.15533e-04 DIIS
-   @DF-RHF iter   5:  -461.43942975917457   -7.38577e-05   2.48566e-05 DIIS
-   @DF-RHF iter   6:  -461.43943330159004   -3.54242e-06   9.21450e-06 DIIS
-   @DF-RHF iter   7:  -461.43943374877290   -4.47183e-07   1.42859e-06 DIIS
-   @DF-RHF iter   8:  -461.43943376439915   -1.56263e-08   4.63301e-07 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
-   => Loading Basis Set <=
-
-    Role: BASIS
-    Keyword: BASIS
-    Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-
-   => Loading Basis Set <=
-
-    Role: BASIS
-    Keyword: BASIS
-    Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                  24
-      Number of AO shells:             108
-      Number of SO shells:              18
-      Number of primitives:            324
-      Number of atomic orbitals:       240
-      Number of basis functions:       228
-
-      Number of irreps:                  8
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  33   24   24   33   24   33   33   24 ]
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 42649419 non-zero two-electron integrals.
-        Stored in file 33.
 
   ==> DiskJK: Disk-Based J/K Matrices <==
 
@@ -375,10 +233,23 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
     Memory (MB):               357
     Schwarz Cutoff:          1E-12
 
-   @RHF iter   9:  -461.44029714576618   -8.63381e-04   1.14842e-05 DIIS
-   @RHF iter  10:  -461.44029757715748   -4.31391e-07   2.72772e-06 DIIS
-   @RHF iter  11:  -461.44029760184139   -2.46839e-08   1.11185e-06 DIIS
-   @RHF iter  12:  -461.44029760638796   -4.54656e-09   1.27160e-07 DIIS
+  Minimum eigenvalue in the overlap matrix is 3.1466917847E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:  -465.62167274706019   -4.65622e+02   7.66242e-02 
+   @RHF iter   1:  -461.17182844452043    4.44984e+00   7.04721e-03 
+   @RHF iter   2:  -461.41525668728616   -2.43428e-01   2.11480e-03 DIIS
+   @RHF iter   3:  -461.43706227842847   -2.18056e-02   8.74458e-04 DIIS
+   @RHF iter   4:  -461.44021846784574   -3.15619e-03   1.16164e-04 DIIS
+   @RHF iter   5:  -461.44029374732224   -7.52795e-05   2.45056e-05 DIIS
+   @RHF iter   6:  -461.44029717906108   -3.43174e-06   8.78770e-06 DIIS
+   @RHF iter   7:  -461.44029759176976   -4.12709e-07   1.35794e-06 DIIS
+   @RHF iter   8:  -461.44029760554020   -1.37704e-08   3.96357e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -387,85 +258,85 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
 
     Doubly Occupied:                                                      
 
-       1B2u  -11.231348     1Ag   -11.231341     1B3g  -11.230784  
-       1B1g  -11.230784     1B1u  -11.230778     1B3u  -11.230778  
-       2B2u  -11.229569     1Au   -11.229569     2Ag   -11.229566  
-       1B2g  -11.229566     2B3g  -11.228977     2B1u  -11.228976  
-       3Ag    -1.144455     3B2u   -1.142754     3B1u   -1.008697  
-       2B3u   -1.008697     3B3g   -1.007176     2B1g   -1.007176  
-       2B2g   -0.817323     4Ag    -0.817323     2Au    -0.816025  
-       4B2u   -0.816025     5Ag    -0.702374     5B2u   -0.700857  
+       1B2u  -11.231348     1Ag   -11.231341     1B3g  -11.230785  
+       1B1g  -11.230784     1B1u  -11.230778     1B3u  -11.230777  
+       2B2u  -11.229569     1Au   -11.229568     2Ag   -11.229566  
+       1B2g  -11.229565     2B3g  -11.228977     2B1u  -11.228976  
+       3Ag    -1.144455     3B2u   -1.142753     3B1u   -1.008697  
+       2B3u   -1.008696     3B3g   -1.007176     2B1g   -1.007176  
+       4Ag    -0.817323     2B2g   -0.817322     4B2u   -0.816026  
+       2Au    -0.816025     5Ag    -0.702374     5B2u   -0.700857  
        4B1u   -0.637068     4B3g   -0.635602     3B3u   -0.610391  
-       3B1g   -0.609807     5B1u   -0.580385     4B3u   -0.580385  
-       5B3g   -0.579088     4B1g   -0.579088     6Ag    -0.504499  
+       3B1g   -0.609807     5B1u   -0.580386     4B3u   -0.580385  
+       5B3g   -0.579088     4B1g   -0.579087     6Ag    -0.504498  
        3B2g   -0.486057     7Ag    -0.486057     3Au    -0.485076  
-       6B2u   -0.485076     7B2u   -0.481708     5B3u   -0.338027  
-       6B1u   -0.338027     5B1g   -0.316378     6B3g   -0.316378  
+       6B2u   -0.485076     7B2u   -0.481707     5B3u   -0.338027  
+       6B1u   -0.338027     5B1g   -0.316378     6B3g   -0.316377  
 
     Virtual:                                                              
 
        4B2g    0.131203     8Ag     0.131203     4Au     0.157549  
        8B2u    0.157549     9Ag     0.172490     9B2u    0.201764  
-       6B3u    0.207435     7B1u    0.207435     6B1g    0.241506  
-       7B3g    0.241506     5B2g    0.244844    10Ag     0.244844  
-       8B1u    0.261404     5Au     0.276622    10B2u    0.276622  
+       7B1u    0.207435     6B3u    0.207436     7B3g    0.241506  
+       6B1g    0.241507    10Ag     0.244844     5B2g    0.244845  
+       8B1u    0.261404    10B2u    0.276622     5Au     0.276623  
        8B3g    0.290911     9B1u    0.345339     9B3g    0.374274  
-      11Ag     0.437180     6B2g    0.437180    11B2u    0.450317  
-       6Au     0.450317    10B1u    0.470396     7B3u    0.470396  
-      10B3g    0.481796     7B1g    0.481796    12Ag     0.559455  
+       6B2g    0.437180    11Ag     0.437181     6Au     0.450317  
+      11B2u    0.450317     7B3u    0.470396    10B1u    0.470396  
+       7B1g    0.481796    10B3g    0.481796    12Ag     0.559456  
        8B3u    0.577790     8B1g    0.601891    12B2u    0.608376  
       13Ag     0.614028    11B1u    0.652277     9B3u    0.652277  
       12B1u    0.672959    11B3g    0.693097    13B2u    0.707699  
-      14Ag     0.712019     7B2g    0.722630    15Ag     0.722630  
-       9B1g    0.739918    12B3g    0.739918     8B2g    0.744790  
-      10B3u    0.748202    13B1u    0.748202     7Au     0.755392  
-       8Au     0.759319    14B2u    0.759319     9B2g    0.793253  
-      16Ag     0.793253    14B1u    0.847663    11B3u    0.847663  
+      14Ag     0.712019    15Ag     0.722630     7B2g    0.722630  
+      12B3g    0.739918     9B1g    0.739918     8B2g    0.744790  
+      13B1u    0.748202    10B3u    0.748203     7Au     0.755392  
+      14B2u    0.759319     8Au     0.759319    16Ag     0.793253  
+       9B2g    0.793254    14B1u    0.847663    11B3u    0.847663  
       13B3g    0.855962    10B1g    0.855962    15B2u    0.869413  
-      15B1u    0.872683    14B3g    0.885484    11B1g    0.885484  
-      17Ag     0.890162    10B2g    0.890162    16B2u    0.900905  
-       9Au     0.900905    10Au     0.911772    17B2u    0.911772  
+      15B1u    0.872684    11B1g    0.885484    14B3g    0.885485  
+      17Ag     0.890161    10B2g    0.890162    16B2u    0.900905  
+       9Au     0.900906    17B2u    0.911772    10Au     0.911773  
       15B3g    0.964652    18Ag     0.986425    16B1u    0.990817  
       16B3g    1.013901    18B2u    1.022519    19Ag     1.053995  
       19B2u    1.056813    17B1u    1.099231    12B3u    1.099231  
       11B2g    1.127912    17B3g    1.131011    12B1g    1.131011  
-      11Au     1.140927    13B3u    1.159594    13B1g    1.159792  
-      20Ag     1.176682    12B2g    1.176682    18B1u    1.221677  
-      14B3u    1.221677    19B1u    1.247018    15B3u    1.247018  
+      11Au     1.140928    13B3u    1.159594    13B1g    1.159792  
+      20Ag     1.176682    12B2g    1.176683    18B1u    1.221677  
+      14B3u    1.221678    19B1u    1.247018    15B3u    1.247018  
       20B2u    1.259360    12Au     1.259360    18B3g    1.263833  
       14B1g    1.263833    20B1u    1.296911    19B3g    1.306061  
-      15B1g    1.306061    13B2g    1.325616    21Ag     1.325616  
-      13Au     1.331802    21B2u    1.331802    20B3g    1.360566  
-      22Ag     1.473491    14B2g    1.484441    23Ag     1.484441  
-      22B2u    1.485682    14Au     1.566881    23B2u    1.566881  
-      16B3u    1.703005    15B2g    1.724307    24Ag     1.724307  
+      15B1g    1.306062    21Ag     1.325617    13B2g    1.325617  
+      21B2u    1.331802    13Au     1.331802    20B3g    1.360566  
+      22Ag     1.473491    23Ag     1.484441    14B2g    1.484441  
+      22B2u    1.485683    23B2u    1.566881    14Au     1.566881  
+      16B3u    1.703005    24Ag     1.724307    15B2g    1.724307  
       21B1u    1.734918    16B1g    1.751288    25Ag     1.799797  
       24B2u    1.809296    15Au     1.809296    21B3g    1.844659  
       25B2u    1.851219    16B2g    1.858781    26Ag     1.858781  
       22B1u    1.895467    17B3u    1.895467    27Ag     1.899438  
-      16Au     1.913766    26B2u    1.913766    23B1u    1.915770  
+      16Au     1.913766    26B2u    1.913766    23B1u    1.915771  
       27B2u    1.926925    22B3g    1.930117    17B1g    1.930117  
       24B1u    1.946432    18B3u    1.946432    25B1u    1.960015  
-      19B3u    1.960015    23B3g    1.960845    18B1g    1.960845  
-      24B3g    2.004959    19B1g    2.004959    25B3g    2.055200  
+      19B3u    1.960015    23B3g    1.960845    18B1g    1.960846  
+      19B1g    2.004959    24B3g    2.004959    25B3g    2.055200  
       20B3u    2.089353    26B1u    2.089353    20B1g    2.119278  
-      26B3g    2.119278    21B3u    2.133274    27B1u    2.135779  
-      22B3u    2.135779    21B1g    2.138248    17B2g    2.155862  
-      28B2u    2.179108    17Au     2.179108    28Ag     2.179928  
-      18B2g    2.179928    18Au     2.194614    27B3g    2.210047  
-      22B1g    2.210047    29Ag     2.274645    19B2g    2.274645  
+      26B3g    2.119278    21B3u    2.133274    22B3u    2.135779  
+      27B1u    2.135779    21B1g    2.138248    17B2g    2.155862  
+      17Au     2.179108    28B2u    2.179108    28Ag     2.179928  
+      18B2g    2.179928    18Au     2.194614    22B1g    2.210047  
+      27B3g    2.210047    29Ag     2.274645    19B2g    2.274645  
       30Ag     2.277482    20B2g    2.277482    29B2u    2.277632  
       19Au     2.277632    28B1u    2.326479    30B2u    2.340327  
-      20Au     2.340327    28B3g    2.386611    21B2g    2.510958  
-      21Au     2.511111    29B3g    2.576243    29B1u    2.576452  
+      20Au     2.340328    28B3g    2.386611    21B2g    2.510959  
+      21Au     2.511111    29B3g    2.576244    29B1u    2.576452  
       31Ag     2.711413    31B2u    2.736727    32Ag     2.753257  
       22B2g    2.753257    30B1u    2.800391    23B3u    2.800391  
-      30B3g    2.813698    23B1g    2.813698    32B2u    2.825880  
-      22Au     2.825880    31B1u    2.960723    32B1u    2.977040  
-      24B3u    2.977040    31B3g    2.997937    24B1g    2.997937  
+      30B3g    2.813698    23B1g    2.813699    32B2u    2.825880  
+      22Au     2.825880    31B1u    2.960723    24B3u    2.977040  
+      32B1u    2.977040    24B1g    2.997937    31B3g    2.997937  
       32B3g    3.133676    23B2g    3.148507    23Au     3.157487  
       33Ag     3.292297    24B2g    3.292297    33B2u    3.307447  
-      24Au     3.307447    33B1u    4.047739    33B3g    4.082232  
+      24Au     3.307447    33B1u    4.047739    33B3g    4.082233  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
@@ -473,18 +344,18 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #T
 
   Energy converged.
 
-  @RHF Final Energy:  -461.44029760638796
+  @RHF Final Energy:  -461.44029760554020
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            618.2896430864730064
-    One-Electron Energy =               -1849.8599187918919142
-    Two-Electron Energy =                 770.1299780990309500
+    Nuclear Repulsion Energy =            618.2896430864728927
+    One-Electron Energy =               -1849.8600124751301337
+    Two-Electron Energy =                 770.1300717831167049
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -461.4402976063879578
+    Total Energy =                       -461.4402976055404224
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -495,24 +366,24 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -64.0143     YY:   -81.6134     ZZ:   -64.0143
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:   -64.0144     YY:   -81.6135     ZZ:   -64.0141
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     5.8664     YY:   -11.7328     ZZ:     5.8664
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:     5.8663     YY:   -11.7328     ZZ:     5.8666
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -522,10 +393,10 @@ Properties computed using the SCF density matrix
        4     C     3.00825  3.00825  0.00000 -0.01650
        5     C     3.00825  3.00825  0.00000 -0.01650
        6     C     3.00825  3.00825  0.00000 -0.01650
-       7     H     0.49175  0.49175  0.00000  0.01650
+       7     H     0.49175  0.49175  0.00000  0.01651
        8     H     0.49175  0.49175  0.00000  0.01650
        9     H     0.49175  0.49175  0.00000  0.01650
-      10     H     0.49175  0.49175  0.00000  0.01650
+      10     H     0.49175  0.49175  0.00000  0.01651
       11     H     0.49175  0.49175  0.00000  0.01650
       12     H     0.49175  0.49175  0.00000  0.01650
       13     C     3.00825  3.00825  0.00000 -0.01650
@@ -534,10 +405,10 @@ Properties computed using the SCF density matrix
       16     C     3.00825  3.00825  0.00000 -0.01650
       17     C     3.00825  3.00825  0.00000 -0.01650
       18     C     3.00825  3.00825  0.00000 -0.01650
-      19     H     0.49175  0.49175  0.00000  0.01650
+      19     H     0.49175  0.49175  0.00000  0.01651
       20     H     0.49175  0.49175  0.00000  0.01650
       21     H     0.49175  0.49175  0.00000  0.01650
-      22     H     0.49175  0.49175  0.00000  0.01650
+      22     H     0.49175  0.49175  0.00000  0.01651
       23     H     0.49175  0.49175  0.00000  0.01650
       24     H     0.49175  0.49175  0.00000  0.01650
 
@@ -545,23 +416,17 @@ Properties computed using the SCF density matrix
 
 
   Saving occupied orbitals to File 180.
-   => Loading Basis Set <=
 
-    Role: BASIS
-    Keyword: BASIS
-    Name: CC-PVDZ
-    atoms 1-6, 13-18  entry C          line   130 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-    atoms 7-12, 19-24 entry H          line    20 file /theoryfs2/ds/sherrill/psi4-private/lib/basis/cc-pvdz.gbs
-
-
-*** tstop() called on ds9.sherrill.chemistry.gatech.edu at Sat Jun  6 13:14:40 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:15:35 2016
 Module time:
-	user time   =     101.92 seconds =       1.70 minutes
-	system time =       0.74 seconds =       0.01 minutes
-	total time  =        103 seconds =       1.72 minutes
+	user time   =     104.13 seconds =       1.74 minutes
+	system time =       1.81 seconds =       0.03 minutes
+	total time  =        107 seconds =       1.78 minutes
 Total time:
-	user time   =     101.92 seconds =       1.70 minutes
-	system time =       0.74 seconds =       0.01 minutes
-	total time  =        103 seconds =       1.72 minutes
+	user time   =     104.13 seconds =       1.74 minutes
+	system time =       1.81 seconds =       0.03 minutes
+	total time  =        107 seconds =       1.78 minutes
+	Nuclear repulsion energy..........................................PASSED
+	SCF energy........................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*
@@ -712,16 +717,28 @@ SharedMatrix Deriv::compute()
     SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));
 
     // Print things out, after making sure that each component is properly symmetrized
-    symmetrize_gradient(enuc)->print_atom_vector();
-    symmetrize_gradient(opdm_contr_)->print_atom_vector();
-    symmetrize_gradient(x_contr_)->print_atom_vector();
-    symmetrize_gradient(tpdm_contr_)->print_atom_vector();
-    if (x_ref_contr_)
-        symmetrize_gradient(x_ref_contr_)->print_atom_vector();
-    if (opdm_ref_contr_)
-        symmetrize_gradient(opdm_ref_contr_)->print_atom_vector();
-    if (tpdm_ref_contr_)
-        symmetrize_gradient(tpdm_ref_contr_)->print_atom_vector();
+    enuc->symmetrize_gradient(molecule_);
+    opdm_contr_->symmetrize_gradient(molecule_);
+    x_contr_->symmetrize_gradient(molecule_);
+    tpdm_contr_->symmetrize_gradient(molecule_);
+
+    enuc->print_atom_vector();
+    opdm_contr_->print_atom_vector();
+    x_contr_->print_atom_vector();
+    tpdm_contr_->print_atom_vector();
+
+    if (x_ref_contr_) {
+        x_ref_contr_->symmetrize_gradient(molecule_);
+        x_ref_contr_->print_atom_vector();
+    }
+    if (opdm_ref_contr_) {
+        opdm_ref_contr_->symmetrize_gradient(molecule_);
+        opdm_ref_contr_->print_atom_vector();
+    }
+    if (tpdm_ref_contr_) {
+        tpdm_ref_contr_->symmetrize_gradient(molecule_);
+        tpdm_ref_contr_->print_atom_vector();
+    }
 
     // Add everything up into a temp.
     SharedMatrix corr(new Matrix("Correlation contribution to gradient", molecule_->natom(), 3));
@@ -749,38 +766,6 @@ SharedMatrix Deriv::compute()
 
     return gradient_;
 }
-
-SharedMatrix Deriv::symmetrize_gradient(SharedMatrix grad)
-{
-    // Make a temporary storage object
-    SharedMatrix temp(grad->clone());
-    temp->zero();
-
-    CharacterTable ct = molecule_->point_group()->char_table();
-
-    // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(molecule_);
-
-    // Symmetrize the gradients to remove any noise
-    for (int atom=0; atom<molecule_->natom(); ++atom) {
-        for (int g=0; g<ct.order(); ++g) {
-
-            int Gatom = atom_map[atom][g];
-
-            SymmetryOperation so = ct.symm_operation(g);
-
-            temp->add(atom, 0, so(0, 0) * grad->get(Gatom, 0) / ct.order());
-            temp->add(atom, 1, so(1, 1) * grad->get(Gatom, 1) / ct.order());
-            temp->add(atom, 2, so(2, 2) * grad->get(Gatom, 2) / ct.order());
-        }
-    }
-    // Delete the atom map.
-    delete_atom_map(atom_map, molecule_);
-
-    grad->copy(temp);
-    return grad;
-}
-
 
 }
 

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /**********************************************************
@@ -178,7 +183,30 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->a1_ = p2;
         disp->a2_ = p3;
         return disp;
+    } else if (boost::to_upper_copy(name) == "-D3MZERO") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-D3MZERO";
+        disp->description_ = "    Grimme's -D3 (zero-damping, short-range refitted) Dispersion Correction\n";
+        disp->citation_ = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n";
+        disp->bibtex_ = "Grimme:2010:154104";
+        disp->s6_ = s6;
+        disp->s8_ = p1;
+        disp->sr6_ = p2;
+        disp->d_ = p3;
+        return disp;
+    } else if (boost::to_upper_copy(name) == "-D3MBJ") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-D3MBJ";
+        disp->description_ = "    Grimme's -D3 (BJ-damping, short-range refitted) Dispersion Correction\n";
+        disp->citation_ = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n";
+        disp->bibtex_ = "Grimme:2011:1456";
+        disp->s6_ = s6;
+        disp->s8_ = p1;
+        disp->a1_ = p2;
+        disp->a2_ = p3;
+        return disp;
     } else {
+        printf("cant find %s", boost::to_upper_copy(name).c_str());
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
     }
 }
@@ -196,13 +224,18 @@ void Dispersion::print(std::string out, int level) const
     printer->Printf( "\n");
 
     printer->Printf( "    S6  = %14.6E\n", s6_);
-    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { printer->Printf( "    S8  = %14.6E\n", s8_); }
-    if (name_ == "-D3ZERO") { printer->Printf( "    SR6 = %14.6E\n", sr6_); }
-    if (name_ == "-D3BJ") { printer->Printf( "    A1  = %14.6E\n", a1_); }
-    if (name_ == "-D3BJ") { printer->Printf( "    A2  = %14.6E\n", a2_); }
-    if ((name_ == "-D1") || (name_ == "-D2") || (name_ == "-CHG") || (name_ == "-D2GR") || (name_ == "-D3ZERO")) {
+    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ") || (name_ == "-D3MZERO") || (name_ == "-D3MBJ"))
+        printer->Printf( "    S8  = %14.6E\n", s8_);
+    if ((name_ == "-D3ZERO") || (name_ == "-D3MZERO"))
+        printer->Printf( "    SR6 = %14.6E\n", sr6_);
+    if ((name_ == "-D3BJ") || (name_ == "-D3MBJ"))
+        printer->Printf( "    A1  = %14.6E\n", a1_);
+    if ((name_ == "-D3BJ") || (name_ == "-D3MBJ"))
+        printer->Printf( "    A2  = %14.6E\n", a2_);
+    if ((name_ == "-D1") || (name_ == "-D2") || (name_ == "-CHG") || (name_ == "-D2GR") || (name_ == "-D3ZERO"))
         printer->Printf( "    A6  = %14.6E\n", d_);
-    }
+    if (name_ == "-D3MZERO")
+        printer->Printf( "    B   = %14.6E\n", d_);
     printer->Printf( "\n");
 }
 std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
@@ -212,7 +245,7 @@ std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
     s.setf(ios::scientific);
     s.precision(11);
 
-    s << "   " << name_ << " Dispersion Energy: " << e << " [H]" << endl;
+    s << "   " << name_ << " Dispersion Energy: " << e << " [Eh]" << endl;
 
     return s.str();
 }
@@ -276,23 +309,33 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
 {
     double E = 0.0;
 
-    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ")) {
+    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ") || (name_ == "-D3MZERO") || (name_ == "-D3MBJ")) {
         if (Py_IsInitialized()) {
             try {
+                // Update geometry in molecule, convert to string
+                m->update_geometry();
+                std::string smol = m->create_psi4_string_from_molecule();
+
                 // Grab run_dftd3 off of the Python plane
                 PyObject *molutil;
-                PY_TRY(molutil, PyImport_ImportModule("interface_dftd3") );
+                PY_TRY(molutil, PyImport_ImportModule("qcdb.interface_dftd3") );
                 PyObject *grimme;
                 PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
                 PyObject *pargs;
                 if (name_ == "-D2GR") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", NULL, NULL, "d2gr", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", smol.c_str(), NULL, "d2gr",
                         "s6", s6_, "alpha6", d_, 0));
                 } else if (name_ == "-D3ZERO") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3zero", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3zero",
                         "s6", s6_, "sr6", sr6_, "s8", s8_, "alpha6", d_, 0));
                 } else if (name_ == "-D3BJ") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3bj", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3bj",
+                        "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 0));
+                } else if (name_ == "-D3MZERO") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3mzero",
+                        "s6", s6_, "sr6", sr6_, "s8", s8_, "beta", d_, 0));
+                } else if (name_ == "-D3MBJ") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3mbj",
                         "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 0));
                 }
                 PyObject *ret;
@@ -449,22 +492,33 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
     double** Gp = G->pointer();
 
     if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ")) {
+    //if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ") || (name_ == "-D3MZERO") || (name_ == "-D3MBJ")) {
         if (Py_IsInitialized()) {
             try {
+                // Update geometry in molecule, convert to string
+                m->update_geometry();
+                std::string smol = m->create_psi4_string_from_molecule();
+
                 // Grab run_dftd3 off of the Python plane
                 PyObject *molutil;
-                PY_TRY(molutil, PyImport_ImportModule("interface_dftd3") );
+                PY_TRY(molutil, PyImport_ImportModule("qcdb.interface_dftd3") );
                 PyObject *grimme;
                 PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
                 PyObject *pargs;
                 if (name_ == "-D2GR") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", NULL, NULL, "d2gr", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", smol.c_str(), NULL, "d2gr",
                         "s6", s6_, "alpha6", d_, 1));
                 } else if (name_ == "-D3ZERO") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3zero", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3zero",
                         "s6", s6_, "sr6", sr6_, "s8", s8_, "alpha6", d_, 1));
                 } else if (name_ == "-D3BJ") {
-                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3bj", 
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3bj",
+                        "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 1));
+                } else if (name_ == "-D3MZERO") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3mzero",
+                        "s6", s6_, "sr6", sr6_, "s8", s8_, "beta", d_, 1));
+                } else if (name_ == "-D3MBJ") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", smol.c_str(), NULL, "d3mbj",
                         "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 1));
                 }
                 PyObject *ret;

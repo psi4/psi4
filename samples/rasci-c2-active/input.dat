@@ -10,7 +10,7 @@ molecule c2 {
   C 1 1.25
 }
 
-set globals {
+set {
   wfn detci
   basis 6-31G*
   d_convergence 10
@@ -26,7 +26,7 @@ revoke_global_option_changed("ACTIVE")
 
 
 # The following is an alternative way of specifying exactly the same CI
-set globals {
+set {
   wfn detci
   basis 6-31G*
   restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]

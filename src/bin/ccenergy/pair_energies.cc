@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -162,35 +167,35 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
       double ecc_aa_tot = 0.0;  
       double ecc_ab_tot = 0.0;  
 
-      outfile->Printf( "\tAlpha-alpha pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
-      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "    Alpha-alpha pair energies\n");
+      outfile->Printf( "        i       j         MP2             %s\n",params_.wfn.c_str());
+      outfile->Printf( "      -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<i; j++,ij++) {
-            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_aa[ij], ecc_aa[ij]);
+            outfile->Printf( "      %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_aa[ij], ecc_aa[ij]);
             emp2_aa_tot += emp2_aa[ij];
             ecc_aa_tot += ecc_aa[ij];
           }
       }
-      outfile->Printf( "\t  -------------   ------------   ------------\n");
-      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
+      outfile->Printf( "      -------------   ------------   ------------\n");
+      outfile->Printf( "          Total       %12.9lf   %12.9lf\n\n", emp2_aa_tot, ecc_aa_tot);
 
-      outfile->Printf( "\tAlpha-beta pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
-      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "    Alpha-beta pair energies\n");
+      outfile->Printf( "        i       j         MP2             %s\n",params_.wfn.c_str());
+      outfile->Printf( "      -----   -----   ------------   ------------\n");
       if (nab) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<nocc_act; j++,ij++) {
-            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_ab[ij], ecc_ab[ij]);
+            outfile->Printf( "      %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_ab[ij], ecc_ab[ij]);
             emp2_ab_tot += emp2_ab[ij];
             ecc_ab_tot += ecc_ab[ij];
           }
       }
-      outfile->Printf( "\t  -------------   ------------   ------------\n");
-      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n", emp2_ab_tot, ecc_ab_tot);
+      outfile->Printf( "      -------------   ------------   ------------\n");
+      outfile->Printf( "          Total       %12.9lf   %12.9lf\n", emp2_ab_tot, ecc_ab_tot);
 
     }
     else {
@@ -200,9 +205,9 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
       double ecc_s_tot = 0.0;
       double ecc_t_tot = 0.0;
 
-      outfile->Printf( "\tSinglet pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
-      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "    Singlet pair energies\n");
+      outfile->Printf( "        i       j         MP2             %s\n",params_.wfn.c_str());
+      outfile->Printf( "      -----   -----   ------------   ------------\n");
       ij = 0;
       for(i=0; i<nocc_act; i++)
         for(j=0; j<=i; j++,ij++) {
@@ -227,27 +232,27 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
             eaa = 0.0;
           ecc_s = (i != j ? 2.0 : 1.0) * eab - 0.5 * eaa;
           
-          outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_s, ecc_s);
+          outfile->Printf( "      %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_s, ecc_s);
           emp2_s_tot += emp2_s;
           ecc_s_tot += ecc_s;
         }
-      outfile->Printf( "\t  -------------   ------------   ------------\n");
-      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
+      outfile->Printf( "      -------------   ------------   ------------\n");
+      outfile->Printf( "          Total       %12.9lf   %12.9lf\n\n", emp2_s_tot, ecc_s_tot);
 
-      outfile->Printf( "\tTriplet pair energies\n");
-      outfile->Printf( "\t    i       j         MP2             %s\n",params_.wfn.c_str());
-      outfile->Printf( "\t  -----   -----   ------------   ------------\n");
+      outfile->Printf( "    Triplet pair energies\n");
+      outfile->Printf( "        i       j         MP2             %s\n",params_.wfn.c_str());
+      outfile->Printf( "      -----   -----   ------------   ------------\n");
       if (naa) {
         ij = 0;
         for(i=0; i<nocc_act; i++)
           for(j=0; j<i; j++,ij++) {
-            outfile->Printf( "\t  %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, 1.5*emp2_aa[ij], 1.5*ecc_aa[ij]);
+            outfile->Printf( "      %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, 1.5*emp2_aa[ij], 1.5*ecc_aa[ij]);
             emp2_t_tot += 1.5*emp2_aa[ij];
             ecc_t_tot += 1.5*ecc_aa[ij];
           }
       }
-      outfile->Printf( "\t  -------------   ------------   ------------\n");
-      outfile->Printf( "\t      Total       %12.9lf   %12.9lf\n", emp2_t_tot, ecc_t_tot);
+      outfile->Printf( "      -------------   ------------   ------------\n");
+      outfile->Printf( "          Total       %12.9lf   %12.9lf\n", emp2_t_tot, ecc_t_tot);
 
     }      
     

@@ -16,7 +16,7 @@ H    1.2637478640   -0.8928403697   -1.8467135486
 units angstrom
 }
 
-set globals {
+set {
   basis sto-3g
 }
 

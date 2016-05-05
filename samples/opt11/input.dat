@@ -9,7 +9,7 @@ molecule hooh {
  H 3 0.95 2 105.0 1 120.0
  noreorient
 }
-set globals {
+set {
   basis cc-pvdz
   opt_type ts
   docc = [ 5 , 4 ]

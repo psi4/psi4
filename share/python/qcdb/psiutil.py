@@ -24,16 +24,14 @@ r"""Stuff stolen from psi. Should import or not as necessary
 or some better way. Apologies to the coders.
 
 """
-from __future__ import print_function
 from __future__ import absolute_import
-from __future__ import division
+from __future__ import print_function
 import sys
 import math
 import re
 import os
 import string
 from .vecutil import *
-from .exceptions import *
 
 
 def _success(label):
@@ -45,20 +43,28 @@ def _success(label):
     sys.stdout.flush()
 
 
-def compare_values(expected, computed, digits, label):
+def compare_values(expected, computed, digits, label, exitonfail=True):
     """Function to compare two values. Prints :py:func:`util.success`
     when value *computed* matches value *expected* to number of *digits*
     (or to *digits* itself when *digits* > 1 e.g. digits=0.04). Performs
-    a system exit on failure. Used in input files in the test suite.
+    a system exit on failure unless *exitonfail* False, in which case
+    returns error message. Used in input files in the test suite.
 
     """
     thresh = 10 ** -digits if digits > 1 else digits
     if abs(expected - computed) > thresh:
-        message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
-        raise ValidationError(message)
+        print("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
+        if exitonfail:
+            sys.exit(1)
+        else:
+            return
     if math.isnan(computed):
-        message = ("\t%s: computed value (%f) does not match (%f)\n\tprobably because the computed value is nan." % (label, computed, expected))
-        raise ValidationError(message)
+        print("\t%s: computed value (%f) does not match (%f)\n" % (label, computed, expected))
+        print("\tprobably because the computed value is nan.")
+        if exitonfail:
+            sys.exit(1)
+        else:
+            return
     _success(label)
 
 
@@ -69,8 +75,8 @@ def compare_integers(expected, computed, label):
 
     """
     if (expected != computed):
-        message = ("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
-        raise ValidationError(message)
+        print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
+        sys.exit(1)
     _success(label)
 
 
@@ -81,8 +87,8 @@ def compare_strings(expected, computed, label):
 
     """
     if(expected != computed):
-        message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
-        raise ValidationError(message)
+        print("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
+        sys.exit(1)
     _success(label)
 
 
@@ -108,7 +114,7 @@ def compare_matrices(expected, computed, digits, label):
         show(computed)
         print('\n')
         show(expected)
-        raise ValidationError("\n")
+        sys.exit(1)
     _success(label)
 
 
@@ -139,7 +145,7 @@ def query_yes_no(question, default=True):
     while True:
         sys.stdout.write(question + prompt)
         choice = raw_input().strip().lower()
-        if default is not None and choice == "":
+        if default is not None and choice == '':
             return default
         elif yes.match(choice):
             return True
@@ -156,7 +162,7 @@ def search_file(filename, search_path):
 
     """
     file_found = False
-    paths = search_path.split(os.pathsep)
+    paths = string.split(search_path, os.pathsep)
     for path in paths:
         if os.path.exists(os.path.join(path, filename)):
             file_found = True
@@ -188,7 +194,7 @@ def all_casings(input_string):
 
     """
     if not input_string:
-        yield ""
+        yield ''
     else:
         first = input_string[:1]
         if first.lower() == first.upper():
@@ -234,3 +240,20 @@ def import_ignorecase(module):
             break
 
     return modobj
+
+def findfile_ignorecase(fil, pre='', post=''):
+    """Function to locate a file *pre* + *fil* + *post* in any possible 
+    lettercase permutation of *fil*. Returns *pre* + *fil* + *post* if 
+    available, None if not.
+
+    """
+    afil = None
+    for per in list(all_casings(fil)):
+        if os.path.isfile(pre + per + post):
+            afil = pre + per + post
+            break
+        else:
+            pass
+
+    return afil
+

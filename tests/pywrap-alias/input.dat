@@ -8,7 +8,7 @@ He
 He 1 1.0
 }
 
-set globals {
+set {
     basis 6-31g
     g_convergence gau
     mp2_type conv  # no fitting bases for helium
@@ -24,7 +24,7 @@ set scf {
 set occ do_scs on
 
 banner('gold standard')
-energy('sherrill_gold_standard')
+energy(sherrill_gold_standard)
 compare_values(-5.66406119, get_variable('CBS TOTAL ENERGY'), 7, "[1]  Au std")
 clean()
 
@@ -78,11 +78,11 @@ clean()
 
 banner('cbs()')
 set scf_type pk
-cbs('scf',scf_basis='cc-pvdz')
+energy(cbs, scf_type='scf', scf_basis='cc-pvdz')
 compare_values(-5.55609846, get_variable('CBS TOTAL ENERGY'), 7, "[10] cbs()")
 clean()
 
-set globals {
+set {
     basis sto-3g
     df_basis_scf cc-pVDZ-JKFIT
     scf_type df
@@ -95,7 +95,7 @@ database('scf','S22',subset=[2,8],benchmark='S22A')
 compare_values(0.604937374581, get_variable('S22 DATABASE MEAN ABSOLUTE DEVIATION'), 5, "[11] db()")  #TEST
 clean()
 
-set globals {
+set {
     basis 6-31g
     scf_type pk
 }

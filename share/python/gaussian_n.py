@@ -1,8 +1,12 @@
-from __future__ import absolute_import
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +22,10 @@ from __future__ import absolute_import
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
+
+from __future__ import absolute_import
 
 # Gn theory.
 
@@ -27,13 +33,11 @@ import re
 import os
 import math
 import warnings
-#CUimport psi4
-#CUimport p4const
-#CUimport p4util
-from driver import *
-#from extend_Molecule import *
-#CUfrom molutil import *
-#CUfrom p4regex import *
+import driver
+import psi4
+import p4util
+import p4const
+#from driver import *
 # never import aliases into this file
 
 def run_gaussian_2(name, **kwargs):
@@ -56,11 +60,11 @@ def run_gaussian_2(name, **kwargs):
     # optimize geometry at scf level
     psi4.clean()
     psi4.set_global_option('BASIS',"6-31G(D)")
-    optimize('scf')
+    driver.optimize('scf')
     psi4.clean()
 
     # scf frequencies for zpe
-    scf_e, ref= frequency('scf', return_wfn=True)
+    scf_e, ref = driver.frequency('scf', return_wfn=True)
 
     # thermodynamic properties
     du = psi4.get_variable('INTERNAL ENERGY CORRECTION')
@@ -70,7 +74,7 @@ def run_gaussian_2(name, **kwargs):
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
     freqsum = 0.0
-    for i in range (0,nfreq):
+    for i in range(0, nfreq):
         freqsum += freqs.get(i)
     zpe = freqsum / p4const.psi_hartree2wavenumbers * 0.8929 * 0.5
     psi4.clean()
@@ -79,14 +83,14 @@ def run_gaussian_2(name, **kwargs):
     # note: freeze_core isn't an option in MP2
     psi4.set_global_option('FREEZE_CORE',"FALSE")
     psi4.set_global_option('MP2_TYPE', 'CONV')
-    optimize('mp2')
+    driver.optimize('mp2')
     psi4.clean()
 
     # qcisd(t)
     psi4.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
     psi4.set_global_option('FREEZE_CORE',"TRUE")
     psi4.set_global_option('BASIS',"6-311G(D_P)")
-    ref = run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
+    ref = driver.proc.run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
 
     # HLC: high-level correction based on number of valence electrons
     nirrep = ref.nirrep()
@@ -108,14 +112,14 @@ def run_gaussian_2(name, **kwargs):
 
     # correction for diffuse functions
     psi4.set_global_option('BASIS',"6-311+G(D_P)")
-    energy('mp4')
+    driver.energy('mp4')
     emp4_6311pg_dp = psi4.get_variable("MP4 TOTAL ENERGY")
     emp2_6311pg_dp = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
 
     # correction for polarization functions
     psi4.set_global_option('BASIS',"6-311G(2DF_P)")
-    energy('mp4')
+    driver.energy('mp4')
     emp4_6311g2dfp = psi4.get_variable("MP4 TOTAL ENERGY")
     emp2_6311g2dfp = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
@@ -123,7 +127,7 @@ def run_gaussian_2(name, **kwargs):
     # big basis mp2
     psi4.set_global_option('BASIS',"6-311+G(3DF_2P)")
     #run_fnocc('_mp2',**kwargs)
-    energy('mp2')
+    driver.energy('mp2')
     emp2_big = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
 
@@ -197,5 +201,5 @@ def run_gaussian_2(name, **kwargs):
     return eg2_0k
 
 # aliases for g2
-procedures['energy']['gaussian-2'] = run_gaussian_2
-procedures['energy']['g2']         = run_gaussian_2
+driver.procedures['energy']['gaussian-2'] = run_gaussian_2
+driver.procedures['energy']['g2']         = run_gaussian_2

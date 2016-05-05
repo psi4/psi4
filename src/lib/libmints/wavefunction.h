@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef _psi_src_lib_libmints_wavefunction_h
@@ -204,7 +209,6 @@ protected:
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
-    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
     SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
@@ -424,6 +428,16 @@ public:
     * @return the matrix in the desired basis
     **/
     SharedMatrix Db_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the D matrix in the desired basis
+    * @param D matrix in the SO basis to transform
+    * @param C matrix in the SO basis to use as a transformer
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO, CartAO
+    * @return the D matrix in the desired basis
+    **/
+    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
 
     /**
     * Return the alpha orbital eigenvalues in the desired basis

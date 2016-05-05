@@ -30,8 +30,8 @@ Earray = [
   'MP3',
   'MP2.5',
   'OMP2.5',
-  'CEPA(0)',
-  'OCEPA(0)',
+  'LCCD',
+  'OLCCD',
   'BP86',
 ]
 random.shuffle(Earray)
@@ -92,7 +92,7 @@ Earray = [
   'FCI',
   'DCFT',
   'MP2.5',
-  'OCEPA(0)',
+  'OLCCD',
   'BP86',
   'B2PLYP-D',
 ]
@@ -123,6 +123,7 @@ revoke_global_option_changed('DF_BASIS_SCF')
 Earray = [
   'MP4',
   'MP4(SDQ)',
+  'LCCD',
   'CEPA(0)',
   'CEPA(1)',
   'CEPA(3)',

@@ -32,7 +32,7 @@ option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
 option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
 option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
 # Modules requiring Fortran
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
    if(NOT CMAKE_Fortran_COMPILER)
       message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
    endif()
@@ -46,6 +46,9 @@ CMAKE_DEPENDENT_OPTION(
                              "CMAKE_Fortran_COMPILER"                      OFF)
 CMAKE_DEPENDENT_OPTION(
        ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
+                             "CMAKE_Fortran_COMPILER"                      OFF)
+CMAKE_DEPENDENT_OPTION(
+       ENABLE_GDMA           "Enable use of Stone's GDMA multipole code"   ON
                              "CMAKE_Fortran_COMPILER"                      OFF)
 option(ENABLE_AMBIT          "Enable Ambit interface"                      OFF)
 
@@ -61,7 +64,7 @@ option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"  
 set(EXTERNAL_LIBS)
 
 # Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH)
+if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
    include(FortranEnabler)
    enable_language(Fortran)
    # add_definitions(-DHAVE_FORTRAN)  # unused
@@ -208,6 +211,11 @@ if(ENABLE_DKH)
    add_definitions(-DHAVE_DKH)
 endif()
 
+if(ENABLE_GDMA)
+   message(STATUS "GDMA is ENABLED")
+   add_definitions(-DHAVE_GDMA)
+endif()
+
 # Libint configuration
 # Set default for LIBINT_OPT_AM if not set by setup script.
 if(NOT LIBINT_OPT_AM)
@@ -291,6 +299,7 @@ endforeach()
 foreach(def ${defs})
     set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
 endforeach()
+set(PLUGIN_CXX "${CMAKE_CXX_COMPILER}")
 set(CXX_FLAGS_PLUGIN "")
 set(PLUGIN_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT}")
 include(ConfigPlugins) # This module has to be included **after** ConfigCompilerFlags.cmake
@@ -298,6 +307,15 @@ string(STRIP ${CXX_FLAGS_PLUGIN} CXX_FLAGS_PLUGIN)
 string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
 string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
 string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
+if(ENABLE_CONDA_DEST)
+    set(PLUGIN_CXX "\${MCONDA}/bin/g++")
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        set(PLUGIN_DEFINES "-DHAVE_GDMA -DHAVE_DKH -DHAVE_MM_MALLOC_H -DHAS_CXX11_VARIADIC_TEMPLATES -DHAS_CXX11_STATIC_ASSERT -DHAS_CXX11_SIZEOF_MEMBER -DHAS_CXX11_RVALUE_REFERENCES -DHAS_CXX11_NULLPTR -DHAS_CXX11_LONG_LONG -DHAS_CXX11_LAMBDA -DHAS_CXX11_INITIALIZER_LIST -DHAS_CXX11_DECLTYPE -DHAS_CXX11_CSTDINT_H -DHAS_CXX11_CONSTEXPR -DHAS_CXX11_AUTO_RET_TYPE -DHAS_CXX11_AUTO -DHAS_CXX11_FUNC -DHAS_CXX11 -DSYS_LINUX -DUSE_FCMANGLE_H")
+        set(CXX_FLAGS_PLUGIN "-DRESTRICT=__restrict__ -Xlinker -export-dynamic -fPIC -std=c++11 -fopenmp -O3 -DNDEBUG -Wno-unused")
+    endif()
+    set(PLUGIN_LDFLAGS "-Wl,-rpath,\${MCONDA}/lib/")
+    set(PLUGIN_INCLUDE_DIRECTORIES "-I\${MCONDA}/include/ -I\${MCONDA}/include/psi4 -I\${MCONDA}/include/python2.7 -I/usr/include")
+endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 configure_file(include/psi4-config.in include/psi4-config.tmp)
 install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/psi4/)

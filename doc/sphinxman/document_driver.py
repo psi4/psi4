@@ -41,7 +41,7 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
         fdriver.write('   :undoc-members:\n')
 
         if basename == 'driver':
-            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop\n')
+            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop, molden, gdma, fchk, gradient, hessian\n')
         elif basename == 'wrappers':
             fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
             fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')
@@ -50,12 +50,14 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
 #            fdriver.write('\n.. literalinclude:: %sshare/python/%s\n' % (IncludePath, filename))
         elif basename == 'diatomic':
             fdriver.write('   :exclude-members: anharmonicity\n')
-        elif basename == 'interface_dftd3':
-            fdriver.write('   :exclude-members: run_dftd3\n')
+#        elif basename == 'interface_dftd3':
+#            fdriver.write('   :exclude-members: run_dftd3\n')
         elif basename == 'interface_cfour':
             fdriver.write('   :exclude-members: run_cfour\n')
         elif basename == 'aliases':
             fdriver.write('   :exclude-members: sherrill_gold_standard, allen_focal_point\n')
+        elif basename == 'p4util':
+            fdriver.write('   :exclude-members: oeprop, cubeprop\n')
 
     fdriver.write('\n')
 
@@ -82,6 +84,9 @@ for basename in os.walk(DriverPath + '../../share/python').next()[1]:
             fdriver.write('.. automodule:: %s.%s\n' % (basename, basename2))
             fdriver.write('   :members:\n')
             fdriver.write('   :undoc-members:\n')
+
+        if basename == 'qcdb' and basename2 == 'interface_dftd3':
+            fdriver.write('   :exclude-members: run_dftd3\n')
 
         fdriver.write('\n')
     fdriver.write('\n')

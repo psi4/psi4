@@ -7,7 +7,7 @@ molecule h2o {
   H 1 0.9894093 2 100.02688
 }
 
-set globals {
+set {
   basis sto-3g
   d_convergence 11
   scf_type pk

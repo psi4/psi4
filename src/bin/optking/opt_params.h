@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file opt-params.h
@@ -192,8 +197,8 @@ struct OPT_PARAMS {
   double IRC_step_size;
   bool keep_intcos; // don't delete intco.dat
 
-  // for coordinates with user-specified equilibrium values - this is the force constant
-  //double fixed_coord_force_constant;
+  // for coordinates with user-specified equilibrium values - this is the starting force constant
+  double fixed_coord_force_constant;
 
   // If a static line search is being done (which currently just outputs N geometries)
   // these control the min and the max of the largest internal coordinate displacement.
@@ -205,4 +210,3 @@ struct OPT_PARAMS {
 }
 
 #endif
-

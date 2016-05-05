@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} fdb9578f5cb0074d552ae8944aabc354df928483
+                          Git: Rev {master} ad94c93
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,8 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   6317
-    PSI4DATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib
+
+    Psi4 started on: Fri Mar 18 13:36:43 2016
+
+    Process ID:    434
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -80,13 +83,9 @@ print_variables()
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds4
-*** at Tue Feb  3 12:18:55 2015
-
-
   Memory set to 200.000 MiB by Python script.
-  EFP fragment h2o read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/h2o.efp
-  EFP fragment nh3 read from /theoryfs2/ds/cdsgroup/psi4-compile/psi4cmake/psi4/lib/efpfrag/nh3.efp
+  EFP fragment h2o read from /home/dsmith/Gits/dgas_psi/share/efpfrag/h2o.efp
+  EFP fragment nh3 read from /home/dsmith/Gits/dgas_psi/share/efpfrag/nh3.efp
 
 
 LIBEFP ver. 1.2.1
@@ -148,6 +147,13 @@ Project web site: http://www.libefp.org/
       QM/EFP                            0.000000000000 [H] 
 
     Total EFP                           0.002680445044 [H]
+	QM NRE............................................................PASSED
+	EFP-EFP Elst......................................................PASSED
+	EFP-EFP Indc......................................................PASSED
+	EFP-EFP Disp......................................................PASSED
+	EFP-EFP Exch......................................................PASSED
+	EFP-EFP Totl......................................................PASSED
+	Current...........................................................PASSED
 
 
   Variable Map:
@@ -217,15 +223,15 @@ Project web site: http://www.libefp.org/
 
     Geometry (in Bohr), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     0.224348285559
-           H         -1.423528800232     0.000000000000    -0.897393142237
-           H          1.423528800232     0.000000000000    -0.897393142237
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.224348285559    15.994914619560
+           H         -1.423528800232     0.000000000000    -0.897393142237     1.007825032070
+           H          1.423528800232     0.000000000000    -0.897393142237     1.007825032070
 
 
-*** tstart() called on ds4
-*** at Tue Feb  3 12:18:55 2015
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Fri Mar 18 13:36:43 2016
 
 
          ---------------------------------------------------------
@@ -242,11 +248,11 @@ Project web site: http://www.libefp.org/
 
     Geometry (in Bohr), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     0.224348285559
-           H         -1.423528800232     0.000000000000    -0.897393142237
-           H          1.423528800232     0.000000000000    -0.897393142237
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.224348285559    15.994914619560
+           H         -1.423528800232     0.000000000000    -0.897393142237     1.007825032070
+           H          1.423528800232     0.000000000000    -0.897393142237     1.007825032070
 
   Running in c1 symmetry.
 
@@ -290,32 +296,7 @@ Project web site: http://www.libefp.org/
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:              10
-      Number of SO shells:              10
-      Number of primitives:             23
-      Number of atomic orbitals:        19
-      Number of basis functions:        19
-
-      Number of irreps:                  1
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  19 ]
-
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 7575 non-zero two-electron integrals.
-        Stored in file 33.
 
 	Batch   1 pq = [       0,     190] index = [             0,18145]
   ==> DiskJK: Disk-Based J/K Matrices <==
@@ -335,26 +316,26 @@ Project web site: http://www.libefp.org/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   1:   -69.20025909724203   -6.92003e+01   1.74012e-01 
-   @RHF iter   2:   -71.90452703707764   -2.70427e+00   1.25882e-01 DIIS
-   @RHF iter   3:   -76.16423715505543   -4.25971e+00   3.39581e-02 DIIS
-   @RHF iter   4:   -76.26453097271934   -1.00294e-01   7.36376e-03 DIIS
-   @RHF iter   5:   -76.27689589220275   -1.23649e-02   1.01626e-03 DIIS
-   @RHF iter   6:   -76.27623921615809    6.56676e-04   3.87068e-04 DIIS
-   @RHF iter   7:   -76.27634785195853   -1.08636e-04   5.84323e-05 DIIS
+   @RHF iter   1:   -69.20025909724208   -6.92003e+01   1.74012e-01 
+   @RHF iter   2:   -71.90452703707767   -2.70427e+00   1.25882e-01 DIIS
+   @RHF iter   3:   -76.16423715505546   -4.25971e+00   3.39581e-02 DIIS
+   @RHF iter   4:   -76.26453097271938   -1.00294e-01   7.36376e-03 DIIS
+   @RHF iter   5:   -76.27689589220265   -1.23649e-02   1.01626e-03 DIIS
+   @RHF iter   6:   -76.27623921615805    6.56676e-04   3.87068e-04 DIIS
+   @RHF iter   7:   -76.27634785195858   -1.08636e-04   5.84323e-05 DIIS
    @RHF iter   8:   -76.27623843650700    1.09415e-04   2.69614e-05 DIIS
-   @RHF iter   9:   -76.27620470581111    3.37307e-05   2.86513e-06 DIIS
-   @RHF iter  10:   -76.27619672973579    7.97608e-06   7.02330e-07 DIIS
+   @RHF iter   9:   -76.27620470581107    3.37307e-05   2.86513e-06 DIIS
+   @RHF iter  10:   -76.27619672973580    7.97608e-06   7.02330e-07 DIIS
    @RHF iter  11:   -76.27619622313712    5.06599e-07   1.88160e-07 DIIS
-   @RHF iter  12:   -76.27619615512926    6.80079e-08   2.92274e-08 DIIS
-   @RHF iter  13:   -76.27619617190902   -1.67798e-08   4.58134e-09 DIIS
-   @RHF iter  14:   -76.27619616474627    7.16275e-09   7.20001e-10 DIIS
-   @RHF iter  15:   -76.27619616142505    3.32122e-09   1.71296e-10 DIIS
-   @RHF iter  16:   -76.27619616070726    7.17790e-10   3.15748e-11 DIIS
-   @RHF iter  17:   -76.27619616045153    2.55724e-10   6.58743e-12 DIIS
-   @RHF iter  18:   -76.27619616043488    1.66551e-11   1.15772e-12 DIIS
-   @RHF iter  19:   -76.27619616043285    2.03215e-12   2.80761e-13 DIIS
-   @RHF iter  20:   -76.27619616043339   -5.40012e-13   8.81795e-14 DIIS
+   @RHF iter  12:   -76.27619615512931    6.80078e-08   2.92274e-08 DIIS
+   @RHF iter  13:   -76.27619617190896   -1.67797e-08   4.58134e-09 DIIS
+   @RHF iter  14:   -76.27619616474627    7.16270e-09   7.20001e-10 DIIS
+   @RHF iter  15:   -76.27619616142501    3.32126e-09   1.71296e-10 DIIS
+   @RHF iter  16:   -76.27619616070729    7.17719e-10   3.15751e-11 DIIS
+   @RHF iter  17:   -76.27619616045146    2.55824e-10   6.58716e-12 DIIS
+   @RHF iter  18:   -76.27619616043494    1.65272e-11   1.15755e-12 DIIS
+   @RHF iter  19:   -76.27619616043282    2.11742e-12   2.80746e-13 DIIS
+   @RHF iter  20:   -76.27619616043346   -6.39488e-13   8.81945e-14 DIIS
 
     EFP Results
   ------------------------------------------------------------
@@ -402,20 +383,20 @@ Project web site: http://www.libefp.org/
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01393627573469
+  @RHF Final Energy:   -76.01393627573478
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1793879213580709
-    One-Electron Energy =                -123.2995149829607868
-    Two-Electron Energy =                  37.8557003946554147
+    One-Electron Energy =                -123.2995149829610995
+    Two-Electron Energy =                  37.8557003946556136
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.2504903912126638
-    Total Energy =                        -76.0139362757346362
+    EFP Energy =                            0.2504903912126659
+    Total Energy =                        -76.0139362757347499
 
-  Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
@@ -438,15 +419,22 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds4 at Tue Feb  3 12:18:56 2015
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Fri Mar 18 13:36:43 2016
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+	QM NRE............................................................PASSED
+	EFP corr to SCF...................................................PASSED
+	QM-EFP Indc.......................................................PASSED
+	EFP-EFP Disp......................................................PASSED
+	EFP-EFP Exch......................................................PASSED
+	EFP-EFP Totl......................................................PASSED
+	SCF...............................................................PASSED
 
 
   Variable Map:
@@ -469,7 +457,7 @@ Total time:
   "SCF DIPOLE Z"             =>      -2.298772865050
   "SCF ITERATION ENERGY"     =>     -76.276196160433
   "SCF TOTAL ENERGY"         =>     -76.013936275735
-  "TWO-ELECTRON ENERGY"      =>      37.855700394655
+  "TWO-ELECTRON ENERGY"      =>      37.855700394656
 
 
 

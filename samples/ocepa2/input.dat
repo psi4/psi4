@@ -9,11 +9,11 @@ n
 o 1 1.158
 }
 
-set global {
+set {
   basis cc-pcvdz
   reference uks
   dft_functional b3lyp 
   e_convergence 8
 }
-energy('ocepa(0)')
+energy('olccd')
 

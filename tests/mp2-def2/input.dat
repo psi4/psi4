@@ -21,11 +21,11 @@ O 2.8186228 -0.6587208 3.2810031
 units angstrom
 }
 
-set globals {
+set {
   basis def2-tzvpp
 }
 
-e_cp = cp('mp2')
+e_cp = energy('mp2', bsse_type='cp')
 clean()
 
 

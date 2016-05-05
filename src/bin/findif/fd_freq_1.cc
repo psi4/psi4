@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -334,12 +339,17 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
     sq_rsp(dim, dim, H_irr[h], evals, 3, evects, 1e-14);
 
     // Bu^1/2 * evects -> normal mode
+    for (int i=0; i<dim; ++i)
+      for (int a=0; a<Natom; ++a)
+        for (int xyz=0; xyz<3; ++xyz)
+          B_irr[i][3*a+xyz] /= sqrt(mol->mass(a));
+
     double **normal_irr = block_matrix(3*Natom, dim);
     C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B_irr[0], 3*Natom, evects[0],
       dim, 0, normal_irr[0], dim);
 
     if (print_lvl >= 2) {
-      outfile->Printf("\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h]);
       eivout(normal_irr, evals, 3*Natom, dim, "outfile");
     }
 
@@ -445,4 +455,3 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
 }
 
 }}
-

@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta5+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {master} deb3922041f15aa489fbb82efa1a8d8649c0000a
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -15,11 +15,11 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  16107
-    PSI4DATADIR: /home/ugur/psi4/lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:12:46 2016
 
+    Process ID:   7300
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -46,26 +46,28 @@ set {
   scf_type df
   guess sad
   reference uhf
+  mp2_type df
 }
-energy('df-omp2')
+energy('omp2')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
-compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Energy (a.u.)");               #TEST
+compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Energy (a.u.)");               #TEST
 
 --------------------------------------------------------------------------
 
   Memory set to 256.000 MiB by Python script.
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
-*** tstart() called on bozkaya
-*** at Thu Jan 23 11:17:37 2014
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:46 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -75,20 +77,16 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
 
     Geometry (in Angstrom), charge = 0, multiplicity = 2:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           N          0.000000000000     0.000000000000    -0.617445101450
-           O          0.000000000000     0.000000000000     0.540554898550
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           N          0.000000000000     0.000000000000    -0.617445101450    14.003074004780
+           O          0.000000000000     0.000000000000     0.540554898550    15.994914619560
 
   Running in c1 symmetry.
 
-
-	Rotational constants (cm^-1):
-	A = **********    B =    1.68371   C =    1.68371
-
-	Rotational constants (MHz):
-	A = **********    B = 50476.22913   C = 50476.22913
-  Nuclear repulsion =   25.590607669291881
+  Rotational constants: A = ************  B =      1.68371  C =      1.68371 [cm^-1]
+  Rotational constants: A = ************  B =  50476.22913  C =  50476.22913 [MHz]
+  Nuclear repulsion =   25.590607669291888
 
   Charge       = 0
   Multiplicity = 2
@@ -126,23 +124,6 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
     Total      28      28       8       7       7       1
    -------------------------------------------------------
 
- OEINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   2
-      Number of AO shells:              12
-      Number of SO shells:              12
-      Number of primitives:             44
-      Number of atomic orbitals:        30
-      Number of basis functions:        28
-
-      Number of irreps:                  1
-      Number of functions per irrep: [  28 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -150,8 +131,8 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               183
     Algorithm:                Core
     Integral Cache:           SAVE
@@ -160,7 +141,7 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
 
    => Auxiliary Basis Set <=
 
-  Basis Set: cc-pvdz-jkfit
+  Basis Set: CC-PVDZ-JKFIT
     Number of shells: 48
     Number of basis function: 140
     Number of Cartesian functions: 162
@@ -175,96 +156,99 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   0:  -129.74089514895340   -1.29741e+02   8.86996e-02 
-   @DF-UHF iter   1:  -129.20643229037606    5.34463e-01   1.15872e-02 
-   @DF-UHF iter   2:  -129.24976475205142   -4.33325e-02   3.84296e-03 DIIS
-   @DF-UHF iter   3:  -129.25581336900188   -6.04862e-03   2.30562e-03 DIIS
-   @DF-UHF iter   4:  -129.25760727376260   -1.79390e-03   7.57853e-04 DIIS
-   @DF-UHF iter   5:  -129.25827786514228   -6.70591e-04   3.41750e-04 DIIS
-   @DF-UHF iter   6:  -129.25843826022216   -1.60395e-04   1.75814e-04 DIIS
-   @DF-UHF iter   7:  -129.25851679042202   -7.85302e-05   1.33050e-04 DIIS
-   @DF-UHF iter   8:  -129.25860373031190   -8.69399e-05   1.09321e-04 DIIS
-   @DF-UHF iter   9:  -129.25866231021436   -5.85799e-05   1.02621e-04 DIIS
-   @DF-UHF iter  10:  -129.25876053219247   -9.82220e-05   9.40317e-05 DIIS
-   @DF-UHF iter  11:  -129.25907394716842   -3.13415e-04   8.62276e-05 DIIS
-   @DF-UHF iter  12:  -129.25910053262268   -2.65855e-05   3.80356e-05 DIIS
-   @DF-UHF iter  13:  -129.25910485560559   -4.32298e-06   8.70898e-06 DIIS
-   @DF-UHF iter  14:  -129.25910520636984   -3.50764e-07   6.82205e-06 DIIS
-   @DF-UHF iter  15:  -129.25910483906165    3.67308e-07   1.20009e-05 DIIS
-   @DF-UHF iter  16:  -129.25910529601015   -4.56948e-07   3.75920e-06 DIIS
-   @DF-UHF iter  17:  -129.25910534883573   -5.28256e-08   4.69899e-07 DIIS
-   @DF-UHF iter  18:  -129.25910534863195    2.03784e-10   3.83506e-07 DIIS
-   @DF-UHF iter  19:  -129.25910534911682   -4.84874e-10   2.47503e-08 DIIS
-   @DF-UHF iter  20:  -129.25910534911733   -5.11591e-13   9.51231e-09 DIIS
+   @DF-UHF iter   0:  -129.55731796592454   -1.29557e+02   8.10319e-02 
+   @DF-UHF iter   1:  -129.21670600059642    3.40612e-01   1.01137e-02 
+   @DF-UHF iter   2:  -129.25247903124418   -3.57730e-02   2.94456e-03 DIIS
+   @DF-UHF iter   3:  -129.25679531266553   -4.31628e-03   1.53658e-03 DIIS
+   @DF-UHF iter   4:  -129.25797623163808   -1.18092e-03   7.61793e-04 DIIS
+   @DF-UHF iter   5:  -129.25841451714842   -4.38286e-04   3.04590e-04 DIIS
+   @DF-UHF iter   6:  -129.25854449186585   -1.29975e-04   1.44732e-04 DIIS
+   @DF-UHF iter   7:  -129.25859471369606   -5.02218e-05   1.14182e-04 DIIS
+   @DF-UHF iter   8:  -129.25864006072436   -4.53470e-05   1.05228e-04 DIIS
+   @DF-UHF iter   9:  -129.25870089631471   -6.08356e-05   9.87191e-05 DIIS
+   @DF-UHF iter  10:  -129.25888956701837   -1.88671e-04   7.95177e-05 DIIS
+   @DF-UHF iter  11:  -129.25905714527798   -1.67578e-04   5.93079e-05 DIIS
+   @DF-UHF iter  12:  -129.25906761928277   -1.04740e-05   4.49824e-05 DIIS
+   @DF-UHF iter  13:  -129.25910201300954   -3.43937e-05   4.91589e-05 DIIS
+   @DF-UHF iter  14:  -129.25910348956035   -1.47655e-06   1.46392e-05 DIIS
+   @DF-UHF iter  15:  -129.25910490137343   -1.41181e-06   1.12027e-05 DIIS
+   @DF-UHF iter  16:  -129.25910534020909   -4.38836e-07   1.35914e-06 DIIS
+   @DF-UHF iter  17:  -129.25910534418955   -3.98046e-09   1.34132e-06 DIIS
+   @DF-UHF iter  18:  -129.25910534906467   -4.87512e-09   7.12909e-08 DIIS
+   @DF-UHF iter  19:  -129.25910534907047   -5.79803e-12   1.22743e-07 DIIS
+   @DF-UHF iter  20:  -129.25910534911466   -4.41958e-11   8.90454e-09 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   6.749243956E-02
+   @Spin Contamination Metric:   6.749296888E-02
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                8.174924396E-01
+   @S^2 Observed:                8.174929689E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Alpha Occupied:                                                       
+    Alpha Occupied:                                                       
 
-	   1A    -20.696259     2A    -15.735086     3A     -1.606104  
-	   4A     -0.966174     5A     -0.780007     6A     -0.690670  
-	   7A     -0.634234     8A     -0.422073  
+       1A    -20.696259     2A    -15.735086     3A     -1.606104  
+       4A     -0.966174     5A     -0.780007     6A     -0.690670  
+       7A     -0.634234     8A     -0.422073  
 
-	Alpha Virtual:                                                        
+    Alpha Virtual:                                                        
 
-	   9A      0.096516    10A      0.506775    11A      0.864721  
-	  12A      0.909605    13A      0.954089    14A      0.998791  
-	  15A      1.119036    16A      1.170662    17A      1.232183  
-	  18A      1.897893    19A      1.898040    20A      1.938940  
-	  21A      1.967331    22A      1.984609    23A      2.811976  
-	  24A      2.916501    25A      2.917078    26A      3.486471  
-	  27A      3.503084    28A      3.873180  
+       9A      0.096516    10A      0.506775    11A      0.864721  
+      12A      0.909605    13A      0.954089    14A      0.998791  
+      15A      1.119036    16A      1.170662    17A      1.232184  
+      18A      1.897893    19A      1.898040    20A      1.938940  
+      21A      1.967331    22A      1.984610    23A      2.811976  
+      24A      2.916501    25A      2.917078    26A      3.486471  
+      27A      3.503084    28A      3.873180  
 
-	Beta Occupied:                                                        
+    Beta Occupied:                                                        
 
-	   1A    -20.691315     2A    -15.698671     3A     -1.573759  
-	   4A     -0.883234     5A     -0.658034     6A     -0.644681  
-	   7A     -0.606673  
+       1A    -20.691315     2A    -15.698671     3A     -1.573759  
+       4A     -0.883234     5A     -0.658035     6A     -0.644681  
+       7A     -0.606673  
 
-	Beta Virtual:                                                         
+    Beta Virtual:                                                         
 
-	   8A      0.126727     9A      0.172855    10A      0.530204  
-	  11A      0.957874    12A      0.974386    13A      0.990731  
-	  14A      1.037911    15A      1.127757    16A      1.198965  
-	  17A      1.234715    18A      1.981518    19A      1.989508  
-	  20A      1.990999    21A      1.992666    22A      2.018865  
-	  23A      2.844382    24A      2.931514    25A      2.931658  
-	  26A      3.492001    27A      3.531779    28A      3.881286  
+       8A      0.126727     9A      0.172855    10A      0.530204  
+      11A      0.957874    12A      0.974386    13A      0.990731  
+      14A      1.037911    15A      1.127757    16A      1.198965  
+      17A      1.234715    18A      1.981518    19A      1.989508  
+      20A      1.990999    21A      1.992666    22A      2.018865  
+      23A      2.844382    24A      2.931514    25A      2.931658  
+      26A      3.492001    27A      3.531779    28A      3.881286  
 
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     7 ]
-	SOCC [     1 ]
+    Final Occupation by Irrep:
+              A 
+    DOCC [     7 ]
+    SOCC [     1 ]
 
   Energy converged.
 
-  @DF-UHF Final Energy:  -129.25910534911733
+  @DF-UHF Final Energy:  -129.25910534911466
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.4124525571854747
-    Two-Electron Energy =                  72.5627395387762704
+    Nuclear Repulsion Energy =             25.5906076692918880
+    One-Electron Energy =                -227.4124521532389167
+    Two-Electron Energy =                  72.5627391348323556
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.2591053491173341
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -129.2591053491146624
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0044
 
@@ -280,46 +264,64 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Thu Jan 23 11:17:38 2014
+  UHF NO Occupations:
+  HONO-2 :    6  A 1.9973824
+  HONO-1 :    7  A 1.9706498
+  HONO-0 :    8  A 1.0000000
+  LUNO+0 :    9  A 0.0293502
+  LUNO+1 :   10  A 0.0026176
+  LUNO+2 :   11  A 0.0018946
+  LUNO+3 :   12  A 0.0001982
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:47 2016
 Module time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on bozkaya
-*** at Thu Jan 23 11:17:38 2014
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:12:47 2016
 
 
 
   Options:
   ----------------------------------------------------------------------------
+  ACTIVE                      => [  ]             
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
+  CC_LAMBDA                   => FALSE            
   CC_MAXITER                  => 50               
-  CC_TYPE                     => CONVENTIONAL     
-  CEPA_OS_SCALE               => 1.27             
-  CEPA_SOS_SCALE              => 1.3              
-  CEPA_SS_SCALE               => 1.13             
-  CEPA_TYPE                   => CEPA(0)          
+  CC_TYPE                     => CONV             
+  CHOLESKY                    => FALSE           !
   CHOLESKY_TOLERANCE          => 0.0001           
-  CONV_TEI_TYPE               => DIRECT           
+  CI_TYPE                     => CONV             
+  COMPUT_S2                   => FALSE            
+  CUBEPROP_BASIS_FUNCTIONS    => [  ]             
+  CUBEPROP_FILEPATH           => .                
+  CUBEPROP_ORBITALS           => [  ]             
+  CUBEPROP_TASKS              => [  ]             
+  CUBIC_BASIS_TOLERANCE       => 1e-12            
+  CUBIC_BLOCK_MAX_POINTS      => 1000             
+  CUBIC_GRID_OVERAGE          => [  ]             
+  CUBIC_GRID_SPACING          => [  ]             
   CUTOFF                      => 8                
   DEBUG                       => 0                
   DERTYPE                     => NONE             
   DF_BASIS_CC                 => CC-PVDZ-RI      !
   DIE_IF_NOT_CONVERGED        => TRUE             
+  DKH_ORDER                   => 2                
   DOCC                        => [  ]             
   DO_DIIS                     => TRUE             
   DO_LEVEL_SHIFT              => TRUE             
-  DO_SCS                      => FALSE            
-  DO_SOS                      => FALSE            
+  DO_SCS                      => FALSE           !
+  DO_SOS                      => FALSE           !
   E3_SCALE                    => 0.25             
-  EKT_EA                      => FALSE            
   EKT_IP                      => FALSE            
   EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
   E_CONVERGENCE               => 1e-06           !
@@ -327,45 +329,68 @@ Total time:
   FROZEN_DOCC                 => [  ]             
   FROZEN_UOCC                 => [  ]             
   HESS_TYPE                   => HF               
+  INTEGRAL_CUTOFF             => 9                
   INTEGRAL_PACKAGE            => ERD              
   LEVEL_SHIFT                 => 0.02             
   LINEQ_SOLVER                => CDGESV           
+  LITERAL_CFOUR               => (empty)          
   MAT_NUM_COLUMN_PRINT        => 5                
   MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOLDEN_WRITE                => FALSE            
   MO_DIIS_NUM_VECS            => 6                
   MO_MAXITER                  => 50               
   MO_STEP_MAX                 => 0.5              
+  MP2_AMP_TYPE                => DIRECT           
   MP2_OS_SCALE                => 1.2              
   MP2_SOS_SCALE               => 1.3              
   MP2_SOS_SCALE2              => 1.2              
   MP2_SS_SCALE                => 0.333333         
+  MP2_TYPE                    => DF              !
+  MP_TYPE                     => CONV             
   NAT_ORBS                    => FALSE            
   NUM_FROZEN_DOCC             => 0                
   NUM_FROZEN_UOCC             => 0                
   OCC_ORBS_PRINT              => FALSE            
+  OEPROP                      => FALSE            
   OO_SCALE                    => 0.01             
   OPT_METHOD                  => QNR              
-  ORB_OPT                     => TRUE             
+  ORB_OPT                     => TRUE            !
   ORB_RESP_SOLVER             => PCG              
   ORTH_TYPE                   => MGS              
   PCG_BETA_TYPE               => FLETCHER_REEVES  
   PCG_CONVERGENCE             => 1e-06            
-  PCG_MAXITER                 => 30               
+  PCG_MAXITER                 => 50               
+  PCM                         => FALSE            
+  PCM_SCF_TYPE                => TOTAL            
   PRINT                       => 1                
+  PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
+  QCHF                        => FALSE            
+  QC_MODULE                   => (empty)          
+  RAS1                        => [  ]             
+  RAS2                        => [  ]             
+  RAS3                        => [  ]             
+  RAS4                        => [  ]             
   READ_SCF_3INDEX             => TRUE             
   REGULARIZATION              => FALSE            
-  REG_PARAM                   => 0.004            
+  REG_PARAM                   => 0.4              
+  RELATIVISTIC                => NO               
+  REL_BASIS                   => (empty)          
+  RESTRICTED_DOCC             => [  ]             
+  RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
+  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
   SOS_TYPE                    => SOS              
+  TRIPLES_IABC_TYPE           => DISK             
   UNITS                       => ANGSTROMS        
+  WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
-  WFN_TYPE                    => DF-OMP2          
+  WFN_TYPE                    => DF-OMP2         !
   WRITER_FILE_LABEL           => (empty)          
 
 
@@ -375,7 +400,7 @@ Total time:
 
                       DF-OMP2 (DF-OO-MP2)   
               Program Written by Ugur Bozkaya
-              Latest Revision Jan 17, 2014
+              Latest Revision February 19, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -384,34 +409,33 @@ Total time:
 	RMS orbital gradient is changed to :     1.00e-04
 	MAX orbital gradient is changed to :     1.00e-03
 	MO Hessian type is changed to 'APPROX_DIAG'
-
 	MO spaces... 
 
 	 FC   AOCC   BOCC  AVIR   BVIR   FV 
 	------------------------------------------
 	  0     8     7    20     21     0
-
-	Available memory is:    256 MB 
-	Minimum required memory for the DFOCC module is:      0 MB 
 	Reading DF integrals from disk ...
 	Number of basis functions in the DF-HF basis: 140
 	Number of basis functions in the DF-CC basis: 112
 
+	Available memory                      :    244.14 MB 
+	Minimum required memory for amplitudes:      0.59 MB 
+
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
-	DF-HF Energy (a.u.)                :  -129.25910534911733
-	REF Energy (a.u.)                  :  -129.25910534911733
-	Alpha-Alpha Contribution (a.u.)    :    -0.04432750308176
-	Alpha-Beta Contribution (a.u.)     :    -0.23137109541934
-	Beta-Beta Contribution (a.u.)      :    -0.04339949653490
-	Scaled_SS Correlation Energy (a.u.):    -0.02924233320556
-	Scaled_OS Correlation Energy (a.u.):    -0.27764531450321
-	DF-SCS-MP2 Total Energy (a.u.)     :  -129.56599299682611
-	DF-SOS-MP2 Total Energy (a.u.)     :  -129.55988777316247
-	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41350486844269
-	DF-MP2 Correlation Energy (a.u.)   :    -0.31909809503601
-	DF-MP2 Total Energy (a.u.)         :  -129.57820344415333
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
+	DF-HF Energy (a.u.)                :  -129.25910534911466
+	REF Energy (a.u.)                  :  -129.25910534911466
+	Alpha-Alpha Contribution (a.u.)    :    -0.04432750305732
+	Alpha-Beta Contribution (a.u.)     :    -0.23137104825662
+	Beta-Beta Contribution (a.u.)      :    -0.04339947958171
+	Scaled_SS Correlation Energy (a.u.):    -0.02924232754634
+	Scaled_OS Correlation Energy (a.u.):    -0.27764525790794
+	DF-SCS-MP2 Total Energy (a.u.)     :  -129.56599293456895
+	DF-SOS-MP2 Total Energy (a.u.)     :  -129.55988771184826
+	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41350483855936
+	DF-MP2 Correlation Energy (a.u.)   :    -0.31909803089565
+	DF-MP2 Total Energy (a.u.)         :  -129.57820338001031
 	======================================================================= 
 
 	Number of alpha independent-pairs:160
@@ -424,15 +448,15 @@ Total time:
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -129.5875121943     -9.31e-03       5.87e-03         4.20e-02        1.19e-04 
-   2     -129.5903438280     -2.83e-03       4.35e-03         3.82e-02        5.85e-05 
-   3     -129.5917257982     -1.38e-03       3.01e-03         3.01e-02        4.04e-05 
-   4     -129.5924963039     -7.71e-04       2.31e-03         2.08e-02        2.54e-05 
-   5     -129.5929441446     -4.48e-04       1.81e-03         1.93e-02        1.92e-05 
-   6     -129.5935333731     -5.89e-04       1.09e-03         7.38e-03        4.15e-05 
-   7     -129.5935769647     -4.36e-05       2.57e-04         2.28e-03        7.24e-06 
-   8     -129.5935833211     -6.36e-06       2.44e-04         1.78e-03        3.00e-06 
-   9     -129.5935838206     -4.99e-07       2.30e-04         1.50e-03        1.40e-06 
+   1     -129.5875121501     -9.31e-03       5.87e-03         4.20e-02        1.19e-04 
+   2     -129.5903438001     -2.83e-03       4.35e-03         3.82e-02        5.85e-05 
+   3     -129.5917257812     -1.38e-03       3.01e-03         3.01e-02        4.04e-05 
+   4     -129.5924962936     -7.71e-04       2.31e-03         2.08e-02        2.54e-05 
+   5     -129.5929441384     -4.48e-04       1.81e-03         1.93e-02        1.92e-05 
+   6     -129.5935333728     -5.89e-04       1.09e-03         7.38e-03        4.15e-05 
+   7     -129.5935769645     -4.36e-05       2.57e-04         2.28e-03        7.24e-06 
+   8     -129.5935833209     -6.36e-06       2.44e-04         1.78e-03        3.00e-06 
+   9     -129.5935838206     -5.00e-07       2.30e-04         1.50e-03        1.40e-06 
 
  ============================================================================== 
  ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== 
@@ -440,44 +464,47 @@ Total time:
 
 	Computing MP2 energy using optimized MOs... 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
-	DF-HF Energy (a.u.)                :  -129.25910534911733
-	REF Energy (a.u.)                  :  -129.24923289345563
-	Alpha-Alpha Contribution (a.u.)    :    -0.04510158218317
-	Alpha-Beta Contribution (a.u.)     :    -0.24860486693092
-	Beta-Beta Contribution (a.u.)      :    -0.05064411824539
-	Scaled_SS Correlation Energy (a.u.):    -0.03191523347619
-	Scaled_OS Correlation Energy (a.u.):    -0.29832584031710
-	DF-SCS-MP2 Total Energy (a.u.)     :  -129.57947396724890
-	DF-SOS-MP2 Total Energy (a.u.)     :  -129.54755873377272
-	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41774532620991
-	DF-MP2 Correlation Energy (a.u.)   :    -0.33447811169776
-	DF-MP2 Total Energy (a.u.)         :  -129.59358346081510
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
+	DF-HF Energy (a.u.)                :  -129.25910534911466
+	REF Energy (a.u.)                  :  -129.24923289430535
+	Alpha-Alpha Contribution (a.u.)    :    -0.04510158255399
+	Alpha-Beta Contribution (a.u.)     :    -0.24860486651896
+	Beta-Beta Contribution (a.u.)      :    -0.05064411742456
+	Scaled_SS Correlation Energy (a.u.):    -0.03191523332618
+	Scaled_OS Correlation Energy (a.u.):    -0.29832583982276
+	DF-SCS-MP2 Total Energy (a.u.)     :  -129.57947396745428
+	DF-SOS-MP2 Total Energy (a.u.)     :  -129.54755873412810
+	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41774532626758
+	DF-MP2 Correlation Energy (a.u.)   :    -0.33447811168818
+	DF-MP2 Total Energy (a.u.)         :  -129.59358346080285
 	======================================================================= 
 
 	======================================================================= 
 	================ DF-OMP2 FINAL RESULTS ================================ 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
-	DF-HF Energy (a.u.)                :  -129.25910534911733
-	REF Energy (a.u.)                  :  -129.24923289345563
-	DF-SCS-OMP2 Total Energy (a.u.)    :  -129.57947396724890
-	DF-SOS-OMP2 Total Energy (a.u.)    :  -129.54755873377272
-	DF-SCSN-OMP2 Total Energy (a.u.)   :  -129.41774532620991
-	DF-OMP2 Correlation Energy (a.u.)  :    -0.33447847145968
-	Edfomp2 - Eref (a.u.)              :    -0.34435092712138
-	DF-OMP2 Total Energy (a.u.)        :  -129.59358382057701
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
+	DF-HF Energy (a.u.)                :  -129.25910534911466
+	REF Energy (a.u.)                  :  -129.24923289430535
+	DF-SCS-OMP2 Total Energy (a.u.)    :  -129.57947396745428
+	DF-SOS-OMP2 Total Energy (a.u.)    :  -129.54755873412810
+	DF-SCSN-OMP2 Total Energy (a.u.)   :  -129.41774532626758
+	DF-OMP2 Correlation Energy (a.u.)  :    -0.33447847144015
+	Edfomp2 - Eref (a.u.)              :    -0.34435092624946
+	DF-OMP2 Total Energy (a.u.)        :  -129.59358382055481
 	======================================================================= 
 
 
-*** tstop() called on bozkaya at Thu Jan 23 11:17:39 2014
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:47 2016
 Module time:
-	user time   =       3.61 seconds =       0.06 minutes
-	system time =       0.56 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.34 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.96 seconds =       0.08 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+	Nuclear Repulsion Energy (a.u.)...................................PASSED
+	DF-HF Energy (a.u.)...............................................PASSED
+	DF-OMP2 Total Energy (a.u.).......................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!
