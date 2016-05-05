@@ -3561,6 +3561,16 @@ def run_detcas(name, **kwargs):
 
 
     ciwfn = psi4.detci(ref_wfn)
+
+    # We always would like to print a little dipole information
+    oeprop = psi4.OEProp(ciwfn)
+    oeprop.set_title(name.upper())
+    oeprop.add("DIPOLE")
+    oeprop.compute()
+    psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable("SCF DIPOLE X"))
+    psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable("SCF DIPOLE Y"))
+    psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable("SCF DIPOLE Z"))
+
     optstash.restore()
     return ciwfn
 
