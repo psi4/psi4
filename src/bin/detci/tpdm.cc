@@ -427,6 +427,12 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
   if (transp_tmp != nullptr) free_block(transp_tmp);
   if (transp_tmp2 != nullptr) free_block(transp_tmp2);
 
+  std::vector<int> nshape{nact, nact, nact, nact};
+  tpdm_aam->set_numpy_shape(nshape);
+  tpdm_abm->set_numpy_shape(nshape);
+  tpdm_bbm->set_numpy_shape(nshape);
+  tpdm->set_numpy_shape(nshape);
+
   std::vector<SharedMatrix> ret_list;
   ret_list.push_back(tpdm_aam);
   ret_list.push_back(tpdm_abm);

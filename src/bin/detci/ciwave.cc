@@ -370,7 +370,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
       double** retp = ret->pointer();
 
       // Symmetrize
-      for (int p=0, target=0; p<CalcInfo_->num_ci_orbs; p++) {
+      for (int p=0, target=0; p<nact; p++) {
       for (int q=0; q<=p; q++) {
       for (int r=0; r<=p; r++) {
 
@@ -396,6 +396,10 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 
         }
       }}}
+
+      // Add numpy shape
+      std::vector<int> nshape{nact, nact, nact, nact};
+      ret->set_numpy_shape(nshape);
 
       // Return
       return ret;

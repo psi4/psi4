@@ -305,11 +305,14 @@ void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec, int sve
     if (Parameters_->fci)
         oei = CalcInfo_->tf_onel_ints->pointer();
     else
-        oei = CalcInfo_->gmat->pointer()[0];
+        oei = CalcInfo_->gmat->pointer();
     sigma(*(C.get()), *(S.get()), oei, CalcInfo_->twoel_ints->pointer(), svec);
 }
 void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec,
                            int svec, SharedVector oei, SharedVector tei) {
+    if ((oei->nirrep() != 1) || (tei->nirrep() != 1)){
+      throw PSIEXCEPTION("CIWavefunction::sigma: Electron integrals cannot have irreps");
+    }
     C->cur_vect_ = cvec;
     sigma(*(C.get()), *(S.get()), oei->pointer(), tei->pointer(), svec);
 }
