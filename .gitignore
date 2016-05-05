@@ -63,7 +63,8 @@ tests/*/pcmsolver.inp
 tests/*/*.xyz
 tests/*/*.grad
 tests/*/*.hess
-tests/*/*.cube
+tests/*/grid_esp.dat
+tests/*/grid_field.dat
 
 # Automatically generated files
 share/python/pcm_placeholder.py

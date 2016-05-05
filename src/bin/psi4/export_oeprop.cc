@@ -34,11 +34,29 @@ using namespace psi;
 
 void export_oeprop()
 {
+    // class_<Prop, boost::shared_ptr<Prop> >("Prop", "docstring", no_init).
+    //     def(init<boost::shared_ptr<Wavefunction> >()).
+    //     def("print_header", pure_virtual(&Prop::print_header)).
+    //     def("compute", pure_virtual(&Prop::compute)).
+    //     def("set_Da_ao", &Prop::set_Da_ao, "docstring").
+    //     def("set_Db_ao", &Prop::set_Db_ao, "docstring").
+    //     def("set_Da_so", &Prop::set_Da_so, "docstring").
+    //     def("set_Db_so", &Prop::set_Db_so, "docstring").
+    //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
+    //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
+
     class_<OEProp, boost::shared_ptr<OEProp> >("OEProp", "docstring", no_init).
         def(init<boost::shared_ptr<Wavefunction> >()).
         def("add", &OEProp::oepy_add, "docstring").
         def("compute", &OEProp::oepy_compute, "docstring").
-        def("set_title", &OEProp::oepy_set_title, "docstring");
+        def("set_title", &OEProp::set_title, "docstring").
+        def("clear", &OEProp::clear, "docstring").
+        def("set_Da_ao", &OEProp::set_Da_ao, "docstring").
+        def("set_Db_ao", &OEProp::set_Db_ao, "docstring").
+        def("set_Da_so", &OEProp::set_Da_so, "docstring").
+        def("set_Db_so", &OEProp::set_Db_so, "docstring").
+        def("set_Da_mo", &OEProp::set_Da_mo, "docstring").
+        def("set_Db_mo", &OEProp::set_Db_mo, "docstring");
 
     //class_<GridProp, boost::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").

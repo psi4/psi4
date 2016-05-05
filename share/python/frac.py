@@ -33,7 +33,7 @@ import math
 import p4util
 from molutil import *
 from driver import *
-from p4xcpt import *
+from p4util.exceptions import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(molecule, **kwargs):

@@ -42,16 +42,12 @@ import glob
 import shelve
 import datetime
 import difflib
-#CUimport psi4
-#CUimport p4const
-#CUimport p4util
-#CUimport qcdb
-#CUfrom p4regex import *
-#from extend_Molecule import *
-#CUfrom molutil import *
-#CUfrom functional import *
-from driver import *
-from p4xcpt import *
+#from driver import *
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
+from p4util.exceptions import *
 # never import driver, wrappers, or aliases into this file
 
 

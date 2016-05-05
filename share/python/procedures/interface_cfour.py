@@ -37,17 +37,18 @@ import shutil
 import os
 import subprocess
 import re
+import sys
 import inspect
 import random
-#CUimport psi4
-#CUimport p4const
+
+# Relative hack for now
+import os, sys, inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+sys.path.append(path_dir)
 import p4util
 import qcdb
-#CUfrom p4regex import *
-#from extend_Molecule import *
 from molutil import *
-#CUfrom functional import *
-from p4xcpt import *  #CU add revisit
+from p4util.exceptions import *
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

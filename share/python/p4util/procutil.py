@@ -33,10 +33,8 @@ import sys
 import pickle
 import collections
 import inspect
-#CUimport psi4
-#CUimport inputparser
-from p4xcpt import *
-from p4regex import *
+from .exceptions import *
+from . import p4regex
 
 
 if sys.version_info[0] > 2:
@@ -47,18 +45,42 @@ def kwargs_lower(kwargs):
     with all keys made lowercase. Should be called by every
     function that could be called directly by the user.
     Also turns boolean-like values into actual booleans.
+    Also turns values lowercase if sensible.
 
     """
     caseless_kwargs = {}
     # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.iteritems():
         lkey = key.lower()
-        if yes.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
-            caseless_kwargs[lkey] = True
-        elif no.match(str(key)) and lkey not in ['dertype', 'check_bsse']:
-            caseless_kwargs[lkey] = False
+        if lkey in ['subset']:  # only kw for which case matters
+            lvalue = value
         else:
-            caseless_kwargs[lkey] = value
+            try:
+                lvalue = value.lower()
+            except AttributeError:
+                lvalue = value
+
+        if lkey in ['irrep', 'check_bsse', 'linkage']:
+            caseless_kwargs[lkey] = lvalue
+
+        elif 'dertype' in lkey:
+            if p4regex.der0th.match(str(lvalue)):
+                caseless_kwargs[lkey] = 0
+            elif p4regex.der1st.match(str(lvalue)):
+                caseless_kwargs[lkey] = 1
+            elif p4regex.der2nd.match(str(lvalue)):
+                caseless_kwargs[lkey] = 2
+            else:
+                raise KeyError('Derivative type key %s was not recognized' % str(key))
+
+        elif p4regex.yes.match(str(lvalue)):
+            caseless_kwargs[lkey] = True
+
+        elif p4regex.no.match(str(lvalue)):
+            caseless_kwargs[lkey] = False
+
+        else:
+            caseless_kwargs[lkey] = lvalue
     return caseless_kwargs
 
 

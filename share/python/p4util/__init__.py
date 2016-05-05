@@ -25,8 +25,10 @@
 # @END LICENSE
 #
 
-from p4util.optproc import *
-from p4util.text import *
-from p4util.basislist import *
-from p4util.procutil import *
-from p4util.util import *
+from .optproc import *
+from .text import *
+from .basislist import *
+from .procutil import *
+from .util import *
+from .exceptions import *
+from .inpsight import *

@@ -141,8 +141,12 @@ void CIWavefunction::form_opdm(void)
       opdm_b_ = opdm_list[croot][1]->clone();
       opdm_ = opdm_list[croot][2]->clone();
   }
-  Da_ = opdm_add_inactive(opdm_a_, 1.0, true);
-  Db_ = opdm_add_inactive(opdm_b_, 1.0, true);
+
+  SharedMatrix MO_Da = opdm_add_inactive(opdm_a_, 1.0, true);
+  SharedMatrix MO_Db = opdm_add_inactive(opdm_b_, 1.0, true);
+  Da_ = Matrix::triplet(Ca_, MO_Da, Ca_, false, false, true);
+  Db_ = Matrix::triplet(Cb_, MO_Db, Cb_, false, false, true);
+
 
 opdm_called_ = true;
 

@@ -33,11 +33,10 @@ import os
 import inputparser
 import math
 import warnings
-from driver import *
-from wrappers import *
+import driver
 from molutil import *
 import p4util
-from p4xcpt import *
+from p4util.exceptions import *
 
 
 def run_@plugin@(name, **kwargs):
@@ -59,7 +58,7 @@ def run_@plugin@(name, **kwargs):
     print('Attention! This SCF may be density-fitted.')
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = driver.scf_helper(name, **kwargs)
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
@@ -69,7 +68,7 @@ def run_@plugin@(name, **kwargs):
 
 
 # Integration with driver routines
-procedures['energy']['@plugin@'] = run_@plugin@
+driver.procedures['energy']['@plugin@'] = run_@plugin@
 
 
 def exampleFN():

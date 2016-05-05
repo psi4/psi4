@@ -1,9 +1,12 @@
 # Checks all psi4 relevant files for proper boilerplate GNU license.
 # This is sold as is with no warrenty-- probably should double check everything
 # after running. I am not responsible if you break Psi4.
+#
+# Do not forget to do share/plugins by hand!
 
 import os
 
+# File type we know how to handle
 ftypes = ['cc', 'h', 'py']
 
 c_header ="""/*
