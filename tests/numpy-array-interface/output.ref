@@ -1,0 +1,151 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.3.1163 Driver
+
+                          Git: Rev {ciwave} dc924ac dirty
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Fri May  6 11:23:23 2016
+
+    Process ID:  10702
+    PSI4DATADIR: /home/dsmith/Gits/psi4cas/share
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Numpy interface testing
+
+import numpy as np
+
+# Matrix from array
+arr_matrix = np.random.rand(2, 2)
+arr_matrix_value = arr_matrix[0, 0]
+
+mat1 = psi4.Matrix.from_array(arr_matrix)
+mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix])
+
+compare_values(mat1.get(0,0), arr_matrix[0,0], 9, "Non-irreped psi4.Matrix Build")     #TEST
+compare_values(mat2.get(1,0,0), arr_matrix[0,0], 9, "Irreped psi4.Matrix Build")     #TEST
+
+# Array from matrix
+np_mat1 = mat1.to_array()
+np_mat2 = mat2.to_array()
+
+np_mat1_view = mat1.to_array(copy=False)
+np_mat2_view = mat2.to_array(copy=False)
+mat1.set(0, 0, 13)
+mat2.set(0, 0, 0, 13)
+
+compare_values(np_mat1[0,0], arr_matrix_value, 9, "Non-irreped NumPy Array Matrix Build")     #TEST
+compare_values(np_mat2[0][0,0], arr_matrix_value, 9, "Irreped NumPy Array Matrix Build")     #TEST
+
+compare_values(np_mat1_view[0,0], 13, 9, "Non-irreped NumPy View Matrix Build")     #TEST
+compare_values(np_mat2_view[0][0,0], 13, 9, "Irreped NumPy View Matrix Build")     #TEST
+
+
+# Vector from array
+arr_vector = np.random.rand(4)
+arr_vec_value = arr_vector[0]
+
+vec1 = psi4.Vector.from_array(arr_vector)
+vec2 = psi4.Vector.from_array([arr_vector, arr_vector])
+
+compare_values(vec1.get(0), arr_vector[0], 9, "Non-irreped psi4.Vector Build")     #TEST
+compare_values(vec2.get(1,0), arr_vector[0], 9, "Irreped psi4.Vector Build")     #TEST
+
+# Array from Vector
+np_vec1 = vec1.to_array()
+np_vec2 = vec2.to_array()
+
+np_vec1_view = vec1.to_array(copy=False)
+np_vec2_view = vec2.to_array(copy=False)
+vec1.set(0, 13)
+vec2.set(0, 0, 13)
+
+compare_values(np_vec1[0], arr_vec_value, 9, "Non-irreped NumPy Array Vector Build")     #TEST
+compare_values(np_vec2[0][0], arr_vec_value, 9, "Irreped NumPy Array Vector Build")     #TEST
+
+compare_values(np_vec1_view[0], 13, 9, "Non-irreped NumPy View Vector Build")     #TEST
+compare_values(np_vec2_view[0][0], 13, 9, "Irreped NumPy View Vector Build")     #TEST
+
+# Test blank irreps
+dim1 = Dimension(3)
+dim2 = Dimension(3)
+
+dim1[0] = 3
+dim1[1] = 0
+dim1[2] = 0
+
+dim2[0] = 3
+dim2[1] = 0
+dim2[2] = 2
+
+irrep_mat = Matrix("Matrix with two zero irreps", dim1, dim2)
+
+arr = irrep_mat.to_array()
+compare_values(arr[1].shape[0], 0, 9, "Irrep shape with zero element arrays, dimension[1,0]")     #TEST
+compare_values(arr[1].shape[1], 0, 9, "Irrep shape with zero element arrays, dimension[1,1]")     #TEST
+compare_values(arr[2].shape[1], 2, 9, "Irrep shape with zero element arrays, dimension[2,1]")     #TEST
+
+new_mat = Matrix.from_array(arr)
+compare_values(new_mat.rowdim()[1], 0, 9, "Irrep shape with zero element psi4.Matrix, dimension[1,0]")     #TEST
+compare_values(new_mat.coldim()[1], 0, 9, "Irrep shape with zero element psi4.Matrix, dimension[1,1]")     #TEST
+compare_values(new_mat.coldim()[2], 2, 9, "Irrep shape with zero element psi4.Matrix, dimension[2,1]")     #TEST
+
+
+irrep_vec = Vector("Vector with two zero irreps", dim2)
+
+arr = irrep_vec.to_array()
+compare_values(arr[0].shape[0], 3, 9, "Irrep shape with zero element arrays, dimension[0]")     #TEST
+compare_values(arr[1].shape[0], 0, 9, "Irrep shape with zero element arrays, dimension[1]")     #TEST
+compare_values(arr[2].shape[0], 2, 9, "Irrep shape with zero element arrays, dimension[2]")     #TEST
+
+new_vec = Vector.from_array(arr)
+compare_values(new_vec.dim(0), 3, 9, "Irrep shape with zero element psi4.Vector, dimension[0]")     #TEST
+compare_values(new_vec.dim(1), 0, 9, "Irrep shape with zero element psi4.Vector, dimension[1]")     #TEST
+compare_values(new_vec.dim(2), 2, 9, "Irrep shape with zero element psi4.Vector, dimension[2]")     #TEST
+
+
+
+
+--------------------------------------------------------------------------
+	Non-irreped psi4.Matrix Build.....................................PASSED
+	Irreped psi4.Matrix Build.........................................PASSED
+	Non-irreped NumPy Array Matrix Build..............................PASSED
+	Irreped NumPy Array Matrix Build..................................PASSED
+	Non-irreped NumPy View Matrix Build...............................PASSED
+	Irreped NumPy View Matrix Build...................................PASSED
+	Non-irreped psi4.Vector Build.....................................PASSED
+	Irreped psi4.Vector Build.........................................PASSED
+	Non-irreped NumPy Array Vector Build..............................PASSED
+	Irreped NumPy Array Vector Build..................................PASSED
+	Non-irreped NumPy View Vector Build...............................PASSED
+	Irreped NumPy View Vector Build...................................PASSED
+	Irrep shape with zero element arrays, dimension[1,0]..............PASSED
+	Irrep shape with zero element arrays, dimension[1,1]..............PASSED
+	Irrep shape with zero element arrays, dimension[2,1]..............PASSED
+	Irrep shape with zero element psi4.Matrix, dimension[1,0].........PASSED
+	Irrep shape with zero element psi4.Matrix, dimension[1,1].........PASSED
+	Irrep shape with zero element psi4.Matrix, dimension[2,1].........PASSED
+	Irrep shape with zero element arrays, dimension[0]................PASSED
+	Irrep shape with zero element arrays, dimension[1]................PASSED
+	Irrep shape with zero element arrays, dimension[2]................PASSED
+	Irrep shape with zero element psi4.Vector, dimension[0]...........PASSED
+	Irrep shape with zero element psi4.Vector, dimension[1]...........PASSED
+	Irrep shape with zero element psi4.Vector, dimension[2]...........PASSED
+
+*** PSI4 exiting successfully. Buy a developer a beer!

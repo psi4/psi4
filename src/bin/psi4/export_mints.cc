@@ -325,6 +325,8 @@ void export_mints()
     class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
             def(init<const Dimension&>()).
+            def(init<const std::string&, int>()).
+            def(init<const std::string&, const Dimension&>()).
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -378,6 +380,7 @@ void export_mints()
 
     class_<Matrix, SharedMatrix>("Matrix", "docstring").
             def(init<int, int>()).
+            def(init<const std::string&, int, int>()).
             def(init<const std::string&, const Dimension&, const Dimension&>()).
             def(init<const std::string&>()).
             def("clone", &Matrix::clone, "docstring").
