@@ -85,6 +85,7 @@ but are in active development. For documentation on plugin modules, see
 * :source:`plugins/sointegrals/sointegrals.cc` 
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
+.. _`sec:condaplugins`:
 
 Creating a New Plugin Using a Conda Pre-compiled Binary
 -------------------------------------------------------
