@@ -90,6 +90,15 @@ compare_values(new_vec.dim(0), 3, 9, "Irrep shape with zero element psi4.Vector,
 compare_values(new_vec.dim(1), 0, 9, "Irrep shape with zero element psi4.Vector, dimension[1]")     #TEST
 compare_values(new_vec.dim(2), 2, 9, "Irrep shape with zero element psi4.Vector, dimension[2]")     #TEST
 
+# Test dense conversion
+dense_vec = irrep_vec.to_array(dense=True)
+compare_values(dense_vec.shape[0], 5, 9, "psi4.Vector to dense array shape test")     #TEST
+compare_arrays(np.zeros((5)), dense_vec, 9, "psi4.Vector to dense array value test")     #TEST
+
+dense_mat = irrep_mat.to_array(dense=True)
+compare_values(dense_mat.shape[0], 3, 9, "psi4.Matrix to dense array shape1 test")     #TEST
+compare_values(dense_mat.shape[1], 3, 9, "psi4.Matrix to dense array shape2 test")     #TEST
+compare_arrays(np.zeros((3,3)), dense_mat, 9, "psi4.Matrix to dense array value test")     #TEST
 
 
 
