@@ -86,12 +86,12 @@ void CIWavefunction::compute_mpn()
         totfzc += CalcInfo_->dropped_docc[h1];
 
     for(h1 = 0,offset = 0; h1 < CalcInfo_->nirreps; h1++) {
-        if(h1>0) offset += CalcInfo_->orbs_per_irr[h1-1];
+        if(h1>0) offset += nmopi_[h1-1];
         docc = CalcInfo_->docc[h1];
         socc = CalcInfo_->socc[h1];
         for(x = offset+docc; x<offset+docc+socc; x++){
             for(h2 = 0,offset2 = 0; h2 < CalcInfo_->nirreps; h2++) {
-                if(h2>0) offset2 += CalcInfo_->orbs_per_irr[h2-1];
+                if(h2>0) offset2 += nmopi_[h2-1];
                 docc2 = CalcInfo_->docc[h2];
                 socc2 = CalcInfo_->socc[h2];
                 for(y=offset2+docc2;y<offset2+docc2+socc2;y++) {
@@ -99,8 +99,8 @@ void CIWavefunction::compute_mpn()
                     j = CalcInfo_->reorder[y] - totfzc;
                     ij = INDEX2(i,j);
                     ijij = ioff[ij] + ij;
-                    CalcInfo_->scfeigvala[i+totfzc] -= 0.5*CalcInfo_->twoel_ints[ijij];
-                    CalcInfo_->scfeigvalb[i+totfzc] += 0.5*CalcInfo_->twoel_ints[ijij];
+                    CalcInfo_->scfeigvala[i+totfzc] -= 0.5*CalcInfo_->twoel_ints->pointer()[ijij];
+                    CalcInfo_->scfeigvalb[i+totfzc] += 0.5*CalcInfo_->twoel_ints->pointer()[ijij];
                 }
             }
         }
@@ -159,8 +159,8 @@ void CIWavefunction::compute_mpn()
 
    /* prepare the H0 block */
 
-   Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints,
-          CalcInfo_->twoel_ints, CalcInfo_->e0_drc, CalcInfo_->num_alp_expl,
+   Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
+          CalcInfo_->twoel_ints->pointer(), CalcInfo_->e0_drc, CalcInfo_->num_alp_expl,
           CalcInfo_->num_bet_expl, CalcInfo_->num_ci_orbs, Parameters_->hd_ave);
 
    H0block_setup(CIblks_->num_blocks, CIblks_->Ia_code, CIblks_->Ib_code);
@@ -179,11 +179,11 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   int kvec_offset; /* offset if c_0 is not stored on disk */
 
 
-  CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+  CIvect Cvec(Parameters_->icore, Parameters_->maxnvect, 1,
            Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
-  CIvect Sigma(Parameters_->icore, 1, Parameters_->num_s_tmp_units,
+  CIvect Sigma(Parameters_->icore, 1, 1,
             Parameters_->s_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
-  CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, Parameters_->num_c_tmp_units,
+  CIvect Cvec2(Parameters_->icore, Parameters_->maxnvect, 1,
             Parameters_->c_filenum, CIblks_, CalcInfo_, Parameters_, H0block_, false);
 
 
@@ -218,9 +218,9 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   wfn_overlap[0][0] = 1.0;
 
   /* oei = CalcInfo_->tf_onel_ints; */
-  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-  else oei = CalcInfo_->gmat[0];
-  tei = CalcInfo_->twoel_ints;
+  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+  else oei = CalcInfo_->gmat->pointer();
+  tei = CalcInfo_->twoel_ints->pointer();
 
   outfile->Printf("   CalcInfo_->escf = %25.15f\n", CalcInfo_->escf);
   outfile->Printf("   CalcInfo_->e0   = %25.15f\n", CalcInfo_->e0);
@@ -250,7 +250,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
       &tval);
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Zeroth-order wavefunction\n");
-    Cvec.print("outfile");
+    Cvec.print();
   }
 
   Sigma.buf_lock(buffer2);
@@ -267,7 +267,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf("Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
-    Sigma.print("outfile");
+    Sigma.print();
     }
   //outfile->Printf("Sigma zero_blocks after sigma call.\n");
   //Sigma.print_zero_blocks();
@@ -293,7 +293,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   Cvec.copy(Sigma, (1-kvec_offset), 0);
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec copying Sigma.\n");
-    Cvec.print("outfile");
+    Cvec.print();
   }
 
   Sigma.buf_unlock();
@@ -305,7 +305,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   tval = 0.0;
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec after dcalc2.\n");
-    Cvec.print("outfile");
+    Cvec.print();
   }
   Cvec.read((1-kvec_offset),0);
   Cvec.set_vals((1-kvec_offset), 1, &(CalcInfo_->ref_alp_list),
@@ -315,7 +315,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
 
   if (Parameters_->print_lvl >= 5) {
     outfile->Printf( "Cvec after set_vals.\n");
-    Cvec.print("outfile");
+    Cvec.print();
     }
 
   /* Here buffer1 = Cvec and buffer2 = Sigma */

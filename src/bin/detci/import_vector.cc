@@ -100,10 +100,10 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
   new_betastr_idx   = init_int_array(betastrings->size);
 
   stringset_translate_addr(alphastrings, CalcInfo_->num_alp_expl, 
-    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, AlphaG_, new_alphastr_list,
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), AlphaG_, new_alphastr_list,
     new_alphastr_idx);
   stringset_translate_addr(betastrings, CalcInfo_->num_bet_expl, 
-    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, BetaG_, new_betastr_list,
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), BetaG_, new_betastr_list,
     new_betastr_idx);
 
   /* loop over all the dets in the imported vector and translate

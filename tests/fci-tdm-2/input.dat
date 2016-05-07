@@ -23,13 +23,12 @@ H     3.00000000    -0.37149000     0.00000000
 }
 
 set {
-  reference rohf
-  basis cc-pVDZ 
-  docc [3,0,0,0]
-  socc [1,0,0,0]
-  freeze_core true
-  dipmom true
-  num_roots 2
+  reference     rohf
+  basis         cc-pVDZ 
+  docc          [3,0,0,0]
+  socc          [1,0,0,0]
+  freeze_core   true
+  num_roots     2
 }
 
 set scf d_convergence 10
@@ -43,7 +42,7 @@ compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #
 compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
 compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
 compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
-compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
-compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
-compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 3, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 3, "CI ROOT 2 Z Component of dipole")        #TEST
+compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 3, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST

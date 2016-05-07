@@ -78,8 +78,7 @@ protected:
     void assign_pointer_offsets();
 
     /// Numpy Shape
-    int numpy_dims_;
-    int *numpy_shape_;
+    std::vector<int> numpy_shape_;
 
 public:
     /// Default constructor, zeros everything out
@@ -342,14 +341,8 @@ public:
     /**
     * Adds accessability to the matrix shape for numpy
     */
-    void set_numpy_dims(int dims)
-    { numpy_dims_ = dims; }
-    void set_numpy_shape(int *shape)
-    { numpy_shape_ = shape; }
-    int numpy_dims()
-    { return numpy_dims_; }
-    int *numpy_shape()
-    { return numpy_shape_; }
+    void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
+    std::vector<int> numpy_shape() { return numpy_shape_; }
 
 
     friend class Matrix;

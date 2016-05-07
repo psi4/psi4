@@ -232,7 +232,7 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
             if (j < Cinfo->num_expl_cor_orbs) continue;
             jsym = Cinfo->orbsym[j + Cinfo->num_drc_orbs];
             isym = ijsym ^ jsym;
-            for (part=0; part<ras_opi[ras][isym]; part++) {
+            for (part=0; part<Cinfo->ras_opi[ras][isym]; part++) {
                i = ras_orbs[ras][isym][part]; 
                
                /* make sure i is not occupied already */
@@ -344,7 +344,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
          if (j < Cinfo->num_expl_cor_orbs) continue;
          jsym = Cinfo->orbsym[j + Cinfo->num_drc_orbs];
          isym = ijsym ^ jsym;
-         for (part=0; part<ras_opi[isym]; part++) {
+         for (part=0; part<Cinfo->ras_opi[up][isym]; part++) {
             i = ras_orbs[isym][part];
 
             /* make sure i is not occupied already */

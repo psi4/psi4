@@ -82,14 +82,9 @@ void CIWavefunction::H0block_init(unsigned int size) {
       H0block_->H0b = init_matrix(H0block_->size, H0block_->size);
       if (Parameters_->precon == PRECON_GEN_DAVIDSON)
         H0block_->H0b_diag_transpose = init_array(H0block_->size);
-    /*  H0block_->H0b_diag_transpose = init_matrix(H0block_->size, H0block_->size); */
       H0block_->H0b_diag = init_matrix(H0block_->size, H0block_->size);
       H0block_->H0b_eigvals = init_array(H0block_->size);
-      /* if (Parameters_->precon == PRECON_H0BLOCK_INVERT ||
-          Parameters_->precon == PRECON_H0BLOCK_ITER_INVERT) */
       H0block_->tmp1 = init_matrix(H0block_->size, H0block_->size);
-      if (Parameters_->precon == PRECON_H0BLOCK_INVERT)
-        H0block_->H0b_inv = init_matrix(H0block_->size, H0block_->size);
       H0block_->H00 = init_array(size2);
       H0block_->c0b = init_array(size2);
       H0block_->c0bp = init_array(size2);
@@ -101,6 +96,8 @@ void CIWavefunction::H0block_init(unsigned int size) {
       H0block_->betidx = init_int_array(size2);
       H0block_->blknum = init_int_array(size2);
       H0block_->pair = init_int_array(size2);
+      if (Parameters_->precon == PRECON_H0BLOCK_INVERT)
+        H0block_->H0b_inv = init_matrix(H0block_->size, H0block_->size);
 
       if (Parameters_->h0block_coupling) {
         H0block_->tmp_array1 = init_array(size2);
