@@ -84,14 +84,12 @@ Matrix::Matrix()
     matrix_ = NULL;
     nirrep_ = 0;
     symmetry_ = 0;
-    numpy_dims_ = 0;
 }
 
 Matrix::Matrix(const string& name, int symmetry)
     : matrix_(NULL), nirrep_(0),
       name_(name), symmetry_(symmetry)
 {
-    numpy_dims_ = 0;
 }
 
 Matrix::Matrix(const Matrix& c)
@@ -100,7 +98,6 @@ Matrix::Matrix(const Matrix& c)
     matrix_ = NULL;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
-    numpy_dims_ = 0;
     alloc();
     copy_from(c.matrix_);
 }
@@ -111,7 +108,6 @@ Matrix::Matrix(const SharedMatrix& c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    numpy_dims_ = 0;
     alloc();
     copy_from(c->matrix_);
 }
@@ -122,7 +118,6 @@ Matrix::Matrix(const Matrix* c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    numpy_dims_ = 0;
     alloc();
     copy_from(c->matrix_);
 }
@@ -133,7 +128,6 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    numpy_dims_ = 0;
     rowspi_ = l_rowspi;
     colspi_ = l_colspi;
     alloc();
@@ -145,7 +139,6 @@ Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    numpy_dims_ = 0;
     rowspi_ = l_rowspi;
     colspi_ = l_colspi;
     alloc();
@@ -157,7 +150,6 @@ Matrix::Matrix(const string& name, int rows, int cols)
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    numpy_dims_ = 0;
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -169,7 +161,6 @@ Matrix::Matrix(int rows, int cols)
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    numpy_dims_ = 0;
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
@@ -180,7 +171,6 @@ Matrix::Matrix(int nirrep, int rows, const int *colspi)
 {
     matrix_ = NULL;
     symmetry_ = 0;
-    numpy_dims_ = 0;
     nirrep_ = nirrep;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rows;
@@ -194,7 +184,6 @@ Matrix::Matrix(int nirrep, const int *rowspi, int cols)
 {
     matrix_ = NULL;
     symmetry_ = 0;
-    numpy_dims_ = 0;
     nirrep_ = nirrep;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rowspi[i];
@@ -208,7 +197,6 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     name_ = name;
     matrix_ = NULL;
     symmetry_ = symmetry;
-    numpy_dims_ = 0;
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -237,7 +225,6 @@ Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
 {
     matrix_ = NULL;
     symmetry_ = symmetry;
-    numpy_dims_ = 0;
 
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
@@ -269,7 +256,6 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
-    numpy_dims_ = 0;
     nirrep_ = inFile->params->nirreps;
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inFile->params->rowtot[i];
@@ -809,6 +795,20 @@ double **Matrix::to_block_matrix() const
 
     delete[] col_offset;
     return temp;
+}
+SharedMatrix Matrix::to_block_sharedmatrix() const
+{
+    int sizer=0, sizec=0;
+    for (int h=0; h<nirrep_; ++h) {
+        sizer += rowspi_[h];
+        sizec += colspi_[h^symmetry_];
+    }
+   SharedMatrix ret(new Matrix(name_ + " Block Copy", sizer, sizec));
+   double **temp = to_block_matrix();
+   ret->set(temp, 0);
+   free_block(temp);
+   return ret;
+
 }
 
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const

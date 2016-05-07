@@ -56,10 +56,7 @@ namespace psi { namespace detci {
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo);
-//void print_config(int nbf, int num_alp_el, int num_bet_el,
-//   struct stringwr *stralp, struct stringwr *strbet,
-//   int num_drc_orbs, char *outstring);
+void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 
@@ -143,7 +140,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {
 
-      orb2lbl(j+num_drc_orbs, olabel, CalcInfo_); /* get label for orbital j */
+      orb2lbl(j+num_drc_orbs, olabel, CalcInfo_, nmopi_); /* get label for orbital j */
 
       for (k=0,afound=0; k<num_alp_el; k++) {
          if ((stralp->occs)[k] > j) break;
@@ -196,7 +193,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
 **    Allow it to handle more complex spaces...don't assume QT orbital order.
 **    It was getting labels all mixed up for RAS's.
 */
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
+void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr)
 {
 
    int ir, i, j, pitzer_orb, rel_orb;
@@ -209,16 +206,16 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
       }
 
    for (ir=0,j=0; ir<Cinfo->nirreps; ir++) {
-      if (Cinfo->orbs_per_irr[ir] == 0) continue;
-      if (j + Cinfo->orbs_per_irr[ir] > pitzer_orb) break;
-      else j += Cinfo->orbs_per_irr[ir];
+      if (orbs_per_irr[ir] == 0) continue;
+      if (j + orbs_per_irr[ir] > pitzer_orb) break;
+      else j += orbs_per_irr[ir];
       }
    rel_orb = pitzer_orb - j;
 
    if (rel_orb < 0) {
       outfile->Printf( "(orb2lbl): rel_orb < 0\n");
       }
-   else if (rel_orb > Cinfo->orbs_per_irr[ir]) {
+   else if (rel_orb > orbs_per_irr[ir]) {
       outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
 
@@ -291,10 +288,8 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //}
 
 
-//void eivout_t(double **a, double *b, int m, int n, std::string out)
+//void eivout_t(double **a, double *b, int m, int n)
 //   {
-//   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-//         boost::shared_ptr<OutFile>(new OutFile(out)));
 //      int ii,jj,kk,nn,ll;
 //      int i,j,k;
 //
@@ -306,21 +301,21 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //      nn=n;
 //      if (nn > kk) nn=kk;
 //      ll = 2*(nn-ii+1)+1;
-//      printer->Printf("\n");
-//      for (i=ii; i <= nn; i++) printer->Printf("       %5d",i);
-//      printer->Printf("\n");
+//      outfile->Printf("\n");
+//      for (i=ii; i <= nn; i++) outfile->Printf("       %5d",i);
+//      outfile->Printf("\n");
 //      for (i=0; i < m; i++) {
-//         printer->Printf("\n%5d",i+1);
+//         outfile->Printf("\n%5d",i+1);
 //         for (j=ii-1; j < nn; j++) {
-//            printer->Printf("%12.7f",a[j][i]);
+//            outfile->Printf("%12.7f",a[j][i]);
 //            }
 //         }
-//      printer->Printf("\n");
-//      printer->Printf("\n     ");
+//      outfile->Printf("\n");
+//      outfile->Printf("\n     ");
 //      for (j=ii-1; j < nn; j++) {
-//         printer->Printf("%12.7f",b[j]);
+//         outfile->Printf("%12.7f",b[j]);
 //         }
-//      printer->Printf("\n");
+//      outfile->Printf("\n");
 //      if (n <= kk) {
 //         return;
 //         }
@@ -347,23 +342,6 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo)
 //              (unsigned long) CIblks.Ia_size[blk] *
 //              (unsigned long) CIblks.Ib_size[blk]);
 //      }
-//}
-
-/*
-** WRITE_ENERGY
-**
-** This routine writes out the energies to an ASCII file
-*/
-//void write_energy(int nroots, double *evals, double offset)
-//{
-//
-//  int i;
-//  boost::shared_ptr<OutFile> printer(new OutFile("detci_energies.dat",APPEND));
-//  //ffile(&efile,"detci_energies.dat",1);
-//  for (i=0; i<nroots; i++) {
-//    printer->Printf("%8.6lf ", evals[i]+offset);
-//  }
-//  printer->Printf("\n");
 //}
 
 }} // namespace psi::detci

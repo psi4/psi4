@@ -93,9 +93,6 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->ref_sym = options.get_int("REFERENCE_SYM");
 
-  Parameters_->oei_file = PSIF_OEI;  /* always need fzc operator */
-  Parameters_->tei_file = PSIF_MO_TEI;
-
   Parameters_->hd_ave = EVANGELISTI;
 
   if (Parameters_->wfn == "CASSCF") {
@@ -145,11 +142,6 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->s_filenum = options["CI_FILE_START"].to_integer() + 2;
   Parameters_->d_filenum = options["CI_FILE_START"].to_integer() + 3;
 
-  Parameters_->num_hd_tmp_units = 1;
-  Parameters_->num_c_tmp_units = 1;
-  Parameters_->num_s_tmp_units = 1;
-  Parameters_->num_d_tmp_units = 1;
-
   Parameters_->cc = options["CC"].to_integer();
 
   if (Parameters_->dertype == "FIRST" ||
@@ -160,9 +152,7 @@ void CIWavefunction::get_parameters(Options &options)
      Parameters_->convergence = 1e-7;
      Parameters_->energy_convergence = 1e-8;
      Parameters_->opdm = 1;
-     Parameters_->opdm_write = 1;
      Parameters_->tpdm = 1;
-     Parameters_->tpdm_write = 1;
      Parameters_->maxiter = 12;
   }
 
@@ -178,15 +168,10 @@ void CIWavefunction::get_parameters(Options &options)
       Parameters_->maxiter = 12;
     }
     Parameters_->opdm = 0;
-    Parameters_->opdm_write = 0;
     Parameters_->tpdm = 0;
-    Parameters_->tpdm_write = 0;
   }
 
-  Parameters_->opdm_file = PSIF_MO_OPDM;
   Parameters_->opdm_diag = 0;
-  Parameters_->opdm_orbsfile = 76;
-  Parameters_->tpdm_file = PSIF_MO_TPDM;
 
   if (options["MAXITER"].has_changed()) {
     Parameters_->maxiter = options.get_int("MAXITER");
@@ -319,9 +304,6 @@ void CIWavefunction::get_parameters(Options &options)
       Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
     else if (line1 == "DFILE")
       Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
- /* else if (Parameters_->mpn) Parameters_->guess_vector = PARM_GUESS_VEC_UNIT; */
-    else if (line1 == "IMPORT")
-      Parameters_->guess_vector = PARM_GUESS_VEC_IMPORT;
     else Parameters_->guess_vector = PARM_GUESS_VEC_UNIT;
   }
 
@@ -362,6 +344,11 @@ void CIWavefunction::get_parameters(Options &options)
       Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
     if (line1 == "SEMTEST")
       Parameters_->diag_method = METHOD_RSPTEST_OF_SEM;
+  }
+
+  if ((Parameters_->diag_method == METHOD_RSP) & (Parameters_->icore != 1)){
+    outfile->Printf("RSP only works with icore = 1, switching.");
+    Parameters_->icore = 1;
   }
 
   Parameters_->precon = PRECON_DAVIDSON;
@@ -459,32 +446,24 @@ void CIWavefunction::get_parameters(Options &options)
    * but we will try to eliminate some of those.  Parameters_opdm will
    * function as the master switch for all other OPDM parameters.
    */
-  Parameters_->opdm_print = options["OPDM_PRINT"].to_integer();
   Parameters_->opdm_diag = options["NAT_ORBS"].to_integer();
   Parameters_->opdm_ave = options["OPDM_AVG"].to_integer();
 
-  if (Parameters_->opdm_print || Parameters_->opdm_diag
-      || Parameters_->opdm_ave) Parameters_->opdm = 1;
+  if (Parameters_->opdm_diag || Parameters_->opdm_ave)
+    Parameters_->opdm = 1;
   if (options["OPDM"].has_changed())
     Parameters_->opdm = options["OPDM"].to_integer();
-  if (Parameters_->opdm) Parameters_->opdm_write = 1;
 
   /* transition density matrices */
-  Parameters_->tdm_print = 0; Parameters_->tdm_write = 0;
   Parameters_->transdens = 0;
-  Parameters_->tdm_print = options["TDM_PRINT"].to_integer();
-  Parameters_->tdm_write = options["TDM_WRITE"].to_integer();
 
-  if (Parameters_->tdm_print || Parameters_->tdm_write ||
-      (Parameters_->num_roots > 1))
+  if (Parameters_->num_roots > 1)
     Parameters_->transdens = 1;
   else
     Parameters_->transdens = 0;
 
   if (options["TDM"].has_changed())
     Parameters_->transdens = options["TDM"].to_integer();
-  if (Parameters_->transdens && !options["TDM_WRITE"].has_changed())
-    Parameters_->tdm_write = 1;
 
   /* dipole or transition dipole moment? */
   if (Parameters_->opdm) Parameters_->dipmom = 1;
@@ -509,29 +488,6 @@ void CIWavefunction::get_parameters(Options &options)
   if (options["TPDM"].has_changed())
     Parameters_->tpdm = options["TPDM"].to_integer();
 
-  if (Parameters_->tpdm) Parameters_->tpdm_write = 1;
-
-  Parameters_->tpdm_print = options["TPDM_PRINT"].to_integer();
-
-  // We always phase check now
-  //if (Parameters_->guess_vector == PARM_GUESS_VEC_DFILE &&
-  //    Parameters_->wfn != "DETCAS" &&
-  //    Parameters_->wfn != "CASSCF" &&
-  //    Parameters_->wfn != "RASSCF")
-  //{
-
-
-  //  if (!i) {
-  //    outfile->Printf( "Can't use d file guess: SCF phase not checked\n");
-  //    if (Parameters_->h0guess_size) {
-  //      Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-  //      if (Parameters_->precon == PRECON_GEN_DAVIDSON)
-  //        Parameters_->precon = PRECON_H0BLOCK_ITER_INVERT;
-  //    }
-  //    else Parameters_->guess_vector = PARM_GUESS_VEC_UNIT;
-  //  }
-  //}
-
   if (Parameters_->num_init_vecs < Parameters_->num_roots)
     Parameters_->num_init_vecs = Parameters_->num_roots;
   if (Parameters_->guess_vector == PARM_GUESS_VEC_UNIT &&
@@ -550,26 +506,12 @@ void CIWavefunction::get_parameters(Options &options)
   }
   if (Parameters_->nthreads < 1) Parameters_->nthreads = 1;
 
-  Parameters_->export_ci_vector = options["VECS_WRITE"].to_integer();
-
-  Parameters_->num_export = 0;
-  if (Parameters_->export_ci_vector) {
-    Parameters_->num_export = 1;
-    if (options["NUM_VECS_WRITE"].has_changed())
-      Parameters_->num_export = options.get_int("NUM_VECS_WRITE");
-    if (Parameters_->num_export > Parameters_->num_roots) {
-      outfile->Printf( "Warning: can't export %d roots if %d requested\n",
-              Parameters_->num_export, Parameters_->num_roots);
-      Parameters_->num_export = Parameters_->num_roots;
-    }
-  }
-
   Parameters_->sf_restrict = options["SF_RESTRICT"].to_integer();
   Parameters_->print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
 
   if (Parameters_->cc) Parameters_->ex_lvl = Parameters_->cc_ex_lvl + 2;
 
-  Parameters_->ex_allow = (int *)malloc(Parameters_->ex_lvl*sizeof(int));
+  Parameters_->ex_allow.resize(Parameters_->ex_lvl);
   if (options["EX_ALLOW"].has_changed()) {
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
@@ -577,7 +519,7 @@ void CIWavefunction::get_parameters(Options &options)
       str += boost::lexical_cast<std::string>( Parameters_->ex_lvl) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
-    options.fill_int_array("EX_ALLOW", Parameters_->ex_allow);
+    options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());
   }
   else {
     for (i=0;i<Parameters_->ex_lvl;i++) {
@@ -652,8 +594,8 @@ void CIWavefunction::get_parameters(Options &options)
       throw PsiException(str,__FILE__,__LINE__);
     }
 
-    Parameters_->average_states = init_int_array(i);
-    Parameters_->average_weights = init_array(i);
+    Parameters_->average_states.resize(i);
+    Parameters_->average_weights.resize(i);
     Parameters_->average_num = i;
     for (i=0;i<Parameters_->average_num;i++) {
       Parameters_->average_states[i] = options["AVG_STATES"][i].to_integer();
@@ -689,8 +631,8 @@ void CIWavefunction::get_parameters(Options &options)
 
   else {
     Parameters_->average_num = 1;
-    Parameters_->average_states = init_int_array(1);
-    Parameters_->average_weights = init_array(1);
+    Parameters_->average_states.resize(1);
+    Parameters_->average_weights.resize(1);
     Parameters_->average_states[0] = Parameters_->root;
     Parameters_->average_weights[0] = 1.0;
   } /* end state-average parsing */
@@ -700,13 +642,13 @@ void CIWavefunction::get_parameters(Options &options)
   if (options["FOLLOW_VECTOR"].has_changed()) {
     i = options["FOLLOW_VECTOR"].size();
     Parameters_->follow_vec_num = i;
-    Parameters_->follow_vec_coef   = init_array(i);
-    Parameters_->follow_vec_Ia     = init_int_array(i);
-    Parameters_->follow_vec_Ib     = init_int_array(i);
-    Parameters_->follow_vec_Iac    = init_int_array(i);
-    Parameters_->follow_vec_Ibc    = init_int_array(i);
-    Parameters_->follow_vec_Iaridx = init_int_array(i);
-    Parameters_->follow_vec_Ibridx = init_int_array(i);
+    Parameters_->follow_vec_coef.resize(i);
+    Parameters_->follow_vec_Ia.resize(i);
+    Parameters_->follow_vec_Ib.resize(i);
+    Parameters_->follow_vec_Iac.resize(i);
+    Parameters_->follow_vec_Ibc.resize(i);
+    Parameters_->follow_vec_Iaridx.resize(i);
+    Parameters_->follow_vec_Ibridx.resize(i);
 
     /* now parse each piece */
     for (i=0; i<Parameters_->follow_vec_num; i++) {
@@ -771,39 +713,6 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->diis_freq = options.get_int("DIIS_FREQ");
   Parameters_->diis_min_vecs = options.get_int("DIIS_MIN_VECS");
   Parameters_->diis_max_vecs = options.get_int("DIIS_MAX_VECS");
-
-  /* parse cc_macro = [
-       [ex_lvl, max_holes_I, max_parts_IV, max_I+IV]
-       ...
-     ]
-     This says to eliminate T blocks in which: [the excitation level
-     (holes in I + II) is equal to ex_lvl] AND [there are more than
-     max_holes_I holes in RAS I, there are more than max_parts_IV
-     particles in RAS IV, OR there are more than max_I+IV quasiparticles
-     in RAS I + RAS IV]
-   */
-
-  Parameters_->cc_macro_on = 0;
-  if (Parameters_->cc && options["CC_MACRO"].has_changed()) {
-    i = options["CC_MACRO"].size();
-    Parameters_->cc_macro = init_int_matrix(Parameters_->cc_ex_lvl +
-      Parameters_->cc_val_ex_lvl + 1, 3);
-    Parameters_->cc_macro_parsed = init_int_array(Parameters_->cc_ex_lvl +
-      Parameters_->cc_val_ex_lvl + 1);
-    for (j=0; j<i; j++) {
-      // errcod = ip_data("CC_MACRO","%d",&k,2,j,0);
-      k = options["CC_MACRO"][j][0].to_integer();
-      // errcod = ip_data("CC_MACRO","%d",Parameters_->cc_macro[k],2,j,1);
-      Parameters_->cc_macro[k][0] = options["CC_MACRO"][j][1].to_integer();
-      // errcod = ip_data("CC_MACRO","%d",Parameters_->cc_macro[k]+1,2,j,2);
-      Parameters_->cc_macro[k][1] = options["CC_MACRO"][j][2].to_integer();
-      // errcod = ip_data("CC_MACRO","%d",Parameters_->cc_macro[k]+2,2,j,3);
-      Parameters_->cc_macro[k][2] = options["CC_MACRO"][j][3].to_integer();
-      Parameters_->cc_macro_parsed[k] = 1;
-    }
-    Parameters_->cc_macro_on = 1;
-  } /* end parsing of CC_MACRO */
-
 }
 
 
@@ -839,12 +748,9 @@ void CIWavefunction::print_parameters(void)
 
    outfile->Printf( "   E CONV        = %6.2e      MIXED4       =   %6s\n",
       Parameters_->energy_convergence, Parameters_->mixed4 ? "yes" : "no");
-   outfile->Printf( "   OEI FILE      =   %6d      R4S          =   %6s\n",
-      Parameters_->oei_file, Parameters_->r4s ? "yes" : "no");
-   outfile->Printf( "   REPL OTF      =   %6s\n",
-      Parameters_->repl_otf ? "yes" : "no");
-   outfile->Printf( "   TEI FILE      =   %6d      DIAG METHOD  =   ",
-      Parameters_->tei_file);
+   outfile->Printf( "   R4S           =   %6s      REPL OTF     =   %6s\n",
+      Parameters_->r4s ? "yes" : "no", Parameters_->repl_otf ? "yes" : "no");
+   outfile->Printf( "   DIAG METHOD   =   ");
 
    switch (Parameters_->diag_method) {
       case 0:
@@ -924,9 +830,6 @@ void CIWavefunction::print_parameters(void)
       case PARM_GUESS_VEC_DFILE:
          outfile->Printf( "%7s", "D FILE");
          break;
-      case PARM_GUESS_VEC_IMPORT:
-         outfile->Printf( "%7s", "IMPORT");
-         break;
       default:
          outfile->Printf( "%7s", "???");
          break;
@@ -986,8 +889,6 @@ void CIWavefunction::print_parameters(void)
            Parameters_->perturbation_parameter, Parameters_->root);
    outfile->Printf( "   NUM THREADS   =   %6d\n",
            Parameters_->nthreads);
-   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE = %6d\n",
-           Parameters_->export_ci_vector ? "yes":"no", Parameters_->num_export);
    outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters_->filter_guess ?  "yes":"no",
            Parameters_->sf_restrict ? "yes":"no");
@@ -1049,8 +950,8 @@ void CIWavefunction::set_ras_parameters(void)
    {
      Parameters_->val_ex_lvl = 0;
      Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-     free(Parameters_->ex_allow);
-     Parameters_->ex_allow = init_int_array(Parameters_->ex_lvl);
+     Parameters_->ex_allow.clear();
+     Parameters_->ex_allow.resize(Parameters_->ex_lvl);
      for (i=0; i<Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
 
      if (Parameters_->print_lvl>2) {

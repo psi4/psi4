@@ -87,381 +87,370 @@ extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
-
-CIvect::CIvect() // Default constructor
+CIvect::CIvect()  // Default constructor
 {
-   common_init();
+    common_init();
 }
 
+CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
+               int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+               int cdpirr, int mxv, int nu, int funit, int *fablk, int *lablk,
+               int **dc, struct calcinfo *CI_CalcInfo, struct params *CI_Params,
+               struct H_zero_block *CI_H0block, bool buf_init) {
+    common_init();
+    CI_CalcInfo_ = CI_CalcInfo;
+    CI_Params_ = CI_Params;
+    CI_H0block_ = CI_H0block;
 
-CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
-         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
-         int nirr, int cdpirr, int mxv, int nu,
-         int funit, int *fablk, int *lablk, int **dc,
-         struct calcinfo *CI_CalcInfo, struct params *CI_Params,
-         struct H_zero_block *CI_H0block, bool buf_init)
-{
-   common_init();
-   CI_CalcInfo_ = CI_CalcInfo;
-   CI_Params_ = CI_Params;
-   CI_H0block_ = CI_H0block;
+    set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc, nirr, cdpirr,
+        mxv, nu, funit, fablk, lablk, dc);
 
-   set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc,
-         nirr, cdpirr, mxv, nu, funit, fablk, lablk, dc);
-
-   if (buf_init){
-       buffer_ = buf_malloc();
-       blocks_[0][0] = buffer_;
-       buf_lock(buffer_);
-   }
-
+    if (buf_init) {
+        buffer_ = buf_malloc();
+        blocks_[0][0] = buffer_;
+        buf_lock(buffer_);
+    }
 }
-CIvect::CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks,
-               struct calcinfo *CI_CalcInfo, struct params *CI_Params,
-               struct H_zero_block *CI_H0block, bool buf_init)
-{
-  common_init();
-  CI_CalcInfo_ = CI_CalcInfo;
-  CI_Params_ = CI_Params;
-  CI_H0block_ = CI_H0block;
+CIvect::CIvect(int incor, int maxvect, int nunits, int funit,
+               struct ci_blks *CIblks, struct calcinfo *CI_CalcInfo,
+               struct params *CI_Params, struct H_zero_block *CI_H0block,
+               bool buf_init) {
+    common_init();
+    CI_CalcInfo_ = CI_CalcInfo;
+    CI_Params_ = CI_Params;
+    CI_H0block_ = CI_H0block;
 
-  set(CIblks->vectlen, CIblks->num_blocks, incor, CIblks->Ms0,
-      CIblks->Ia_code, CIblks->Ib_code, CIblks->Ia_size, CIblks->Ib_size,
-      CIblks->offset, CIblks->num_alp_codes, CIblks->num_bet_codes,
-      CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits,
-      funit, CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
+    set(CIblks->vectlen, CIblks->num_blocks, incor, CIblks->Ms0,
+        CIblks->Ia_code, CIblks->Ib_code, CIblks->Ia_size, CIblks->Ib_size,
+        CIblks->offset, CIblks->num_alp_codes, CIblks->num_bet_codes,
+        CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits, funit,
+        CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
 
-  if (buf_init){
-      buffer_ = buf_malloc();
-      blocks_[0][0] = buffer_;
-      buf_lock(buffer_);
-  }
+    if (buf_init) {
+        buffer_ = buf_malloc();
+        blocks_[0][0] = buffer_;
+        buf_lock(buffer_);
+    }
 }
 
-void CIvect::common_init(void)
-{
-   vectlen_ = 0;
-   num_blocks_ = 0;
-   icore_ = 1;
-   Ms0_ = 0;
-   Ia_code_ = NULL;
-   Ib_code_ = NULL;
-   Ia_size_ = NULL;
-   Ib_size_ = NULL;
-   offset_ = NULL;
-   num_alpcodes_ = 0;
-   num_betcodes_ = 0;
-   nirreps_ = 0;
-   codes_per_irrep_ = 0;
-   buf_per_vect_ = 0;
-   buf_total_ = 0;
-   new_first_buf_ = 0;
-   maxvect_ = 0;
-   nvect_ = 0;
-   nunits_ = 0;
-   cur_vect_ = -1;
-   cur_buf_ = -1;
-   buffer_size_ = 0;
-   units_ = NULL;
-   file_number_ = NULL;
-   buf_size_ = NULL;
-   buf2blk_ = NULL;
-   buf_offdiag_ = NULL;
-   first_ablk_ = NULL;
-   last_ablk_ = NULL;
-   decode_ = NULL;
-   blocks_ = NULL;
-   zero_blocks_ = NULL;
-   buf_locked_ = 0;
-   buffer_ = NULL;
-   in_file_ = 0;
-   extras_ = 0;
-   units_used_ = 0;
-   cur_unit_ = 0;
-   cur_size_ = 0;
-   first_unit_ = 0;
+void CIvect::common_init(void) {
+    vectlen_ = 0;
+    num_blocks_ = 0;
+    icore_ = 1;
+    Ms0_ = 0;
+    Ia_code_ = NULL;
+    Ib_code_ = NULL;
+    Ia_size_ = NULL;
+    Ib_size_ = NULL;
+    offset_ = NULL;
+    num_alpcodes_ = 0;
+    num_betcodes_ = 0;
+    nirreps_ = 0;
+    codes_per_irrep_ = 0;
+    buf_per_vect_ = 0;
+    buf_total_ = 0;
+    new_first_buf_ = 0;
+    maxvect_ = 0;
+    nvect_ = 0;
+    nunits_ = 0;
+    cur_vect_ = -1;
+    cur_buf_ = -1;
+    buffer_size_ = 0;
+    units_ = NULL;
+    file_number_ = NULL;
+    buf_size_ = NULL;
+    buf2blk_ = NULL;
+    buf_offdiag_ = NULL;
+    first_ablk_ = NULL;
+    last_ablk_ = NULL;
+    decode_ = NULL;
+    blocks_ = NULL;
+    zero_blocks_ = NULL;
+    buf_locked_ = 0;
+    buffer_ = NULL;
+    in_file_ = 0;
+    extras_ = 0;
+    units_used_ = 0;
+    cur_unit_ = 0;
+    cur_size_ = 0;
+    first_unit_ = 0;
 }
 
-void CIvect::set(int incor, int maxvect, int nunits, int funit, struct ci_blks *CIblks){
-  set(CIblks->vectlen, CIblks->num_blocks, incor, CIblks->Ms0,
-      CIblks->Ia_code, CIblks->Ib_code, CIblks->Ia_size, CIblks->Ib_size,
-      CIblks->offset, CIblks->num_alp_codes, CIblks->num_bet_codes,
-      CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits,
-      funit, CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
+void CIvect::set(int incor, int maxvect, int nunits, int funit,
+                 struct ci_blks *CIblks) {
+    set(CIblks->vectlen, CIblks->num_blocks, incor, CIblks->Ms0,
+        CIblks->Ia_code, CIblks->Ib_code, CIblks->Ia_size, CIblks->Ib_size,
+        CIblks->offset, CIblks->num_alp_codes, CIblks->num_bet_codes,
+        CIblks->nirreps, CIblks->subgr_per_irrep, maxvect, nunits, funit,
+        CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
 }
 
-void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
-         int *ibc, int *ias, int *ibs, BIGINT *offs, int nac, int nbc,
-         int nirr, int cdpirr, int mxv, int nu, int fu, int *fablk,
-         int *lablk, int **dc)
-{
-   int i,j,ij,k,l;
-   int maxrows = 0, maxcols = 0;
-   unsigned long bufsize, maxbufsize;
-   unsigned long size, cur_offset_;
-   //static int first=1;
-   /* int in_file, extras, units_used, cur_unit; */
+void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
+                 int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+                 int cdpirr, int mxv, int nu, int fu, int *fablk, int *lablk,
+                 int **dc) {
+    int i, j, ij, k, l;
+    int maxrows = 0, maxcols = 0;
+    unsigned long bufsize, maxbufsize;
+    unsigned long size, cur_offset_;
+    // static int first=1;
+    /* int in_file, extras, units_used, cur_unit; */
 
-   vectlen_ = vl;
-   num_blocks_ = nb;
-   icore_ = incor;
-   Ms0_ = ms0;
-   nirreps_ = nirr;
-   codes_per_irrep_ = cdpirr;
-   maxvect_ = mxv;
-   nvect_ = 1;
-   nunits_ = nu;
-   if (nunits_) units_ = init_int_array(nunits_);
-   first_unit_ = fu;
-   for (i=0; i<nunits_; i++) units_[i] = fu + i;
+    vectlen_ = vl;
+    num_blocks_ = nb;
+    icore_ = incor;
+    Ms0_ = ms0;
+    nirreps_ = nirr;
+    codes_per_irrep_ = cdpirr;
+    maxvect_ = mxv;
+    nvect_ = 1;
+    nunits_ = nu;
+    if (nunits_) units_ = init_int_array(nunits_);
+    first_unit_ = fu;
+    for (i = 0; i < nunits_; i++) units_[i] = fu + i;
 
-   Ia_code_ = init_int_array(nb);
-   Ib_code_ = init_int_array(nb);
-   Ia_size_ = init_int_array(nb);
-   Ib_size_ = init_int_array(nb);
-   offset_ = (BIGINT *) malloc (nb * sizeof(BIGINT));
+    Ia_code_ = init_int_array(nb);
+    Ib_code_ = init_int_array(nb);
+    Ia_size_ = init_int_array(nb);
+    Ib_size_ = init_int_array(nb);
+    offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
 
-   for (i=0; i<nb; i++) {
-      Ia_code_[i] = iac[i];
-      Ib_code_[i] = ibc[i];
-      Ia_size_[i] = ias[i];
-      Ib_size_[i] = ibs[i];
-      offset_[i] = offs[i];
-      }
+    for (i = 0; i < nb; i++) {
+        Ia_code_[i] = iac[i];
+        Ib_code_[i] = ibc[i];
+        Ia_size_[i] = ias[i];
+        Ib_size_[i] = ibs[i];
+        offset_[i] = offs[i];
+    }
 
-   num_alpcodes_ = nac;
-   num_betcodes_ = nbc;
+    num_alpcodes_ = nac;
+    num_betcodes_ = nbc;
 
-   first_ablk_ = init_int_array(nirr);
-   last_ablk_ = init_int_array(nirr);
-   for (i=0; i<nirr; i++) {
-      first_ablk_[i] = fablk[i];
-      last_ablk_[i] = lablk[i];
-      }
+    first_ablk_ = init_int_array(nirr);
+    last_ablk_ = init_int_array(nirr);
+    for (i = 0; i < nirr; i++) {
+        first_ablk_[i] = fablk[i];
+        last_ablk_[i] = lablk[i];
+    }
 
-   decode_ = init_int_matrix(nac, nbc);
-   for (i=0; i<nac; i++) {
-      for (j=0; j<nbc; j++) {
-         decode_[i][j] = dc[i][j];
-         }
-      }
+    decode_ = init_int_matrix(nac, nbc);
+    for (i = 0; i < nac; i++) {
+        for (j = 0; j < nbc; j++) {
+            decode_[i][j] = dc[i][j];
+        }
+    }
 
-   if (icore_ == 1) { /* whole vector in-core */
-      buf_per_vect_ = 1;
-      buf_total_ = maxvect_;
-      buf_size_ = (unsigned long *) malloc(buf_per_vect_ * sizeof(unsigned long));
-      buf2blk_ = init_int_array(buf_per_vect_);
-      buf_offdiag_ = init_int_array(buf_per_vect_);
-      for (i=0; i<buf_per_vect_; i++) buf_size_[i] = 0;
-      if (maxvect_ < nunits_) nunits_ = maxvect_;
-      if (nvect_ > maxvect_) nvect_ = maxvect_;
-      size = vectlen_;  /* may want to change for Ms=0 later */
-      for (i=0; i<buf_per_vect_; i++) {
-         buf2blk_[i] = -1;
-         buf_size_[i] = size;
-         }
-      }
+    if (icore_ == 1) { /* whole vector in-core */
+        buf_per_vect_ = 1;
+        buf_total_ = maxvect_;
+        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf2blk_ = init_int_array(buf_per_vect_);
+        buf_offdiag_ = init_int_array(buf_per_vect_);
+        for (i = 0; i < buf_per_vect_; i++) buf_size_[i] = 0;
+        if (maxvect_ < nunits_) nunits_ = maxvect_;
+        if (nvect_ > maxvect_) nvect_ = maxvect_;
+        size = vectlen_; /* may want to change for Ms=0 later */
+        for (i = 0; i < buf_per_vect_; i++) {
+            buf2blk_[i] = -1;
+            buf_size_[i] = size;
+        }
+    }
 
-   if (icore_ == 2) { /* whole symmetry block in-core */
-      /* figure out how many buffers per vector */
-      for (i=0,buf_per_vect_=0; i<nirreps_; i++) {
-         j = first_ablk_[i];
-         if (j < 0) continue;
-         if (!Ms0_ || CI_CalcInfo_->ref_sym==0) buf_per_vect_++;
-         else if (Ia_code_[j]/codes_per_irrep_ > Ib_code_[j]/codes_per_irrep_)
-            buf_per_vect_++;
-         }
+    if (icore_ == 2) { /* whole symmetry block in-core */
+        /* figure out how many buffers per vector */
+        for (i = 0, buf_per_vect_ = 0; i < nirreps_; i++) {
+            j = first_ablk_[i];
+            if (j < 0) continue;
+            if (!Ms0_ || CI_CalcInfo_->ref_sym == 0)
+                buf_per_vect_++;
+            else if (Ia_code_[j] / codes_per_irrep_ >
+                     Ib_code_[j] / codes_per_irrep_)
+                buf_per_vect_++;
+        }
 
-      buf2blk_ = init_int_array(buf_per_vect_);
-      buf_offdiag_ = init_int_array(buf_per_vect_);
+        buf2blk_ = init_int_array(buf_per_vect_);
+        buf_offdiag_ = init_int_array(buf_per_vect_);
 
-      for (i=0,j=0; i<nirreps_; i++) {
-         k = first_ablk_[i];
-         if (k < 0) continue;
-         if (!Ms0_ || CI_CalcInfo_->ref_sym==0) {
-            buf2blk_[j] = i;
-            j++;
+        for (i = 0, j = 0; i < nirreps_; i++) {
+            k = first_ablk_[i];
+            if (k < 0) continue;
+            if (!Ms0_ || CI_CalcInfo_->ref_sym == 0) {
+                buf2blk_[j] = i;
+                j++;
+            } else if (Ia_code_[k] / codes_per_irrep_ >
+                       Ib_code_[k] / codes_per_irrep_) {
+                buf_offdiag_[j] = 1;
+                buf2blk_[j] = i;
+                j++;
             }
-         else if (Ia_code_[k]/codes_per_irrep_ > Ib_code_[k]/codes_per_irrep_) {
-            buf_offdiag_[j] = 1;
-            buf2blk_[j] = i;
-            j++;
+        }
+
+        buf_total_ = maxvect_ * buf_per_vect_;
+        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        for (i = 0; i < buf_per_vect_; i++) {
+            buf_size_[i] = 0;
+            j = buf2blk_[i];
+            for (k = first_ablk_[j]; k <= last_ablk_[j]; k++) {
+                buf_size_[i] += (unsigned long)Ia_size_[k] * (unsigned long)Ib_size_[k];
             }
-         }
+        }
+    } /* end icore==2 */
 
-      buf_total_ = maxvect_ * buf_per_vect_;
-      buf_size_ = (unsigned long *) malloc(buf_per_vect_ * sizeof(unsigned long));
-      for (i=0; i<buf_per_vect_; i++) {
-         buf_size_[i] = 0;
-         j = buf2blk_[i];
-         for (k=first_ablk_[j]; k<=last_ablk_[j]; k++) {
-            buf_size_[i] += (unsigned long) Ia_size_[k] *
-                           (unsigned long) Ib_size_[k];
+    if (icore_ == 0) { /* one subblock in-core */
+
+        /* figure out how many blocks are stored */
+        buf_per_vect_ = 0;
+        if (Ms0_) {
+            for (i = 0; i < num_blocks_; i++) {
+                if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i] > 0 &&
+                    Ib_size_[i] > 0)
+                    buf_per_vect_++;
             }
-         }
-      } /* end icore==2 */
-
-   if (icore_ == 0) { /* one subblock in-core */
-
-      /* figure out how many blocks are stored */
-      buf_per_vect_ = 0;
-      if (Ms0_) {
-         for (i=0; i<num_blocks_; i++) {
-            if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i]>0 && Ib_size_[i]>0)
-               buf_per_vect_++;
+        } else {
+            for (i = 0; i < num_blocks_; i++) {
+                if (Ia_size_[i] > 0 && Ib_size_[i] > 0) buf_per_vect_++;
             }
-         }
-      else {
-         for (i=0; i<num_blocks_; i++) {
-            if (Ia_size_[i] > 0 && Ib_size_[i] > 0) buf_per_vect_++;
+        }
+
+        buf_total_ = buf_per_vect_ * maxvect_;
+        buf2blk_ = init_int_array(buf_per_vect_);
+        buf_offdiag_ = init_int_array(buf_per_vect_);
+        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+
+        if (Ms0_) {
+            for (i = 0, j = 0; i < num_blocks_; i++) {
+                if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i] > 0 &&
+                    Ib_size_[i] > 0) {
+                    buf2blk_[j] = i;
+                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    if (Ia_code_[i] != Ib_code_[i]) buf_offdiag_[j] = 1;
+                    j++;
+                }
             }
-         }
-
-      buf_total_ = buf_per_vect_ * maxvect_;
-      buf2blk_ = init_int_array(buf_per_vect_);
-      buf_offdiag_ = init_int_array(buf_per_vect_);
-      buf_size_ = (unsigned long *) malloc(buf_per_vect_ * sizeof(unsigned long));
-
-      if (Ms0_) {
-         for (i=0,j=0; i<num_blocks_; i++) {
-            if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i]>0 && Ib_size_[i]>0) {
-               buf2blk_[j] = i;
-               buf_size_[j] = (unsigned long) Ia_size_[i] *
-                             (unsigned long) Ib_size_[i];
-               if (Ia_code_[i] != Ib_code_[i]) buf_offdiag_[j] = 1;
-               j++;
-               }
+        } else {
+            for (i = 0, j = 0; i < num_blocks_; i++) {
+                if (Ia_size_[i] > 0 && Ib_size_[i] > 0) {
+                    buf2blk_[j] = i;
+                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    j++;
+                }
             }
-         }
-      else {
-         for (i=0,j=0; i<num_blocks_; i++) {
-            if (Ia_size_[i]>0 && Ib_size_[i]>0) {
-               buf2blk_[j] = i;
-               buf_size_[j] = (unsigned long) Ia_size_[i] *
-                             (unsigned long) Ib_size_[i];
-               j++;
-               }
-            }
-         }
+        }
 
-      } /* end icore==0 */
+    } /* end icore==0 */
 
-   file_number_ = init_int_array(buf_total_);
+    file_number_ = init_int_array(buf_total_);
 
-   if (nunits_) {
-      in_file_ = 0;
-      extras_ = buf_total_ % nunits_;
-      units_used_ = 0;
-      cur_unit_ = units_[0];
+    if (nunits_) {
+        in_file_ = 0;
+        extras_ = buf_total_ % nunits_;
+        units_used_ = 0;
+        cur_unit_ = units_[0];
 
-      for (i=0; i<buf_total_; i++) {
-
-         if (in_file_ + 1 <= buf_total_ / nunits_) {
-            file_number_[i] = cur_unit_;
-            in_file_++;
+        for (i = 0; i < buf_total_; i++) {
+            if (in_file_ + 1 <= buf_total_ / nunits_) {
+                file_number_[i] = cur_unit_;
+                in_file_++;
             }
 
-         else if ((in_file_ == buf_total_ / nunits_) && extras_) {
-            file_number_[i] = cur_unit_;
-            extras_--;
-            in_file_++;
+            else if ((in_file_ == buf_total_ / nunits_) && extras_) {
+                file_number_[i] = cur_unit_;
+                extras_--;
+                in_file_++;
             }
 
-         else {
-            units_used_++;
-            cur_unit_ = units_[units_used_];
-            file_number_[i] = cur_unit_;
-            in_file_ = 1;
+            else {
+                units_used_++;
+                cur_unit_ = units_[units_used_];
+                file_number_[i] = cur_unit_;
+                in_file_ = 1;
             }
-         } /* end loop over buffers */
-     }
+        } /* end loop over buffers */
+    }
 
     // do next step separately now to control OPEN_NEW vs OPEN_OLD
     // init_io_files();
 
-/*
-   outfile->Printf("num_blocks_ = %d\n", num_blocks_);
-   for (i=0; i<buf_total_; i++)
-      outfile->Printf("file_offset_[%d] = %lu\n ", i, file_offset_[i]);
-   for (i=0; i<maxvect_; i++)
-      outfile->Printf("zero_block_offset_[%d] = %lu\n ", i,zero_block_offset_[i]);
-   for (i=0; i<buf_per_vect_; i++)
-      outfile->Printf("buf_size_[%d] = %lu\n ", i, buf_size_[i]);
-*/
+    /*
+       outfile->Printf("num_blocks_ = %d\n", num_blocks_);
+       for (i=0; i<buf_total_; i++)
+          outfile->Printf("file_offset_[%d] = %lu\n ", i, file_offset_[i]);
+       for (i=0; i<maxvect_; i++)
+          outfile->Printf("zero_block_offset_[%d] = %lu\n ", i,zero_block_offset_[i]);
+       for (i=0; i<buf_per_vect_; i++)
+          outfile->Printf("buf_size_[%d] = %lu\n ", i, buf_size_[i]);
+    */
 
-   // Set up the flags for zero blocks...at first, all blocks are all 0's
-   // but we will put '0' indicating that the program should assume
-   // nonzero.  It is hard to put this stuff in correctly at this point,
-   // and dangerous to throw out any nonzero data, so we will only set
-   // the blocks to all zero when we know we want them to be treated as
-   // all 0's for certain.
-   zero_blocks_ = init_int_array(num_blocks_);
+    // Set up the flags for zero blocks...at first, all blocks are all 0's
+    // but we will put '0' indicating that the program should assume
+    // nonzero.  It is hard to put this stuff in correctly at this point,
+    // and dangerous to throw out any nonzero data, so we will only set
+    // the blocks to all zero when we know we want them to be treated as
+    // all 0's for certain.
+    zero_blocks_ = init_int_array(num_blocks_);
 
-   // Figure out the buffer size and allocate some pointers (but not storage)
-   blocks_ = (double ***) malloc (num_blocks_ * sizeof(double **));
+    // Figure out the buffer size and allocate some pointers (but not storage)
+    blocks_ = (double ***)malloc(num_blocks_ * sizeof(double **));
 
-   if (icore_ == 1) {   /* everything is in-core */
-      for (i=0; i<num_blocks_; i++) {
-         if (Ia_size_[i])
-            blocks_[i] = (double **) malloc (Ia_size_[i] * sizeof(double *));
-         else
-            blocks_[i] = (double **) malloc (sizeof(double *));
-         }
-      buffer_size_ = vectlen_;
-      } /* end icore==1 */
-   else if (icore_ == 2) { /* one symmetry block is held at a time */
-     /* figure out which symmetry block is largest */
-      for (i=0, maxbufsize=0; i<nirreps_; i++) {
-         for (j=first_ablk_[i],bufsize=0; j<=last_ablk_[i]; j++) {
-            bufsize += (unsigned long) Ia_size_[j] * (unsigned long) Ib_size_[j];
+    if (icore_ == 1) { /* everything is in-core */
+        for (i = 0; i < num_blocks_; i++) {
+            if (Ia_size_[i])
+                blocks_[i] = (double **)malloc(Ia_size_[i] * sizeof(double *));
+            else
+                blocks_[i] = (double **)malloc(sizeof(double *));
+        }
+        buffer_size_ = vectlen_;
+    }                       /* end icore==1 */
+    else if (icore_ == 2) { /* one symmetry block is held at a time */
+                            /* figure out which symmetry block is largest */
+        for (i = 0, maxbufsize = 0; i < nirreps_; i++) {
+            for (j = first_ablk_[i], bufsize = 0; j <= last_ablk_[i]; j++) {
+                bufsize +=
+                    (unsigned long)Ia_size_[j] * (unsigned long)Ib_size_[j];
             }
-         if (bufsize > maxbufsize) maxbufsize = bufsize;
-         }
-      for (i=0; i<num_blocks_; i++) {
-         if (Ia_size_[i])
-            blocks_[i] = (double **) malloc (Ia_size_[i] * sizeof(double *));
-         else
-            blocks_[i] = (double **) malloc (sizeof(double *));
-         }
-      buffer_size_ = maxbufsize;
-      } /* end icore==2 */
-   else if (icore_ == 0) { /* only one subblock in core at once */
-      for (i=0, maxbufsize=0; i<num_blocks_; i++) {
-         if (Ia_size_[i] > maxrows) maxrows = Ia_size_[i];
-         if (Ib_size_[i] > maxcols) maxcols = Ib_size_[i];
-         if (Ia_size_[i])
-            blocks_[i] = (double **) malloc (Ia_size_[i] * sizeof(double *));
-         else
-            blocks_[i] = (double **) malloc (sizeof(double *));
-         bufsize = (unsigned long) Ia_size_[i] * (unsigned long) Ib_size_[i];
-         if (bufsize > maxbufsize) maxbufsize = bufsize;
-         }
-      // CDS 11/5/97: Revise buffer_size, the size of the biggest buffer
-      // buffer_size = maxrows * maxcols;   Made buffers too large
-      buffer_size_ = maxbufsize;  // Why didn't I do it this way before?
-      } /* end icore==0 */
-   else {
-     printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
-     return;
-     }
+            if (bufsize > maxbufsize) maxbufsize = bufsize;
+        }
+        for (i = 0; i < num_blocks_; i++) {
+            if (Ia_size_[i])
+                blocks_[i] = (double **)malloc(Ia_size_[i] * sizeof(double *));
+            else
+                blocks_[i] = (double **)malloc(sizeof(double *));
+        }
+        buffer_size_ = maxbufsize;
+    }                       /* end icore==2 */
+    else if (icore_ == 0) { /* only one subblock in core at once */
+        for (i = 0, maxbufsize = 0; i < num_blocks_; i++) {
+            if (Ia_size_[i] > maxrows) maxrows = Ia_size_[i];
+            if (Ib_size_[i] > maxcols) maxcols = Ib_size_[i];
+            if (Ia_size_[i])
+                blocks_[i] = (double **)malloc(Ia_size_[i] * sizeof(double *));
+            else
+                blocks_[i] = (double **)malloc(sizeof(double *));
+            bufsize = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+            if (bufsize > maxbufsize) maxbufsize = bufsize;
+        }
+        // CDS 11/5/97: Revise buffer_size, the size of the biggest buffer
+        // buffer_size = maxrows * maxcols;   Made buffers too large
+        buffer_size_ = maxbufsize;  // Why didn't I do it this way before?
+    }                               /* end icore==0 */
+    else {
+        printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
+        return;
+    }
 
-   // MLL 5/7/98: Want to know the subblock length of a vector //
-   //  if (CI_Params_->print_lvl) {
-   //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
-   //
-   //     }
-
-
+    // MLL 5/7/98: Want to know the subblock length of a vector //
+    //  if (CI_Params_->print_lvl) {
+    //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
+    //
+    //     }
 }
 
-
-CIvect::~CIvect()
-{
+CIvect::~CIvect() {
     if (num_blocks_) {
         if (buf_locked_) free(buffer_);
-        for (int i=0; i<num_blocks_; i++) {
-           free(blocks_[i]);
-           }
+        for (int i = 0; i < num_blocks_; i++) {
+            free(blocks_[i]);
+        }
 
         free(blocks_);
         free(zero_blocks_);
@@ -479,9 +468,7 @@ CIvect::~CIvect()
         free_int_matrix(decode_);
         free(offset_);
     }
-
 }
-
 
 /*
 ** CIvect::buf_malloc
@@ -499,15 +486,13 @@ CIvect::~CIvect()
 ** Returns:
 **    pointer to memory buffer (double *)
 */
-double * CIvect::buf_malloc(void)
-{
-   double *tmp;
+double *CIvect::buf_malloc(void) {
+    double *tmp;
 
-   tmp = init_array(buffer_size_);
+    tmp = init_array(buffer_size_);
 
-   return(tmp);
+    return (tmp);
 }
-
 
 /*
 ** CIvect::set_nvect
@@ -516,10 +501,7 @@ double * CIvect::buf_malloc(void)
 ** to call if it must be changed in an unusual way (i.e. resetting
 ** the Davidson subspace).
 */
-void CIvect::set_nvect(int i)
-{
-  nvect_ = i;
-}
+void CIvect::set_nvect(int i) { nvect_ = i; }
 /*
 ** CIvect::vdot
 **
@@ -528,73 +510,79 @@ void CIvect::set_nvect(int i)
 ** tvec and ovec are this and other vector numbers, respectively.
 */
 
-double CIvect::vdot(SharedCIVector b, int tvec, int ovec)
-{
+double CIvect::vdot(SharedCIVector b, int tvec, int ovec) {
+    tvec = (tvec == -1) ? cur_vect_ : tvec;
+    ovec = (ovec == -1) ? b->cur_vect_ : ovec;
 
-   tvec = (tvec == -1) ? cur_vect_ : tvec;
-   ovec = (ovec == -1) ? b->cur_vect_ : ovec;
+    double dotprod = 0.0;
+    if (Ms0_) {
+        for (int buf = 0; buf < buf_per_vect_; buf++) {
+            read(tvec, buf);
+            b->read(ovec, buf);
+            double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+            // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+            if (buf_offdiag_[buf]) tval *= 2.0;
+            dotprod += tval;
+        }
+    }
 
-   double dotprod = 0.0;
-   if (Ms0_) {
-      for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(tvec, buf);
-         b->read(ovec, buf);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
-          // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
-         if (buf_offdiag_[buf]) tval *= 2.0;
-         dotprod += tval;
-         }
-      }
+    else {
+        for (int buf = 0; buf < buf_per_vect_; buf++) {
+            read(tvec, buf);
+            b->read(ovec, buf);
+            double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+            // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
+            dotprod += tval;
+        }
+    }
 
-   else {
-      for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(tvec, buf);
-         b->read(ovec, buf);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
-         // dot_arr(buffer_, b->buffer_, buf_size_[buf], &tval);
-         dotprod += tval;
-         }
-      }
-
-   return dotprod;
+    return dotprod;
 }
-void CIvect::axpy(double a, SharedCIVector X, int yvec, int xvec)
-{
-   // Y += a * X
-   for (int buf=0; buf<buf_per_vect_; buf++) {
-      X->read(xvec, buf);
-      read(yvec, buf);
-      C_DAXPY(buf_size_[buf], a, X->buffer_, 1, buffer_, 1);
-      write(yvec, buf);
+void CIvect::axpy(double a, SharedCIVector X, int yvec, int xvec) {
+    // Y += a * X
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        X->read(xvec, buf);
+        read(yvec, buf);
+        C_DAXPY(buf_size_[buf], a, X->buffer_, 1, buffer_, 1);
+        write(yvec, buf);
     }
 }
 
-void CIvect::scale(double a, int vec)
-{
-   // this *= a
-   for (int buf=0; buf<buf_per_vect_; buf++) {
-      read(vec, buf);
-      C_DSCAL(buf_size_[buf], a, buffer_, 1);
-      write(vec, buf);
+void CIvect::scale(double a, int vec) {
+    // this *= a
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(vec, buf);
+        C_DSCAL(buf_size_[buf], a, buffer_, 1);
+        write(vec, buf);
     }
 }
 
-void CIvect::copy(SharedCIVector src, int tvec, int ovec)
-{
+void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        src->read(ovec, buf);
+        read(tvec, buf);
+        C_DCOPY(buf_size_[buf], src->buffer_, 1, buffer_, 1);
+        int blk = buf2blk_[buf];
+        if ((zero_blocks_[blk] == 0) || (src->zero_blocks_[blk] == 0))
+            zero_blocks_[blk] = 0;
+        write(tvec, buf);
+    }
+}
+void CIvect::divide(SharedCIVector denom, int tvec, int ovec) {
    for (int buf=0; buf<buf_per_vect_; buf++) {
-      src->read(ovec, buf);
+      denom->read(ovec, buf);
       read(tvec, buf);
-      C_DCOPY(buf_size_[buf], src->buffer_, 1, buffer_, 1);
-      int blk = buf2blk_[buf];
-      if ( (zero_blocks_[blk]==0) || (src->zero_blocks_[blk]==0) ) zero_blocks_[blk] = 0;
-      write(tvec, buf);
+      for (size_t i = 0; i < buf_size_[buf]; ++i) {
+          buffer_[i] /= denom->buffer_[i];
       }
+      write(tvec, buf);
+  }
 }
 
-boost::python::dict CIvect::numpy_array_interface()
-{
+boost::python::dict CIvect::numpy_array_interface() {
     // Why is this so complex other places?
-    if (!buf_locked_) throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
+    if (!buf_locked_)
+        throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
     boost::python::dict rv;
     rv["shape"] = boost::python::make_tuple(buffer_size_);
     rv["data"] = boost::python::make_tuple((long)buffer_, false);
@@ -604,116 +592,109 @@ boost::python::dict CIvect::numpy_array_interface()
     return rv;
 }
 
-double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum)
-{
+double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum) {
     double normsq = 0.0;
-    for (int buf=0; buf<buf_per_vect_; buf++) {
-      read(rootnum, buf);
-      Hd->read(0, buf);
-      // if (CI_Params_->precon >= PRECON_GEN_DAVIDSON)
-      // h0block_gather_vec(CI_VEC);
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(rootnum, buf);
+        Hd->read(0, buf);
 
-      double tval = 0.0;
-      for (size_t i=0; i<(size_t)buf_size_[buf]; i++){
-        double divisor = (lambda - Hd->buffer_[i]);
-        if (std::fabs(divisor) > HD_MIN){
-          buffer_[i] /= divisor;
-          tval += buffer_[i] * buffer_[i];
+        double tval = 0.0;
+        for (size_t i = 0; i < (size_t)buf_size_[buf]; i++) {
+            double divisor = (lambda - Hd->buffer_[i]);
+            if (std::fabs(divisor) > HD_MIN) {
+                buffer_[i] /= divisor;
+                tval += buffer_[i] * buffer_[i];
+            } else {
+                buffer_[i] = 0.0;
+            }
         }
-        else{
-          buffer_[i] = 0.0;
-        }
-      }
 
-      if (buf_offdiag_[buf]) tval *= 2.0;
-      normsq += tval;
-      write(rootnum, buf);
+        if (buf_offdiag_[buf]) tval *= 2.0;
+        normsq += tval;
+        write(rootnum, buf);
     }
     double norm = std::sqrt(normsq);
-    return(norm);
+    return (norm);
 }
 
-void CIvect::symnormalize(double a, int tvec)
-{
-    int i,j;
-    int blk,buf,irrep,ac,bc,len,upper;
-    double **mat,*arr, phase, tval;
+void CIvect::symnormalize(double a, int tvec) {
+    int i, j;
+    int blk, buf, irrep, ac, bc, len, upper;
+    double **mat, *arr, phase, tval;
 
     if (!Ms0_) {
         scale(a, tvec);
         return;
     }
 
-    if (!CI_Params_->Ms0) phase = 1.0;
-    else phase = ((int) CI_Params_->S % 2) ? -1.0 : 1.0;
+    if (!CI_Params_->Ms0)
+        phase = 1.0;
+    else
+        phase = ((int)CI_Params_->S % 2) ? -1.0 : 1.0;
 
     if (icore_ == 1) {
-
-      read(tvec, 0);
-      for (blk=0; blk<num_blocks_; blk++) {
-         ac = Ia_code_[blk];
-         bc = Ib_code_[blk];
-         mat = blocks_[blk];
-         if (ac == bc) { /* diagonal block */
-            for (i=0; i<Ia_size_[blk]; i++) {
-               mat[i][i] *= a;
-               for (j=0; j<i; j++) {
-                  mat[i][j] *= a;
-                  mat[j][i] = mat[i][j] * phase;
-                  }
-               }
+        read(tvec, 0);
+        for (blk = 0; blk < num_blocks_; blk++) {
+            ac = Ia_code_[blk];
+            bc = Ib_code_[blk];
+            mat = blocks_[blk];
+            if (ac == bc) { /* diagonal block */
+                for (i = 0; i < Ia_size_[blk]; i++) {
+                    mat[i][i] *= a;
+                    for (j = 0; j < i; j++) {
+                        mat[i][j] *= a;
+                        mat[j][i] = mat[i][j] * phase;
+                    }
+                }
             }
 
-         if (ac > bc) { /* off-diagonal block */
-            // xeax(blocks_[blk][0], a, Ia_size_[blk] * Ib_size_[blk]);
-            C_DSCAL(Ia_size_[blk] * Ib_size_[blk], a, blocks_[blk][0], 1);
-            upper = decode_[bc][ac];
-            if (upper >= 0) {
-               zero_blocks_[upper] = zero_blocks_[blk];
-               for (i=0; i<Ia_size_[blk]; i++) {
-                  for (j=0; j<Ib_size_[blk]; j++) {
-                     blocks_[upper][j][i] = mat[i][j] * phase;
-                     }
-                  }
-               }
+            if (ac > bc) { /* off-diagonal block */
+                // xeax(blocks_[blk][0], a, Ia_size_[blk] * Ib_size_[blk]);
+                C_DSCAL(Ia_size_[blk] * Ib_size_[blk], a, blocks_[blk][0], 1);
+                upper = decode_[bc][ac];
+                if (upper >= 0) {
+                    zero_blocks_[upper] = zero_blocks_[blk];
+                    for (i = 0; i < Ia_size_[blk]; i++) {
+                        for (j = 0; j < Ib_size_[blk]; j++) {
+                            blocks_[upper][j][i] = mat[i][j] * phase;
+                        }
+                    }
+                }
             }
-         } /* end loop over blocks */
+        } /* end loop over blocks */
 
-      write(tvec, 0);
+        write(tvec, 0);
 
     } /* end icore_ == 1 */
 
     else {
-        printf("(CIvect::symnorm): Only support incore=1 at the moment\n");
+        printf("(CIvect::symnorm): Only supports incore=1 at the moment\n");
         return;
     }
-
 }
 
-double CIvect::norm(int tvec)
-{
+double CIvect::norm(int tvec) {
+    tvec = (tvec == -1) ? cur_vect_ : tvec;
 
-   tvec = (tvec == -1) ? cur_vect_ : tvec;
+    double dotprod = 0.0;
+    if (Ms0_) {
+        for (int buf = 0; buf < buf_per_vect_; buf++) {
+            read(tvec, buf);
+            double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
+            if (buf_offdiag_[buf]) tval *= 2.0;
+            dotprod += tval;
+        }
+    }
 
-   double dotprod = 0.0;
-   if (Ms0_) {
-      for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(tvec, buf);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
-         if (buf_offdiag_[buf]) tval *= 2.0;
-         dotprod += tval;
-         }
-      }
+    else {
+        for (int buf = 0; buf < buf_per_vect_; buf++) {
+            read(tvec, buf);
+            double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
+            dotprod += tval;
+        }
+    }
 
-   else {
-      for (int buf=0; buf<buf_per_vect_; buf++) {
-         read(tvec, buf);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
-         dotprod += tval;
-         }
-      }
-
-   return std::sqrt(dotprod);
+    return std::sqrt(dotprod);
 }
 
 /*
@@ -750,27 +731,24 @@ double CIvect::operator*(CIvect &b)
    return(dotprod);
 }
 
+void CIvect::setarray(const double *a, BIGINT len) {
+    double *aptr;
+    BIGINT i;
 
-void CIvect::setarray(const double *a, BIGINT len)
-{
-   double *aptr;
-   BIGINT i;
+    if (len > vectlen_) len = vectlen_;
 
-   if (len > vectlen_) len = vectlen_;
+    if (icore_ == 1) {
+        aptr = buffer_;
+        for (i = 0; i < len; i++) {
+            aptr[i] = a[i];
+        }
+    }
 
-   if (icore_ == 1) {
-      aptr = buffer_;
-      for (i=0; i<len; i++) {
-         aptr[i] = a[i];
-         }
-      }
-
-   else {
-      outfile->Printf("(CIvect::setarray): Invalid icore option!\n");
-      outfile->Printf("   use only for icore_=1\n");
-      }
+    else {
+        outfile->Printf("(CIvect::setarray): Invalid icore option!\n");
+        outfile->Printf("   use only for icore_=1\n");
+    }
 }
-
 
 void CIvect::max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
       double *coeff, int neg_only)
@@ -1163,57 +1141,54 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
       }
 }
 
-void CIvect::print(std::string out)
-{
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
-   int block, buf, irrep;
+void CIvect::print() {
+    int block, buf, irrep;
 
-   if (cur_vect_ < 0 || cur_buf_ < 0) {
-      printf("(CIvect::print): Warning...printing unlocked vector\n");
-      printer->Printf( "[Can't print unlocked vector]\n");
-      }
+    if (cur_vect_ < 0 || cur_buf_ < 0) {
+        outfile->Printf("[Can't print unlocked vector]\n");
+    }
 
-   if (vectlen_ > 100000) {
-      printer->Printf( "Not printing long (>100000) vector...\n");
-      return;
-      }
+    if (vectlen_ > 100000) {
+        outfile->Printf("Not printing long (>100000) vector...\n");
+        return;
+    }
 
-   if (icore_ == 0) {
-      for (buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         block = buf2blk_[buf];
-         printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-            Ia_code_[block], Ib_code_[block]);
-         print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
-         }
-      }
+    if (icore_ == 0) {
+        for (buf = 0; buf < buf_per_vect_; buf++) {
+            read(cur_vect_, buf);
+            block = buf2blk_[buf];
+            outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                            Ia_code_[block], Ib_code_[block]);
+            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], "outfile");
+        }
+    }
 
-   else if (icore_ == 1) {
-      for (block=0; block<num_blocks_; block++) {
-         printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-            Ia_code_[block], Ib_code_[block]);
-         print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
-         }
-      }
+    else if (icore_ == 1) {
+        for (block = 0; block < num_blocks_; block++) {
+            outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                            Ia_code_[block], Ib_code_[block]);
+            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], "outfile");
+        }
+    }
 
-   else if (icore_ == 2) {
-      for (buf=0; buf<buf_per_vect_; buf++) {
-         read(cur_vect_, buf);
-         irrep = buf2blk_[buf];
-         for (block=first_ablk_[irrep]; block<=last_ablk_[irrep]; block++) {
-            printer->Printf( "\nBlock %2d, codes = (%2d,%2d)\n", block,
-               Ia_code_[block], Ib_code_[block]);
-            print_mat(blocks_[block], Ia_size_[block], Ib_size_[block], out);
+    else if (icore_ == 2) {
+        for (buf = 0; buf < buf_per_vect_; buf++) {
+            read(cur_vect_, buf);
+            irrep = buf2blk_[buf];
+            for (block = first_ablk_[irrep]; block <= last_ablk_[irrep];
+                 block++) {
+                outfile->Printf("\nBlock %2d, codes = (%2d,%2d)\n", block,
+                                Ia_code_[block], Ib_code_[block]);
+                print_mat(blocks_[block], Ia_size_[block], Ib_size_[block],
+                          "outfile");
             }
-         }
-      }
+        }
+    }
 
-   else {
-      printer->Printf( "(CIvect::print): unrecognized icore option\n");
-      }
+    else {
+        outfile->Printf("(CIvect::print): unrecognized icore option\n");
+    }
 }
-
 
 void CIvect::init_vals(int ivect, int nvals, int *alplist, int *alpidx,
       int *betlist, int *betidx, int *blknums, double *value)
@@ -1947,10 +1922,10 @@ int CIvect::write(int ivect, int ibuf)
    int blk;
    char key[20];
 
-   timer_on("CIWave: CIvect write");
-
+   // If we are just an incore buffer
    if (nunits_ < 1) return(1);
 
+   timer_on("CIWave: CIvect write");
 
    if (ivect >= maxvect_) throw PSIEXCEPTION("(CIvect::write): ivect >= maxvect");
    if (ivect > nvect_) throw PSIEXCEPTION("(CIvect::write): ivect > nvect");
@@ -2217,7 +2192,7 @@ void CIvect::zero(void)
 ** Returns: none
 */
 void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
-             double *buf1, int printflag, std::string out)
+             double *buf1, int printflag)
 {
    int buf, ivect, root;
    double tval;
@@ -2233,7 +2208,7 @@ void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
          write(nr, buf);
          if (printflag) {
             outfile->Printf( "\nSigma renormalized matrix\n");
-            print_buf("outfile");
+            print_buf();
             }
          } /* loop over buffers */
 }
@@ -2261,7 +2236,7 @@ void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
 */
 void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
       double *norm_arr, CIvect &C, CIvect &S, double *buf1, double *buf2,
-      int *root_converged, int printflag, std::string out, double *E_est)
+      int *root_converged, int printflag, double *E_est)
 {
    int buf, ivect, root, tmproot, converged=0, i;
    double tval;
@@ -2317,7 +2292,7 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
 
          if (printflag) {
             outfile->Printf( "\nfirst D matrix\n");
-            print_buf("outfile");
+            print_buf();
             }
          } /* loop over buffers */
 
@@ -2355,12 +2330,12 @@ double CIvect::dcalc2(int rootnum, double lambda, CIvect &Hd,
       if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
       else if (CI_Params_->hd_otf == TRUE) {
         if (CI_Params_->mpn)
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         else
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
 
@@ -2415,8 +2390,8 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
 
      for (buf=0; buf<buf_per_vect_; buf++) {
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         read(k-1, buf);
         norm = calc_mpn_vec(buffer_, (mp_energy[1]-CI_CalcInfo_->edrc),
@@ -2450,8 +2425,8 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
         S.buf_unlock();
 
         Hd.buf_lock(buf2);
-        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+        Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         norm = calc_mpn_vec(buffer_, CI_CalcInfo_->e0, Hd.buffer_, buf_size_[buf],
                 -1.0, 1.0, DIV);
@@ -2565,8 +2540,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       E2kp1 += tval;
       S.buf_unlock();
       Hd.buf_lock(buf2);
-      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-           CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+           CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
            CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
       xexy(Hd.buffer_, buffer_, buf_size_[buf]);
       dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
@@ -2718,7 +2693,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
 **
 ** Returns: none
 */
-void CIvect::print_buf(std::string out)
+void CIvect::print_buf()
 {
    int blk;
    int irrep;
@@ -3420,8 +3395,8 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
       /* outfile->Printf(" i = %d\n", i);
       outfile->Printf("In scale_sigma\n"); */
       Hd.buf_lock(buf1);
-      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-         CI_CalcInfo_->twoel_ints, CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
+      Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+         CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
          CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, ORB_ENER);
       C.buf_lock(buf2);
       C.read(i, buf);
@@ -3484,8 +3459,8 @@ double CIvect::dcalc_evangelisti(int rootnum, int num_vecs, double lambda,
       Hd.buf_lock(buf2);
       if (CI_Params_->hd_otf == FALSE) Hd.read(0, buf);
       else if (CI_Params_->hd_otf == TRUE) {
-          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints,
-             CI_CalcInfo_->twoel_ints, CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
+          Hd.diag_mat_els_otf(alplist, betlist, CI_CalcInfo_->onel_ints->pointer(),
+             CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->edrc, CI_CalcInfo_->num_alp_expl,
              CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
         }
       xpey(buf2, buf1, buf_size_[buf]); /* Hd -2*r_I*c_I + c_I*c_I */

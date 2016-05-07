@@ -109,14 +109,15 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = mat->numpy_dims();
-    if (numpy_dim){
-        int* numpy_shape = mat->numpy_shape();
+    std::vector<int> numpy_shape = mat->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
         rv["shape"] = boost::python::tuple(shape);
+        // rv["shape"] = numpy_shape;
     }
     else{
         int rows = mat->rowspi(irrep);
@@ -159,15 +160,14 @@ dict vector_array_interface(SharedVector vec, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = vec->numpy_dims();
-
-    if (numpy_dim){
-        int* numpy_shape = vec->numpy_shape();
+    std::vector<int> numpy_shape = vec->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
-        rv["shape"] = boost::python::make_tuple(shape);
+        rv["shape"] = boost::python::tuple(shape);
     }
     else {
         const int elements = vec->dim(irrep);
@@ -1008,11 +1008,20 @@ void export_mints()
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
 
+    /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
-                                            boost::shared_ptr<psi::detci::CIvect>, int, int) =
-                                            &detci::CIWavefunction::sigma;
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                    &detci::CIWavefunction::sigma;
+    void (detci::CIWavefunction::*py_ci_int_sigma)(boost::shared_ptr<psi::detci::CIvect>,
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int,
+                                    SharedVector, SharedVector) =
+                                    &detci::CIWavefunction::sigma;
 
-    // Looks like this has to go here.
+    typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          int, int);
+
     class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
         .def(init<boost::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
@@ -1021,17 +1030,22 @@ void export_mints()
         .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
         .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
+        .def("rotate_mcscf_integrals", &detci::CIWavefunction::rotate_mcscf_integrals, "docstring")
+        .def("pitzer_to_ci_order_onel", &detci::CIWavefunction::pitzer_to_ci_order_onel, "docstring")
+        .def("pitzer_to_ci_order_twoel", &detci::CIWavefunction::pitzer_to_ci_order_twoel, "docstring")
         .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
         .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
         .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
         .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
+        .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
-        .def("sigma", py_ci_sigma, "docstring");
+        .def("sigma", py_ci_sigma, "docstring")
+        .def("sigma", py_ci_int_sigma, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;

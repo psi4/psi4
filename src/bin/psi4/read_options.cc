@@ -431,16 +431,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     using these determinants.  This submatrix is used to accelerate
     convergence of the CI iterations in the OLSEN and MITRUSHENKOV
     iteration schemes, and also to find a good starting guess for the
-    SEM method if |detci__guess_vector| is ``H0_BLOCK``.  Defaults to 400.
+    SEM method if |detci__guess_vector| is ``H0_BLOCK``.  Defaults to 1000.
     Note that the program may change the given size for Ms=0 cases
     (|detci__ms0| is TRUE) if it determines that the H0 block includes only
     one member of a pair of determinants related by time reversal symmetry.
     For very small block sizes, this could conceivably eliminate the entire
     H0 block; the program should print warnings if this occurs. !expert -*/
-    options.add_int("H0_BLOCKSIZE", 400);
+    options.add_int("H0_BLOCKSIZE", 1000);
 
     /*- size of H0 block for initial guess !expert -*/
-    options.add_int("H0_GUESS_SIZE", 400);
+    options.add_int("H0_GUESS_SIZE", 1000);
 
     /*- Do use coupling block in preconditioner? !expert -*/
     options.add_bool("H0_BLOCK_COUPLING",false);
@@ -528,10 +528,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Guess vector type.  Accepted values are ``UNIT`` for a unit vector
     guess (|detci__num_roots| and |detci__num_init_vecs| must both be 1); ``H0_BLOCK`` to use
     eigenvectors from the H0 BLOCK submatrix (default); ``DFILE`` to use
-    NUM_ROOTS previously converged vectors in the D file; ``IMPORT`` to
-    import a guess previously exported from a CI computation
-    (possibly using a different CI space) !expert -*/
-    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE IMPORT");
+    NUM_ROOTS previously converged vectors in the D file; !expert -*/
+    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE");
 
     /*- The number of initial vectors to use in the CI iterative procedure.
     Defaults to the number of roots. !expert -*/
@@ -546,8 +544,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do restart a DETCI iteration that
     terminated prematurely? It assumes that the CI and sigma vectors are on
-    disk; the number of vectors specified by RESTART_VECS (obsolete) is collapsed
-    down to one vector per root. -*/
+    disk. -*/
     options.add_bool("RESTART",false);
 
     /*- Do invoke the FILTER_GUESS options that are used to filter out some
@@ -602,15 +599,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     collapsed subspace retains the best estimate of the CI vector for
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
-
-    /*- Do store converged vector(s) at the end of
-    the run?  The vector(s) is(are) stored in a transparent format such that
-    other programs can use it easily. The format is specified in
-    :source:`src/lib/libqt/slaterdset.h` . -*/
-    options.add_bool("VECS_WRITE", false);
-
-    /*- Number of vectors to export -*/
-    options.add_int("NUM_VECS_WRITE", 1);
 
     /*- Do compute the diagonal elements of the Hamiltonian matrix
     on-the-fly? Otherwise, a diagonal element vector is written
