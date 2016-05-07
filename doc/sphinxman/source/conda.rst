@@ -30,6 +30,8 @@ distribution with same package manger `conda
 
 * add-ons (plugins, extra features requiring Fortran compiler, etc.) can be made available as conda packages
 
+* develop |PSIfour| through plugins without a pre-existing development environment, see :ref:`sec:condaplugins`.
+
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:quickconda`.
@@ -188,14 +190,15 @@ The output for either of the installation commands above looks like the followin
         Manual:  http://psicode.org/psi4manual/master/index.html
         GitHub:  https://github.com/psi4/psi4/wiki
         Binary:  https://anaconda.org/psi4
-        Runtime Environment Diagnostic: /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/share/psi4/scripts/setenv.py
         Youtube: https://www.youtube.com/user/psitutorials
     
       For csh/tcsh command-line use, add to shell or ~/.tcshrc file:
+        unsetenv PSIDATADIR
         setenv PATH /theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/bin:$PATH
         setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
     
       For sh/bash command-line use, add to shell or ~/.bashrc file:
+        unset PSIDATADIR
         export PATH=/theoryfs2/ds/cdsgroup/miniconda/envs/tpsi4/bin:$PATH
         export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
     
