@@ -1492,19 +1492,24 @@ def _cbs_wrapper_methods(**kwargs):
 
 
 def _parse_cbs_gufunc_string(method_name):
-    method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', method_name)
-
-    if len(method_name_list) > 1:
+    method_name_list = re.split( """\+(?![^\[\]]*\]|[^\(\)]*\))""", method_name)
+    if len(method_name_list) > 2:
         raise ValidationError("CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")
 
     method_list = []
     basis_list = []
-    for method_str in method_name_list:
+    for num, method_str in enumerate(method_name_list):
         if (method_str.count("[") > 1) or (method_str.count("]") > 1):
             raise ValidationError("""CBS gufunc: Too many brackets given! %s """ % method_str)
 
         if method_str.count('/') != 1:
             raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
+
+        if num > 0:
+            if method_str[:2].lower() != 'd:':
+                raise ValidationError("""CBS gufunc: Delta method must start with 'D:'.""")
+            else:
+                method_str = method_str[2:]
         method, basis = method_str.split('/')
         method_list.append(method)
         basis_list.append(basis)
@@ -1529,14 +1534,12 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     molecule.update_geometry()
 
     # Sanitize total_method_name
+    label = total_method_name
     total_method_name = total_method_name.lower()
-    replacement_list = [(' ', ''), ('D-', 'D:'), ('{', '['), ('}', ']')]
-    for char, rep in replacement_list:
-        total_method_name = total_method_name.replace(char, rep)
+    total_method_name = total_method_name.replace(' ', '')
 
     # Split into components
     method_list, basis_list = _parse_cbs_gufunc_string(total_method_name)
-    total_method_name_list = re.split(r'/\+(?!([^\(]*\)|[^\[]*\]))$', total_method_name)
 
     # Single energy call?
     single_call = len(method_list) == 1
@@ -1569,27 +1572,18 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['verbose'] = cbs_verbose
 
     # Find method and basis
-    method1, basis_str1 = total_method_name_list[0].split('/')
-    if method1 in ['scf', 'hf']:
+    if method_list[0] in ['scf', 'hf']:
         cbs_kwargs['scf_wfn'] = method_list[0]
         cbs_kwargs['scf_basis'] = basis_list[0]
     else:
         cbs_kwargs['corl_wfn'] = method_list[0]
         cbs_kwargs['corl_basis'] = basis_list[0]
 
-    ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
+    if len(method_list) > 1:
+        cbs_kwargs['delta_wfn'] = method_list[1]
+        cbs_kwargs['delta_basis'] = basis_list[1]
 
-    # SCF/cc-pv[DTQ]Z + D:MP2/cc-pv[DT]Z + D:CCSD(T)
-    # MP2/cc-pv[DT]Z + D:CCSD(T)
-
-    # SCF/cc-pv[DT]Z
-    # scf_basis = [...]
-    # corl_wfn
-    # corl_basis
-    # delta_wfn
-    # delta_basis
-    # delta2_wfn
-    # delta2_basis
+    ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
     if return_wfn:
         return (ptype_value, wfn)
