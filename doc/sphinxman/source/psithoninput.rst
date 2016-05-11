@@ -407,7 +407,7 @@ many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.  
 
 As seen in the neon dimer example from the :ref:`sec:tutorial` section,
-the :py:func:`~wrappers.cp` wrapper provides automatic computation of 
+the :py:func:`~driver_nbody._nbody_gufunc` wrapper provides automatic computation of 
 counterpoise-corrected interaction energies between two molecules.  For
 example,::
 
@@ -416,7 +416,7 @@ example,::
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
 
-|PSIfour| also provides the :py:func:`~wrappers.complete_basis_set` wrapper,
+|PSIfour| also provides the :py:func:`~driver_cbs.complete_basis_set` wrapper,
 which automatically computes a complete-basis-set extrapolation (and
 automatically sets up the computations with different basis sets required to
 do the extrapolation).  For example,::
@@ -430,7 +430,7 @@ largest basis (cc-pVTZ).
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
-as provided by the :py:func:`~wrappers.database` wrapper.  For example,::
+as provided by the :py:func:`~wrapper_database.database` wrapper.  For example,::
 
   database('mp2','S22',cp=1,benchmark='S22B')
 
