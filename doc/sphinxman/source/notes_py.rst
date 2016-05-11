@@ -13,7 +13,7 @@ Notes on Options
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The one exception is documented for the *subset* option in the :py:func:`~wrappers.database`
+   The one exception is documented for the *subset* option in the :py:func:`~wrapper_database.database`
    function, where case structure must match the database file.
 
 .. _`op_py_bool`:

@@ -1,0 +1,22 @@
+#! MP2/aug-cc-pv[DT]Z many body energies of an arbitrary Helium complex
+#! Size vs cost tradeoff is rough here
+
+memory 500 mb
+
+
+molecule he_tetramer {
+He 0 0 0
+--
+He 0 0 4
+--
+He 0 4 0
+}
+
+set {
+    e_convergence 1.e-10
+    d_convergence 1.e-10
+}
+
+energy('MP2/aug-cc-pV[D,T]Z', molecule=he_tetramer, bsse_type=['cp', 'nocp', 'vmfc'])
+
+

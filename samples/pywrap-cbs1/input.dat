@@ -13,8 +13,12 @@ set {
     df_scf_guess false
 }
 
-e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
+e_cbs = energy(cbs,
+            scf_wfn='scf',
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme=driver_cbs.scf_xtpl_helgaker_3)
 
+compare_values(3.0, get_variable('cbs number'), 6, '[1b]')
 clean()
 
 
@@ -33,8 +37,14 @@ set {
     df_scf_guess true
 }
 
-e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
-
+e_cbs = energy(cbs,
+            corl_wfn='mp2',
+            corl_basis='cc-pV[TQ]Z',
+            corl_scheme=driver_cbs.corl_xtpl_helgaker_2,
+            delta_wfn='ccsd',
+            delta_basis='cc-pV[DT]Z',
+            delta_scheme=driver_cbs.corl_xtpl_helgaker_2)
+compare_values(3.0, get_variable('cbs number'), 6, '[2b]')
 clean()
 
 
@@ -48,13 +58,24 @@ set {
     df_scf_guess false
 }
 
-e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
+e_cbs = energy(cbs,
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme=driver_cbs.scf_xtpl_helgaker_3,
+            corl_wfn='ccsd',
+            corl_basis='aug-cc-pV[DT]Z',
+            corl_scheme=driver_cbs.corl_xtpl_helgaker_2)
 
-
+compare_values(3.0, get_variable('cbs number'), 6, '[3b]')
 clean()
 
 # Example with default extrapolation schemes
-e_cbs = cbs('mp2', corl_basis='cc-pv[dt]z', delta_wfn='mp5', delta_basis='cc-pVDZ')
+e_cbs = energy(cbs,
+            corl_wfn='mp2',
+            corl_basis='cc-pv[dt]z',
+            delta_wfn='mp5',
+            delta_basis='cc-pVDZ')
+
+compare_values(2.0, get_variable('cbs number'), 6, '[4b]')
 
 
 
