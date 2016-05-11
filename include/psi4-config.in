@@ -19,6 +19,9 @@ def main(argv):
     info['--top-level-psi4-dir'] = '@CMAKE_SOURCE_DIR@'
     info['--max-am-eri'] = '@LIBINT_OPT_AM@'
     info['--python-version'] = '@_PYTHON_VERSION@'
+    info['--python'] = '@PYTHON_INTERPRETER@'
+    info['--python-lib'] = '@PYTHON_LIBRARY@'
+    info['--has-fortran'] = '@FORTRAN_ENABLED@'
     info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
     info['--has-chemps2'] = '@ENABLE_CHEMPS2@'
     info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'  # aka PLUGIN_INCLUDES
@@ -26,6 +29,7 @@ def main(argv):
     info['--ldflags'] = '@CMAKE_CXX_LINK_FLAGS@'  # aka PLUGIN_LDFLAGS. skipping LIBC_INTERJECT
     info['--flags'] = '@CXX_FLAGS_PLUGIN@'  # aka PLUGIN_FLAGS
     info['--libs'] = sep_cmake_list('@EXTERNAL_LIBS@')
+    info['--extrafortranflags'] = '@CMAKE_EXTRA_Fortran_FLAGS@'
 
     if len(argv) == 1:
         retstr = """Build conditions of Psi4. Usage:
