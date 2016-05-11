@@ -194,15 +194,16 @@ def _nbody_gufunc(func, method_string, **kwargs):
     nbody_range = range(1, max_nbody + 1)
     fragment_range = range(1, max_frag + 1)
 
+    # Flip this off for now, needs more testing
     # If we are doing CP lets save them integrals
-    if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-        # Set to save RI integrals for repeated full-basis computations
-        ri_ints_io = psi4.get_global_option('DF_INTS_IO')
+    #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
+    #    # Set to save RI integrals for repeated full-basis computations
+    #    ri_ints_io = psi4.get_global_option('DF_INTS_IO')
 
-        # inquire if above at all applies to dfmp2 or just scf
-        psi4.set_global_option('DF_INTS_IO', 'SAVE')
-        psioh = psi4.IOManager.shared_object()
-        psioh.set_specific_retention(97, True)
+    #    # inquire if above at all applies to dfmp2 or just scf
+    #    psi4.set_global_option('DF_INTS_IO', 'SAVE')
+    #    psioh = psi4.IOManager.shared_object()
+    #    psioh.set_specific_retention(97, True)
 
 
     bsse_str = bsse_type_list[0]
@@ -281,9 +282,10 @@ def _nbody_gufunc(func, method_string, **kwargs):
             energies_dict[pair] = psi4.get_variable("CURRENT ENERGY")
             psi4.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % 
                                                                 (str(pair[0]), str(pair[1]), energies_dict[pair]))
-
-            if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-                psi4.set_global_option('DF_INTS_IO', 'LOAD')
+    
+            # Flip this off for now, needs more testing
+            #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
+            #    psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
             psi4.clean()
 
@@ -313,7 +315,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
     else:
         cp_ptype_by_level, cp_ptype_body_dict = None, None
         nocp_ptype_by_level, nocp_ptype_body_dict = None, None
-        vmfc_ptype_by_level= None
+        vmfc_ptype_body_dict = None
 
 
     # Sum up all of the levels

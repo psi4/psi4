@@ -1,17 +1,17 @@
-#! RHF aug-cc-pVQZ energy for the BH molecule, with Cartesian input.
+#! Extrapolated water energies
 import numpy as np
 memory 500 mb
 
 nucenergy_ref =   8.801465529972    #TEST
-scf_dz_ref =    -76.0213974638      #TEST
-scf_tzvp_ref =  -76.0531455176      #TEST
-scf_adtz_ref =  -76.059124724830    #TEST
-scf_atqz_ref =  -76.060985115229    #TEST
+scf_dz_ref    = -76.0213974638      #TEST
+scf_tzvp_ref  = -76.0531455176      #TEST
+scf_adtz_ref  = -76.059124724830    #TEST
+scf_atqz_ref  = -76.060985115229    #TEST
 scf_adtqz_ref = -76.061691654613    #TEST
-mp2_addz_ref =  -76.261216702741    #TEST
-mp2_atz_ref =   -76.341088480148    #TEST
-mp2_adtz_ref =  -76.3667778886      #TEST
-mp2_atqz_ref =  -76.4038500042      #TEST
+mp2_addz_ref  = -76.261216702741    #TEST
+mp2_atz_ref   = -76.341088480148    #TEST
+mp2_adtz_ref  = -76.3667778886      #TEST
+mp2_atqz_ref  = -76.4038500042      #TEST
 
 molecule h2o {
     O
@@ -19,8 +19,8 @@ molecule h2o {
     H 1 1.0 2 104.5
 }
 
-# Get a reasonable guess, to save some iterations
-set globals = {
+# Use DF to save some time
+set {
     scf_type      df
     mp2_type      df
     e_convergence 7
