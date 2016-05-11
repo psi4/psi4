@@ -229,6 +229,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
+    ${PROJECT_SOURCE_DIR}/src/bin
+    ${PROJECT_BINARY_DIR}/src/bin
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
 
@@ -319,6 +321,9 @@ endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 configure_file(include/psi4-config.in include/psi4-config.tmp)
 install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/psi4/)
+if(FORTRAN_ENABLED)
+    install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/FCMangle.h" include/psi4/)
+endif()
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include/psi4 FILES_MATCHING PATTERN "*.h")
 
 # Make known that the setup command given and the corresponding CMake
