@@ -29,6 +29,7 @@
 import sys
 import os
 import math
+import numpy as np
 from .exceptions import *
 
 
@@ -238,6 +239,28 @@ def compare_vectors(expected, computed, digits, label):
             expected.print_out()
             message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
             raise TestComparisonError(message)
+    success(label)
+
+def compare_arrays(expected, computed, digits, label):
+    """Function to compare two numpy arrays. Prints :py:func:`util.success`
+    when elements of vector *computed* match elements of vector *expected* to
+    number of *digits*. Performs a system exit on failure to match symmetry
+    structure, dimension, or element values. Used in input files in the test suite.
+
+    """
+
+    try:
+        shape1 = expected.shape
+        shape2 = computed.shape
+    except:
+        raise TestComparisonError("Input objects do not have a shape attribute.")
+
+    if shape1 != shape2: 
+        TestComparisonError("Input shapes do not match.")
+
+    if not np.allclose(expected, computed, atol=digits):
+        message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
+        raise TestComparisonError(message)
     success(label)
 
 

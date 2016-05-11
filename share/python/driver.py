@@ -1744,9 +1744,9 @@ def fchk(wfn, filename):
     fw.write(filename)
 
 
-def molden(wfn, filename):
+def molden(wfn, filename, density_a=None, density_b=None):
     """Function to write wavefunction information in *wfn* to *filename* in
-    molden format.
+    molden format. Will write natural orbitals from *density* (MO basis) if supplied.
 
     .. versionadded:: 0.5
        *wfn* parameter passed explicitly
@@ -1759,25 +1759,60 @@ def molden(wfn, filename):
     :type filename: string
     :param filename: destination file name for MOLDEN file
 
+    :type density_a: psi4.Matrix
+    :param density_a: density in the MO basis to build alpha NO's from (optional)
+
+    :type density_b: psi4.Matrix
+    :param density_b: density in the MO basis to build beta NO's from, assumes restricted if not supplied (optional)
+
     :examples:
 
     >>> # [1] Molden file for DFT calculation
     >>> E, wfn = energy('b3lyp', return_wfn=True)
     >>> molden(wfn, 'mycalc.molden')
 
-    """
-    try:
-        occa = wfn.occupation_a()
-        occb = wfn.occupation_a()
-    except AttributeError:
-        psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
-                       "Writing zero's for occupation numbers\n\n")
-        occa = psi4.Vector(wfn.nmopi())
-        occb = psi4.Vector(wfn.nmopi())
+    >>> # [2] Molden file for CI/MCSCF computation using NO roots
+    >>> E, wfn = energy('ci', return_wfn=True)
+    >>> molden(wfn, 'no_root1.molden', density_a=wfn.opdm(0, 0, "A", True))
 
-    # At this point occupation number will be difficult to build, lets set them to zero
-    mw = psi4.MoldenWriter(wfn)
-    mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+    """
+    if density_a:
+        nmopi = wfn.nmopi()
+        nsopi = wfn.nsopi()
+
+        NO_Ra = psi4.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
+        NO_occa = psi4.Vector(nmopi)
+        density_a.diagonalize(NO_Ra, NO_occa, psi4.DiagonalizeOrder.Descending)
+        NO_Ca = psi4.Matrix("Ca Natural Orbitals", nsopi, nmopi)
+        NO_Ca.gemm(False, False, 1.0, wfn.Ca(), NO_Ra, 0)
+
+        if density_b:
+            NO_Rb = psi4.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
+            NO_occa = psi4.Vector(nmopi)
+            density_b.diagonalize(NO_Ra, NO_occa, psi4.DiagonalizeOrder.Descending)
+            NO_Cb = psi4.Matrix("Cb Natural Orbitals", nsopi, nmopi)
+            NO_Cb.gemm(False, False, 1.0, wfn.Cb(), NO_Rb, 0)
+
+        else:
+            NO_occb = NO_occa
+            NO_Cb = NO_Ca
+        
+        mw = psi4.MoldenWriter(wfn)
+        mw.writeNO(filename, NO_Ca, NO_Cb, NO_occa, NO_occb)
+
+    else:
+        try:
+            occa = wfn.occupation_a()
+            occb = wfn.occupation_a()
+        except AttributeError:
+            psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
+                           "Writing zero's for occupation numbers\n\n")
+            occa = psi4.Vector(wfn.nmopi())
+            occb = psi4.Vector(wfn.nmopi())
+
+        # At this point occupation number will be difficult to build, lets set them to zero
+        mw = psi4.MoldenWriter(wfn)
+        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
 
 
 # Aliases
