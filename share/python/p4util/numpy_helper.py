@@ -51,65 +51,189 @@ def _find_dim(arr, ndim):
         raise ValidationError("Input array does not have a valid shape.")
 
 @classmethod
-def array_to_matrix(self, arr, name="New Matrix"):
+def _dimension_from_list(self, dims, name="New Dimension"):
     """
-    Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list)
+    Builds a psi4.Dimension object from a python list or tuple. If a dimension
+    object is passed a copy will be returned.
+    """
+
+    if isinstance(dims, (tuple, list)):
+        irreps = len(dims)
+    elif isinstance(dims, psi4.Dimension):
+        irreps = dims.n()
+    else:
+        raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
+
+    ret = psi4.Dimension(irreps, name)
+    for i in range(irreps):
+        ret[i] = dims[i]
+    return ret
+
+def _dimension_to_list(dim):
+    """
+    Converts a psi4.Dimension object to a tuple.
+    """
+
+    if isinstance(dim, (tuple, list)):
+        return tuple(dim)
+    
+    irreps = dim.n()
+    ret = []
+    for i in range(irreps):
+        ret.append(dim[i])
+    return tuple(ret)
+
+
+@classmethod
+def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
+    """
+    Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list).
+    
+    Parameters
+    ----------
+    arr : array or list of arrays
+        Numpy array or list of arrays to use as the data for a new psi4.Matrix
+    name : str
+        Name to give the new psi4.Matrix
+    dim1 : list, tuple, or psi4.Dimension (optional)
+        If a single dense numpy array is given, a dimension can be supplied to
+        apply irreps to this array. Note that this discards all extra information
+        given in the matrix besides the diagonal blocks determined by the passed
+        dimension.
+    dim2 :
+        Same as dim1 only if using a Psi4.Dimension object.
+
+    Returns
+    -------
+    ret : psi4.Vector or psi4.Matrix
+       Returns the given Psi4 object 
+
+    Notes
+    -----
+    This is a generalized function to convert a NumPy array to 
+
+    Examples
+    --------
+    
+    >>> data = np.random.rand(20)
+    >>> vector = array_to_matrix(data)
+
+    >>> irrep_data = [np.random.rand(2, 2), np.empty(shape=(0,3)), np.random.rand(4, 4)]
+    >>> matrix = array_to_matrix(irrep_data)
+    >>> print matrix.rowspi().to_tuple()
+    >>> (2, 0, 4)
     """
 
     # What type is it? MRO can help.
     arr_type = self.__mro__[0]
-    non_arr = np.array(None)
 
     # Irreped case
     if isinstance(arr, (list, tuple)):
+        if (dim1 is not None) or (dim2 is not None):
+            raise ValidationError("Array_to_Matrix: If passed input is list of arrays dimension cannot be specified.")
+
         irreps = len(arr)
         if arr_type == psi4.Matrix:
-            dim1 = psi4.Dimension(irreps)
-            dim2 = psi4.Dimension(irreps)
+            sdim1 = psi4.Dimension(irreps)
+            sdim2 = psi4.Dimension(irreps)
         
             for i in range(irreps):
                 d1, d2 = _find_dim(arr[i], 2)
-                dim1[i] = d1
-                dim2[i] = d2
+                sdim1[i] = d1
+                sdim2[i] = d2
 
-            ret = self(name, dim1, dim2)
+            ret = self(name, sdim1, sdim2)
 
         elif arr_type == psi4.Vector:
-            dim1 = psi4.Dimension(irreps)
+            sdim1 = psi4.Dimension(irreps)
 
             for i in range(irreps):
                 d1 = _find_dim(arr[i], 1)
-                dim1[i] = d1[0]
+                sdim1[i] = d1[0]
 
-            ret = self(name, dim1)
+            ret = self(name, sdim1)
         else:
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
-        views = []
-        for interface in ret.array_interfaces():
+        for interface, vals in zip(ret.array_interfaces(), arr):
             if 0 in interface.__array_interface__["shape"]:
-                views.append(None)
+                continue
             else:
-                views.append(np.asarray(interface))
-
-        for i in range(irreps):
-            if views[i] is None: continue
-            views[i][:] = arr[i]
+                view = np.asarray(interface)
+                view[:] = vals
 
         return ret            
 
-    # No irreps
+    # No irreps implied by list
     else:
         if arr_type == psi4.Matrix:
-            ret = self(name, arr.shape[0], arr.shape[1])
+
+            # Build an irreped array back out
+            if dim1 is not None:
+                if dim2 is None:
+                    raise ValidationError ("Array_to_Matrix: If dim1 is supplied must supply dim2 also")
+    
+                dim1 = psi4.Dimension.from_list(dim1) 
+                dim2 = psi4.Dimension.from_list(dim2) 
+
+                if dim1.n() != dim2.n():
+                    raise ValidationError("Array_to_Matrix: Length of passed dim1 must equal length of dim2.")
+            
+                ret = self(name, dim1, dim2)
+            
+                start1 = 0
+                start2 = 0
+                for num, interface in enumerate(ret.array_interfaces()):
+                    d1 = dim1[num]
+                    d2 = dim2[num]
+                    if (d1 == 0) or (d2 == 0):
+                        continue
+
+                    view = np.asarray(interface)
+                    view[:] = arr[start1:start1 + d1, start2:start2 + d2]
+                    start1 += d1 
+                    start2 += d2
+
+                return ret
+        
+            # Simple case without irreps
+            else:
+                ret = self(name, arr.shape[0], arr.shape[1])
+                ret_view = np.asarray(ret)
+                ret_view[:] = arr
+                return ret
+
         elif arr_type == psi4.Vector:
-            ret = self(name, arr.shape[0])
+            # Build an irreped array back out
+            if dim1 is not None:
+                if dim2 is not None:
+                    raise ValidationError ("Array_to_Matrix: If dim2 should not be supplied for 1D vectors.")
+    
+                dim1 = psi4.Dimension.from_list(dim1) 
+                ret = self(name, dim1)
+
+                start1 = 0
+                for num, interface in enumerate(ret.array_interfaces()):
+                    d1 = dim1[num]
+                    if (d1 == 0):
+                        continue
+
+                    view = np.asarray(interface)
+                    view[:] = arr[start1:start1 + d1]
+                    start1 += d1 
+
+                return ret
+        
+            # Simple case without irreps
+            else:
+                ret = self(name, arr.shape[0])
+                ret_view = np.asarray(ret)
+                ret_view[:] = arr
+                return ret
+
         else:
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
-        ret_view = np.asarray(ret)
-        ret_view[:] = arr
-        return ret
 
 def to_array(matrix, copy=True, dense=False):
     """
@@ -156,21 +280,22 @@ def to_array(matrix, copy=True, dense=False):
         ndim1 = np.sum(dim1)
         ndim2 = np.sum(dim2)
         if ret_type == '1D':
-            dense_ret = np.empty(shape=(ndim1))
+            dense_ret = np.zeros(shape=(ndim1))
             start = 0
             for d1, arr in zip(dim1, ret):
                 if d1 == 0: continue
                 dense_ret[start: start + d1] = arr
                 start += d1
         else:
-            dense_ret = np.empty(shape=(ndim1, ndim2))
+            dense_ret = np.zeros(shape=(ndim1, ndim2))
             start1 = 0
             start2 = 0
             for d1, d2, arr in zip(dim1, dim2, ret):
                 if d1 == 0: continue
+
                 dense_ret[start1: start1 + d1, start2: start2 + d2] = arr
                 start1 += d1
-                start1 += d2
+                start2 += d2
 
         return dense_ret
 
@@ -188,3 +313,7 @@ psi4.Matrix.to_array = to_array
 # Vector attributes
 psi4.Vector.from_array = array_to_matrix
 psi4.Vector.to_array = to_array
+
+# Dimension attributes
+psi4.Dimension.from_list = _dimension_from_list
+psi4.Dimension.to_list = _dimension_to_list
