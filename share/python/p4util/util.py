@@ -253,7 +253,7 @@ def compare_arrays(expected, computed, digits, label):
         shape1 = expected.shape
         shape2 = computed.shape
     except:
-        TestComparisonError("Input objects do not have a shape attribute.")
+        raise TestComparisonError("Input objects do not have a shape attribute.")
 
     if shape1 != shape2: 
         TestComparisonError("Input shapes do not match.")
