@@ -33,6 +33,7 @@ Place in this file quickly defined procedures such as
    - simple modifications to existing methods
 
 """
+from __future__ import print_function
 from __future__ import absolute_import
 import re
 import os
