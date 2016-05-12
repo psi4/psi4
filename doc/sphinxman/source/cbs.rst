@@ -18,7 +18,9 @@ Complete Basis Set
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-.. autofunction:: wrappers.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
+.. autofunction:: driver_cbs.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
+
+.. note:: Presently (May 2016), only two of the five delta possibilities are active. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.
 
 .. index::
    pair: cbs(); output
@@ -102,13 +104,13 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: wrappers.highest_1
+.. autofunction:: driver_cbs.xtpl_highest_1
 
-.. autofunction:: wrappers.scf_xtpl_helgaker_2
+.. autofunction:: driver_cbs.scf_xtpl_helgaker_2
 
-.. autofunction:: wrappers.scf_xtpl_helgaker_3
+.. autofunction:: driver_cbs.scf_xtpl_helgaker_3
 
-.. autofunction:: wrappers.corl_xtpl_helgaker_2
+.. autofunction:: driver_cbs.corl_xtpl_helgaker_2
 
 Aliases
 ^^^^^^^

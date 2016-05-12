@@ -50,4 +50,4 @@ add_custom_command(
 )
 
 add_custom_target(libderiv DEPENDS libderiv.compiled int)
-install_list_FILES("${PROJECT_BINARY_DIR}/src/lib/libderiv/libderiv.h" include/psi4/libderiv)
+install_list_FILES("${PROJECT_BINARY_DIR}/src/lib/libderiv/libderiv.h" include/psi4/lib/libderiv)

@@ -8,13 +8,13 @@
 
 .. _`sec:db()`:
 
-Database, :py:func:`~wrappers.database`
-=======================================
+Database, :py:func:`~wrapper_database.database`
+===============================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-.. autofunction:: wrappers.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
+.. autofunction:: wrapper_database.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
 
 .. index:: 
    pair: database(); output
