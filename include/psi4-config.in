@@ -19,7 +19,7 @@ def main(argv):
     info['--top-level-psi4-dir'] = '@CMAKE_SOURCE_DIR@'
     info['--max-am-eri'] = '@LIBINT_OPT_AM@'
     info['--python-version'] = '@_PYTHON_VERSION@'
-    info['--python'] = '@PYTHON_INTERPRETER@'
+    info['--python'] = '@PYTHON_EXECUTABLE@'
     info['--python-lib'] = '@PYTHON_LIBRARY@'
     info['--has-fortran'] = '@FORTRAN_ENABLED@'
     info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
