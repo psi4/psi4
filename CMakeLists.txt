@@ -229,8 +229,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/lib
     ${PROJECT_BINARY_DIR}/src/lib
-    ${PROJECT_SOURCE_DIR}/src/bin
-    ${PROJECT_BINARY_DIR}/src/bin
     ${PROJECT_BINARY_DIR}/interfaces/include
 )
 
@@ -316,7 +314,7 @@ if(ENABLE_CONDA_DEST)
         set(CXX_FLAGS_PLUGIN "-DRESTRICT=__restrict__ -Xlinker -export-dynamic -fPIC -std=c++11 -fopenmp -O3 -DNDEBUG -Wno-unused")
     endif()
     set(PLUGIN_LDFLAGS "-Wl,-rpath,\${MCONDA}/lib/")
-    set(PLUGIN_INCLUDE_DIRECTORIES "-I\${MCONDA}/include/ -I\${MCONDA}/include/psi4 -I\${MCONDA}/include/python2.7 -I/usr/include")
+    set(PLUGIN_INCLUDE_DIRECTORIES "-I\${MCONDA}/include/ -I\${MCONDA}/include/psi4 -I\${MCONDA}/include/psi4/lib -I\${MCONDA}/include/python2.7 -I/usr/include")
 endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 configure_file(include/psi4-config.in include/psi4-config.tmp)
