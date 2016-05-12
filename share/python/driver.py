@@ -442,7 +442,7 @@ def energy(name, **kwargs):
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
 
     for postcallback in hooks['energy']['post']:
-        postcallback(lowername, **kwargs)
+        postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
