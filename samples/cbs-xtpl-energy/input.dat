@@ -1,4 +1,4 @@
-#! RHF aug-cc-pVQZ energy for the BH molecule, with Cartesian input.
+#! Extrapolated water energies
 import numpy as np
 memory 500 mb
 
@@ -9,8 +9,8 @@ molecule h2o {
     H 1 1.0 2 104.5
 }
 
-# Get a reasonable guess, to save some iterations
-set globals = {
+# Use DF to save some time
+set {
     scf_type      df
     mp2_type      df
     e_convergence 7
