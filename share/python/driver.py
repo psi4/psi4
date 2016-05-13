@@ -1082,7 +1082,7 @@ def optimize(name, **kwargs):
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(moleculeclone.geometry())
             for postcallback in hooks['optimize']['post']:
-                postcallback(lowername, **kwargs)
+                postcallback(lowername, wfn=wfn, **kwargs)
             psi4.clean()
 
             # S/R: Clean up opt input file
@@ -1644,7 +1644,7 @@ def frequency(name, **kwargs):
     psi4.thermo(wfn, wfn.frequencies())
 
     for postcallback in hooks['frequency']['post']:
-        postcallback(lowername, **kwargs)
+        postcallback(lowername, wfn=wfn, **kwargs)
 
     # Reset old global basis if needed
     if not old_global_basis is None:
