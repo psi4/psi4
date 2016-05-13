@@ -100,7 +100,10 @@ try:
 
     # major-minor-patch
     if len(fields) == 2:
-        mmp = '.'.join(fields)
+        if fields[0].endswith('rc'):
+            mmp = ''.join(fields)
+        else:
+            mmp = '.'.join(fields)
     else:
         mmp = ''
 
