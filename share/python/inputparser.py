@@ -603,7 +603,7 @@ def process_input(raw_input, print_level=1):
 
     """
     # Check if the infile is actually an outfile (yeah we did)
-    psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
+    psi4_id = re.compile(r'Psi4: An Open-Source Ab Initio Electronic Structure Package')
     if re.search(psi4_id, raw_input):
         input_lines = raw_input.split("\n")
         input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')

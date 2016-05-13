@@ -34,7 +34,7 @@
 #include <libpsio/psio.h>
 
 #ifndef HAVE_AMBIT
-#error PSI4 was not compiled with Ambit support.
+#error Psi4 was not compiled with Ambit support.
 #endif
 
 #include <ambit/tensor.h>

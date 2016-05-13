@@ -34,7 +34,7 @@ from .psivarrosetta import useme2psivar
 
 
 def harvest_output(outtext):
-    """Function to separate portions of a PSI4 output file *outtext*.
+    """Function to separate portions of a Psi4 output file *outtext*.
 
     """
     psivar = PreservingDict()
@@ -91,7 +91,7 @@ def harvest_output(outtext):
                 psivar['%s' % (submobj.group(1))] = submobj.group(2)
 
     # Process Completion
-    mobj = re.search(r'PSI4 exiting successfully. Buy a developer a beer!',
+    mobj = re.search(r'Psi4 exiting successfully. Buy a developer a beer!',
         outtext, re.MULTILINE)
     if mobj:
         psivar['SUCCESS'] = True

@@ -34,7 +34,7 @@ from .pdict import PreservingDict
 
 
 def harvest_output(outtext):
-    """Function to separate portions of a PSI4 output file *outtext*.
+    """Function to separate portions of a Psi4 output file *outtext*.
 
     """
     psivar = PreservingDict()
