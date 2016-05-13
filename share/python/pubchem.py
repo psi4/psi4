@@ -38,7 +38,7 @@ from __future__ import print_function
            entry["PubChemObj"]  => instance of PubChemObj for this compound
 
            entry["PubChemObj"].getMoleculeString()   => returns a string compatible
-                                                        with PSI4's Molecule creation
+                                                        with Psi4's Molecule creation
 
 """
 from __future__ import absolute_import

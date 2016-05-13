@@ -115,7 +115,7 @@ void HF::frac()
 
             // Throw if the user is insane
             if (val < 0.0)
-                throw PSIEXCEPTION("Fractional Occupation SCF: PSI4 is not configured for positrons. Please annihilate and start again");             
+                throw PSIEXCEPTION("Fractional Occupation SCF: Psi4 is not configured for positrons. Please annihilate and start again");
 
             outfile->Printf( "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
         }

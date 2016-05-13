@@ -23,7 +23,7 @@
 #define PLUGIN_OBJDIR "@PROJECT_BINARY_DIR@"
 #define PLUGIN_LDFLAGS "@PLUGIN_LDFLAGS@"
 
-/* The PSI4 Datadir */
+/* The Psi4 Datadir */
 #define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/share/psi4"
 
 /* MPI? */

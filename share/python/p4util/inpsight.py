@@ -428,7 +428,7 @@ class InPsight:
 
         # Write the pov.ini file
         fh = open(ini_filename,'w')
-        fh.write('; InPsight: visualization in PSI4\n')
+        fh.write('; InPsight: visualization in Psi4\n')
         fh.write(';  by Rob Parrish\n')
         fh.write('; .pov.ini file\n')
         fh.write('; Created %s\n' % str(date.today()))
@@ -451,7 +451,7 @@ class InPsight:
         # Write the pov file
         fh = open(pov_filename, 'w')
 
-        fh.write('// InPsight: visualization in PSI4\n')
+        fh.write('// InPsight: visualization in Psi4\n')
         fh.write('//  by Rob Parrish\n')
         fh.write('// .pov file (adopted from Jmol)\n')
         fh.write('// Created %s\n' % str(date.today()))
@@ -551,7 +551,7 @@ class InPsight:
 
         # Write the pov.ini file
         fh = open(ini_filename,'w')
-        fh.write('; InPsight: visualization in PSI4\n')
+        fh.write('; InPsight: visualization in Psi4\n')
         fh.write(';  by Rob Parrish\n')
         fh.write('; .pov.ini file\n')
         fh.write('; Created %s\n' % str(date.today()))
@@ -574,7 +574,7 @@ class InPsight:
         # Write the pov file
         fh = open(pov_filename, 'w')
 
-        fh.write('// InPsight: visualization in PSI4\n')
+        fh.write('// InPsight: visualization in Psi4\n')
         fh.write('//  by Rob Parrish\n')
         fh.write('// .pov file (adopted from Jmol)\n')
         fh.write('// Created %s\n' % str(date.today()))
