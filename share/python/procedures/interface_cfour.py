@@ -164,7 +164,7 @@ def run_cfour(name, **kwargs):
   [1] Supply a GENBAS by placing it in PATH or PSIPATH
       [1a] Use cfour {} block with molecule and basis directives.
       [1b] Use molecule {} block and CFOUR_BASIS keyword.
-  [2] Allow PSI4's internal basis sets to convert to GENBAS
+  [2] Allow Psi4's internal basis sets to convert to GENBAS
       [2a] Use molecule {} block and BASIS keyword.
 
 """
@@ -444,7 +444,7 @@ def write_zmat(name, dertype):
             molecule.reset_point_group('c1')  # need basis printed for *every* atom
             with open('GENBAS', 'w') as cfour_basfile:
                 cfour_basfile.write(psi4.BasisSet.pyconstruct_orbital(molecule, "BASIS", psi4.get_global_option('BASIS')).genbas())
-            psi4.print_out('  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
+            psi4.print_out('  GENBAS loaded from Psi4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
             molecule.reset_point_group(user_pg)
             molecule.update_geometry()
             bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())

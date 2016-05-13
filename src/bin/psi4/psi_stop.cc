@@ -56,8 +56,8 @@ int psi_stop(FILE* infile, std::string OutFileRMR, char* psi_file_prefix)
   free(psi_file_prefix);
  
   // Success Flag, so a user can tell via grep that the outfile worked (or at least didn't segfault)
-  // With a little PSI4 flavor to it. 
-  outfile->Printf( "\n*** PSI4 exiting successfully. Buy a developer a beer!\n");
+  // With a little Psi4 flavor to it. 
+  outfile->Printf( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n");
 
   
   //if (outfile)

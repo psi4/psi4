@@ -138,7 +138,7 @@ void PSIOManager::print(std::string out)
    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             boost::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("                    --------------------------------\n");
-    printer->Printf("                    ==> PSI4 Current File Status <==\n");
+    printer->Printf("                    ==> Psi4 Current File Status <==\n");
     printer->Printf( "                    --------------------------------\n");
     printer->Printf( "\n");
 

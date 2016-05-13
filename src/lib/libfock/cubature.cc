@@ -2317,7 +2317,7 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[])
     };
 
     if (n > TABSIZE)
-        throw PSIEXCEPTION("PSI4 does not support MultiExp radial grids for n > 200.");
+        throw PSIEXCEPTION("Psi4 does not support MultiExp radial grids for n > 200.");
 
     double a[n], bhack[n+1];
     double *const b = &bhack[1]; // Note that b[n-1] is unused.

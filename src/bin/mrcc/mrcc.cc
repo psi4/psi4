@@ -577,7 +577,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options& options, c
 {
     tstart();
 
-    outfile->Printf( "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||
@@ -638,7 +638,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
 {
     tstart();
 
-    outfile->Printf( "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||

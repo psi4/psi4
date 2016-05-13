@@ -283,7 +283,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 
     FILE* fh = fopen(ss.str().c_str(), "w");
     // Two comment lines
-    fprintf(fh, "PSI4 Gaussian Cube File.\n");
+    fprintf(fh, "Psi4 Gaussian Cube File.\n");
     fprintf(fh, "Property: %s\n", name.c_str());
 
     // Number of atoms plus origin of data

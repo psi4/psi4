@@ -1131,7 +1131,7 @@ class BasisSet(object):
         for uA in range(self.molecule.nunique()):
             A = self.molecule.unique(uA)
             text += """%s:P4_%d\n""" % (self.molecule.symbol(A), A + 1)
-            text += """PSI4 basis %s for element %s atom %d\n\n""" % \
+            text += """Psi4 basis %s for element %s atom %d\n\n""" % \
                 (self.name.upper(), self.molecule.symbol(A), A + 1)
 
             first_shell = self.center_to_shell[A]

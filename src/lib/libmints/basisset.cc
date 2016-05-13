@@ -326,7 +326,7 @@ std::string BasisSet::print_detail_cfour() const
 
         sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A+1);
         ss << buffer;
-        sprintf(buffer, "PSI4 basis %s for element %s atom %d\n\n",
+        sprintf(buffer, "Psi4 basis %s for element %s atom %d\n\n",
                 boost::to_upper_copy(name_).c_str(), molecule_->symbol(A).c_str(), A+1);
         ss << buffer;
 

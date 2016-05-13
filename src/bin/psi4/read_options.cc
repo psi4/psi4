@@ -137,7 +137,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   describing the origin about which one-electron properties are computed. -*/
   options.add("PROPERTIES_ORIGIN", new ArrayType());
 
-  /*- PSI4 dies if energy does not converge. !expert -*/
+  /*- Psi4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
   /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
   options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
@@ -2810,7 +2810,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
-          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling Psi4 then
           that value is used. When set, this option overrides everything. Be aware
           the ``-n`` command-line option described in section :ref:`sec:threading`
           does not affect MRCC.
@@ -2988,10 +2988,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       `CFOUR Website <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_
       and extended by interface comments. -*/
 
-      /*- SUBSECTION PSI4 Control of CFOUR -*/
+      /*- SUBSECTION Psi4 Control of CFOUR -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling CFOUR.
-          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling Psi4 then
           that value is used. When set, this option overrides everything. Be aware
           the ``-n`` command-line option described in section :ref:`sec:threading`
           does not affect CFOUR.
@@ -3117,7 +3117,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       arbitrary basis (see non-standard basis-set input). However, the
       latter must be available in the supplied GENBAS file. As standard
       basis sets, currently the following are available.
-      **PSI4 Interface:** Recommended to use instead |mints__basis| for
+      **Psi4 Interface:** Recommended to use instead |mints__basis| for
       larger basis set selection and greater flexibility. When |mints__basis|
       used, |cfour__cfour_spherical| is set appropriately. -*/
       options.add_str("CFOUR_BASIS", "SPECIAL", "STO-3G 3-21G 4-31G 6-31G 6-31G* 6-31G** 6-311G 6-311G* 6-311G** DZ DZP TZ TZP TZ2P PVDZ PVTZ PVQZ PV5Z PV6Z PCVDZ PCVTZ PCVQZ PCV5Z PCV6Z AUG-PVDZ AUG-PVTZ AUG-PVTZ AUG-PVQZ AUG-PV5Z AUG-PV6Z D-AUG-PVDZ D-AUG-PVTZ D-AUG-PVQZ D-AUG-PV5Z D-AUG-PV6Z cc-pVDZ cc-pVTZ cc-pVQZ cc-pV5Z cc-pV6Z cc-pCVDZ cc-pCVTZ cc-pCVQZ cc-pCV5Z cc-pCV6Z PWCVDZ PWCVTZ PWCVQZ PWCV5Z PWCV6Z PwCVDZ PwCVTZ PwCVQZ PwCV5Z PwCV6Z svp dzp tzp tzp2p qz2p pz3d2f 13s9p4d3f WMR ANO0 ANO1 ANO2 EVEN_TEMPERED SPECIAL");
@@ -3140,7 +3140,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //BUFFERSIZE
 
       /*- Defines the level of calculation to be performed.
-      **PSI4 Interface:** Keyword set from argument of computation
+      **Psi4 Interface:** Keyword set from argument of computation
       command: CCSD if ``energy('c4-ccsd')``, *etc.* See :ref:`Energy
       (CFOUR) <table:energy_cfour>` and :ref:`Gradient (CFOUR)
       <table:grad_cfour>`. for all available. -*/
@@ -3189,7 +3189,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       gradients. That is, if you are doing a geometry optimization with
       ROHF as your reference wave function then it is safe to use the
       option VCC.
-      **PSI4 Interface:** Keyword set according to best practice for the
+      **Psi4 Interface:** Keyword set according to best practice for the
       computational method |cfour__cfour_calc_level|, reference
       |cfour__cfour_reference| (NYI) and derivative level
       |cfour__cfour_deriv_level| according to Table :ref:`Best Practices
@@ -3200,7 +3200,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
 
       /*- Specifies the molecular charge.
-      **PSI4 Interface:** Keyword set from active molecule. -*/
+      **Psi4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_CHARGE", 0);
 
       /*- Specifies the convergence threshold as :math:`10^{-N}` for CIS
@@ -3236,7 +3236,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       internal coordinates defined implicitly by supplying Cartesian
       coordinates. Note that geometry optimizations are currently only
       possible for INTERNAL and XYZ2INT.
-      **PSI4 Interface:** Keyword set from active molecule, always CARTESIAN.
+      **Psi4 Interface:** Keyword set from active molecule, always CARTESIAN.
       Above restrictions on geometry optimizations no longer apply. -*/
       options.add_str("CFOUR_COORDINATES", "INTERNAL", "INTERNAL CARTESIAN XYZINT");
 
@@ -3286,7 +3286,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       that this keyword usually needs not be set in any calculation since
       it is automatically set if the appropriate other options in the
       CFOUR namelist are turned on.
-      **PSI4 Interface:** Keyword set from type of computation command:
+      **Psi4 Interface:** Keyword set from type of computation command:
       ZERO if :py:func:`~driver.energy`, FIRST if
       :py:func:`~driver.gradient` or :py:func:`~driver.optimization`,
       *etc.* -*/
@@ -3443,7 +3443,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Tells the program, in the course of a geometry optimization, to
       calculate the Hessian explicitly every N cycles. 0 means never
       calculated explicitly.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__full_hess_every|. -*/
@@ -3615,7 +3615,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the convergence criterion for geometry optimization.
       The optimization terminates when the RMS gradient is below $10^{-N}$
       Hartree/bohr, where $N$ is the specified value.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__g_convergence| =CFOUR, which should be equivalent
@@ -3624,7 +3624,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies largest step (in millibohr) which is allowed in
       geometry optimizations.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__intrafrag_step_limit|. -*/
@@ -3646,7 +3646,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("CFOUR_GEO_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT ENERONLY");
 
       /*- Specifies the maximum allowed number of geometry optimization cycles.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__geom_maxiter|. -*/
@@ -3772,14 +3772,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (default) or in the units specified via the keyword |cfour__cfour_mem_unit|.
       Default: 100 000 000 (approximately 381 or 762 MB for 32 or 64 bit
       machines, respectively).
-      **PSI4 Interface:** Keyword set in MB from memory input command when
+      **Psi4 Interface:** Keyword set in MB from memory input command when
       given. -*/
       options.add_int("CFOUR_MEMORY_SIZE", 100000000);
 
       /*- Specifies the units in which the amount of requested core memory
       is given. Possible choices are INTEGERWORDS (default), kB, MB, GB,
       and TB.
-      **PSI4 Interface:** Keyword set from memory input command when
+      **Psi4 Interface:** Keyword set from memory input command when
       given, always MB. -*/
       options.add_str("CFOUR_MEM_UNIT", "INTEGERWORDS", "INTEGERWORDS KB MB GB TB");
 
@@ -3794,7 +3794,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       for minimum (very efficient minimization scheme, particularly if the
       Hessian is available); 4 is currently unavailable;
       SINGLE_POINT (=5) is a single point calculation.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__opt_type| and |optking__step_type|. -*/
@@ -3805,7 +3805,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CFOUR_MRCC", false);
 
       /*- Specifies the spin multiplicity.
-      **PSI4 Interface:** Keyword set from active molecule. -*/
+      **Psi4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_MULTIPLICITY", 1);
 
       /*- Calculation of non-adiabatic coupling. In case of ON (=1) the
@@ -3826,7 +3826,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       plugging away (this is strongly discouraged!); and if RFA
       (=2), the keyword |cfour__cfour_geo_method| is switched to RFA internally and the
       optimization is continued.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead. -*/
       options.add_str("CFOUR_NEGEVAL", "ABORT", "ABORT SWITCH RFA");
@@ -3874,7 +3874,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       usually converge to the lowest energy HF-SCF solution, but this
       should not be blindly assumed.  (Default: The occupation is given
       by the core Hamiltonian initial guess).
-      **PSI4 Interface:** The arrays above are specified in PSI as
+      **Psi4 Interface:** The arrays above are specified in PSI as
       (whitespace-tolerant) [3,1,1,0] and [[3,1,1,0],[3,0,1,0]]. -*/
       options.add("CFOUR_OCCUPATION", new ArrayType());
 
@@ -4056,7 +4056,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       open-shell Hartree-Fock calculation; TCSCF (=3) a
       two-configurational SCF calculation, and CASSCF (=4) a
       complete-active space SCF calculations (currently not implemented).
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__reference| unless set explicitly. -*/
       options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
 
@@ -4133,7 +4133,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the convergence criterion for the HF-SCF equations.
       Equations are considered converged when the maximum change in
       density matrix elements is less than $10^{-N}$.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__d_convergence| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_CONV", 7);
 
@@ -4144,7 +4144,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       currently 1000 (no damping), but a value of 500 is recommended in
       particular for transition metal compounds where the SCF convergence
       is often troublesome.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__damping_percentage| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_DAMPING", 1000);
 
@@ -4162,7 +4162,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CFOUR_SCF_EXTRAPOLATION", true);
 
       /*- Specifies the maximum number of SCF iterations.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
 
@@ -4187,7 +4187,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether spherical harmonic (5d, 7f, 9g, etc.) or
       Cartesian (6d, 10f, 15g, etc.) basis functions are to be used. ON (=
       1) uses spherical harmonics, OFF (= 0) uses Cartesians.
-      **PSI4 Interface:** Keyword set according to basis design when
+      **Psi4 Interface:** Keyword set according to basis design when
       |mints__basis| is used instead of |cfour__cfour_basis|. Keyword
       subject to translation from value of |globals__puream| unless set
       explicitly. -*/
@@ -4323,7 +4323,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies the units used for molecular geometry input. ANGSTROM
       (= 0) uses Angstrom units, BOHR (= 1) specifies atomic units.
-      **PSI4 Interface:** Keyword set from active molecule, always ANGSTROM. -*/
+      **Psi4 Interface:** Keyword set from active molecule, always ANGSTROM. -*/
       options.add_str("CFOUR_UNITS", "ANGSTROM", "ANGSTROM BOHR");
 
       //UNOS
@@ -4529,7 +4529,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
         options.add_int("DMRG_WFN_MULTP", -1);
 
-        /*- The DMRG wavefunction irrep uses the same conventions as PSI4. How convenient :-).
+        /*- The DMRG wavefunction irrep uses the same conventions as Psi4. How convenient :-).
             Just to avoid confusion, it's copied here. It can also be found on
             http://sebwouters.github.io/CheMPS2/classCheMPS2_1_1Irreps.html .
 
