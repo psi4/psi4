@@ -209,7 +209,7 @@ void py_reopen_outfile()
     else {
         outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
         if (!outfile)
-            throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
+            throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
 }
 
@@ -218,7 +218,7 @@ void py_be_quiet()
     py_close_outfile();
     outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
     if (!outfile)
-        throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
+        throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
 
 std::string py_get_outfile_name()
@@ -1217,14 +1217,14 @@ bool psi4_python_module_initialize()
 
     print_version("stdout");
 
-    // Track down the location of PSI4's python script directory.
+    // Track down the location of Psi4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
     std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
     // printf("Python dir is at %s\n", psiDataDirName.c_str());
     if(!boost::filesystem::is_directory(bf_path)) {
-        printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+        printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
         return false;
     }
@@ -1640,7 +1640,7 @@ void Python::run(FILE *input)
         Py_SetProgramName(s);
 #endif
 
-        // Track down the location of PSI4's auxiliary directories path
+        // Track down the location of Psi4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
         boost::char_separator<char> sep(":");
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -1652,7 +1652,7 @@ void Python::run(FILE *input)
             boost::filesystem::path bf_path2;
             bf_path2 = boost::filesystem::system_complete(*tok_iter);
             if (!boost::filesystem::is_directory(bf_path2)) {
-                printf("Unable to read the PSI4 Auxililary folder - check the PSIPATH environmental variable\n"
+                printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
                                "      Current value of PSIPATH is %s\n", psiPath.c_str());
                 exit(1);
             }
@@ -1667,14 +1667,14 @@ void Python::run(FILE *input)
         Py_DECREF(path);
         Py_DECREF(sysmod);
 
-        // Track down the location of PSI4's python script directory.
+        // Track down the location of Psi4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPython = psiDataDirName + "/python";
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
         // printf("Python dir is at %s\n", psiDataDirName.c_str());
         if (!boost::filesystem::is_directory(bf_path)) {
-            printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+            printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }

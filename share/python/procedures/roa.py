@@ -186,7 +186,7 @@ def roa_stat(db):
                 with open('{}/output.dat'.format(job)) as outfile:
                     outfile.seek(-150,2)
                     for line in outfile:
-                        if 'PSI4 exiting successfully' in line:
+                        if 'Psi4 exiting successfully' in line:
                             db['job_status'][job] = 'finished'
                             n_finished += 1
                             break

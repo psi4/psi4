@@ -445,7 +445,7 @@ if route == 2:
     """
 
 final += """
-       *  Make sure the PSI4 driver can find your new database.
+       *  Make sure the Psi4 driver can find your new database.
           If running from an installed psi4, move %s.py into INSTALLED_DIRECTORY/share/psi/databases .
           If running from source, move %s.py into PSIDATADIR/databases .
           Alternatively, add the directory containing %s.py into PYTHONPATH .

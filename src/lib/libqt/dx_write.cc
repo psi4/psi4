@@ -192,7 +192,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
 
   // Prep .dx file
   boost::shared_ptr<OutFile> printer(new OutFile("density.dx",APPEND));
-  printer->Printf( "#  Output from PSI4 calculation\n");
+  printer->Printf( "#  Output from Psi4 calculation\n");
   printer->Printf( "#  Electronic density (in e/ang^3) for: \n");
   printer->Printf( "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
   printer->Printf( "origin %8.6E  %8.6E  %8.6E\n", xmin, ymin, zmin);
