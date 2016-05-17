@@ -479,6 +479,32 @@ double HF::compute_energy()
 
 double HF::finalize_E()
 {
+    // Perform wavefunction stability analysis before doing
+    // anything on a wavefunction that may not be truly converged.
+    if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
+        bool follow = stability_analysis();
+
+        while ( follow && !(attempt_number_ > max_attempts_) ) {
+
+          attempt_number_++;
+          outfile->Printf("    Running SCF again with the rotated orbitals.\n");
+
+          if(initialized_diis_manager_) diis_manager_->reset_subspace();
+          // Reading the rotated orbitals in before starting iterations
+          form_D();
+          E_ = compute_initial_E();
+          iterations();
+          follow = stability_analysis();
+        }
+        if ( follow && (attempt_number_ > max_attempts_) ) {
+          outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
+          outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
+        }
+    }
+
+    // At this point, we are not doing any more SCF cycles
+    // and we can compute and print final quantities.
+
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->compute();
 
@@ -523,32 +549,6 @@ double HF::finalize_E()
         }
         outfile->Printf( "\n\n");
         print_energies();
-
-        // Perform wavefunction stability analysis before doing
-        // anything on a wavefunction that may not be truly converged.
-        if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
-            bool follow = stability_analysis();
-
-            while ( follow && !(attempt_number_ > max_attempts_) ) {
-
-              attempt_number_++;
-              outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-
-              if(initialized_diis_manager_) diis_manager_->reset_subspace();
-              // Reading the rotated orbitals in before starting iterations
-              form_D();
-              E_ = compute_initial_E();
-              iterations();
-              follow = stability_analysis();
-            }
-            if ( follow && (attempt_number_ > max_attempts_) ) {
-              outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-              outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
-            }
-        }
-
-        // At this point, we are not doing any more SCF cycles
-        // and we can compute and print final quantities.
 
         // Need to recompute the Fock matrices, as they are modified during the SCF iteration
         // and might need to be dumped to checkpoint later
