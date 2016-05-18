@@ -75,7 +75,8 @@ void ijklBasisIterator::next() {
 }
 
 std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> psio,
-                  boost::shared_ptr<BasisSet> primary, size_t memory, Options &options) {
+                  boost::shared_ptr<BasisSet> primary, size_t memory, Options &options,
+                  bool dowK, double omega_in) {
 
     std::string algo = options.get_str("PK_ALGO");
     bool noincore = options.get_bool("PK_NO_INCORE");
@@ -84,16 +85,27 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
     size_t pk_size = nbf * (nbf + 1) / 2;
     pk_size = pk_size * (pk_size + 1) / 2;
 
-    if(2 * pk_size < memory && !noincore) {
-        PKMgrInCore* pkmgr = new PKMgrInCore(primary,memory,options);
-        return std::shared_ptr<PKManager>(pkmgr);
-    } else if(algo == "REORDER") {
-        PKMgrReorder* pkmgr = new PKMgrReorder(psio,primary,memory,options);
-        return std::shared_ptr<PKManager>(pkmgr);
-    } else if (algo == "YOSHIMINE") {
-        PKMgrYoshimine* pkmgr = new PKMgrYoshimine(psio,primary,memory,options);
-        return std::shared_ptr<PKManager>(pkmgr);
+    int ncorebuf = 2;
+    if(dowK) {
+        ncorebuf = 3;
     }
+
+    std::shared_ptr<PKManager> pkmgr;
+
+    if(ncorebuf * pk_size < memory && !noincore) {
+        pkmgr = std::shared_ptr<PKManager>(new PKMgrInCore(primary,memory,options));
+    } else if(algo == "REORDER") {
+        pkmgr = std::shared_ptr<PKManager>(new PKMgrReorder(psio,primary,memory,options));
+    } else if (algo == "YOSHIMINE") {
+        pkmgr = std::shared_ptr<PKManager>(new PKMgrYoshimine(psio,primary,memory,options));
+    }
+
+    // Set do_wK and value of omega if necessary
+    // Might need to get these functions public
+    pkmgr->set_wK(dowK);
+    pkmgr->set_omega(omega_in);
+
+    return pkmgr;
 
 }
 
@@ -142,23 +154,29 @@ void PKManager::print_batches() {
     outfile->Printf( "\n");
 }
 
-
 // Integral computation based on several tasks
 // computing each an interval of canonical indices ijkl
-void PKManager::compute_integrals() {
+void PKManager::compute_integrals(bool wK) {
 
     // Get an AO integral factory
     boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
 
     // Get ERI object, one per thread
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for(int i = 0; i < nthreads_; ++i) {
-        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+
+    if(wK) {
+        for(int i = 0; i < nthreads_; ++i) {
+            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
+        }
+    } else {
+        for(int i = 0; i < nthreads_; ++i) {
+            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+        }
     }
 
 
     size_t nshqu = 0;
-#pragma omp parallel for schedule(dynamic) reduction(+:nshqu)
+#pragma omp parallel for num_threads(nthreads_) schedule(dynamic) reduction(+:nshqu)
     for(size_t i = 0; i < ntasks_; ++i) {
         // We need to get the list of shell quartets for each task
         int thread = 0;
@@ -167,40 +185,88 @@ void PKManager::compute_integrals() {
 #endif
         SharedPKWrkr buf = get_buffer();
 //DEBUG        outfile->Printf("Starting task %d\n", i);
-        for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
-            unsigned int P = buf->P();
-            unsigned int Q = buf->Q();
-            unsigned int R = buf->R();
-            unsigned int S = buf->S();
-            //Sort shells based on AM to save ERI some work doing permutation resorting
-            if (primary()->shell(P).am() < primary()->shell(Q).am()) {
-                std::swap(P,Q);
-            }
-            if (primary()->shell(R).am() < primary()->shell(S).am()) {
-                std::swap(R,S);
-            }
-            if (primary()->shell(P).am() + primary()->shell(Q).am() >
-                    primary()->shell(R).am() + primary()->shell(S).am()) {
-                std::swap(P, R);
-                std::swap(Q, S);
-            }
-//DEBUG#pragma omp critical
+        if(!wK) {  // Computing usual integrals
+            for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
+                unsigned int P = buf->P();
+                unsigned int Q = buf->Q();
+                unsigned int R = buf->R();
+                unsigned int S = buf->S();
+                //Sort shells based on AM to save ERI some work doing permutation resorting
+                if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                    std::swap(P,Q);
+                }
+                if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                    std::swap(R,S);
+                }
+                if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                        primary()->shell(R).am() + primary()->shell(S).am()) {
+                    std::swap(P, R);
+                    std::swap(Q, S);
+                }
+//DEBUG#    pragma omp critical
 //DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
-            tb[thread]->compute_shell(P,Q,R,S);
-            integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
-            ++nshqu;
+                tb[thread]->compute_shell(P,Q,R,S);
+                integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
+//DEBUG#pragma omp critical
+//DEBUG              {
+//DEBUG                outfile->Printf("After buffering\n");
+//DEBUG                debug_wrt();
+//DEBUG              }
+                ++nshqu;
+            }
+        } else {  // Computing range-separated integrals
+            buf->set_do_wK(true);
+            for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
+                unsigned int P = buf->P();
+                unsigned int Q = buf->Q();
+                unsigned int R = buf->R();
+                unsigned int S = buf->S();
+                //Sort shells based on AM to save ERI some work doing permutation resorting
+                if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                    std::swap(P,Q);
+                }
+                if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                    std::swap(R,S);
+                }
+                if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                        primary()->shell(R).am() + primary()->shell(S).am()) {
+                    std::swap(P, R);
+                    std::swap(Q, S);
+                }
+//DEBUG#    pragma omp critical
+//DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
+                tb[thread]->compute_shell(P,Q,R,S);
+                integrals_buffering_wK(tb[thread]->buffer(),P,Q,R,S);
+                ++nshqu;
+            }
+
         }
-        write();
+        if(!wK) {
+            write();
+        } else {
+            write_wK();
+        }
     }
-    outfile->Printf("  We computed %lu shell quartets total.\n",nshqu);
     size_t nsh = primary_->nshell();
     size_t nsh_u = nsh * (nsh + 1) / 2;
     nsh_u = nsh_u * (nsh_u + 1) / 2;
-    outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
+    if(wK) {
+        outfile->Printf("  We computed %lu wK shell quartets total.\n",nshqu);
+        outfile->Printf("  Whereas there are %lu wK unique shell quartets.\n",nsh_u);
+    } else {
+        outfile->Printf("  We computed %lu shell quartets total.\n",nshqu);
+        outfile->Printf("  Whereas there are %lu unique shell quartets.\n",nsh_u);
+    }
     if (nshqu > nsh_u) {
         outfile->Printf("  %7.2f percent of shell quartets recomputed by reordering.\n", (nshqu - nsh_u) / float(nsh_u) * 100);
     }
 
+}
+
+void PKManager::compute_integrals_wK() {
+    // Call the same routine with additional branching for each
+    // shell. Bit less efficient than re-writing the routine but more maintainable
+    compute_integrals(true);
 }
 
 void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsigned int Q,
@@ -228,6 +294,36 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
 //DEBUG            }
 //DEBUG}
             iobuffers_[thread]->fill_values(val, i, j, k, l);
+        }
+    }
+
+}
+
+void PKManager::integrals_buffering_wK(const double *buffer, unsigned int P, unsigned int Q,
+                                    unsigned int R, unsigned int S) {
+    int thread = 0;
+#ifdef _OPENMP
+    thread = omp_get_thread_num();
+#endif
+    AOIntegralsIterator bfiter(primary_->shell(P), primary_->shell(Q), primary_->shell(R), primary_->shell(S));
+
+    for (bfiter.first(); bfiter.is_done() == false; bfiter.next()) {
+        int i = bfiter.i();
+        int j = bfiter.j();
+        int k = bfiter.k();
+        int l = bfiter.l();
+        size_t idx = bfiter.index();
+
+        double val = buffer[idx];
+        if(fabs(val) > cutoff_) {
+//DEBUG#pragma omp critical
+//DEBUG{
+//DEBUG            if(INDEX2(k,l) == 0) {
+//DEBUG              outfile->Printf("Integral <%d %d|%d %d>,<%d|%d> = %16.12f\n",i,j,k,l,INDEX2(i,j),INDEX2(k,l),val);
+//DEBUG              outfile->Printf("Integral <%d %d|%d %d> = %16.12f\n",i,j,k,l,val);
+//DEBUG            }
+//DEBUG}
+            iobuffers_[thread]->fill_values_wK(val, i, j, k, l);
         }
     }
 
@@ -310,11 +406,11 @@ void PKManager::make_J_vec(std::vector<SharedMatrix> J) {
     }
 }
 
-void PKManager::get_results(std::vector<SharedMatrix> J,bool exch) {
+void PKManager::get_results(std::vector<SharedMatrix> J,std::string exch) {
     // Now, directly transfer data to resulting matrices
     for(int N = 0; N < J.size(); ++N) {
         // Symmetric density matrix: copy triangle and build full matrix
-        if(is_sym(N)) {
+        if(is_sym(N) && exch != "wK") {
             double *Jp = JK_vec_[N];
             for(int p = 0; p < nbf_; ++p) {
                 for(int q = 0; q <= p; ++q) {
@@ -325,7 +421,7 @@ void PKManager::get_results(std::vector<SharedMatrix> J,bool exch) {
             delete [] JK_vec_[N];
         // Non-symmetric density matrix: result is already in the target
         //TODO: if we store the triangle only, change that.
-        } else if (!exch) {
+        } else if (exch == "") {
           double** Jp = J[N]->pointer();
           for(int p = 0; p < nbf_; ++p) {
             Jp[p][p] *= 0.5;
@@ -340,7 +436,13 @@ void PKManager::form_K(std::vector<SharedMatrix> K) {
     // Right now, this supports both J and K. K asym is
     // formed at the same time than J asym for convenience.
     // The following call only forms K sym.
-    form_J(K,true);
+    form_J(K,"K");
+}
+
+void PKManager::form_wK(std::vector<SharedMatrix> wK) {
+    // We call form_J with an appropriate flag. This way,
+    // we can reuse the code for K. Not optimal but should work.
+    form_J(wK,"wK");
 }
 
 void PKManager::finalize_D() {
@@ -367,6 +469,12 @@ void PKMgrDisk::initialize() {
     prestripe_files();
     print_batches();
     allocate_buffers();
+}
+
+void PKMgrDisk::initialize_wK() {
+    prestripe_files_wK();
+    print_batches_wK();
+    allocate_buffers_wK();
 }
 
 void PKMgrDisk::batch_sizing() {
@@ -477,6 +585,10 @@ void PKMgrDisk::write() {
     get_buffer()->write(batch_index_min_,batch_index_max_,pk_pairs());
 }
 
+void PKMgrDisk::write_wK() {
+    get_buffer()->write_wK(batch_index_min_,batch_index_max_,pk_pairs());
+}
+
 void PKMgrDisk::open_PK_file() {
     psio_->open(pk_file_, PSIO_OPEN_OLD);
 }
@@ -518,7 +630,7 @@ void PKMgrDisk::finalize_PK() {
 
 }
 
-void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch,
+void PKMgrDisk::form_J(std::vector<SharedMatrix> J, std::string exch,
                        std::vector<SharedMatrix> K) {
     make_J_vec(J);
 
@@ -532,8 +644,10 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch,
         double* j_block = new double[batch_size];
 
         char* label;
-        if (exch) {
+        if (exch == "K") {
             label = PKWorker::get_label_K(batch);
+        } else if(exch == "wK") {
+            label = PKWorker::get_label_wK(batch);
         } else {
             label = PKWorker::get_label_J(batch);
         }
@@ -542,7 +656,7 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch,
         // Read one entry, use it for all density matrices
         for(int N = 0; N < J.size(); ++N) {
             // Symmetric density matrix, pure triangular
-            if(is_sym(N)) {
+            if(is_sym(N) && exch != "wK") {
                 double* D_vec = D_glob_vecs(N);
                 double* J_vec = JK_glob_vecs(N);
                 double* j_ptr = j_block;
@@ -565,44 +679,51 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, bool exch,
                     J_vec[pq] += J_pq;
                 }
             // Non-symmetric density matrix case
-            } else if (!exch) {
-                double* D_vec = D_glob_vecs(N);
-                double** J_vec = J[N]->pointer();
+            } else if (exch == "" || exch == "wK") {
                 double* j_ptr = j_block;
                 const int fp = ind_for_pq_[min_pq].first;
                 const int fq = ind_for_pq_[min_pq].second;
                 const int maxp = ind_for_pq_[max_pq].first;
-                for(int p = fp; p <= maxp; ++p) {
-                  int maxq = (p == maxp) ? ind_for_pq_[max_pq].second : p + 1;
-                  int poffs = p * nbf();
-                  int q = (p == fp) ? fq : 0;
-                  for(;q < maxq; ++q) {
-                    int qoffs = q * nbf();
-                    for(int r = 0; r <= p; ++r) {
-                      int roffs = r * nbf();
-                      int maxs = (r == p) ? q : r;
-                      for(int s = 0; s <= maxs; ++s) {
-//                        if(!exch && INDEX2(r,s) == 0) {
-//                          outfile->Printf("PK int (%lu|%lu) = %20.16f\n",INDEX2(p,q),INDEX2(r,s),*j_ptr);
-//                          int x = 0;  // For the lolz
-//                        }
-                          J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
-                          J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
-                          J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
-                          J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
-                          ++j_ptr;
-                      }
+                if(exch != "wK") {
+                    double* D_vec = D_glob_vecs(N);
+                    double** J_vec = J[N]->pointer();
+                    for(int p = fp; p <= maxp; ++p) {
+                      int maxq = (p == maxp) ? ind_for_pq_[max_pq].second : p + 1;
+                      int poffs = p * nbf();
+                      int q = (p == fp) ? fq : 0;
+                      for(;q < maxq; ++q) {
+                        int qoffs = q * nbf();
+                        for(int r = 0; r <= p; ++r) {
+                          int roffs = r * nbf();
+                          int maxs = (r == p) ? q : r;
+                          for(int s = 0; s <= maxs; ++s) {
+//                            if(!exch && INDEX2(r,s) == 0) {
+//                              outfile->Printf("PK int (%lu|%lu) = %20.16f\n",INDEX2(p,q),INDEX2(r,s),*j_ptr);
+//                              int x = 0;  // For the lolz
+//                            }
+                              J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                              J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                              J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
+                              J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
+                              ++j_ptr;
+                          }
 
+                        }
+                      }
                     }
-                  }
                 }
                 // Since we just read a batch, might as well compute K
                 // Primitive algorithm, just contract integrals with appropriate
                 // element on the fly. Might be faster than reading/writing the appropriate
                 // PK supermatrix
-                if(K.size()) {
+                if(K.size() || exch == "wK") {
                     double** Dmat = original_D(N)->pointer();
-                    double** K_vec = K[N]->pointer();
+                    double** K_vec;
+                    if(exch == "wK") {
+                        K_vec = J[N]->pointer();
+                    } else {
+                        K_vec = K[N]->pointer();
+                    }
                     j_ptr = j_block;
                     for(int p = fp; p <= maxp; ++p) {
                       int maxq = (p == maxp) ? ind_for_pq_[max_pq].second : p + 1;
@@ -677,6 +798,18 @@ void PKMgrReorder::prestripe_files() {
 
 }
 
+// Pre-striping PK file for wK
+void PKMgrReorder::prestripe_files_wK() {
+    // PK file should still be open at this point for AIO writing of
+    // the J/K supermatrices
+    for(int batch = 0; batch < batch_ind_min().size(); ++batch) {
+        size_t batch_size = batch_ind_max()[batch] - batch_ind_min()[batch];
+        // Keep the labels around in a vector
+        label_wK_.push_back(PKWorker::get_label_wK(batch));
+        AIO()->zero_disk(pk_file(),label_wK_[batch],1,batch_size);
+    }
+}
+
 void PKMgrReorder::allocate_buffers() {
     // Factor 2 because we need memory for J and K buffers
     size_t mem_per_thread = memory() / (2 * nthreads());
@@ -707,8 +840,39 @@ void PKMgrReorder::allocate_buffers() {
 
 }
 
+void PKMgrReorder::allocate_buffers_wK() {
+    // We need to redimension and reset the number of tasks
+    size_t mem_per_thread = memory() / nthreads();
+    size_t buf_size = mem_per_thread / 2; // For AIO
+    if (max_mem_buf_ != 0) buf_size = std::min(buf_size, max_mem_buf_);
+
+    // Number of tasks needed with this buffer size
+    set_ntasks(pk_size() / buf_size + 1);
+    // Is there less tasks than threads ?
+    if(ntasks() < nthreads()) {
+        set_ntasks(ntasks() * nthreads());
+        size_t tmp_size = pk_size() / ntasks() + 1;
+        buf_size = tmp_size;
+        set_ntasks(pk_size() / buf_size + 1);
+    }
+    size_t buf_per_thread = std::min(mem_per_thread / buf_size, ntasks() / nthreads());
+    // Some printing for us
+    outfile->Printf("  wK Task number: %lu\n",ntasks());
+    outfile->Printf("  wK Buffer size: %lu\n",buf_size);
+    outfile->Printf("  wK Buffer per thread: %lu\n",buf_per_thread);
+
+    for(int i = 0; i < nthreads(); ++i) {
+        buffer(i)->allocate_wK(buf_size,buf_per_thread);
+    }
+}
+
 void PKMgrReorder::form_PK() {
     compute_integrals();
+    set_writing(true);
+}
+
+void PKMgrReorder::form_PK_wK() {
+    compute_integrals_wK();
     set_writing(true);
 }
 
@@ -736,6 +900,7 @@ PKMgrYoshimine::PKMgrYoshimine(boost::shared_ptr<PSIO> psio, boost::shared_ptr<B
     PKMgrDisk(psio,primary,memory,options) {
     iwl_file_J_ = PSIF_SO_PKSUPER1;
     iwl_file_K_ = PSIF_SO_PKSUPER2;
+    iwl_file_wK_ = PSIF_WK_PK;
     ints_per_buf_ = IWL_INTS_PER_BUF;
     iwl_int_size_ = ints_per_buf_ * (4L * sizeof(Label) + sizeof(Value)) + 2L * sizeof(int);
 }
@@ -757,6 +922,18 @@ void PKMgrYoshimine::prestripe_files() {
     // pre-sorted in two different buckets for K
     psio()->open(iwl_file_K_, PSIO_OPEN_NEW);
     AIO()->zero_disk(iwl_file_K_, IWL_KEY_BUF, 1, 2*iwlsize);
+}
+
+void PKMgrYoshimine::prestripe_files_wK() {
+    psio()->open(iwl_file_wK_, PSIO_OPEN_NEW);
+    // Pre-stripe the new file
+    // Number of IWL buffers necessary to write all integrals
+    size_t num_iwlbuf = pk_size() / ints_per_buf_ + 1;
+    // The last buffer of each batch may be partially filled only
+    num_iwlbuf += batch_ind_min().size();
+    size_t iwlsize_bytes = num_iwlbuf * iwl_int_size_;
+    size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
+    AIO()->zero_disk(iwl_file_wK_,IWL_KEY_BUF,1,iwlsize);
 }
 
 void PKMgrYoshimine::allocate_buffers() {
@@ -790,6 +967,26 @@ void PKMgrYoshimine::allocate_buffers() {
 
 }
 
+void PKMgrYoshimine::allocate_buffers_wK() {
+    // Need a vector of starting positions for each batch in the wK
+    // IWL file
+    int bufperthread = batch_ind_min().size();
+    boost::shared_ptr< size_t [] > current_pos(new size_t[bufperthread]);
+    current_pos[0] = 0;
+    for(int i = 1; i < bufperthread; ++i) {
+        size_t batchsize = batch_ind_max()[i - 1] - batch_ind_min()[i - 1];
+        size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
+        current_pos[i] = iwlperbatch * iwl_int_size_ + current_pos[i - 1];
+    }
+
+    // Now we pass these new positions to the Workers, which will also
+    // take care of their setup for wK.
+    for(int i = 0; i < nthreads(); ++i) {
+        buffer(i)->allocate_wK(current_pos,iwl_file_wK_);
+    }
+
+}
+
 void PKMgrYoshimine::form_PK() {
     compute_integrals();
 
@@ -801,59 +998,123 @@ void PKMgrYoshimine::form_PK() {
 
 }
 
-void PKMgrYoshimine::compute_integrals() {
+void PKMgrYoshimine::form_PK_wK() {
+    compute_integrals_wK();
+
+    // Now we need to actually read the integral file and sort
+    // the buckets to write them to the PK file
+    // We deallocate buffers and synchronize AIO writing in there.
+
+    sort_ints_wK();
+}
+
+void PKMgrYoshimine::compute_integrals(bool wK) {
 
     // Get an AO integral factory
     boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary()));
 
     // Get ERI object, one per thread
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for(int i = 0; i < nthreads(); ++i) {
-        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+    if(!wK) {
+        for(int i = 0; i < nthreads(); ++i) {
+            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+        }
+    } else {
+        for(int i = 0; i < nthreads(); ++i) {
+            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
+        }
     }
 
     // Loop over significant shell pairs from ERISieve
     const std::vector< std::pair<int, int> >& sh_pairs = sieve()->shell_pairs();
     size_t npairs = sh_pairs.size();
+    // We avoid having one more branch in the loop by moving it outside
+    if(!wK) {
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads())
-    for(size_t i = 0; i < npairs; ++i) {
-        int PP = sh_pairs[i].first;
-        int QQ = sh_pairs[i].second;
-        int thread = 0;
-      #ifdef _OPENMP
-        thread = omp_get_thread_num();
-      #endif
+        for(size_t i = 0; i < npairs; ++i) {
+            int PP = sh_pairs[i].first;
+            int QQ = sh_pairs[i].second;
+            int thread = 0;
+          #ifdef _OPENMP
+            thread = omp_get_thread_num();
+          #endif
 
-        for(size_t j = 0; j <= i; ++j) {
-            int RR = sh_pairs[j].first;
-            int SS = sh_pairs[j].second;
-            if(sieve()->shell_significant(PP,QQ,RR,SS)) {
-                int P = PP;
-                int Q = QQ;
-                int R = RR;
-                int S = SS;
-                //Sort shells based on AM to save ERI some work doing permutation resorting
-                if (primary()->shell(P).am() < primary()->shell(Q).am()) {
-                    std::swap(P,Q);
+            for(size_t j = 0; j <= i; ++j) {
+                int RR = sh_pairs[j].first;
+                int SS = sh_pairs[j].second;
+                if(sieve()->shell_significant(PP,QQ,RR,SS)) {
+                    int P = PP;
+                    int Q = QQ;
+                    int R = RR;
+                    int S = SS;
+                    //Sort shells based on AM to save ERI some work doing permutation resorting
+                    if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                        std::swap(P,Q);
+                    }
+                    if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                        std::swap(R,S);
+                    }
+                    if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                            primary()->shell(R).am() + primary()->shell(S).am()) {
+                        std::swap(P, R);
+                        std::swap(Q, S);
+                    }
+//DEBUG                    outfile->Printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S);
+                    tb[thread]->compute_shell(P, Q, R, S);
+                    integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
                 }
-                if (primary()->shell(R).am() < primary()->shell(S).am()) {
-                    std::swap(R,S);
-                }
-                if (primary()->shell(P).am() + primary()->shell(Q).am() >
-                        primary()->shell(R).am() + primary()->shell(S).am()) {
-                    std::swap(P, R);
-                    std::swap(Q, S);
-                }
-//DEBUG                outfile->Printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S);
-                tb[thread]->compute_shell(P, Q, R, S);
-                integrals_buffering(tb[thread]->buffer(),P,Q,R,S);
             }
-        }
-    } // end of parallelized loop
+        } // end of parallelized loop
 
-    // We write all remaining buffers to disk.
-    write();
+        // We write all remaining buffers to disk.
+        write();
+    } else {
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads())
+        for(size_t i = 0; i < npairs; ++i) {
+            int PP = sh_pairs[i].first;
+            int QQ = sh_pairs[i].second;
+            int thread = 0;
+          #ifdef _OPENMP
+            thread = omp_get_thread_num();
+          #endif
 
+            for(size_t j = 0; j <= i; ++j) {
+                int RR = sh_pairs[j].first;
+                int SS = sh_pairs[j].second;
+                if(sieve()->shell_significant(PP,QQ,RR,SS)) {
+                    int P = PP;
+                    int Q = QQ;
+                    int R = RR;
+                    int S = SS;
+                    //Sort shells based on AM to save ERI some work doing permutation resorting
+                    if (primary()->shell(P).am() < primary()->shell(Q).am()) {
+                        std::swap(P,Q);
+                    }
+                    if (primary()->shell(R).am() < primary()->shell(S).am()) {
+                        std::swap(R,S);
+                    }
+                    if (primary()->shell(P).am() + primary()->shell(Q).am() >
+                            primary()->shell(R).am() + primary()->shell(S).am()) {
+                        std::swap(P, R);
+                        std::swap(Q, S);
+                    }
+//DEBUG                    outfile->Printf("Computing shell <%i %i|%i %i>\n", P, Q, R, S);
+                    tb[thread]->compute_shell(P, Q, R, S);
+                    integrals_buffering_wK(tb[thread]->buffer(),P,Q,R,S);
+                }
+            }
+        } // end of parallelized loop
+
+        // We write all remaining buffers to disk.
+        write_wK();
+
+    }
+
+}
+
+void PKMgrYoshimine::compute_integrals_wK() {
+    // Simply invoke the compute_integrals routine with a flag
+    compute_integrals(true);
 }
 
 void PKMgrYoshimine::write() {
@@ -880,7 +1141,31 @@ void PKMgrYoshimine::write() {
 
 }
 
-void PKMgrYoshimine::sort_ints() {
+void PKMgrYoshimine::write_wK() {
+    // Each thread buffer has several buckets that may be partially full.
+    // Concatenate all internal buckets to the ones of thread buffer 0.
+    double val;
+    size_t i, j, k, l;
+    SharedPKWrkr buf0 = buffer(0);
+    SharedPKWrkr buftarget;
+    for(int t = 1; t < nthreads(); ++t) {
+        buftarget = buffer(t);
+        unsigned int nbufs = buftarget->nbuf();
+        // Get through all wK buffers
+        for(int buf = 0; buf < nbufs; ++buf) {
+            while(buftarget->pop_value_wK(buf,val,i,j,k,l)) {
+                buf0->insert_value_wK(buf,val,i,j,k,l);
+            }
+        }
+
+    }
+    // By now we should have transferred all remaining integrals to
+    // buffer 0, we now flush it.
+    buf0->flush_wK();
+
+}
+
+void PKMgrYoshimine::sort_ints(bool wK) {
     // compute max batch size
     size_t max_size = 0;
     size_t batch_size;
@@ -899,16 +1184,22 @@ void PKMgrYoshimine::sort_ints() {
     // At this point we need to close the IWL file to create
     // an IWL object which will open it. Dumb but minor inconvenience (hopefully)
     // We also open the PK file
-    psio()->open(pk_file(), PSIO_OPEN_NEW);
+    // wK is done after J/K so we open the file as old
+    psio()->open(pk_file(), wK ? PSIO_OPEN_OLD : PSIO_OPEN_NEW);
     //TODO: this function may need renaming
     finalize_PK();
     set_writing(false);
-    close_iwl_buckets();
+    if(!wK) {
+        close_iwl_buckets();
+        generate_J_PK(twoel_ints,max_size);
+        // Need to reset to zero the two-el integral array
+        ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+        generate_K_PK(twoel_ints,max_size);
 
-    generate_J_PK(twoel_ints,max_size);
-    // Need to reset to zero the two-el integral array
-    ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
-    generate_K_PK(twoel_ints,max_size);
+    } else {
+        close_iwl_buckets_wK();
+        generate_wK_PK(twoel_ints,max_size);
+    }
 
     //delete two-el int array
     delete [] twoel_ints;
@@ -917,9 +1208,18 @@ void PKMgrYoshimine::sort_ints() {
 
 }
 
+void PKMgrYoshimine::sort_ints_wK() {
+    // We call sort_ints with a flag
+    sort_ints(true);
+}
+
 void PKMgrYoshimine::close_iwl_buckets() {
     psio()->close(iwl_file_J_, 1);
     psio()->close(iwl_file_K_, 1);
+}
+
+void PKMgrYoshimine::close_iwl_buckets_wK() {
+    psio()->close(iwl_file_wK_, 1);
 }
 
 void PKMgrYoshimine::generate_J_PK(double *twoel_ints, size_t max_size) {
@@ -1067,15 +1367,81 @@ void PKMgrYoshimine::generate_K_PK(double *twoel_ints, size_t max_size) {
 
 }
 
+void PKMgrYoshimine::generate_wK_PK(double *twoel_ints, size_t max_size) {
+
+    IWL inbuf(psio().get(),iwl_file_wK_,0.0, 1, 0);
+
+    int idx, id;
+    size_t p, q, r, s;
+    Label* lblptr = inbuf.labels();
+    Value* valptr = inbuf.values();
+    int lastbuf;
+
+    size_t offset, maxind, nintegrals;
+    size_t pqrs;
+
+    int batch = 0;
+    int nbatches = batch_ind_min().size();
+    while(batch < nbatches) {
+        inbuf.fetch();
+        offset = batch_ind_min()[batch];
+        maxind = batch_ind_max()[batch];
+        nintegrals = batch_ind_max()[batch] - batch_ind_min()[batch];
+
+        for(idx = 0; idx < inbuf.buffer_count(); ++idx) {
+            id = 4 * idx;
+            p = lblptr[id++];
+            q = lblptr[id++];
+            r = lblptr[id++];
+            s = lblptr[id];
+
+//DEBUG            size_t pqd = INDEX2(p,q);
+//DEBUG            size_t rsd = INDEX2(r,s);
+//DEBUG            if (rsd == 0) {
+//DEBUG              outfile->Printf("Integral <%d |%d> = %16.12f added\n",pqd,rsd,valptr[idx]);
+//DEBUG            }
+            pqrs = INDEX4(p,q,r,s);
+            twoel_ints[pqrs - offset] += valptr[idx];
+        }
+
+        lastbuf = inbuf.last_buffer();
+        if(lastbuf) {
+            // We just completed a batch, write it to disk
+            char* label = PKWorker::get_label_wK(batch);
+            // Divide diagonal elements by two
+            for(size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
+                pqrs = INDEX2(pq,pq);
+                twoel_ints[pqrs - offset] *= 0.5;
+            }
+            psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
+            delete [] label;
+            ++batch;
+            if(batch < nbatches) {
+                ::memset((void*)twoel_ints,'\0',max_size * sizeof(double));
+            }
+        }
+
+    }
+
+    inbuf.set_keep_flag(false);
+
+}
+
 void PKMgrInCore::initialize() {
     print_batches();
     allocate_buffers();
 }
 
+void PKMgrInCore::initialize_wK() {
+   /// Nothing to do
+   print_batches_wK();
+}
+
 void PKMgrInCore::print_batches() {
     PKManager::print_batches();
     outfile->Printf("  Performing in-core PK\n");
-    outfile->Printf("  Using %lu doubles for integral storage.\n", 2 * pk_size());
+    int nbufincore = do_wk() ? 3 : 2;
+    outfile->Printf("  Using %lu doubles for integral storage.\n", nbufincore * pk_size());
 }
 
 void PKMgrInCore::allocate_buffers() {
@@ -1084,6 +1450,10 @@ void PKMgrInCore::allocate_buffers() {
     K_ints_ = std::unique_ptr< double [] >(new double[pk_size()]);
     ::memset((void*) J_ints_.get(), '\0', pk_size() * sizeof(double));
     ::memset((void*) K_ints_.get(), '\0', pk_size() * sizeof(double));
+    if(do_wk()) {
+        wK_ints_ = std::unique_ptr< double [] >(new double[pk_size()]);
+        ::memset((void*) wK_ints_.get(), '\0', pk_size() * sizeof(double));
+    }
 
     // Now we allocate a derived class of IOBuffer_PK that takes care of
     // giving the tasks to the threads and storing results properly.
@@ -1097,11 +1467,9 @@ void PKMgrInCore::allocate_buffers() {
     for(size_t i = 0; i < nthreads(); ++i) {
 //DEBUG        outfile->Printf("start is %lu\n",start);
         SharedPKWrkr buf;
-        if(i < nthreads() - 1) {
-            buf = SharedPKWrkr(new PKWrkrInCore(primary(),sieve(),buffer_size,0,J_ints_.get(),K_ints_.get()));
-        } else {
-            buf = SharedPKWrkr(new PKWrkrInCore(primary(),sieve(),buffer_size,lastbuf,J_ints_.get(),K_ints_.get()));
-        }
+        buf = SharedPKWrkr(new PKWrkrInCore(primary(),sieve(),
+              buffer_size,lastbuf,J_ints_.get(),K_ints_.get(),
+              wK_ints_.get(), nthreads()));
         fill_buffer(buf);
         set_ntasks(nthreads());
     }
@@ -1109,11 +1477,22 @@ void PKMgrInCore::allocate_buffers() {
 
 void PKMgrInCore::form_PK() {
     compute_integrals();
+    if(!do_wk()) {
+        finalize_PK();
+    }
+}
+
+void PKMgrInCore::form_PK_wK() {
+    compute_integrals_wK();
     finalize_PK();
 }
 
 void PKMgrInCore::write() {
     get_buffer()->finalize_ints(pk_pairs());
+}
+
+void PKMgrInCore::write_wK() {
+    get_buffer()->finalize_ints_wK(pk_pairs());
 }
 
 void PKMgrInCore::finalize_PK() {
@@ -1127,20 +1506,20 @@ void PKMgrInCore::prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatr
     form_D_vec(D,Cl,Cr);
 }
 
-void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch, std::vector<SharedMatrix> K) {
+void PKMgrInCore::form_J(std::vector<SharedMatrix> J, std::string exch, std::vector<SharedMatrix> K) {
 
     make_J_vec(J);
 
     for(int N = 0; N < J.size(); ++N) {
         double* j_ptr;
-        if(exch) {
+        if(exch == "K") {
             j_ptr = K_ints_.get();
         } else {
             j_ptr = J_ints_.get();
         }
 //TODO We should totally parallelize this loop now.
         // Symmetric density matrix case
-        if(is_sym(N)) {
+        if(is_sym(N) && exch != "wK") {
             double* J_vec = JK_glob_vecs(N);
             double* D_vec = D_glob_vecs(N);
             for(size_t pq = 0; pq < pk_pairs(); ++pq) {
@@ -1163,37 +1542,45 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch, std::vector<Sha
 
         //TODO ? Fuse J and K loops ?
         // Non-symmetric density matrix
-        } else if (!exch) {
-            double* D_vec = D_glob_vecs(N);
-            double** J_vec = J[N]->pointer();
-            for(int p = 0;p < nbf(); ++p) {
-              int poffs = p * nbf();
-              for(int q = 0;q <= p; ++q) {
-                int qoffs = q * nbf();
-                for(int r = 0; r <= p; ++r) {
-                  int roffs = r * nbf();
-                  int maxs = (r == p) ? q : r;
-                  for(int s = 0; s <= maxs; ++s) {
-                      J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
-                      J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
-                      J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
-                      J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
-                      ++j_ptr;
-                  }
+        } else if (exch == "" || exch == "wK") {
+            if(exch == "") {
+                double* D_vec = D_glob_vecs(N);
+                double** J_vec = J[N]->pointer();
+                for(int p = 0;p < nbf(); ++p) {
+                  int poffs = p * nbf();
+                  for(int q = 0;q <= p; ++q) {
+                    int qoffs = q * nbf();
+                    for(int r = 0; r <= p; ++r) {
+                      int roffs = r * nbf();
+                      int maxs = (r == p) ? q : r;
+                      for(int s = 0; s <= maxs; ++s) {
+                          J_vec[p][q] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                          J_vec[q][p] += *j_ptr * (D_vec[roffs + s] + D_vec[s * nbf() + r]);
+                          J_vec[r][s] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
+                          J_vec[s][r] += *j_ptr * (D_vec[poffs + q] + D_vec[qoffs + p]);
+                          ++j_ptr;
+                      }
 
+                    }
+                  }
                 }
-              }
             }
             // Since we just read a batch, might as well compute K
             // Primitive algorithm, just contract integrals with appropriate
             // element on the fly. Might be faster than reading/writing the appropriate
             // PK supermatrix
-            if(K.size()) {
+            if(K.size() || exch =="wK") {
                 double** Dmat = original_D(N)->pointer();
-                double** K_vec = K[N]->pointer();
-                // We use J supermatrix because it contains every unique integral
-                // K supermatrix has summed some integrals that we need separately
-                j_ptr = J_ints_.get();
+                double** K_vec;
+                if(exch == "wK") {
+                    K_vec = J[N]->pointer();
+                    j_ptr = wK_ints_.get();
+                } else {
+                    K_vec = K[N]->pointer();
+                    // We use J supermatrix because it contains every unique integral
+                    // K supermatrix has summed some integrals that we need separately
+                    j_ptr = J_ints_.get();
+                }
                 for(int p = 0;p < nbf(); ++p) {
           //        int poffs = p * nbf();
                   for(int q = 0;q <= p; ++q) {
@@ -1215,6 +1602,10 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, bool exch, std::vector<Sha
                         } else if (p == q || r == s) {
                             fac = 0.5;
                         }
+//DEBUG                       bool prt = (p == 0 && r == 0) || (q == 0 && r == 0) || (p == 0 && s == 0) || (s == 0 && q == 0); 
+//DEBUG                       if(exch == "wK" && prt) {
+//DEBUG                         outfile->Printf("PK int (%d %d|%d %d) = %20.16f\n",p,q,r,s,*j_ptr);
+//DEBUG                       }
                         K_vec[p][r] += (*j_ptr) * fac * Dmat[q][s];
                         K_vec[r][p] += (*j_ptr) * fac * Dmat[s][q];
                         K_vec[q][r] += (*j_ptr) * fac * Dmat[p][s];
