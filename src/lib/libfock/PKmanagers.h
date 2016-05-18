@@ -95,6 +95,11 @@ private:
     /// Number of tasks for integral computation
     size_t ntasks_;
 
+    /// Do wK in addition to regular J and K?
+    bool do_wK_;
+    /// Value for omeaga
+    double omega_;
+
 
     /// Sieving object for the integrals
     std::shared_ptr<ERISieve> sieve_;
@@ -120,6 +125,14 @@ private:
     /// Vector of triangular result J/K matrices
     std::vector<double*> JK_vec_;
 
+    /// Setter functions for internal wK options
+    void set_wK(bool dowK) { do_wK_ = dowK; }
+    void set_omega(double omega_in) { omega_ = omega_in; }
+
+protected:
+    /// Setter objects for internal data
+    void fill_buffer(SharedPKWrkr tmp) { iobuffers_.push_back(tmp); }
+
 public:
 
     /// Base constructor
@@ -129,6 +142,8 @@ public:
     virtual ~PKManager() {}
 
     /// Accessor functions for simple data
+    bool do_wk()                            const { return do_wK_; }
+    double omega()                          const { return omega_; }
     double cutoff()                         const { return cutoff_; }
     int nthreads()                          const { return nthreads_; }
     int nbf()                               const { return nbf_; }
@@ -149,9 +164,6 @@ public:
     SharedPKWrkr get_buffer();
     void set_ntasks(size_t tmp) { ntasks_ = tmp; }
 
-    /// Setter objects for internal data
-    void fill_buffer(SharedPKWrkr tmp) { iobuffers_.push_back(tmp); }
-
     /**
      * @brief build_PKManager
      * Static instance constructor, used to get a proper
@@ -160,14 +172,19 @@ public:
      * @return abstract PKmanager object tuned with relevant options
      */
     static std::shared_ptr<PKManager> build_PKManager(boost::shared_ptr<PSIO> psio,
-                boost::shared_ptr<BasisSet> primary, size_t memory, Options &options);
+                boost::shared_ptr<BasisSet> primary, size_t memory, Options &options,
+                bool dowK, double omega_in = 0);
 
     // Base functions needed for the class to work
     /// Pure virtual initialize function: contains batch sizing and file
     /// opening if needed, allocation of thread buffers
     virtual void initialize()=0;
+    /// Initialize for wK integrals
+    virtual void initialize_wK()=0;
     /// Forming the PK supermatrices
     virtual void form_PK() = 0;
+    /// Forming PK supermatrices for wK
+    virtual void form_PK_wK() = 0;
     /// Preparing JK computation
     virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
                             std::vector<SharedMatrix> Cr)=0;
@@ -176,10 +193,14 @@ public:
 
     /// Function to print batch sizing information
     virtual void print_batches();
+    /// Some printing for wK integrals;
+    virtual void print_batches_wK() {}
     /// Allocating the thread buffers
     virtual void allocate_buffers()=0;
     /// Actually computing the integrals
-    virtual void compute_integrals();
+    virtual void compute_integrals(bool wK = false);
+    /// Computing integrals for wK
+    virtual void compute_integrals_wK();
     /// Deallocating the thread buffers
     virtual void finalize_PK()=0;
 
@@ -187,22 +208,29 @@ public:
     /// Store the computed integrals in the appropriate buffers
     void integrals_buffering(const double *buffer, unsigned int P, unsigned int Q,
                              unsigned int R, unsigned int S);
+    /// Store the computed wK integrals in the appropriate buffers
+    void integrals_buffering_wK(const double *buffer, unsigned int P, unsigned int Q,
+                             unsigned int R, unsigned int S);
 
     /// Write the buffers of integrals to PK storage
     virtual void write() = 0;
+    /// Write the buffers of wK integrals to PK storage
+    virtual void write_wK() = 0;
 
     /// Actual computation of J and K
     /// Prepare the density matrix
     void form_D_vec(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl, std::vector<SharedMatrix> Cr);
     /// Forming J
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch = false,
+    virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
                         std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL))=0;
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
-    void get_results(std::vector<SharedMatrix> J,bool exch);
+    void get_results(std::vector<SharedMatrix> J,std::string exch);
     /// Forming K
     void form_K(std::vector<SharedMatrix> K);
+    /// Forming wK
+    virtual void form_wK(std::vector<SharedMatrix> wK);
     /// Finalize and delete the density matrix vectors
     void finalize_D();
 };
@@ -262,6 +290,11 @@ public:
 
     /// Initialize sequence for Disk algorithms
     virtual void initialize();
+    /// Initialize wK PK supermatrix, has to be called after
+    /// initialize()
+    virtual void initialize_wK();
+    /// Allocating new buffers for wK integrals
+    virtual void allocate_buffers_wK()=0;
     /// Prepare the JK formation for disk algorithms
     virtual void prepare_JK(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl,
                             std::vector<SharedMatrix> Cr);
@@ -273,9 +306,13 @@ public:
 
     /// Opening files for integral storage
     virtual void prestripe_files()=0;
+    /// Opening files for wK integral storage
+    virtual void prestripe_files_wK() = 0;
 
     /// Write integrals on disk
     virtual void write();
+    /// Write wK integrals on disk
+    virtual void write_wK();
 
     /// Opening the PK file
     void open_PK_file();
@@ -283,7 +320,7 @@ public:
     virtual void close_PK_file(bool keep);
 
     /// Form J from PK supermatrix
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch,
+    virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
                         std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
 
     /// Finalize JK matrix formation
@@ -294,6 +331,7 @@ class PKMgrReorder : public PKMgrDisk {
 private:
     std::vector<char*> label_J_;
     std::vector<char*> label_K_;
+    std::vector<char*> label_wK_;
 
     size_t max_mem_buf_;
 
@@ -306,12 +344,19 @@ public:
 
     /// Sequence of operations to form PK for reorder algo
     virtual void form_PK();
+    /// Forming PK for wK integrals
+    virtual void form_PK_wK();
 
     /// Pre-striping the PK file
     virtual void prestripe_files();
+    /// Pre-striping PK file for wK integrals
+    virtual void prestripe_files_wK();
 
     /// Allocating the buffers for each thread
     virtual void allocate_buffers();
+    /// De-allocating buffer space for J/K supermatrices and
+    /// allocating space for wK. Allows us to use buffers twice as big
+    virtual void allocate_buffers_wK();
     /// Finalize PK: synchronize AIO writing, delete thread
     /// buffers, keep PK file open since we are going to
     /// use it immediately
@@ -324,6 +369,7 @@ private:
     /// Files of pre-sorted IWL integral buckets
     int iwl_file_J_;
     int iwl_file_K_;
+    int iwl_file_wK_;
     /// Number of integrals per buckets
     //TODO: change the name of all variables for buckets
     size_t ints_per_buf_;
@@ -341,29 +387,45 @@ public:
     /// Pre-striping the IWL pre-sorted bucket files
     //TODO: Optimize the vastly excessive amount of pre-striping for the K file
     virtual void prestripe_files();
+    /// Pre-striping for IWL wK pre-sorted files
+    virtual void prestripe_files_wK();
 
     /// Gather all steps to form PK
     virtual void form_PK();
+    /// Steps to form the supermatrix for wK
+    virtual void form_PK_wK();
 
     /// Allocating the buffers for each thread
     virtual void allocate_buffers();
+    /// Allocating buffers for wK integrals
+    virtual void allocate_buffers_wK();
 
     /// Computing the integrals
-    virtual void compute_integrals();
+    virtual void compute_integrals(bool wK = false);
+    /// computing wK integrals
+    virtual void compute_integrals_wK();
 
     /// Writing of the last partially filled buffers
     virtual void write();
+    /// Writing of the last partially filled buffers for wK
+    virtual void write_wK();
 
     /// Reading and sorting integrals to generate PK file
-    void sort_ints();
+    void sort_ints(bool wK = false);
+    /// Reading and sorting wK integrals for PK file
+    void sort_ints_wK();
 
     /// Close the IWL bucket files
     void close_iwl_buckets();
+    /// Close the IWL bucket file for wK
+    void close_iwl_buckets_wK();
 
     /// Generate the J PK supermatrix from IWL integrals
     void generate_J_PK(double* twoel_ints, size_t max_size);
     /// Generate the K PK supermatrix from IWL integrals
     void generate_K_PK(double* twoel_ints, size_t max_size);
+    /// Generate the wK PK supermatrix from IWL integrals
+    void generate_wK_PK(double* twoel_ints, size_t max_size);
 };
 
 /* PKMgrInCore: Class to manage in-core PK algorithm */
@@ -373,30 +435,37 @@ private:
     /// Large in core arrays for integral storage
     std::unique_ptr<double []> J_ints_;
     std::unique_ptr<double []> K_ints_;
+    std::unique_ptr<double []> wK_ints_;
 
 public:
     /// Constructor for in-core class
     PKMgrInCore(boost::shared_ptr<BasisSet> primary, size_t memory,
-                Options &options) : PKManager(primary,memory,options) {}
+                Options &options) : wK_ints_(nullptr), PKManager(primary,memory,options) {}
     /// Destructor for in-core class
     virtual ~PKMgrInCore() {}
 
     /// Initialize sequence for in-core algorithm
     virtual void initialize();
+    /// Initialize the wK integrals
+    virtual void initialize_wK();
     /// Sequence of steps to form PK matrix
     virtual void form_PK();
+    /// Sequence of steps to form wK PK matrix
+    virtual void form_PK_wK();
     /// Steps to prepare JK formation
     virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
                             std::vector<SharedMatrix> Cr);
 
     /// Form J matrix
-    virtual void form_J(std::vector<SharedMatrix> J, bool exch,
+    virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
                         std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
     /// Finalize JK formation
     virtual void finalize_JK();
 
     /// No disk write, only finalizes integral arrays
     virtual void write();
+    /// Finalize integral arrays for wK
+    virtual void write_wK();
 
     /// Printing the algorithm header
     virtual void print_batches();

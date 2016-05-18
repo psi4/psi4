@@ -97,7 +97,7 @@ void PKJK::preiterations()
     // PK file to disk. Also, do everything in the AO basis
     // like the modern JK algos, for adding sieving later
 
-    PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options);
+    PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options,do_wK_,omega_);
 
     outfile->Printf(" Computing reordered integrals for PK\n\n");
 
@@ -107,6 +107,16 @@ void PKJK::preiterations()
 
     // PK files are written at this point. We are done.
     timer_off("Total PK formation time");
+
+    // If range-separated K needed, we redo all the above steps
+    if(do_wK_) {
+        outfile->Printf("  Computing range-separated integrals for PK\n");
+
+        PKmanager_->initialize_wK();
+
+        PKmanager_->form_PK_wK();
+
+    }
 
     /*
      * For omega, we only need exchange and it's done separately from conventional terms, so we can
@@ -212,10 +222,13 @@ void PKJK::compute_JK()
     if(J_ao_.size()) {
         // We can safely pass K here since its size is checked within
         // the routine
-        PKmanager_->form_J(J_ao_,false,K_ao_);
+        PKmanager_->form_J(J_ao_,"",K_ao_);
     }
     if(K_ao_.size()) {
         PKmanager_->form_K(K_ao_);
+    }
+    if(wK_ao_.size()) {
+        PKmanager_->form_wK(wK_ao_);
     }
 
     PKmanager_->finalize_JK();
