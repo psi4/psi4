@@ -430,18 +430,18 @@ void DFOCC::ccsd_manager_cd()
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
         }
 
-	// cost_4vex_hm
-	cost_4vex_hm = ntri_abAA / 1024.0;
-        cost_4vex_hm *= cost_4vex_hm;
-        cost_4vex_hm *= sizeof(double);
-        cost_4vex_hm += cost_amp;
-        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
-	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = false;
+	// cost_ppl_hm
+	cost_ppl_hm = ntri_abAA / 1024.0;
+        cost_ppl_hm *= cost_ppl_hm;
+        cost_ppl_hm *= sizeof(double);
+        cost_ppl_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+	if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = false;
             outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
 	}
-	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = true;
+	else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
         
@@ -726,18 +726,18 @@ void DFOCC::ccsd_t_manager_cd()
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
         }
 
-	// cost_4vex_hm
-	cost_4vex_hm = ntri_abAA / 1024.0;
-        cost_4vex_hm *= cost_4vex_hm;
-        cost_4vex_hm *= sizeof(double);
-        cost_4vex_hm += cost_amp;
-        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
-	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = false;
+	// cost_ppl_hm
+	cost_ppl_hm = ntri_abAA / 1024.0;
+        cost_ppl_hm *= cost_ppl_hm;
+        cost_ppl_hm *= sizeof(double);
+        cost_ppl_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+	if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = false;
             outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
 	}
-	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = true;
+	else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
 
@@ -1077,18 +1077,18 @@ void DFOCC::ccsdl_t_manager_cd()
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
         }
 
-	// cost_4vex_hm
-	cost_4vex_hm = ntri_abAA / 1024.0;
-        cost_4vex_hm *= cost_4vex_hm;
-        cost_4vex_hm *= sizeof(double);
-        cost_4vex_hm += cost_amp;
-        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
-	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = false;
+	// cost_ppl_hm
+	cost_ppl_hm = ntri_abAA / 1024.0;
+        cost_ppl_hm *= cost_ppl_hm;
+        cost_ppl_hm *= sizeof(double);
+        cost_ppl_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+	if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = false;
             outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
 	}
-	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = true;
+	else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
 
@@ -1415,18 +1415,18 @@ void DFOCC::ccd_manager_cd()
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
         
-        // cost_4vex_hm
-	cost_4vex_hm = ntri_abAA / 1024.0;
-        cost_4vex_hm *= cost_4vex_hm;
-        cost_4vex_hm *= sizeof(double);
-        cost_4vex_hm += cost_amp;
-        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_4vex_hm);
-	if (cost_4vex_hm > memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = false;
+        // cost_ppl_hm
+	cost_ppl_hm = ntri_abAA / 1024.0;
+        cost_ppl_hm *= cost_ppl_hm;
+        cost_ppl_hm *= sizeof(double);
+        cost_ppl_hm += cost_amp;
+        outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+	if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = false;
             outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
 	}
-	else if (cost_4vex_hm <= memory_mb && Wabef_type_ == "AUTO") {
-	    do_4vex_hm = true;
+	else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+	    do_ppl_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
 
@@ -2996,4 +2996,6 @@ void DFOCC::lccd_manager_cd()
 
 
 }} // End Namespaces
+
+
 

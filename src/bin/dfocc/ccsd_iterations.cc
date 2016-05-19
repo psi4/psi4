@@ -38,6 +38,9 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::ccsd_iterations()
 {
 
+      // CD-PPL
+      if (Wabef_type_ == "CD") cd_abcd_cints();
+
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
 outfile->Printf(" ================ Performing DF-CCSD iterations... ============================ \n");
@@ -65,6 +68,7 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
           T2.reset();
           T1.reset();
       }// if diis true
+
 
 // head of loop      
 do
@@ -163,3 +167,4 @@ else if (conver == 0) {
 
 }// end ccsd_iterations
 }} // End Namespaces
+

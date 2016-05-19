@@ -73,7 +73,7 @@ void DFOCC::ccd_t2_amps()
 
     // WabefT2
     if (Wabef_type_ == "AUTO") {
-	if (!do_4vex_hm) ccd_WabefT2();
+	if (!do_ppl_hm) ccd_WabefT2();
 	else ccd_WabefT2_high_mem();
     }
     else if (Wabef_type_ == "LOW_MEM") ccd_WabefT2();

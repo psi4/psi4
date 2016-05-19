@@ -36,7 +36,10 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
   
 void DFOCC::ccsd_iterations_low()
-{
+{ 
+
+      // CD-PPL
+      if (Wabef_type_ == "CD") cd_abcd_cints();
 
 outfile->Printf("\n");
 outfile->Printf(" ============================================================================== \n");
@@ -142,3 +145,4 @@ else if (conver == 0) {
 
 }// end ccsd_iterations_low
 }} // End Namespaces
+
