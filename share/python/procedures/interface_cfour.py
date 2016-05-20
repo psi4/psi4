@@ -148,6 +148,8 @@ def run_cfour(name, **kwargs):
 
     if 'path' in kwargs:
         lenv['PATH'] = kwargs['path'] + ':' + lenv['PATH']
+    #   Filter out None values as subprocess will fault on them
+    lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Load the GENBAS file
     genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
