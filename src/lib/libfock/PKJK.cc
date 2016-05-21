@@ -105,9 +105,6 @@ void PKJK::preiterations()
 
     PKmanager_->form_PK();
 
-    // PK files are written at this point. We are done.
-    timer_off("Total PK formation time");
-
     // If range-separated K needed, we redo all the above steps
     if(do_wK_) {
         outfile->Printf("  Computing range-separated integrals for PK\n");
@@ -118,104 +115,14 @@ void PKJK::preiterations()
 
     }
 
-    /*
-     * For omega, we only need exchange and it's done separately from conventional terms, so we can
-     * use fewer batches in principle.  For now we just use the batching scheme that's already been
-     * computed for the conventional J/K combo, above
-     */
-/*    if(do_wK_){
-        for(int batch = 0; batch < nbatches; ++batch){
-            size_t min_index   = batch_index_min_[batch];
-            size_t max_index   = batch_index_max_[batch];
-            size_t batch_size = max_index - min_index;
-            double *wk_block = new double[batch_size];
-            ::memset(wk_block, '\0', batch_size * sizeof(double));
+    // PK files are written at this point. We are done.
+    timer_off("Total PK formation time");
 
-            IWL *iwl = new IWL(psio_.get(), PSIF_SO_ERF_TEI, cutoff_, 1, 1);
-            Label *lblptr = iwl->labels();
-            Value *valptr = iwl->values();
-            int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
-            size_t bra, ket, braket;
-            double value;
-            bool last_buffer;
-            do{
-                last_buffer = iwl->last_buffer();
-                for(int index = 0; index < iwl->buffer_count(); ++index){
-                    labelIndex = 4*index;
-                    pabs  = abs((int) lblptr[labelIndex++]);
-                    qabs  = (int) lblptr[labelIndex++];
-                    rabs  = (int) lblptr[labelIndex++];
-                    sabs  = (int) lblptr[labelIndex++];
-                    prel  = so2index_[pabs];
-                    qrel  = so2index_[qabs];
-                    rrel  = so2index_[rabs];
-                    srel  = so2index_[sabs];
-                    psym  = so2symblk_[pabs];
-                    qsym  = so2symblk_[qabs];
-                    rsym  = so2symblk_[rabs];
-                    ssym  = so2symblk_[sabs];
-                    value = (double) valptr[index];
-
-                    if ((psym == qsym) && (rsym == ssym)) {
-                        // K (2nd sort)
-                        if (build_k && (prel != qrel) && (rrel != srel)) {
-                            if ((psym == ssym) && (qsym == rsym)) {
-                                bra = INDEX2(prel, srel);
-                                ket = INDEX2(qrel, rrel);
-                                braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
-                                if((braket >= min_index) && (braket < max_index)){
-                                    if ((prel == srel) || (qrel == rrel)) {
-                                        wk_block[braket - min_index] += value;
-                                    } else {
-                                        wk_block[braket - min_index] += 0.5 * value;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // K (1st sort)
-                    if (build_k && (psym == rsym) && (qsym == ssym)) {
-                        bra = INDEX2(prel, rrel);
-                        ket = INDEX2(qrel, srel);
-                        braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
-                        if((braket >= min_index) && (braket < max_index)){
-                            if ((prel == rrel) || (qrel == srel)) {
-                                wk_block[braket - min_index] += value;
-                            } else {
-                                wk_block[braket - min_index] += 0.5 * value;
-                            }
-                        }
-                    }
-                }
-                if (!last_buffer) iwl->fetch();
-            } while (!last_buffer);
-            delete iwl;
-
-            // Halve the diagonal elements held in core
-            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
-                size_t address = INDEX2(pq, pq) - min_index;
-                wk_block[address] *= 0.5;
-            }
-
-            char *label = new char[100];
-            sprintf(label, "wK Block (Batch %d)", batch);
-            psio_->write_entry(pk_file_, label, (char*) wk_block, batch_size * sizeof(double));
-            delete [] label;
-
-            delete [] wk_block;
-        } // End of loop over batches
-    }
-
-    delete [] orb_offset;
-
-//    if(!file_was_open);
-        psio_->close(pk_file_, 1);
-*/
 }
 
 void PKJK::compute_JK()
 {
+    timer_on("PK computes JK");
     // We form the vector containing the density matrix triangular elements
     PKmanager_->prepare_JK(D_ao_,C_left_ao_,C_right_ao_);
 
@@ -232,6 +139,8 @@ void PKJK::compute_JK()
     }
 
     PKmanager_->finalize_JK();
+
+    timer_off("PK computes JK");
 
 }
 
