@@ -1,12 +1,7 @@
 /*
- * @BEGIN LICENSE
+ *@BEGIN LICENSE
  *
- * Psi4: an open-source quantum chemistry software package
- *
- * Copyright (c) 2007-2016 The Psi4 Developers.
- *
- * The copyrights for code used from other parties are included in
- * the corresponding files.
+ * PSI4: an ab initio quantum chemistry software package
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * @END LICENSE
+ *@END LICENSE
  */
 
 #include <libmints/mints.h>
@@ -74,6 +69,10 @@ void CDJK::initialize_JK_core()
     timer_on("CD: cholesky decomposition");
     boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
+    if(df_ints_io_ == "LOAD")
+    {
+        Ch->read_previous_cholesky_vector();
+    }
     Ch->choleskify();
     ncholesky_  = Ch->Q();
 
@@ -107,10 +106,9 @@ void CDJK::initialize_JK_core()
 
     if (df_ints_io_ == "SAVE") {
         // stick ncholesky in process environment for other codes that may use the integrals
-        Process::environment.globals["NAUX (SCF)"] = (double)ncholesky_;
-
         psio_->open(unit_,PSIO_OPEN_NEW);
-        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->write_entry(unit_, "length", (char*)&ncholesky_, sizeof(long int));
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Lp[0], sizeof(double) * nbf * nbf * ncholesky_);
         psio_->close(unit_,1);
     }
 }

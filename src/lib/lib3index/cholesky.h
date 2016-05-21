@@ -1,12 +1,7 @@
 /*
- * @BEGIN LICENSE
+ *@BEGIN LICENSE
  *
- * Psi4: an open-source quantum chemistry software package
- *
- * Copyright (c) 2007-2016 The Psi4 Developers.
- *
- * The copyrights for code used from other parties are included in
- * the corresponding files.
+ * PSI4: an ab initio quantum chemistry software package
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * @END LICENSE
+ *@END LICENSE
  */
 
 #ifndef THREE_INDEX_CHOLESKY
@@ -45,6 +40,8 @@ protected:
     SharedMatrix L_;
     /// Number of columns required, if choleskify() called
     size_t Q_;
+    /// Read a previous cholesky vector (only need to use for ERI)
+    bool read_previous_cholesky_vector_ = false;
 
 public:
     /*!
@@ -72,6 +69,11 @@ public:
     virtual void compute_diagonal(double* target) = 0;
     /// Row row of the original square tensor, provided by the subclass
     virtual void compute_row(int row, double* target) = 0;
+    virtual void read_previous_cholesky_vector()
+    {
+        read_previous_cholesky_vector_ = false;
+    }
+
 };
 
 class CholeskyMatrix : public Cholesky {
@@ -100,6 +102,10 @@ public:
     virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
+    virtual void read_previous_cholesky_vector()
+    {
+        read_previous_cholesky_vector_ = true;
+    }
 };
 
 class CholeskyMP2 : public Cholesky {
