@@ -54,6 +54,9 @@ from . import proc_util
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html
 
+# List of SCF methods that do not write the IWL integral file
+no_iwl_scf = ['DF', 'CD', 'PK', 'DIRECT']
+
 def select_mp2(name, **kwargs):
     """Function selecting the algorithm for a MP2 energy call
     and directing to specified or best-performance default modules.
@@ -1191,6 +1194,9 @@ def run_dcft(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+
     dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
 
@@ -1584,7 +1590,7 @@ def run_occ(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
@@ -1652,7 +1658,7 @@ def run_occ_gradient(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
@@ -1838,9 +1844,8 @@ def run_ccenergy(name, **kwargs):
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
-        mints = psi4.MintsHelper(ref_wfn.basisset())
-        mints.integrals()
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
@@ -1938,9 +1943,8 @@ def run_bccd(name, **kwargs):
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF'):
         ref_wfn.semicanonicalize()
 
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
-        mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
-        mints.integrals()
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
@@ -2393,6 +2397,10 @@ def run_adc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    # Make sure the integral file gets written to disk.
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+
     return psi4.adc(ref_wfn)
 
 
@@ -2571,7 +2579,7 @@ def run_detci(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+        if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     ci_wfn = psi4.detci(ref_wfn)
@@ -2635,9 +2643,8 @@ def run_dmrgscf(name, **kwargs):
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
-        mints = psi4.MintsHelper(ref_wfn.basisset())
-        mints.integrals()
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
+        psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2661,7 +2668,7 @@ def run_dmrgci(name, **kwargs):
 
     # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
     # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
@@ -3388,7 +3395,7 @@ def run_fnocc(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # if the scf type is df/cd, then the ao integrals were never written to disk.
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
         # do we generate 4-index eri's with 3-index ones, or do we want conventional eri's?
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
@@ -3486,7 +3493,7 @@ def run_cepa(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+    if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
         if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
@@ -3556,7 +3563,7 @@ def run_detcas(name, **kwargs):
                 raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
+        if psi4.get_option('SCF', 'SCF_TYPE') in no_iwl_scf:
             psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
 

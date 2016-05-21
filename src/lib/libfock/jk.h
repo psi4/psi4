@@ -578,6 +578,9 @@ class PKJK : public JK {
     /// The PSIO instance to use for I/O
     boost::shared_ptr<PSIO> psio_;
 
+    /// Options object
+    Options& options_;
+
     /// The pk file to use for storing the pk batches
     int pk_file_;
 

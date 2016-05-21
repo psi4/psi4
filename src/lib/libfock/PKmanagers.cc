@@ -81,6 +81,10 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
     std::string algo = options.get_str("PK_ALGO");
     bool noincore = options.get_bool("PK_NO_INCORE");
 
+    // Approximate number of batches beyond which the Yoshimine algorithm should be preferred
+    // Estimated from a single example on a nucleic base, there may be a better number
+    int algo_factor = 40;
+
     size_t nbf = primary->nbf();
     size_t pk_size = nbf * (nbf + 1) / 2;
     pk_size = pk_size * (pk_size + 1) / 2;
@@ -90,14 +94,37 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
         ncorebuf = 3;
     }
 
+    bool do_reord = false;
+    bool do_yosh = false;
+    bool do_incore = false;
+    if(options["PK_ALGO"].has_changed()) {
+      if(algo == "REORDER") {
+        do_reord = true;
+      } else if (algo == "YOSHIMINE") {
+        do_yosh = true;
+      }
+    } else {
+      if ( algo_factor * memory < pk_size) {
+        do_reord = true;
+      } else {
+        do_yosh = true;
+      }
+    }
+
+    if(ncorebuf * pk_size < memory && !noincore) do_incore = true;
+
     std::shared_ptr<PKManager> pkmgr;
 
-    if(ncorebuf * pk_size < memory && !noincore) {
+    if(do_incore) {
         pkmgr = std::shared_ptr<PKManager>(new PKMgrInCore(primary,memory,options));
-    } else if(algo == "REORDER") {
+    // Estimate that we'll need less than 40 buffers: do integral reorder
+    } else if (do_reord) {
         pkmgr = std::shared_ptr<PKManager>(new PKMgrReorder(psio,primary,memory,options));
-    } else if (algo == "YOSHIMINE") {
+    // Low memory case: Yoshimine should be faster
+    } else if (do_yosh) {
         pkmgr = std::shared_ptr<PKManager>(new PKMgrYoshimine(psio,primary,memory,options));
+    } else {
+      throw PSIEXCEPTION("PK algorithm selection error.\n");
     }
 
     // Set do_wK and value of omega if necessary
@@ -456,7 +483,7 @@ PKMgrDisk::PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> p
           size_t memory, Options &options) : PKManager(primary,memory,options) {
     psio_ = psio;
     AIO_ = std::shared_ptr<AIOHandler>(new AIOHandler(psio_));
-    max_batches_ = options.get_int("MAX_BUCKETS");
+    max_batches_ = options.get_int("PK_MAX_BUCKETS");
     pk_file_ = PSIF_SO_PK;
 
     // No current writing since we are constructing
@@ -539,6 +566,10 @@ void PKMgrDisk::batch_sizing() {
             batch_index_max_.pop_back();
             batch_pq_min_.pop_back();
             batch_index_min_.pop_back();
+            // The last batch disappeared thus we need to correct batch_for_pq
+            for(size_t i = 0; i < batch_for_pq_.size(); ++i) {
+              if(batch_for_pq_[i] == lastb) batch_for_pq_[i]--;
+            }  
         }
     }
 
@@ -795,7 +826,6 @@ void PKMgrReorder::prestripe_files() {
         label_K_.push_back(PKWorker::get_label_K(batch));
         AIO()->zero_disk(pk_file(),label_K_[batch],1,batch_size);
     }
-
 }
 
 // Pre-striping PK file for wK
