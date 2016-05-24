@@ -2626,7 +2626,8 @@ def run_dmrgscf(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'])
+        ['SCF', 'SCF_TYPE'],
+        ['DMRG', 'DMRG_CASPT2'])
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2638,6 +2639,9 @@ def run_dmrgscf(name, **kwargs):
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
         mints = psi4.MintsHelper(ref_wfn.basisset())
         mints.integrals()
+
+    if 'CASPT2' in name.upper():
+        psi4.set_local_option("DMRG", "DMRG_CASPT2", True) 
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2652,7 +2656,7 @@ def run_dmrgci(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'],
-        ['DMRG', 'DMRG_MAXITER'])
+        ['DMRG', 'DMRG_MAX_ITER'])
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2664,7 +2668,7 @@ def run_dmrgci(name, **kwargs):
     if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
         psi4.MintsHelper(ref_wfn.basisset()).integrals()
 
-    psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
+    psi4.set_local_option('DMRG', 'DMRG_MAX_ITER', 1)
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
