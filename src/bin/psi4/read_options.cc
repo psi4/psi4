@@ -4610,6 +4610,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     }
     if (name == "DERIV"|| options.read_globals()) {
         options.add_bool("DERIV_TPDM_PRESORTED", false);
+        options.add_bool("DERIV_DENSITY_BACKTRANSFORMED", false);
     }
 
   return true;
