@@ -31,6 +31,9 @@
 #include <psi4-dec.h>
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.h>
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 namespace psi {
 
@@ -53,7 +56,6 @@ void Cholesky::choleskify()
 
         size_t n = N();
         L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
-        outfile->Printf("\n Q_: %d n: %d", Q_, n);
 
         double** Lp = L_->pointer();
         psio->read_entry(file_unit,"(Q|mn) Integrals",(char*) Lp[0], sizeof(double) * Q_ * n);
@@ -73,7 +75,7 @@ void Cholesky::choleskify()
 
         // Get the diagonal (Q|Q)^(0)
         double* diag = new double[n];
-        outfile->Printf("\n Compute diagonal:");
+        //outfile->Printf("\n Compute diagonal:");
         Timer diagonal_time;
         compute_diagonal(diag);
         outfile->Printf(" %8.6f s\n", diagonal_time.get());
@@ -85,8 +87,8 @@ void Cholesky::choleskify()
         std::vector<int> pivots;
 
         // Cholesky procedure
+        Timer cholesky_procedure;
         while (Q_ < n) {
-            Timer cholesky_iter;
 
             // Select the pivot
             size_t pivot = 0;
@@ -107,25 +109,20 @@ void Cholesky::choleskify()
 
             // Check to see if memory constraints are OK
             if (Q_ > max_rows) {
-                throw PSIEXCEPTION("Cholesky: Memory constraints exceeded. Fire your theorist.");
+                is_disk_ = true;
             }
 
             // If here, we're really going to add this row
             L.push_back(new double[n]);
 
             // (m|Q)
-            outfile->Printf("\n Compute_row: ");
-            Timer compute_row_time;
             compute_row(pivot, L[Q_]);
-            outfile->Printf(" %8.6f s\n", compute_row_time.get());
 
             // [(m|Q) - L_m^P L_Q^P]
-            outfile->Printf("\n C_DAXPY: ");
             Timer daxpy_time;
             for (size_t P = 0; P < Q_; P++) {
                 C_DAXPY(n,-L[P][pivots[Q_]],L[P],1,L[Q_],1);
             }
-            outfile->Printf("%8.6f s", daxpy_time.get());
 
             // 1/L_QQ [(m|Q) - L_m^P L_Q^P]
             C_DSCAL(n, 1.0 / L_QQ, L[Q_], 1);
@@ -149,16 +146,19 @@ void Cholesky::choleskify()
             }
 
             Q_++;
-            outfile->Printf("\n Cholesky Iter: %8.6f s", cholesky_iter.get());
         }
+        //outfile->Printf("\n Cholesky Procedure takes %8.8f s", cholesky_procedure.get());
 
         // Copy into a more permanant Matrix object
-        L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
-        double** Lp = L_->pointer();
+        if(!is_disk_)
+        {
+            L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
+            double** Lp = L_->pointer();
 
-        for (size_t Q = 0; Q < Q_; Q++) {
-            ::memcpy(static_cast<void*>(Lp[Q]), static_cast<void*>(L[Q]), n * sizeof(double));
-            delete[] L[Q];
+            for (size_t Q = 0; Q < Q_; Q++) {
+                ::memcpy(static_cast<void*>(Lp[Q]), static_cast<void*>(L[Q]), n * sizeof(double));
+                delete[] L[Q];
+            }
         }
     }
 }
@@ -196,6 +196,9 @@ CholeskyERI::CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwar
     integral_(integral), schwarz_(schwarz), Cholesky(delta, memory)
 {
     basisset_ = integral_->basis();
+    //{
+    //    integral_threads_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+    //}
 }
 CholeskyERI::~CholeskyERI()
 {
@@ -206,10 +209,26 @@ size_t CholeskyERI::N()
 }
 void CholeskyERI::compute_diagonal(double* target)
 {
+    //outfile->Printf("\n Compute Diagonal integrals: ");
+    Timer diagonal_ints;
     const double* buffer = integral_->buffer();
+    //int nthread = 1;
+    //#ifdef _OPENMP
+    //    nthread = omp_get_max_threads();
+    //#endif
+    //std::vector<const double*> buffer;
+    //for(int thread = 0; thread < nthread; thread++)
+    //{
+    //    buffer.push_back(integral_threads_[thread]->buffer());
+    //}
 
+    //#pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = 0; N < basisset_->nshell(); N++) {
+     //       int thread = 0;
+     //       #ifdef _OPENMP
+     //           thread = omp_get_thread_num();
+     //       #endif
 
             integral_->compute_shell(M,N,M,N);
 
@@ -226,11 +245,12 @@ void CholeskyERI::compute_diagonal(double* target)
             }
         }
     }
+//    outfile->Printf("\n Diagonal Done in %8.8f s.", diagonal_ints.get());
 }
 void CholeskyERI::compute_row(int row, double* target)
 {
-    const double* buffer = integral_->buffer();
-
+//    outfile->Printf("\n Row computed takes ");
+    Timer chol_row;
     size_t r = row / basisset_->nbf();
     size_t s = row % basisset_->nbf();
     size_t R = basisset_->function_to_shell(r);
@@ -243,10 +263,27 @@ void CholeskyERI::compute_row(int row, double* target)
 
     size_t oR = r - rstart;
     size_t os = s - sstart;
+    int nshell = basisset_->nshell();
 
+    //int nthread = 1;
+    //#ifdef _OPENMP
+    //    nthread = omp_get_max_threads();
+    //#endif
+    //std::vector<const double*> buffer;
+    //for(int thread = 0; thread < nthread; thread++)
+    //{
+    //    buffer.push_back(integral_threads_[thread]->buffer());
+    //}
+
+
+    //#pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
-        for (size_t N = 0; N < basisset_->nshell(); N++) {
-
+        for (size_t N = M; N < basisset_->nshell(); N++) {
+ //           int thread = 0;
+ //           #ifdef _OPENMP
+ //               thread = omp_get_thread_num();
+ //           #endif
             integral_->compute_shell(M,N,R,S);
 
             size_t nM = basisset_->shell(M).nfunction();
@@ -257,11 +294,13 @@ void CholeskyERI::compute_row(int row, double* target)
             for (size_t om = 0; om < nM; om++) {
                 for (size_t on = 0; on < nN; on++) {
                     target[(om + mstart) * basisset_->nbf() + (on + nstart)] =
+                    target[(on + nstart) * basisset_->nbf() + (om + mstart)] =
                         buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
                 }
             }
         }
     }
+    //outfile->Printf(" %8.8f s. ", chol_row.get());
 }
 
 CholeskyMP2::CholeskyMP2(SharedMatrix Qia,

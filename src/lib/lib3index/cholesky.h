@@ -22,6 +22,7 @@
 
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
+#include <libmints/sieve.h>
 
 namespace psi {
 
@@ -95,6 +96,7 @@ protected:
     double schwarz_;
     boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<TwoBodyAOInt> integral_;
+    bool is_disk_ = false;
 public:
     CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
     virtual ~CholeskyERI();
