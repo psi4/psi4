@@ -114,7 +114,7 @@ void DFOCC::ccsdl_l2_amps()
 
     // WabefL2
     if (Wabef_type_ == "AUTO") {
-	if (!do_4vex_hm) ccsdl_WabefL2();
+	if (!do_ppl_hm) ccsdl_WabefL2();
 	else {
 	    ccsdl_LijmeL2_high_mem();
 	    ccsdl_WabefL2_high_mem();

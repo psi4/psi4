@@ -93,7 +93,7 @@ void DFOCC::ccsd_t2_amps()
 
     // WabefT2
     if (Wabef_type_ == "AUTO") {
-	if (!do_4vex_hm) ccsd_Wabef2T2();
+	if (!do_ppl_hm) ccsd_Wabef2T2();
 	else {
 	    ccsd_WijamT2_high_mem();
 	    ccsd_WabefT2_high_mem();
@@ -103,6 +103,10 @@ void DFOCC::ccsd_t2_amps()
     else if (Wabef_type_ == "HIGH_MEM") {
 	ccsd_WijamT2_high_mem();
 	ccsd_WabefT2_high_mem();
+    }
+    else if (Wabef_type_ == "CD") {
+	ccsd_WijamT2();
+	ccsd_WabefT2_cd();
     }
 
     // Denom
@@ -226,3 +230,4 @@ void DFOCC::ccsd_tau_tilde_amps(SharedTensor2d &U, SharedTensor2d &T)
 }// end ccsd_tau_tilde_amps
 
 }} // End Namespaces
+

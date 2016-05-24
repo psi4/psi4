@@ -78,6 +78,7 @@ void DFOCC::common_init()
     tol_t2=options_.get_double("R_CONVERGENCE");
     tol_pcg=options_.get_double("PCG_CONVERGENCE");
     reg_param=options_.get_double("REG_PARAM");
+    tol_ldl=options_.get_double("CHOLESKY_TOLERANCE");
 
     orth_type=options_.get_str("ORTH_TYPE");
     opt_method=options_.get_str("OPT_METHOD");
@@ -105,7 +106,7 @@ void DFOCC::common_init()
     mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
     qchf_=options_.get_str("QCHF");
     cc_lambda_=options_.get_str("CC_LAMBDA");
-    Wabef_type_=options_.get_str("WABEF_TYPE");
+    Wabef_type_=options_.get_str("PPL_TYPE");
     triples_iabc_type_=options_.get_str("TRIPLES_IABC_TYPE");
     do_cd=options_.get_str("CHOLESKY");
 
@@ -380,7 +381,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE") outfile->Printf("                    CD-LCCD   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision February 19, 2016\n") ;
+   outfile->Printf("              Latest Revision April 17, 2016\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -535,3 +536,4 @@ double DFOCC::compute_energy()
 } // end of compute_energy
 
 }}
+

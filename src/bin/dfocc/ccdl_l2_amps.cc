@@ -89,7 +89,7 @@ void DFOCC::ccdl_l2_amps()
 
     // WabefL2
     if (Wabef_type_ == "AUTO") {
-	if (!do_4vex_hm) ccdl_WabefL2();
+	if (!do_ppl_hm) ccdl_WabefL2();
 	else ccsdl_WabefL2_high_mem();
     }
     else if (Wabef_type_ == "LOW_MEM") ccdl_WabefL2();
