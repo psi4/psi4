@@ -80,7 +80,6 @@ void CDJK::initialize_JK_core()
         psio_->read_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
         psio_->close(unit_,1);
         Process::environment.globals["NAUX (SCF)"] = ncholesky_;
-        outfile->Printf("\n Loaded cholesky integrals");
         timer_off("CD: cholesky decomposition");
         return;
     }
