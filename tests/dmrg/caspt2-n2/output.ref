@@ -63,7 +63,7 @@ set dmrg dmrg_active_space    NO  # INPUT; NO; LOC
 set dmrg dmrg_loc_random      false
 
 #set dmrg dmrg_caspt2          true
-set dmrg dmrg_caspt2_orb      pseduocanonical
+set dmrg dmrg_caspt2_orb      pseudocanonical
 set dmrg dmrg_ipea            0.0
 set dmrg dmrg_imag_shift      0.0
 
