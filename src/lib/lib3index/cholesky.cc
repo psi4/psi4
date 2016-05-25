@@ -78,7 +78,7 @@ void Cholesky::choleskify()
         //outfile->Printf("\n Compute diagonal:");
         Timer diagonal_time;
         compute_diagonal(diag);
-        outfile->Printf(" %8.6f s\n", diagonal_time.get());
+        //outfile->Printf(" %8.6f s\n", diagonal_time.get());
 
         // Temporary cholesky factor
         std::vector<double*> L;
@@ -109,7 +109,6 @@ void Cholesky::choleskify()
 
             // Check to see if memory constraints are OK
             if (Q_ > max_rows) {
-                is_disk_ = true;
             }
 
             // If here, we're really going to add this row
@@ -150,15 +149,12 @@ void Cholesky::choleskify()
         //outfile->Printf("\n Cholesky Procedure takes %8.8f s", cholesky_procedure.get());
 
         // Copy into a more permanant Matrix object
-        if(!is_disk_)
-        {
-            L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
-            double** Lp = L_->pointer();
+        L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
+        double** Lp = L_->pointer();
 
-            for (size_t Q = 0; Q < Q_; Q++) {
-                ::memcpy(static_cast<void*>(Lp[Q]), static_cast<void*>(L[Q]), n * sizeof(double));
-                delete[] L[Q];
-            }
+        for (size_t Q = 0; Q < Q_; Q++) {
+            ::memcpy(static_cast<void*>(Lp[Q]), static_cast<void*>(L[Q]), n * sizeof(double));
+            delete[] L[Q];
         }
     }
 }
