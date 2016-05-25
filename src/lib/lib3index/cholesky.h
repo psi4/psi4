@@ -41,8 +41,6 @@ protected:
     SharedMatrix L_;
     /// Number of columns required, if choleskify() called
     size_t Q_;
-    /// Read a previous cholesky vector (only need to use for ERI)
-    bool read_previous_cholesky_vector_ = false;
 
 public:
     /*!
@@ -70,10 +68,6 @@ public:
     virtual void compute_diagonal(double* target) = 0;
     /// Row row of the original square tensor, provided by the subclass
     virtual void compute_row(int row, double* target) = 0;
-    virtual void read_previous_cholesky_vector()
-    {
-        read_previous_cholesky_vector_ = false;
-    }
 
 };
 
@@ -103,10 +97,6 @@ public:
     virtual size_t N();
     virtual void compute_diagonal(double* target);
     virtual void compute_row(int row, double* target);
-    virtual void read_previous_cholesky_vector()
-    {
-        read_previous_cholesky_vector_ = true;
-    }
 };
 
 class CholeskyMP2 : public Cholesky {
