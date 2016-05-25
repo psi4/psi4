@@ -1,30 +1,3 @@
-/*
- * @BEGIN LICENSE
- *
- * Psi4: an open-source quantum chemistry software package
- *
- * Copyright (c) 2007-2016 The Psi4 Developers.
- *
- * The copyrights for code used from other parties are included in
- * the corresponding files.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * @END LICENSE
- */
-
 #include <libmints/mints.h>
 #include <libmints/local.h>
 #include <libthce/thce.h>
@@ -663,7 +636,7 @@ void FISAPT::nuclear()
     //Zs->print();
     //Enucs->print();
 
-    outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
+    outfile->Printf("    Nuclear Repulsion Tot: %24.16E [H]\n", Etot);
     outfile->Printf("\n");
 }
 void FISAPT::coulomb()
@@ -1084,13 +1057,13 @@ void FISAPT::dHF()
 
     // => Print <= //
 
-    outfile->Printf("    E ABC = %24.16E [Eh]\n", EABC);
-    outfile->Printf("    E AC  = %24.16E [Eh]\n", EAC);
-    outfile->Printf("    E BC  = %24.16E [Eh]\n", EBC);
-    outfile->Printf("    E A   = %24.16E [Eh]\n", EA);
-    outfile->Printf("    E B   = %24.16E [Eh]\n", EB);
-    outfile->Printf("    E C   = %24.16E [Eh]\n", EC);
-    outfile->Printf("    E HF  = %24.16E [Eh]\n", EHF);
+    outfile->Printf("    E ABC = %24.16E [H]\n", EABC);
+    outfile->Printf("    E AC  = %24.16E [H]\n", EAC);
+    outfile->Printf("    E BC  = %24.16E [H]\n", EBC);
+    outfile->Printf("    E A   = %24.16E [H]\n", EA);
+    outfile->Printf("    E B   = %24.16E [H]\n", EB);
+    outfile->Printf("    E C   = %24.16E [H]\n", EC);
+    outfile->Printf("    E HF  = %24.16E [H]\n", EHF);
     outfile->Printf("\n");
 
     scalars_["HF"] = EHF;
@@ -1123,10 +1096,10 @@ void FISAPT::elst()
         Elst10 += Elst10_terms[k];
     }
     //for (int k = 0; k < Elst10_terms.size(); k++) {
-    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
+    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
     //}
     scalars_["Elst10,r"] = Elst10;
-    outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n",Elst10);
+    outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -1185,11 +1158,11 @@ void FISAPT::exch()
         Exch10_2M += Exch10_2M_terms[k];
     }
     //for (int k = 0; k < Exch10_2M_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2M_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
-    //outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf H\n",Exch10_2M);
+    //outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2M);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^2, DCBS only) <== //
@@ -1218,11 +1191,11 @@ void FISAPT::exch()
         Exch10_2 += Exch10_2_terms[k];
     }
     //for (int k = 0; k < Exch10_2_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
     //}
     scalars_["Exch10(S^2)"] = Exch10_2;
-    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
-    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2);
+    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf H\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
     //fflush(outfile);
 
     // ==> Exchange Terms (S^\infty, MCBS or DCBS) <== //
@@ -1312,13 +1285,19 @@ void FISAPT::exch()
         Exch10_n += Exch10_n_terms[k];
     }
     //for (int k = 0; k < Exch10_n_terms.size(); k++) {
-    //    outfile->Printf("    Exch10 (%1d)          = %18.12lf [Eh]\n",k+1,Exch10_n_terms[k]);
+    //    outfile->Printf("    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
     //}
     scalars_["Exch10"] = Exch10_n;
-    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf [Eh]\n",Exch10_n);
-    outfile->Printf("    Exch10              = %18.12lf [Eh]\n",Exch10_n);
+    //outfile->Printf("    Exch10      [MCBS]  = %18.12lf H\n",Exch10_n);
+    outfile->Printf("    Exch10              = %18.12lf H\n",Exch10_n);
     outfile->Printf("\n");
     //fflush(outfile);
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
+        sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
+        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
+    }
 
 }
 void FISAPT::ind()
@@ -1473,9 +1452,9 @@ void FISAPT::ind()
     scalars_["Ind20,u (A<-B)"] = Ind20u_AB;
     scalars_["Ind20,u (B<-A)"] = Ind20u_BA;
     scalars_["Ind20,u"] = Ind20u;
-    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf [Eh]\n",Ind20u_AB);
-    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf [Eh]\n",Ind20u_BA);
-    outfile->Printf("    Ind20,u             = %18.12lf [Eh]\n",Ind20u);
+    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
+    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf H\n",Ind20u_BA);
+    outfile->Printf("    Ind20,u             = %18.12lf H\n",Ind20u);
     //fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -1483,11 +1462,24 @@ void FISAPT::ind()
     double ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
     double ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n",ExchInd20u_AB);
-    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n",ExchInd20u_BA);
-    outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n",ExchInd20u);
+    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
+    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
+    outfile->Printf("    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
     outfile->Printf("\n");
     //fflush(outfile);
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        double scale = sSAPT0_scale_;
+        double sExchInd20u_AB = 2.0 * scale * xuA->vector_dot(uB);
+        double sExchInd20u_BA = 2.0 * scale * xuB->vector_dot(uA);
+        double sExchInd20u = sExchInd20u_AB + sExchInd20u_BA;
+        outfile->Printf("    sExch-Ind20,u (A<-B) = %18.12lf H\n",sExchInd20u_AB);
+        outfile->Printf("    sExch-Ind20,u (B<-A) = %18.12lf H\n",sExchInd20u_BA);
+        outfile->Printf("    sExch-Ind20,u        = %18.12lf H\n",sExchInd20u);
+        outfile->Printf("\n");
+        scalars_["sExch-Ind20,u (A<-B)"] = sExchInd20u_AB;
+        scalars_["sExch-Ind20,u (B<-A)"] = sExchInd20u_BA;
+        scalars_["sExch-Ind20,u"] = sExchInd20u_AB + sExchInd20u_BA;
+    }
 
     scalars_["Exch-Ind20,u (A<-B)"] = ExchInd20u_AB;
     scalars_["Exch-Ind20,u (B<-A)"] = ExchInd20u_BA;
@@ -1532,9 +1524,9 @@ void FISAPT::ind()
     scalars_["Ind20,r (A<-B)"] = Ind20r_AB;
     scalars_["Ind20,r (B<-A)"] = Ind20r_BA;
     scalars_["Ind20,r"] = Ind20r;
-    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",Ind20r_AB);
-    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",Ind20r_BA);
-    outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",Ind20r);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
+    outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
     //fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -1542,15 +1534,29 @@ void FISAPT::ind()
     double ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
     double ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
     double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",ExchInd20r_AB);
-    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",ExchInd20r_BA);
-    outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",ExchInd20r);
+    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+    outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
     outfile->Printf("\n");
     //fflush(outfile);
 
     scalars_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
     scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
     scalars_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
+   
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        double scale = sSAPT0_scale_;
+        double sExchInd20r_AB = scale * ExchInd20r_AB;
+        double sExchInd20r_BA = scale * ExchInd20r_BA;
+        double sExchInd20r = sExchInd20r_AB + sExchInd20r_BA;
+        outfile->Printf("    sExch-Ind20,r (A<-B) = %18.12lf H\n",sExchInd20r_AB);
+        outfile->Printf("    sExch-Ind20,r (B<-A) = %18.12lf H\n",sExchInd20r_BA);
+        outfile->Printf("    sExch-Ind20,r        = %18.12lf H\n",sExchInd20r);
+        outfile->Printf("\n");
+        scalars_["sExch-Ind20,r (A<-B)"] = sExchInd20r_AB;
+        scalars_["sExch-Ind20,r (B<-A)"] = sExchInd20r_BA;
+        scalars_["sExch-Ind20,r"] = sExchInd20r_AB + sExchInd20r_BA;
+    }
 
     scalars_["delta HF,r (2)"] = 0.0;
     if (scalars_["HF"] != 0.0) {
@@ -2171,8 +2177,8 @@ void FISAPT::disp()
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
-    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
+    outfile->Printf("    Disp20              = %18.12lf H\n",Disp20);
+    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -2181,8 +2187,11 @@ void FISAPT::print_trailer()
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
     scalars_["Exchange"]       = scalars_["Exch10"];
     scalars_["Induction"]      = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"] + scalars_["delta HF,r (2)"];
+    scalars_["sInduction"]      = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + scalars_["delta HF,r (2)"];
     scalars_["Dispersion"]     = scalars_["Disp20"] + scalars_["Exch-Disp20"];
+    scalars_["sDispersion"]     = scalars_["Disp20"] + scalars_["sExch-Disp20"];
     scalars_["SAPT"]           = scalars_["Electrostatics"] + scalars_["Exchange"] + scalars_["Induction"] + scalars_["Dispersion"];
+    scalars_["sSAPT"]           = scalars_["Electrostatics"] + scalars_["Exchange"] + scalars_["sInduction"] + scalars_["sDispersion"];
 
     double Sdelta = scalars_["Induction"] / (scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"]);
     scalars_["Induction (A<-B)"] = Sdelta * (scalars_["Ind20,r (A<-B)"] + scalars_["Exch-Ind20,r (A<-B)"]);
@@ -2191,88 +2200,44 @@ void FISAPT::print_trailer()
     outfile->Printf("  ==> Results <==\n\n");
 
     outfile->Printf("\n    SAPT Results  \n");
-    std::string scaled = "   ";
-    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scalars_["Electrostatics"] * 1000.0,
-      scalars_["Electrostatics"] * pc_hartree2kcalmol,
-      scalars_["Electrostatics"] * pc_hartree2kJmol);
-    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
-      scalars_["Elst10,r"] * 1000.0,
-      scalars_["Elst10,r"] * pc_hartree2kcalmol,
-      scalars_["Elst10,r"] * pc_hartree2kJmol);
+    outfile->Printf("  -----------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Electrostatics"]*1000.0,scalars_["Electrostatics"]*pc_hartree2kcalmol);
+    outfile->Printf("      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      scalars_["Elst10,r"]*1000.0,scalars_["Elst10,r"]*pc_hartree2kcalmol);
+    outfile->Printf("    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Exchange"]*1000.0,scalars_["Exchange"]*pc_hartree2kcalmol);
+    outfile->Printf("      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Exch10"]*1000.0,scalars_["Exch10"]*pc_hartree2kcalmol);
+    outfile->Printf("      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      scalars_["Exch10(S^2)"]*1000.0,scalars_["Exch10(S^2)"]*pc_hartree2kcalmol);
+    outfile->Printf("    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Induction"]*1000.0,scalars_["Induction"]*pc_hartree2kcalmol);
+    outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Ind20,r"]*1000.0,scalars_["Ind20,r"]*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Exch-Ind20,r"]*1000.0,scalars_["Exch-Ind20,r"]*pc_hartree2kcalmol);
+    outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["delta HF,r (2)"]*1000.0,scalars_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    outfile->Printf("      Induction (A<-B) %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Induction (A<-B)"]*1000.0,scalars_["Induction (A<-B)"]*pc_hartree2kcalmol);
+    outfile->Printf("      Induction (B<-A) %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      scalars_["Induction (B<-A)"]*1000.0,scalars_["Induction (B<-A)"]*pc_hartree2kcalmol);
+    outfile->Printf("    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Dispersion"]*1000.0,scalars_["Dispersion"]*pc_hartree2kcalmol);
+    outfile->Printf("      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["Disp20"]*1000.0,scalars_["Disp20"]*pc_hartree2kcalmol);
+    outfile->Printf("      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      scalars_["Exch-Disp20"]*1000.0,scalars_["Exch-Disp20"]*pc_hartree2kcalmol);
 
-    outfile->Printf("    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["Exchange"] * 1000.0,
-      scalars_["Exchange"] * pc_hartree2kcalmol,
-      scalars_["Exchange"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch10                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scalars_["Exch10"] * 1000.0,
-      scalars_["Exch10"] * pc_hartree2kcalmol,
-      scalars_["Exch10"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
-      scalars_["Exch10(S^2)"] * 1000.0,
-      scalars_["Exch10(S^2)"] * pc_hartree2kcalmol,
-      scalars_["Exch10(S^2)"] * pc_hartree2kJmol);
-
-    outfile->Printf("    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["Induction"] * 1000.0,
-      scalars_["Induction"] * pc_hartree2kcalmol,
-      scalars_["Induction"] * pc_hartree2kJmol);
-    outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scalars_["Ind20,r"] * 1000.0,
-      scalars_["Ind20,r"] * pc_hartree2kcalmol,
-      scalars_["Ind20,r"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["Exch-Ind20,r"] * 1000.0,
-      scalars_["Exch-Ind20,r"] * pc_hartree2kcalmol,
-      scalars_["Exch-Ind20,r"] * pc_hartree2kJmol);
-    outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["delta HF,r (2)"] * 1000.0,
-      scalars_["delta HF,r (2)"] * pc_hartree2kcalmol,
-      scalars_["delta HF,r (2)"] * pc_hartree2kJmol);
-    outfile->Printf("      Induction (A<-B) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["Induction (A<-B)"] * 1000.0,
-      scalars_["Induction (A<-B)"] * pc_hartree2kcalmol,
-      scalars_["Induction (A<-B)"] * pc_hartree2kJmol);
-    outfile->Printf("      Induction (B<-A) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
-      scaled.c_str(),
-      scalars_["Induction (B<-A)"] * 1000.0,
-      scalars_["Induction (B<-A)"] * pc_hartree2kcalmol,
-      scalars_["Induction (B<-A)"] * pc_hartree2kJmol);
-
-    outfile->Printf("    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["Dispersion"] * 1000.0,
-      scalars_["Dispersion"] * pc_hartree2kcalmol,
-      scalars_["Dispersion"] * pc_hartree2kJmol);
-    outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scalars_["Disp20"] * 1000.0,
-      scalars_["Disp20"] * pc_hartree2kcalmol,
-      scalars_["Disp20"] * pc_hartree2kJmol);
-    outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
-      scaled.c_str(),
-      scalars_["Exch-Disp20"] * 1000.0,
-      scalars_["Exch-Disp20"] * pc_hartree2kcalmol,
-      scalars_["Exch-Disp20"] * pc_hartree2kJmol);
-
-    outfile->Printf("  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scalars_["HF"] * 1000.0,
-      scalars_["HF"] * pc_hartree2kcalmol,
-      scalars_["HF"] * pc_hartree2kJmol);
-    outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
-      scaled.c_str(),
-      scalars_["SAPT"] * 1000.0,
-      scalars_["SAPT"] * pc_hartree2kcalmol,
-      scalars_["SAPT"] * pc_hartree2kJmol);
-    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
-
+    outfile->Printf("    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["HF"]*1000.0,scalars_["HF"]*pc_hartree2kcalmol);
+    outfile->Printf("    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+      scalars_["SAPT"]*1000.0,scalars_["SAPT"]*pc_hartree2kcalmol);
+    if (options_.get_bool("sSAPT0_SCALE")) outfile->Printf("    Total sSAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+        scalars_["sSAPT"]*1000.0,scalars_["sSAPT"]*pc_hartree2kcalmol);
     outfile->Printf("\n");
+
     outfile->Printf("    Han Solo: This is *not* gonna work.\n");
     outfile->Printf("    Luke Skywalker: Why didn't you say so before?\n");
     outfile->Printf("    Han Solo: I *did* say so before.\n");
@@ -2651,10 +2616,10 @@ void FISAPT::felst()
         Elst10 += Elst10_terms[k];
     }
     //for (int k = 0; k < Elst10_terms.size(); k++) {
-    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
+    //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
     //}
     //scalars_["Elst10,r"] = Elst10;
-    outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n",Elst10);
+    outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -2851,10 +2816,10 @@ void FISAPT::fexch()
         Exch10_2 += Exch10_2_terms[k];
     }
     //for (int k = 0; k < Exch10_2_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
+    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
     //}
     //scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
     outfile->Printf("\n");
     //fflush(outfile);
 
@@ -2864,11 +2829,6 @@ void FISAPT::fexch()
         double scale = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
-    }
-    if (options_.get_bool("sSAPT0_SCALE")) {
-        sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
-        sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
-        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 }
 void FISAPT::find()
@@ -3128,6 +3088,27 @@ void FISAPT::find()
     double ExchInd20u_AB = 0.0;
     double ExchInd20u_BA = 0.0;
 
+    
+    int sna = 0;
+    int snB = 0;
+    int snb = 0;
+    int snA = 0;
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        sna = na;
+        snB = nB;
+        snb = nb;
+        snA = nA;
+    }
+    
+    boost::shared_ptr<Matrix> sExchInd20u_AB_terms(new Matrix("sExchInd20 [A<-B] (a x B)", sna, snB + snb));
+    boost::shared_ptr<Matrix> sExchInd20u_BA_terms(new Matrix("sExchInd20 [B<-A] (A x b)", snA + sna, snb));
+    double** sExchInd20u_AB_termsp = sExchInd20u_AB_terms->pointer();
+    double** sExchInd20u_BA_termsp = sExchInd20u_BA_terms->pointer();
+
+    double sExchInd20u_AB = 0.0;
+    double sExchInd20u_BA = 0.0;
+
     boost::shared_ptr<Matrix> Indu_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB + nb));
     boost::shared_ptr<Matrix> Indu_BA_terms(new Matrix("Ind [B<-A] (A x b)", nA + na, nb));
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
@@ -3135,13 +3116,16 @@ void FISAPT::find()
 
     double Indu_AB = 0.0;
     double Indu_BA = 0.0;
+    
+    boost::shared_ptr<Matrix> sIndu_AB_terms(new Matrix("sInd [A<-B] (a x B)", sna, snB + snb));
+    boost::shared_ptr<Matrix> sIndu_BA_terms(new Matrix("sInd [B<-A] (A x b)", snA + sna, snb));
+    double** sIndu_AB_termsp = sIndu_AB_terms->pointer();
+    double** sIndu_BA_termsp = sIndu_BA_terms->pointer();
+
+    double sIndu_AB = 0.0;
+    double sIndu_BA = 0.0;
 
     // ==> A <- B Uncoupled <== //
-
-    double scale = 1.0;
-    if (options_.get_bool("sSAPT0_SCALE")) {
-        scale = sSAPT0_scale_;
-    }
 
     fseek(WBarf,0L,SEEK_SET);
     for (int B = 0; B < nB + nb; B++) {
@@ -3163,11 +3147,18 @@ void FISAPT::find()
         // Zip up the Ind20 contributions
         for (int a = 0; a < na; a++) {
             double Jval = 2.0 * C_DDOT(nr,x2Ap[a],1,wBTp[a],1);
-            double Kval = scale * 2.0 * C_DDOT(nr,x2Ap[a],1,uBTp[a],1);
+            double Kval = 2.0 * C_DDOT(nr,x2Ap[a],1,uBTp[a],1);
             Ind20u_AB_termsp[a][B] = Jval;
             Ind20u_AB += Jval;
             ExchInd20u_AB_termsp[a][B] = Kval;
             ExchInd20u_AB += Kval;
+            if (options_.get_bool("sSAPT0_SCALE")) {
+                sExchInd20u_AB_termsp[a][B] = Kval;
+                sExchInd20u_AB += Kval;
+                sIndu_AB_termsp[a][B] = Jval + Kval;
+                sIndu_AB += Jval + Kval;
+            }
+
             Indu_AB_termsp[a][B] = Jval + Kval;
             Indu_AB += Jval + Kval;
         }
@@ -3196,33 +3187,49 @@ void FISAPT::find()
         // Zip up the Ind20 contributions
         for (int b = 0; b < nb; b++) {
             double Jval = 2.0 * C_DDOT(ns,x2Bp[b],1,wATp[b],1);
-            double Kval = 2.0 * scale * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
+            double Kval = 2.0 * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
             Ind20u_BA_termsp[A][b] = Jval;
             Ind20u_BA += Jval;
             ExchInd20u_BA_termsp[A][b] = Kval;
             ExchInd20u_BA += Kval;
+            if (options_.get_bool("sSAPT0_SCALE")) {
+                sExchInd20u_BA_termsp[A][b] = Kval;
+                sExchInd20u_BA += Kval;
+                sIndu_BA_termsp[A][b] = Jval + Kval;
+                sIndu_BA += Jval + Kval;
+            }
             Indu_BA_termsp[A][b] = Jval + Kval;
             Indu_BA += Jval + Kval;
         }
 
     }
+    
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
-    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf [Eh]\n",Ind20u_AB);
-    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf [Eh]\n",Ind20u_BA);
-    outfile->Printf("    Ind20,u             = %18.12lf [Eh]\n",Ind20u);
+    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
+    outfile->Printf("    Ind20,u (B<-A)      = %18.12lf H\n",Ind20u_BA);
+    outfile->Printf("    Ind20,u             = %18.12lf H\n",Ind20u);
     //fflush(outfile);
 
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n",ExchInd20u_AB);
-    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n",ExchInd20u_BA);
-    outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n",ExchInd20u);
+    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
+    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
+    outfile->Printf("    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
     outfile->Printf("\n");
     //fflush(outfile);
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        double sExchInd20u = sExchInd20u_AB + sExchInd20u_BA;
+        outfile->Printf("    sExch-Ind20,u (A<-B) = %18.12lf H\n",sExchInd20u_AB);
+        outfile->Printf("    sExch-Ind20,u (B<-A) = %18.12lf H\n",sExchInd20u_BA);
+        outfile->Printf("    sExch-Ind20,u        = %18.12lf H\n",sExchInd20u);
+        outfile->Printf("\n");
+    }
 
     double Ind = Ind20u + ExchInd20u;
     boost::shared_ptr<Matrix> Ind_AB_terms = Indu_AB_terms;
     boost::shared_ptr<Matrix> Ind_BA_terms = Indu_BA_terms;
+    boost::shared_ptr<Matrix> sInd_AB_terms = sIndu_AB_terms;
+    boost::shared_ptr<Matrix> sInd_BA_terms = sIndu_BA_terms;
 
     if (ind_resp) {
 
@@ -3354,15 +3361,15 @@ void FISAPT::find()
         }
 
         double Ind20r = Ind20r_AB + Ind20r_BA;
-        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",Ind20r_AB);
-        outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",Ind20r_BA);
-        outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",Ind20r);
+        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+        outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",Ind20r_BA);
+        outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
         //fflush(outfile);
 
         double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n",ExchInd20r_AB);
-        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n",ExchInd20r_BA);
-        outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n",ExchInd20r);
+        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+        outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
         outfile->Printf("\n");
         //fflush(outfile);
 
@@ -3384,6 +3391,14 @@ void FISAPT::find()
         double Sdelta = IndHF / IndSAPT0;
         double SrAB = (ind_resp ? 1.0 : (scalars_["Ind20,r (A<-B)"] + scalars_["Exch-Ind20,r (A<-B)"]) / (scalars_["Ind20,u (A<-B)"] + scalars_["Exch-Ind20,u (A<-B)"]));
         double SrBA = (ind_resp ? 1.0 : (scalars_["Ind20,r (B<-A)"] + scalars_["Exch-Ind20,r (B<-A)"]) / (scalars_["Ind20,u (B<-A)"] + scalars_["Exch-Ind20,u (B<-A)"]));
+        
+        double sIndHF = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + dHF;
+        double sIndSAPT0 = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"];
+        
+        double sSdelta = sIndHF / IndSAPT0;
+
+        double sSrAB = (ind_resp ? 1.0 : (scalars_["Ind20,r (A<-B)"] + scalars_["sExch-Ind20,r (A<-B)"]) / (scalars_["Ind20,u (A<-B)"] + scalars_["sExch-Ind20,u (A<-B)"]));
+        double sSrBA = (ind_resp ? 1.0 : (scalars_["Ind20,r (B<-A)"] + scalars_["sExch-Ind20,r (B<-A)"]) / (scalars_["Ind20,u (B<-A)"] + scalars_["sExch-Ind20,u (B<-A)"]));
 
         outfile->Printf("    Scaling for delta HF        = %11.3E\n", Sdelta);
         outfile->Printf("    Scaling for response (A<-B) = %11.3E\n", SrAB);
@@ -3394,26 +3409,68 @@ void FISAPT::find()
 
         Ind_AB_terms->scale(Sdelta * SrAB);
         Ind_BA_terms->scale(Sdelta * SrBA);
+        Ind20u_AB_terms->scale(Sdelta * SrAB);
+        ExchInd20u_AB_terms->scale(Sdelta * SrAB);
+        Ind20u_BA_terms->scale(Sdelta * SrBA);
+        ExchInd20u_BA_terms->scale(Sdelta * SrBA);
+        sInd_AB_terms->scale(sSdelta * SrAB);
+        sInd_BA_terms->scale(sSdelta * SrBA);
     }
 
     matrices_["IndAB_AB"] = boost::shared_ptr<Matrix>(new Matrix("IndAB_AB", nA + na, nB + nb));
-    matrices_["IndBA_AB"] = boost::shared_ptr<Matrix>(new Matrix("IndAB_AB", nA + na, nB + nb));
+    matrices_["IndBA_AB"] = boost::shared_ptr<Matrix>(new Matrix("IndBA_AB", nA + na, nB + nb));
+    matrices_["Ind20u_AB_terms"] = boost::shared_ptr<Matrix>(new Matrix("Ind20uAB_AB", nA + na, nB + nb));
+    matrices_["ExchInd20u_AB_terms"] = boost::shared_ptr<Matrix>(new Matrix("ExchInd20uAB_AB", nA + na, nB + nb));
+    matrices_["Ind20u_BA_terms"] = boost::shared_ptr<Matrix>(new Matrix("Ind20uBA_AB", nA + na, nB + nb));
+    matrices_["ExchInd20u_BA_terms"] = boost::shared_ptr<Matrix>(new Matrix("ExchInd20uBA_AB", nA + na, nB + nb));
     double** EABp = matrices_["IndAB_AB"]->pointer();
     double** EBAp = matrices_["IndBA_AB"]->pointer();
+    double** Ind20ABp = matrices_["Ind20u_AB_terms"]->pointer();
+    double** ExchInd20ABp = matrices_["ExchInd20u_AB_terms"]->pointer();
+    double** Ind20BAp = matrices_["Ind20u_BA_terms"]->pointer();
+    double** ExchInd20BAp = matrices_["ExchInd20u_BA_terms"]->pointer();
     double** EAB2p = Ind_AB_terms->pointer();
     double** EBA2p = Ind_BA_terms->pointer();
+    double** Ind20AB2p = Ind20u_AB_terms->pointer();
+    double** ExchInd20AB2p = ExchInd20u_AB_terms->pointer();
+    double** Ind20BA2p = Ind20u_BA_terms->pointer();
+    double** ExchInd20BA2p = ExchInd20u_BA_terms->pointer();
 
     for (int a = 0; a < na; a++) {
         for (int B = 0; B < nB + nb; B++) {
             EABp[a+nA][B] = EAB2p[a][B];
+            Ind20ABp[a+nA][B] = Ind20AB2p[a][B];
+            ExchInd20ABp[a+nA][B] = ExchInd20AB2p[a][B];
         }
     }
 
     for (int A = 0; A < nA + na; A++) {
         for (int b = 0; b <  nb; b++) {
             EBAp[A][b+nB] = EBA2p[A][b];
+            Ind20BAp[A][b+nB] = Ind20BA2p[A][b];
+            ExchInd20BAp[A][b+nB] = ExchInd20BA2p[A][b];
         }
     }
+    
+    matrices_["sIndAB_AB"] = boost::shared_ptr<Matrix>(new Matrix("sIndAB_AB", snA + sna, snB + snb));
+    matrices_["sIndBA_AB"] = boost::shared_ptr<Matrix>(new Matrix("sIndBA_AB", snA + sna, snB + snb));
+    double** sEABp = matrices_["sIndAB_AB"]->pointer();
+    double** sEBAp = matrices_["sIndBA_AB"]->pointer();
+    double** sEAB2p = sInd_AB_terms->pointer();
+    double** sEBA2p = sInd_BA_terms->pointer();
+
+    for (int a = 0; a < sna; a++) {
+        for (int B = 0; B < snB + snb; B++) {
+            sEABp[a+snA][B] = sEAB2p[a][B];
+        }
+    }
+
+    for (int A = 0; A < snA + sna; A++) {
+        for (int b = 0; b <  snb; b++) {
+            sEBAp[A][b+snB] = sEBA2p[A][b];
+        }
+    }
+
 }
 void FISAPT::fdisp()
 {
@@ -3451,6 +3508,25 @@ void FISAPT::fdisp()
 
     matrices_["Disp_AB"] = boost::shared_ptr<Matrix>(new Matrix("Disp_AB", nA + nfa + na, nB + nfb + nb));
     double** Ep = matrices_["Disp_AB"]->pointer();
+    
+    int snA = 0;
+    int snfa = 0;
+    int sna = 0;
+    int snB = 0;
+    int snfb = 0;
+    int snb = 0;
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        snA = nA;
+        snfa = nfa;
+        sna = na;
+        snB = nB;
+        snfb = nfb;
+        snb = nb;
+    } 
+    
+    matrices_["sDisp_AB"] = boost::shared_ptr<Matrix>(new Matrix("Disp_AB", snA + snfa + sna, snB + snfb + snb));
+    double** sEp = matrices_["sDisp_AB"]->pointer();
 
     // => Stashed Variables <= //
 
@@ -3826,14 +3902,17 @@ void FISAPT::fdisp()
 
     double Disp20 = 0.0;
     double ExchDisp20 = 0.0;
+    double sExchDisp20 = 0.0;
 
     // => Local Targets <= //
 
     std::vector<boost::shared_ptr<Matrix> > E_disp20_threads;
     std::vector<boost::shared_ptr<Matrix> > E_exch_disp20_threads;
+    std::vector<boost::shared_ptr<Matrix> > sE_exch_disp20_threads;
     for (int t = 0; t < nT; t++) {
         E_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("E_disp20",na,nb)));
         E_exch_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("E_exch_disp20",na,nb)));
+        sE_exch_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("sE_exch_disp20",sna,snb)));
     }
 
     // => MO => LO Transform <= //
@@ -3874,7 +3953,7 @@ void FISAPT::fdisp()
 
             long int nrs = nrblock * nsblock;
 
-            #pragma omp parallel for schedule(dynamic) reduction(+: Disp20, ExchDisp20)
+            #pragma omp parallel for schedule(dynamic) reduction(+: Disp20, ExchDisp20, sExchDisp20)
             for (long int rs = 0L; rs < nrs; rs++) {
                 int r = rs / nsblock;
                 int s = rs % nsblock;
@@ -3886,6 +3965,7 @@ void FISAPT::fdisp()
 
                 double** E_disp20Tp = E_disp20_threads[thread]->pointer();
                 double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
+                double** sE_exch_disp20Tp = sE_exch_disp20_threads[thread]->pointer();
 
                 double** Tabp  = Tab[thread]->pointer();
                 double** Vabp  = Vab[thread]->pointer();
@@ -3935,8 +4015,10 @@ void FISAPT::fdisp()
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
-                        E_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
-                        ExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                        E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        if (options_.get_bool("sSAPT0_SCALE")) sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                        ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
             }
@@ -3952,15 +4034,26 @@ void FISAPT::fdisp()
         E_disp20->add(E_disp20_threads[t]);
         E_exch_disp20->add(E_exch_disp20_threads[t]);
     }
-    
-    if (options_.get_bool("sSAPT0_SCALE")) {
-        E_exch_disp20->scale(sSAPT0_scale_);
-    }
 
     for (int a = 0; a < na; a++) {
         for (int b = 0; b < nb; b++) {
             Ep[a+nfa+nA][b+nfb+nB] = E_disp20p[a][b] +
                                      E_exch_disp20p[a][b];
+        }
+    }
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        
+        boost::shared_ptr<Matrix> sE_exch_disp20(new Matrix("sE_exch_disp20", na, nb));
+        sE_exch_disp20->copy(E_exch_disp20);
+        double** sE_exch_disp20p = sE_exch_disp20->pointer();
+        sE_exch_disp20->scale(sSAPT0_scale_);
+    
+        for (int a = 0; a < na; a++) {
+            for (int b = 0; b < nb; b++) {
+                sEp[a+nfa+nA][b+nfb+nB] = E_disp20p[a][b] +
+                                          sE_exch_disp20p[a][b];
+            }
         }
     }
 
@@ -3969,8 +4062,10 @@ void FISAPT::fdisp()
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
-    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
+    if (options_.get_bool("sSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
+    outfile->Printf("    Disp20              = %18.12lf H\n",Disp20);
+    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    if (options_.get_bool("sSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf H\n",sExchDisp20);
     outfile->Printf("\n");
     //fflush(outfile);
 }
@@ -3983,7 +4078,7 @@ void FISAPT::fdrop()
 
     boost::filesystem::path dir(filepath);
     boost::filesystem::create_directory(dir);
-
+    
     std::stringstream ss;
     ss << filepath << "geom.xyz";
     primary_->molecule()->save_xyz_file(ss.str(), true);
@@ -3995,7 +4090,7 @@ void FISAPT::fdrop()
     matrices_["IndAB_AB"]->set_name("IndAB");
     matrices_["IndBA_AB"]->set_name("IndBA");
     matrices_["Disp_AB"]->set_name("Disp");
-
+    
     drop(vectors_["ZA"],filepath);
     drop(vectors_["ZB"],filepath);
     drop(matrices_["Qocc0A"],filepath);
@@ -4005,6 +4100,35 @@ void FISAPT::fdrop()
     drop(matrices_["IndAB_AB"],filepath);
     drop(matrices_["IndBA_AB"],filepath);
     drop(matrices_["Disp_AB"],filepath);
+    
+    
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        std::string sSAPT_filepath = options_.get_str("FISAPT_FsSAPT_FILEPATH");
+        outfile->Printf("    sF-SAPT Data Filepath = %s\n\n", sSAPT_filepath.c_str());
+    
+        boost::filesystem::path sSAPTdir(sSAPT_filepath);
+        boost::filesystem::create_directory(sSAPTdir);     
+
+        std::stringstream sSAPT_ss;
+        sSAPT_ss << sSAPT_filepath << "geom.xyz";
+        primary_->molecule()->save_xyz_file(sSAPT_ss.str(), true);
+
+        matrices_["sIndAB_AB"]->set_name("IndAB");
+        matrices_["sIndBA_AB"]->set_name("IndBA");
+        matrices_["sDisp_AB"]->set_name("Disp");
+
+
+
+        drop(vectors_["ZA"],sSAPT_filepath);
+        drop(vectors_["ZB"],sSAPT_filepath);
+        drop(matrices_["Qocc0A"],sSAPT_filepath);
+        drop(matrices_["Qocc0B"],sSAPT_filepath);
+        drop(matrices_["Elst_AB"],sSAPT_filepath);
+        drop(matrices_["Exch_AB"],sSAPT_filepath);
+        drop(matrices_["sIndAB_AB"],sSAPT_filepath);
+        drop(matrices_["sIndBA_AB"],sSAPT_filepath);
+        drop(matrices_["sDisp_AB"],sSAPT_filepath);
+    }
 }
 
 void FISAPT::drop(boost::shared_ptr<Matrix> A, const std::string& filepath)
@@ -4304,7 +4428,7 @@ void FISAPTSCF::compute_energy()
 
     // => Print Final Info <= //
 
-    outfile->Printf("    Final SCF Energy: %24.16E [Eh]\n\n", scalars_["E SCF"]);
+    outfile->Printf("    Final SCF Energy: %24.16E [H]\n\n", scalars_["E SCF"]);
 
     print_orbitals("Occupied Orbital Energies", 1, eps_occ);
     print_orbitals("Virtual Orbital Energies", nocc+1, eps_vir);
