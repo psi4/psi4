@@ -60,7 +60,7 @@ CDJK::~CDJK()
 }
 void CDJK::initialize_JK_disk()
 {
-    //throw PsiException("Disk algorithm for CD JK not implemented.",__FILE__,__LINE__);
+    throw PsiException("Disk algorithm for CD JK not implemented.",__FILE__,__LINE__);
 }
 
 void CDJK::initialize_JK_core()
