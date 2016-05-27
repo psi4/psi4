@@ -47,6 +47,10 @@
 
 //#define DebugPrint 1
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifndef DebugPrint
 #   define DebugPrint 0
 #endif
