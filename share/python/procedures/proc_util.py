@@ -122,12 +122,12 @@ def oeprop_validator(prop_list):
             raise ValidationError("OEProp: Feature '%s' is not recognized. %s" % (prop, alternatives))
     
 
-def check_iwl_file_from_scf_type(wfn):
+def check_iwl_file_from_scf_type(scf_type, wfn):
     """
     Ensures that a IWL file has been written based on input SCF type.
     """
 
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'PK', 'DIRECT']:
+    if scf_type in ['DF', 'CD', 'PK', 'DIRECT']:
         mints = psi4.MintsHelper(wfn.basisset())
         mints.set_print(1)
         mints.integrals()
