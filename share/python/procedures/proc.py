@@ -1188,7 +1188,7 @@ def run_dcft(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
@@ -1583,7 +1583,7 @@ def run_occ(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1650,7 +1650,7 @@ def run_occ_gradient(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1834,7 +1834,7 @@ def run_ccenergy(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
@@ -1933,7 +1933,7 @@ def run_bccd(name, **kwargs):
         ref_wfn.semicanonicalize()
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
@@ -2387,7 +2387,7 @@ def run_adc(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     return psi4.adc(ref_wfn)
 
@@ -2566,8 +2566,9 @@ def run_detci(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
-        # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(ref_wfn)
+
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     ci_wfn = psi4.detci(ref_wfn)
 
@@ -2629,7 +2630,7 @@ def run_dmrgscf(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2652,7 +2653,7 @@ def run_dmrgci(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
 
@@ -3075,7 +3076,7 @@ def run_mrcc(name, **kwargs):
         mrcc_tmpdir = kwargs['path']
 
     # Check to see if directory already exists, if not, create.
-    if os.path.exists(mrcc_tmpdir) == False:
+    if os.path.exists(mrcc_tmpdir) is False:
         os.mkdir(mrcc_tmpdir)
 
     # Move into the new directory
@@ -3178,7 +3179,7 @@ def run_mrcc(name, **kwargs):
     os.chdir('..')
     try:
         # Delete unless we're told not to
-        if (keep == False and not('path' in kwargs)):
+        if (keep is False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
     except OSError as e:
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
@@ -3377,9 +3378,9 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') is False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
@@ -3473,9 +3474,9 @@ def run_cepa(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') is False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
@@ -3533,7 +3534,7 @@ def run_detcas(name, **kwargs):
             psi4.set_global_option('SCF_TYPE', 'PK')
 
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Second-order SCF requires non-symmetric density matrix support
     if psi4.get_option('DETCI', 'MCSCF_SO'):
