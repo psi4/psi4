@@ -2308,6 +2308,7 @@ void FISAPT::print_trailer()
       scalars_["SAPT"] * pc_hartree2kJmol);
     if (options_.get_bool("sSAPT0_SCALE")) {
         outfile->Printf("  Total sSAPT0 %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+        scaled.c_str(),
         scalars_["sSAPT"] * 1000.0,
         scalars_["sSAPT"] * pc_hartree2kcalmol,
         scalars_["sSAPT"] * pc_hartree2kJmol);
@@ -2906,6 +2907,11 @@ void FISAPT::fexch()
         double scale = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
+    }
+    if (options_.get_bool("sSAPT0_SCALE")) {
+        sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
+        sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
+        outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 }
 void FISAPT::find()
