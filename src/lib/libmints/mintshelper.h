@@ -95,7 +95,7 @@ public:
     int nbf() const;
 
     /// Sets the print level
-    boost::shared_ptr<BasisSet> set_print(int print) {print_ = print; }
+    void set_print(int print) {print_ = print; }
 
     /// Returns petite list that is capable of transforming basis functions (nbf) to SO's.
     boost::shared_ptr<PetiteList> petite_list() const;
