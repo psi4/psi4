@@ -99,8 +99,6 @@ void PKJK::preiterations()
 
     PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options,do_wK_,omega_);
 
-    outfile->Printf(" Computing reordered integrals for PK\n\n");
-
     PKmanager_->initialize();
 
     PKmanager_->form_PK();

@@ -104,7 +104,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
         do_yosh = true;
       }
     } else {
-      if ( algo_factor * memory < pk_size) {
+      if ( algo_factor * memory > pk_size) {
         do_reord = true;
       } else {
         do_yosh = true;
@@ -116,12 +116,15 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
     std::shared_ptr<PKManager> pkmgr;
 
     if(do_incore) {
+        outfile->Printf("  Using in-core PK algorithm.\n");
         pkmgr = std::shared_ptr<PKManager>(new PKMgrInCore(primary,memory,options));
     // Estimate that we'll need less than 40 buffers: do integral reorder
     } else if (do_reord) {
+        outfile->Printf("  Using integral reordering PK algorithm.\n");
         pkmgr = std::shared_ptr<PKManager>(new PKMgrReorder(psio,primary,memory,options));
     // Low memory case: Yoshimine should be faster
     } else if (do_yosh) {
+        outfile->Printf("  Using Yoshimine PK algorithm.\n");
         pkmgr = std::shared_ptr<PKManager>(new PKMgrYoshimine(psio,primary,memory,options));
     } else {
       throw PSIEXCEPTION("PK algorithm selection error.\n");
@@ -518,6 +521,7 @@ void PKMgrDisk::batch_sizing() {
     size_t pb, qb, rb, sb;
     int batch = 0;
 
+    outfile->Printf("  Sizing the integral batches needed.\n");
     batch_index_min_.push_back(0);
     batch_pq_min_.push_back(0);
     batch_for_pq_.push_back(0);
@@ -584,6 +588,7 @@ void PKMgrDisk::batch_sizing() {
     // Finally, we want to store the pairs of indices p,q corresponding
     // to min pq and max pq for each batch (useful for non-sym. density matrices)
     // We go beyond the number of pq to make sure we include the last one.
+    outfile->Printf("  Building batch lookup table.\n");
     ind_for_pq_[0] = std::make_pair(0,0);
     int nb = 0;
     for(int p = 0; p <= nbf(); ++p) {
@@ -945,13 +950,25 @@ void PKMgrYoshimine::prestripe_files() {
     num_iwlbuf += batch_ind_min().size();
     size_t iwlsize_bytes = num_iwlbuf * iwl_int_size_;
     size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
-    AIO()->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,iwlsize);
+    // We need to check whether iwlsize bytes can actually fit 
+    // in memory. 
+    size_t safemem = memory() * 9 / 10;
+    size_t nrows = iwlsize / safemem;
+    size_t leftover = iwlsize % safemem;
+    safemem = std::min(iwlsize, safemem);
+    if (nrows > 0 ) {
+        AIO()->zero_disk(iwl_file_J_,IWL_KEY_BUF,nrows,safemem);
+    }
+    AIO()->zero_disk(iwl_file_J_,IWL_KEY_BUF,1,leftover);
 
     // And we do the same for the file containing K buckets
     // We need at most twice as much IWL buffers since integrals can be
     // pre-sorted in two different buckets for K
     psio()->open(iwl_file_K_, PSIO_OPEN_NEW);
-    AIO()->zero_disk(iwl_file_K_, IWL_KEY_BUF, 1, 2*iwlsize);
+    if (nrows > 0) {
+        AIO()->zero_disk(iwl_file_K_, IWL_KEY_BUF, 2*nrows, safemem);
+    }
+    AIO()->zero_disk(iwl_file_K_, IWL_KEY_BUF, 2, leftover);
 }
 
 void PKMgrYoshimine::prestripe_files_wK() {

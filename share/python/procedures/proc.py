@@ -3378,7 +3378,7 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4.get_option('FNOCC', 'USE_DF_INTS') is False:
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
@@ -3474,7 +3474,7 @@ def run_cepa(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4.get_option('FNOCC', 'USE_DF_INTS') is False:
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
