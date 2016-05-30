@@ -5,7 +5,7 @@ import os
 #  [1]
 #  Sends scratch files for all jobs to one place. Usually safe since pid labeled.
 #  Useful when psi4 is run on box from which it's called (not queued cluster system)
-psi4_io.set_default_path('/scratch/parrish/')
+psi4_io.set_default_path('/tmp')
 
 #  [2]
 #  Sends scratch files to directory from which psi4 was called.
