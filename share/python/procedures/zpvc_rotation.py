@@ -29,16 +29,9 @@ from __future__ import print_function
 
 import p4util
 from p4const import *
-
-import collection
-import shelve
-import copy
-import pis4
-# Relative hack for now
 import os
 import sys
 import inspect
-
 path_dir = os.path.realpath(
     os.path.abspath(
         os.path.join(
@@ -46,6 +39,14 @@ path_dir = os.path.realpath(
     )
 )
 sys.path.append(path_dir)
+import findif_response_utils
+
+import collection
+import shelve
+import copy
+import pis4
+# Relative hack for now
+
 
 
 def run_zpvc_rotation(name, **kwargs):
