@@ -25,6 +25,9 @@
 # @END LICENSE
 #
 
+from p4const import *
+import p4util
+import findif_respose_utils
 from __future__ import absolute_import
 from __future__ import print_function
 import collections
@@ -33,12 +36,11 @@ import copy
 import os
 import psi4
 # Relative hack for now
-import os, sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
+import sys
+import inspect
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
 sys.path.append(path_dir)
-import findif_respose_utils
-import p4util
-from p4const import *
+
 
 def run_roa(name, **kwargs):
     """
@@ -55,76 +57,73 @@ def run_roa(name, **kwargs):
 
     # Get list of omega values -> Make sure we only have one wavelength
     # Catch this now before any real work gets done
-    omega = psi4.get_option('CCRESPONSE','OMEGA')
+    omega = psi4.get_option('CCRESPONSE', 'OMEGA')
     if len(omega) > 2:
         raise Exception('ROA scattering can only be performed for one wavelength.')
     else:
         pass
 
-    psi4.print_out('Running ROA computation. Subdirectories for each '
-              'required displaced geometry have been created.\n\n')
+    psi4.print_out(
+        'Running ROA computation. Subdirectories for each '
+        'required displaced geometry have been created.\n\n')
 
-    dbno=0
-    ### Initialize database
-    db = shelve.open('database',writeback=True)
-    ### Check if final result is in here
-    # if we have already computed roa, back up the dict
-    # copy it setting this flag to false and continue
+    dbno = 0
+    # Initialize database
+    db = shelve.open('database', writeback=True)
+    # Check if final result is in here
+    # ->if we have already computed roa, back up the dict
+    # ->copy it setting this flag to false and continue
     if db['roa_computed']:
-        db2 = shelve.open('.database.bak{}'.format(dbno),writeback=True)
-        dbno +=1
+        db2 = shelve.open('.database.bak{}'.format(dbno), writeback=True)
+        dbno += 1
         db2 = db
         db2.close()
         db['roa_computed'] = False
 
     if 'inputs_generated' not in db:
-        findif_response_utils.initialize_database(db,'roa')
+        findif_response_utils.initialize_database(db, 'roa')
 
-    ### Generate input files
+    # Generate input files
     if not db['inputs_generated']:
         findif_response_utils.generate_inputs(name, db)
         # handled by helper db['inputs_generated'] = True
 
-    ### If 'serial' calculation, proceed with subdir execution
-
-    ### Check job status
+    # Check job status
     if db['inputs_generated'] and not db['jobs_complete']:
         print('Checking status')
         findif_response_utils.stat(db)
-        for job,status in db['job_status'].items():
-            print("{} --> {}".format(job,status))
+        for job, status in db['job_status'].items():
+            print("{} --> {}".format(job, status))
 
-    ### Compute ROA Scattering
+    # Compute ROA Scattering
     if db['jobs_complete']:
-        mygauge = psi4.get_option('CCRESPONSE','GAUGE')
+        mygauge = psi4.get_option('CCRESPONSE', 'GAUGE')
         consider_gauge = {
-                'LENGTH':   ['Length Gauge'],
-                'VELOCITY': ['Modified Velocity Gauge'],
-                'BOTH':    ['Length Gauge','Modified Velocity Gauge']
-            }
-        gauge_list = [ "{} Results".format(x) for x in consider_gauge[mygauge]]
+            'LENGTH': ['Length Gauge'],
+            'VELOCITY': ['Modified Velocity Gauge'],
+            'BOTH': ['Length Gauge', 'Modified Velocity Gauge']
+        }
+        gauge_list = ["{} Results".format(x) for x in consider_gauge[mygauge]]
         # Gather data
         dip_polar_list = findif_response_utils.sythesize_displaced_tensor(
-                db,
-                'Dipole Polarizability',
-                3
-                )
+            db, 'Dipole Polarizability', 3)
         opt_rot_list = [
             x for x in (
                 findif_response_utils.synthesize_displaced_tensor(
                     db,
                     "Optical Rotation Tensor ({})".format(gauge),
-                    3)
-                for gauge in consider_gauge[mygauge]
+                    3
                 )
-            ]
+                for gauge in consider_gauge[mygauge]
+            )
+        ]
         dip_quad_polar_list = findif_response_utils.synthesize_displaced_tensor(
             db, "Electric-Dipole/Quadrupole Polarizability", 9)
         # Compute Scattering
-            # Run new function (src/bin/ccresponse/scatter.cc)
+        # Run new function (src/bin/ccresponse/scatter.cc)
         psi4.print_out('Running scatter function')
-        step = psi4.get_local_option('FINDIF','DISP_SIZE')
-        for g_indx,gauge in enumerate(opt_rot_list):
+        step = psi4.get_local_option('FINDIF', 'DISP_SIZE')
+        for g_indx, gauge in enumerate(opt_rot_list):
             print('\n\n----------------------------------------------------------------------')
             print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
             print('----------------------------------------------------------------------\n\n')
@@ -136,50 +135,44 @@ def run_roa(name, **kwargs):
     db['roa_computed'] = True
     db.close()
 
+#   SAVE this for when multiple wavelengths works
+# # Get list of omega values
+# omega = psi4.get_option('CCRESPONSE','OMEGA')
+# if len(omega) > 1:
+#     units = copy.copy(omega[-1])
+#     omega.pop()
+# else:
+#     units = 'atomic'
+# wavelength = copy.copy(omega[0])
+# # Set up units for scatter.cc
+# if units == 'NM':
+#     wavelength = (psi_c * psi_h * 1*(10**-9))/(wavelength * psi_hartree2J)
+# if units == 'HZ':
+#     wavelength = wavelength * psi_h / psi_hartree2J
+# if units == 'EV':
+#     wavelength = wavelength / psi_hartree2ev
+# if units == 'atomic':
+#     pass
+# ################################
+# ###                          ###
+# ###    DATABASE STRUCTURE    ###
+# ###                          ###
+# ################################
 
-
-
-        #   SAVE this for when multiple wavelengths works
-            # # Get list of omega values
-            # omega = psi4.get_option('CCRESPONSE','OMEGA')
-            # if len(omega) > 1:
-            #     units = copy.copy(omega[-1])
-            #     omega.pop()
-            # else:
-            #     units = 'atomic'
-            # wavelength = copy.copy(omega[0])
-            # # Set up units for scatter.cc
-            # if units == 'NM':
-            #     wavelength = (psi_c * psi_h * 1*(10**-9))/(wavelength * psi_hartree2J)
-            # if units == 'HZ':
-            #     wavelength = wavelength * psi_h / psi_hartree2J
-            # if units == 'EV':
-            #     wavelength = wavelength / psi_hartree2ev
-            # if units == 'atomic':
-            #     pass
-
-
-
-################################
-###                          ###
-###    DATABASE STRUCTURE    ###
-###                          ###
-################################
-
-#Dict of dicts
-#inputs_generated (boolean)
-#job_status: (ordered Dict)
+# Dict of dicts
+# inputs_generated (boolean)
+# job_status: (ordered Dict)
 #    key-> {atom}_{cord}_{p/m}
 #       val-> (not_started,running,finished)
 #    job_list: (string)
 #        status (string)
-#jobs_complete (boolean)
-#roa_computed (boolean)
+# jobs_complete (boolean)
+# roa_computed (boolean)
 #
 
-#?
-#data: dipole_polarizability
+# ?
+# data: dipole_polarizability
 #    : optical_rotation
 #    : dipole_quadrupole_polarizability
-#?
-#results:
+# ?
+# results:
