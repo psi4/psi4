@@ -2081,6 +2081,11 @@ def run_cc_property(name, **kwargs):
         run_roa(name, **kwargs)
         return  # Don't do anything further
 
+    if 'zpvc_rotation' in response:
+        # perform distributed zpvc to optical rotation
+        run_zpvc_rotation(name, **kwargs)
+        return # Don't do anything further
+
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("""Computing both density- and response-based properties.""")
 
@@ -2236,7 +2241,7 @@ def run_detci_property(name, **kwargs):
     if name in ['mcscf', 'rasscf', 'casscf']:
         ciwfn = run_detcas(name, **kwargs)
     else:
-        ciwfn = run_detci(name, **kwargs) 
+        ciwfn = run_detci(name, **kwargs)
 
     # All property names are just CI
     if 'CI' in name.upper():
@@ -2245,7 +2250,7 @@ def run_detci_property(name, **kwargs):
     states = psi4.get_global_option('avg_states')
     nroots = psi4.get_global_option('num_roots')
     if len(states) != nroots:
-        states = range(1, nroots + 1) 
+        states = range(1, nroots + 1)
 
     # Run OEProp
     oe = psi4.OEProp(ciwfn)
@@ -2263,10 +2268,10 @@ def run_detci_property(name, **kwargs):
             oe.set_title("%s ROOT %d" % (name.upper(), root))
             root = root - 1
             if ciwfn.same_a_b_dens():
-                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True)) 
+                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True))
             else:
-                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True)) 
-                oe.set_Db_mo(ciwfn.get_opdm(root, root, "B", True)) 
+                oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True))
+                oe.set_Db_mo(ciwfn.get_opdm(root, root, "B", True))
             oe.compute()
 
     # Transition density matrices
@@ -2280,10 +2285,10 @@ def run_detci_property(name, **kwargs):
             oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 1, root))
             root = root - 1
             if ciwfn.same_a_b_dens():
-                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True)) 
+                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True))
             else:
-                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True)) 
-                oe.set_Db_mo(ciwfn.get_opdm(0, root, "B", True)) 
+                oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True))
+                oe.set_Db_mo(ciwfn.get_opdm(0, root, "B", True))
             oe.compute()
 
     optstash.restore()
