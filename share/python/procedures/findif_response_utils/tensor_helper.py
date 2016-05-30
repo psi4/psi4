@@ -25,9 +25,10 @@
 # @END LICENSE
 #
 
-"""r
-Module of helper functions for tensor related operations in distributed
-ccresonse calculations
+"""
+Module of helper functions for distributed ccresponse computations.
+
+Defines functions for retrieving tensors computed at displaced geometries.
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -74,9 +75,12 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
     row_tot: ( int ) indicates the number of lines that the matrix data should
         be printed across in the file
 
-        Returns a flattened matrix (list) should be 3*row_tot
-            Throws an exception (Collecting matrix data failed) if it is not
-            the corect size
+        Returns: a flattened matrix (list) should be 3*row_tot
+
+        Throws: Exception (Collecting matrix data failed) if
+                It is found, but not the correct size,
+                It found the matrix header, but no data,
+                It can't find the matrix header in the file
     """
     collect_matrix = False
     n_rows = 0
