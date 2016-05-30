@@ -959,6 +959,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
       /*- Do sSAPT0 exchange-scaling with F-SAPT -*/
       options.add_bool("sSAPT0_SCALE", false);
+      /*- Filepath to drop  sSAPT0 exchange-scaling F-SAPT data -*/
+      options.add_str_i("FISAPT_FsSAPT_FILEPATH", "s-fsapt/");
 
       // => CubicScalarGrid options <= //
 
