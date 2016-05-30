@@ -40,7 +40,7 @@ import p4util
 from p4const import *
 
 
-def synthesize_displaced_tensor(db,signature,row_dim):
+def synthesize_displaced_tensor(db, signature, row_dim):
     """
         Gathers a list of tensors, one at each displaced geometry.
 
@@ -57,12 +57,14 @@ def synthesize_displaced_tensor(db,signature,row_dim):
     result = []
     for job in db['job_status']:
         with open('{}/output.dat'.format(job)) as outfile:
-            result.append(grab_psi4_matrix(outfile,signature,row_dim))
+            result.append(grab_psi4_matrix(outfile, signature, row_dim))
 
     return result
 
+    # END sythesize_displaced_tensor()
 
-def grab_psi4_matrix(outfile, matrix_name,row_tot):
+
+def grab_psi4_matrix(outfile, matrix_name, row_tot):
     """
         Grabs a psi4 matrix printed to the output file
 
@@ -86,32 +88,26 @@ def grab_psi4_matrix(outfile, matrix_name,row_tot):
         if collect_matrix and (n_rows < row_tot):
             try:
                 n_tries += 1
-                if n_tries > (row_tot +13):
+                if n_tries > (row_tot + 13):
                     raise Exception('{} Matrix was unreadable. Scanned {}'
-                            'lines.'.format(matrix_name,n_tries))
+                                    'lines.'.format(matrix_name, n_tries))
                 else:
-                    (index, x,y,z) = line.split()
+                    (index, x, y, z) = line.split()
                     matrix_data.append(float(x))
                     matrix_data.append(float(y))
                     matrix_data.append(float(z))
                     n_rows += 1
             except:
                 pass
-        if (n_rows == row_tot) and (len(matrix_data) != 3*row_tot):
+        if (n_rows == row_tot) and (len(matrix_data) != 3 * row_tot):
             raise Exception('Collecting {} matrix data failed!'
-                    '\nExpected {} elements but only captured {}'.format(
-                         matrix_name,3*row_tot,len(matrix_data)
-                        )
-                    )
-        if len(matrix_data) == 3*row_tot:
+                            '\nExpected {} elements but only captured {}'.format(
+                                matrix_name, 3 * row_tot, len(matrix_data)))
+        if len(matrix_data) == 3 * row_tot:
             return matrix_data
 
+    raise Exception('{} Matrix was not found in the output file, but it was'
+                    ' marked for collection. Check output files in displacement'
+                    'sub-dirs!'.format(matrix_name))
 
-
-
-
-
-
-
-
-
+    # END grab_psi4_matrix()
