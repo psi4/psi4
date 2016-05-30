@@ -29,13 +29,18 @@ from __future__ import print_function
 
 from p4const import *
 import p4util
+import sys
+import inspect
+import os
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
+sys.path.append(path_dir)
+from . import findif_response_utils
 # Relative hack for now
 import sys
 import inspect
 import os
 path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
 sys.path.append(path_dir)
-import findif_respose_utils
 import collections
 import shelve
 import copy
@@ -73,11 +78,15 @@ def run_roa(name, **kwargs):
     # Check if final result is in here
     # ->if we have already computed roa, back up the dict
     # ->copy it setting this flag to false and continue
-    if db['roa_computed']:
+    if ('roa_computed' in db) and ( db['roa_computed'] ):
         db2 = shelve.open('.database.bak{}'.format(dbno), writeback=True)
         dbno += 1
-        db2 = db
+        for key,value in db.iteritems():
+            db2[key]=value
+
         db2.close()
+        db['roa_computed'] = False
+    else:
         db['roa_computed'] = False
 
     if 'inputs_generated' not in db:
@@ -105,7 +114,7 @@ def run_roa(name, **kwargs):
         }
         gauge_list = ["{} Results".format(x) for x in consider_gauge[mygauge]]
         # Gather data
-        dip_polar_list = findif_response_utils.sythesize_displaced_tensor(
+        dip_polar_list = findif_response_utils.synthesize_displaced_tensor(
             db, 'Dipole Polarizability', 3)
         opt_rot_list = [
             x for x in (
@@ -123,7 +132,7 @@ def run_roa(name, **kwargs):
         # Run new function (src/bin/ccresponse/scatter.cc)
         psi4.print_out('Running scatter function')
         step = psi4.get_local_option('FINDIF', 'DISP_SIZE')
-        for g_indx, gauge in enumerate(opt_rot_list):
+        for g_idx, gauge in enumerate(opt_rot_list):
             print('\n\n----------------------------------------------------------------------')
             print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
             print('----------------------------------------------------------------------\n\n')
@@ -132,7 +141,9 @@ def run_roa(name, **kwargs):
             psi4.print_out('----------------------------------------------------------------------\n\n')
             print('roa.py:85 I am not being passed a molecule, grabbing from global :(')
             psi4.scatter(psi4.get_active_molecule(), step, dip_polar_list, gauge, dip_quad_polar_list)
-    db['roa_computed'] = True
+
+        db['roa_computed'] = True
+
     db.close()
 
 #   SAVE this for when multiple wavelengths works
