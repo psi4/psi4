@@ -25,7 +25,5 @@
 # @END LICENSE
 #
 
-
-
 from .db_helper import *
 from .tensor_helper import *

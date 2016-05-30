@@ -24,8 +24,15 @@
 #
 # @END LICENSE
 #
-"""r
-Module of helper functions for distributed ccresponse property computations
+
+"""
+Module of helper functions for ccresponse distributed property calculations.
+Defines functions for interacting with the database created by the run_XXX
+driver function. Properties that are able to use this module should be added to
+the registered_props dictionary. The dictionary key is the top-level input
+properties array argument that indicates the driver should be used. The value
+is the properties array argument that should be used in each subdir
+computation.
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -37,7 +44,13 @@ import psi4
 import p4util
 from p4const import *
 
-def generate_inputs(name,db):
+registered_props = {
+    "roa": "roa_tensor",
+    "zpvc_roation": "roation"
+}
+
+
+def generate_inputs(name, db):
     """
         Generates the input files in each sub-directory of the
         distributed finite differences property calculation
@@ -54,13 +67,13 @@ def generate_inputs(name,db):
 
     # Sanity Check
     # there should be 3 cords * natoms *2 directions (+/-)
-    if not (6*natom ) == len(displacement_geoms):
+    if not (6 * natom) == len(displacement_geoms):
         raise Exception('The number of atomic displacements should be 6 times'
                         ' the number of atoms!')
 
     displacement_names = db['job_status'].keys()
 
-    for n,entry in enumerate(displacement_names):
+    for n, entry in enumerate(displacement_names):
         if not os.path.exists(entry):
             os.makedirs(entry)
 
@@ -70,23 +83,23 @@ def generate_inputs(name,db):
         molecule.set_geometry(displacement_geoms[n])
         molecule.fix_orientation(True)
         molecule.fix_com(True)
-        inputfile = open('{0}/input.dat'.format(entry),'w')
+        inputfile = open('{0}/input.dat'.format(entry), 'w')
         inputfile.write("# This is a psi4 input file auto-generated for computing properties by finite differences.\n\n")
         inputfile.write(
-                inp_template.format(
-                    molname=molecule.name(),
-                    disp=entry,
-                    molecule_info=molecule.create_psi4_string_from_molecule(),
-                    options=p4util.format_options_for_input(),
-                    jobspec="property('{0}', properties=['{1}'])".format(
-                        name,db['prop_string']
-                        )
-                    )
-                )
+            inp_template.format(
+                molname=molecule.name(),
+                disp=entry,
+                molecule_info=molecule.create_psi4_string_from_molecule(),
+                options=p4util.format_options_for_input(),
+                jobspec="property('{0}', properties=['{1}'])".format(
+                    name, db['prop_string'])))
         inputfile.close()
     db['inputs_generated'] = True
 
-def initialize_database(database,prop):
+    # END generate_inputs
+
+
+def initialize_database(database, prop):
     """
         Initialize the database for computation of some property
         using distributed finite differences driver
@@ -94,29 +107,24 @@ def initialize_database(database,prop):
     database: (database) the database object passes from the caller
     prop:  (string) the property that is being computed
     """
-    registered_props = {
-            "roa":"roa_tensor",
-            "roation":"roation_tensor"
-            }
-    database['inputs_generated']         = False
-    database['jobs_complete']            = False
+    database['inputs_generated'] = False
+    database['jobs_complete'] = False
     database['{}_computed'.format(prop)] = False
-    database['prop_string']              = registered_props[prop]
-    database['job_status']               = collections.OrderedDict()
+    database['prop_string'] = registered_props[prop]
+    database['job_status'] = collections.OrderedDict()
     # Populate the job_status dict
     molecule = psi4.get_active_molecule()
-    natom    = molecule.natom()
-    coordinates       = ['x','y','z']
-    step_direction    = ['p','m']
+    natom = molecule.natom()
+    coordinates = ['x', 'y', 'z']
+    step_direction = ['p', 'm']
 
-    for atom in range(1,natom+1):
+    for atom in range(1, natom + 1):
         for coord in coordinates:
             for step in step_direction:
-                job_name = '{}_{}_{}'.format(atom,coord,step)
+                job_name = '{}_{}_{}'.format(atom, coord, step)
                 database['job_status'].update({job_name: 'not_started'})
 
     # End initalize_database()
-
 
 
 def stat(db):
@@ -128,14 +136,14 @@ def stat(db):
         property calculation
 
     """
-    n_finished=0
+    n_finished = 0
     for job, status in db['job_status'].items():
         if status == 'finished':
-            n_finished +=1
-        elif status in ('not_started','running'):
+            n_finished += 1
+        elif status in ('not_started', 'running'):
             try:
                 with open("{}/output.dat".format(job)) as outfile:
-                    outfile.seek(-150,2)
+                    outfile.seek(-150, 2)
                     for line in outfile:
                         if 'Psi4 exiting successfully' in line:
                             db['job_status'][job] = 'finished'
@@ -145,6 +153,8 @@ def stat(db):
                             db['job_status'][job] = 'running'
             except:
                 pass
-    ### check all jobs done?
+    # check all jobs done?
     if n_finished == len(db['job_status'].keys()):
         db['jobs_complete'] = True
+
+    # END stat()
