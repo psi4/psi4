@@ -24,12 +24,12 @@
 #
 # @END LICENSE
 #
+from __future__ import absolute_import
+from __future__ import print_function
 
 from p4const import *
 import p4util
 import findif_respose_utils
-from __future__ import absolute_import
-from __future__ import print_function
 import collections
 import shelve
 import copy
