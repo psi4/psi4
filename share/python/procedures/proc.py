@@ -2081,10 +2081,11 @@ def run_cc_property(name, **kwargs):
         run_roa(name, **kwargs)
         return  # Don't do anything further
 
-    if 'zpvc_rotation' in response:
-        # perform distributed zpvc to optical rotation
-        run_zpvc_rotation(name, **kwargs)
-        return # Don't do anything further
+    # save for later
+    # if 'zpvc_rotation' in response:
+    #     # perform distributed zpvc to optical rotation
+    #     run_zpvc_rotation(name, **kwargs)
+    #     return # Don't do anything further
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("""Computing both density- and response-based properties.""")
