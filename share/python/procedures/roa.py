@@ -29,17 +29,17 @@ from __future__ import print_function
 
 from p4const import *
 import p4util
+# Relative hack for now
+import sys
+import inspect
+import os
+path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
+sys.path.append(path_dir)
 import findif_respose_utils
 import collections
 import shelve
 import copy
-import os
 import psi4
-# Relative hack for now
-import sys
-import inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
-sys.path.append(path_dir)
 
 
 def run_roa(name, **kwargs):
