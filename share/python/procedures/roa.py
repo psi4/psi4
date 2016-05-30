@@ -179,6 +179,7 @@ def run_roa(name, **kwargs):
 #        status (string)
 # jobs_complete (boolean)
 # roa_computed (boolean)
+# prop (string) = roa
 #
 
 # ?
