@@ -24,6 +24,15 @@
 #
 # @END LICENSE
 #
+"""
+Module findif_response_utils
 
+Defines functions/variables that are shared between ccreponse drivers for
+computing properties using a distributed, multiple-input finite differences
+approach.
+
+New drivers should be added to the registered_props array in
+db_helper.py
+"""
 from .db_helper import *
 from .tensor_helper import *

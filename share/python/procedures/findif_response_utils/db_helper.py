@@ -28,11 +28,11 @@
 """
 Module of helper functions for ccresponse distributed property calculations.
 Defines functions for interacting with the database created by the run_XXX
-driver function. Properties that are able to use this module should be added to
-the registered_props dictionary. The dictionary key is the top-level input
-properties array argument that indicates the driver should be used. The value
-is the properties array argument that should be used in each subdir
-computation.
+driver function.
+
+Properties that are able to use this module should be added to
+the registered_props dictionary.
+
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -44,6 +44,17 @@ import psi4
 import p4util
 from p4const import *
 
+"""
+registered_props (dict)
+
+The dictionary key is the top-level input properties array argument that indicates
+the driver should be used. The value is the properties array argument that
+should be used in each subdir computation. There is no halting of KeyErrors
+from this dict run_cc_property should correctly ensure that only appropriate
+drivers are called. In the future running multiple properties may facilitated
+using this dict. For now it is used to properly setup sub-dir input files, and
+nothing else.
+"""
 registered_props = {
     "roa": "roa_tensor",
     "zpvc_roation": "roation"
@@ -57,7 +68,10 @@ def generate_inputs(name, db):
 
     name: ( string ) method name passed to original driver,
     db:   (database) The database object associated with this property
-        calculation.
+          calculation.
+
+    Returns: nothing
+    Throws: Exception if the number of atomic displacements is not correct.
     """
     molecule = psi4.get_active_molecule()
     natom = molecule.natom()
@@ -106,6 +120,9 @@ def initialize_database(database, prop):
 
     database: (database) the database object passes from the caller
     prop:  (string) the property that is being computed
+
+    Returns: nothing
+    Throws: nothing
     """
     database['inputs_generated'] = False
     database['jobs_complete'] = False
@@ -135,6 +152,8 @@ def stat(db):
     db: (database) the database storing information for this distributed
         property calculation
 
+    Returns: nothing
+    Throws: nothing
     """
     n_finished = 0
     for job, status in db['job_status'].items():
