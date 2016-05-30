@@ -81,6 +81,11 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
     std::string algo = options.get_str("PK_ALGO");
     bool noincore = options.get_bool("PK_NO_INCORE");
 
+    // We introduce another safety factor in the memory, otherwise
+    // we are apparently prone to being killed by the OS.
+    //TODO: Check for memory leaks ? Trace memory usage ?
+    memory = memory * 9 / 10;
+
     // Approximate number of batches beyond which the Yoshimine algorithm should be preferred
     // Estimated from a single example on a nucleic base, there may be a better number
     int algo_factor = 40;
