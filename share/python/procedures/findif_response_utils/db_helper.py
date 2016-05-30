@@ -24,6 +24,9 @@
 #
 # @END LICENSE
 #
+"""r
+Module of helper functions for distributed ccresponse property computations
+"""
 from __future__ import absolute_import
 from __future__ import print_function
 import collections
@@ -51,7 +54,7 @@ def generate_inputs(name,db):
 
     # Sanity Check
     # there should be 3 cords * natoms *2 directions (+/-)
-    if not (6*natom ) == len(displacment_geoms):
+    if not (6*natom ) == len(displacement_geoms):
         raise Exception('The number of atomic displacements should be 6 times'
                         ' the number of atoms!')
 
@@ -83,7 +86,7 @@ def generate_inputs(name,db):
         inputfile.close()
     db['inputs_generated'] = True
 
-def initalize_database(database,prop):
+def initialize_database(database,prop):
     """
         Initialize the database for computation of some property
         using distributed finite differences driver
@@ -126,7 +129,7 @@ def stat(db):
 
     """
     n_finished=0
-    for job,status in db['job_status'].items():
+    for job, status in db['job_status'].items():
         if status == 'finished':
             n_finished +=1
         elif status in ('not_started','running'):
@@ -134,7 +137,7 @@ def stat(db):
                 with open("{}/output.dat".format(job)) as outfile:
                     outfile.seek(-150,2)
                     for line in outfile:
-                        if 'Psi4 exiting sucessfully' in line:
+                        if 'Psi4 exiting successfully' in line:
                             db['job_status'][job] = 'finished'
                             n_finished += 1
                             break

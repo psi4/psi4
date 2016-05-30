@@ -25,6 +25,10 @@
 # @END LICENSE
 #
 
+"""r
+Module of helper functions for tensor related operations in distributed
+ccresonse calculations
+"""
 from __future__ import absolute_import
 from __future__ import print_function
 import collections
@@ -73,7 +77,7 @@ def grab_psi4_matrix(outfile, matrix_name,row_tot):
             the corect size
     """
     collect_matrix = False
-    n_nrows = 0
+    n_rows = 0
     n_tries = 0
     matrix_data = []
     for line in outfile:
