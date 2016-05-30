@@ -34,16 +34,12 @@ import psi4
 import p4util
 from p4const import *
 
-def generate_inputs(name,prop,db):
+def generate_inputs(name,db):
     """
         Generates the input files in each sub-directory of the
         distributed finite differences property calculation
 
     name: ( string ) method name passed to original driver,
-    prop: ( string ) property type being computed.
-      ** Warning this will very soon be depreciated for **
-      ** a more general database structure that contains this **
-      ** information is being developed **
     db:   (database) The database object associated with this property
         calculation.
     """
@@ -80,11 +76,12 @@ def generate_inputs(name,prop,db):
                     molecule_info=molecule.create_psi4_string_from_molecule(),
                     options=p4util.format_options_for_input(),
                     jobspec="property('{0}', properties=['{1}'])".format(
-                        name,prop
+                        name,db['prop_string']
                         )
                     )
                 )
         inputfile.close()
+    db['inputs_generated'] = True
 
 def initalize_database(database,prop):
     """
