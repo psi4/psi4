@@ -49,26 +49,22 @@ registered_props (dict)
 
 The dictionary key is the top-level input properties array argument that indicates
 the driver should be used. The value is the properties array argument that
-should be used in each subdir computation. There is no halting of KeyErrors
-from this dict run_cc_property should correctly ensure that only appropriate
-drivers are called. In the future running multiple properties may facilitated
-using this dict. For now it is used to properly setup sub-dir input files, and
-nothing else.
+should be used in each subdir computation.  Drivers using this module will be
+added as needed.
 """
 registered_props = {
-    "roa": "roa_tensor",
-    "zpvc_roation": "roation"
+    "roa": "roa_tensor"
 }
 
 
 def generate_inputs(name, db):
     """
         Generates the input files in each sub-directory of the
-        distributed finite differences property calculation
+        distributed finite differences property calculation.
 
-    name: ( string ) method name passed to original driver,
+    name: ( string ) method name passed to calling driver,
     db:   (database) The database object associated with this property
-          calculation.
+          calculation. On exit this db['inputs_generated'] has been set True
 
     Returns: nothing
     Throws: Exception if the number of atomic displacements is not correct.
@@ -98,7 +94,8 @@ def generate_inputs(name, db):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
         inputfile = open('{0}/input.dat'.format(entry), 'w')
-        inputfile.write("# This is a psi4 input file auto-generated for computing properties by finite differences.\n\n")
+        inputfile.write("# This is a psi4 input file auto-generated for"
+            "computing properties by finite differences.\n\n")
         inputfile.write(
             inp_template.format(
                 molname=molecule.name(),
@@ -118,7 +115,7 @@ def initialize_database(database, prop):
         Initialize the database for computation of some property
         using distributed finite differences driver
 
-    database: (database) the database object passes from the caller
+    database: (database) the database object passed from the caller
     prop:  (string) the property that is being computed
 
     Returns: nothing
@@ -141,7 +138,7 @@ def initialize_database(database, prop):
                 job_name = '{}_{}_{}'.format(atom, coord, step)
                 database['job_status'].update({job_name: 'not_started'})
 
-    # End initalize_database()
+    # END initialize_database()
 
 
 def stat(db):
