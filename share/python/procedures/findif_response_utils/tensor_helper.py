@@ -51,9 +51,10 @@ def synthesize_displaced_tensor(db, signature, row_dim):
     row_dim: the expected number of rows that this value should be printed
         across in the file
 
-        Returns a 2d list result[i][j]:
-            i: indexes displacements
-            j: indexes elements of the flattened tensor at some displacement
+    Returns a 2d list result[i][j]:
+        i: indexes displacements
+        j: indexes elements of the flattened tensor at some displacement
+    Throws: none
     """
     result = []
     for job in db['job_status']:
@@ -75,12 +76,12 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
     row_tot: ( int ) indicates the number of lines that the matrix data should
         be printed across in the file
 
-        Returns: a flattened matrix (list) should be 3*row_tot
+    Returns: matrix_data a list of matrix elements, len = 3*row_tot
 
-        Throws: Exception (Collecting matrix data failed) if
-                It is found, but not the correct size,
-                It found the matrix header, but no data,
-                It can't find the matrix header in the file
+    Throws: Exception (Collecting matrix data failed) if
+            It is found, but not the correct size,
+            It found the matrix header, but no data,
+            It can't find the matrix header in the file
     """
     collect_matrix = False
     n_rows = 0
