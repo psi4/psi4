@@ -45,6 +45,15 @@ class ValidationError(PsiException):
         self.message = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
 
+class ParsingError(PsiException):
+    """Error called for problems parsing a text file. Prints error message
+    *msg* to standard output stream and output file.
+
+    """
+    def __init__(self, msg):
+        Psiexception.__init__(self,msg)
+        self.message = msg
+        psi4.print_out('\nPsiException: %s\n\n' % (msg))
 
 class TestComparisonError(PsiException):
     """Error called when a test case fails due to a failed
