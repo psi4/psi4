@@ -28,7 +28,7 @@
 """
 Module of helper functions for distributed ccresponse computations.
 
-Defines functions for retrieving tensors computed at displaced geometries.
+Defines functions for retrieving data computed at displaced geometries.
 """
 from __future__ import absolute_import
 from __future__ import print_function
@@ -38,10 +38,9 @@ import copy
 import os
 import psi4
 import p4util
-from p4const import *
 
 
-def synthesize_displaced_tensor(db, signature, row_dim):
+def collect_displaced_matrix_data(db, signature, row_dim):
     """
         Gathers a list of tensors, one at each displaced geometry.
 
@@ -59,16 +58,16 @@ def synthesize_displaced_tensor(db, signature, row_dim):
     result = []
     for job in db['job_status']:
         with open('{}/output.dat'.format(job)) as outfile:
-            result.append(grab_psi4_matrix(outfile, signature, row_dim))
+            result.append(parse_geometry_matrix_data(outfile, signature, row_dim))
 
     return result
 
-    # END sythesize_displaced_tensor()
+    # END collect_displaced_matrix_data()
 
 
-def grab_psi4_matrix(outfile, matrix_name, row_tot):
+def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
     """
-        Grabs a psi4 matrix printed to the output file
+        Parses data from a 3 by n  matrix printed to a file
 
     outfile: ( file ) handle open in read mode, where the data should be found
     matrix_name: ( string ) that indicates the matrix data is found on the lines
