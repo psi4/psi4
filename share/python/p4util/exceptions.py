@@ -51,7 +51,7 @@ class ParsingError(PsiException):
 
     """
     def __init__(self, msg):
-        Psiexception.__init__(self,msg)
+        PsiException.__init__(self,msg)
         self.message = msg
         psi4.print_out('\nPsiException: %s\n\n' % (msg))
 
