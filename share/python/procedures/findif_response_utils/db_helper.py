@@ -44,20 +44,9 @@ import psi4
 import p4util
 from p4const import *
 
-"""
-registered_props (dict)
-
-The dictionary key is the top-level input properties array argument that indicates
-the driver should be used. The value is the properties array argument that
-should be used in each subdir computation.  Drivers using this module will be
-added as needed.
-"""
-registered_props = {
-    "roa": "roa_tensor"
-}
 
 
-def generate_inputs(name, db):
+def generate_inputs(db,name):
     """
         Generates the input files in each sub-directory of the
         distributed finite differences property calculation.
@@ -102,29 +91,45 @@ def generate_inputs(name, db):
                 disp=entry,
                 molecule_info=molecule.create_psi4_string_from_molecule(),
                 options=p4util.format_options_for_input(),
-                jobspec="property('{0}', properties=['{1}'])".format(
-                    name, db['prop_string'])))
+                jobspec=db['prop_cmd']))
         inputfile.close()
     db['inputs_generated'] = True
 
     # END generate_inputs
 
 
-def initialize_database(database, prop):
+def initialize_database(database, name, prop, properties_array, additional_kwargs=None):
     """
         Initialize the database for computation of some property
         using distributed finite differences driver
 
     database: (database) the database object passed from the caller
-    prop:  (string) the property that is being computed
+    name:  (string) name as passed to calling driver
+    prop: (string) the property being computed, used to add xxx_computed flag
+        to database
+    prop_array: (list of strings) properties to go in
+        properties kwarg of the property() cmd in each sub-dir
+    additional_kwargs: (list of strings) *optional*
+        any additional kwargs that should go in the call to the
+        property() driver method in each subdir
+
 
     Returns: nothing
     Throws: nothing
     """
     database['inputs_generated'] = False
     database['jobs_complete'] = False
-    database['{}_computed'.format(prop)] = False
-    database['prop_string'] = registered_props[prop]
+    prop_cmd ="property('{0}',".format(name)
+    prop_cmd += "properties=[ '{}' ".format(properties_array[0])
+    if len(properties_array) > 1:
+        for element in properties_array[1:]:
+            prop_cmd += ",'{}'".format(element)
+    prop_cmd += "]"
+    if additional_kwargs is not None:
+        for arg in additional_kwargs:
+            prop_cmd += ", {}".format(arg)
+    prop_cmd += ")"
+    database['prop_cmd'] = prop_cmd
     database['job_status'] = collections.OrderedDict()
     # Populate the job_status dict
     molecule = psi4.get_active_molecule()
@@ -137,6 +142,7 @@ def initialize_database(database, prop):
             for step in step_direction:
                 job_name = '{}_{}_{}'.format(atom, coord, step)
                 database['job_status'].update({job_name: 'not_started'})
+    database['{}_computed'.format(prop)] = False
 
     # END initialize_database()
 

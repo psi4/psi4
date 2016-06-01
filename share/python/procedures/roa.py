@@ -85,11 +85,11 @@ def run_roa(name, **kwargs):
         db['roa_computed'] = False
 
     if 'inputs_generated' not in db:
-        findif_response_utils.initialize_database(db, 'roa')
+        findif_response_utils.initialize_database(db,name,"roa", ["roa_tensor"])
 
     # Generate input files
     if not db['inputs_generated']:
-        findif_response_utils.generate_inputs(name, db)
+        findif_response_utils.generate_inputs(db,name)
         # handled by helper db['inputs_generated'] = True
 
     # Check job status
