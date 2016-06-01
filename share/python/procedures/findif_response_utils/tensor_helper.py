@@ -78,10 +78,12 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
 
     Returns: matrix_data a list of matrix elements, len = 3*row_tot
 
-    Throws: Exception (Collecting matrix data failed) if
-            It is found, but not the correct size,
-            It found the matrix header, but no data,
-            It can't find the matrix header in the file
+    Throws: ParsingError (Collecting matrix data failed) if
+            It can't find matrix_header in the file.
+            It found matrix_header, but no data.
+            It found matrix_header, and data but the number of elements is
+            incorrect.
+
     """
     collect_matrix = False
     n_rows = 0
@@ -94,7 +96,7 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
             try:
                 n_tries += 1
                 if n_tries > (row_tot + 13):
-                    raise Exception('{} Matrix was unreadable. Scanned {}'
+                    raise ParsingError('{} Matrix was unreadable. Scanned {}'
                                     'lines.'.format(matrix_name, n_tries))
                 else:
                     (index, x, y, z) = line.split()
@@ -105,14 +107,14 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
             except:
                 pass
         if (n_rows == row_tot) and (len(matrix_data) != 3 * row_tot):
-            raise Exception('Collecting {} matrix data failed!'
+            raise p4util.ParsingError('Collecting {} data failed!'
                             '\nExpected {} elements but only captured {}'.format(
                                 matrix_name, 3 * row_tot, len(matrix_data)))
         if len(matrix_data) == 3 * row_tot:
             return matrix_data
 
-    raise Exception('{} Matrix was not found in the output file, but it was'
-                    ' marked for collection. Check output files in displacement'
-                    'sub-dirs!'.format(matrix_name))
+    raise p4util.ParsingError('data for {}  was not found in the output file, '
+                    'but it was marked for collection. Check output files '
+                    'in displacement sub-dirs!'.format(matrix_name))
 
-    # END grab_psi4_matrix()
+    # END parse_geometry_matrix_data()
