@@ -151,6 +151,7 @@ public:
     void set_omega(double omega) { omega_ = omega; }
 
     std::map<std::string, SharedMatrix>& gradients() { return gradients_; }
+    std::map<std::string, SharedMatrix>& hessians() { return hessians_; }
 
     virtual void compute_gradient() = 0;
     virtual void compute_hessian() = 0;

@@ -355,7 +355,7 @@ void OverlapInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShel
                                 buffer_[(2*size)+ao12] += over_pf*l1*n1*x[l1-1][l2]*y[m1][m2]*z[n1-1][n2];
 
                             // S_{\mu\nu}^{a_y a_y}
-                            buffer_[(3*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1+2][m2]*z[n1][n2] -
+                            buffer_[(3*size)+ao12] += (4.0*a1*a1*x[l1][l2]*y[m1+2][m2]*z[n1][n2] -
                                                       2.0*a1*(2*m1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
                             if (m1 > 1)
                                 buffer_[(3*size)+ao12] += over_pf*m1*(m1-1)*x[l1][l2]*y[m1-2][m1]*z[n1][n2];
@@ -370,7 +370,7 @@ void OverlapInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShel
                                 buffer_[(4*size)+ao12] += over_pf*m1*n1*x[l1][l2]*y[m1-1][m2]*z[n1-1][n2];
 
                             // S_{\mu\nu}^{a_z a_z}
-                            buffer_[(5*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+2][n2] -
+                            buffer_[(5*size)+ao12] += (4.0*a1*a1*x[l1][l2]*y[m1][m2]*z[n1+2][n2] -
                                                       2.0*a1*(2*n1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
                             if (n1 > 1)
                                 buffer_[(5*size)+ao12] += over_pf*n1*(n1-1)*x[l1][l2]*y[m1][m1]*z[n1-2][n2];
