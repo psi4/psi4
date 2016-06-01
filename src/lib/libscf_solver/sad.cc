@@ -359,8 +359,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     SharedMatrix Db(mat.create_matrix("Db"));
     SharedMatrix Dold(mat.create_matrix("Dold"));
 
-    SharedMatrix Grada(mat.create_matrix("Grada"));
-    SharedMatrix Gradb(mat.create_matrix("Gradb"));
+    SharedMatrix gradient_a(mat.create_matrix("gradient_a"));
+    SharedMatrix gradient_b(mat.create_matrix("gradient_b"));
 
     SharedMatrix Fa(mat.create_matrix("Fa"));
     SharedMatrix Fb(mat.create_matrix("Fb"));
@@ -401,6 +401,10 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
 
     double E_old;
     int iteration = 0;
+
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::LargestError, DIISManager::InCore);
+    diis_manager.set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix, gradient_b.get());
+    diis_manager.set_vector_size(2, DIISEntry::Matrix, Fa.get(), DIISEntry::Matrix, Fb.get());
 
     bool converged = false;
     if (print_>1) {
@@ -461,19 +465,13 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         E *= 0.5;
 
         // Build Gradient
-        form_gradient(norbs, Grada, Fa, Da, S, X);
-        form_gradient(norbs, Gradb, Fb, Db, S, X);
-        double Drms = 0.5 * (Grada->rms() + Gradb->rms()); 
+        form_gradient(norbs, gradient_a, Fa, Da, S, X);
+        form_gradient(norbs, gradient_b, Fb, Db, S, X);
+        double Drms = 0.5 * (gradient_a->rms() + gradient_b->rms()); 
 
-        //Perform any required convergence stabilization
-        //F-mixing (should help with oscillation)
-        //20% old, 80% new Fock matrix for now
-        if (iteration >= f_mixing_iteration) {
-            Fa->scale(0.8);
-            Fb->scale(0.8);
-            Fa->axpy(0.2, Fa_old);
-            Fb->axpy(0.2, Fa_old);
-        }
+        // Add and extrapolate DIIS
+        diis_manager.add_entry(4, gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
+        diis_manager.extrapolate(2, Fa.get(), Fb.get());
 
         //Diagonalize Fa and Fb to from Ca and Cb and Da and Db
         form_C_and_D(nalpha, norbs, X, Fa, Ca, Da);
@@ -528,7 +526,7 @@ void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, Share
 
     // SDF
     Scratch1->copy(Scratch2);
-    Scratch1->transpose();
+    Scratch1->transpose_this();
 
     // FDS - SDF
     grad->copy(Scratch2);
