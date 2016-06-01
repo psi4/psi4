@@ -94,6 +94,9 @@ public:
     /// Returns the number of basis functions
     int nbf() const;
 
+    /// Sets the print level
+    void set_print(int print) {print_ = print; }
+
     /// Returns petite list that is capable of transforming basis functions (nbf) to SO's.
     boost::shared_ptr<PetiteList> petite_list() const;
 

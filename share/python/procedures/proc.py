@@ -1010,12 +1010,8 @@ def scf_helper(name, **kwargs):
         raise ValidationError("It is not possible to pass scf_helper a reference wavefunction")
 
     # Second-order SCF requires non-symmetric density matrix support
-    if (
-        psi4.get_option('SCF', 'SOSCF') and
-        (psi4.get_option('SCF', 'SCF_TYPE') not in  ['DF', 'CD', 'OUT_OF_CORE'])
-        ):
-        raise ValidationError("Second-order SCF: Requires a JK algorithm that supports non-symmetric"\
-                                  " density matrices.")
+    if psi4.get_option('SCF', 'SOSCF'):
+        proc_util.check_non_symmetric_jk_density("Second-order SCF")
 
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
@@ -1190,6 +1186,9 @@ def run_dcft(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
+
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     dcft_wfn = psi4.dcft(ref_wfn)
     return dcft_wfn
@@ -1583,9 +1582,8 @@ def run_occ(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1651,9 +1649,8 @@ def run_occ_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if psi4.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1836,11 +1833,8 @@ def run_ccenergy(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
-    # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
-        mints = psi4.MintsHelper(ref_wfn.basisset())
-        mints.integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Obtain semicanonical orbitals
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF') and \
@@ -1938,9 +1932,8 @@ def run_bccd(name, **kwargs):
     if (psi4.get_option('SCF', 'REFERENCE') == 'ROHF'):
         ref_wfn.semicanonicalize()
 
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['CD', 'DF']:
-        mints = psi4.MintsHelper(ref_wfn.molecule().basisset())
-        mints.integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     psi4.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     psi4.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
@@ -2229,7 +2222,7 @@ def run_detci_property(name, **kwargs):
     proc_util.oeprop_validator(ci_prop)
 
     psi4.set_global_option('OPDM', 'TRUE')
-    if len(ci_trans) > 0:
+    if len(ci_trans):
         psi4.set_global_option('TDM', 'TRUE')
 
     # Compute
@@ -2392,6 +2385,9 @@ def run_adc(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
+
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     return psi4.adc(ref_wfn)
 
@@ -2570,9 +2566,9 @@ def run_detci(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-            psi4.MintsHelper(ref_wfn.basisset()).integrals()
+
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     ci_wfn = psi4.detci(ref_wfn)
 
@@ -2633,11 +2629,8 @@ def run_dmrgscf(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
-    # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
-        mints = psi4.MintsHelper(ref_wfn.basisset())
-        mints.integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2659,10 +2652,8 @@ def run_dmrgci(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
-    # written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD', 'DIRECT']:
-        psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     psi4.set_local_option('DMRG', 'DMRG_MAXITER', 1)
 
@@ -3085,7 +3076,7 @@ def run_mrcc(name, **kwargs):
         mrcc_tmpdir = kwargs['path']
 
     # Check to see if directory already exists, if not, create.
-    if os.path.exists(mrcc_tmpdir) == False:
+    if os.path.exists(mrcc_tmpdir) is False:
         os.mkdir(mrcc_tmpdir)
 
     # Move into the new directory
@@ -3188,7 +3179,7 @@ def run_mrcc(name, **kwargs):
     os.chdir('..')
     try:
         # Delete unless we're told not to
-        if (keep == False and not('path' in kwargs)):
+        if (keep is False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
     except OSError as e:
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
@@ -3387,11 +3378,9 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    # if the scf type is df/cd, then the ao integrals were never written to disk.
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        # do we generate 4-index eri's with 3-index ones, or do we want conventional eri's?
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+        # Ensure IWL files have been written
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
@@ -3485,10 +3474,9 @@ def run_cepa(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
-            psi4.MintsHelper(ref_wfn.basisset()).integrals()
+    if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+        # Ensure IWL files have been written
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     fnocc_wfn = psi4.fnocc(ref_wfn)
 
@@ -3517,13 +3505,15 @@ def run_detcas(name, **kwargs):
         )
 
     user_ref = psi4.get_option('DETCI', 'REFERENCE')
-    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+    if user_ref not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name == 'rasscf':
         psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif name == 'casscf':
         psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+    else:
+        raise ValidationError("Run DETCAS: Name %s not understood" % name)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -3538,27 +3528,17 @@ def run_detcas(name, **kwargs):
         if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
             psi4.set_global_option('SCF_TYPE', 'DF')
 
-        # Make sure a valid JK algorithm is selected
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            if (molecule.schoenflies_symbol() != 'c1'):
-                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
-
     # The non-DF case
     else:
         if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-            # PK is faster than out_of_core, but PK cannot support non-symmetric density matrices
-            # Do NOT set global options in general, this is a bit of a hack
-            psi4.set_global_option('SCF_TYPE', 'OUT_OF_CORE')
+            psi4.set_global_option('SCF_TYPE', 'PK')
 
-        # Make sure a valid JK algorithm is selected
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'PK'):
-            if (molecule.schoenflies_symbol() != 'c1'):
-                raise ValidationError("Second-order MCSCF: PK algorithm only supports C1 symmetry.")
+        # Ensure IWL files have been written
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-        # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']:
-            psi4.MintsHelper(ref_wfn.basisset()).integrals()
-
+    # Second-order SCF requires non-symmetric density matrix support
+    if psi4.get_option('DETCI', 'MCSCF_SO'):
+        proc_util.check_non_symmetric_jk_density("Second-order MCSCF")
 
     ciwfn = psi4.detci(ref_wfn)
 
@@ -3567,9 +3547,9 @@ def run_detcas(name, **kwargs):
     oeprop.set_title(name.upper())
     oeprop.add("DIPOLE")
     oeprop.compute()
-    psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable("SCF DIPOLE X"))
-    psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable("SCF DIPOLE Y"))
-    psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable("SCF DIPOLE Z"))
+    psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable(name.upper() + " DIPOLE X"))
+    psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable(name.upper() + " DIPOLE Y"))
+    psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
     return ciwfn
