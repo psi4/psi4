@@ -109,11 +109,11 @@ def run_roa(name, **kwargs):
         }
         gauge_list = ["{} Results".format(x) for x in consider_gauge[mygauge]]
         # Gather data
-        dip_polar_list = findif_response_utils.synthesize_displaced_tensor(
+        dip_polar_list = findif_response_utils.collect_displaced_matrix_data(
             db, 'Dipole Polarizability', 3)
         opt_rot_list = [
             x for x in (
-                findif_response_utils.synthesize_displaced_tensor(
+                findif_response_utils.collect_displaced_matrix_data(
                     db,
                     "Optical Rotation Tensor ({})".format(gauge),
                     3
@@ -121,7 +121,7 @@ def run_roa(name, **kwargs):
                 for gauge in consider_gauge[mygauge]
             )
         ]
-        dip_quad_polar_list = findif_response_utils.synthesize_displaced_tensor(
+        dip_quad_polar_list = findif_response_utils.collect_displaced_matrix_data(
             db, "Electric-Dipole/Quadrupole Polarizability", 9)
         # Compute Scattering
         # Run new function (src/bin/ccresponse/scatter.cc)
