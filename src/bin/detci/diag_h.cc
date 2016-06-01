@@ -518,8 +518,8 @@ void CIWavefunction::diag_h() {
                          Parameters_->maxnvect, "outfile",
                          Parameters_->print_lvl);
 
-            H0block_free();
         }
+        H0block_free();
 
     } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 

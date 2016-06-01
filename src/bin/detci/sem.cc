@@ -1219,12 +1219,45 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    Sigma.close_io_files(1);
    if (Parameters_->nodfile == FALSE) Dvec.close_io_files(1);
 
-   free(mi_iac); free(mi_ibc); free(mi_iaidx); free(mi_ibidx); free(mi_coeff);
-   free(dvecnorm);  free(lastroot);  free(root_converged);
-   free(clpse_norm);  free(did_root);  free_matrix(clpse_dot, nroots);
-   free_matrix(tmpmat, maxnvect);  free(Lvec);
+   // Free N-D arrays
+   for (i=0; i<maxnvect; i++)
+      free_matrix(m_lambda[i], nroots);
+   free(m_lambda);
+
+   for (i=0; i<nroots; i++)
+        free_matrix(M[i], maxnvect);
+   free(M);
+
+   for (i=0; i<maxnvect; i++) {
+      free_matrix(alpha[i], maxnvect);
+      }
+   free(alpha);
+
+   for (i=0; i<maxiter; i++) {
+      for (j=0; j<nroots; j++) {
+         free_matrix(m_alpha[i][j], maxnvect);
+      }
+     free(m_alpha[i]);
+   }
+   free(m_alpha);
+
+   // Free buffers
    free(buffer1);
    free(buffer2);
+
+   // Free arrays
+   free(lastroot);  free(dvecnorm);     free(root_converged);
+   free(did_root);  free(clpse_norm);   free(lse_do_arr);
+   free(renorm_c);  free(x);            free(y);
+   free(E_est);     free(mi_iac);       free(Lvec);
+   free(mi_ibc);    free(mi_iaidx);     free(mi_ibidx);
+   free(mi_coeff);
+
+   // Free matrices
+   free_matrix(clpse_dot, maxnvect);    free_matrix(G, maxnvect);
+   free_matrix(tmpmat, maxnvect);       free_matrix(cmp_cncoe, maxnvect);
+   free_matrix(tr_cmp_cncoe, maxnvect); free_matrix(sigma_overlap, maxnvect);
+   free_matrix(lambda, maxnvect);
 }
 
 }} // namespace psi::detci

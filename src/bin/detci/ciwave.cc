@@ -449,6 +449,11 @@ void CIWavefunction::cleanup(void) {
     for (int i = 0, cnt = 0; i < 4; i++) {
         free_int_matrix(CalcInfo_->ras_orbs[i]);
     };
+
+
+    if (Parameters_->mcscf) {
+        ints_.reset();
+    }
     // delete CalcInfo_;
     // delete MCSCF_Parameters_;
 
