@@ -63,9 +63,10 @@ JK::JK( boost::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options)
+boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options,
+                                   std::string jk_type)
 {
-    if (options.get_str("SCF_TYPE") == "CD") {
+    if (jk_type == "CD") {
 
         CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
 
@@ -86,7 +87,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "DF") {
+    } else if (jk_type == "DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
             "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
@@ -111,7 +112,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "FAST_DF") {
+    } else if (jk_type == "FAST_DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
             "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
@@ -146,7 +147,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "PK") {
+    } else if (jk_type == "PK") {
 
         PKJK* jk = new PKJK(primary, options);
 
@@ -159,7 +160,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
+    } else if (jk_type == "OUT_OF_CORE") {
 
         DiskJK* jk = new DiskJK(primary, options);
 
@@ -175,7 +176,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         return boost::shared_ptr<JK>(jk);
 
     }
-    else if (options.get_str("SCF_TYPE") == "DIRECT") {
+    else if (jk_type == "DIRECT") {
         DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -191,7 +192,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
 
         return boost::shared_ptr<JK>(jk);
 
-      } else if (options.get_str("SCF_TYPE") == "INDEPENDENT") {
+      } else if (jk_type == "INDEPENDENT") {
 
       // available types: right now:
       // direct with screening (does either or both)
@@ -224,6 +225,10 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
     }else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
+}
+boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options)
+{
+    return build_JK(primary, options, options.get_str("SCF_TYPE"));
 }
 SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/)
 {
@@ -443,6 +448,10 @@ void JK::USO2AO()
     // Transform D
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     for (size_t N = 0; N < D_.size(); ++N) {
+
+        if (D_[N]->nirrep() != AO2USO_->nirrep()){
+            throw PSIEXCEPTION("JK::AO2USO: Dimensions of C and D do not match AO2USO!\n");
+        }
         D_ao_[N]->zero();
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {

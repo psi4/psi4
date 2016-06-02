@@ -1385,9 +1385,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_D_CONVERGENCE", 1E-5);
     /*- Maximum number of SAD guess iterations !expert -*/
     options.add_int("SAD_MAXITER", 50);
-    /*- SAD Guess F-mix Iteration Start !expert -*/
-    options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies). !expert -*/
+    /*- Basis for the SAD guess !expert -*/
+    options.add_str("BASIS_SAD", "3-21G");
+    /*- Auxiliary basis for the SAD guess !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
     /*- SUBSECTION DFT -*/
