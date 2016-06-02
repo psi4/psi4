@@ -635,6 +635,7 @@ void export_mints()
             def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
             def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
+            def("set_print", &MintsHelper::set_print, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");

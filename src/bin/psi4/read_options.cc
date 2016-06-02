@@ -1167,6 +1167,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
+    /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
+    options.add_int("PK_MAX_BUCKETS", 500);
+    /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
+    options.add_str("PK_ALGO", "REORDER", "REORDER YOSHIMINE");
+    /*- Deactivate in core algorithm. For debug purposes. !expert -*/
+    options.add_bool("PK_NO_INCORE", false);
+    /*- All densities are considered non symmetric, debug only. !expert -*/
+    options.add_bool("PK_ALL_NONSYM", false);
+    /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
+    options.add_int("MAX_MEM_BUF",  0);
     /*- JK Independent options
      -*/
     options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");

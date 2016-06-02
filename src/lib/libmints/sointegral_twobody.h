@@ -47,6 +47,10 @@
 
 //#define DebugPrint 1
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifndef DebugPrint
 #   define DebugPrint 0
 #endif
@@ -208,8 +212,12 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     dprintf("uish %d, ujsh %d, uksh %d, ulsh %d\n", uish, ujsh, uksh, ulsh);
 
     int thread = 0;
+    #ifdef _OPENMP
+      thread = omp_get_thread_num();
+    #endif
     //Old call WorldComm->thread_id(pthread_self());
 
+    //timer_on("TwoBodySOInt::compute_shell overall");
     mints_timer_on("TwoBodySOInt::compute_shell overall");
     mints_timer_on("TwoBodySOInt::compute_shell setup");
 
@@ -335,7 +343,9 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         const unsigned short *lfuncpi = s4.nfuncpi;
 
         // Compute this unique AO shell
+        //timer_on("Computing the AO shell");
         tb_[thread]->compute_shell(si, sj, sk, sl);
+        //timer_off("Computing the AO shell");
 
         mints_timer_on("TwoBodySOInt::compute_shell actual transform");
 
@@ -419,6 +429,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     provide_IJKL(uish, ujsh, uksh, ulsh, body);
 
     mints_timer_off("TwoBodySOInt::compute_shell overall");
+    //timer_off("TwoBodySOInt::compute_shell overall");
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -426,8 +437,12 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 {
     int thread = 0;
     //Old call WorldComm->thread_id(pthread_self());
+    #ifdef _OPENMP
+      thread = omp_get_thread_num();
+    #endif
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
+    //timer_on("TwoBodySOInt::provide_IJKL overall");
 
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
@@ -562,6 +577,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
             }
         }
     }
+    //timer_off("TwoBodySOInt::provide_IJKL overall");
     mints_timer_off("TwoBodySOInt::provide_IJKL overall");
 }
 
