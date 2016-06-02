@@ -34,11 +34,5 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
 
 fci_energy = prop('FCI', properties=props)
 
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Y")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Z")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE XX")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YY")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ")
 
 

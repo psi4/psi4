@@ -39,7 +39,6 @@ set mp2_type conv
 print('   Testing explicit mp2 (conv) ...')
 val = energy('mp2')
 
-compare_values(conv_mp2tot, val, 5, 'mp2 return')
 clean()
 
 

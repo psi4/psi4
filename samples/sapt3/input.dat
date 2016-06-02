@@ -26,19 +26,6 @@ nat_orbs_t3 true
 
 energy('sapt2+3(ccd)')
 
-Eref = [
--0.01306509072, 
- 0.01341768624, 
--0.00391313510,
--0.00358358119, 
--0.00858408936, 
--0.00672343851,
--0.00733405078, 
--0.00700901577,
--0.00718054690,
--0.00729762464,
--0.00697258964,
--0.00714412076]
 
 Labels = [
 'SAPT Elst',
@@ -69,5 +56,3 @@ Echeck.append(psi4.get_variable("SAPT SAPT2+(CCD) ENERGY"))
 Echeck.append(psi4.get_variable("SAPT SAPT2+(3)(CCD) ENERGY"))
 Echeck.append(psi4.get_variable("SAPT SAPT2+3(CCD) ENERGY"))
 
-for k in range(0,len(Labels)):
-    compare_values(Eref[k],Echeck[k],6,Labels[k])

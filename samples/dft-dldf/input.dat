@@ -22,15 +22,11 @@ set dft_radial_points 99
 set dft_spherical_points 302
 
 edft = energy('dldf+d')
-val = -153.8044099603441168
-compare_values(val, edft, 8, "dlDF+D (2010 +D correction)")
 
 clean()
 
 
 edft = energy('dldf+d09')
-val = -153.8046528936604886 
-compare_values(val, edft, 8, "dlDF+D09 (2009 +D correction)")
 
 clean()
 
