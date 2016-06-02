@@ -45,4 +45,4 @@ set {
 
 energy = optimize('scf')
 
-compare_values(energy, -92.8743625872132, 4, "Energy of last IRC point")
+compare_values(-92.8743625872132, energy, 4, "Energy of last IRC point")  #TEST

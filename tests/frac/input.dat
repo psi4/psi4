@@ -152,5 +152,5 @@ for k in range(len(occs)):
 
 # Test the results 
 for k in range(len(occs)):
-    compare_values(reference_energies[occs[k]], energies[k], 8, "%11.3E electron energy" % occs[k])  
+    compare_values(reference_energies[occs[k]], energies[k], 8, "%11.3E electron energy" % occs[k])  #TEST
 

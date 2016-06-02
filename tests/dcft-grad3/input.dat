@@ -46,6 +46,6 @@ set {
 set reference rhf
 set ao_basis none
 grad = gradient('dcft')
-compare_matrices(ref_aonone, grad, 8, "DF-RODC-12 analytic gradient (ao_basis=none)")
+compare_matrices(ref_aonone, grad, 8, "DF-RODC-12 analytic gradient (ao_basis=none)")  #TEST
 clean()
 

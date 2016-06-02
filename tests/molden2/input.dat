@@ -43,5 +43,5 @@ for num, comp, ref in zip(range(13)[::-1], molden_cas_ref, molden_occup):
     c = round(float(comp.split('=')[-1]), mtol)
     r = round(float(ref.split('=')[-1]), mtol)
    
-    compare_values(r, c, mtol, ("Comparison of occupation number %d" % (num+1)))
+    compare_values(r, c, mtol, ("Comparison of occupation number %d" % (num+1)))  #TEST
 

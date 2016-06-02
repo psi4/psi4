@@ -19,7 +19,7 @@ e_cbs = energy(cbs,
             scf_scheme=driver_cbs.scf_xtpl_helgaker_3)
 
 compare_values(-7.4326961561955551, e_cbs, 7, "[1] Li ROHF extrapolated energy") #TEST
-compare_values(3.0, get_variable('cbs number'), 6, '[1b]')
+compare_values(3.0, get_variable('cbs number'), 6, '[1b]')  #TEST
 clean()
 
 
@@ -46,7 +46,7 @@ e_cbs = energy(cbs,
             delta_basis='cc-pV[DT]Z',
             delta_scheme=driver_cbs.corl_xtpl_helgaker_2)
 compare_values(-1.148287763304, e_cbs, 7, "[2] H2 mp2 extrapolated energy with ccsd delta correction") #TEST
-compare_values(3.0, get_variable('cbs number'), 6, '[2b]')
+compare_values(3.0, get_variable('cbs number'), 6, '[2b]')  #TEST
 clean()
 
 
@@ -68,7 +68,7 @@ e_cbs = energy(cbs,
             corl_scheme=driver_cbs.corl_xtpl_helgaker_2)
 
 compare_values(-2.9033043421572055642, e_cbs, 7, "[3] He ccsd extrapolated energy") #TEST
-compare_values(3.0, get_variable('cbs number'), 6, '[3b]')
+compare_values(3.0, get_variable('cbs number'), 6, '[3b]')  #TEST
 clean()
 
 # Example with default extrapolation schemes
@@ -79,7 +79,7 @@ e_cbs = energy(cbs,
             delta_basis='cc-pVDZ')
 
 compare_values(-2.90394676, e_cbs, 6, '[4] MP5: minimal info')  #TEST
-compare_values(2.0, get_variable('cbs number'), 6, '[4b]')
+compare_values(2.0, get_variable('cbs number'), 6, '[4b]')  #TEST
 
 
 

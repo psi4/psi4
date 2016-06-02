@@ -30,4 +30,4 @@ clean()
 
 
 ie = psi_hartree2kcalmol*psi_cal2J*(e_cp)
-compare_values(E_cp,ie,1,"CP corrected Binding Energy for C4H5N with CO2")
+compare_values(E_cp,ie,1,"CP corrected Binding Energy for C4H5N with CO2")  #TEST
