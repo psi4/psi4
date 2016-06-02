@@ -24,22 +24,15 @@ oswater.set_multiplicity(2)
 oswater.set_molecular_charge(1)
 
 e = energy('b3lyp', molecule=cswater)
-compare_values(-76.444577160243, e, 5, 'clsd-shell: b3lyp (vwn3rpa) vs NWChem (vwn_1_rpa; default)')
 
 set reference uhf
 e = energy('b3lyp', molecule=oswater)
-compare_values(-75.974154693676, e, 5, 'open-shell: b3lyp (vwn3rpa) vs NWChem (vwn_1_rpa; default)')
-compare_values(-75.97415476252, e, 5, 'open-shell: b3lyp (vwn3rpa) vs Turbomole (vwn3)')
-compare_values(-75.9741544303, e, 5, 'open-shell: b3lyp (vwn3rpa) vs Gaussian (default)')
 
 set reference rks
 e = energy('b3lyp5', molecule=cswater)
-compare_values(-76.407526614389, e, 5, 'clsd-shell: b3lyp5 (vwn5) vs NWChem (vwn_3)')
 
 set reference uks
 e = energy('b3lyp5', molecule=oswater)
-compare_values(-75.940741067166, e, 4, 'open-shell: b3lyp5 (vwn5) vs NWChem (vwn_3)')
-compare_values(-75.94075271487, e, 5, 'open-shell: b3lyp5 (vwn5) vs Turbomole (vwn5; default)')
 # this one doesn't match quite so well
 
 

@@ -29,12 +29,6 @@ print_variables()
 # scs-sapt0 has a definition and we check it here but that shouldn't be
 #   taken for evidence that the method is any good whatsoever or that we
 #   endorse it.
-code = 'SCS-SAPT0'  # SAPTSCS-SA-jadz
-compare_values(-8.8322, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 7.1453, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.1246, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-1.1972, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-5.0086, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 clean()
 
@@ -52,124 +46,28 @@ energy('sapt2+3(ccd)dmp2')
 print_variables()
 
 # SAPT0
-code = 'SAPT0'  # SAPT0-SA-adz
-compare_values(-8.3932, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 7.0396, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.2148, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-1.8153, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-5.3837, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # sSAPT0
-code = 'SSAPT0'  # SAPT0S-SA-adz
-compare_values(-8.3932, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 7.0396, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.1809, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-1.8094, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-5.3440, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # SCS-SAPT0
-code = 'SCS-SAPT0'  # SAPTSCS-SA-adz
-#compare_values(-8.3932, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-#compare_values( 7.0396, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-#compare_values(-2.2148, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-#compare_values(-1.7171, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-#compare_values(-5.2855, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # SAPT2
-code = 'SAPT2'  # SAPT2-SA-adz
-compare_values(-8.3650, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-1.8153, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.2041, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # SAPT2+
 
-code = 'SAPT2+'  # SAPT2P-SA-adz
-compare_values(-8.3650, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1984, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5873, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+(CCD)'  # SAPT2PC-SA-adz
-compare_values(-8.3650, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1758, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5646, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+DMP2'  # SAPT2PM-SA-adz
-compare_values(-8.3650, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.6152, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1984, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.7490, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+(CCD)DMP2'  # SAPT2PCM-SA-adz
-compare_values(-8.3650, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.6152, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1758, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.7264, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # SAPT2+(3)
 
-code = 'SAPT2+(3)'  # SAPT3-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1610, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.3833, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+(3)(CCD)'  # SAPT3C-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1384, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.3607, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+(3)DMP2'  # SAPT3M-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.6152, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1610, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5450, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+(3)(CCD)DMP2'  # SAPT3CM-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.6152, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.1384, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5224, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
 # SAPT2+3
 
-code = 'SAPT2+3'  # SAPT3F-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.2653, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.4876, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+3(CCD)'  # SAPT3FC-SA-adz (SAPTCCD)
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.4535, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.2427, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.4649, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+3DMP2'  # SAPT3FM-SA-adz
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.5225, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.2653, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5566, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
-code = 'SAPT2+3(CCD)DMP2'  # SAPT3FCM-SA-adz (SAPTCCDM)
-compare_values(-8.1985, h2kc * get_variable(code + ' ELST ENERGY'), digits, code + ' elst')
-compare_values( 8.4297, h2kc * get_variable(code + ' EXCH ENERGY'), digits, code + ' exch')
-compare_values(-2.5225, h2kc * get_variable(code + ' INDC ENERGY'), digits, code + ' indc')
-compare_values(-2.2427, h2kc * get_variable(code + ' DISP ENERGY'), digits, code + ' disp')
-compare_values(-4.5339, h2kc * get_variable(code + ' TOTAL ENERGY'), digits, code)
 
