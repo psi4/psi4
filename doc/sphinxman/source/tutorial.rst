@@ -387,7 +387,7 @@ loops need to be indented, and each line in the loop has to be indented
 by the same amount.  The first line in the loop, ``dimer.R = R``,
 sets the Z-matrix variable ``R`` of the molecule called ``dimer``
 to the ``R`` value extracted from the ``Rvals`` array.  The next line,
-``ecp[R] = cp('ccsd(t)')``, computes the counterpoise-corrected
+``ecp[R] = energy('ccsd(t)', bsse_type='cp')``, computes the counterpoise-corrected
 CCSD(T) energy and places it in the ``ecp`` dictionary with ``R`` as
 the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
