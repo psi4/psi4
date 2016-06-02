@@ -54,12 +54,12 @@ compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE XX'), -22.372784472330, 4
 compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YY'), -28.853737019899, 4, "CI ROOT 2 QUADRUPOLE YY")    #TEST
 compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE ZZ'), -27.849796390412, 4, "CI ROOT 2 QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 2 QUADRUPOLE YZ")    #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Y")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Z")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE XX")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YY")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ")
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Y")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Z")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE XX")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YY")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ")  #TEST
 
 fci_energy = prop('CASSCF', properties=props)    #TEST
 compare_values(psi4.get_variable('CASSCF DIPOLE Y'), 0.000000000000, 4, "CASSCF DIPOLE Y")    #TEST

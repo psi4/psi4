@@ -32,5 +32,5 @@ set {
 }
 
 grad = gradient('dcft')
-compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")
+compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")  #TEST
 clean()
