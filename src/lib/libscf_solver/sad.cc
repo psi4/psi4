@@ -163,10 +163,11 @@ SharedMatrix SADGuess::form_D_AO()
         mol_string << std::endl << basis_->molecule()->label(A) << std::endl;
         boost::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
         atom_mol->reset_point_group("C1"); // Booo symmetry
-        boost::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS", basis_name_);
 
+        boost::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
+                                                basis_->molecule()->atom_entry(A)->basisset());
         atomic_bases.push_back(atom_bas);
-        //atomic_bases.push_back(basis_->atomic_basis_set(A));
+
         if (print_ > 6) {
             outfile->Printf("  SAD: Atomic Basis Set %d\n", A);
             atomic_bases[A]->molecule()->print();
@@ -189,7 +190,7 @@ SharedMatrix SADGuess::form_D_AO()
     const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0,1,0,1,2,5,6,5,4,3,0,1,0,1,2,3,2,1,0,1,0,1,0,3,4,5,6,7,8,5,4,3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,2,1,0};
     const int MAX_Z = 86;
 
-    if (print_>1)
+    if (print_ > 1)
         outfile->Printf("  Determining Atomic Occupations\n");
 
     for (int A = 0; A<molecule_->natom(); A++) {
@@ -202,7 +203,7 @@ SharedMatrix SADGuess::form_D_AO()
         tot_elec+= nelec[A];
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
-        if (print_>1)
+        if (print_ > 1)
             outfile->Printf("  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
 
@@ -216,6 +217,8 @@ SharedMatrix SADGuess::form_D_AO()
         unique_indices[l] = l;
         atomic_indices[l] = l;
     }
+
+    // This is all overkill for now, but lets leave it incase we do something oddball in the future
     for (int l = 0; l < molecule_->natom() - 1; l++) {
         for (int m = l + 1; m < molecule_->natom(); m++) {
             if (unique_indices[m] != m)
@@ -297,7 +300,10 @@ SharedMatrix SADGuess::form_D_AO()
 void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec, int nhigh, SharedMatrix D)
 {
     boost::shared_ptr<Molecule> mol = bas->molecule();
-    mol->print();
+    mol->update_geometry();
+    if (print_ > 1){
+        mol->print();
+    }
 
     int nbeta = (nelec-nhigh)/2;
     int nalpha = nelec-nbeta;
@@ -306,7 +312,7 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
 
     if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
-    if (print_>1) {
+    if (print_ > 1) {
         outfile->Printf("\n");
         bas->print("outfile");
         outfile->Printf("  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
@@ -377,11 +383,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     SharedMatrix Fb_old(mat.create_matrix("Fb_old"));
 
     //Compute initial Cx, Dx, and D from core guess
-    outfile->Printf("About to compute Ca\n");
     form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, Da);
-    outfile->Printf("About to compute Cb\n");
     form_C_and_D(nbeta, norbs, X, H, Cb, Cb_occ, Db);
-    outfile->Printf("Finished C");
 
     D->zero();
     D->add(Da);
@@ -414,10 +417,12 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     diis_manager.set_vector_size(2, DIISEntry::Matrix, Fa.get(), DIISEntry::Matrix, Fb.get());
 
     // Setup JK
-    boost::shared_ptr<JK> jk = JK::build_JK(bas, options_, "DIRECT");
-    jk->set_memory((ULI)(0.4 * (Process::environment.get_memory() / 8L)));
+    boost::shared_ptr<JK> jk;
+    jk = JK::build_JK(bas, options_, "DF");
+    jk->set_memory((ULI)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
-    jk->print_header();
+    if (print_ > 1)
+        jk->print_header();
 
     // These are static so lets just grab them now
     std::vector<SharedMatrix> & jkC = jk->C_left();
@@ -428,7 +433,7 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
 
 
     bool converged = false;
-    if (print_>1) {
+    if (print_ > 1) {
         outfile->Printf( "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         outfile->Printf( "                                         Total Energy            Delta E              Density RMS\n\n");
 
@@ -493,7 +498,7 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
             Db->print();
             D->print();
         }
-        if (print_>1)
+        if (print_ > 1)
             outfile->Printf( "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
@@ -555,17 +560,15 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
     //Form C = XC'
     C->gemm(false, false, 1.0, X, Scratch1, 0.0);
 
-    //Form D = Cocc*Cocc'
-    double** Cp = C->pointer();
-    double** Dp = D->pointer();
-    C_DGEMM('N', 'T', norbs, norbs, nocc, 1.0, Cp[0], norbs, Cp[0], norbs, 0.0, Dp[0], norbs);
-
     // Copy over Cocc
     double** Coccp = Cocc->pointer();
+    double** Cp = C->pointer();
     for (int i = 0; i < norbs; i++){
         C_DCOPY(nocc, Cp[i], 1, Coccp[i], 1);
 
     }
+    //Form D = Cocc*Cocc'
+    D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
 
     Scratch1.reset();
     Scratch2.reset();
@@ -575,27 +578,21 @@ void HF::compute_SAD_guess()
 {
 
     // Future change this to BASIS_SAD
-    std::string sad_basis_string = options_.get_str("BASIS");
-    boost::shared_ptr<BasisSet> sad_basis = BasisSet::pyconstruct_orbital(molecule_, "BASIS", sad_basis_string);
+    // std::string sad_basis_string = options_.get_str("BASIS_SAD");
+    // boost::shared_ptr<BasisSet> sad_basis = BasisSet::pyconstruct_orbital(molecule_, "BASIS", sad_basis_string);
 
-    boost::shared_ptr<SADGuess> guess(new SADGuess(sad_basis, sad_basis_string, nalpha_, nbeta_, options_));
+    // boost::shared_ptr<SADGuess> guess(new SADGuess(sad_basis, sad_basis_string, nalpha_, nbeta_, options_));
+    boost::shared_ptr<SADGuess> guess(new SADGuess(basisset_, "STO-3G", nalpha_, nbeta_, options_));
     guess->compute_guess();
 
 
-    //SharedMatrix Ca_sad = BasisProjection(guess->Ca(), guess->Ca()->colspi(), sad_basis, basisset_);
-    //SharedMatrix Cb_sad = BasisProjection(guess->Cb(), guess->Cb()->colspi(), sad_basis, basisset_);
+    // SharedMatrix Ca_sad = BasisProjection(guess->Ca(), guess->Ca()->colspi(), sad_basis, basisset_);
+    // SharedMatrix Cb_sad = BasisProjection(guess->Cb(), guess->Cb()->colspi(), sad_basis, basisset_);
+    // Da_->gemm(false, true, 1.0, Ca_sad, Ca_sad, 0.0);
+    // Db_->gemm(false, true, 1.0, Cb_sad, Cb_sad, 0.0);
+
     SharedMatrix Ca_sad = guess->Ca();
     SharedMatrix Cb_sad = guess->Cb();
-
-    //Ca_sad->print();
-    //guess->Ca()->print();
-
-    //Da_->gemm(false, true, 1.0, Ca_sad, Ca_sad, 0.0);
-    //Db_->gemm(false, true, 1.0, Cb_sad, Cb_sad, 0.0);
-
-    //guess->Da()->print();
-    //Da_->print();
-
     Da_->copy(guess->Da());
     Db_->copy(guess->Db());
 
@@ -650,6 +647,7 @@ SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_pt
 
     intAB->compute(SAB);
     intBB->compute(SBB);
+    SAB->print();
 
     //SAB->print();
     //SBB->print();
@@ -661,7 +659,7 @@ SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_pt
     pet.reset();
 
     // Constrained to the same symmetry at the moment, we can relax this soon
-    SharedMatrix C_B(new Matrix("C_B", C_A->nirrep(),AO2USO->colspi(), noccpi));
+    SharedMatrix C_B(new Matrix("C_B", C_A->nirrep(), AO2USO->colspi(), noccpi));
 
     // Block over irreps (soon united irreps)
     for (int h = 0; h < C_A->nirrep(); h++) {
