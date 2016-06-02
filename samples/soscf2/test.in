@@ -1,0 +1,82 @@
+#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
+
+#### UHF Triplet Oxygen energy, triplet
+molecule mol {
+    0 3
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    basis cc-pVDZ
+    guess sad
+    soscf true
+    scf_type df
+    reference uhf
+}
+
+df_uhf_energy = energy('SCF')
+df_triplet_energy = -149.6286212486618865  #TEST
+compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Triplet Energy')  #TEST
+
+# Non-DF case
+set scf_type out_of_core
+uhf_energy = energy('SCF')
+triplet_energy = -149.6289923133230104  #TEST
+compare_values(triplet_energy, uhf_energy, 6, 'OOC-UHF Triplet Energy')  #TEST
+
+set scf_type pk
+uhf_energy = energy('SCF')
+compare_values(triplet_energy, uhf_energy, 6, 'PK-UHF Triplet Energy')  #TEST
+
+
+# ROHF Triplet
+set {
+    reference rohf
+    scf_type df
+}
+
+df_rohf_energy = energy('SCF')
+df_triplet_energy = -149.60909083608837  #TEST
+compare_values(df_triplet_energy, df_rohf_energy, 6, 'DF-ROHF Triplet Energy')  #TEST
+
+# Non-DF case
+set scf_type out_of_core
+rohf_energy = energy('SCF')
+triplet_energy = -149.60946112073862  #TEST
+compare_values(triplet_energy, rohf_energy, 6, 'OOC-ROHF Triplet Energy')  #TEST
+
+set scf_type pk
+rohf_energy = energy('SCF')  #TEST
+compare_values(triplet_energy, rohf_energy, 6, 'PK-ROHF Triplet Energy')  #TEST
+
+
+
+#### RHF Singlet Oxygen energy, singlet
+molecule mol {
+    0 1
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    scf_type df
+    reference rhf
+}
+
+df_rhf_energy = energy('SCF')
+df_singlet_energy = -149.5439580186044850  #TEST
+compare_values(df_singlet_energy, df_rhf_energy, 6, 'DF-RHF Singlet Energy')  #TEST
+
+# Non-DF case
+
+set scf_type out_of_core
+uhf_energy = energy('SCF')
+singlet_energy = -149.5442147477362198  #TEST
+compare_values(singlet_energy, uhf_energy, 6, 'OOC-RHF Singlet Energy')  #TEST
+
+set scf_type pk
+uhf_energy = energy('SCF')
+compare_values(singlet_energy, uhf_energy, 6, 'PK-RHF Singlet Energy')  #TEST

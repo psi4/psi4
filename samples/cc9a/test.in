@@ -1,0 +1,39 @@
+#! ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical, 
+#! with Z-matrix input.
+
+memory 250 mb
+
+molecule CN {
+  0 2
+  C
+  N 1 R
+
+  R = 1.175
+}
+
+set {
+  reference   rohf
+  basis       cc-pVDZ
+  docc        [4, 0, 1, 1]
+  socc        [1, 0, 0, 0]
+  ao_basis disk
+  delete_tei false
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+energy('ccsd(t)')
+
+enuc   =  18.91527043470638   #TEST
+escf   = -92.19555660616878   #TEST
+eccsd  =  -0.28492292236582   #TEST
+e_t    =  -0.01406303578471   #TEST
+etotal = -92.49454256431926   #TEST
+
+compare_values(enuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(escf, get_variable("SCF total energy"), 9, "SCF energy")               #TEST
+compare_values(eccsd, get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(e_t, get_variable("(T) correction energy"), 9, "(T) contribution")         #TEST
+compare_values(etotal, get_variable("Current energy"), 9, "Total energy")             #TEST

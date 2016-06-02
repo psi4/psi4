@@ -1,0 +1,119 @@
+#! DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
+
+ref_vals_dc06 = [                                                             #TEST
+                [ 0.000000000000,     0.000000000000,    -0.065140460923],    #TEST
+                [ 0.000000000000,     0.000000000000,     0.065140460923]     #TEST
+                ]                                                             #TEST
+ref_vals_odc06= [                                                             #TEST
+                [ 0.000000000000,     0.000000000000,    -0.056944434749],    #TEST
+                [ 0.000000000000,     0.000000000000,     0.056944434749]     #TEST
+                ]                                                             #TEST
+ref_vals_odc12= [                                                             #TEST
+                [ 0.000000000000,     0.000000000000,    -0.070863321661],    #TEST
+                [ 0.000000000000,     0.000000000000,     0.070863321661]     #TEST
+                ]                                                             #TEST
+ref_vals_odc13= [                                                             #TEST
+                [ 0.000000000000,     0.000000000000,    -0.077544709375 ],   #TEST
+                [ 0.000000000000,     0.000000000000,     0.077544709375 ]    #TEST
+                ]                                                             #TEST
+ref_dc06 = psi4.Matrix(2, 3)                                                  #TEST
+ref_odc06= psi4.Matrix(2, 3)                                                  #TEST
+ref_odc12= psi4.Matrix(2, 3)                                                  #TEST
+ref_odc13= psi4.Matrix(2, 3)                                                  #TEST
+ref_dc06.set(ref_vals_dc06)                                                   #TEST
+ref_odc06.set(ref_vals_odc06)                                                 #TEST
+ref_odc12.set(ref_vals_odc12)                                                 #TEST
+ref_odc13.set(ref_vals_odc13)                                                 #TEST
+
+memory 250 mb
+
+molecule o2 {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.400
+}
+
+set {
+  basis           cc-pvdz
+  r_convergence   11
+  diis_start_convergence 1e-2
+  qc_coupling     true
+  reference       uhf
+}
+
+#AO_BASIS = NONE
+set ao_basis        none
+set dcft_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dcft')
+compare_matrices(ref_dc06, grad_sim, 8, "DC-06 analytic gradient (simultaneous, ao_basis=none)")      #TEST
+
+set ao_basis        none
+set dcft_functional dc-06
+set algorithm       qc
+grad_qc = gradient('dcft')
+compare_matrices(ref_dc06, grad_qc, 8, "DC-06 analytic gradient (qc, ao_basis=none)")                 #TEST
+
+set ao_basis        none
+set dcft_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dcft')
+compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-06
+set algorithm       qc
+grad_odc06 = gradient('dcft')
+compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (qc, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dcft')
+compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-12
+set algorithm       qc
+grad_odc12 = gradient('dcft')
+compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (qc, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dcft')
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       qc
+grad_odc13 = gradient('dcft')
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (qc, ao_basis=none)")  #TEST
+
+#AO_BASIS = DISK
+set ao_basis        disk
+set dcft_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dcft')
+compare_matrices(ref_dc06, grad_sim, 8, "DC-06 analytic gradient (simultaneous, ao_basis=disk)")      #TEST
+
+set ao_basis        disk
+set dcft_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dcft')
+compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
+
+set ao_basis        disk
+set dcft_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dcft')
+compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
+
+set ao_basis        disk
+set dcft_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dcft')
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
