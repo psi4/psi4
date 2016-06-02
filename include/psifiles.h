@@ -288,6 +288,8 @@
 #define PSIF_DFOCC_IABC        279  /*- DFOCC (IA|BC) -*/ 
 #define PSIF_DFOCC_TEMP        280  /*- DFOCC temporary storage -*/
 
+#define PSIF_SAD               300  /*- A SAD file (File for SAD related quantities -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
