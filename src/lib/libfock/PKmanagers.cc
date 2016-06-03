@@ -437,7 +437,7 @@ void PKManager::make_J_vec(std::vector<SharedMatrix> J) {
         // Shared pointer initialized to null
         //TODO Could actually store triangle since J is always symmetric
         } else {
-            JK_vec_.push_back(nullptr);
+            JK_vec_.push_back(boost::shared_ptr());
         }
     }
 }
