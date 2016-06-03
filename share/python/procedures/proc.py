@@ -1145,6 +1145,16 @@ def scf_helper(name, **kwargs):
         p4util.banner(name.upper())
         psi4.print_out('\n')
 
+    # If GUESS is auto guess what it should be
+    elif psi4.get_option('SCF', 'GUESS') == "AUTO":
+        if psi4.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']:
+            psi4.set_local_option('SCF', 'GUESS', 'SAD')
+        elif psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
+            psi4.set_local_option('SCF', 'GUESS', 'GWH')
+        else:
+            psi4.set_local_option('SCF', 'GUESS', 'CORE')
+        
+
     # EFP preparation
     efp = psi4.get_active_efp()
     if efp.nfragments() > 0:

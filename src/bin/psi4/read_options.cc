@@ -1197,10 +1197,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- The type of guess orbitals.  Defaults to CORE except for geometry
-    optimizations, in which case READ becomes the default after the first
-    geometry step. -*/
-    options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    /*- The type of guess orbitals.  Defaults to SAD for RHF, GWH for ROHF and UHF,
+    and READ for geometry optimizations after the first step. -*/
+
+    options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD READ");
     /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
     Useful to produce broken-symmetry unrestricted solutions.
     Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1385,8 +1385,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_D_CONVERGENCE", 1E-5);
     /*- Maximum number of SAD guess iterations !expert -*/
     options.add_int("SAD_MAXITER", 50);
-    /*- Basis for the SAD guess !expert -*/
-    options.add_str("BASIS_SAD", "3-21G");
+    /*- SCF type of SAD guess !expert -*/
+    options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
+    /*- Auxiliary basis for the SAD guess !expert -*/
+    options.add_bool("SAD_FRAC_OCC", false);
     /*- Auxiliary basis for the SAD guess !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
