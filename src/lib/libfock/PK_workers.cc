@@ -752,7 +752,7 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
 
 PKWrkrInCore::PKWrkrInCore(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size,
                            size_t lastbuf, double *Jbuf, double *Kbuf, double *wKbuf, int nworkers) :
-    PKWorker(primary,sieve,NULL,0,buf_size) {
+    PKWorker(primary,sieve,std::shared_ptr<AIOHandler>(),0,buf_size) {
 
     nworkers_ = nworkers;
     last_buf_ = lastbuf;

@@ -220,9 +220,9 @@ public:
     /// Actual computation of J and K
     /// Prepare the density matrix
     void form_D_vec(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl, std::vector<SharedMatrix> Cr);
-    /// Forming J
+    /// Forming J, shared_ptr() initializes to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL))=0;
+                        std::vector<SharedMatrix> K = {} )=0;
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
@@ -319,9 +319,9 @@ public:
     /// Closing the files
     virtual void close_PK_file(bool keep);
 
-    /// Form J from PK supermatrix
+    /// Form J from PK supermatrix, shared_ptr() initialized to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
+                        std::vector<SharedMatrix> K = {});
 
     /// Finalize JK matrix formation
     virtual void finalize_JK();
@@ -456,9 +456,9 @@ public:
     virtual void prepare_JK(std::vector<SharedMatrix> D,std::vector<SharedMatrix> Cl,
                             std::vector<SharedMatrix> Cr);
 
-    /// Form J matrix
+    /// Form J matrix, shared_ptr() initializes to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>(NULL));
+                        std::vector<SharedMatrix> K = {});
     /// Finalize JK formation
     virtual void finalize_JK();
 
