@@ -46,7 +46,6 @@ protected:
 
     int print_;
     int debug_;
-    std::string basis_name_;
 
     boost::shared_ptr<Molecule> molecule_;
     boost::shared_ptr<BasisSet> basis_;
@@ -67,30 +66,31 @@ protected:
     SharedMatrix form_D_AO();
     void form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D,
                       SharedMatrix S, SharedMatrix X);
-    void get_uhf_atomic_density(boost::shared_ptr<BasisSet> atomic_basis, 
+    void get_uhf_atomic_density(boost::shared_ptr<BasisSet> atomic_basis,
                                 int n_electrons, int multiplicity, SharedMatrix D);
     void form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
-                                  SharedMatrix C, SharedMatrix Cocc, SharedMatrix D);
+                                  SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
+                                  SharedMatrix D);
 
     void form_D();
     void form_C();
 
 public:
 
-    SADGuess(boost::shared_ptr<BasisSet> basis, std::string basis_name, int nalpha, int nbeta, Options& options);
+    SADGuess(boost::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options);
     virtual ~SADGuess();
 
     void compute_guess();
-    
-    SharedMatrix Da() const { return Da_; } 
-    SharedMatrix Db() const { return Db_; } 
-    SharedMatrix Ca() const { return Ca_; } 
-    SharedMatrix Cb() const { return Cb_; } 
+
+    SharedMatrix Da() const { return Da_; }
+    SharedMatrix Db() const { return Db_; }
+    SharedMatrix Ca() const { return Ca_; }
+    SharedMatrix Cb() const { return Cb_; }
 
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 
-}; 
+};
 
 }}
 

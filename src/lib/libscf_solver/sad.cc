@@ -60,8 +60,8 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-SADGuess::SADGuess(boost::shared_ptr<BasisSet> basis, std::string basis_name, int nalpha, int nbeta, Options& options) :
-    basis_(basis), basis_name_(basis_name), nalpha_(nalpha), nbeta_(nbeta), options_(options)
+SADGuess::SADGuess(boost::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
+    basis_(basis), nalpha_(nalpha), nbeta_(nbeta), options_(options)
 {
     common_init();
 }
@@ -186,7 +186,7 @@ SharedMatrix SADGuess::form_D_AO()
     int tot_elec = 0;
 
     //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
-    //For 37 to 86, save for f-bloack: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American Institute of Physics, Woodbury, New York, USA, 1996.
+    //For 37 to 86, save for f-block: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American Institute of Physics, Woodbury, New York, USA, 1996.
     const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0,1,0,1,2,5,6,5,4,3,0,1,0,1,2,3,2,1,0,1,0,1,0,3,4,5,6,7,8,5,4,3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,2,1,0};
     const int MAX_Z = 86;
 
@@ -273,6 +273,8 @@ SharedMatrix SADGuess::form_D_AO()
         if (print_ > 1)
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
         get_uhf_atomic_density(atomic_bases[index], nelec[index], nhigh[index], atomic_D[A]);
+        if (print_ > 1)
+            outfile->Printf("Finished UHF Computation!\n");
     }
     if (print_)
         outfile->Printf("\n");
@@ -305,10 +307,11 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         mol->print();
     }
 
-    int nbeta = (nelec-nhigh)/2;
-    int nalpha = nelec-nbeta;
+    int nbeta = (nelec - nhigh) / 2;
+    int nalpha = nelec - nbeta;
     int natom = mol->natom();
     int norbs = bas->nbf();
+    int Z = bas->molecule()->Z(0);
 
     if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
@@ -367,24 +370,81 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     // Init temps
     SharedMatrix Ca(mat.create_matrix("Ca"));
     SharedMatrix Cb(mat.create_matrix("Cb"));
-    SharedMatrix Ca_occ(new Matrix("Ca occupied", norbs, nalpha));
-    SharedMatrix Cb_occ(new Matrix("Ca occupied", norbs, nbeta));
 
     SharedMatrix Da(mat.create_matrix("Da"));
     SharedMatrix Db(mat.create_matrix("Db"));
-    SharedMatrix Dold(mat.create_matrix("Dold"));
 
     SharedMatrix gradient_a(mat.create_matrix("gradient_a"));
     SharedMatrix gradient_b(mat.create_matrix("gradient_b"));
 
     SharedMatrix Fa(mat.create_matrix("Fa"));
     SharedMatrix Fb(mat.create_matrix("Fb"));
-    SharedMatrix Fa_old(mat.create_matrix("Fa_old"));
-    SharedMatrix Fb_old(mat.create_matrix("Fb_old"));
+
+    // Factional occupation
+    SharedVector occ_a, occ_b;
+    if (options_.get_double("SAD_FRAC_OCC")){
+        int nfzc = 0, nact = 0;
+        if (Z <= 2){
+            nfzc = 0;
+            nact = 1;
+        }
+        else if (Z <= 4){
+            nfzc = 1;
+            nact = 1;
+        }
+        else if (Z <= 10){
+            nfzc = 2;
+            nact = 3;
+        }
+        else if (Z <= 18){
+            nfzc = 5;
+            nact = 4;
+        }
+        else if (Z <= 36){
+            nfzc = 9;
+            nact = 9;
+        }
+        else if (Z <= 54){
+            nfzc = 18;
+            nact = 9;
+        }
+        else if (Z <= 54){
+            nfzc = 18;
+            nact = 9;
+        }
+        else if (Z <= 86){
+            nfzc = 27;
+            nact = 16;
+        }
+        else{
+            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radeon");
+        }
+
+        nalpha = nfzc + nact;
+        nbeta = nalpha;
+        double frac_act = std::pow(((double)(Z - nfzc * 2)) / ((double)nact * 2), 0.5);
+
+        occ_a = boost::shared_ptr<Vector>(new Vector("Alpha fractional occupation", nalpha));
+        for (size_t x = 0; x<nfzc; x++) occ_a->set(x, 1.0);
+        for (size_t x = nfzc; x<nalpha; x++) occ_a->set(x, frac_act);
+        occ_b = boost::shared_ptr<Vector>(occ_a->clone());
+
+    }
+    else{
+
+        // Conventional occupations
+        occ_a = boost::shared_ptr<Vector>(new Vector("Alpha occupation", nalpha));
+        for (size_t x = 0; x<nalpha; x++) occ_a->set(x, 1.0);
+        occ_b = boost::shared_ptr<Vector>(new Vector("Beta occupation", nbeta));
+        for (size_t x = 0; x<nbeta; x++) occ_b->set(x, 1.0);
+    }
+
+    SharedMatrix Ca_occ(new Matrix("Ca occupied", norbs, nalpha));
+    SharedMatrix Cb_occ(new Matrix("Ca occupied", norbs, nbeta));
 
     //Compute initial Cx, Dx, and D from core guess
-    form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, Da);
-    form_C_and_D(nbeta, norbs, X, H, Cb, Cb_occ, Db);
+    form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, occ_a, Da);
+    form_C_and_D(nbeta, norbs, X, H, Cb, Cb_occ, occ_b, Db);
 
     D->zero();
     D->add(Da);
@@ -408,7 +468,7 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     double D_tol = options_.get_double("SAD_D_CONVERGENCE");
     int maxiter = options_.get_int("SAD_MAXITER");
 
-    double E_old;
+    double E_old = E;
     int iteration = 0;
 
     // Setup DIIS
@@ -417,8 +477,32 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     diis_manager.set_vector_size(2, DIISEntry::Matrix, Fa.get(), DIISEntry::Matrix, Fb.get());
 
     // Setup JK
-    boost::shared_ptr<JK> jk;
-    jk = JK::build_JK(bas, options_, "DF");
+    std::unique_ptr<JK> jk;
+
+    // Need a very special auxiliary basis here
+    if (options_.get_str("SAD_SCF_TYPE") == "DF"){
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(bas->molecule(),
+            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
+            options_.get_str("BASIS"), bas->has_puream());
+
+        DFJK* dfjk = new DFJK(bas, auxiliary);
+        dfjk->set_unit(PSIF_SAD);
+        if (options_["DF_INTS_NUM_THREADS"].has_changed())
+            dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        jk = std::unique_ptr<JK>(dfjk);
+    }
+    else if (options_.get_str("SAD_SCF_TYPE") == "DIRECT"){
+        DirectJK* directjk(new DirectJK(bas));
+        if (options_["DF_INTS_NUM_THREADS"].has_changed())
+            directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        jk = std::unique_ptr<JK>(directjk);
+    }
+    else {
+        std::stringstream msg;
+        msg << "SAD: JK type of " << options_.get_str("SAD_SCF_TYPE") << " not understood.\n";
+        throw PSIEXCEPTION(msg.str());
+    }
+
     jk->set_memory((ULI)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1)
@@ -431,22 +515,21 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
     const std::vector<SharedMatrix> & Jvec = jk->J();
     const std::vector<SharedMatrix> & Kvec = jk->K();
 
-
+    // Print a header
     bool converged = false;
     if (print_ > 1) {
         outfile->Printf( "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         outfile->Printf( "                                         Total Energy            Delta E              Density RMS\n\n");
 
     }
+
+    // Run the iterations
     do {
 
         iteration++;
 
         // Copy the old values over for error analysis
         E_old = E;
-        Dold->copy(D);
-        Fa_old->copy(Fa);
-        Fb_old->copy(Fb);
 
         // Compute JK matrices
         jk->compute();
@@ -467,6 +550,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         E += Db->vector_dot(Fb);
         E *= 0.5;
 
+        double deltaE = fabs(E-E_old);
+
         // Build Gradient
         form_gradient(norbs, gradient_a, Fa, Da, S, X);
         form_gradient(norbs, gradient_b, Fb, Db, S, X);
@@ -477,16 +562,12 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         diis_manager.extrapolate(2, Fa.get(), Fb.get());
 
         //Diagonalize Fa and Fb to from Ca and Cb and Da and Db
-        form_C_and_D(nalpha, norbs, X, Fa, Ca, Ca_occ, Da);
-        form_C_and_D(nbeta, norbs, X, Fb, Cb, Cb_occ, Db);
+        form_C_and_D(nalpha, norbs, X, Fa, Ca, Ca_occ, occ_a, Da);
+        form_C_and_D(nbeta, norbs, X, Fb, Cb, Cb_occ, occ_b, Db);
 
         //Form D
         D->copy(Da);
         D->add(Db);
-
-        //double Drms = Dold->rms();
-
-        double deltaE = fabs(E-E_old);
 
         if (print_ > 6) {
             H->print();
@@ -500,6 +581,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         }
         if (print_ > 1)
             outfile->Printf( "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
+
+        //Check convergence
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
 
@@ -508,8 +591,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
             break;
         }
 
-        //Check convergence
     } while (!converged);
+
     if (converged && print_ > 1)
         outfile->Printf( "  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(),E);
 
@@ -542,7 +625,8 @@ void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, Share
 
 
 void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
-                                        SharedMatrix C, SharedMatrix Cocc, SharedMatrix D)
+                                        SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
+                                        SharedMatrix D)
 {
     if (nocc == 0) return;
 
@@ -565,7 +649,10 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
     double** Cp = C->pointer();
     for (int i = 0; i < norbs; i++){
         C_DCOPY(nocc, Cp[i], 1, Coccp[i], 1);
-
+    }
+    // Scale by occ
+    for (int i = 0; i < nocc; i++){
+        C_DSCAL(norbs, occ->get(i), &Cp[0][i], nocc);
     }
     //Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
@@ -577,19 +664,8 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
 void HF::compute_SAD_guess()
 {
 
-    // Future change this to BASIS_SAD
-    // std::string sad_basis_string = options_.get_str("BASIS_SAD");
-    // boost::shared_ptr<BasisSet> sad_basis = BasisSet::pyconstruct_orbital(molecule_, "BASIS", sad_basis_string);
-
-    // boost::shared_ptr<SADGuess> guess(new SADGuess(sad_basis, sad_basis_string, nalpha_, nbeta_, options_));
-    boost::shared_ptr<SADGuess> guess(new SADGuess(basisset_, "STO-3G", nalpha_, nbeta_, options_));
+    boost::shared_ptr<SADGuess> guess(new SADGuess(basisset_, nalpha_, nbeta_, options_));
     guess->compute_guess();
-
-
-    // SharedMatrix Ca_sad = BasisProjection(guess->Ca(), guess->Ca()->colspi(), sad_basis, basisset_);
-    // SharedMatrix Cb_sad = BasisProjection(guess->Cb(), guess->Cb()->colspi(), sad_basis, basisset_);
-    // Da_->gemm(false, true, 1.0, Ca_sad, Ca_sad, 0.0);
-    // Db_->gemm(false, true, 1.0, Cb_sad, Cb_sad, 0.0);
 
     SharedMatrix Ca_sad = guess->Ca();
     SharedMatrix Cb_sad = guess->Cb();
@@ -647,7 +723,6 @@ SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_pt
 
     intAB->compute(SAB);
     intBB->compute(SBB);
-    SAB->print();
 
     //SAB->print();
     //SBB->print();
