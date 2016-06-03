@@ -434,9 +434,10 @@ void PKManager::make_J_vec(std::vector<SharedMatrix> J) {
             JK_vec_.push_back(Jvec);
         // Non-symmetric density matrix: stores NULL pointer
         // as we will use full J.
+        // Shared pointer initialized to null
         //TODO Could actually store triangle since J is always symmetric
         } else {
-            JK_vec_.push_back(NULL);
+            JK_vec_.push_back(nullptr);
         }
     }
 }
