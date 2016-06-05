@@ -29,4 +29,3 @@ h2o2.reset_point_group('c2')
 
 energy = optimize('scf')
 
-compare_values(energy, -150.8200278868627, 5, "Energy of last IRC point")

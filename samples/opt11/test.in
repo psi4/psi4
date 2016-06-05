@@ -1,0 +1,36 @@
+#! Transition-state optimizations of HOOH to both torsional transition states.
+TORS_ENERGY      = -150.7853070  #TEST
+ZERO_TORS_ENERGY = -150.7739141  #TEST
+
+# Optimization to 180 degree torsion from 120
+molecule hooh {
+ 0 1
+ H
+ O 1 0.95
+ O 2 1.40 1 105.0
+ H 3 0.95 2 105.0 1 120.0
+ noreorient
+}
+set {
+  basis cc-pvdz
+  opt_type ts
+  docc = [ 5 , 4 ]
+  intrafrag_step_limit 0.1
+  # loose convergence criteria due to scf convergence problems as c2h structure is approached
+  MAX_FORCE_G_CONVERGENCE 5.0e-4
+}
+
+thisenergy = optimize('scf')
+compare_values(TORS_ENERGY, thisenergy, 6, "cc-pVDZ RHF transition-state opt. of HOOH (dihedral=180), energy") #TEST
+
+# Optimization to 0 degree torsion from 100
+molecule hooh {
+ H
+ O 1 0.95
+ O 2 1.40 1 105.0
+ H 3 0.95 2 105.0 1 100.0
+}
+
+thisenergy = optimize('scf')
+compare_values(ZERO_TORS_ENERGY, thisenergy, 6, "cc-pVDZ RHF transition-state opt. of HOOH (dihedral=0), energy") #TEST
+
