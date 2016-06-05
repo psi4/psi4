@@ -80,29 +80,7 @@ no_com
 no_reorient
 """
 
-def test_qcdb():
-    print_out("%s\n" % ans[0])
-    print_out(origfrag.create_psi4_string_from_molecule())
-    gorig = origfrag.geometry()
-    frag = qcdb.Molecule(origfrag.create_psi4_string_from_molecule())
-    frag.update_geometry()
-    gnew = frag.geometry()
-    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "QCDB %s: NRE" % ans[0])
-    compare_integers(ans[2], frag.molecular_charge(), "QCDB %s: charge" % ans[0])
-    compare_integers(ans[3], frag.multiplicity(), "QCDB %s: multiplicity" % ans[0])
-    qcdb.compare_matrices(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])
 
-def test_libmints():
-    print_out("%s\n" % ans[0])
-    print_out(origfrag.create_psi4_string_from_molecule())
-    gorig = origfrag.geometry()
-    frag = geometry(origfrag.create_psi4_string_from_molecule())
-    frag.update_geometry()
-    gnew = frag.geometry()
-    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "Libmints %s: NRE" % ans[0])
-    compare_integers(ans[2], frag.molecular_charge(), "Libmints %s: charge" % ans[0])
-    compare_integers(ans[3], frag.multiplicity(), "Libmints %s: multiplicity" % ans[0])
-    compare_matrices(gorig, gnew, 5, "Libmints %s: string recreates geometry" % ans[0])
 
 mol = qcdb.Molecule(mol1)
 mol.update_geometry()
@@ -168,11 +146,8 @@ mol = geometry(mol3)
 mol.update_geometry()
 ans = ["Mol3 Dimer", 27.4057052589, 0, 2]
 origfrag = mol
-test_libmints()
 ans = ["Mol3 MonoA CP", 5.11387151899, 0, 1]
 origfrag = mol.extract_subsets(1,2)
-test_libmints()
 ans = ["Mol3 MonoB UNCP", 4.34190449534, 0, 2]
 origfrag = mol.extract_subsets(2)
-test_libmints()
 

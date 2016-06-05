@@ -2,7 +2,6 @@
 #! Testing the in line -decontract option for basis sets
 
 
-ref_energy = -460.08989223006836
 memory 250 mb
 
 molecule {
@@ -21,4 +20,3 @@ set {
 
 energy('scf')
 
-compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")
