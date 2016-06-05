@@ -278,9 +278,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | psimrcc                 | Mukherjee multireference coupled cluster (Mk-MRCC) :ref:`[manual] <sec:psimrcc>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrgscf                 | density matrix renormalization group SCF :ref:`[manual] <sec:dmrg>`                                           |
+    | dmrg-scf                | density matrix renormalization group SCF :ref:`[manual] <sec:dmrg>`                                           |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrgci                  | density matrix renormalization group CI :ref:`[manual] <sec:dmrg>`                                            |
+    | dmrg-caspt2             | density matrix renormalization group CASPT2 :ref:`[manual] <sec:dmrg>`                                           |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | dmrg-ci                 | density matrix renormalization group CI :ref:`[manual] <sec:dmrg>`                                            |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT) :ref:`[manual] <sec:sapt>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+

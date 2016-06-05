@@ -1183,7 +1183,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
-    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech 
+    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech
         in a |scf__scf_type| ``DIRECT`` calculation -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
@@ -4537,26 +4537,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_bool("QMEFP", false);
     }
     if (name == "DMRG"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Performs a DMRG computation
+       *
+       *  -*/
 
         /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
-        options.add_int("DMRG_WFN_MULTP", -1);
+        options.add_int("WFN_MULTP", -1);
 
-        /*- The DMRG wavefunction irrep uses the same conventions as Psi4. How convenient :-).
+        /*- The DMRG wavefunction irrep uses the same conventions as PSI4. How convenient :-).
             Just to avoid confusion, it's copied here. It can also be found on
             http://sebwouters.github.io/CheMPS2/classCheMPS2_1_1Irreps.html .
-
             Symmetry Conventions        Irrep Number & Name
-            Group Number & Name         0 	1 	2 	3 	4 	5 	6 	7
+            Group Number & Name         0     1     2     3     4     5     6     7
             0: c1                       A
-            1: ci                       Ag 	Au
-            2: c2                       A 	B
-            3: cs                       A' 	A''
-            4: d2                       A 	B1 	B2 	B3
-            5: c2v                      A1 	A2 	B1 	B2
-            6: c2h                      Ag 	Bg 	Au 	Bu
-            7: d2h                      Ag 	B1g 	B2g 	B3g 	Au 	B1u 	B2u 	B3u
+            1: ci                       Ag     Au
+            2: c2                       A     B
+            3: cs                       A'     A''
+            4: d2                       A     B1     B2     B3
+            5: c2v                      A1     A2     B1     B2
+            6: c2h                      Ag     Bg     Au     Bu
+            7: d2h                      Ag     B1g     B2g     B3g     Au     B1u     B2u     B3u
         -*/
-        options.add_int("DMRG_WFN_IRREP", -1);
+        options.add_int("WFN_IRREP", -1);
 
         /*- The number of reduced renormalized basis states to be
             retained during successive DMRG instructions -*/
@@ -4566,6 +4568,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             during successive DMRG instructions -*/
         options.add("DMRG_E_CONVERGENCE", new ArrayType());
 
+        /*- The density RMS convergence to stop an instruction
+            during successive DMRG instructions -*/
+        options.add_double("DMRG_D_CONVERGENCE", 1.e-6);
+
         /*- The maximum number of sweeps to stop an instruction
             during successive DMRG instructions -*/
         options.add("DMRG_MAXSWEEPS", new ArrayType());
@@ -4573,26 +4579,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- The noiseprefactors for successive DMRG instructions -*/
         options.add("DMRG_NOISEPREFACTORS", new ArrayType());
 
+        /*- The residual tolerances for the Davidson diagonalization during DMRG instructions -*/
+        options.add("DMRG_DVDSON_RTOL", new ArrayType());
+
         /*- Whether or not to print the correlation functions after the DMRG calculation -*/
-        options.add_bool("DMRG_PRINT_CORR", true);
+        options.add_bool("DMRG_PRINT_CORR", false);
 
         /*- Whether or not to create intermediary MPS checkpoints -*/
         options.add_bool("DMRG_CHKPT", false);
 
-        /*- Doubly occupied frozen orbitals for DMRGSCF, per irrep. Same
-            conventions as for other MR methods -*/
-        options.add("FROZEN_DOCC", new ArrayType());
-
-        /*- Active space orbitals for DMRGSCF, per irrep. Same conventions as for other MR methods. -*/
-        options.add("ACTIVE", new ArrayType());
-
-        /*- Convergence threshold for the gradient norm. -*/
-        options.add_double("D_CONVERGENCE", 1e-6);
-
         /*- Whether or not to store the unitary on disk (convenient for restarting). -*/
         options.add_bool("DMRG_STORE_UNIT", true);
 
-        /*- Whether or not to use DIIS for DMRGSCF. -*/
+        /*- Whether or not to use DIIS for DMRG. -*/
         options.add_bool("DMRG_DO_DIIS", false);
 
         /*- When the update norm is smaller than this value DIIS starts. -*/
@@ -4601,16 +4600,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Whether or not to store the DIIS checkpoint on disk (convenient for restarting). -*/
         options.add_bool("DMRG_STORE_DIIS", true);
 
-        /*- Maximum number of DMRGSCF iterations -*/
-        options.add_int("DMRG_MAXITER", 100);
+        /*- Maximum number of DMRG iterations -*/
+        options.add_int("DMRG_MAX_ITER", 100);
 
         /*- Which root is targeted: 1 means ground state, 2 first excited state, etc. -*/
         options.add_int("DMRG_WHICH_ROOT", 1);
 
         /*- Whether or not to use state-averaging for roots >=2 with DMRG-SCF. -*/
-        options.add_bool("DMRG_AVG_STATES", true);
+        options.add_bool("DMRG_STATE_AVG", true);
 
-        /*- Which active space to use for DMRGSCF calculations:
+        /*- Which active space to use for DMRG calculations:
                --> input with SCF rotations (INPUT);
                --> natural orbitals (NO);
                --> localized and ordered orbitals (LOC) -*/
@@ -4618,6 +4617,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
         /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
         options.add_bool("DMRG_LOC_RANDOM", true);
+
+        /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
+        options.add_bool("DMRG_CASPT2", false);
+
+        /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
+        options.add_str("DMRG_CASPT2_ORB", "PSEUDOCANONICAL", "PSEUDOCANONICAL ACTIVE");
+
+        /*- CASPT2 IPEA shift -*/
+        options.add_double("DMRG_IPEA", 0.0);
+
+        /*- CASPT2 Imaginary shift -*/
+        options.add_double("DMRG_IMAG_SHIFT", 0.0);
+
+        /*- DMRG-CI or converged DMRG-SCF orbitals in molden format -*/
+        options.add_bool("DMRG_MOLDEN", false);
+
+        /*- Print out the density matrix in the AO basis -*/
+        options.add_bool("DMRG_DENSITY_AO", false);
 
     }
     if (name == "DERIV"|| options.read_globals()) {
