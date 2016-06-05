@@ -31,6 +31,15 @@ To preferentially use a particular dftd3 compilation, simply adjust its
 position in the path environment variables. To remove the dftd3 that
 conda installs alongside |PSIfour|, ``conda remove dftd3m``.
 
+.. note:: At present there are two conda packages. ``dftd3`` is the
+   DFTD3 code straight from Grimme and |PSIfour| uses it for -D3
+   and -D3BJ. ``dftd3m`` additionally patches DFTD3 according to
+   [Smith:2016:2197]_ to compute -D3M and -D3MBJ. Eventually this
+   distinction will cease. But for the moment, this documents the
+   distinction. ``dftd3m`` the package is what gets installed alongside
+   the conda |PSIfour| binary. Both packages install an executable
+   with the same name, ``dftd3``.
+
 Alternatively, to build DFTD3 yourself,
 follow the instructions provided with the source
 (essentially, unpack the source, edit the Makefile to select a
@@ -194,7 +203,7 @@ program is suppressed; to see it in the output file, set print > 2.
 .. [#f2] [Grimme:2006:1787]_
 .. [#f3] [Grimme:2010:154104]_
 .. [#f4] [Grimme:2011:1456]_
-.. [#f5] [Smith:2016:xxxx]_
+.. [#f5] [Smith:2016:2197]_
 
 A few practical examples:
 
