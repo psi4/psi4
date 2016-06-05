@@ -307,3 +307,7 @@ Bibliography
    W. Kutzelnigg,
    *Int. J. Quantum Chem.* **25**, 107-129 (1984)
  
+.. [Smith:2016:2197]
+   D. Smith, L. Burns, K. Patkowski, and D. Sherrill,
+   *J. Phys. Chem. Lett.* **7**, 2197-2203 (2016).
+
