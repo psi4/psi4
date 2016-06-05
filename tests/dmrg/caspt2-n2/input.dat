@@ -12,13 +12,13 @@ set d_convergence  1e-12
 set dmrg wfn_irrep            0
 set dmrg wfn_multp            1
 set dmrg frozen_docc          [ 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 ]
-set dmrg active               [ 2 , 0 , 1 , 1 , 0 , 2 , 1 , 1 ]
+set dmrg active               [ 4 , 0 , 1 , 1 , 0 , 4 , 1 , 1 ]
 
-set dmrg dmrg_states          [   500,  1000,  1000 ]
-set dmrg dmrg_e_convergence   [ 1e-10, 1e-10, 1e-10 ]
-set dmrg dmrg_dvdson_rtol     [  1e-8,  1e-8,  1e-8 ]
-set dmrg dmrg_maxsweeps       [     5,     5,    10 ]
-set dmrg dmrg_noiseprefactors [  0.05,  0.05,   0.0 ]
+set dmrg dmrg_states          [   500,  1000]
+set dmrg dmrg_e_convergence   [ 1e-10, 1e-10]
+set dmrg dmrg_dvdson_rtol     [  1e-5, 1e-10]
+set dmrg dmrg_maxsweeps       [     5,     5]
+set dmrg dmrg_noiseprefactors [  0.05,  0.05]
 set dmrg dmrg_print_corr      true
 set dmrg dmrg_chkpt           false
 
@@ -33,8 +33,12 @@ set dmrg dmrg_state_avg       false
 set dmrg dmrg_active_space    NO  # INPUT; NO; LOC
 set dmrg dmrg_loc_random      false
 
-energy("dmrg-scf")
+set dmrg dmrg_caspt2_orb      pseudocanonical
+set dmrg dmrg_ipea            0.0
+set dmrg dmrg_imag_shift      0.0
 
-ref_energy = -109.1035023353 #TEST
-compare_values(ref_energy, get_variable("CURRENT ENERGY"), 6, "DMRG Energy")   #TEST
+energy("dmrg-caspt2")
+
+compare_values(-109.15104350802, get_variable("DMRG-SCF ENERGY"), 6, "DMRG-SCF Energy")   #TEST
+compare_values(-109.2680229921, get_variable("CURRENT ENERGY"), 6, "DMRG-CASPT2 Energy")   #TEST
 
