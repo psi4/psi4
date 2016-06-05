@@ -115,6 +115,10 @@ namespace psi {
             double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
             int nbfso, int elbert, int intermediate, int no_pq_perm, 
             int qdim, int add, int printflg, std::string OutFileRMR);
+        static void sort_buffer_pk(IWL* inbuf, int out_tape, int is_exch,
+                                   double *ints, unsigned int fpq, unsigned int lpq,
+                                   int *so2ind, int *so2sym, int*pksymoff, int printflg,
+                                   std::string out);
     };
     
 }

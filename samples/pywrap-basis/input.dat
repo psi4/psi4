@@ -17,9 +17,8 @@ H   2.158621  -0.136396   0.809565
 units angstrom
 }
 
-# Just as the basis must be specified after each molecule {...} block, the
-#   auto-fragment function that redefines the molecule into a fragmented
-#   molecule must be placed before the basis set in the input file
+# Auto-fragment function acts on active molecule by default ane returns
+#   fragmented molecule which then needs to be activated
 activate(auto_fragments())
 
 # Effectively "set basis heavy-aug-cc-pvdz"

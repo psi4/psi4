@@ -22,31 +22,23 @@ h2o.update_geometry()
 # SCF TESTS
 
 scf_dz = energy('SCF/cc-pVDZ')
-compare_values(scf_dz_ref, scf_dz, 6, "SCF/DZ Energy Check")
 
 scf_tzvp = energy('SCF/def2-TZVP')
-compare_values(scf_tzvp_ref, scf_tzvp, 6, "SCF/TZVP Energy Check")
 
 scf_adtz = energy('SCF/aug-cc-pV[23]Z')
-compare_values(scf_adtz_ref, scf_adtz, 6, "SCF/a[DT]Z Energy Check")
 
 # Three point extrapolation
 # scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
-# compare_values(scf_adtqz_ref, scf_adtqz, 6, "SCF/a[DTQ]Z Energy Check")
 
 
 # MP2 TESTS
 
 mp2_addz = energy('MP2/aug-cc-pV(D+d)Z')
-compare_values(mp2_addz_ref, mp2_addz, 6, "MP2/a(D+d)Z Energy Check")
 
 mp2_atz = energy('MP2/aug-cc-pVTZ')
-compare_values(mp2_atz_ref, mp2_atz, 6, "MP2/aTZ Energy Check")
 
 mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
-compare_values(mp2_adtz_ref, mp2_adtz, 6, "MP2/a[DT]Z Energy Check")
 
 # mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
-# compare_values(mp2_atqz_ref, mp2_atqz, 6, "MP2/a[TQ]Z Energy Check")
 
 
