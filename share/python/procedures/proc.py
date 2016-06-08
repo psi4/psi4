@@ -2803,7 +2803,7 @@ def run_sapt(name, **kwargs):
     elif name in ['sapt2+', 'sapt2+dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
-    elif name in ['sapt2+(3)', 'sapt2+(3)']:
+    elif name in ['sapt2+(3)', 'sapt2+(3)dmp2']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', False)
