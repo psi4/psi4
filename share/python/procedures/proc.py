@@ -3069,6 +3069,8 @@ def run_mrcc(name, **kwargs):
                 ':' + os.environ.get('PATH'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
+    #   Filter out None values as subprocess will fault on them
+    lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
     psi_io = psi4.IOManager.shared_object()
