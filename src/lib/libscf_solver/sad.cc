@@ -83,8 +83,11 @@ void SADGuess::common_init()
 }
 void SADGuess::compute_guess()
 {
+    
+    timer_on("SAD Guess");
     form_D();
     form_C();
+    timer_off("SAD Guess");
 }
 void SADGuess::form_D()
 {
@@ -481,9 +484,8 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF"){
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(bas->molecule(),
-            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-            options_.get_str("BASIS"), bas->has_puream());
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(bas->molecule(), "BASIS",
+                                                options_.get_str("DF_BASIS_SAD"));
 
         DFJK* dfjk = new DFJK(bas, auxiliary);
         dfjk->set_unit(PSIF_SAD);

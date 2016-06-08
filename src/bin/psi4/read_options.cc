@@ -1383,6 +1383,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_E_CONVERGENCE", 1E-5);
     /*- Convergence criterion for SCF density in SAD Guess. -*/
     options.add_double("SAD_D_CONVERGENCE", 1E-5);
+    /*- Fitting SAD basis !expert -*/
+    options.add_str("DF_BASIS_SAD", "SAD-FIT");
     /*- Maximum number of SAD guess iterations !expert -*/
     options.add_int("SAD_MAXITER", 50);
     /*- SCF type of SAD guess !expert -*/

@@ -1147,7 +1147,8 @@ def scf_helper(name, **kwargs):
 
     # If GUESS is auto guess what it should be
     elif psi4.get_option('SCF', 'GUESS') == "AUTO":
-        if psi4.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']:
+        if (psi4.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
+                ((scf_molecule.natom() > 1) or psi4.get_option('SCF', 'SAD_FRAC_OCC')):
             psi4.set_local_option('SCF', 'GUESS', 'SAD')
         elif psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
             psi4.set_local_option('SCF', 'GUESS', 'GWH')

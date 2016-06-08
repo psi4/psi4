@@ -46,6 +46,6 @@ thisenergy = energy('scf')
 
 stab = get_array_variable("SCF STABILITY EIGENVALUES")
 
-compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")  #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")  #TEST
-compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")  #TEST
+compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")                   #TEST
