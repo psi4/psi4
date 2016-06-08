@@ -46,11 +46,11 @@ try:
         E = eeee.run_dftd3(fctl, dlvl, dertype=der)
         E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
         E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
-except Dftd3Error as e:
+except qcdb.Dftd3Error as e:
     print_stdout("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
     hasD3M = False
 
-hasD3M = False  # temporary until fctl released into superfunctionals list
+#hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
 #   accomodate old and new dftd3 exe? the answer is we can't catch from c-side.
 
@@ -63,6 +63,7 @@ set dft_spherical_points 110
 #set scf print 3  # will print dftd3 program output to psi4 output file
 
 energy('b3lyp-d2gr', molecule=eeee)
+# single test below fails for mysterious dft reasons
 
 energy('b3lyp-d3', molecule=mAuncp)
 

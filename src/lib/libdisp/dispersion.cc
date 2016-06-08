@@ -491,8 +491,7 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
     SharedMatrix G(new Matrix("Dispersion Gradient", m->natom(), 3));
     double** Gp = G->pointer();
 
-    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ")) {
-    //if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ") || (name_ == "-D3MZERO") || (name_ == "-D3MBJ")) {
+    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ") || (name_ == "-D3MZERO") || (name_ == "-D3MBJ")) {
         if (Py_IsInitialized()) {
             try {
                 // Update geometry in molecule, convert to string

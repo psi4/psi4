@@ -60,6 +60,8 @@ def run_cfour_module(xmod):
                 ':' + psi4.psi_top_srcdir() + '/share/basis',
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
+    #   Filter out None values as subprocess will fault on them
+    lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Call executable xcfour, directing cfour output to the psi4 output file
     try:
