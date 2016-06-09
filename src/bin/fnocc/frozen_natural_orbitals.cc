@@ -494,16 +494,16 @@ void FrozenNO::ComputeNaturalOrbitals(){
     }
 
     // free memory
-    delete newVirOrbsPI;
+    delete[] newVirOrbsPI;
 
-    delete aOccOrbsPI;
-    delete bOccOrbsPI;
-    delete aVirOrbsPI;
-    delete bVirOrbsPI;
-    delete aOccEvals;
-    delete bOccEvals;
-    delete aVirEvals;
-    delete bVirEvals;
+    delete[] aOccOrbsPI;
+    delete[] bOccOrbsPI;
+    delete[] aVirOrbsPI;
+    delete[] bVirOrbsPI;
+    delete[] aOccEvals;
+    delete[] bOccEvals;
+    delete[] aVirEvals;
+    delete[] bVirEvals;
 
     tstop();
 }

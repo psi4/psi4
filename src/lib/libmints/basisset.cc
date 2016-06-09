@@ -985,122 +985,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     }
 }
 
-BasisSet::BasisSet(const BasisSet *bs, const int center)
-{
-    initialize_singletons();
-
-    /*
-     * First, find the shells we need, and grab the data
-     */
-    std::vector<double> uexps;
-    std::vector<double> ucoefs;
-    std::vector<double> uoriginal_coefs;
-    std::vector<double> uerd_coefs;
-    name_ = bs->name();
-    n_shells_ = 0;
-    n_uprimitive_ = 0;
-    nao_ = 0;
-    nbf_ = 0;
-    for(int shelln = 0; shelln < bs->nshell(); ++shelln){
-        const GaussianShell &shell = bs->shell(shelln);
-        if(shell.ncenter() == center){
-            int nprim = shell.nprimitive();
-            for(int prim = 0; prim < nprim; ++prim){
-                uexps.push_back(shell.exp(prim));
-                ucoefs.push_back(shell.coef(prim));
-                uoriginal_coefs.push_back(shell.original_coef(prim));
-                uerd_coefs.push_back(shell.erd_coef(prim));
-                n_uprimitive_++;
-            }
-            n_shells_++;
-            nao_ += shell.ncartesian();
-            nbf_ += shell.nfunction();
-        }
-    }
-    nprimitive_ = n_uprimitive_;
-
-
-    // Create a "molecule", i.e., an atom
-    boost::shared_ptr<Molecule> mol = bs->molecule();
-    molecule_ = boost::shared_ptr<Molecule>(new Molecule);
-    int Z = mol->Z(center);
-    double mass = mol->mass(center);
-    double charge = mol->charge(center);
-    std::string lab = mol->label(center);
-    char* label = new char[lab.length() + 1];
-    strcpy(label,lab.c_str());
-    //Put the atomic info into mol
-    molecule_->add_atom(Z, 0.0, 0.0, 0.0, label, mass, charge);
-
-
-    /*
-     * Allocate arrays
-     */
-    n_prim_per_shell_ = new int[n_shells_];
-    // The unique primitives
-    uexponents_ = new double[n_uprimitive_];
-    ucoefficients_ = new double[n_uprimitive_];
-    uoriginal_coefficients_ = new double[n_uprimitive_];
-    uerd_coefficients_ = new double[n_uprimitive_];
-    for(int i = 0; i < n_uprimitive_; ++i){
-        uexponents_[i] = uexps[i];
-        ucoefficients_[i] = ucoefs[i];
-        uoriginal_coefficients_[i] = uoriginal_coefs[i];
-        uerd_coefficients_[i] = uoriginal_coefs[i];
-    }
-
-    shell_first_ao_ = new int[n_shells_];
-    shell_first_basis_function_ = new int[n_shells_];
-    shells_ = new GaussianShell[n_shells_];
-    ao_to_shell_ = new int[nao_];
-    function_to_shell_ = new int[nbf_];
-    function_center_ = new int[nbf_];
-    shell_center_ = new int[n_shells_];
-    center_to_nshell_ = new int[1];
-    center_to_shell_ = new int[1];
-    xyz_ = new double[3];
-
-    /*
-     * Now loop over shell for this atom, and point to the appropriate unique data
-     */
-    int shell_count = 0;
-    int ao_count = 0;
-    int bf_count = 0;
-    puream_ = false;
-    max_am_ = 0;
-    max_nprimitive_ = 0;
-    int prim_count = 0;
-    for(int shelln = 0; shelln < bs->nshell(); ++shelln){
-        const GaussianShell &shell = bs->shell(shelln);
-        if(shell.ncenter() == center){
-            center_to_nshell_[0] = n_shells_;
-            center_to_shell_[0] = shell_count;
-            shell_first_ao_[shell_count] = ao_count;
-            shell_first_basis_function_[shell_count] = bf_count;
-            int shell_nprim = shell.nprimitive();
-            int am = shell.am();
-            max_nprimitive_ = shell_nprim > max_nprimitive_ ? shell_nprim : max_nprimitive_;
-            max_am_ = max_am_ > am ? max_am_ : am;
-            shell_center_[shell_count] = center;
-            GaussianType puream = shell.is_pure() ? Pure : Cartesian;
-            if(puream)
-                puream_ = true;
-            shells_[shell_count] = GaussianShell(am, shell_nprim, &uoriginal_coefficients_[prim_count],
-                                                 &ucoefficients_[prim_count], &uerd_coefficients_[prim_count], &uexponents_[prim_count], puream, center, xyz_, bf_count);
-            for(int thisbf = 0; thisbf < shell.nfunction(); ++thisbf){
-                function_to_shell_[bf_count] = shell_count;
-                function_center_[bf_count++] = center;
-            }
-            for(int thisao = 0; thisao < shell.ncartesian(); ++thisao){
-                ao_to_shell_[ao_count++] = shell_count;
-            }
-            shell_count++;
-            prim_count += shell_nprim;
-        }
-    }
-    xyz_[0] = xyz_[1] = xyz_[2] = 0.0;
-}
-
 std::string BasisSet::make_filename(const std::string& name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
@@ -1403,12 +1287,6 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
 
     return make_pair(labels, new_basis);
 #endif
-}
-
-
-boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
-{
-    return boost::shared_ptr<BasisSet>(new BasisSet(this, center));
 }
 
 boost::shared_ptr<BasisSet> BasisSet::decontract()

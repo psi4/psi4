@@ -275,7 +275,7 @@ def compare_cubes(expected, computed, label):
     cvec = [float(k) for k in computed.split()[6:]]
     if len(evec) == len(cvec):
         for n in range(len(evec)):
-            if (math.fabs(evec[n]-cvec[n]) > 1.0e-5):
+            if (math.fabs(evec[n]-cvec[n]) > 1.0e-4):
                 message = ("\t%s: computed cube file does not match expected cube file." % label)
                 raise TestComparisonError(message)
     else:

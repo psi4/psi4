@@ -20,7 +20,7 @@ extent |PSIfours| functionality.
    notes_py
    energy
    prop
-   cp
+   nbody
    opt
    freq
    db

@@ -360,6 +360,8 @@ public:
     */
     static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
                                           Options& options);
+    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+                                          Options& options, std::string jk_type);
 
 
     // => Knobs <= //
