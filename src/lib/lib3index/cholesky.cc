@@ -58,10 +58,7 @@ void Cholesky::choleskify()
 
     // Get the diagonal (Q|Q)^(0)
     double* diag = new double[n];
-    //outfile->Printf("\n Compute diagonal:");
-    Timer diagonal_time;
     compute_diagonal(diag);
-    //outfile->Printf(" %8.6f s\n", diagonal_time.get());
 
     // Temporary cholesky factor
     std::vector<double*> L;
@@ -70,7 +67,6 @@ void Cholesky::choleskify()
     std::vector<int> pivots;
 
     // Cholesky procedure
-    Timer cholesky_procedure;
     while (Q_ < n) {
 
         // Select the pivot
@@ -92,6 +88,7 @@ void Cholesky::choleskify()
 
         // Check to see if memory constraints are OK
         if (Q_ > max_rows) {
+            throw PSIEXCEPTION("Cholesky: Memory constraints exceeded. Fire your theorist.");
         }
 
         // If here, we're really going to add this row
@@ -101,7 +98,6 @@ void Cholesky::choleskify()
         compute_row(pivot, L[Q_]);
 
         // [(m|Q) - L_m^P L_Q^P]
-        Timer daxpy_time;
         for (size_t P = 0; P < Q_; P++) {
             C_DAXPY(n,-L[P][pivots[Q_]],L[P],1,L[Q_],1);
         }
@@ -182,7 +178,6 @@ size_t CholeskyERI::N()
 }
 void CholeskyERI::compute_diagonal(double* target)
 {
-    Timer diagonal_ints;
     const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = 0; N < basisset_->nshell(); N++) {
@@ -205,7 +200,6 @@ void CholeskyERI::compute_diagonal(double* target)
 }
 void CholeskyERI::compute_row(int row, double* target)
 {
-    Timer chol_row;
     size_t r = row / basisset_->nbf();
     size_t s = row % basisset_->nbf();
     size_t R = basisset_->function_to_shell(r);
