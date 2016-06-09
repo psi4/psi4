@@ -76,10 +76,10 @@ void
 DIISManager::set_vector_size(int numQuantities, ...)
 {
     if(_vectorSize)
-        throw SanityCheckError("The size of the DIIS vector has already been set",
+        throw SanityCheckError("DIISManager: The size of the DIIS vector has already been set",
                                __FILE__, __LINE__);
     if(_errorVectorSize == 0)
-        throw SanityCheckError("The error vector size must be set before the vector size",
+        throw SanityCheckError("DIISManager: The error vector size must be set before the vector size",
                                __FILE__, __LINE__);
     _numVectorComponents = numQuantities;
     dpdfile2 *file2;

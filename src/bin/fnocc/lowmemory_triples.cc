@@ -511,8 +511,8 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   }
 
 
-  delete name;
-  delete space;
+  delete[] name;
+  delete[] space;
 
   // free memory:
   free(E2ijak);

@@ -5,8 +5,8 @@
 memory 250 mb
 
 refnuc   =  15.2403036073920  #TEST
-refscf   = -75.3789876324580  #TEST
-refci    = -75.5556153544407  #TEST
+refscf   = -75.3870408916852  #TEST
+refci    = -75.5535266390568  #TEST
 refcorr  = refci - refscf     #TEST
 
 molecule c2 {
@@ -16,7 +16,8 @@ molecule c2 {
 
 set {
   wfn detci
-  basis 6-31G*
+  basis cc-pVDZ
+  e_convergence 10
   d_convergence 10
   restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
   active          [2, 0, 1, 1, 0, 2, 1, 1]
@@ -36,9 +37,9 @@ revoke_global_option_changed("ACTIVE")
 # The following is an alternative way of specifying exactly the same CI
 set {
   wfn detci
-  basis 6-31G*
+  basis cc-pVDZ
   restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
-  restricted_uocc [5, 1, 2, 2, 1, 5, 2, 2]
+  restricted_uocc [4, 1, 2, 2, 1, 4, 2, 2]
   ras1            [1, 0, 0, 0, 0, 1, 1, 1]
   ras2            [1, 0, 1, 1, 0, 1, 0, 0]
   ex_level 2
