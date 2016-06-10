@@ -1121,6 +1121,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("DF_BASIS_DCFT","");
 
   }
+  if (name == "GDMA"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs distributed multipole analysis (DMA), using
+    Anthony Stone's GDMA program. See :ref:`GDMA <sec:gdma>` for more details. -*/
+
+    /*- The order of multipole expansion on each site.  Currently limited to the same
+        order for all sites; for more advanced usage a user-provided GDMA data file
+        should be provided. -*/
+    options.add_int("GDMA_LIMIT", 2);
+    /*- The radii to be used, overriding the defaults.  Specified as an array
+        [ n1, r1, n2, r2, ... ] where n1,n2,n3... are atom type strings and
+        r1,r2,r3 are radii in Angstrom. -*/
+    options.add("GDMA_RADIUS", new ArrayType());
+    /*- The origin (in Angstrom, expressed as an [x, y, z] array) about which the total multipoles
+        will be computed during DMA.  Useful for determining single site expansions at an arbitrary point. -*/
+    options.add("GDMA_ORIGIN", new ArrayType());
+    /*- Whether to print DMA results in atomic units or SI. -*/
+    options.add_str("GDMA_MULTIPOLE_UNITS", "AU SI", "AU");
+    /*- The value to switch between the older standard DMA and the new grid-based approach.
+        Pairs of primitives whose exponents sum is above this value will be treated using
+        standard DMA.  Set to 0 to force all pairs to be treated with standard DMA. -*/
+    options.add_double("GDMA_SWITCH", 4.0);
+  }
+
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
       whenever disk-based molecular integrals are required. -*/
@@ -2494,11 +2517,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*In constrained optimizations, for coordinates with user-specified
-      equilibrium values, this is the force constant (in au) used to apply an additional
-      force to each coordinate.  If the user is only concerned to satisfy the desired constraint,
-      then the user need only ensure that this value is sufficiently large. */
-      //options.add_double("FIXED_COORD_FORCE_CONSTANT", 2.0);
+      /*- In constrained optimizations, for coordinates with user-specified
+      equilibrium values, this is the initial force constant (in au) used to apply an
+      additional force to each coordinate. -*/
+      options.add_double("FIXED_COORD_FORCE_CONSTANT", 0.5);
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest

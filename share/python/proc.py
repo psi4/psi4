@@ -1050,9 +1050,7 @@ def scf_helper(name, **kwargs):
         if scf_molecule.schoenflies_symbol() != 'c1':
             psi4.print_out("""  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n""")
-            molname = scf_molecule.name()
-            scf_molecule = psi4.Molecule.create_molecule_from_string(scf_molecule.create_psi4_string_from_molecule())
-            scf_molecule.set_name(molname)
+            scf_molecule = scf_molecule.clone()
             scf_molecule.reset_point_group('c1')
             scf_molecule.fix_orientation(True)
             scf_molecule.fix_com(True)
@@ -2730,9 +2728,7 @@ def run_sapt(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        molname = sapt_dimer.name()
-        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
-        sapt_dimer.set_name(molname)
+        sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
@@ -2878,9 +2874,7 @@ def run_sapt_ct(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        molname = sapt_dimer.name()
-        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
-        sapt_dimer.set_name(molname)
+        sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
@@ -3030,9 +3024,7 @@ def run_fisapt(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         psi4.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        molname = sapt_dimer.name()
-        sapt_dimer = psi4.Molecule.create_molecule_from_string(sapt_dimer.create_psi4_string_from_molecule())
-        sapt_dimer.set_name(molname)
+        sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)

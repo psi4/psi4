@@ -287,6 +287,7 @@ add_subdirectory(pywrap-db1)
 add_subdirectory(pywrap-db2)
 add_subdirectory(pywrap-db3)
 add_subdirectory(pywrap-freq-e-sowreap)
+add_subdirectory(pywrap-freq-g-sowreap)
 add_subdirectory(pywrap-molecule)
 add_subdirectory(pywrap-opt-sowreap)
 add_subdirectory(rasci-c2-active)
@@ -393,5 +394,9 @@ endif()
 
 if(ENABLE_CHEMPS2)
     add_subdirectory(dmrg)
+endif()
+
+if(ENABLE_GDMA)
+    add_subdirectory(gdma1)
 endif()
 

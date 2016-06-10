@@ -187,28 +187,18 @@ void MOLECULE::apply_constraint_forces(void) {
         double eq_val = fragments[f]->coord_fixed_eq_val(i);
         double val = fragments[f]->coord_value(i);
 
-        k = H[cnt][cnt];
-        if (iter > 10) { // this works OK
-          k = abs(k);
-          k += 0.05;
-          H[cnt][cnt] = k;
-        }
+        // Increase force constant by 5% of initial value per iteration
+        k = (1 + 0.05 * (iter-1)) * Opt_params.fixed_coord_force_constant;
+        H[cnt][cnt] = k;
 
-        // haven't tested this
-/* INTCO_TYPE it = fragments[f]->get_simple_type(i);
-        if (it == stre_type) k = 0.5;
-        else if (it == bend_type) k = 0.2;
-        else k = 0.1; */
-
-        double force = (eq_val - val) * fabs(k);
-        oprintf_out("\tAdding user-defined constraint: Fragment %d; Coordinate %d; Force constant %8.4e.\n",
-           f+1, i+1, k);
-        oprintf_out("\tValue=%8.4e; Fixed value=%8.4e; Force=%8.4e.\n", val, eq_val, force);
-        oprintf_out("\tRemoving off-diagonal coupling of this coordinate with others.\n");
+        double force = (eq_val - val) * k;
+        oprintf_out("\tAdding user-defined constraint: Fragment %d; Coordinate %d:\n", f+1, i+1);
+        oprintf_out("\t\tValue = %12.6f; Fixed value    = %12.6f\n", val, eq_val);
+        oprintf_out("\t\tForce = %12.6f; Force constant = %12.6f\n", force, k);
         f_q[cnt] = force;
 
         // If user eq. value is specified delete coupling between this coordinate and others.
-        if (iter > 10)
+        oprintf_out("\tRemoving off-diagonal coupling between coordinate %d and others.\n", cnt+1);
         for (int j=0; j<N; ++j)
           if (j != cnt)
             H[j][cnt] = H[cnt][j] = 0;

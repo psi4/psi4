@@ -100,7 +100,7 @@ void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> 
      sum += mol->mass(a);
 
   // print out normal modes in format that WebMO likes
-  outfile->Printf( "\n\tNormal Modes (mass-weighted).\n");
+  outfile->Printf( "\n\tNormal Modes (non-mass-weighted).\n");
   outfile->Printf( "\tMolecular mass is %10.5f amu.\n", sum);
   outfile->Printf( "\tFrequencies in cm^-1; force constants in au.\n");
 

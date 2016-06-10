@@ -91,6 +91,7 @@ void set_params(void)
      Opt_params.coordinates = OPT_PARAMS::BOTH;
 
 // Maximum step size in bohr or radian along an internal coordinate {double}
+   // For fixed coordinate optimizations, also see below.
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAG_STEP_LIMIT");
     Opt_params.intrafragment_step_limit_min = options.get_double("INTRAFRAG_STEP_LIMIT_MIN");
@@ -393,7 +394,7 @@ void set_params(void)
     Opt_params.keep_intcos = true;
 
   // for coordinates with user-specified equilibrium values - this is the force constant
-  //Opt_params.fixed_coord_force_constant = options.get_double("FIXED_COORD_FORCE_CONSTANT");
+  Opt_params.fixed_coord_force_constant = options.get_double("FIXED_COORD_FORCE_CONSTANT");
 
   // Currently, a static line search merely displaces along the gradient in internal
   // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
@@ -614,6 +615,15 @@ void set_params(void)
   Opt_params.fixed_distance_str = options.get_str("FIXED_DISTANCE");
   Opt_params.fixed_bend_str     = options.get_str("FIXED_BEND");
   Opt_params.fixed_dihedral_str = options.get_str("FIXED_DIHEDRAL");
+
+  if (!Opt_params.fixed_distance_str.empty() ||
+      !Opt_params.fixed_bend_str.empty()     ||
+      !Opt_params.fixed_dihedral_str.empty()) {
+    if (!options["INTRAFRAG_STEP_LIMIT"].has_changed())     Opt_params.intrafragment_step_limit = 0.1;
+    if (!options["INTRAFRAG_STEP_LIMIT_MIN"].has_changed()) Opt_params.intrafragment_step_limit_min = 0.1;
+    if (!options["INTRAFRAG_STEP_LIMIT_MAX"].has_changed()) Opt_params.intrafragment_step_limit_max = 0.1;
+  }
+
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // Read QChem input and write all the frozen distances into a string
   if (rem_read(REM_GEOM_OPT2_FROZEN_DISTANCES) > 0) {
