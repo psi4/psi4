@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.434 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} 49b8e11 dirty
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,34 +16,33 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tue Jan 19 12:07:39 2016
+    Psi4 started on: Mon Mar 14 15:40:22 2016
 
-    Process ID:  34689
-    PSI4DATADIR: /Users/wderri2/Source/psi4/lib
+    Process ID:  14293
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# Testing decontract option for the basis sets
+#! RHF/cc-pvdz-decontract HCl single-point energy 
+#! Testing the in line -decontract option for basis sets
 
 
 ref_energy = -460.08989223006836
 memory 250 mb
 
-import cdft
-
 molecule {
 0 1
 CL        0.000000000000  0.000000000000  -0.035925275852
 H         0.000000000000  0.000000000000   1.246511684916
-    symmetry c1
+symmetry c1
 }
 
 set {
-  basis cc-pvdz-decontract
-  df_basis_scf cc-pvdz-jkfit
-  reference rhf
+  basis         cc-pvdz-decontract
+  df_basis_scf  cc-pvdz-jkfit
+  reference     rhf
 
 }
 
@@ -53,10 +52,9 @@ compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.
-/Users/wderri2/Source/cdft/cdft.so loaded.
 
-*** tstart() called on dhcp190-136.emerson.emory.edu
-*** at Tue Jan 19 12:07:40 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:40:22 2016
 
 
          ---------------------------------------------------------
@@ -152,16 +150,16 @@ compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:  -400.50615581375229   -4.00506e+02   6.41156e-01 
-   @DF-RHF iter   2:  -438.95335529506610   -3.84472e+01   2.79521e-01 DIIS
-   @DF-RHF iter   3:  -457.62394823362678   -1.86706e+01   8.27294e-02 DIIS
-   @DF-RHF iter   4:  -460.07065435408225   -2.44671e+00   4.68567e-03 DIIS
-   @DF-RHF iter   5:  -460.08879319020281   -1.81388e-02   9.54772e-04 DIIS
-   @DF-RHF iter   6:  -460.08983205645171   -1.03887e-03   1.82920e-04 DIIS
-   @DF-RHF iter   7:  -460.08988919760128   -5.71411e-05   3.58023e-05 DIIS
-   @DF-RHF iter   8:  -460.08989210350256   -2.90590e-06   7.58035e-06 DIIS
-   @DF-RHF iter   9:  -460.08989222333042   -1.19828e-07   1.71785e-06 DIIS
-   @DF-RHF iter  10:  -460.08989223006819   -6.73776e-09   2.50897e-07 DIIS
+   @DF-RHF iter   1:  -400.50615581382607   -4.00506e+02   6.41156e-01 
+   @DF-RHF iter   2:  -438.95335529506013   -3.84472e+01   2.79521e-01 DIIS
+   @DF-RHF iter   3:  -457.62394823359443   -1.86706e+01   8.27294e-02 DIIS
+   @DF-RHF iter   4:  -460.07065435407918   -2.44671e+00   4.68567e-03 DIIS
+   @DF-RHF iter   5:  -460.08879319019854   -1.81388e-02   9.54772e-04 DIIS
+   @DF-RHF iter   6:  -460.08983205644722   -1.03887e-03   1.82920e-04 DIIS
+   @DF-RHF iter   7:  -460.08988919759634   -5.71411e-05   3.58023e-05 DIIS
+   @DF-RHF iter   8:  -460.08989210349796   -2.90590e-06   7.58035e-06 DIIS
+   @DF-RHF iter   9:  -460.08989222332548   -1.19828e-07   1.71785e-06 DIIS
+   @DF-RHF iter  10:  -460.08989223006381   -6.73833e-09   2.50898e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -196,18 +194,18 @@ compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -460.08989223006819
+  @DF-RHF Final Energy:  -460.08989223006381
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              7.0147795339917902
-    One-Electron Energy =                -649.8284091018053914
-    Two-Electron Energy =                 182.7237373377454048
+    One-Electron Energy =                -649.8284091017700348
+    Two-Electron Energy =                 182.7237373377145104
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -460.0898922300681306
+    Total Energy =                       -460.0898922300636968
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -232,14 +230,15 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on dhcp190-136.emerson.emory.edu at Tue Jan 19 12:07:40 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:40:22 2016
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+	RHF energy........................................................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

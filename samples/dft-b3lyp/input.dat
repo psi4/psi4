@@ -1,0 +1,77 @@
+#! Check flavors of B3LYP (b3lyp3/b3lyp5) against other programs
+
+# all non-psi4 references from http://forum.psicode.org/t/b3lyp-defect-compatibility-with-gamess-and-gaussian/193
+# also see discussion in https://github.com/psi4/psi4/pull/339
+
+
+set scf_type pk
+set e_convergence 9
+set dft_spherical_points 590
+set dft_radial_points 99
+set print 2
+
+set basis aug-cc-pvdz
+
+molecule cswater {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+oswater = cswater.clone()
+oswater.set_multiplicity(2)
+oswater.set_molecular_charge(1)
+
+e = energy('b3lyp', molecule=cswater)
+
+set reference uhf
+e = energy('b3lyp', molecule=oswater)
+
+set reference rks
+e = energy('b3lyp5', molecule=cswater)
+
+set reference uks
+e = energy('b3lyp5', molecule=oswater)
+# this one doesn't match quite so well
+
+
+molecule {
+0 1
+O
+H 1 rOH
+H 1 rOH 2 aHOH
+
+rOH = 0.9622
+aHOH = 103.84
+}
+
+set basis 6-311g(d)
+
+e = energy('b3lyp')
+
+# all the below pass just fine but redundant for test-case purposes
+
+### clean()
+### 
+### 
+### set basis 6-31G(2df,p)
+### 
+### e = energy('b3lyp')
+### 
+### e = energy('b3lyp5')
+### 
+### clean()
+### 
+### 
+### molecule {
+### O -1.769142 -0.076181 0.000000
+### H -2.065745 0.837492 0.000000
+### H -0.809034 0.001317 0.000000
+### }
+### 
+### set basis def2-tzvp
+### 
+### e = energy('b3lyp')
+### e = energy('b3lyp5')
+

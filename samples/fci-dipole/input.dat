@@ -10,11 +10,10 @@ molecule h2o {
 units bohr
 }
 
-set globals {
+set {
   basis 6-31G
-  dipmom true
   print 2
 }
 
-thisenergy = energy('fci')
+thisenergy = prop('fci')
 

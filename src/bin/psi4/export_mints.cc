@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <boost/python.hpp>
@@ -104,14 +109,15 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = mat->numpy_dims();
-    if (numpy_dim){
-        int* numpy_shape = mat->numpy_shape();
+    std::vector<int> numpy_shape = mat->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
         rv["shape"] = boost::python::tuple(shape);
+        // rv["shape"] = numpy_shape;
     }
     else{
         int rows = mat->rowspi(irrep);
@@ -154,15 +160,14 @@ dict vector_array_interface(SharedVector vec, int irrep){
     dict rv;
 
     // Shape
-    int numpy_dim = vec->numpy_dims();
-
-    if (numpy_dim){
-        int* numpy_shape = vec->numpy_shape();
+    std::vector<int> numpy_shape = vec->numpy_shape();
+    if (numpy_shape.size()){
+        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
         boost::python::list shape;
-        for (int i=0; i<numpy_dim; i++){
-            shape.append(numpy_shape[i]);
+        for (int i=0; i<numpy_shape.size(); i++){
+           shape.append(numpy_shape[i]);
         }
-        rv["shape"] = boost::python::make_tuple(shape);
+        rv["shape"] = boost::python::tuple(shape);
     }
     else {
         const int elements = vec->dim(irrep);
@@ -320,6 +325,8 @@ void export_mints()
     class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
             def(init<const Dimension&>()).
+            def(init<const std::string&, int>()).
+            def(init<const std::string&, const Dimension&>()).
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -373,6 +380,7 @@ void export_mints()
 
     class_<Matrix, SharedMatrix>("Matrix", "docstring").
             def(init<int, int>()).
+            def(init<const std::string&, int, int>()).
             def(init<const std::string&, const Dimension&, const Dimension&>()).
             def(init<const std::string&>()).
             def("clone", &Matrix::clone, "docstring").
@@ -627,6 +635,7 @@ void export_mints()
             def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
             def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
+            def("set_print", &MintsHelper::set_print, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
@@ -779,7 +788,7 @@ void export_mints()
             def("symmetrize", &Molecule::symmetrize_to_abelian_group, "Finds the highest point Abelian point group within the specified tolerance, and forces the geometry to have that symmetry.").
             def("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg1 in psi4 format").
             staticmethod("create_molecule_from_string").
-                def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
+            def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
             def("set_variable", &Molecule::set_variable, "Assigns the value arg3 to the variable arg2 in the list of geometry variables, then calls update_geometry()").
             def("get_variable", &Molecule::get_variable, "Checks if variable arg2 is in the list, sets it to val and returns true if it is, and returns false if not").
             def("update_geometry", &Molecule::update_geometry, "Reevaluates the geometry with current variable values, orientation directives, etc. Must be called after initial Molecule definition by string.").
@@ -948,6 +957,7 @@ void export_mints()
 
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).
+            def("writeNO", &MoldenWriter::writeNO, "docstring").
             def("write", &MoldenWriter::write, "docstring");
 
     class_<NBOWriter, boost::shared_ptr<NBOWriter> >("NBOWriter", "docstring", no_init).
@@ -1003,11 +1013,20 @@ void export_mints()
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
 
+    /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
-                                            boost::shared_ptr<psi::detci::CIvect>, int, int) =
-                                            &detci::CIWavefunction::sigma;
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int) =
+                                    &detci::CIWavefunction::sigma;
+    void (detci::CIWavefunction::*py_ci_int_sigma)(boost::shared_ptr<psi::detci::CIvect>,
+                                    boost::shared_ptr<psi::detci::CIvect>, int, int,
+                                    SharedVector, SharedVector) =
+                                    &detci::CIWavefunction::sigma;
 
-    // Looks like this has to go here.
+    typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          int, int);
+
     class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
         .def(init<boost::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
@@ -1016,17 +1035,22 @@ void export_mints()
         .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
         .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
+        .def("rotate_mcscf_integrals", &detci::CIWavefunction::rotate_mcscf_integrals, "docstring")
+        .def("pitzer_to_ci_order_onel", &detci::CIWavefunction::pitzer_to_ci_order_onel, "docstring")
+        .def("pitzer_to_ci_order_twoel", &detci::CIWavefunction::pitzer_to_ci_order_twoel, "docstring")
         .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
         .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
         .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
         .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
         .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
+        .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("orbital_ci_block", &detci::CIWavefunction::orbital_ci_block, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
-        .def("sigma", py_ci_sigma, "docstring");
+        .def("sigma", py_ci_sigma, "docstring")
+        .def("sigma", py_ci_int_sigma, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;

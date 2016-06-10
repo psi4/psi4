@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -95,10 +100,10 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
   new_betastr_idx   = init_int_array(betastrings->size);
 
   stringset_translate_addr(alphastrings, CalcInfo_->num_alp_expl, 
-    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, AlphaG_, new_alphastr_list,
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), AlphaG_, new_alphastr_list,
     new_alphastr_idx);
   stringset_translate_addr(betastrings, CalcInfo_->num_bet_expl, 
-    CalcInfo_->num_drc_orbs, CalcInfo_->reorder, BetaG_, new_betastr_list,
+    CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), BetaG_, new_betastr_list,
     new_betastr_idx);
 
   /* loop over all the dets in the imported vector and translate
@@ -206,4 +211,3 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
 }
 
 }} // namespace psi::detci
-

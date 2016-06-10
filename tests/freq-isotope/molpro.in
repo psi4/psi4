@@ -1,0 +1,35 @@
+***,HCl
+memory,100,M
+geomtyp=zmat
+geometry
+O,,      0.00000000 ,   0.00000000 ,   0.00000000
+H2,,      0.00000000 ,   1.93042809 ,  -1.10715266
+H3,,      0.00000000 ,  -1.93042809 ,  -1.10715266
+end
+
+basis=sto-3g
+GTHRESH,energy=1.d-8
+
+{HF}
+{OPTG}
+
+{frequencies,analytic
+thermo,
+print,thermo}
+
+mass,init,H=2.014101779,O=15.994914619560
+{frequencies,analytic
+thermo,
+print,thermo}
+
+mass,init,O=15.994914619560,H2=2.014101779,H3=1.007825032070
+{frequencies,analytic
+thermo,
+print,thermo}
+
+mass,init,O=15.994914619560,H2=2.014101779,H3=3.01604927
+{frequencies,analytic
+thermo,
+print,thermo}
+
+

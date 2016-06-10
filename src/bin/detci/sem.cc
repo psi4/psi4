@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -147,9 +152,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    /* get some of the stuff from CalcInfo for easier access */
    num_alp_str = CalcInfo_->num_alp_str;
    num_bet_str = CalcInfo_->num_bet_str;
-   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-   else oei = CalcInfo_->gmat[0];
-   tei = CalcInfo_->twoel_ints;
+   if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints->pointer();
+   else oei = CalcInfo_->gmat->pointer();
+   tei = CalcInfo_->twoel_ints->pointer();
 
    lastroot = init_array(nroots);
    dvecnorm = init_array(nroots);
@@ -279,13 +284,13 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          Sigma.read(i, 0);
          if (print_lvl > 4) {
             outfile->Printf( "Sigma[%d] =\n", i);
-            Sigma.print("outfile");
+            Sigma.print();
             }
          for (j=0; j<=i; j++) {
             Cvec.read(j, 0);
             if (print_lvl > 4) {
                outfile->Printf( "C[%d] =\n", j);
-               Cvec.print("outfile");
+               Cvec.print();
                }
             G[j][i] = G[i][j] = Cvec * Sigma;
             }
@@ -402,51 +407,6 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      Cvec.write_num_vecs(1);
      Sigma.set_zero_blocks_all();
      k = 1;
-   }
-
-   /* import a previously exported CI vector */
-   else if (Parameters_->guess_vector == PARM_GUESS_VEC_IMPORT) {
-
-     SlaterDetSet *dets;
-     int *import_alplist, *import_alpidx, *import_betlist, *import_betidx;
-     int *import_blknums;
-
-     slaterdetset_read(PSIF_CIVECT, "CI vector", &dets);
-
-     // store the alpha graph, relative alpha index, beta graph, relative
-     // beta index, and CI block number for each imported determinant
-     import_alplist = init_int_array(dets->size);
-     import_alpidx  = init_int_array(dets->size);
-     import_betlist = init_int_array(dets->size);
-     import_betidx  = init_int_array(dets->size);
-     import_blknums = init_int_array(dets->size);
-
-     parse_import_vector(dets, import_alplist, import_alpidx, import_betlist,
-       import_betidx, import_blknums);
-
-     k=0;
-     for (i=0; i<nroots; i++) {
-
-       zero_arr(buffer2, dets->size);
-       slaterdetset_read_vect(PSIF_CIVECT, "CI vector", buffer2,
-         dets->size, i);
-
-       // initialize the values in Cvec
-       Cvec.buf_lock(buffer1);
-       Cvec.init_vals(i, dets->size, import_alplist, import_alpidx,
-         import_betlist, import_betidx, import_blknums, buffer2);
-       Cvec.buf_unlock();
-       k++; // increment number of vectors
-     }
-
-     Cvec.write_num_vecs(k);
-     Sigma.set_zero_blocks_all();
-
-     // when we're done, free the memory
-     slaterdetset_delete_full(dets);
-     free(import_alplist);  free(import_alpidx);
-     free(import_betlist);  free(import_betidx);
-     free(import_blknums);
    }
 
    else { /* use H0BLOCK eigenvector guess */
@@ -578,7 +538,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          Cvec.read(i, 0);
          if (print_lvl > 3) {
             outfile->Printf( "b[%d] =\n", i);
-            Cvec.print("outfile");
+            Cvec.print();
             }
 
          sigma(Cvec, Sigma, oei, tei, i);
@@ -594,7 +554,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
          if (print_lvl > 3) { /* and this as well */
             outfile->Printf( "H * b[%d] = \n", i);
-            Sigma.print("outfile");
+            Sigma.print();
             }
 
          for (j=0; j<L; j++) {
@@ -636,14 +596,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           Sigma.read(i, 0);
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
-            Sigma.print("outfile");
+            Sigma.print();
 
           }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
-               Sigma2.print("outfile");
+               Sigma2.print();
 
              }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
@@ -696,14 +656,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           Sigma.read(i, 0);
           if (print_lvl > 2) {
             outfile->Printf("Sigma[%d] = ", i);
-            Sigma.print("outfile");
+            Sigma.print();
 
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
-               Sigma2.print("outfile");
+               Sigma2.print();
 
                }
              sigma_overlap[i][j] = sigma_overlap[j][i] = Sigma * Sigma2;
@@ -1004,7 +964,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           /* form the d part of the correction vector */
           Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec,
                      Sigma, buffer1, buffer2, root_converged, (print_lvl > 4),
-                     "outfile", E_est);
+                     E_est);
           }
         else if (Parameters_->update == UPDATE_OLSEN) {
           /* Compute x and y values for E_est */
@@ -1036,7 +996,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              */
              }
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
-          buffer1,buffer2,root_converged,(print_lvl > 4),"outfile",E_est);
+          buffer1,buffer2,root_converged,(print_lvl > 4),E_est);
          }
         else {
           throw PsiException("UPDATE option not recognized.  Choose DAVIDSON or OLSEN",__FILE__,__LINE__);
@@ -1172,7 +1132,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
          if (print_lvl > 4) {
             outfile->Printf( "\nsecond d matrix root %d\n", k);
-            Dvec.print("outfile");
+            Dvec.print();
             }
 
          Hd.buf_unlock();
@@ -1239,105 +1199,6 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
   } /* end iteration */
   Parameters_->diag_iters_taken = iter;
 
-   /* Dump the vector to a PSIO file
-      Added by Edward valeev (August 2002) */
-   if (Parameters_->export_ci_vector && Parameters_->icore==1) {
-     StringSet alphastrings, betastrings;
-     SlaterDetSet dets;
-     //SlaterDetVector vec;
-     short int *drc_occ;
-     unsigned char *newocc;
-     int irrep, gr, l, n;
-
-     if (CalcInfo_->num_drc_orbs > 0) {
-       drc_occ = (short int *) malloc(CalcInfo_->num_drc_orbs*sizeof(short int));
-       for (int l=0; l<CalcInfo_->num_drc_orbs; l++) {
-         drc_occ[l] = CalcInfo_->order[l]; /* put it in Pitzer order */
-       }
-     }
-
-     newocc = (unsigned char *) malloc(((AlphaG_->num_el > BetaG_->num_el) ?
-       AlphaG_->num_el : BetaG_->num_el)*sizeof(unsigned char));
-
-     stringset_init(&alphastrings,AlphaG_->num_str,AlphaG_->num_el,
-                    CalcInfo_->num_drc_orbs, drc_occ);
-     int list_gr = 0;
-     int offset = 0;
-     for(irrep=0; irrep<AlphaG_->nirreps; irrep++) {
-       for(gr=0; gr<AlphaG_->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = AlphaG_->sg[irrep][gr].num_strings;
-         for(l=0; l<nlists_per_gr; l++) {
-           /* convert occs to Pitzer order */
-           for (n=0; n<AlphaG_->num_el; n++) {
-             newocc[n] = (unsigned char)
-               CalcInfo_->order[alplist[list_gr][l].occs[n] +
-               CalcInfo_->num_drc_orbs];
-           }
-       stringset_add(&alphastrings,l+offset,newocc);
-         }
-     offset += nlists_per_gr;
-       }
-     }
-
-     stringset_init(&betastrings,BetaG_->num_str,BetaG_->num_el,
-                    CalcInfo_->num_drc_orbs, drc_occ);
-     list_gr = 0;
-     offset = 0;
-     for(irrep=0; irrep<BetaG_->nirreps; irrep++) {
-       for(gr=0; gr<BetaG_->subgr_per_irrep; gr++,list_gr++) {
-         int nlists_per_gr = BetaG_->sg[irrep][gr].num_strings;
-         for(l=0; l<nlists_per_gr; l++) {
-           /* convert occs to Pitzer order */
-           for (n=0; n<BetaG_->num_el; n++) {
-             newocc[n] = (unsigned char)
-               CalcInfo_->order[betlist[list_gr][l].occs[n] +
-               CalcInfo_->num_drc_orbs];
-           }
-       stringset_add(&betastrings,l+offset,newocc);
-         }
-     offset += nlists_per_gr;
-       }
-     }
-     free(newocc);
-     if (CalcInfo_->num_drc_orbs > 0)
-       free(drc_occ);
-
-     int ii;
-     int size = CIblks_->vectlen;
-     int Iarel, Ialist, Ibrel, Iblist;
-     slaterdetset_init(&dets,size,&alphastrings,&betastrings);
-     for (ii=0; ii<size; ii++) {
-       Dvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);
-       int irrep = Ialist/AlphaG_->subgr_per_irrep;
-       int gr = Ialist%AlphaG_->subgr_per_irrep;
-       int Ia = Iarel + AlphaG_->list_offset[Ialist];
-       irrep = Iblist/BetaG_->subgr_per_irrep;
-       gr = Iblist%BetaG_->subgr_per_irrep;
-       int Ib = Ibrel + BetaG_->list_offset[Iblist];
-       slaterdetset_add(&dets, ii, Ia, Ib);
-     }
-
-     // Don't init, don't need the memory allocated
-     // slaterdetvector_init(&vec, &dets);
-
-     Dvec.buf_lock(buffer1);
-     for (ii=0; ii<Parameters_->num_export; ii++) {
-       zero_arr(buffer1, size);
-       Dvec.read(ii,0);
-       // slaterdetvector_set(&vec, buffer1);
-       // slaterdetvector_write(PSIF_CIVECT,"CI vector",&vec);
-       slaterdetset_write(PSIF_CIVECT,"CI vector",&dets);
-       slaterdetset_write_vect(PSIF_CIVECT,"CI vector",buffer1,size,ii);
-     }
-
-     Dvec.buf_unlock();
-     slaterdetset_delete_full(&dets);
-   }
-   else if (Parameters_->export_ci_vector && Parameters_->icore != 1) {
-     outfile->Printf( "\nWarning: requested CI vector export, unavailable " \
-       "for icore = %d\n", Parameters_->icore);
-   }
-
    /* PT correction */
    /*
    if (Parameters_->calc_pt_corr) {
@@ -1358,21 +1219,45 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    Sigma.close_io_files(1);
    if (Parameters_->nodfile == FALSE) Dvec.close_io_files(1);
 
-   free(mi_iac); free(mi_ibc); free(mi_iaidx); free(mi_ibidx); free(mi_coeff);
-   free(dvecnorm);  free(lastroot);  free(root_converged);
-   free(clpse_norm);  free(did_root);  free_matrix(clpse_dot, nroots);
-   free_matrix(tmpmat, maxnvect);  free(Lvec);
+   // Free N-D arrays
+   for (i=0; i<maxnvect; i++)
+      free_matrix(m_lambda[i], nroots);
+   free(m_lambda);
+
+   for (i=0; i<nroots; i++)
+        free_matrix(M[i], maxnvect);
+   free(M);
+
+   for (i=0; i<maxnvect; i++) {
+      free_matrix(alpha[i], maxnvect);
+      }
+   free(alpha);
+
+   for (i=0; i<maxiter; i++) {
+      for (j=0; j<nroots; j++) {
+         free_matrix(m_alpha[i][j], maxnvect);
+      }
+     free(m_alpha[i]);
+   }
+   free(m_alpha);
+
+   // Free buffers
    free(buffer1);
    free(buffer2);
 
+   // Free arrays
+   free(lastroot);  free(dvecnorm);     free(root_converged);
+   free(did_root);  free(clpse_norm);   free(lse_do_arr);
+   free(renorm_c);  free(x);            free(y);
+   free(E_est);     free(mi_iac);       free(Lvec);
+   free(mi_ibc);    free(mi_iaidx);     free(mi_ibidx);
+   free(mi_coeff);
 
-   //CIvect D(Parameters_->icore, maxnvect, 1,
-   //            Parameters_->d_filenum, CIblks_, CalcInfo_, Parameters_,
-   //            H0block_, true);
-   //D.init_io_files(true);
-   //D.read(0,0);
-   //D.print("outfile");
+   // Free matrices
+   free_matrix(clpse_dot, maxnvect);    free_matrix(G, maxnvect);
+   free_matrix(tmpmat, maxnvect);       free_matrix(cmp_cncoe, maxnvect);
+   free_matrix(tr_cmp_cncoe, maxnvect); free_matrix(sigma_overlap, maxnvect);
+   free_matrix(lambda, maxnvect);
 }
 
 }} // namespace psi::detci
-

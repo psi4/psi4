@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -280,40 +285,42 @@ void CIWavefunction::sigma_free()
 ** Changed into a master function which calls the appropriate subfunction
 **
 */
-void CIWavefunction::sigma(CIvect& C, CIvect& S, double *oei, double *tei, int ivec)
-{
+void CIWavefunction::sigma(CIvect &C, CIvect &S, double *oei, double *tei, int ivec) {
+    if (!CalcInfo_->sigma_initialized) sigma_init(C, S);
+    int fci = Parameters_->fci;
 
-   if (!CalcInfo_->sigma_initialized) sigma_init(C, S);
-   int fci = Parameters_->fci;
-
-   switch (C.icore_) {
-      case 0:
-         sigma_a(alplist_, betlist_, C, S, oei, tei, fci, ivec);
-         break;
-      case 1:
-         sigma_b(alplist_, betlist_, C, S, oei, tei, fci, ivec);
-         break;
-      case 2:
-         sigma_c(alplist_, betlist_, C, S, oei, tei, fci, ivec);
-         break;
-      default:
-         outfile->Printf( "(sigma): Error, invalid icore option\n");
-         break;
-      }
-
+    switch (C.icore_) {
+        case 0:
+            sigma_a(alplist_, betlist_, C, S, oei, tei, fci, ivec);
+            break;
+        case 1:
+            sigma_b(alplist_, betlist_, C, S, oei, tei, fci, ivec);
+            break;
+        case 2:
+            sigma_c(alplist_, betlist_, C, S, oei, tei, fci, ivec);
+            break;
+        default:
+            outfile->Printf("(sigma): Error, invalid icore option\n");
+            break;
+    }
 }
-
-void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec)
-{
-  C->cur_vect_ = cvec;
-  double* oei;
-  if (Parameters_->fci) oei = CalcInfo_->tf_onel_ints;
-  else oei = CalcInfo_->gmat[0];
-  sigma(*(C.get()), *(S.get()), oei, CalcInfo_->twoel_ints, svec);
-
+void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec) {
+    C->cur_vect_ = cvec;
+    double *oei;
+    if (Parameters_->fci)
+        oei = CalcInfo_->tf_onel_ints->pointer();
+    else
+        oei = CalcInfo_->gmat->pointer();
+    sigma(*(C.get()), *(S.get()), oei, CalcInfo_->twoel_ints->pointer(), svec);
 }
-
-
+void CIWavefunction::sigma(SharedCIVector C, SharedCIVector S, int cvec,
+                           int svec, SharedVector oei, SharedVector tei) {
+    if ((oei->nirrep() != 1) || (tei->nirrep() != 1)){
+      throw PSIEXCEPTION("CIWavefunction::sigma: Electron integrals cannot have irreps");
+    }
+    C->cur_vect_ = cvec;
+    sigma(*(C.get()), *(S.get()), oei->pointer(), tei->pointer(), svec);
+}
 
 /*
 ** sigma_a(): This function computes the sigma vector for a given C vector
@@ -586,7 +593,7 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
                if ((s1_contrib_[sblock][cblock] || s2_contrib_[sblock][cblock] ||
                     s3_contrib_[sblock][cblock]) &&
                     !C.check_zero_block(cblock)) {
-		  if (SigmaData_->cprime != NULL) set_row_ptrs(cnas, cnbs, SigmaData_->cprime);
+      if (SigmaData_->cprime != NULL) set_row_ptrs(cnas, cnbs, SigmaData_->cprime);
                   sigma_block(alplist, betlist, C.blocks_[cblock],
                      S.blocks_[sblock], oei, tei, fci, cblock,
                      sblock, nas, nbs, sac, sbc, cac, cbc, cnas, cnbs,
@@ -601,7 +608,7 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
                        s3_contrib_[sblock][cblock2]) &&
                       !C.check_zero_block(cblock2)) {
                      C.transp_block(cblock, SigmaData_->transp_tmp);
-		     if (SigmaData_->cprime != NULL) set_row_ptrs(cnbs, cnas, SigmaData_->cprime);
+         if (SigmaData_->cprime != NULL) set_row_ptrs(cnbs, cnas, SigmaData_->cprime);
                      sigma_block(alplist, betlist, SigmaData_->transp_tmp,S.blocks_[sblock],
                         oei, tei, fci, cblock2, sblock, nas, nbs, sac, sbc,
                         cbc, cac, cnbs, cnas, C.num_alpcodes_, C.num_betcodes_,

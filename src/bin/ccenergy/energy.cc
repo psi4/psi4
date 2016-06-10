@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -183,8 +188,8 @@ double CCEnergyWavefunction::uhf_energy(void)
   */
 
   /*
-  outfile->Printf("\n\tOpposite-spin energy  = %20.15f\n",E2AB);
-  outfile->Printf("\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
+  outfile->Printf("\n    Opposite-spin energy  = %20.15f\n",E2AB);
+  outfile->Printf("    Same-spin energy  = %20.15f\n",E2AA+E2BB);
   */
 
   // Store the same-spin and opposite-spin pair energies

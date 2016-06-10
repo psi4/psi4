@@ -18,7 +18,7 @@ energy('scf')
 clean()
 
 
-set globals {
+set {
     BASIS sto-3g
     DF_BASIS_SCF  cc-pVDZ-JKFIT
     DF_BASIS_SAPT cc-pVDZ-RI
@@ -62,14 +62,12 @@ set myplugin1 {
 
 energy('myplugin1')
 
-compare_values(-74.9455096208439784, get_variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')
 clean()
 
 ###########################
 set basis mysto3g
 set df_basis_scf myccpvdzri
 energy('scf')
-compare_values(-74.9455096190513927, get_variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')
 clean()
 
 ###########################

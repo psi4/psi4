@@ -1,8 +1,9 @@
-#! ROHF stability analysis check for CN with cc-pVDZ.  
+#! ROHF stability analysis check for CN with cc-pVDZ.
 #! This test corresponds to the rohf-stab test from Psi3.
 
 
 
+nirrep = 4
 
 
 
@@ -17,7 +18,7 @@ molecule cn {
    R = 1.175
 }
 
-set globals = {
+set = {
   reference = rohf
   scf_type pk
   docc = [4, 0, 1, 1]

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <libmints/mints.h>
@@ -962,7 +967,1334 @@ void DFOCC::b_so_non_zero()
 
 } // end b_so_non_zero
 
+//=======================================================
+//       Form LDL ABCD ints: Experimental 
+//=======================================================          
+void DFOCC::ldl_abcd_ints()
+{
+    timer_on("LDL <AB|CD>");
+
+    // Variables
+    nQ_cd = 1;
+    int n = navirA * navirA;
+    double dmax = 0.0;
+    double dmin = 0.0;
+    int maxQ = n;
+    int Q = 0;
+    int ndiag = 0;
+
+    SharedTensor1d D, D2, L1, U1, R1;
+    SharedTensor2d R, L, L2, Dmat, U, LU, J, K;
+    SharedTensor1i o2n, n2o;
+    SharedTensor1i pair_to_idx1, pair_to_idx2;
+
+    // Title
+    outfile->Printf("\n\tGenerating LDL factors ...\n");
+    outfile->Printf("\tLDL decomposition threshold: %8.2le\n", tol_ldl);
+
+    outfile->Printf( "\n\t          LDL for <AB|CD> \n");
+    outfile->Printf( "\t   ------------------------------ \n");
+    outfile->Printf( "\tIter      max(|D_Q|)        # of LDL vectors  \n");
+    outfile->Printf( "\t----    ---------------    ------------------ \n");
+
+    // Pair to idx mapping
+    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
+    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < navirA; ++a){
+        for(int b = 0 ; b < navirA; ++b){
+            int ab = ab_idxAA->get(a,b);
+	    pair_to_idx1->set(ab,a);
+	    pair_to_idx2->set(ab,b);
+	}
+    }
+
+    /*
+    // compute diagonals (AB|AB)
+    D = SharedTensor1d(new Tensor1d("D", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < navirA; ++a){
+        for(int b = 0 ; b < navirA; ++b){
+            int ab = ab_idxAA->get(a,b);
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+		sum += bQabA->get(P,ab) * bQabA->get(P,ab);
+	    }
+	    D->set(ab,sum);
+	}
+    }
+    */
+
+    // compute diagonals <AB|AB>
+    D = SharedTensor1d(new Tensor1d("D", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < navirA; ++a){
+        int aa = ab_idxAA->get(a,a);
+        for(int b = 0 ; b < navirA; ++b){
+            int bb = ab_idxAA->get(b,b);
+            int ab = ab_idxAA->get(a,b);
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+		sum += bQabA->get(P,aa) * bQabA->get(P,bb);
+	    }
+	    D->set(ab,sum);
+	}
+    }
+
+    // Count number of non-zero diagonals
+    for(int i=0; i< n; i++) {
+        if (fabs(D->get(i)) > tol_ldl) ndiag++;
+    }
+
+    // Initialize mapping arrays
+    o2n = SharedTensor1i(new Tensor1i("Old -> New", n));
+    n2o = SharedTensor1i(new Tensor1i("New -> Old", n));
+    #pragma omp parallel for
+    for(int i=0; i < n; i++) {
+	o2n->set(i,i);
+	n2o->set(i,i);
+    }
+
+    // Descending ordering for D 
+    for(int i=0; i< (n-1); i++) {
+        for(int j = (i+1); j < n; j++) { 
+            if (fabs(D->get(i)) < fabs(D->get(j))) {
+                double temp= D->get(i);
+         	D->set(i,D->get(j));
+		D->set(j,temp);
+                int i_org = n2o->get(i);
+                int j_org = n2o->get(j);
+		o2n->set(i_org,j);
+		o2n->set(j_org,i);
+		n2o->set(i,j_org);
+		n2o->set(j,i_org);
+	    }
+	}
+    }
+
+    // RMS
+    dmax = fabs(D->get(Q));
+    dmin = fabs(D->get(ndiag-1));
+    outfile->Printf("\tNumber of complete LDL factors:   %5li\n",n);
+    outfile->Printf("\tEstimated number of LDL factors:   %5li\n",ndiag);
+    outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
+    outfile->Printf("\tmin(|D_Q|) =%12.8f\n",dmin);
+    outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
+
+    // compute the off-diagonal
+    R1 = SharedTensor1d(new Tensor1d("R1", n));
+    int j0 = n2o->get(Q);
+    int c0 = pair_to_idx1->get(j0);
+    int d0 = pair_to_idx2->get(j0);
+    #pragma omp parallel for
+    for(int i = Q+1; i < n; i++) {
+        int ab = n2o->get(i);
+        int a0 = pair_to_idx1->get(ab);
+        int b0 = pair_to_idx2->get(ab);
+        int ac = ab_idxAA->get(a0,c0);
+        int bd = ab_idxAA->get(b0,d0);
+	double sum = 0.0;
+        for(int P = 0 ; P < nQ; ++P){
+            sum += bQabA->get(P,ac) * bQabA->get(P,bd);
+	}
+	R1->set(i,sum);
+    }
+
+    // Compute the first L vector
+    L1 = SharedTensor1d(new Tensor1d("L1", n));
+    L1->set(0,1.0);
+    #pragma omp parallel for
+    for(int i = Q+1; i < n; i++) {
+	double value = R1->get(i)/D->get(Q); 
+	L1->set(i,value);
+    }
+
+    // Form the global L matrix
+    L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+    #pragma omp parallel for
+    for(int i = 0; i < n; i++) {
+	L->set(i,0,L1->get(i));
+    }
+
+//==========================================================================================
+//========================= Head of the Loop ===============================================
+//==========================================================================================
+    // Start Iterations
+    do 
+    {
+        // increment Q
+        Q++;
+
+	// Update the diagonal vector
+        #pragma omp parallel for
+        for(int j = Q; j < n; j++) {
+	    double value = L->get(j,Q-1) * L->get(j,Q-1) * D->get(Q-1);
+	    D->subtract(j,value);
+	}
+
+	/*
+    	// Revert L to the original ordering
+    	L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    	L2->copy(L);
+        #pragma omp parallel for
+    	for(int i = 0; i < n; i++) {
+	    int i_new = o2n->get(i);
+            for(int j = 0; j < nQ_cd; j++) {
+	    	L->set(i,j,L2->get(i_new,j));
+	     }	
+    	}
+    	L2.reset();
+
+        // Descending ordering for D 
+        for(int i=Q; i < (n-1); i++) {
+            for(int j = (i+1); j < n; j++) { 
+                if (fabs(D->get(i)) < fabs(D->get(j))) {
+                    double temp = D->get(i);
+         	    D->set(i,D->get(j));
+		    D->set(j,temp);
+                    int i_org = n2o->get(i);
+                    int j_org = n2o->get(j);
+		    o2n->set(i_org,j);
+		    o2n->set(j_org,i);
+		    n2o->set(i,j_org);
+		    n2o->set(j,i_org);
+	        }
+	    }
+        }  
+	*/
+
+        // Choose the dmax
+        dmax = fabs(D->get(Q));
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+	    if (fabs(D->get(i)) > dmax) {
+                dmax = fabs(D->get(i)); 
+	    }
+        }
+	
+        // Print
+        outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
+
+	/*
+    	// Reorder L to the new ordering
+        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2->copy(L);
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+	    int i_old = n2o->get(i);
+            for(int j = 0; j < nQ_cd; j++) {
+	        L->set(i,j,L2->get(i_old,j));
+	    }
+        }
+        L2.reset();
+	*/
+
+	// check dmax
+	if (dmax <= tol_ldl) break;
+	
+        // Form U1
+	// U[Q](P) = L(P,Q)*D(P)
+        U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
+        #pragma omp parallel for
+        for(int P = 0; P < nQ_cd; P++) {
+	    U1->set(P,L->get(Q,P)*D->get(P));
+        } 
+
+        // Compute the off-diagonal: Part-1
+	// R(ab,Q) = <ab|Q>
+	R1->zero();
+        int j0 = n2o->get(Q);
+        int c0 = pair_to_idx1->get(j0);
+        int d0 = pair_to_idx2->get(j0);
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+	    if (fabs(D->get(i)) * fabs(D->get(Q)) > tol_ldl) {
+            int ab = n2o->get(i);
+            int a0 = pair_to_idx1->get(ab);
+            int b0 = pair_to_idx2->get(ab);
+            int ac = ab_idxAA->get(a0,c0);
+            int bd = ab_idxAA->get(b0,d0);
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+                sum += bQabA->get(P,ac) * bQabA->get(P,bd);
+	    }
+	    R1->set(i,sum);
+	    }
+        }
+
+        // Compute the off-diagonal: Part-2
+	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P) 
+	R1->gemv(false, L, U1, -1.0, 1.0);
+        U1.reset();
+
+        // Compute the next L vector
+	L1->zero();
+	L1->set(Q,1.0); // set diagonal to 1
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+	    if (fabs(D->get(Q)) > tol_ldl) {
+	        double value = R1->get(i)/D->get(Q); 
+	        L1->set(i,value);
+	    }
+        }
+	
+        // Form the global L matrix
+        nQ_cd++;
+        L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
+	// copy previous L
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < nQ_cd-1; j++) {
+		L2->set(i,j,L->get(i,j));
+	    }
+	}
+        L.reset();
+        L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+        L->copy(L2);
+        L2.reset();
+	// add L1
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+	    L->set(i,Q,L1->get(i));
+	}
+
+    }
+    while(Q < (maxQ-1));
+    outfile->Printf("\tIteratons were done.\n");
+    outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
+    outfile->Printf("\tNumber of computed LDL factors:   %5li\n",nQ_cd);
+//==========================================================================================
+//========================= End of the Loop ================================================
+//==========================================================================================
+    // Form U
+    U = SharedTensor2d(new Tensor2d("U <Q|CD>", nQ_cd, n));
+    #pragma omp parallel for
+    for(int Q = 0; Q < nQ_cd; Q++) {
+        for(int i = 0; i < n; i++) {
+	    U->set(Q,i,L->get(i,Q)*D->get(Q));
+	}	
+    }
+
+    // Revert L to the original ordering
+    L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    L2->copy(L);
+    #pragma omp parallel for
+    for(int i = 0; i < n; i++) {
+	int i_new = o2n->get(i);
+        for(int j = 0; j < nQ_cd; j++) {
+	    L->set(i,j,L2->get(i_new,j));
+	}	
+    }
+    L2.reset();
+
+    // Revert U to the original ordering
+    L2 = SharedTensor2d(new Tensor2d("L-copy", nQ_cd, n));
+    L2->copy(U);
+    #pragma omp parallel for
+    for(int i = 0; i < nQ_cd; i++) {
+        for(int j = 0; j < n; j++) {
+	    int j_new = o2n->get(j);
+	    U->set(i,j,L2->get(i,j_new));
+	}	
+    }
+    L2.reset();
+
+    // Write L matrix
+    L->write(psio_, PSIF_DFOCC_INTS);
+    U->write(psio_, PSIF_DFOCC_INTS);
+
+    /*
+    // Verification
+    LU = SharedTensor2d(new Tensor2d("LU", n, n));
+    LU->gemm(false,false,L,U,1.0,0.0);
+
+    // Form exact <AB|CD> 
+    J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
+    J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K->sort(1324, J, 1.0, 0.0);
+    J.reset();
+    
+    // Final Results
+    L->print();
+    U->print();
+    LU->print();
+    LU.reset();
+    K->print();
+    K.reset();
+    */
+
+    // reset
+    D.reset();
+    U.reset();
+    L.reset();
+    L1.reset();
+    R1.reset();
+    o2n.reset();
+    n2o.reset();
+    pair_to_idx1.reset();
+    pair_to_idx2.reset();
+
+    timer_off("LDL <AB|CD>");
+
+} // end ldl_abcd_ints
+
+//=======================================================
+//       Form LDL PQRS ints: Experimental 
+//=======================================================          
+void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
+{
+    timer_on("LDL <PQ|RS>");
+
+    // Variables
+    nQ_cd = 1;
+    int n = dim1 * dim2;
+    double dmax = 0.0;
+    double dmin = 0.0;
+    int maxQ = n;
+    int Q = 0;
+    int ndiag = 0;
+
+    SharedTensor1d D, D2, L1, U1, R1;
+    SharedTensor2d R, L, L2, Dmat, U, LU, J, K;
+    SharedTensor1i o2n, n2o;
+    SharedTensor1i pair_to_idx1, pair_to_idx2;
+
+    // Title
+    outfile->Printf("\n\tGenerating LDL factors ...\n");
+    outfile->Printf("\tLDL decomposition threshold: %8.2le\n", tol_ldl);
+
+    // Pair to idx mapping
+    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
+    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    pair_to_idx1->set(ab,a);
+	    pair_to_idx2->set(ab,b);
+	}
+    }
+
+    /*
+    // compute diagonals (PQ|PQ)
+    D = SharedTensor1d(new Tensor1d("D", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+		sum += bQ->get(P,ab) * bQ->get(P,ab);
+	    }
+	    D->set(ab,sum);
+	}
+    }
+    */
+
+    // compute diagonals <PQ|PQ>
+    D = SharedTensor1d(new Tensor1d("D", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        int aa = (a*dim2) + a;
+        for(int b = 0 ; b < dim2; ++b){
+            int bb = (b*dim2) + b;
+            int ab = (a*dim2) + b;
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+		sum += bQ->get(P,aa) * bQ->get(P,bb);
+	    }
+	    D->set(ab,sum);
+	}
+    }
+
+    // Count number of non-zero diagonals
+    for(int i=0; i< n; i++) {
+        if (fabs(D->get(i)) > tol_ldl) ndiag++;
+    }
+
+    // Initialize mapping arrays
+    o2n = SharedTensor1i(new Tensor1i("Old -> New", n));
+    n2o = SharedTensor1i(new Tensor1i("New -> Old", n));
+    #pragma omp parallel for
+    for(int i=0; i < n; i++) {
+	o2n->set(i,i);
+	n2o->set(i,i);
+    }
+
+    // Descending ordering for D 
+    for(int i=0; i< (n-1); i++) {
+        for(int j = (i+1); j < n; j++) { 
+            if (fabs(D->get(i)) < fabs(D->get(j))) {
+                double temp= D->get(i);
+         	D->set(i,D->get(j));
+		D->set(j,temp);
+                int i_org = n2o->get(i);
+                int j_org = n2o->get(j);
+		o2n->set(i_org,j);
+		o2n->set(j_org,i);
+		n2o->set(i,j_org);
+		n2o->set(j,i_org);
+	    }
+	}
+    }
+
+    // RMS
+    dmax = fabs(D->get(Q));
+    dmin = fabs(D->get(ndiag-1));
+    outfile->Printf("\tNumber of complete LDL factors:   %5li\n",n);
+    outfile->Printf("\tEstimated number of LDL factors:   %5li\n",ndiag);
+    outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
+    outfile->Printf("\tmin(|D_Q|) =%12.8f\n",dmin);
+    //outfile->Printf("\t%3d     %12.8f     %3d\n",Q,dmax,nQ_cd);
+
+    // compute the off-diagonal
+    R1 = SharedTensor1d(new Tensor1d("R1", n));
+    int j0 = n2o->get(Q);
+    int c0 = pair_to_idx1->get(j0);
+    int d0 = pair_to_idx2->get(j0);
+    #pragma omp parallel for
+    for(int i = Q+1; i < n; i++) {
+        int ab = n2o->get(i);
+        int a0 = pair_to_idx1->get(ab);
+        int b0 = pair_to_idx2->get(ab);
+        int ac = (a0*dim2) + c0;
+        int bd = (b0*dim2) + d0;
+	double sum = 0.0;
+        for(int P = 0 ; P < nQ; ++P){
+            sum += bQ->get(P,ac) * bQ->get(P,bd);
+	}
+	R1->set(i,sum);
+    }
+
+    // Compute the first L vector
+    L1 = SharedTensor1d(new Tensor1d("L1", n));
+    L1->set(0,1.0);
+    #pragma omp parallel for
+    for(int i = Q+1; i < n; i++) {
+	double value = R1->get(i)/D->get(Q); 
+	L1->set(i,value);
+    }
+
+    // Form the global L matrix
+    L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+    #pragma omp parallel for
+    for(int i = 0; i < n; i++) {
+	L->set(i,0,L1->get(i));
+    }
+
+//==========================================================================================
+//========================= Head of the Loop ===============================================
+//==========================================================================================
+    // Start Iterations
+    do 
+    {
+        // increment Q
+        Q++;
+
+	// Update the diagonal vector
+        #pragma omp parallel for
+        for(int j = Q; j < n; j++) {
+	    double value = L->get(j,Q-1) * L->get(j,Q-1) * D->get(Q-1);
+	    D->subtract(j,value);
+	}
+
+    	// Revert L to the original ordering
+    	L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    	L2->copy(L);
+        #pragma omp parallel for
+    	for(int i = 0; i < n; i++) {
+	    int i_new = o2n->get(i);
+            for(int j = 0; j < nQ_cd; j++) {
+	    	L->set(i,j,L2->get(i_new,j));
+	     }	
+    	}
+    	L2.reset();
+
+        // Descending ordering for D 
+        for(int i=Q; i < (n-1); i++) {
+            for(int j = (i+1); j < n; j++) { 
+                if (fabs(D->get(i)) < fabs(D->get(j))) {
+                    double temp = D->get(i);
+         	    D->set(i,D->get(j));
+		    D->set(j,temp);
+                    int i_org = n2o->get(i);
+                    int j_org = n2o->get(j);
+		    o2n->set(i_org,j);
+		    o2n->set(j_org,i);
+		    n2o->set(i,j_org);
+		    n2o->set(j,i_org);
+	        }
+	    }
+        }  
+
+        // Choose the dmax
+        dmax = fabs(D->get(Q));
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+	    if (fabs(D->get(i)) > dmax) {
+                dmax = fabs(D->get(i)); 
+	    }
+        }
+	
+        // Print
+        //outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
+
+    	// Reorder L to the new ordering
+        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2->copy(L);
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+	    int i_old = n2o->get(i);
+            for(int j = 0; j < nQ_cd; j++) {
+	        L->set(i,j,L2->get(i_old,j));
+	    }
+        }
+        L2.reset();
+
+	// check dmax
+	if (dmax <= tol_ldl) break;
+	
+        // Form U1
+	// U[Q](P) = L(P,Q)*D(P)
+        U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
+        for(int P = 0; P < nQ_cd; P++) {
+	    U1->set(P,L->get(Q,P)*D->get(P));
+        } 
+
+        // Compute the off-diagonal: Part-1
+	// R(ab,Q) = <ab|Q>
+        int j0 = n2o->get(Q);
+        int c0 = pair_to_idx1->get(j0);
+        int d0 = pair_to_idx2->get(j0);
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+            int ab = n2o->get(i);
+            int a0 = pair_to_idx1->get(ab);
+            int b0 = pair_to_idx2->get(ab);
+            int ac = (a0*dim2) + c0;
+            int bd = (b0*dim2) + d0;
+	    double sum = 0.0;
+            for(int P = 0 ; P < nQ; ++P){
+                sum += bQ->get(P,ac) * bQ->get(P,bd);
+	    }
+	    R1->set(i,sum);
+        }
+
+        // Compute the off-diagonal: Part-2
+	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P) 
+	R1->gemv(false, L, U1, -1.0, 1.0);
+        U1.reset();
+
+        // Compute the next L vector
+	L1->zero();
+	L1->set(Q,1.0); // set diagonal to 1
+        #pragma omp parallel for
+        for(int i = Q+1; i < n; i++) {
+	    if (fabs(D->get(Q)) > tol_ldl) {
+	        double value = R1->get(i)/D->get(Q); 
+	        L1->set(i,value);
+	    }
+        }
+	
+        // Form the global L matrix
+        nQ_cd++;
+        L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
+	// copy previous L
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < nQ_cd-1; j++) {
+		L2->set(i,j,L->get(i,j));
+	    }
+	}
+        L.reset();
+	// add L1
+        #pragma omp parallel for
+        for(int i = 0; i < n; i++) {
+	    L2->set(i,Q,L1->get(i));
+	}
+        L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+        L->copy(L2);
+        L2.reset();
+
+    }
+    while(Q < (maxQ-1));
+    outfile->Printf("\tIteratons were done.\n");
+    outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
+    outfile->Printf("\tNumber of computed LDL factors:   %5li\n",nQ_cd);
+//==========================================================================================
+//========================= End of the Loop ================================================
+//==========================================================================================
+    // Form U
+    U = SharedTensor2d(new Tensor2d("U <Q|CD>", nQ_cd, n));
+    #pragma omp parallel for
+    for(int Q = 0; Q < nQ_cd; Q++) {
+        for(int i = 0; i < n; i++) {
+	    U->set(Q,i,L->get(i,Q)*D->get(Q));
+	}	
+    }
+
+    // Revert L to the original ordering
+    L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    L2->copy(L);
+    #pragma omp parallel for
+    for(int i = 0; i < n; i++) {
+	int i_new = o2n->get(i);
+        for(int j = 0; j < nQ_cd; j++) {
+	    L->set(i,j,L2->get(i_new,j));
+	}	
+    }
+    L2.reset();
+
+    // Revert U to the original ordering
+    L2 = SharedTensor2d(new Tensor2d("L-copy", nQ_cd, n));
+    L2->copy(U);
+    #pragma omp parallel for
+    for(int i = 0; i < nQ_cd; i++) {
+        for(int j = 0; j < n; j++) {
+	    int j_new = o2n->get(j);
+	    U->set(i,j,L2->get(i,j_new));
+	}	
+    }
+    L2.reset();
+
+    // Write L matrix
+    L->write(psio_, PSIF_DFOCC_INTS);
+    U->write(psio_, PSIF_DFOCC_INTS);
+
+    /*
+    // Verification
+    LU = SharedTensor2d(new Tensor2d("LU", n, n));
+    LU->gemm(false,false,L,U,1.0,0.0);
+
+    // Form exact <AB|CD> 
+    J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
+    J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K->sort(1324, J, 1.0, 0.0);
+    J.reset();
+    
+    // Final Results
+    L->print();
+    U->print();
+    LU->print();
+    LU.reset();
+    K->print();
+    K.reset();
+    */
+
+    // reset
+    D.reset();
+    U.reset();
+    L.reset();
+    L1.reset();
+    R1.reset();
+    o2n.reset();
+    n2o.reset();
+    pair_to_idx1.reset();
+    pair_to_idx2.reset();
+
+    timer_off("LDL <PQ|RS>");
+
+} // end ldl_pqrs_ints
+
+//=======================================================
+//       Form CD (MN|LS) ints 
+//=======================================================          
+void DFOCC::cd_aob_cints()
+{
+    timer_on("CD (MN|LS)");
+
+    // Variables
+    int dim1 = nso_;
+    int dim2 = nso_;
+    int naux = nQ;
+
+    SharedTensor1d D, D2, L1, U1, R1;
+    SharedTensor2d bQ, R, L_, L2, Dmat, U, LU, J, K;
+    SharedTensor1i pair_to_idx1, pair_to_idx2;
+
+    // Title
+    outfile->Printf("\n\tGenerating CD factors ...\n");
+    outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
+
+    // SO basis
+    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+    // Initial dimension
+    size_t n = dim1 * dim2; 
+    size_t Q = 0;
+
+    outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
+
+    // Pair to idx mapping
+    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
+    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    pair_to_idx1->set(ab,a);
+	    pair_to_idx2->set(ab,b);
+	}
+    }
+
+    // Memory constrasize_t on rows
+    size_t max_size_t = std::numeric_limits<int>::max();
+
+    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
+
+    // Get the diagonal (Q|Q)^(0)
+    double* diag = new double[n];
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+		sum += bQ->get(P,ab) * bQ->get(P,ab);
+	    }
+	    diag[ab] = sum;
+	}
+    }
+
+    // Temporary cholesky factor
+    std::vector<double*> L;
+
+    // List of selected pivots
+    std::vector<int> pivots;
+
+    // Cholesky procedure
+    while (Q < n) {
+
+        // Select the pivot
+        size_t pivot = 0;
+        double dmax = diag[0];
+        for (size_t P = 0; P < n; P++) {
+            if (dmax < diag[P]) {
+                dmax = diag[P];
+                pivot = P;
+            }
+        }
+
+        // Check to see if convergence reached
+        if (dmax < tol_ldl || dmax < 0.0) break;
+
+	// Print
+        //outfile->Printf("\t%3d     %12.8f\n",Q,dmax);
+
+        // If here, we're trying to add this row
+        pivots.push_back(pivot);
+        double L_QQ = sqrt(dmax);
+
+        // Check to see if memory constraints are OK
+        if (Q > max_rows) {
+            throw PSIEXCEPTION("Cholesky: Memory constraints exceeded.");
+        }
+
+        // If here, we're really going to add this row
+        L.push_back(new double[n]);
+
+        // Compute (ab|Q)
+        int c0 = pair_to_idx1->get(pivot);
+        int d0 = pair_to_idx2->get(pivot);
+        #pragma omp parallel for
+        for(size_t i = 0; i < n; i++) {
+            int a0 = pair_to_idx1->get(i);
+            int b0 = pair_to_idx2->get(i);
+            int ab = (a0*dim2) + b0;
+            int cd = (c0*dim2) + d0;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+                sum += bQ->get(P,ab) * bQ->get(P,cd);
+	    }
+	    L[Q][i] = sum;
+        }  
+
+        // [(ab|Q) - L_ab^P L_Q^P]
+        for (size_t P = 0; P < Q; P++) {
+            C_DAXPY(n,-L[P][pivots[Q]],L[P],1,L[Q],1);
+        }
+
+        // 1/L_QQ [(ab|Q) - L_ab^P L_Q^P]
+        C_DSCAL(n, 1.0 / L_QQ, L[Q], 1);
+
+        // Zero the upper triangle
+        for (size_t P = 0; P < pivots.size(); P++) {
+            L[Q][pivots[P]] = 0.0;
+        }
+
+        // Set the pivot factor
+        L[Q][pivot] = L_QQ;
+
+        // Update the Schur complement diagonal
+        for (size_t P = 0; P < n; P++) {
+            diag[P] -= L[Q][P] * L[Q][P];
+        }
+
+        // Force truly zero elements to zero
+        for (size_t P = 0; P < pivots.size(); P++) {
+            diag[pivots[P]] = 0.0;
+        }
+
+        Q++;
+    }
+    nQ_cd = static_cast<int>(Q);
+    int n_ = static_cast<int>(n);
+    outfile->Printf("\tIteratons were done.\n");
+    outfile->Printf("\tNumber of computed CD factors:   %5li\n",nQ_cd);
+
+    // Form L
+    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    #pragma omp parallel for
+    for(size_t P = 0; P < Q; P++) {
+        int PP = static_cast<int>(P);
+        for(size_t i = 0; i < n; i++) {
+            int ii = static_cast<int>(i);
+	    U->set(PP,ii,L[P][i]);
+	}	
+    }
+
+    // Write L matrix
+    U->write(psio_, PSIF_DFOCC_INTS);
+    U.reset();
+
+    /*
+    // Verification
+    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU->gemm(true,false,U,U,1.0,0.0);
+    LU->print();
+    LU.reset();
+
+    // Form exact (AB|CD) 
+    J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
+    J->gemm(true, false, bQ, bQ, 1.0, 0.0);
+    J->print();
+    J.reset();
+    */
+
+    // reset
+    bQ.reset();
+    pair_to_idx1.reset();
+    pair_to_idx2.reset();
+
+    timer_off("CD (MN|LS)");
+
+} // end cd_aob_cints
+
+//=======================================================
+//       Form CD (AB|CD) ints 
+//=======================================================          
+void DFOCC::cd_abcd_cints()
+{
+    timer_on("CD (AB|CD)");
+
+    // Variables
+    int dim1 = navirA;
+    int dim2 = navirA;
+    int naux = nQ;
+
+    SharedTensor1d D, D2, L1, U1, R1;
+    SharedTensor2d bQ, R, L_, L2, Dmat, U, LU, J, K;
+    SharedTensor1i pair_to_idx1, pair_to_idx2;
+
+    // Title
+    outfile->Printf("\n\tGenerating CD factors ...\n");
+    outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
+
+    // SO basis
+    //bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    //bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
+    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    bQ->read(psio_, PSIF_DFOCC_INTS);
+
+    // Initial dimension
+    //size_t n = dim1 * dim2; 
+    size_t n = ntri_abAA; 
+    size_t Q = 0;
+
+    outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
+
+    /*
+    // Pair to idx mapping
+    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
+    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    pair_to_idx1->set(ab,a);
+	    pair_to_idx2->set(ab,b);
+	}
+    }
+    */
+
+    // Memory constrasize_t on rows
+    size_t max_size_t = std::numeric_limits<int>::max();
+
+    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
+
+    // Get the diagonal (Q|Q)^(0)
+    double* diag = new double[n];
+    /*
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+		sum += bQ->get(P,ab) * bQ->get(P,ab);
+	    }
+	    diag[ab] = sum;
+	}
+    }
+    */
+    #pragma omp parallel for
+    for(int ab = 0; ab < n; ++ab){
+	 double sum = 0.0;
+         for(int P = 0 ; P < naux; ++P){
+	     sum += bQ->get(P,ab) * bQ->get(P,ab);
+	 }
+	 diag[ab] = sum;
+    }
+
+    // Temporary cholesky factor
+    std::vector<double*> L;
+
+    // List of selected pivots
+    std::vector<int> pivots;
+
+    // Cholesky procedure
+    while (Q < n) {
+
+        // Select the pivot
+        size_t pivot = 0;
+        double dmax = diag[0];
+        for (size_t P = 0; P < n; P++) {
+            if (dmax < diag[P]) {
+                dmax = diag[P];
+                pivot = P;
+            }
+        }
+
+        // Check to see if convergence reached
+        if (dmax < tol_ldl || dmax < 0.0) break;
+
+	// Print
+        //outfile->Printf("\t%3d     %12.8f\n",Q,dmax);
+
+        // If here, we're trying to add this row
+        pivots.push_back(pivot);
+        double L_QQ = sqrt(dmax);
+
+        // Check to see if memory constraints are OK
+        if (Q > max_rows) {
+            throw PSIEXCEPTION("Cholesky: Memory constraints exceeded.");
+        }
+
+        // If here, we're really going to add this row
+        L.push_back(new double[n]);
+
+        // Compute (ab|Q)
+	/*
+        int c0 = pair_to_idx1->get(pivot);
+        int d0 = pair_to_idx2->get(pivot);
+        #pragma omp parallel for
+        for(size_t i = 0; i < n; i++) {
+            int a0 = pair_to_idx1->get(i);
+            int b0 = pair_to_idx2->get(i);
+            int ab = (a0*dim2) + b0;
+            int cd = (c0*dim2) + d0;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+                sum += bQ->get(P,ab) * bQ->get(P,cd);
+	    }
+	    L[Q][i] = sum;
+        }  
+	*/
+        #pragma omp parallel for
+        for(size_t i = 0; i < n; i++) {
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+                sum += bQ->get(P,i) * bQ->get(P,pivot);
+	    }
+	    L[Q][i] = sum;
+        }  
+
+        // [(ab|Q) - L_ab^P L_Q^P]
+        for (size_t P = 0; P < Q; P++) {
+            C_DAXPY(n,-L[P][pivots[Q]],L[P],1,L[Q],1);
+        }
+
+        // 1/L_QQ [(ab|Q) - L_ab^P L_Q^P]
+        C_DSCAL(n, 1.0 / L_QQ, L[Q], 1);
+
+        // Zero the upper triangle
+        for (size_t P = 0; P < pivots.size(); P++) {
+            L[Q][pivots[P]] = 0.0;
+        }
+
+        // Set the pivot factor
+        L[Q][pivot] = L_QQ;
+
+        // Update the Schur complement diagonal
+        for (size_t P = 0; P < n; P++) {
+            diag[P] -= L[Q][P] * L[Q][P];
+        }
+
+        // Force truly zero elements to zero
+        for (size_t P = 0; P < pivots.size(); P++) {
+            diag[pivots[P]] = 0.0;
+        }
+
+        Q++;
+    }
+    nQ_cd = static_cast<int>(Q);
+    int n_ = static_cast<int>(n);
+    outfile->Printf("\tIteratons were done.\n");
+    outfile->Printf("\tNumber of computed CD factors:   %5li\n",nQ_cd);
+
+    // Form L
+    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    #pragma omp parallel for
+    for(size_t P = 0; P < Q; P++) {
+        int PP = static_cast<int>(P);
+        for(size_t i = 0; i < n; i++) {
+            int ii = static_cast<int>(i);
+	    U->set(PP,ii,L[P][i]);
+	}	
+    }
+
+    // Write L matrix
+    U->write(psio_, PSIF_DFOCC_INTS);
+    U.reset();
+
+    /*
+    // Verification
+    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU->gemm(true,false,U,U,1.0,0.0);
+    LU->print();
+    LU.reset();
+
+    // Form exact (AB|CD) 
+    //J = SharedTensor2d(new Tensor2d("J (AB|CD)", dim1, dim2, dim1, dim2));
+    J = SharedTensor2d(new Tensor2d("J (A>=B|C>=D)", n_, n_));
+    J->gemm(true, false, bQ, bQ, 1.0, 0.0);
+    J->print();
+    J.reset();
+    */
+
+    // reset
+    bQ.reset();
+    //pair_to_idx1.reset();
+    //pair_to_idx2.reset();
+
+    timer_off("CD (AB|CD)");
+
+} // end cd_abcd_cints
+
+//=======================================================
+//       Form CD <AB|CD> ints 
+//=======================================================          
+void DFOCC::cd_abcd_xints()
+{
+    timer_on("CD <AB|CD>");
+
+    // Variables
+    int dim1 = navirA;
+    int dim2 = navirA;
+    int naux = nQ;
+
+    SharedTensor1d D, D2, L1, U1, R1;
+    SharedTensor2d bQ, R, L_, L2, Dmat, U, LU, J, K;
+    SharedTensor1i pair_to_idx1, pair_to_idx2;
+
+    // Title
+    outfile->Printf("\n\tGenerating CD factors ...\n");
+    outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
+
+    // SO basis
+    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+    // Initial dimension
+    size_t n = dim1 * dim2; 
+    size_t Q = 0;
+
+    outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
+
+    // Pair to idx mapping
+    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
+    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        for(int b = 0 ; b < dim2; ++b){
+            int ab = (a*dim2) + b;
+	    pair_to_idx1->set(ab,a);
+	    pair_to_idx2->set(ab,b);
+	}
+    }
+
+    // Memory constrasize_t on rows
+    size_t max_size_t = std::numeric_limits<int>::max();
+
+    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
+
+    // Get the diagonal (Q|Q)^(0)
+    double* diag = new double[n];
+    #pragma omp parallel for
+    for(int a = 0 ; a < dim1; ++a){
+        int aa = (a*dim2) + a;
+        for(int b = 0 ; b < dim2; ++b){
+            int bb = (b*dim2) + b;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+		sum += bQ->get(P,aa) * bQ->get(P,bb);
+	    }
+            int ab = (a*dim2) + b;
+	    diag[ab] = sum;
+	}
+    }
+
+    // Temporary cholesky factor
+    std::vector<double*> L;
+
+    // List of selected pivots
+    std::vector<int> pivots;
+
+    // Cholesky procedure
+    while (Q < n) {
+
+        // Select the pivot
+        size_t pivot = 0;
+        double dmax = diag[0];
+        for (size_t P = 0; P < n; P++) {
+            if (dmax < diag[P]) {
+                dmax = diag[P];
+                pivot = P;
+            }
+        }
+
+        // Check to see if convergence reached
+        if (dmax < tol_ldl || dmax < 0.0) break;
+
+	// Print
+        //outfile->Printf("\t%3d     %12.8f\n",Q,dmax);
+
+        // If here, we're trying to add this row
+        pivots.push_back(pivot);
+        double L_QQ = sqrt(dmax);
+
+        // Check to see if memory constraints are OK
+        if (Q > max_rows) {
+            throw PSIEXCEPTION("Cholesky: Memory constraints exceeded.");
+        }
+
+        // If here, we're really going to add this row
+        L.push_back(new double[n]);
+
+        // Compute (ab|Q)
+        int c0 = pair_to_idx1->get(pivot);
+        int d0 = pair_to_idx2->get(pivot);
+        #pragma omp parallel for
+        for(size_t i = 0; i < n; i++) {
+            int a0 = pair_to_idx1->get(i);
+            int b0 = pair_to_idx2->get(i);
+            int ac = (a0*dim2) + c0;
+            int bd = (b0*dim2) + d0;
+	    double sum = 0.0;
+            for(int P = 0 ; P < naux; ++P){
+                sum += bQ->get(P,ac) * bQ->get(P,bd);
+	    }
+	    L[Q][i] = sum;
+        }  
+
+        // [(ab|Q) - L_ab^P L_Q^P]
+        for (size_t P = 0; P < Q; P++) {
+            C_DAXPY(n,-L[P][pivots[Q]],L[P],1,L[Q],1);
+        }
+
+        // 1/L_QQ [(ab|Q) - L_ab^P L_Q^P]
+        C_DSCAL(n, 1.0 / L_QQ, L[Q], 1);
+
+        // Zero the upper triangle
+        for (size_t P = 0; P < pivots.size(); P++) {
+            L[Q][pivots[P]] = 0.0;
+        }
+
+        // Set the pivot factor
+        L[Q][pivot] = L_QQ;
+
+        // Update the Schur complement diagonal
+        for (size_t P = 0; P < n; P++) {
+            diag[P] -= L[Q][P] * L[Q][P];
+        }
+
+        // Force truly zero elements to zero
+        for (size_t P = 0; P < pivots.size(); P++) {
+            diag[pivots[P]] = 0.0;
+        }
+
+        Q++;
+    }
+    nQ_cd = static_cast<int>(Q);
+    int n_ = static_cast<int>(n);
+    outfile->Printf("\tIteratons were done.\n");
+    outfile->Printf("\tNumber of computed CD factors:   %5li\n",nQ_cd);
+
+    // Form L
+    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    #pragma omp parallel for
+    for(size_t P = 0; P < Q; P++) {
+        int PP = static_cast<int>(P);
+        for(size_t i = 0; i < n; i++) {
+            int ii = static_cast<int>(i);
+	    U->set(PP,ii,L[P][i]);
+	}	
+    }
+
+    // Write L matrix
+    U->write(psio_, PSIF_DFOCC_INTS);
+    U.reset();
+
+    /*
+    // Verification
+    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU->gemm(true,false,U,U,1.0,0.0);
+    LU->print();
+    LU.reset();
+
+    // Form exact <AB|CD> 
+    J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
+    J->gemm(true, false, bQ, bQ, 1.0, 0.0);
+    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K->sort(1324, J, 1.0, 0.0);
+    J.reset();
+    K->print();
+    K.reset();
+    */
+
+    // reset
+    bQ.reset();
+    pair_to_idx1.reset();
+    pair_to_idx2.reset();
+
+    timer_off("CD <AB|CD>");
+
+} // end cd_abcd_xints
+
+
+
+
+
 }} // Namespaces
+
+
+
 
 
 

@@ -26,11 +26,11 @@ endif()
 # Build static library
 add_library(psimrcc STATIC ${sources_list})
 # Specify dependencies for the library (if any)
-#add_dependencies(psimrcc )
 set_property(GLOBAL APPEND PROPERTY PSILIB psimrcc)
+add_dependencies(psimrcc int deriv)
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(psimrcc custom_boost)
 endif()
 
 # Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/psi4/libpsimrcc)
+install_list_FILES("${headers_list}" include/psi4/bin/psimrcc)

@@ -178,7 +178,7 @@ calculation. For example, consider the following input file::
     
     set basis cc-pvdz
     set reference rhf
-    energy('scf')
+    energy('scf')  # on H2
     
     clean()
 
@@ -188,13 +188,15 @@ calculation. For example, consider the following input file::
     
     set basis cc-pvdz
     set reference uhf
-    energy('scf')
+    energy('scf')  # on H
 
 Here, two separate jobs are performed on two different molecules; the first is
 performed on H\ :sub:`2`, while the second is for H atom. The last molecule to be
 specified is the "active" molecule by default. To explicitly activate a named
-molecule, the activate command is provided. With it, the above input
-file can be equivalently written as follows::
+molecule, the activate command is provided. With it, the above input file can be
+equivalently written as follows. Alternatively, the molecule can be specified
+directly to the computing function. Below, the third calculation is the same as
+the first. ::
 
     molecule h2 {
       H
@@ -208,17 +210,24 @@ file can be equivalently written as follows::
     activate(h2)
     set basis cc-pvdz
     set reference rhf
-    energy('scf')
+    energy('scf')  # on H2
     
     clean()
 
     activate(h)
     set basis cc-pvdz
     set reference uhf
-    energy('scf')
+    energy('scf')  # on H
 
-Note that whenever the molecule is changed, the basis set must be specified
-again. :ref:`sec:jobControl` provides more details about the job control
+    # --------------------------------------
+    # equivalent to previous input ends here
+
+    clean()
+
+    set reference rhf
+    energy('scf', molecule=h2)  # on H2
+
+:ref:`sec:jobControl` provides more details about the job control
 and calculation keywords used in the above examples.
 
 .. index:: 
@@ -249,6 +258,34 @@ will generate a helium dimer with the second atom ghosted, *i.e.*, possessing
 basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2_1`
 and :srcsample:`ghosts` for a demonstration of both mechanisms for specifying
 ghost atoms.
+
+.. index:: 
+   single: Isotopes
+   single: molecule; isotope
+.. _`sec:isotope`:
+
+Isotopic Substitution
+=====================
+
+.. caution:: Use of isotopic substitution in |PSIfour| is not well
+   developed, and the syntax is subject to change.
+
+At present, isotopes can only be specified at creation-time of the molecule
+
+The syntax for a deuterium- and tritium-substituted water is below. Note
+that asymmetric isotopic substitution such as this *will* change the
+molecule's point group symmetry. ::
+
+    molecule dto {
+      units au
+      O                   0.00000000    0.00000000    0.00000000
+      H@2.014101779       0.00000000    1.93042809   -1.10715266
+      H_label@3.01604927  0.00000000   -1.93042809   -1.10715266
+    }
+
+The masses used by |PSIfour| can be found at
+:source:`include/masses.h`. See :srcsample:`freq-isotope` for about
+the only use to which isotopologs can presently be put in |PSIfour|.
 
 .. index:: 
    single: PubChem
@@ -495,7 +532,7 @@ complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
    energy('scf')
 
 If the molecule contains fragments but is not conveniently ordered for the
-``--`` marker, the auto_fragment function can be applied, as shoown in
+``--`` marker, the :py:func:`~wrapper_autofrag.auto_fragments` function can be applied, as shown in
 :srcsample:`pywrap-basis`, to return as active molecule the previous
 active molecule, only fragmented.
 
@@ -507,4 +544,126 @@ powerful :ref:`C++ Molecule class <sec:psimod_Molecule>`. Thus, all member
 functions (that have been exported via Boost Python) documented thereat
 are accessible through the handle :samp:`{option_molecule_name}` in
 :samp:`molecule {optional_molecule_name} \\{...\\}`.
+
+*  The molecular geometry can be got and set and manipulated as a
+   :ref:`psi4.Matrix <sec:psimod_Matrix>` object. Below shows how to access
+   coordinates in an input file in Python. ::
+
+       molecule formaldehyde {
+       C  0.0 0.0 0.0
+       O  0.0 1.2 0.0
+       H -0.8 -0.3 0.0
+       H  0.8 -0.3 0.0                         # set geometry in angstroms
+       }
+
+       formaldehyde.update_geometry()          # update the molecule internals since pre-energy()-like call
+       formaldehyde.print_out()                # print molecule to output file
+       geom1psi = formaldehyde.geometry()      # get coordinates in bohr as a psi4.Matrix
+
+       geom1psi.print_out()                    # print coordinates array to output file
+       geom1py = mat2arr(geom1psi)             # get coordinates as a Python array
+       print geom1py                           # print coordinates to screen
+
+       geom2py = [[ 0.0,  0.0, 0.0],
+                 [ 0.0,  1.5, 0.0],
+                 [-0.8, -0.3, 0.0],
+                 [ 0.8, -0.3, 0.0]]            # define alternate coordinates in angstroms as Python array
+
+       geom2psi = psi4.Matrix(4, 3)            # initialize psi4.Matrix
+       geom2psi.set(geom2py)                   # load Python array into psi4.Matrix
+       geom2psi.scale(1.0/psi_bohr2angstroms)  # scale into bohr
+       geom2psi.print_out()                    # print alternate coord array to output file
+
+       formaldehyde.set_geometry(geom2psi)     # load alternate coordinates into molecule
+       formaldehyde.update_geometry()          # update the molecule internals
+       formaldehyde.print_out()                # print new molecule to output file
+       compare_values(28.9950517332, formaldehyde.nuclear_repulsion_energy(), 4, "geom2 took")
+
+* Molecules can be initited from XYZ files and fragmented for SAPT computations. ::
+
+       # >>> cat mol1.xyz
+       #7
+       #
+       #O          0.00000000      -0.05786571      -1.47979303
+       #N          0.00000000       0.01436394       1.46454628
+       #H          0.00000000       0.82293384      -1.85541474
+       #H          0.81348351       0.39876776       1.92934049
+       #H          0.00000000       0.07949567      -0.51934253
+       #H          0.00000000      -0.98104857       1.65344779
+       #H         -0.81348351       0.39876776       1.92934049
+
+       # >>> cat mol2.xyz
+       # 6 au
+       # stuff
+       #     C     0.00000000000000     0.00000000000000     5.26601138679877
+       #     C     0.00000000000000     0.00000000000000    -3.15195886530135
+       #     H     0.00000000000000     0.00000000000000     7.28558683837122
+       #     H     0.00000000000000     0.00000000000000    -1.12178201232889
+       #     N     0.00000000000000     0.00000000000000     3.08339310458383
+       #     N     0.00000000000000     0.00000000000000    -5.33865984413460
+
+       sapt = {'mol1': -0.0105313323529,
+               'mol2': -0.00839486625709}
+
+       nre = {'mol1': 38.8138764635,
+              'mol2': 72.3451968428}
+
+       set basis jun-cc-pvdz
+
+       for mol in ['mol1', 'mol2']:
+           filen = mol + '.xyz'
+           p4mol = Molecule.init_with_xyz(filen)           # create molecule from file above
+           fragmentedmol = auto_fragments(molecule=p4mol)  # fragment with BFS algorithm
+           activate(fragmentedmol)                         # activate returned molecule (for sapt)
+
+           e = energy('sapt0')                             # run SAPT that requires 2 fragments
+           compare_values(sapt[mol], e, 5, '%s sapt ok' % mol)
+           compare_values(nre[mol], p4mol.nuclear_repulsion_energy(), 4, '%s ok' % mol)
+           clean()                                         # clean scratch between loop calcs
+
+* The essential element, mass and coordinate information of the molecule is accessible ::
+
+           molecule eneyne {
+           0 1
+           C_ene        0.000000  -0.667578  -2.124659
+           C_ene        0.000000   0.667578  -2.124659
+           H_ene@2.014  0.923621  -1.232253  -2.126185
+           H_ene       -0.923621  -1.232253  -2.126185
+           H_ene       -0.923621   1.232253  -2.126185
+           Gh(H_ene)    0.923621   1.232253  -2.126185
+           --
+           0 1
+           X            9.0        9.0        9.0
+           C_yne        0.000000   0.000000   2.900503
+           C_yne        0.000000   0.000000   1.693240
+           H_yne        0.000000   0.000000   0.627352
+           H_yne        0.000000   0.000000   3.963929
+           }
+
+
+           eneyne.update_geometry()
+
+           for iat in range(eneyne.natom()):
+               print """{:4} {:4} {:12} {:8.4f} {:12.6f} {:12.6f} {:12.6f}   {:12.6f}""".format(
+                                             eneyne.Z(iat),       # atomic number
+                                             eneyne.symbol(iat),  # element symbol
+                                             eneyne.label(iat),   # input element label
+                                             eneyne.charge(iat),  # element charge
+                                             eneyne.x(iat),       # x-coordinate
+                                             eneyne.y(iat),       # y-coordinate
+                                             eneyne.z(iat),       # z-coordinate
+                                             eneyne.mass(iat),    # mass
+           )
+
+
+           # 6.0 C    C_ENE          6.0000    -0.031900    -1.218981    -3.948079      12.000000
+           # 6.0 C    C_ENE          6.0000    -0.031900     1.304098    -3.948079      12.000000
+           # 1.0 H    H_ENE          1.0000     1.713491    -2.286062    -3.950962       2.014000
+           # 1.0 H    H_ENE          1.0000    -1.777290    -2.286062    -3.950962       1.007825
+           # 1.0 H    H_ENE          1.0000    -1.777290     2.371180    -3.950962       1.007825
+           # 0.0 H    H_ENE          0.0000     1.713491     2.371180    -3.950962       1.007825
+           # 6.0 C    C_YNE          6.0000    -0.031900     0.042559     5.548101      12.000000
+           # 6.0 C    C_YNE          6.0000    -0.031900     0.042559     3.266705      12.000000
+           # 1.0 H    H_YNE          1.0000    -0.031900     0.042559     1.252468       1.007825
+           # 1.0 H    H_YNE          1.0000    -0.031900     0.042559     7.557685       1.007825
 

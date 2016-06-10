@@ -41,17 +41,20 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
         fdriver.write('   :undoc-members:\n')
 
         if basename == 'driver':
-            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop, molden\n')
-        elif basename == 'wrappers':
-            fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
-            fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')
-            fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
+            fdriver.write('   :exclude-members: energy, optimize, opt, frequency, frequencies, freq, property, prop, molden, gdma, fchk, gradient, hessian\n')
+        elif basename == 'wrapper_database':
+            fdriver.write('   :exclude-members: db, database\n')
+        elif basename == 'driver_nbody':
+            fdriver.write('   :exclude-members: _nbody_gufunc\n')
+        elif basename == 'driver_cbs':
+            fdriver.write('   :exclude-members: cbs, complete_basis_set, xtpl_highest_1,\n')
+            fdriver.write('       scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
 #        elif basename == 'physconst':
 #            fdriver.write('\n.. literalinclude:: %sshare/python/%s\n' % (IncludePath, filename))
         elif basename == 'diatomic':
             fdriver.write('   :exclude-members: anharmonicity\n')
-        elif basename == 'interface_dftd3':
-            fdriver.write('   :exclude-members: run_dftd3\n')
+#        elif basename == 'interface_dftd3':
+#            fdriver.write('   :exclude-members: run_dftd3\n')
         elif basename == 'interface_cfour':
             fdriver.write('   :exclude-members: run_cfour\n')
         elif basename == 'aliases':
@@ -84,6 +87,9 @@ for basename in os.walk(DriverPath + '../../share/python').next()[1]:
             fdriver.write('.. automodule:: %s.%s\n' % (basename, basename2))
             fdriver.write('   :members:\n')
             fdriver.write('   :undoc-members:\n')
+
+        if basename == 'qcdb' and basename2 == 'interface_dftd3':
+            fdriver.write('   :exclude-members: run_dftd3\n')
 
         fdriver.write('\n')
     fdriver.write('\n')

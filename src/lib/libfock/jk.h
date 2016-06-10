@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef JK_H
@@ -26,7 +31,6 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <libmints/typedefs.h>
-
 
 namespace psi {
 class MinimalInterface;
@@ -39,6 +43,10 @@ class TwoBodyAOInt;
 class Options;
 class FittingMetric;
 class PSIO;
+
+namespace pk {
+class PKManager;
+}
 
 // => BASE CLASS <= //
 
@@ -352,6 +360,8 @@ public:
     */
     static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
                                           Options& options);
+    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+                                          Options& options, std::string jk_type);
 
 
     // => Knobs <= //
@@ -573,30 +583,17 @@ class PKJK : public JK {
     /// Options object
     Options& options_;
 
-    /// Absolute AO index to relative SO index
-    int* so2index_;
-    /// Absolute AO index to irrep
-    int* so2symblk_;
-
     /// The pk file to use for storing the pk batches
     int pk_file_;
 
-    /// The number of integrals in the P and K arrays
-    size_t pk_size_;
-    /// The number of totally symmetric pairs that contribute
-    size_t pk_pairs_;
+    /// The number of threads to be used for integral computation
+    int nthreads_;
 
-    /// The index of the first pair in each batch
-    std::vector<size_t> batch_pq_min_;
-    /// The index of the last pair in each batch
-    std::vector<size_t> batch_pq_max_;
-    /// The index of the first integral in each batch
-    std::vector<size_t> batch_index_min_;
-    /// The index of the last integral in each batch
-    std::vector<size_t> batch_index_max_;
+    /// Class handling the PK integrals
+    std::shared_ptr<pk::PKManager> PKmanager_;
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return false; }
+    virtual bool C1() const;
     /// Setup integrals, files, etc
     virtual void preiterations();
     /// Compute J/K for current C/D

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <cstdlib>
@@ -474,6 +479,47 @@ double HF::compute_energy()
 
 double HF::finalize_E()
 {
+    // Perform wavefunction stability analysis before doing
+    // anything on a wavefunction that may not be truly converged.
+    if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
+        // We need the integral file, make sure it is written and
+        // compute it if needed
+        if(options_.get_str("REFERENCE") != "UHF") {
+            psio_->open(PSIF_SO_TEI, PSIO_OPEN_OLD);
+            if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == NULL) {
+                psio_->close(PSIF_SO_TEI,1);
+                outfile->Printf("    SO Integrals not on disk, computing...");
+                boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
+                mints->integrals();
+                outfile->Printf("done.\n");
+            } else {
+                psio_->close(PSIF_SO_TEI,1);
+            }
+
+        }
+        bool follow = stability_analysis();
+
+        while ( follow && !(attempt_number_ > max_attempts_) ) {
+
+          attempt_number_++;
+          outfile->Printf("    Running SCF again with the rotated orbitals.\n");
+
+          if(initialized_diis_manager_) diis_manager_->reset_subspace();
+          // Reading the rotated orbitals in before starting iterations
+          form_D();
+          E_ = compute_initial_E();
+          iterations();
+          follow = stability_analysis();
+        }
+        if ( follow && (attempt_number_ > max_attempts_) ) {
+          outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
+          outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
+        }
+    }
+
+    // At this point, we are not doing any more SCF cycles
+    // and we can compute and print final quantities.
+
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->compute();
 
@@ -481,12 +527,12 @@ double HF::finalize_E()
                                             Process::environment.globals["EFP IND ENERGY"];
         energies_["EFP"] = Process::environment.globals["EFP TOTAL ENERGY"];
 
-        outfile->Printf("    EFP excluding EFP Induction   %20.12f [H]\n", efp_wfn_independent_energy);
-        outfile->Printf("    SCF including EFP Induction   %20.12f [H]\n", E_);
+        outfile->Printf("    EFP excluding EFP Induction   %20.12f [Eh]\n", efp_wfn_independent_energy);
+        outfile->Printf("    SCF including EFP Induction   %20.12f [Eh]\n", E_);
 
         E_ += efp_wfn_independent_energy;
 
-        outfile->Printf("    Total SCF including Total EFP %20.12f [H]\n", E_);
+        outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", E_);
     }
 
 
@@ -519,32 +565,6 @@ double HF::finalize_E()
         outfile->Printf( "\n\n");
         print_energies();
 
-        // Perform wavefunction stability analysis before doing
-        // anything on a wavefunction that may not be truly converged.
-        if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
-            bool follow = stability_analysis();
-
-            while ( follow && !(attempt_number_ > max_attempts_) ) {
-
-              attempt_number_++;
-              outfile->Printf("    Running SCF again with the rotated orbitals.\n");
-
-              if(initialized_diis_manager_) diis_manager_->reset_subspace();
-              // Reading the rotated orbitals in before starting iterations
-              form_D();
-              E_ = compute_initial_E();
-              iterations();
-              follow = stability_analysis();
-            }
-            if ( follow && (attempt_number_ > max_attempts_) ) {
-              outfile->Printf( "    There's still a negative eigenvalue. Try modifying FOLLOW_STEP_SCALE\n");
-              outfile->Printf("    or increasing MAX_ATTEMPTS (not available for PK integrals).\n");
-            }
-        }
-
-        // At this point, we are not doing any more SCF cycles
-        // and we can compute and print final quantities.
-
         // Need to recompute the Fock matrices, as they are modified during the SCF iteration
         // and might need to be dumped to checkpoint later
         form_F();
@@ -571,32 +591,6 @@ double HF::finalize_E()
 #endif
 
         // Properties
-        if (print_) {
-            boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
-            oe->set_title("SCF");
-            oe->add("DIPOLE");
-
-            if (print_ >= 2) {
-                oe->add("QUADRUPOLE");
-                oe->add("MULLIKEN_CHARGES");
-            }
-
-            if (print_ >= 3) {
-                oe->add("LOWDIN_CHARGES");
-                oe->add("MAYER_INDICES");
-                oe->add("WIBERG_LOWDIN_INDICES");
-            }
-
-                outfile->Printf( "  ==> Properties <==\n\n");
-            oe->compute();
-
-            // TODO: Hack to test CubicScalarGrid
-            /*
-            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
-            grid->print_header();
-            grid->compute_density_cube(Da_, "Da");
-            */
-
 //  Comments so that autodoc utility will find these PSI variables
 //
 //  Process::environment.globals["SCF DIPOLE X"] =
@@ -608,11 +602,6 @@ double HF::finalize_E()
 //  Process::environment.globals["SCF QUADRUPOLE YY"] =
 //  Process::environment.globals["SCF QUADRUPOLE YZ"] =
 //  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
-            Process::environment.globals["CURRENT DIPOLE X"] = Process::environment.globals["SCF DIPOLE X"];
-            Process::environment.globals["CURRENT DIPOLE Y"] = Process::environment.globals["SCF DIPOLE Y"];
-            Process::environment.globals["CURRENT DIPOLE Z"] = Process::environment.globals["SCF DIPOLE Z"];
-        }
 
         save_information();
     } else {
@@ -1524,9 +1513,11 @@ void HF::load_orbitals()
 
     boost::shared_ptr<BasisSet> dual_basis;
     if (basisname != options_.get_str("BASIS")) {
-        boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
-        molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-        dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        //boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+        //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
+        //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+        "DUAL_BASIS_SCF", basisname, old_forced_puream);
     } else {
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
         "BASIS", options_.get_str("BASIS"));
@@ -2024,7 +2015,11 @@ void HF::print_energies()
     if (fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
-    outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
+
+    // Only print this alert if we are actually doing EFP or PCM
+    if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
+        outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
+    }
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]

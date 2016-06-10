@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <boost/filesystem.hpp>
@@ -116,7 +121,7 @@ class PluginFileManager{
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
         if(!boost::filesystem::is_directory(bf_path)) {
-            printf("Unable to read the PSI4 plugin folder - check the PSIDATADIR environmental variable\n"
+            printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
                     "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }

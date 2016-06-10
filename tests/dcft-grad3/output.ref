@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.527 Driver
+                              Psi4 0.5 Driver
 
-                          Git: Rev {master} eb7fb1a 
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -16,10 +16,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thu Jan 21 16:03:34 2016
+    Psi4 started on: Mon Mar 14 15:21:20 2016
 
-    Process ID:   9594
-    PSI4DATADIR: /Users/xiaowang/Programs/psi4/lib
+    Process ID:  11561
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -28,12 +28,12 @@
 #! Restricted DF-DCFT ODC-12 gradient for ethylene with cc-pVDZ/cc-pVDZ-RI standard/auxiliary basis set
 
 ref_vals_aonone = [                                                             
-                [ 0.000000000000,     0.000000000000,    -0.087825233898],
-                [ 0.000000000000,     0.000000000000,     0.087825233898],
-                [ 0.000000000000,    -0.074671046970,     0.046771949175],
-                [ 0.000000000000,     0.074671046970,     0.046771949175],
-                [ 0.000000000000,     0.074671046970,    -0.046771949175],
-                [ 0.000000000000,    -0.074671046970,    -0.046771949175]      
+                [ 0.000000000000,     0.000000000000,    -0.087812168179],
+                [ 0.000000000000,     0.000000000000,     0.087812168179],
+                [ 0.000000000000,    -0.074677395781,     0.046776131677],
+                [ 0.000000000000,     0.074677395781,     0.046776131677],
+                [ 0.000000000000,     0.074677395781,    -0.046776131677],
+                [ 0.000000000000,    -0.074677395781,    -0.046776131677]      
                 ]                                                             
 ref_aonone = psi4.Matrix(6, 3)                                                
 ref_aonone.set(ref_vals_aonone)                                               
@@ -72,9 +72,8 @@ set {
 
 set reference rhf
 set ao_basis none
-gradient('dcft')
-#grad = psi4.wavefunction().gradient()
-#compare_matrices(ref_aonone, grad, 8, "DF-RODC-12 analytic gradient (ao_basis=none)")
+grad = gradient('dcft')
+compare_matrices(ref_aonone, grad, 8, "DF-RODC-12 analytic gradient (ao_basis=none)")
 clean()
 
 --------------------------------------------------------------------------
@@ -82,8 +81,8 @@ clean()
   Memory set to 512.000 MiB by Python script.
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on Xiaos-MacBook-Pro.local
-*** at Thu Jan 21 16:03:34 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:21:20 2016
 
 
          ---------------------------------------------------------
@@ -113,7 +112,7 @@ gradient() will perform analytic gradient computation.
 
   Rotational constants: A =      5.57558  B =      1.02163  C =      0.86342 [cm^-1]
   Rotational constants: A = 167151.70091  B =  30627.70574  C =  25884.76322 [MHz]
-  Nuclear repulsion =   34.453060270908090
+  Nuclear repulsion =   34.453060270908111
 
   Charge       = 0
   Multiplicity = 1
@@ -158,75 +157,6 @@ gradient() will perform analytic gradient computation.
     Total      48      48       8       8       8       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               366
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: 
-    Number of shells: 84
-    Number of basis function: 232
-    Number of Cartesian functions: 262
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 5.1200294996E-03.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-    Occupation by irrep:
-             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
-    DOCC [     3,    0,    0,    1,    0,    3,    1,    0 ]
-
-   @DF-RHF iter   1:   -65.77891986070884   -6.57789e+01   1.80735e-01 
-    Occupation by irrep:
-             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
-    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
-
-   @DF-RHF iter   2:   -70.21718392878415   -4.43826e+00   1.25877e-01 
-   @DF-RHF iter   3:   -75.58989236408331   -5.37271e+00   1.03893e-01 
-   @DF-RHF iter   4:   -77.46779963589162   -1.87791e+00   5.01450e-02 
-   @DF-RHF iter   5:   -77.92946171936765   -4.61662e-01   2.12526e-02 
-   @DF-RHF iter   6:   -78.00454668028726   -7.50850e-02   7.36521e-03 
-   @DF-RHF iter   7:   -78.01431773226082   -9.77105e-03   2.66541e-03 
-   @DF-RHF iter   8:   -78.01552807551019   -1.21034e-03   9.13235e-04 
-   @DF-RHF iter   9:   -78.01567551588167   -1.47440e-04   3.22485e-04 
-   @DF-RHF iter  10:   -78.01569343979463   -1.79239e-05   1.11682e-04 
-   @DF-RHF iter  11:   -78.01569561855064   -2.17876e-06   3.90933e-05 
-   @DF-RHF iter  12:   -78.01569588351933   -2.64969e-07   1.36226e-05 
-   @DF-RHF iter  13:   -78.01569591575512   -3.22358e-08   4.74941e-06 
-   @DF-RHF iter  14:   -78.01569591967785   -3.92274e-09   1.65992e-06 
-   @DF-RHF iter  15:   -78.01569592015534   -4.77485e-10   5.77629e-07 
-   @DF-RHF iter  16:   -78.01569592021349   -5.81508e-11   2.02158e-07 
-   @DF-RHF iter  17:   -78.01569592022054   -7.04858e-12   7.02891e-08 
-   @DF-RHF iter  18:   -78.01569592022136   -8.24230e-13   2.46136e-08 
-   @DF-RHF iter  19:   -78.01569592022145   -8.52651e-14   8.55548e-09 
-   @DF-RHF iter  20:   -78.01569592022150   -5.68434e-14   2.99639e-09 
-   @DF-RHF iter  21:   -78.01569592022153   -2.84217e-14   1.04152e-09 
-   @DF-RHF iter  22:   -78.01569592022148    5.68434e-14   3.64744e-10 
-   @DF-RHF iter  23:   -78.01569592022153   -5.68434e-14   1.26802e-10 
-   @DF-RHF iter  24:   -78.01569592022148    5.68434e-14   4.43982e-11 
-
-  DF guess converged.
-
   ==> Integral Setup <==
 
 	Batch   1 pq = [       0,     214] index = [             0,23005]
@@ -238,18 +168,46 @@ gradient() will perform analytic gradient computation.
     Memory (MB):               366
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  25:   -78.01577874967353   -8.28295e-05   1.43476e-05 
-   @RHF iter  26:   -78.01577878961226   -3.99387e-08   3.05361e-06 
-   @RHF iter  27:   -78.01577879141564   -1.80339e-09   7.98166e-07 
-   @RHF iter  28:   -78.01577879157887   -1.63226e-10   2.84304e-07 
-   @RHF iter  29:   -78.01577879159714   -1.82752e-11   9.21622e-08 
-   @RHF iter  30:   -78.01577879159942   -2.27374e-12   3.41286e-08 
-   @RHF iter  31:   -78.01577879159964   -2.27374e-13   1.13212e-08 
-   @RHF iter  32:   -78.01577879159973   -8.52651e-14   4.22678e-09 
-   @RHF iter  33:   -78.01577879159973    0.00000e+00   1.40966e-09 
-   @RHF iter  34:   -78.01577879159970    2.84217e-14   5.28456e-10 
-   @RHF iter  35:   -78.01577879159973   -2.84217e-14   1.76808e-10 
-   @RHF iter  36:   -78.01577879159970    2.84217e-14   6.64894e-11 
+  Minimum eigenvalue in the overlap matrix is 5.1200294996E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    3,    1,    0 ]
+
+   @RHF iter   1:   -65.77953266648940   -6.57795e+01   1.80707e-01 
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+   @RHF iter   2:   -70.20924855762584   -4.42972e+00   1.25940e-01 
+   @RHF iter   3:   -75.58912271411515   -5.37987e+00   1.03907e-01 
+   @RHF iter   4:   -77.46739375714027   -1.87827e+00   5.01629e-02 
+   @RHF iter   5:   -77.92945784610120   -4.62064e-01   2.12626e-02 
+   @RHF iter   6:   -78.00461903905810   -7.51612e-02   7.36842e-03 
+   @RHF iter   7:   -78.01439940948288   -9.78037e-03   2.66647e-03 
+   @RHF iter   8:   -78.01561081563946   -1.21141e-03   9.13559e-04 
+   @RHF iter   9:   -78.01575837305045   -1.47557e-04   3.22585e-04 
+   @RHF iter  10:   -78.01577630966025   -1.79366e-05   1.11711e-04 
+   @RHF iter  11:   -78.01577848977107   -2.18011e-06   3.91020e-05 
+   @RHF iter  12:   -78.01577875488141   -2.65110e-07   1.36250e-05 
+   @RHF iter  13:   -78.01577878713172   -3.22503e-08   4.75006e-06 
+   @RHF iter  14:   -78.01577879105587   -3.92414e-09   1.66006e-06 
+   @RHF iter  15:   -78.01577879153342   -4.77556e-10   5.77657e-07 
+   @RHF iter  16:   -78.01577879159160   -5.81792e-11   2.02156e-07 
+   @RHF iter  17:   -78.01577879159866   -7.06279e-12   7.02864e-08 
+   @RHF iter  18:   -78.01577879159950   -8.38440e-13   2.46112e-08 
+   @RHF iter  19:   -78.01577879159962   -1.13687e-13   8.55442e-09 
+   @RHF iter  20:   -78.01577879159962    0.00000e+00   2.99582e-09 
+   @RHF iter  21:   -78.01577879159963   -1.42109e-14   1.04130e-09 
+   @RHF iter  22:   -78.01577879159964   -1.42109e-14   3.64641e-10 
+   @RHF iter  23:   -78.01577879159964    0.00000e+00   1.26765e-10 
+   @RHF iter  24:   -78.01577879159964    0.00000e+00   4.43813e-11 
 
   ==> Post-Iterations <==
 
@@ -285,18 +243,18 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @RHF Final Energy:   -78.01577879159970
+  @RHF Final Energy:   -78.01577879159964
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             34.4530602709080895
-    One-Electron Energy =                -172.0265606340603597
-    Two-Electron Energy =                  59.5577215715525625
+    Nuclear Repulsion Energy =             34.4530602709081109
+    One-Electron Energy =                -172.0265606237596785
+    Two-Electron Energy =                  59.5577215612519382
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -78.0157787915997147
+    Total Energy =                        -78.0157787915996295
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -321,18 +279,18 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:03:36 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:20 2016
 Module time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Xiaos-MacBook-Pro.local
-*** at Thu Jan 21 16:03:36 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:21:20 2016
 
 
 
@@ -382,9 +340,9 @@ Total time:
 	Transforming two-electron integrals (transformation type: restricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -78.015778791599701
-	 Total MP2 correlation energy     =   -0.276209629479157
-	*Total MP2 energy                 =  -78.291988421078855
+	*Total Hartree-Fock energy        =  -78.015778791599644
+	 Total MP2 correlation energy     =   -0.276209629507682
+	*Total MP2 energy                 =  -78.291988421107320
 
 	DCFT Functional:    		 ODC-12
 	DCFT Type:          		 DF
@@ -394,28 +352,28 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        3.421e-02         1.161e-03     -7.204e-02    -78.364031344455725  S   *
-	* 2        9.763e-03         3.735e-04      2.051e-02    -78.343525266321336  S/E *
-	* 3        4.433e-03         1.174e-04      1.404e-02    -78.329482723339439  S/E *
-	* 4        6.720e-04         5.283e-05      1.203e-03    -78.328279813155035  S/E *
-	* 5        1.950e-04         1.480e-05      5.685e-04    -78.327711265061168  S/E *
-	* 6        4.258e-05         4.013e-06      3.389e-05    -78.327677374820468  S/E *
-	* 7        1.146e-05         8.299e-07     -5.455e-05    -78.327731927276290  S/E *
-	* 8        1.610e-06         1.926e-07      4.910e-06    -78.327727017615317  S/E *
-	* 9        3.346e-07         5.230e-08     -8.143e-07    -78.327727831943818  S/E *
-	* 10       1.485e-07         1.626e-08     -2.459e-08    -78.327727856531070  S/E *
-	* 11       6.183e-08         5.139e-09     -6.645e-08    -78.327727922976180  S/E *
-	* 12       1.580e-08         1.447e-09     -2.958e-08    -78.327727952554568  S/E *
-	* 13       7.565e-09         4.619e-10     -1.374e-08    -78.327727966296763  S/E *
-	* 14       1.722e-09         1.849e-10     -1.030e-09    -78.327727967326737  S/E *
-	* 15       6.257e-10         5.505e-11     -5.425e-10    -78.327727967869265  S/E *
-	* 16       2.728e-10         1.889e-11      3.236e-11    -78.327727967836907  S/E *
-	* 17       5.104e-11         5.571e-12     -9.160e-11    -78.327727967928510  S/E *
+	* 1        3.421e-02         1.161e-03     -7.204e-02    -78.364031344470249  S   *
+	* 2        9.763e-03         3.735e-04      2.051e-02    -78.343525266316519  S/E *
+	* 3        4.433e-03         1.174e-04      1.404e-02    -78.329482723283334  S/E *
+	* 4        6.720e-04         5.283e-05      1.203e-03    -78.328279813156584  S/E *
+	* 5        1.950e-04         1.480e-05      5.685e-04    -78.327711265059406  S/E *
+	* 6        4.258e-05         4.013e-06      3.389e-05    -78.327677374823637  S/E *
+	* 7        1.146e-05         8.299e-07     -5.455e-05    -78.327731927279586  S/E *
+	* 8        1.610e-06         1.926e-07      4.910e-06    -78.327727017618713  S/E *
+	* 9        3.346e-07         5.230e-08     -8.143e-07    -78.327727831947129  S/E *
+	* 10       1.485e-07         1.626e-08     -2.459e-08    -78.327727856534395  S/E *
+	* 11       6.183e-08         5.139e-09     -6.645e-08    -78.327727922979548  S/E *
+	* 12       1.580e-08         1.447e-09     -2.958e-08    -78.327727952557908  S/E *
+	* 13       7.565e-09         4.619e-10     -1.374e-08    -78.327727966300131  S/E *
+	* 14       1.722e-09         1.849e-10     -1.030e-09    -78.327727967330077  S/E *
+	* 15       6.257e-10         5.505e-11     -5.425e-10    -78.327727967872605  S/E *
+	* 16       2.728e-10         1.889e-11      3.237e-11    -78.327727967840232  S/E *
+	* 17       5.104e-11         5.571e-12     -9.157e-11    -78.327727967931807  S/E *
 	*=================================================================================*
 
-	*DF-ODC-12 SCF Energy                                 =  -77.651377830119387
-	*DF-ODC-12 Lambda Energy                              =   -0.676350137809125
-	*DF-ODC-12 Total Energy                               =  -78.327727967928510
+	*DF-ODC-12 SCF Energy                                 =     -77.651377830122726
+	*DF-ODC-12 Lambda Energy                              =      -0.676350137809082
+	*DF-ODC-12 Total Energy                               =     -78.327727967931807
 
 	Orbital occupations:
 		Doubly occupied orbitals
@@ -437,18 +395,18 @@ Total time:
 		
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:03:46 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:22 2016
 Module time:
-	user time   =      11.61 seconds =       0.19 minutes
-	system time =       2.61 seconds =       0.04 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      12.92 seconds =       0.22 minutes
-	system time =       2.67 seconds =       0.04 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on Xiaos-MacBook-Pro.local
-*** at Thu Jan 21 16:03:46 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:21:22 2016
 
 
 
@@ -467,18 +425,18 @@ Total time:
 	nbuckets = 1
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:03:48 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:23 2016
 Module time:
-	user time   =       2.11 seconds =       0.04 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.03 seconds =       0.25 minutes
-	system time =       2.74 seconds =       0.05 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 
-*** tstart() called on Xiaos-MacBook-Pro.local
-*** at Thu Jan 21 16:03:48 2016
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:21:23 2016
 
  DERIV: Derivative code.
    by Justin Turney
@@ -562,66 +520,66 @@ Total time:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
        1        0.000000000000     0.000000000000     4.580647943921
-       2        0.000000000000     0.000000000000    -4.580647943921
+       2       -0.000000000000     0.000000000000    -4.580647943921
        3        0.000000000000    -1.738630267953     1.281937791043
-       4        0.000000000000     1.738630267953     1.281937791043
-       5        0.000000000000     1.738630267953    -1.281937791043
+       4       -0.000000000000     1.738630267953     1.281937791043
+       5       -0.000000000000     1.738630267953    -1.281937791043
        6        0.000000000000    -1.738630267953    -1.281937791043
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000   -11.713051001212
-       2        0.000000000000     0.000000000000    11.713051001212
-       3        0.000000000000     4.214406686201    -2.837421942525
-       4        0.000000000000    -4.214406686201    -2.837421942525
-       5        0.000000000000    -4.214406686201     2.837421942525
-       6        0.000000000000     4.214406686201     2.837421942525
+       1        0.000000000000     0.000000000000   -11.713051001207
+       2        0.000000000000     0.000000000000    11.713051001207
+       3       -0.000000000000     4.214406686199    -2.837421942525
+       4        0.000000000000    -4.214406686199    -2.837421942525
+       5        0.000000000000    -4.214406686199     2.837421942525
+       6       -0.000000000000     4.214406686199     2.837421942525
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.249903647482
-       2        0.000000000000     0.000000000000    -0.249903647482
+       1        0.000000000000     0.000000000000     0.249903647480
+       2        0.000000000000     0.000000000000    -0.249903647480
        3        0.000000000000    -0.186463086237     0.094287924231
-       4        0.000000000000     0.186463086237     0.094287924231
-       5        0.000000000000     0.186463086237    -0.094287924231
+       4       -0.000000000000     0.186463086237     0.094287924231
+       5       -0.000000000000     0.186463086237    -0.094287924231
        6        0.000000000000    -0.186463086237    -0.094287924231
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     6.794687241630
-       2        0.000000000000     0.000000000000    -6.794687241630
-       3        0.000000000000    -2.363990727791     1.507972358927
-       4        0.000000000000     2.363990727791     1.507972358927
-       5        0.000000000000     2.363990727791    -1.507972358927
-       6        0.000000000000    -2.363990727791    -1.507972358927
+       1        0.000000000000     0.000000000000     6.794687241626
+       2        0.000000000000     0.000000000000    -6.794687241626
+       3        0.000000000000    -2.363990727789     1.507972358927
+       4       -0.000000000000     2.363990727789     1.507972358927
+       5       -0.000000000000     2.363990727789    -1.507972358927
+       6        0.000000000000    -2.363990727789    -1.507972358927
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
        1        0.000000000000     0.000000000000    -0.087812168179
-       2        0.000000000000     0.000000000000     0.087812168179
+       2       -0.000000000000     0.000000000000     0.087812168179
        3        0.000000000000    -0.074677395781     0.046776131677
-       4        0.000000000000     0.074677395781     0.046776131677
-       5        0.000000000000     0.074677395781    -0.046776131677
+       4       -0.000000000000     0.074677395781     0.046776131677
+       5       -0.000000000000     0.074677395781    -0.046776131677
        6        0.000000000000    -0.074677395781    -0.046776131677
 
 
-*** tstop() called on Xiaos-MacBook-Pro.local at Thu Jan 21 16:03:50 2016
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:23 2016
 Module time:
-	user time   =       1.81 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.84 seconds =       0.28 minutes
-	system time =       2.77 seconds =       0.05 minutes
-	total time  =         16 seconds =       0.27 minutes
-CURRENT ENERGY:  -78.3277279679
+	user time   =       2.84 seconds =       0.05 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+	DF-RODC-12 analytic gradient (ao_basis=none)......................PASSED
 
 *** PSI4 exiting successfully. Buy a developer a beer!

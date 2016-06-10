@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef _psi_src_lib_libmints_sointegral_h_
@@ -36,13 +41,15 @@
 #include "cdsalclist.h"
 #include "dcd.h"
 
-#include "../libparallel/mpi_wrapper.h"
-#include "../libparallel/local.h"
 
 #include <libqt/qt.h>
 #include <vector>
 
 //#define DebugPrint 1
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifndef DebugPrint
 #   define DebugPrint 0
@@ -67,9 +74,6 @@ public:
 #endif
 
 class TwoBodySOInt
-#if HAVE_MADNESS
-    : public madness::WorldObject<TwoBodySOInt>
-#endif
 {
 protected:
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb_;
@@ -166,20 +170,6 @@ public:
     template<typename TwoBodySOIntFunctor>
     void compute_integrals(TwoBodySOIntFunctor &functor);
 
-#if HAVE_MADNESS
-    template<typename TwoBodySOIntFunctor>
-    int compute_pq_pair(const int &p, const int &q, const TwoBodySOIntFunctor &body) {
-
-        boost::shared_ptr<SO_RS_Iterator> shellIter(
-                    new SO_RS_Iterator(p, q,
-                                       b1_, b2_, b3_, b4_));
-
-        this->compute_quartets(shellIter, const_cast<TwoBodySOIntFunctor &>(body));
-
-        return 0;
-    }
-#endif
-
     // Derivative integrals
     // User provides an iterator object and this function will walk through it.
     template<typename ShellIter, typename TwoBodySOIntFunctor>
@@ -222,8 +212,12 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     dprintf("uish %d, ujsh %d, uksh %d, ulsh %d\n", uish, ujsh, uksh, ulsh);
 
     int thread = 0;
+    #ifdef _OPENMP
+      thread = omp_get_thread_num();
+    #endif
     //Old call WorldComm->thread_id(pthread_self());
 
+    //timer_on("TwoBodySOInt::compute_shell overall");
     mints_timer_on("TwoBodySOInt::compute_shell overall");
     mints_timer_on("TwoBodySOInt::compute_shell setup");
 
@@ -349,7 +343,9 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         const unsigned short *lfuncpi = s4.nfuncpi;
 
         // Compute this unique AO shell
+        //timer_on("Computing the AO shell");
         tb_[thread]->compute_shell(si, sj, sk, sl);
+        //timer_off("Computing the AO shell");
 
         mints_timer_on("TwoBodySOInt::compute_shell actual transform");
 
@@ -433,6 +429,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     provide_IJKL(uish, ujsh, uksh, ulsh, body);
 
     mints_timer_off("TwoBodySOInt::compute_shell overall");
+    //timer_off("TwoBodySOInt::compute_shell overall");
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -440,8 +437,12 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 {
     int thread = 0;
     //Old call WorldComm->thread_id(pthread_self());
+    #ifdef _OPENMP
+      thread = omp_get_thread_num();
+    #endif
 
     mints_timer_on("TwoBodySOInt::provide_IJKL overall");
+    //timer_on("TwoBodySOInt::provide_IJKL overall");
 
     int nso2 = b2_->nfunction(jsh);
     int nso3 = b3_->nfunction(ksh);
@@ -576,6 +577,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
             }
         }
     }
+    //timer_off("TwoBodySOInt::provide_IJKL overall");
     mints_timer_off("TwoBodySOInt::provide_IJKL overall");
 }
 

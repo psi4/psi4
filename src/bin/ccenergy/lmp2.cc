@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -120,9 +125,9 @@ void CCEnergyWavefunction::lmp2(void)
   global_dpd_->buf4_close(&T2);
   global_dpd_->buf4_close(&D);
 
-  outfile->Printf( "\n\tComputing LMP2 amplitudes:\n");
-  outfile->Printf(   "\t--------------------------\n");
-  outfile->Printf( "\titer = %d    LMP2 Energy = %20.14f\n", 0, energy);
+  outfile->Printf( "\n    Computing LMP2 amplitudes:\n");
+  outfile->Printf(   "    --------------------------\n");
+  outfile->Printf( "    iter = %d    LMP2 Energy = %20.14f\n", 0, energy);
 
   conv = 0;
   int lmp2_maxiter=1000;
@@ -191,11 +196,11 @@ void CCEnergyWavefunction::lmp2(void)
 
     rms = sqrt(rms);
 
-    outfile->Printf( "\titer = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
+    outfile->Printf( "    iter = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
 
     if(rms < params_.convergence) {
       conv = 1;
-      outfile->Printf( "\n\tLMP2 Iterations converged.\n");
+      outfile->Printf( "\n    LMP2 Iterations converged.\n");
       break;
     }
     else {
@@ -206,7 +211,7 @@ void CCEnergyWavefunction::lmp2(void)
   }
 
   if(!conv) {
-    outfile->Printf( "\n\tLMP2 Iterative procedure failed.\n");
+    outfile->Printf( "\n    LMP2 Iterative procedure failed.\n");
     throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params_.convergence, rms, __FILE__, __LINE__);
   }
 
@@ -241,9 +246,9 @@ void CCEnergyWavefunction::lmp2(void)
   global_dpd_->buf4_mat_irrep_close(&D, 0);
   global_dpd_->buf4_close(&D);
 
-  outfile->Printf( "\n\tLMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
-  outfile->Printf( "\tLMP2 Correlation Energy = %20.14f\n", energy);
-  outfile->Printf( "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
+  outfile->Printf( "\n    LMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
+  outfile->Printf( "    LMP2 Correlation Energy = %20.14f\n", energy);
+  outfile->Printf( "    LMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
   
 
   local_.weak_pair_energy = weak_pair_energy;

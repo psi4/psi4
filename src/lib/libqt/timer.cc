@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*!
@@ -51,6 +56,13 @@
 ** which may not quite be standard on all machines.
 **
 ** T. Daniel Crawford, August 1999.
+**
+** Modified to use timeval structures for the module wall times, getting
+** nanosecond precision on cumulated wall time instead of second.
+** Useful to time integral computations where there can be millions
+** to billion calls to functions.
+**
+** J. F. Gonthier, February 2016
 */
 
 #include <cstdio>
@@ -60,6 +72,7 @@
 #include <ctime>
 #include <sys/param.h>
 #include <sys/times.h>
+#include <sys/time.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
@@ -83,7 +96,7 @@ struct timer {
     double stime;
     double wtime;
     struct tms ontime;
-    time_t wall_start;
+    struct timeval wall_start;
     struct timer *next;
     struct timer *last;
 };
@@ -136,14 +149,28 @@ void timer_done(void)
 
   this_timer = global_timer;
   while(this_timer != NULL) {
-      if(this_timer->calls > 1)
-          printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
-                  this_timer->key, this_timer->utime, this_timer->stime,
-                  this_timer->wtime, this_timer->calls);
-      else if(this_timer->calls == 1)
-          printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
-                  this_timer->key, this_timer->utime, this_timer->stime,
-                  this_timer->wtime, this_timer->calls);
+      if(this_timer->calls > 1) {
+          if(this_timer->wtime < 10.0) {
+              printer->Printf( "%-12s: %10.2fu %10.2fs %10.6fw %6d calls\n",
+                      this_timer->key, this_timer->utime, this_timer->stime,
+                      this_timer->wtime, this_timer->calls);
+          } else {
+              printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
+                      this_timer->key, this_timer->utime, this_timer->stime,
+                      this_timer->wtime, this_timer->calls);
+          }
+      }
+      else if(this_timer->calls == 1) {
+          if(this_timer->wtime < 10.0) {
+              printer->Printf( "%-12s: %10.2fu %10.2fs %10.8fw %6d call\n",
+                      this_timer->key, this_timer->utime, this_timer->stime,
+                      this_timer->wtime, this_timer->calls);
+          } else {
+              printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
+                      this_timer->key, this_timer->utime, this_timer->stime,
+                      this_timer->wtime, this_timer->calls);
+          }
+      }
       next_timer = this_timer->next;
       free(this_timer);
       this_timer = next_timer;
@@ -241,8 +268,42 @@ void timer_on(const char *key)
   this_timer->calls++;
 
   times(&(this_timer->ontime));
-  this_timer->wall_start = time(NULL);
+  gettimeofday(&(this_timer->wall_start), NULL);
 }
+
+/*!
+** timer_nsdiff(struct timeval endt, struct timeval begint): Returns
+** the time difference between two timeval values as a double, in seconds.
+** Takes into account the difference in nanoseconds accurately.
+** Taken from gnu.org, supposedly the best way to do that works even on
+** peculiar OS where tv_sec is unsigned.
+**
+** \param endt = Final timeval value as obtained through gettimeofday()
+**
+** \param begint = Initial timeval value as obtained through gettimeofday()
+**
+** Returns: the time difference in seconds as a double.
+**
+** \ingroup QT
+*/
+
+double timer_nsdiff(struct timeval& endt, struct timeval& begint) {
+  /*Carry the difference in nanoseconds to the second if needed */
+  long int nsec;
+  long int million = 1000 * 1000;
+  if(endt.tv_usec < begint.tv_usec) {
+    nsec = (begint.tv_usec - endt.tv_usec) / million + 1;
+    begint.tv_usec -= million * nsec;
+    begint.tv_sec += nsec;
+  }
+  if(endt.tv_usec - begint.tv_usec > million) {
+    nsec = (endt.tv_usec - begint.tv_usec) / million;
+    begint.tv_usec += million * nsec;
+    begint.tv_sec -= nsec; 
+  }
+
+  return ( (double)(endt.tv_sec - begint.tv_sec) + ((endt.tv_usec - begint.tv_usec) / ((double)million)) );
+} 
 
 /*!
 ** timer_off(): Turn off the timer with the name given as an argument.  Can
@@ -256,7 +317,7 @@ void timer_off(const char *key)
 {
   struct tms ontime, offtime;
   struct timer *this_timer;
-  time_t wall_stop;
+  struct timeval wall_stop;
 
   this_timer = timer_scan(key);
 
@@ -280,11 +341,10 @@ void timer_off(const char *key)
   this_timer->utime += ((double) (offtime.tms_utime-ontime.tms_utime))/HZ;
   this_timer->stime += ((double) (offtime.tms_stime-ontime.tms_stime))/HZ;
 
-  wall_stop = time(NULL);
-  this_timer->wtime += ((double) (wall_stop - this_timer->wall_start));
+  gettimeofday(&wall_stop, NULL);
+  this_timer->wtime += timer_nsdiff(wall_stop, this_timer->wall_start);
 
   this_timer->status = TIMER_OFF;
 }
 
 }
-

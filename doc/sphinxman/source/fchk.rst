@@ -7,8 +7,8 @@
 
 .. _`sec:fchk`:
 
-Interface to programs through FCHK files, :py:func:`FCHKWriter()`
-=================================================================
+Interface to programs through FCHK files, :py:func:`~driver.fchk()`
+===================================================================
 
 .. codeauthor:: Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -37,6 +37,5 @@ gradient computation, to ensure that the density is updated appropriately::
     fchk_writer = psi4.FCHKWriter(wfn)
     fchk_writer.write('output.fchk')
 
-.. autofunction:: FCHKWriter(wfn)
-
+.. autofunction:: driver.fchk(wfn, filename)
 

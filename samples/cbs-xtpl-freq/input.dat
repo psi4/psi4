@@ -1,0 +1,33 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+memory 500 mb
+
+nucenergy_ref = 9.16819326039
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type      df
+}
+
+h2o.update_geometry()
+
+# SCF TESTS
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, der_type=1)
+
+# scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
+
+
+#scf_dtz = gradient('SCF/cc-pV[23]Z')
+#
+#scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
+#
+## MP2 TESTS
+#mp2_dtz = gradient('MP2/cc-pV[DT]Z')
+
+

@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <libmints/mints.h>
@@ -946,22 +951,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
         dUact = Uact;
     }
     else{
-        dUact = SharedMatrix(new Matrix("Dense Uact", nact_, nmo_));
-        double** dUactp = dUact->pointer();
-        int offset_act = 0;
-        int offset_nmo = 0;
-        for (int h=0; h<nirrep_; h++){
-            if (!nactpi_[h]){
-                offset_nmo += nmopi_[h];
-                continue;
-            }
-            double** Uactp = Uact->pointer(h);
-            for (int a=0; a<nactpi_[h]; a++) {
-                C_DCOPY(nmopi_[h], Uactp[a], 1, dUactp[offset_act+a]+offset_nmo, 1);
-            }
-            offset_act += nactpi_[h];
-            offset_nmo += nmopi_[h];
-        }
+        dUact = Uact->to_block_sharedmatrix();
     }
 
     int nQ = dferi_->size_Q();
@@ -1099,7 +1089,7 @@ DiskSOMCSCF::~DiskSOMCSCF()
 }
 void DiskSOMCSCF::transform(bool approx_only)
 {
-    throw PSIEXCEPTION("DiskSOMCSCF::transoform is not supported for Disk integrals.");
+    throw PSIEXCEPTION("DiskSOMCSCF::transform is not supported for Disk integrals.");
 }
 void DiskSOMCSCF::set_act_MO()
 {

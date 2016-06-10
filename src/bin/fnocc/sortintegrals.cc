@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include"psi4-dec.h"
@@ -599,7 +604,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IJAB,"E2ijab",maxelem);
   outfile->Printf("done.\n");
 
-  delete integralbuffer;
+  delete[] integralbuffer;
 
   struct integral * integralbuffer2 = new integral[maxelem];
 
@@ -624,7 +629,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   outfile->Printf("done.\n");
   outfile->Printf("\n");
 
-  delete integralbuffer2;
+  delete[] integralbuffer2;
 
   double *tmp2;
   tmp2 = new double[maxelem];
@@ -705,8 +710,8 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio->close(PSIF_DCC_ABCD2,1);
 
 
-  delete tmp;
-  delete tmp2;
+  delete[] tmp;
+  delete[] tmp2;
 }
 void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,double*klcd){
   ULI k,l,c,d;
@@ -2109,7 +2114,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
 
      psio->rename_file(PSIF_DCC_TEMP,PSIFILE);*/
 
-     delete addr;
+     delete[] addr;
 
      // close temporary files:
      for (ULI i = 0; i < nbins; i++) {
@@ -2251,8 +2256,8 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
   psio->close(PSIF_DCC_ABCI3,1);
   psio->close(PSIF_DCC_ABCI4,1);
 
-  delete tmp;
-  delete tmp2;
+  delete[] tmp;
+  delete[] tmp2;
 }
 /**
   * OVOV in-core integral sort.  requires o^2v^2 doubles
@@ -2356,11 +2361,10 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   psio->write_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
 
-  delete klcd;
+  delete[] klcd;
 
   outfile->Printf("done.\n");
   outfile->Printf("\n");
 }
 
 }} // end of namespaces
-

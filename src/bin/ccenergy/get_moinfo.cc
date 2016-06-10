@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file
@@ -302,9 +307,9 @@ void CCEnergyWavefunction::get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo_.eref),
                     sizeof(double));
 
-    outfile->Printf("\n\tNuclear Rep. energy (wfn)     = %20.15f\n",moinfo_.enuc);
-    outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo_.escf);
-    outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo_.eref);
+    outfile->Printf("\n    Nuclear Rep. energy (wfn)     = %20.15f\n",moinfo_.enuc);
+    outfile->Printf(  "    SCF energy          (wfn)     = %20.15f\n",moinfo_.escf);
+    outfile->Printf(  "    Reference energy    (file100) = %20.15f\n",moinfo_.eref);
 }
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */

@@ -1,9 +1,14 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
 # @plugin@ by Psi4 Developer, a plugin to:
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +24,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 import psi4
@@ -28,11 +33,10 @@ import os
 import inputparser
 import math
 import warnings
-from driver import *
-from wrappers import *
+import driver
 from molutil import *
 import p4util
-from p4xcpt import *
+from p4util.exceptions import *
 
 
 def run_@plugin@(name, **kwargs):
@@ -54,7 +58,7 @@ def run_@plugin@(name, **kwargs):
     print('Attention! This SCF may be density-fitted.')
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
+        ref_wfn = driver.scf_helper(name, **kwargs)
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
@@ -64,7 +68,7 @@ def run_@plugin@(name, **kwargs):
 
 
 # Integration with driver routines
-procedures['energy']['@plugin@'] = run_@plugin@
+driver.procedures['energy']['@plugin@'] = run_@plugin@
 
 
 def exampleFN():

@@ -9,7 +9,7 @@ molecule CN {
   N  0.000000000000      0.000000000000     -1.024692078304
 }
 
-set globals {
+set {
   reference rohf
   basis cc-pVDZ
   docc [4, 0, 1, 1]

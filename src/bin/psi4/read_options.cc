@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*! \file read_calculation_options
@@ -132,7 +137,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   describing the origin about which one-electron properties are computed. -*/
   options.add("PROPERTIES_ORIGIN", new ArrayType());
 
-  /*- PSI4 dies if energy does not converge. !expert -*/
+  /*- Psi4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
   /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
   options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
@@ -426,16 +431,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     using these determinants.  This submatrix is used to accelerate
     convergence of the CI iterations in the OLSEN and MITRUSHENKOV
     iteration schemes, and also to find a good starting guess for the
-    SEM method if |detci__guess_vector| is ``H0_BLOCK``.  Defaults to 400.
+    SEM method if |detci__guess_vector| is ``H0_BLOCK``.  Defaults to 1000.
     Note that the program may change the given size for Ms=0 cases
     (|detci__ms0| is TRUE) if it determines that the H0 block includes only
     one member of a pair of determinants related by time reversal symmetry.
     For very small block sizes, this could conceivably eliminate the entire
     H0 block; the program should print warnings if this occurs. !expert -*/
-    options.add_int("H0_BLOCKSIZE", 400);
+    options.add_int("H0_BLOCKSIZE", 1000);
 
     /*- size of H0 block for initial guess !expert -*/
-    options.add_int("H0_GUESS_SIZE", 400);
+    options.add_int("H0_GUESS_SIZE", 1000);
 
     /*- Do use coupling block in preconditioner? !expert -*/
     options.add_bool("H0_BLOCK_COUPLING",false);
@@ -523,10 +528,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Guess vector type.  Accepted values are ``UNIT`` for a unit vector
     guess (|detci__num_roots| and |detci__num_init_vecs| must both be 1); ``H0_BLOCK`` to use
     eigenvectors from the H0 BLOCK submatrix (default); ``DFILE`` to use
-    NUM_ROOTS previously converged vectors in the D file; ``IMPORT`` to
-    import a guess previously exported from a CI computation
-    (possibly using a different CI space) !expert -*/
-    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE IMPORT");
+    NUM_ROOTS previously converged vectors in the D file; !expert -*/
+    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE");
 
     /*- The number of initial vectors to use in the CI iterative procedure.
     Defaults to the number of roots. !expert -*/
@@ -541,8 +544,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do restart a DETCI iteration that
     terminated prematurely? It assumes that the CI and sigma vectors are on
-    disk; the number of vectors specified by RESTART_VECS (obsolete) is collapsed
-    down to one vector per root. -*/
+    disk. -*/
     options.add_bool("RESTART",false);
 
     /*- Do invoke the FILTER_GUESS options that are used to filter out some
@@ -597,15 +599,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     collapsed subspace retains the best estimate of the CI vector for
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
-
-    /*- Do store converged vector(s) at the end of
-    the run?  The vector(s) is(are) stored in a transparent format such that
-    other programs can use it easily. The format is specified in
-    :source:`src/lib/libqt/slaterdset.h` . -*/
-    options.add_bool("VECS_WRITE", false);
-
-    /*- Number of vectors to export -*/
-    options.add_int("NUM_VECS_WRITE", 1);
 
     /*- Do compute the diagonal elements of the Hamiltonian matrix
     on-the-fly? Otherwise, a diagonal element vector is written
@@ -807,24 +800,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
     /*- Whether or not to perform exchange scaling for SAPT exchange components.
-     * Default is false, i.e. no scaling. If set to true, performs scaling with
-     * Exch10 / Exch10(S^2). If set to a value \alpha, performs scaling with
-     * (Exch10 / Exch10(S^2))^{\alpha}.
-     */
+    Default is false, i.e. no scaling. If set to true, performs scaling with
+    $Exch10 / Exch10(S^2)$. If set to a value $\alpha$, performs scaling with
+    $(Exch10 / Exch10(S^2))^{\alpha}$. -*/
     options.add_str("EXCH_SCALE_ALPHA", "FALSE", "");
-    /* For SAPT0 only, compute only first-order electrostatics and exchange.
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only first-order electrostatics and exchange.
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E10",false);
-    /* For SAPT0 only, compute only second-order induction
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only second-order induction
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E20IND",false);
-    /* For SAPT0 only, compute only second-order induction
-     * The integrals are computed before any terms, so all integrals will
-     * be computed even if they are not needed for the requested term !expert */
+    /*- For SAPT0 only, compute only second-order induction
+    The integrals are computed before any terms, so all integrals will
+    be computed even if they are not needed for the requested term !expert -*/
     options.add_bool("SAPT0_E20DISP",false);
-
 
     /*- Convergence criterion for energy (change) in the SAPT
     $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
@@ -968,6 +959,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
       /*- Do sSAPT0 exchange-scaling with F-SAPT -*/
       options.add_bool("sSAPT0_SCALE", false);
+      /*- Filepath to drop  sSAPT0 exchange-scaling F-SAPT data -*/
+      options.add_str_i("FISAPT_FsSAPT_FILEPATH", "s-fsapt/");
 
       // => CubicScalarGrid options <= //
 
@@ -1174,13 +1167,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
+    /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
+    options.add_int("PK_MAX_BUCKETS", 500);
+    /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
+    options.add_str("PK_ALGO", "REORDER", "REORDER YOSHIMINE");
+    /*- Deactivate in core algorithm. For debug purposes. !expert -*/
+    options.add_bool("PK_NO_INCORE", false);
+    /*- All densities are considered non symmetric, debug only. !expert -*/
+    options.add_bool("PK_ALL_NONSYM", false);
+    /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
+    options.add_int("MAX_MEM_BUF",  0);
     /*- JK Independent options
      -*/
     options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
     options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
-    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech 
+    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech
         in a |scf__scf_type| ``DIRECT`` calculation -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
@@ -1194,10 +1197,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- The type of guess orbitals.  Defaults to CORE except for geometry
-    optimizations, in which case READ becomes the default after the first
-    geometry step. -*/
-    options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    /*- The type of guess orbitals.  Defaults to SAD for RHF, GWH for ROHF and UHF,
+    and READ for geometry optimizations after the first step. -*/
+
+    options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD READ");
     /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
     Useful to produce broken-symmetry unrestricted solutions.
     Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1380,11 +1383,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_E_CONVERGENCE", 1E-5);
     /*- Convergence criterion for SCF density in SAD Guess. -*/
     options.add_double("SAD_D_CONVERGENCE", 1E-5);
+    /*- Fitting SAD basis !expert -*/
+    options.add_str("DF_BASIS_SAD", "SAD-FIT");
     /*- Maximum number of SAD guess iterations !expert -*/
     options.add_int("SAD_MAXITER", 50);
-    /*- SAD Guess F-mix Iteration Start !expert -*/
-    options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies). !expert -*/
+    /*- SCF type of SAD guess !expert -*/
+    options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
+    /*- Auxiliary basis for the SAD guess !expert -*/
+    options.add_bool("SAD_FRAC_OCC", false);
+    /*- Auxiliary basis for the SAD guess !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
     /*- SUBSECTION DFT -*/
@@ -2770,8 +2777,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
     options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
-    /*- Type of the CCSD Wabef term. -*/
-    options.add_str("WABEF_TYPE","AUTO","LOW_MEM HIGH_MEM AUTO");
+    /*- Type of the CCSD PPL term. -*/
+    options.add_str("PPL_TYPE","AUTO","LOW_MEM HIGH_MEM CD AUTO");
     /*- The algorithm to handle (ia|bc) type integrals that used for (T) correction. -*/
     options.add_str("TRIPLES_IABC_TYPE","DISK","INCORE AUTO DIRECT DISK");
 
@@ -2819,7 +2826,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
-          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling Psi4 then
           that value is used. When set, this option overrides everything. Be aware
           the ``-n`` command-line option described in section :ref:`sec:threading`
           does not affect MRCC.
@@ -2977,10 +2984,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CEPA_NO_SINGLES",false);
   }
   if (name == "THERMO"|| options.read_globals()) {
-      /*- Temperature in Kelvin for thermodynamic analysis. -*/
+      /*- Temperature in Kelvin for thermodynamic analysis. Note that 273.15
+      is the value for IUPAC STP. -*/
       options.add_double("T", 298.15);
-      /*- Pressure in Pascal for thermodynamic analysis. -*/
+      /*- Pressure in Pascal for thermodynamic analysis. Note that 100000.
+      is the value for IUPAC STP. -*/
       options.add_double("P", 101325);
+      /*- Rotational symmetry number for thermodynamic analysis. Default is set
+      from the full point group (e.g., Td for methane) as opposed to the computational
+      point group (e.g., C2v for methane). Default takes into account symmetry
+      reduction through asymmetric isotopic substitution and is unaffected by
+      user-set symmetry on molecule, so this option is the sole way to influence
+      the symmetry-dependent aspects of the thermodynamic analysis. -*/
+      options.add_int("ROTATIONAL_SYMMETRY_NUMBER", 1);
   }
   if (name == "CFOUR"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to CFOUR program written by Stanton and Gauss.
@@ -2988,10 +3004,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       `CFOUR Website <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_
       and extended by interface comments. -*/
 
-      /*- SUBSECTION PSI4 Control of CFOUR -*/
+      /*- SUBSECTION Psi4 Control of CFOUR -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling CFOUR.
-          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling Psi4 then
           that value is used. When set, this option overrides everything. Be aware
           the ``-n`` command-line option described in section :ref:`sec:threading`
           does not affect CFOUR.
@@ -3117,7 +3133,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       arbitrary basis (see non-standard basis-set input). However, the
       latter must be available in the supplied GENBAS file. As standard
       basis sets, currently the following are available.
-      **PSI4 Interface:** Recommended to use instead |mints__basis| for
+      **Psi4 Interface:** Recommended to use instead |mints__basis| for
       larger basis set selection and greater flexibility. When |mints__basis|
       used, |cfour__cfour_spherical| is set appropriately. -*/
       options.add_str("CFOUR_BASIS", "SPECIAL", "STO-3G 3-21G 4-31G 6-31G 6-31G* 6-31G** 6-311G 6-311G* 6-311G** DZ DZP TZ TZP TZ2P PVDZ PVTZ PVQZ PV5Z PV6Z PCVDZ PCVTZ PCVQZ PCV5Z PCV6Z AUG-PVDZ AUG-PVTZ AUG-PVTZ AUG-PVQZ AUG-PV5Z AUG-PV6Z D-AUG-PVDZ D-AUG-PVTZ D-AUG-PVQZ D-AUG-PV5Z D-AUG-PV6Z cc-pVDZ cc-pVTZ cc-pVQZ cc-pV5Z cc-pV6Z cc-pCVDZ cc-pCVTZ cc-pCVQZ cc-pCV5Z cc-pCV6Z PWCVDZ PWCVTZ PWCVQZ PWCV5Z PWCV6Z PwCVDZ PwCVTZ PwCVQZ PwCV5Z PwCV6Z svp dzp tzp tzp2p qz2p pz3d2f 13s9p4d3f WMR ANO0 ANO1 ANO2 EVEN_TEMPERED SPECIAL");
@@ -3140,7 +3156,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //BUFFERSIZE
 
       /*- Defines the level of calculation to be performed.
-      **PSI4 Interface:** Keyword set from argument of computation
+      **Psi4 Interface:** Keyword set from argument of computation
       command: CCSD if ``energy('c4-ccsd')``, *etc.* See :ref:`Energy
       (CFOUR) <table:energy_cfour>` and :ref:`Gradient (CFOUR)
       <table:grad_cfour>`. for all available. -*/
@@ -3189,7 +3205,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       gradients. That is, if you are doing a geometry optimization with
       ROHF as your reference wave function then it is safe to use the
       option VCC.
-      **PSI4 Interface:** Keyword set according to best practice for the
+      **Psi4 Interface:** Keyword set according to best practice for the
       computational method |cfour__cfour_calc_level|, reference
       |cfour__cfour_reference| (NYI) and derivative level
       |cfour__cfour_deriv_level| according to Table :ref:`Best Practices
@@ -3200,7 +3216,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
 
       /*- Specifies the molecular charge.
-      **PSI4 Interface:** Keyword set from active molecule. -*/
+      **Psi4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_CHARGE", 0);
 
       /*- Specifies the convergence threshold as :math:`10^{-N}` for CIS
@@ -3236,7 +3252,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       internal coordinates defined implicitly by supplying Cartesian
       coordinates. Note that geometry optimizations are currently only
       possible for INTERNAL and XYZ2INT.
-      **PSI4 Interface:** Keyword set from active molecule, always CARTESIAN.
+      **Psi4 Interface:** Keyword set from active molecule, always CARTESIAN.
       Above restrictions on geometry optimizations no longer apply. -*/
       options.add_str("CFOUR_COORDINATES", "INTERNAL", "INTERNAL CARTESIAN XYZINT");
 
@@ -3286,7 +3302,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       that this keyword usually needs not be set in any calculation since
       it is automatically set if the appropriate other options in the
       CFOUR namelist are turned on.
-      **PSI4 Interface:** Keyword set from type of computation command:
+      **Psi4 Interface:** Keyword set from type of computation command:
       ZERO if :py:func:`~driver.energy`, FIRST if
       :py:func:`~driver.gradient` or :py:func:`~driver.optimization`,
       *etc.* -*/
@@ -3443,7 +3459,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Tells the program, in the course of a geometry optimization, to
       calculate the Hessian explicitly every N cycles. 0 means never
       calculated explicitly.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__full_hess_every|. -*/
@@ -3615,7 +3631,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the convergence criterion for geometry optimization.
       The optimization terminates when the RMS gradient is below $10^{-N}$
       Hartree/bohr, where $N$ is the specified value.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__g_convergence| =CFOUR, which should be equivalent
@@ -3624,7 +3640,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies largest step (in millibohr) which is allowed in
       geometry optimizations.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__intrafrag_step_limit|. -*/
@@ -3646,7 +3662,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("CFOUR_GEO_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT ENERONLY");
 
       /*- Specifies the maximum allowed number of geometry optimization cycles.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__geom_maxiter|. -*/
@@ -3772,14 +3788,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (default) or in the units specified via the keyword |cfour__cfour_mem_unit|.
       Default: 100 000 000 (approximately 381 or 762 MB for 32 or 64 bit
       machines, respectively).
-      **PSI4 Interface:** Keyword set in MB from memory input command when
+      **Psi4 Interface:** Keyword set in MB from memory input command when
       given. -*/
       options.add_int("CFOUR_MEMORY_SIZE", 100000000);
 
       /*- Specifies the units in which the amount of requested core memory
       is given. Possible choices are INTEGERWORDS (default), kB, MB, GB,
       and TB.
-      **PSI4 Interface:** Keyword set from memory input command when
+      **Psi4 Interface:** Keyword set from memory input command when
       given, always MB. -*/
       options.add_str("CFOUR_MEM_UNIT", "INTEGERWORDS", "INTEGERWORDS KB MB GB TB");
 
@@ -3794,7 +3810,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       for minimum (very efficient minimization scheme, particularly if the
       Hessian is available); 4 is currently unavailable;
       SINGLE_POINT (=5) is a single point calculation.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead,
       particularly |optking__opt_type| and |optking__step_type|. -*/
@@ -3805,7 +3821,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CFOUR_MRCC", false);
 
       /*- Specifies the spin multiplicity.
-      **PSI4 Interface:** Keyword set from active molecule. -*/
+      **Psi4 Interface:** Keyword set from active molecule. -*/
       options.add_int("CFOUR_MULTIPLICITY", 1);
 
       /*- Calculation of non-adiabatic coupling. In case of ON (=1) the
@@ -3826,7 +3842,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       plugging away (this is strongly discouraged!); and if RFA
       (=2), the keyword |cfour__cfour_geo_method| is switched to RFA internally and the
       optimization is continued.
-      **PSI4 Interface:** Geometry optimizations run through PSI (except in
+      **Psi4 Interface:** Geometry optimizations run through PSI (except in
       sandwich mode) use PSI's optimizer and so this keyword has no effect.
       Use :ref:`optking <apdx:optking>` keywords instead. -*/
       options.add_str("CFOUR_NEGEVAL", "ABORT", "ABORT SWITCH RFA");
@@ -3874,7 +3890,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       usually converge to the lowest energy HF-SCF solution, but this
       should not be blindly assumed.  (Default: The occupation is given
       by the core Hamiltonian initial guess).
-      **PSI4 Interface:** The arrays above are specified in PSI as
+      **Psi4 Interface:** The arrays above are specified in PSI as
       (whitespace-tolerant) [3,1,1,0] and [[3,1,1,0],[3,0,1,0]]. -*/
       options.add("CFOUR_OCCUPATION", new ArrayType());
 
@@ -4056,7 +4072,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       open-shell Hartree-Fock calculation; TCSCF (=3) a
       two-configurational SCF calculation, and CASSCF (=4) a
       complete-active space SCF calculations (currently not implemented).
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__reference| unless set explicitly. -*/
       options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
 
@@ -4133,7 +4149,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the convergence criterion for the HF-SCF equations.
       Equations are considered converged when the maximum change in
       density matrix elements is less than $10^{-N}$.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__d_convergence| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_CONV", 7);
 
@@ -4144,7 +4160,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       currently 1000 (no damping), but a value of 500 is recommended in
       particular for transition metal compounds where the SCF convergence
       is often troublesome.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__damping_percentage| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_DAMPING", 1000);
 
@@ -4162,7 +4178,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CFOUR_SCF_EXTRAPOLATION", true);
 
       /*- Specifies the maximum number of SCF iterations.
-      **PSI4 Interface:** Keyword subject to translation from value of
+      **Psi4 Interface:** Keyword subject to translation from value of
       |scf__maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
 
@@ -4187,7 +4203,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether spherical harmonic (5d, 7f, 9g, etc.) or
       Cartesian (6d, 10f, 15g, etc.) basis functions are to be used. ON (=
       1) uses spherical harmonics, OFF (= 0) uses Cartesians.
-      **PSI4 Interface:** Keyword set according to basis design when
+      **Psi4 Interface:** Keyword set according to basis design when
       |mints__basis| is used instead of |cfour__cfour_basis|. Keyword
       subject to translation from value of |globals__puream| unless set
       explicitly. -*/
@@ -4323,7 +4339,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies the units used for molecular geometry input. ANGSTROM
       (= 0) uses Angstrom units, BOHR (= 1) specifies atomic units.
-      **PSI4 Interface:** Keyword set from active molecule, always ANGSTROM. -*/
+      **Psi4 Interface:** Keyword set from active molecule, always ANGSTROM. -*/
       options.add_str("CFOUR_UNITS", "ANGSTROM", "ANGSTROM BOHR");
 
       //UNOS
@@ -4525,26 +4541,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_bool("QMEFP", false);
     }
     if (name == "DMRG"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Performs a DMRG computation
+       *
+       *  -*/
 
         /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
-        options.add_int("DMRG_WFN_MULTP", -1);
+        options.add_int("WFN_MULTP", -1);
 
         /*- The DMRG wavefunction irrep uses the same conventions as PSI4. How convenient :-).
             Just to avoid confusion, it's copied here. It can also be found on
             http://sebwouters.github.io/CheMPS2/classCheMPS2_1_1Irreps.html .
-
             Symmetry Conventions        Irrep Number & Name
-            Group Number & Name         0 	1 	2 	3 	4 	5 	6 	7
+            Group Number & Name         0     1     2     3     4     5     6     7
             0: c1                       A
-            1: ci                       Ag 	Au
-            2: c2                       A 	B
-            3: cs                       A' 	A''
-            4: d2                       A 	B1 	B2 	B3
-            5: c2v                      A1 	A2 	B1 	B2
-            6: c2h                      Ag 	Bg 	Au 	Bu
-            7: d2h                      Ag 	B1g 	B2g 	B3g 	Au 	B1u 	B2u 	B3u
+            1: ci                       Ag     Au
+            2: c2                       A     B
+            3: cs                       A'     A''
+            4: d2                       A     B1     B2     B3
+            5: c2v                      A1     A2     B1     B2
+            6: c2h                      Ag     Bg     Au     Bu
+            7: d2h                      Ag     B1g     B2g     B3g     Au     B1u     B2u     B3u
         -*/
-        options.add_int("DMRG_WFN_IRREP", -1);
+        options.add_int("WFN_IRREP", -1);
 
         /*- The number of reduced renormalized basis states to be
             retained during successive DMRG instructions -*/
@@ -4554,6 +4572,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             during successive DMRG instructions -*/
         options.add("DMRG_E_CONVERGENCE", new ArrayType());
 
+        /*- The density RMS convergence to stop an instruction
+            during successive DMRG instructions -*/
+        options.add_double("DMRG_D_CONVERGENCE", 1.e-6);
+
         /*- The maximum number of sweeps to stop an instruction
             during successive DMRG instructions -*/
         options.add("DMRG_MAXSWEEPS", new ArrayType());
@@ -4561,26 +4583,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- The noiseprefactors for successive DMRG instructions -*/
         options.add("DMRG_NOISEPREFACTORS", new ArrayType());
 
+        /*- The residual tolerances for the Davidson diagonalization during DMRG instructions -*/
+        options.add("DMRG_DVDSON_RTOL", new ArrayType());
+
         /*- Whether or not to print the correlation functions after the DMRG calculation -*/
-        options.add_bool("DMRG_PRINT_CORR", true);
+        options.add_bool("DMRG_PRINT_CORR", false);
 
         /*- Whether or not to create intermediary MPS checkpoints -*/
         options.add_bool("DMRG_CHKPT", false);
 
-        /*- Doubly occupied frozen orbitals for DMRGSCF, per irrep. Same
-            conventions as for other MR methods -*/
-        options.add("FROZEN_DOCC", new ArrayType());
-
-        /*- Active space orbitals for DMRGSCF, per irrep. Same conventions as for other MR methods. -*/
-        options.add("ACTIVE", new ArrayType());
-
-        /*- Convergence threshold for the gradient norm. -*/
-        options.add_double("D_CONVERGENCE", 1e-6);
-
         /*- Whether or not to store the unitary on disk (convenient for restarting). -*/
         options.add_bool("DMRG_STORE_UNIT", true);
 
-        /*- Whether or not to use DIIS for DMRGSCF. -*/
+        /*- Whether or not to use DIIS for DMRG. -*/
         options.add_bool("DMRG_DO_DIIS", false);
 
         /*- When the update norm is smaller than this value DIIS starts. -*/
@@ -4589,16 +4604,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Whether or not to store the DIIS checkpoint on disk (convenient for restarting). -*/
         options.add_bool("DMRG_STORE_DIIS", true);
 
-        /*- Maximum number of DMRGSCF iterations -*/
-        options.add_int("DMRG_MAXITER", 100);
+        /*- Maximum number of DMRG iterations -*/
+        options.add_int("DMRG_MAX_ITER", 100);
 
         /*- Which root is targeted: 1 means ground state, 2 first excited state, etc. -*/
         options.add_int("DMRG_WHICH_ROOT", 1);
 
         /*- Whether or not to use state-averaging for roots >=2 with DMRG-SCF. -*/
-        options.add_bool("DMRG_AVG_STATES", true);
+        options.add_bool("DMRG_STATE_AVG", true);
 
-        /*- Which active space to use for DMRGSCF calculations:
+        /*- Which active space to use for DMRG calculations:
                --> input with SCF rotations (INPUT);
                --> natural orbitals (NO);
                --> localized and ordered orbitals (LOC) -*/
@@ -4606,6 +4621,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
         /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
         options.add_bool("DMRG_LOC_RANDOM", true);
+
+        /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
+        options.add_bool("DMRG_CASPT2", false);
+
+        /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
+        options.add_str("DMRG_CASPT2_ORB", "PSEUDOCANONICAL", "PSEUDOCANONICAL ACTIVE");
+
+        /*- CASPT2 IPEA shift -*/
+        options.add_double("DMRG_IPEA", 0.0);
+
+        /*- CASPT2 Imaginary shift -*/
+        options.add_double("DMRG_IMAG_SHIFT", 0.0);
+
+        /*- DMRG-CI or converged DMRG-SCF orbitals in molden format -*/
+        options.add_bool("DMRG_MOLDEN", false);
+
+        /*- Print out the density matrix in the AO basis -*/
+        options.add_bool("DMRG_DENSITY_AO", false);
 
     }
     if (name == "DERIV"|| options.read_globals()) {
@@ -4616,4 +4649,3 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 }
 
 } //end ::psi
-

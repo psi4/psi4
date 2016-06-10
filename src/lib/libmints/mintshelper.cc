@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <iostream>
@@ -572,12 +577,9 @@ SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<
         }
     }
 
-    // Set Numpy shape
-    int* shape = new int[4];
-    shape[0] = nbf1; shape[1] = nbf2;
-    shape[2] = nbf3; shape[3] = nbf4;
-    I->set_numpy_dims(4);
-    I->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
+    I->set_numpy_shape(nshape);
 
     return I;
 }
@@ -831,13 +833,9 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
             }
         }
     }
-
-    // Set Numpy shape
-    int* shape = new int[4];
-    shape[0] = n1; shape[1] = n2;
-    shape[2] = n3; shape[3] = n4;
-    Imo->set_numpy_dims(4);
-    Imo->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{n1, n2, n3, n4};
+    Imo->set_numpy_shape(nshape);
 
     return Imo;
 }
@@ -901,13 +899,9 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
             }
         }
     }
-
-    // Set Numpy shape
-    int* shape = new int[4];
-    shape[0] = shape[2] = nocc;
-    shape[1] = shape[3] = nvir;
-    Imo->set_numpy_dims(4);
-    Imo->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{nocc, nvir, nocc, nvir};
+    Imo->set_numpy_shape(nshape);
 
     return Imo;
 }
@@ -947,12 +941,9 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
             }
         }
     }
-    // Set Numpy shape
-    int* shape = new int[4];
-    shape[0] = shape[1] = n12;
-    shape[2] = shape[3] = n22;
-    Ispin->set_numpy_dims(4);
-    Ispin->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{n12, n12, n22, n22};
+    Ispin->set_numpy_shape(nshape);
 
     return Ispin;
 }
@@ -1192,16 +1183,12 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     int n2 = C2->colspi()[0];
     int n3 = C3->colspi()[0];
     int n4 = C4->colspi()[0];
+    std::vector<int> nshape{n1, n2, n3, n4};
 
     double** C1p = C1->pointer();
     double** C2p = C2->pointer();
     double** C3p = C3->pointer();
     double** C4p = C4->pointer();
-
-    // Build numpy and final matrix shape
-    int* shape = new int[4];
-    shape[0] = n1; shape[1] = n2;
-    shape[2] = n3; shape[3] = n4;
 
     int shape_left = n1 * n2;
     int shape_right = n3 * n4;
@@ -1306,10 +1293,8 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
             }
         }
     }
-
-    // Set Numpy shape
-    Imo->set_numpy_dims(4);
-    Imo->set_numpy_shape(shape);
+    // Build numpy and final matrix shape
+    Imo->set_numpy_shape(nshape);
 
     return Imo;
 }

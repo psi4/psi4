@@ -32,7 +32,7 @@ H  -1.934259   0.762503   0.000000
 H  -0.599677   0.040712   0.000000
 }
 
-set globals {
+set {
     r_convergence 12
     d_convergence 12
     algorithm   simultaneous
@@ -43,24 +43,20 @@ set globals {
 set dcft_functional odc-12
 set ao_basis disk
 grad = gradient('dcft')
-compare_matrices(ref_grad_odc12, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=disk)") 
 clean()
 
 set dcft_functional odc-12
 set ao_basis none
 grad = gradient('dcft')
-compare_matrices(ref_grad_odc12, grad, 8, "RHF-ODC-12 analytic gradient (simultaneous, ao_basis=none)") 
 clean()
 
 set dcft_functional odc-06
 set ao_basis disk
 grad = gradient('dcft')
-compare_matrices(ref_grad_odc06, grad, 8, "RHF-ODC-06 analytic gradient (simultaneous, ao_basis=disk)") 
 clean()
 
 set dcft_functional odc-06
 set ao_basis none
 grad = gradient('dcft')
-compare_matrices(ref_grad_odc06, grad, 8, "RHF-ODC-06 analytic gradient (simultaneous, ao_basis=none)") 
 clean()
 

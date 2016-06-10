@@ -1,7 +1,12 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,15 +22,15 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
 """Module with utility functions for use in input files."""
-#CUimport psi4
 import sys
 import os
 import math
-from p4xcpt import *
+import numpy as np
+from .exceptions import *
 
 
 def oeprop(wfn, *args, **kwargs):
@@ -236,6 +241,28 @@ def compare_vectors(expected, computed, digits, label):
             raise TestComparisonError(message)
     success(label)
 
+def compare_arrays(expected, computed, digits, label):
+    """Function to compare two numpy arrays. Prints :py:func:`util.success`
+    when elements of vector *computed* match elements of vector *expected* to
+    number of *digits*. Performs a system exit on failure to match symmetry
+    structure, dimension, or element values. Used in input files in the test suite.
+
+    """
+
+    try:
+        shape1 = expected.shape
+        shape2 = computed.shape
+    except:
+        raise TestComparisonError("Input objects do not have a shape attribute.")
+
+    if shape1 != shape2: 
+        TestComparisonError("Input shapes do not match.")
+
+    if not np.allclose(expected, computed, atol=digits):
+        message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
+        raise TestComparisonError(message)
+    success(label)
+
 
 def compare_cubes(expected, computed, label):
     """Function to compare two cube files. Prints :py:func:`util.success`
@@ -248,7 +275,7 @@ def compare_cubes(expected, computed, label):
     cvec = [float(k) for k in computed.split()[6:]]
     if len(evec) == len(cvec):
         for n in range(len(evec)):
-            if (math.fabs(evec[n]-cvec[n]) > 1.0e-5):
+            if (math.fabs(evec[n]-cvec[n]) > 1.0e-4):
                 message = ("\t%s: computed cube file does not match expected cube file." % label)
                 raise TestComparisonError(message)
     else:

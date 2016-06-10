@@ -324,9 +324,10 @@ An advantage of |PSIfours| Python driver is that any number of common
 work-up procedures can be automated and wrapped around the the
 conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
-:py:func:`~wrappers.cp`, :py:func:`~wrappers.database`, and
-:py:func:`~wrappers.complete_basis_set`; read their respective sections
-for details, but an overview is provided here. :py:func:`~wrappers.cp`
+:py:func:`~driver_nbody._nbody_gufunc`,
+:py:func:`~wrapper_database.database`, and
+:py:func:`~driver_cbs.complete_basis_set`; read their respective sections
+for details, but an overview is provided here. :py:func:`~driver_nbody._nbody_gufunc`
 computes the interaction energy of a bimolecular complex (counterpoise-corrected,
 not, or both). ::
 
@@ -351,7 +352,7 @@ yields ::
    R [A] = 3.0  IE [kcal/mol] = 0.030
    R [A] = 4.0  IE [kcal/mol] = -0.014
 
-Next, the :py:func:`~wrappers.database` wrapper allows any computational
+Next, the :py:func:`~wrapper_database.database` wrapper allows any computational
 model chemistry to be applied a predefined collection of molecules. Thus
 an input ::
 
@@ -406,7 +407,7 @@ along the dissociation curve of methane dimer, which is a member of the
                 RMS Dev                         0.4676
    ----------------------------------------------------------------------------------------------
 
-Thirdly, the :py:func:`~wrappers.complete_basis_set` wrapper allows any
+Thirdly, the :py:func:`~driver_cbs.complete_basis_set` wrapper allows any
 compound computational method that can be expressed through :ref:`CBS
 <eq:cbs>` to be applied to a molecule while employing the minimum number
 of calculations. For example, the job below computes a
@@ -439,7 +440,7 @@ This yields::
        total                  CBS                                       -1.10300098
    ---------------------------------------------------------------------------------------------------------
 
-Note that especially for :py:func:`~wrappers.complete_basis_set`, the
+Note that especially for :py:func:`~driver_cbs.complete_basis_set`, the
 basis set needs to be specified through |mints__basis|, not
 |cfour__cfour_basis|.  Many of the wrappers can be used in combination to,
 for example, apply a compound method to every molecule in a database or to
@@ -631,14 +632,14 @@ into |PSIfour| data objects.
   :py:func:`~driver.optimize` for :ref:`methods <table:energy_cfour>`.
   Force with ``gradient('name', dertype=0)``, *etc.*.
 
-* :py:func:`~wrappers.cp` for computation of interaction energies with or
+* :py:func:`~driver_nbody._nbody_gufunc` for computation of interaction energies with or
   without counterpoise correction. Example: :srcsample:`cfour/dfmp2-1`.
 
-* :py:func:`~wrappers.database` for computation of a collection of molecules in a
+* :py:func:`~wrapper_database.database` for computation of a collection of molecules in a
   single input, with summarization of results. Examples:
   :srcsample:`cfour/pywrap-db1` and :srcsample:`cfour/psi-a24-grad`.
 
-* :py:func:`~wrappers.complete_basis_set` for computation of compound methods involving
+* :py:func:`~driver_cbs.complete_basis_set` for computation of compound methods involving
   basis set extrapolations and/or delta corrections with any combination
   of |PSIfour| and Cfour computational methods and |PSIfour| basis sets.
   Example: :srcsample:`cfour/pywrap-cbs1`.

@@ -22,7 +22,7 @@ molecule formic_dim {
    no_reorient
 }
 
-set globals {
+set {
    basis cc-pvdz
    df_basis_scf cc-pvdz-jkfit
    df_basis_mp2 cc-pvdz-ri
@@ -32,5 +32,5 @@ set globals {
    d_convergence 11
 }
 
-e_cp = cp('mp2')
+e_cp = energy('mp2', bsse_type='cp')
 

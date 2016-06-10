@@ -1,24 +1,27 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta5+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.4.190 Driver
 
-               Git: Rev {xtd} 249b6e2c9282aa7826fcbba4d9b4352841da3ecf
+                          Git: Rev {test_ref_refresh} 9b1b239 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
-    Process ID:  12712
-    PSI4DATADIR: /Users/harls/installed/stable/psi4/share/psi
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Apr  4 10:21:27 2016
 
+    Process ID:   4531
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -47,8 +50,8 @@ property('eom-cc2', properties=['oscillator_strength'])
 
   Memory set to 250.000 MiB by Python script.
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:00 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:28 2016
 
 
          ---------------------------------------------------------
@@ -65,16 +68,18 @@ property('eom-cc2', properties=['oscillator_strength'])
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.695000000000    -0.049338350190
-           O          0.000000000000     0.695000000000    -0.049338350190
-           H          0.388142264171    -0.895248563098     0.783035421467
-           H         -0.388142264171     0.895248563098     0.783035421467
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000    -0.695000000000    -0.049338350190    15.994914619560
+           O          0.000000000000     0.695000000000    -0.049338350190    15.994914619560
+           H          0.388142264171    -0.895248563098     0.783035421467     1.007825032070
+           H         -0.388142264171     0.895248563098     0.783035421467     1.007825032070
 
   Running in c2 symmetry.
 
-  Nuclear repulsion =   38.253968380680327
+  Rotational constants: A =     10.61423  B =      0.97044  C =      0.91566 [cm^-1]
+  Rotational constants: A = 318206.57462  B =  29093.19738  C =  27450.82444 [MHz]
+  Nuclear repulsion =   38.253968380680334
 
   Charge       = 0
   Multiplicity = 1
@@ -113,108 +118,7 @@ property('eom-cc2', properties=['oscillator_strength'])
     Total      38      38       9       9       9       0
    -------------------------------------------------------
 
-  Starting with a DF guess...
-
- OEINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   4
-      Number of AO shells:              18
-      Number of SO shells:               9
-      Number of primitives:             54
-      Number of atomic orbitals:        40
-      Number of basis functions:        38
-
-      Number of irreps:                  2
-      Number of functions per irrep: [  19   19 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
   ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               178
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: CC-PVDZ-JKFIT
-    Number of shells: 66
-    Number of basis function: 186
-    Number of Cartesian functions: 212
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  Minimum eigenvalue in the overlap matrix is 2.1870579153E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-	Occupation by irrep:
-	          A     B 
-	DOCC [     4,    5 ]
-
-   @DF-RHF iter   1:  -139.20353000006864   -1.39204e+02   1.47218e-01 
-	Occupation by irrep:
-	          A     B 
-	DOCC [     5,    4 ]
-
-   @DF-RHF iter   2:  -141.93261964781320   -2.72909e+00   1.36092e-01 DIIS
-   @DF-RHF iter   3:  -150.55748731983712   -8.62487e+00   2.65052e-02 DIIS
-   @DF-RHF iter   4:  -150.76498742549592   -2.07500e-01   5.72166e-03 DIIS
-   @DF-RHF iter   5:  -150.77822514230166   -1.32377e-02   1.02425e-03 DIIS
-   @DF-RHF iter   6:  -150.77900292909661   -7.77787e-04   3.17240e-04 DIIS
-   @DF-RHF iter   7:  -150.77907734162821   -7.44125e-05   7.38789e-05 DIIS
-   @DF-RHF iter   8:  -150.77908275261282   -5.41098e-06   1.93847e-05 DIIS
-   @DF-RHF iter   9:  -150.77908317241594   -4.19803e-07   4.96748e-06 DIIS
-   @DF-RHF iter  10:  -150.77908320681846   -3.44025e-08   1.10640e-06 DIIS
-   @DF-RHF iter  11:  -150.77908320793256   -1.11410e-09   3.10842e-07 DIIS
-   @DF-RHF iter  12:  -150.77908320805673   -1.24174e-10   7.77457e-08 DIIS
-   @DF-RHF iter  13:  -150.77908320806418   -7.44649e-12   2.38136e-08 DIIS
-   @DF-RHF iter  14:  -150.77908320806475   -5.68434e-13   3.61946e-09 DIIS
-   @DF-RHF iter  15:  -150.77908320806503   -2.84217e-13   7.53099e-10 DIIS
-   @DF-RHF iter  16:  -150.77908320806503    0.00000e+00   1.99866e-10 DIIS
-   @DF-RHF iter  17:  -150.77908320806500    2.84217e-14   3.26565e-11 DIIS
-
-  DF guess converged.
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   4
-      Number of AO shells:              18
-      Number of SO shells:               9
-      Number of primitives:             54
-      Number of atomic orbitals:        40
-      Number of basis functions:        38
-
-      Number of irreps:                  2
-      Integral cutoff                 0.00e+00
-      Number of functions per irrep: [  19   19 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 117083 non-zero two-electron integrals.
-        Stored in file 33.
 
 	Batch   1 pq = [       0,     380] index = [             0,72390]
   ==> DiskJK: Disk-Based J/K Matrices <==
@@ -225,65 +129,91 @@ property('eom-cc2', properties=['oscillator_strength'])
     Memory (MB):               178
     Schwarz Cutoff:          1E-12
 
-   @RHF iter  18:  -150.77918369063494   -1.00483e-04   2.65950e-05 DIIS
-   @RHF iter  19:  -150.77918386577045   -1.75136e-07   4.41983e-06 DIIS
-   @RHF iter  20:  -150.77918387208089   -6.31044e-09   8.66306e-07 DIIS
-   @RHF iter  21:  -150.77918387232543   -2.44540e-10   2.40101e-07 DIIS
-   @RHF iter  22:  -150.77918387235408   -2.86491e-11   6.95223e-08 DIIS
-   @RHF iter  23:  -150.77918387235795   -3.86535e-12   2.08229e-08 DIIS
-   @RHF iter  24:  -150.77918387235863   -6.82121e-13   4.32514e-09 DIIS
-   @RHF iter  25:  -150.77918387235874   -1.13687e-13   8.03642e-10 DIIS
-   @RHF iter  26:  -150.77918387235869    5.68434e-14   2.13250e-10 DIIS
-   @RHF iter  27:  -150.77918387235852    1.70530e-13   4.63171e-11 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.1870579153E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+              A     B 
+    DOCC [     4,    5 ]
+
+   @RHF iter   1:  -139.20516938778556   -1.39205e+02   1.47187e-01 
+    Occupation by irrep:
+              A     B 
+    DOCC [     5,    4 ]
+
+   @RHF iter   2:  -141.93429494911834   -2.72913e+00   1.36081e-01 DIIS
+   @RHF iter   3:  -150.55773865647834   -8.62344e+00   2.64934e-02 DIIS
+   @RHF iter   4:  -150.76510613226318   -2.07367e-01   5.71692e-03 DIIS
+   @RHF iter   5:  -150.77832743031976   -1.32213e-02   1.02276e-03 DIIS
+   @RHF iter   6:  -150.77910358371346   -7.76153e-04   3.17182e-04 DIIS
+   @RHF iter   7:  -150.77917801137463   -7.44277e-05   7.37963e-05 DIIS
+   @RHF iter   8:  -150.77918341722679   -5.40585e-06   1.93746e-05 DIIS
+   @RHF iter   9:  -150.77918383685963   -4.19633e-07   4.95501e-06 DIIS
+   @RHF iter  10:  -150.77918387111640   -3.42568e-08   1.10377e-06 DIIS
+   @RHF iter  11:  -150.77918387222684   -1.11044e-09   3.09981e-07 DIIS
+   @RHF iter  12:  -150.77918387235050   -1.23663e-10   7.76878e-08 DIIS
+   @RHF iter  13:  -150.77918387235783   -7.33280e-12   2.38145e-08 DIIS
+   @RHF iter  14:  -150.77918387235846   -6.25278e-13   3.61403e-09 DIIS
+   @RHF iter  15:  -150.77918387235854   -8.52651e-14   7.52644e-10 DIIS
+   @RHF iter  16:  -150.77918387235857   -2.84217e-14   1.99851e-10 DIIS
+   @RHF iter  17:  -150.77918387235846    1.13687e-13   3.26364e-11 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A    -20.619349     1B    -20.619013     2A     -1.507787  
-	   2B     -1.207608     3A     -0.772079     3B     -0.669170  
-	   4A     -0.610850     4B     -0.534579     5A     -0.457771  
+       1A    -20.619349     1B    -20.619013     2A     -1.507787  
+       2B     -1.207608     3A     -0.772079     3B     -0.669170  
+       4A     -0.610850     4B     -0.534579     5A     -0.457771  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   6A      0.170058     5B      0.207922     6B      0.357579  
-	   7A      0.826680     7B      0.851681     8A      1.130818  
-	   8B      1.137986     9B      1.173859     9A      1.187142  
-	  10A      1.286565    10B      1.298497    11A      1.497098  
-	  12A      1.540883    11B      1.559287    12B      1.733951  
-	  13A      1.913157    13B      2.037507    14A      2.460009  
-	  14B      2.503912    15B      2.672803    15A      2.821554  
-	  16A      2.932536    17A      3.274207    16B      3.309357  
-	  18A      3.503492    17B      3.609638    18B      3.917634  
-	  19A      4.000575    19B      4.287100  
+       6A      0.170058     5B      0.207922     6B      0.357579  
+       7A      0.826680     7B      0.851681     8A      1.130818  
+       8B      1.137986     9B      1.173859     9A      1.187142  
+      10A      1.286565    10B      1.298497    11A      1.497098  
+      12A      1.540883    11B      1.559287    12B      1.733951  
+      13A      1.913157    13B      2.037507    14A      2.460009  
+      14B      2.503912    15B      2.672803    15A      2.821554  
+      16A      2.932536    17A      3.274207    16B      3.309357  
+      18A      3.503492    17B      3.609638    18B      3.917634  
+      19A      4.000575    19B      4.287100  
 
-	Final Occupation by Irrep:
-	          A     B 
-	DOCC [     5,    4 ]
+    Final Occupation by Irrep:
+              A     B 
+    DOCC [     5,    4 ]
 
   Energy converged.
 
-  @RHF Final Energy:  -150.77918387235852
+  @RHF Final Energy:  -150.77918387235846
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             38.2539683806803268
-    One-Electron Energy =                -284.0698921486325617
-    Two-Electron Energy =                  95.0367398955936267
+    Nuclear Repulsion Energy =             38.2539683806803339
+    One-Electron Energy =                -284.0698921485138726
+    Two-Electron Energy =                  95.0367398954750513
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -150.7791838723586011
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -150.7791838723584874
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
@@ -299,111 +229,77 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:01 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:28 2016
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:01 2013
-
-
-	**************************************************
-	* TRANSQT2: Program to transform integrals from  *
-	*           the SO basis to the MO basis.        *
-	*                                                *
-	*            Daniel, David, & Justin             *
-	**************************************************
-
-
-	Input parameters:
-	-----------------
-	Wave function   =	EOM_CC2
-	Backtransform   =	No
-	Print Level     =	1
-	Print TEIs      =	No
-	Reference wfn   =	RHF
-	Derivative      =	None
-	Delete TEI File =	Yes
-	Memory (Mbytes) =	250.0
-	Cache Level     =	2
-	Cache Type      =	LRU
-	Chkpt Parameters:
-	--------------------
-	Number of irreps     = 2
-	Number of SOs        = 38
-	Number of MOs        = 38
-	Number of active MOs = 36
-
-	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
-	-----	-----	------	------	------	------	------
-	 A	   19	    1	    4	    0	    14	    0
-	 B	   19	    1	    3	    0	    15	    0
-
-	Nuclear Rep. energy (chkpt) =     38.25396838068033
-	SCF energy          (chkpt) =   -150.77918387235852
-
-	Presorting SO-basis two-electron integrals.
-	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy = -132.274848242957233
-	Starting first half-transformation.
-	Sorting half-transformed integrals.
-	Starting second half-transformation.
-	Two-electron integral transformation complete.
-
-*** tstop() called on Leon.local at Tue Oct 29 14:20:01 2013
-Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.63 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:01 2013
-
-
-			**************************
-			*                        *
-			*         CCSORT         *
-			*                        *
-			**************************
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:28 2016
 
 
-	Input parameters:
-	-----------------
-	Wave function   =	EOM_CC2
-	Reference wfn   =	RHF
-	Derivative      =	None
-	Memory (Mbytes) =	250.0
-	AO Basis        =	NONE
-	Make (ab|cd)    =	True
-	Make unpacked (ab|cd) =	True
-	Cache Level     =	2
-	Cache Type      =	LRU
-	Local CC        =     No
-
-
-	Chkpt Parameters:
+	Wfn Parameters:
 	--------------------
+	Wavefunction         = EOM_CC2
 	Number of irreps     = 2
 	Number of MOs        = 38
 	Number of active MOs = 36
+	AO-Basis             = NONE
+	Semicanonical        = false
+	Reference            = RHF
+	Print Level          = 1
 
-	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	IRREP	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
 	 A	   19	    1	    4	    0	    14	    0
 	 B	   19	    1	    3	    0	    15	    0
-
-	Nuclear Rep. energy (chkpt) =     38.25396838068033
-	SCF energy          (chkpt) =   -150.77918387235852
+	Transforming integrals...
+	IWL integrals will be deleted.
+	(OO|OO)...
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	Frozen core energy     =   -132.27484824295780
 
 	Size of irrep 0 of <ab|cd> integrals:      0.177 (MW) /      1.418 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.176 (MW) /      1.411 (MB)
@@ -417,141 +313,131 @@ Total time:
 	Size of irrep 1 of tijab amplitudes:       0.010 (MW) /      0.081 (MB)
 	Total:                                     0.021 (MW) /      0.165 (MB)
 
+	Nuclear Rep. energy          =     38.25396838068033
+	SCF energy                   =   -150.77918387235846
+	One-electron energy          =   -101.99691957058656
+	Two-electron energy          =     45.23861556050571
+	Reference energy             =   -150.77918387235832
 
-	Sorting File: A <ij|kl> nbuckets = 1
-	Sorting File: B <ab|cd> nbuckets = 1
-	Sorting File: B(+) <ab|cd> nbuckets = 1
-	Sorting File: C <ia|jb> nbuckets = 1
-	Sorting File: D <ij|ab> nbuckets = 1
-	Sorting File: E <ai|jk> nbuckets = 1
-	Sorting File: F <ia|bc> nbuckets = 1
-	Sorting File: F <ai|bc> nbuckets = 1
-	Nuclear energy               =     38.25396838068033
-	One-electron energy          =   -101.99691957068734
-	Two-electron (AA) energy     =     19.05943538853760
-	Two-electron (BB) energy     =     19.05943538853760
-	Two-electron (AB) energy     =     26.17918017206815
-	Two-electron energy          =     45.23861556060575
-	Frozen-core energy (transqt) =   -132.27484824295723
-	Reference energy             =   -150.77918387235849
-
-*** tstop() called on Leon.local at Tue Oct 29 14:20:02 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:28 2016
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.69 seconds =       0.01 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:02 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:28 2016
 
-			**************************
-			*                        *
-			*        CCENERGY        *
-			*                        *
-			**************************
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
 
-	Nuclear Rep. energy (chkpt)   =   38.253968380680327
-	SCF energy          (chkpt)   = -150.779183872358516
-	Reference energy    (file100) = -150.779183872358487
+    Nuclear Rep. energy (wfn)     =   38.253968380680334
+    SCF energy          (wfn)     = -150.779183872358459
+    Reference energy    (file100) = -150.779183872358317
 
-	Input parameters:
-	-----------------
-	Wave function   =   EOM_CC2
-	Reference wfn   =     RHF
-	Memory (Mbytes) =     250.0
-	Maxiter         =     50
-	R_Convergence   =     1.0e-07
-	E_Convergence   =     1.0e-08
-	Restart         =     No
-	DIIS            =     Yes
-	AO Basis        =     NONE
-	ABCD            =     NEW
-	Cache Level     =     2
-	Cache Type      =     LOW
-	Print Level     =     1
-	Num. of threads =     1
-	# Amps to Print =     10
-	Print MP2 Amps? =     No
-	Analyze T2 Amps =     No
-	Print Pair Ener =     No
-	Local CC        =     No
-	SCS-MP2         =     False
-	SCSN-MP2        =     False
-	SCS-CCSD        =     False
+    Input parameters:
+    -----------------
+    Wave function   =   EOM_CC2
+    Reference wfn   =     RHF
+    Brueckner       =     No
+    Memory (Mbytes) =     250.0
+    Maxiter         =     50
+    R_Convergence   =     1.0e-07
+    E_Convergence   =     1.0e-08
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LOW
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
 
-	            Solving CC Amplitude Equations
-	            ------------------------------
+MP2 correlation energy -0.3802563053954455
+                Solving CC Amplitude Equations
+                ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.380256305383778    0.000e+00    0.000000    0.000000    0.000000    0.143419
-     1        -0.380254802695076    2.350e-02    0.006281    0.014957    0.014957    0.143419
-     2        -0.382926539211553    6.976e-03    0.007604    0.017580    0.017580    0.146255
-     3        -0.383312067094366    2.742e-03    0.008393    0.018848    0.018848    0.146676
-     4        -0.383283495387968    9.595e-04    0.008568    0.018859    0.018859    0.146729
-     5        -0.383286625179870    3.462e-04    0.008637    0.018841    0.018841    0.146745
-     6        -0.383290105588940    9.323e-05    0.008642    0.018836    0.018836    0.146748
-     7        -0.383289932250450    3.248e-05    0.008643    0.018835    0.018835    0.146748
-     8        -0.383289793462902    1.255e-05    0.008643    0.018835    0.018835    0.146748
-     9        -0.383289823348357    3.458e-06    0.008643    0.018835    0.018835    0.146748
-    10        -0.383289826324861    1.544e-06    0.008643    0.018835    0.018835    0.146748
-    11        -0.383289836375452    4.659e-07    0.008643    0.018835    0.018835    0.146748
-    12        -0.383289840411434    1.935e-07    0.008643    0.018835    0.018835    0.146748
-    13        -0.383289840884661    7.060e-08    0.008643    0.018835    0.018835    0.146748
+     0        -0.380256305395446    0.000e+00    0.000000    0.000000    0.000000    0.143419
+     1        -0.380254802707439    2.350e-02    0.006281    0.014957    0.014957    0.143419
+     2        -0.382926539228826    6.976e-03    0.007604    0.017580    0.017580    0.146255
+     3        -0.383312067115965    2.742e-03    0.008393    0.018848    0.018848    0.146676
+     4        -0.383283495408541    9.595e-04    0.008568    0.018859    0.018859    0.146729
+     5        -0.383286625200923    3.462e-04    0.008637    0.018841    0.018841    0.146745
+     6        -0.383290105610119    9.323e-05    0.008642    0.018836    0.018836    0.146748
+     7        -0.383289932271527    3.248e-05    0.008643    0.018835    0.018835    0.146748
+     8        -0.383289793483959    1.255e-05    0.008643    0.018835    0.018835    0.146748
+     9        -0.383289823369410    3.458e-06    0.008643    0.018835    0.018835    0.146748
+    10        -0.383289826345920    1.544e-06    0.008643    0.018835    0.018835    0.146748
+    11        -0.383289836396510    4.659e-07    0.008643    0.018835    0.018835    0.146748
+    12        -0.383289840432492    1.935e-07    0.008643    0.018835    0.018835    0.146748
+    13        -0.383289840905717    7.060e-08    0.008643    0.018835    0.018835    0.146748
 
-	Iterations converged.
-
-
-	Largest TIA Amplitudes:
-	          5  14        -0.0109554495
-	          6  14        -0.0098594074
-	          2   7        -0.0085098717
-	          2   9        -0.0082148275
-	          2   4         0.0076053348
-	          5  17         0.0075277221
-	          1   0        -0.0069350393
-	          1   8        -0.0069268907
-	          1   3         0.0063772897
-	          2   3        -0.0057368809
-
-	Largest TIjAb Amplitudes:
-	  2   2  15  15        -0.0557781568
-	  1   1  15  15        -0.0278636304
-	  1   2  15  15         0.0272969982
-	  2   1  15  15         0.0272969982
-	  2   2  14  15         0.0270427378
-	  2   2  15  14         0.0270427378
-	  3   3  17  17        -0.0218529151
-	  2   3  15  17         0.0214876847
-	  3   2  17  15         0.0214876847
-	  2   6  15   2         0.0208245683
-
-	SCF energy       (chkpt)              = -150.779183872358516
-	Reference energy (file100)            = -150.779183872358487
-
-	Opposite-spin MP2 correlation energy  =   -0.282698987507391
-	Same-spin MP2 correlation energy      =   -0.097557317876387
-	MP2 correlation energy                =   -0.380256305383778
-      * MP2 total energy                      = -151.159440177742255
-	CC2 correlation energy     =   -0.383289840884661
-      * CC2 total energy           = -151.162473713243145
+    Iterations converged.
 
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:04 2013
+    Largest TIA Amplitudes:
+              5  14        -0.0109554494
+              6  14        -0.0098594080
+              2   7        -0.0085098717
+              2   9        -0.0082148275
+              2   4         0.0076053348
+              5  17         0.0075277220
+              1   0        -0.0069350392
+              1   8        -0.0069268907
+              1   3         0.0063772897
+              2   3        -0.0057368808
+
+    Largest TIjAb Amplitudes:
+      2   2  15  15        -0.0557781569
+      1   1  15  15        -0.0278636304
+      1   2  15  15         0.0272969982
+      2   1  15  15         0.0272969982
+      2   2  14  15         0.0270427379
+      2   2  15  14         0.0270427379
+      3   3  17  17        -0.0218529151
+      2   3  15  17         0.0214876847
+      3   2  17  15         0.0214876847
+      2   6  15   2         0.0208245683
+
+    SCF energy       (wfn)                    = -150.779183872358459
+    Reference energy (file100)                = -150.779183872358317
+
+    Opposite-spin MP2 correlation energy      =   -0.282698987515802
+    Same-spin MP2 correlation energy          =   -0.097557317879644
+    MP2 correlation energy                    =   -0.380256305395446
+      * MP2 total energy                      = -151.159440177753766
+    CC2 correlation energy                    =   -0.383289840905717
+      * CC2 total energy                      = -151.162473713264035
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:28 2016
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.27 seconds =       0.02 minutes
-	system time =       0.66 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:04 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:28 2016
 
 
 			**************************
@@ -561,28 +447,28 @@ Total time:
 			**************************
 
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:05 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:28 2016
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.32 seconds =       0.02 minutes
-	system time =       0.71 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:05 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:28 2016
 
 
 	**********************************************************
 	*  CCEOM: An Equation of Motion Coupled Cluster Program  *
 	**********************************************************
 
-	Nuclear Rep. energy (chkpt)   =   38.253968380680327
-	SCF energy          (chkpt)   = -150.779183872358516
-	Reference energy    (file100) = -150.779183872358487
-	CC2 energy          (file100) =   -0.383289840884661
+	Nuclear Rep. energy (wfn)     =   38.253968380680334
+	SCF energy          (wfn)     = -150.779183872358459
+	Reference energy    (file100) = -150.779183872358317
+	CC2 energy          (file100) =   -0.383289840905717
 
 	Input parameters:
 	-----------------
@@ -603,9 +489,9 @@ Total time:
 	Vectors stored per root     =    12
 	Print HbarSS iterations?    =     0
 	Excitation range for HBarSS =     2
-	Eigenvalue tolerance        = 1.0e-08
+	Eigenvalue tolerance        = 1.0e-05
 	Eigenvalue toleranceSS      = 1.0e-06
-	Residual vector tolerance   = 1.0e-06
+	Residual vector tolerance   = 1.0e-04
 	Residual vector toleranceSS = 1.0e-06
 	Complex tolerance           = 1.0e-12
 	Root for properties         =     2
@@ -622,95 +508,74 @@ Seeking states with multiplicity of 1
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3908373749   3.91e-01    5.95e-01      N
+                     1   0.3908373750   3.91e-01    5.95e-01      N
                      2   0.4695339537   4.70e-01    6.54e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2550709555  -1.36e-01    5.03e-02      N
+                     1   0.2550709556  -1.36e-01    5.03e-02      N
                      2   0.3388817699  -1.31e-01    5.92e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2512135763  -3.86e-03    5.79e-02      N
-                     2   0.3366653956  -2.22e-03    2.88e-02      N
+                     1   0.2512135764  -3.86e-03    5.79e-02      N
+                     2   0.3366653957  -2.22e-03    2.88e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2495571333  -1.66e-03    1.70e-02      N
+                     1   0.2495571334  -1.66e-03    1.70e-02      N
                      2   0.3362551544  -4.10e-04    9.73e-03      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2493271704  -2.30e-04    8.41e-03      N
+                     1   0.2493271705  -2.30e-04    8.41e-03      N
                      2   0.3361310598  -1.24e-04    7.17e-03      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.2492941420  -3.30e-05    3.41e-03      N
                      2   0.3360872095  -4.39e-05    4.32e-03      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492869291  -7.21e-06    1.18e-03      N
+                     1   0.2492869292  -7.21e-06    1.18e-03      N
                      2   0.3360728191  -1.44e-05    1.37e-03      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492852002  -1.73e-06    5.37e-04      N
+                     1   0.2492852003  -1.73e-06    5.37e-04      N
                      2   0.3360714948  -1.32e-06    6.32e-04      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849759  -2.24e-07    1.15e-04      N
-                     2   0.3360706412  -8.54e-07    2.07e-04      N
+                     1   0.2492849760  -2.24e-07    1.15e-04      N
+                     2   0.3360706413  -8.54e-07    2.07e-04      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849835   7.56e-09    3.72e-05      N
-                     2   0.3360710565   4.15e-07    9.93e-05      N
-Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849586  -2.48e-08    9.50e-06      N
-                     2   0.3360710348  -2.16e-08    5.94e-05      N
-Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849471  -1.15e-08    3.00e-06      N
-                     2   0.3360709798  -5.50e-08    3.76e-05      N
-Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849471  -5.75e-14    3.00e-06      N
-                     2   0.3360709798  -6.11e-16    3.76e-05      N
-Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849464  -7.82e-10    1.04e-06      N
-                     2   0.3360709774  -2.37e-09    1.56e-05      N
-Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849464   9.59e-11    2.47e-07      Y
-                     2   0.3360709837   6.25e-09    5.02e-06      N
-Iter=16   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849464  -3.69e-11    1.42e-07      Y
-                     2   0.3360709793  -4.41e-09    1.15e-06      N
-Iter=17   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2492849464  -5.80e-12    1.39e-07      Y
-                     2   0.3360709800   7.64e-10    4.19e-07      Y
+                     1   0.2492849835   7.56e-09    3.72e-05      Y
+                     2   0.3360710565   4.15e-07    9.93e-05      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
-EOM CC2 R0 for root 0 =  -0.00222234849
-EOM CC2 R0 for root 1 =  -0.01569796619
+EOM CC2 R0 for root 0 =   0.00222257735
+EOM CC2 R0 for root 1 =   0.01570026575
 
 Final Energetic Summary for Converged Roots of Irrep A
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 1      6.783    54711.7   0.2492849464  -150.913188766837
+EOM State 1      6.783    54711.7   0.2492849835  -150.913188729736
 
 Largest components of excited wave function #1:
  RIA (libdpd indices) : (cscf notation)
-         3 >   0      :        5a >     6a :    0.6769453152
-         3 >   1      :        5a >     7a :   -0.0594981168
-         2 >   0      :        4a >     6a :    0.0329482700
-         2 >   0      :        4b >     5b :    0.0296946485
-         1 >   0      :        3b >     5b :   -0.0289962501
+         3 >   0      :        5a >     6a :   -0.6769441198
+         3 >   1      :        5a >     7a :    0.0595076033
+         2 >   0      :        4a >     6a :   -0.0329571005
+         2 >   0      :        4b >     5b :   -0.0296933452
+         1 >   0      :        3b >     5b :    0.0289994530
  RIjAb (libdpd indices)     : (cscf notation)
-        2   1 >   1   0     :     4a     3b >     6b     6a :    0.0443371649
-        1   2 >   0   1     :     3b     4a >     6a     6b :    0.0443371649
-        1   3 >   0   0     :     3a     5a >     6a     6a :    0.0340052812
-        3   1 >   0   0     :     5a     3a >     6a     6a :    0.0340052812
-        1   1 >   1   0     :     3a     3b >     6b     6a :   -0.0280575949
-EOM State 2      9.145    73759.0   0.3360709800  -150.826402733218
+        2   1 >   1   0     :     4a     3b >     6b     6a :   -0.0443379564
+        1   2 >   0   1     :     3b     4a >     6a     6b :   -0.0443379564
+        1   3 >   0   0     :     3a     5a >     6a     6a :   -0.0340050213
+        3   1 >   0   0     :     5a     3a >     6a     6a :   -0.0340050213
+        1   1 >   1   0     :     3a     3b >     6b     6a :    0.0280579786
+EOM State 2      9.145    73759.1   0.3360710565  -150.826402656770
 
 Largest components of excited wave function #2:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :        4b >     5b :   -0.5493092781
-         2 >   1      :        4b >     6b :    0.3949768928
-         1 >   0      :        3b >     5b :    0.0791935713
-         1 >   1      :        3b >     6b :   -0.0625827804
-         2 >   2      :        4b >     7b :    0.0486889718
+         2 >   0      :        4b >     5b :    0.5493306309
+         2 >   1      :        4b >     6b :   -0.3949868943
+         1 >   0      :        3b >     5b :   -0.0790971373
+         1 >   1      :        3b >     6b :    0.0624887086
+         2 >   2      :        4b >     7b :   -0.0486861428
  RIjAb (libdpd indices)     : (cscf notation)
-        2   2 >   0   1     :     4a     4a >     5b     6b :    0.0333689207
-        2   2 >   1   0     :     4a     4a >     6b     5b :    0.0333689207
-        2   2 >   1   1     :     4a     4a >     6b     6b :   -0.0322478819
-        2   2 >   0   0     :     4a     4a >     5b     5b :   -0.0274707037
-        2   3 >   1   0     :     4a     5a >     6b     5b :    0.0270925466
+        2   2 >   0   1     :     4a     4a >     5b     6b :   -0.0333764588
+        2   2 >   1   0     :     4a     4a >     6b     5b :   -0.0333764588
+        2   2 >   1   1     :     4a     4a >     6b     6b :    0.0322443347
+        2   2 >   0   0     :     4a     4a >     5b     5b :    0.0274807095
+        2   3 >   1   0     :     4a     5a >     6b     5b :   -0.0270848057
 
 Symmetry of excited state: B
 Symmetry of right eigenvector: B
@@ -718,118 +583,103 @@ Seeking states with multiplicity of 1
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3840582302   3.84e-01    6.54e-01      N
+                     1   0.3840582303   3.84e-01    6.54e-01      N
                      2   0.4526989243   4.53e-01    5.76e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2558809034  -1.28e-01    5.67e-02      N
+                     1   0.2558809035  -1.28e-01    5.67e-02      N
                      2   0.3343922182  -1.18e-01    4.56e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2540437636  -1.84e-03    2.36e-02      N
+                     1   0.2540437637  -1.84e-03    2.36e-02      N
                      2   0.3320770040  -2.32e-03    3.79e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2537339901  -3.10e-04    1.15e-02      N
+                     1   0.2537339902  -3.10e-04    1.15e-02      N
                      2   0.3313054066  -7.72e-04    1.65e-02      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.2535244965  -2.09e-04    9.53e-03      N
                      2   0.3306781090  -6.27e-04    2.35e-02      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534711522  -5.33e-05    3.80e-03      N
+                     1   0.2534711523  -5.33e-05    3.80e-03      N
                      2   0.3302326490  -4.45e-04    1.68e-02      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534604015  -1.08e-05    9.31e-04      N
+                     1   0.2534604016  -1.08e-05    9.31e-04      N
                      2   0.3300578563  -1.75e-04    6.48e-03      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596592  -7.42e-07    3.82e-04      N
+                     1   0.2534596593  -7.42e-07    3.82e-04      N
                      2   0.3300118556  -4.60e-05    4.16e-03      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534593918  -2.67e-07    1.19e-04      N
+                     1   0.2534593919  -2.67e-07    1.19e-04      N
                      2   0.3300025053  -9.35e-06    1.49e-03      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596113   2.19e-07    5.85e-05      N
+                     1   0.2534596113   2.19e-07    5.85e-05      Y
                      2   0.3300027430   2.38e-07    6.71e-04      N
-Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596705   5.93e-08    2.30e-05      N
-                     2   0.3300022007  -5.42e-07    3.33e-04      N
-Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596413  -2.92e-08    8.17e-06      N
-                     2   0.3300020591  -1.42e-07    1.43e-04      N
-Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596413  -2.18e-14    8.17e-06      N
-                     2   0.3300020591   2.78e-16    1.43e-04      N
-Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596326  -8.72e-09    2.05e-06      N
-                     2   0.3300021925   1.33e-07    4.13e-05      N
-Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596316  -9.79e-10    6.22e-07      Y
-                     2   0.3300021833  -9.15e-09    1.39e-05      N
-Iter=16   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596315  -1.75e-10    2.22e-07      Y
-                     2   0.3300021749  -8.39e-09    3.43e-06      N
-Iter=17   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596315   3.70e-11    1.91e-07      Y
-                     2   0.3300021759   9.38e-10    1.06e-06      N
-Iter=18   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2534596315   7.88e-12    1.90e-07      Y
-                     2   0.3300021761   2.57e-10    5.33e-07      Y
+Iter=11   L=21    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2534596623   5.09e-08    3.77e-05      Y
+                     2   0.3300022064  -5.37e-07    3.40e-04      N
+Iter=12   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2534596363  -2.60e-08    2.73e-05      Y
+                     2   0.3300020493  -1.57e-07    1.49e-04      N
+Iter=13   L=23    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2534596216  -1.47e-08    2.53e-05      Y
+                     2   0.3300021901   1.41e-07    4.34e-05      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
-Energy written to chkpt:Etot -150.8324715371
-States per irrep written to chkpt.
+Energy written to CC_INFO:Etot -150.8324715231
+States per irrep written to CC_INFO.
 EOM CC2 R0 for root 0 =   0.00000000000
 EOM CC2 R0 for root 1 =   0.00000000000
 
 Final Energetic Summary for Converged Roots of Irrep B
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 3      6.897    55628.0   0.2534596315  -150.909014081742
+EOM State 3      6.897    55627.9   0.2534596216  -150.909014091670
 
 Largest components of excited wave function #3:
  RIA (libdpd indices) : (cscf notation)
-         3 >   0      :        5a >     5b :    0.5559555483
-         3 >   1      :        5a >     6b :   -0.3960778854
-         3 >   2      :        5a >     7b :   -0.0499442213
-         2 >   0      :        4a >     5b :    0.0429255487
-         2 >   1      :        4a >     6b :   -0.0384577115
+         3 >   0      :        5a >     5b :   -0.5559553932
+         3 >   1      :        5a >     6b :    0.3960782665
+         3 >   2      :        5a >     7b :    0.0499449087
+         2 >   0      :        4a >     5b :   -0.0429227404
+         2 >   1      :        4a >     6b :    0.0384589502
  RIjAb (libdpd indices)     : (cscf notation)
-        2   1 >   1   0     :     4a     3b >     6b     5b :    0.0371377585
-        1   2 >   0   1     :     3b     4a >     5b     6b :    0.0371377585
-        2   1 >   1   1     :     4a     3b >     6b     6b :   -0.0245536422
-        1   2 >   1   1     :     3b     4a >     6b     6b :   -0.0245536422
-        1   1 >   1   0     :     3a     3b >     6b     5b :   -0.0232126105
-EOM State 4      8.980    72427.1   0.3300021761  -150.832471537108
+        2   1 >   1   0     :     4a     3b >     6b     5b :   -0.0371373084
+        1   2 >   0   1     :     3b     4a >     5b     6b :   -0.0371373084
+        2   1 >   1   1     :     4a     3b >     6b     6b :    0.0245531258
+        1   2 >   1   1     :     3b     4a >     6b     6b :    0.0245531258
+        1   1 >   1   0     :     3a     3b >     6b     5b :    0.0232122367
+EOM State 4      8.980    72427.1   0.3300021901  -150.832471523121
 
 Largest components of excited wave function #4:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :        4b >     6a :    0.6052389692
-         3 >   1      :        5a >     6b :    0.2475026041
-         3 >   0      :        5a >     5b :    0.1457588698
-         1 >   0      :        3b >     6a :   -0.1181599148
-         2 >   1      :        4b >     7a :   -0.0541827429
+         2 >   0      :        4b >     6a :    0.6052370991
+         3 >   1      :        5a >     6b :    0.2475062994
+         3 >   0      :        5a >     5b :    0.1457632861
+         1 >   0      :        3b >     6a :   -0.1181548814
+         2 >   1      :        4b >     7a :   -0.0541862646
  RIjAb (libdpd indices)     : (cscf notation)
-        1   2 >   0   0     :     3a     4b >     6a     6a :    0.0336277334
-        2   1 >   0   0     :     4b     3a >     6a     6a :    0.0336277334
-        2   3 >   1   0     :     4a     5a >     6b     6a :   -0.0261192160
-        3   2 >   0   1     :     5a     4a >     6a     6b :   -0.0261192160
-        2   2 >   0   1     :     4a     4a >     6a     6b :   -0.0256992213
+        1   2 >   0   0     :     3a     4b >     6a     6a :    0.0336279067
+        2   1 >   0   0     :     4b     3a >     6a     6a :    0.0336279067
+        2   3 >   1   0     :     4a     5a >     6b     6a :   -0.0261191895
+        3   2 >   0   1     :     5a     4a >     6a     6b :   -0.0261191895
+        2   2 >   0   1     :     4a     4a >     6a     6b :   -0.0256988254
 
 	Putting into environment energy for root of R irrep 2 and root 2.
-	Putting into environment CURRENT ENERGY:             -150.8324715371
+	Putting into environment CURRENT ENERGY:             -150.8324715231
 
-	Total # of sigma evaluations: 61
+	Total # of sigma evaluations: 43
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:07 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:29 2016
 Module time:
-	user time   =       1.48 seconds =       0.02 minutes
-	system time =       0.66 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.80 seconds =       0.05 minutes
-	system time =       1.37 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       0.59 seconds =       0.01 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:08 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:29 2016
 
 
 			**************************
@@ -837,31 +687,31 @@ Total time:
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =   38.253968380680327
-	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   = -150.779183872358516
-	Reference energy    (CC_INFO) = -150.779183872358487
-	CC2 energy          (CC_INFO) =   -0.383289840884661
-	Total CC2 energy    (CC_INFO) = -151.162473713243145
+	Nuclear Rep. energy (wfn)     =   38.253968380680334
+	Reference           (wfn)     =                    0
+	SCF energy          (wfn)     = -150.779183872358459
+	Reference energy    (CC_INFO) = -150.779183872358317
+	CC2 energy          (CC_INFO) =   -0.383289840905717
+	Total CC2 energy    (CC_INFO) = -151.162473713264035
 
 	Input parameters:
 	-----------------
-	Maxiter       =      50
-	Convergence   = 1.0e-07
-	Restart       =     No
-	Cache Level   =     2
-	Model III     =     No
-	DIIS          =     Yes
-	AO Basis      =     No
-	ABCD            =     NEW
-	Local CC        =     No
+	Maxiter           =     50
+	Convergence       = 1.0e-04
+	Restart           =     No
+	Cache Level       =     2
+	Model III         =     No
+	DIIS              =     Yes
+	AO Basis          =     No
+	ABCD              =     NEW
+	Local CC          =     No
 	Paramaters for left-handed eigenvectors:
 	    Irr   Root  Ground-State?    EOM energy        R0
 	  1   0     0        Yes       0.0000000000   1.0000000000
-	  2   0     1         No       0.2492849464  -0.0022223485
-	  3   0     2         No       0.3360709800  -0.0156979662
-	  4   1     1         No       0.2534596315   0.0000000000
-	  5   1     2         No       0.3300021761   0.0000000000
+	  2   0     1         No       0.2492849835   0.0022225773
+	  3   0     2         No       0.3360710565   0.0157002657
+	  4   1     1         No       0.2534596216   0.0000000000
+	  5   1     2         No       0.3300021901   0.0000000000
 	Labels for eigenvector 1:
 	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
 	Labels for eigenvector 2:
@@ -880,161 +730,139 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.383295397490254    0.000e+00
-	   1        -0.383117232807417    1.890e-03
-	   2        -0.383117284962162    3.948e-04
-	   3        -0.383115580400800    1.797e-04
-	   4        -0.383115288769718    4.040e-05
-	   5        -0.383115070743072    1.631e-05
-	   6        -0.383114987961103    4.432e-06
-	   7        -0.383114970797720    1.882e-06
-	   8        -0.383114971273515    3.890e-07
-	   9        -0.383114972417007    9.585e-08
+	   0        -0.383295397506733    0.000e+00
+	   1        -0.383117230994412    1.890e-03
+	   2        -0.383117283426905    3.947e-04
+	   3        -0.383115579296852    1.797e-04
+	   4        -0.383115422138374    4.040e-05
 
 	Largest LIA Amplitudes:
-	          5  14        -0.0106325348
-	          6  14        -0.0091021268
-	          2   7        -0.0085623595
-	          2   9        -0.0085246857
-	          2   4         0.0077474305
-	          5  17         0.0076075626
-	          1   8        -0.0069597306
-	          1   3         0.0064431868
-	          1   0        -0.0061242792
-	          2   3        -0.0058807114
+	          5  14        -0.0106463740
+	          6  14        -0.0091194431
+	          2   7        -0.0085628904
+	          2   9        -0.0085251020
+	          2   4         0.0077482229
+	          5  17         0.0076072549
+	          1   8        -0.0069596903
+	          1   3         0.0064424743
+	          1   0        -0.0061372491
+	          2   3        -0.0058820193
 
 	Largest LIjAb Amplitudes:
-	  2   2  15  15        -0.0557451799
-	  1   1  15  15        -0.0278670082
-	  1   2  15  15         0.0272995611
-	  2   1  15  15         0.0272995611
-	  2   2  14  15         0.0269850149
-	  2   2  15  14         0.0269850149
-	  3   3  17  17        -0.0218489276
-	  2   3  15  17         0.0214821828
-	  3   2  17  15         0.0214821828
-	  2   6  15   2         0.0208269426
+	  2   2  15  15        -0.0557426325
+	  1   1  15  15        -0.0278679435
+	  1   2  15  15         0.0272992996
+	  2   1  15  15         0.0272992996
+	  2   2  14  15         0.0269862860
+	  2   2  15  14         0.0269862860
+	  3   3  17  17        -0.0218489577
+	  2   3  15  17         0.0214817640
+	  3   2  17  15         0.0214817640
+	  2   6  15   2         0.0208259404
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.89784269301
+	Overlap <L|e^T> =        0.89784163859
 	Symmetry of left-hand state: A
 	Symmetry of left-hand eigenvector: A
-	Initial overlap of initial guess <L|R> =    0.9999893898
+	Initial overlap of initial guess <L|R> =    0.9999893877
 	Checking overlap of initial guess <L|R> =    1.0000000000
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         0.000184829895224    9.585e-08
-	   1        -0.000394227005921    5.433e-03
-	   2        -0.000419873248425    1.120e-03
-	   3        -0.000424783945258    6.011e-04
-	   4        -0.000424366904335    2.679e-04
-	   5        -0.000422914276387    6.849e-05
-	   6        -0.000422021145676    4.303e-05
-	   7        -0.000421843984744    2.049e-05
-	   8        -0.000421738802673    9.124e-06
-	   9        -0.000421636630551    3.154e-06
-	  10        -0.000421565067636    1.409e-06
-	  11        -0.000421552658600    5.373e-07
-	  12        -0.000421554141482    1.498e-07
-	  13        -0.000421554235234    7.237e-08
+	   0        -0.000184860014336    4.040e-05
+	   1         0.000394334614775    5.434e-03
+	   2         0.000419946563683    1.122e-03
+	   3         0.000424832510077    6.025e-04
+	   4         0.000424384964747    2.685e-04
+	   5         0.000423228276698    6.867e-05
 
-	Initial  <L|R>  =        1.0013696554
+	Initial  <L|R>  =        1.0013709669
 	Normalizing L...
-	L0 * R0 =       -0.0000000000
-	L1 * R1 =        0.9357011406
-	L2 * R2 =        0.0642988594
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9356992868
+	L2 * R2 =        0.0643007132
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =   -0.000420977640937
+	Pseudoenergy or Norm of normalized L =    0.000422648839123
 
 	Largest LIA Amplitudes:
-	          3   0         0.6775248318
-	          3   1        -0.0573921624
-	          2   0         0.0336700733
-	          6  14         0.0289930396
-	          5  14        -0.0288433041
-	          5  15        -0.0285715078
-	          6  15         0.0248302594
-	          3   2         0.0195047992
-	          1   0         0.0156601019
-	          3   5        -0.0152601236
+	          3   0        -0.6775309237
+	          3   1         0.0574129663
+	          2   0        -0.0336132958
+	          6  14        -0.0289609187
+	          5  14         0.0288654001
+	          5  15         0.0284686210
+	          6  15        -0.0248025696
+	          3   2        -0.0195013546
+	          1   0        -0.0156515004
+	          3   5         0.0152554947
 
 	Largest LIjAb Amplitudes:
-	  2   5  15   0         0.0437019317
-	  5   2   0  15         0.0437019317
-	  1   3   0   0         0.0336627979
-	  3   1   0   0         0.0336627979
-	  1   5  15   0        -0.0281235490
-	  5   1   0  15        -0.0281235490
-	  3   5  17   0        -0.0264656989
-	  5   3   0  17        -0.0264656989
-	  2   6  15   0        -0.0258715493
-	  6   2   0  15        -0.0258715493
+	  2   5  15   0        -0.0437058322
+	  5   2   0  15        -0.0437058322
+	  1   3   0   0        -0.0336630503
+	  3   1   0   0        -0.0336630503
+	  1   5  15   0         0.0281256635
+	  5   1   0  15         0.0281256635
+	  3   5  17   0         0.0264675170
+	  5   3   0  17         0.0264675170
+	  2   6  15   0         0.0258689808
+	  6   2   0  15         0.0258689808
 
 	Iterations converged.
 
 	Symmetry of left-hand state: A
 	Symmetry of left-hand eigenvector: A
-	Initial overlap of initial guess <L|R> =    0.9994934322
+	Initial overlap of initial guess <L|R> =    0.9994932810
 	Checking overlap of initial guess <L|R> =    1.0000000000
 
 	          Solving Lambda Equations
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         0.000355995371673    7.237e-08
-	   1        -0.003885539410245    8.445e-03
-	   2        -0.004059704988368    1.811e-03
-	   3        -0.004094120497632    1.466e-03
-	   4        -0.004106285746873    9.519e-04
-	   5        -0.004104769146048    6.744e-04
-	   6        -0.004108799168490    3.877e-04
-	   7        -0.004111503501213    1.023e-04
-	   8        -0.004112347039794    3.787e-05
-	   9        -0.004112253591895    1.756e-05
-	  10        -0.004111922520980    9.281e-06
-	  11        -0.004111889571252    4.682e-06
-	  12        -0.004111973981555    2.215e-06
-	  13        -0.004112029303316    1.522e-06
-	  14        -0.004112075357819    1.029e-06
-	  15        -0.004112086097570    4.027e-07
-	  16        -0.004112091842445    1.858e-07
-	  17        -0.004112092433237    6.650e-08
+	   0        -0.000356035692829    6.867e-05
+	   1         0.003886346861250    8.449e-03
+	   2         0.004060365792422    1.814e-03
+	   3         0.004094767480973    1.468e-03
+	   4         0.004106813285120    9.549e-04
+	   5         0.004105090757717    6.755e-04
+	   6         0.004108844550672    3.875e-04
+	   7         0.004111502320018    1.022e-04
+	   8         0.004111731790250    3.783e-05
 
-	Initial  <L|R>  =        1.0029753019
+	Initial  <L|R>  =        1.0029562034
 	Normalizing L...
-	L0 * R0 =       -0.0000000000
-	L1 * R1 =        0.9495220180
-	L2 * R2 =        0.0504779820
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9495230235
+	L2 * R2 =        0.0504769765
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =   -0.004099894010755
+	Pseudoenergy or Norm of normalized L =    0.004099612501785
 
 	Largest LIA Amplitudes:
-	          6  14        -0.5539827059
-	          6  15         0.3898331163
-	          5  14         0.0808272472
-	          5  15        -0.0623217291
-	          6  16         0.0464667598
-	          6  17         0.0319114061
-	          6  19        -0.0262656821
-	          2   0        -0.0174397628
-	          1   0        -0.0158343682
-	          6  22         0.0148806940
+	          6  14         0.5539432985
+	          6  15        -0.3898889506
+	          5  14        -0.0808013630
+	          5  15         0.0623775268
+	          6  16        -0.0464459954
+	          6  17        -0.0319155388
+	          6  19         0.0262756656
+	          2   0         0.0174108685
+	          1   0         0.0158338978
+	          6  22        -0.0148816436
 
 	Largest LIjAb Amplitudes:
-	  2   2  14  15         0.0322036425
-	  2   2  15  14         0.0322036425
-	  2   2  15  15        -0.0307920210
-	  2   3  15  14         0.0269295602
-	  3   2  14  15         0.0269295602
-	  2   2  14  14        -0.0263702049
-	  1   1  15  15         0.0224719884
-	  1   2  14  15         0.0224354379
-	  2   1  15  14         0.0224354379
-	  1   3  15  14        -0.0218676437
+	  2   2  14  15        -0.0322037151
+	  2   2  15  14        -0.0322037151
+	  2   2  15  15         0.0307939088
+	  2   3  15  14        -0.0269247562
+	  3   2  14  15        -0.0269247562
+	  2   2  14  14         0.0263700014
+	  1   1  15  15        -0.0224733906
+	  1   2  14  15        -0.0224341962
+	  2   1  15  14        -0.0224341962
+	  1   3  15  14         0.0218648871
 
 	Iterations converged.
 
@@ -1047,53 +875,47 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         1.000000000000000    6.650e-08
-	   1         1.001633533044731    9.598e-03
-	   2         1.001663084198166    1.700e-03
-	   3         1.001924518525565    1.339e-03
-	   4         1.002159078082512    8.362e-04
-	   5         1.002345310796575    6.068e-04
-	   6         1.002525319383903    3.279e-04
-	   7         1.002568803105483    1.053e-04
-	   8         1.002575660624275    2.801e-05
-	   9         1.002577495659273    9.825e-06
-	  10         1.002577833116756    5.796e-06
-	  11         1.002578597779148    2.774e-06
-	  12         1.002578367306946    7.928e-07
-	  13         1.002578461538644    2.347e-07
-	  14         1.002578458457336    9.556e-08
+	   0         1.000000000000000    3.783e-05
+	   1         1.001633291227410    9.597e-03
+	   2         1.001662894041952    1.700e-03
+	   3         1.001924277350858    1.339e-03
+	   4         1.002158902961815    8.362e-04
+	   5         1.002345075478325    6.067e-04
+	   6         1.002525032273509    3.279e-04
+	   7         1.002568515927458    1.053e-04
+	   8         1.002569484874388    2.792e-05
 
-	Initial  <L|R>  =        1.0024719332
+	Initial  <L|R>  =        1.0024637063
 	Normalizing L...
 	L0 * R0 =        0.0000000000
-	L1 * R1 =        0.9523852636
-	L2 * R2 =        0.0476147364
+	L1 * R1 =        0.9523863299
+	L2 * R2 =        0.0476136701
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =    1.000106262554926
+	Pseudoenergy or Norm of normalized L =    1.000105518633516
 
 	Largest LIA Amplitudes:
-	          3   0         0.5608353619
-	          3   1        -0.3902697930
-	          3   2        -0.0482140485
-	          2   0         0.0436505844
-	          2   1        -0.0382625876
-	          3   3        -0.0295091036
-	          3   5         0.0277558888
-	          6  14         0.0215367082
-	          3   4        -0.0206172585
-	          3   8        -0.0170269498
+	          3  14        -0.5608054683
+	          3  15         0.3903094610
+	          3  16         0.0481938501
+	          2  14        -0.0436659455
+	          2  15         0.0382769327
+	          3  17         0.0295148480
+	          3  19        -0.0277646527
+	          6   0        -0.0215586280
+	          3  18         0.0206189735
+	          3  22         0.0170276896
 
 	Largest LIjAb Amplitudes:
-	  2   5  15  14         0.0367762527
-	  5   2  14  15         0.0367762527
-	  2   5  15  15        -0.0238122237
-	  5   2  15  15        -0.0238122237
-	  1   5  15  14        -0.0234575915
-	  5   1  14  15        -0.0234575915
-	  2   6  15  14        -0.0216098380
-	  6   2  14  15        -0.0216098380
-	  2   5  14  14        -0.0200673093
-	  5   2  14  14        -0.0200673093
+	  2   5  15  14        -0.0367732836
+	  5   2  14  15        -0.0367732836
+	  2   5  15  15         0.0238142361
+	  5   2  15  15         0.0238142361
+	  1   5  15  14         0.0234557720
+	  5   1  14  15         0.0234557720
+	  2   6  15  14         0.0216091725
+	  6   2  14  15         0.0216091725
+	  2   5  14  14         0.0200651345
+	  5   2  14  14         0.0200651345
 
 	Iterations converged.
 
@@ -1106,57 +928,44 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         1.000000000000000    9.556e-08
-	   1         1.001486125293489    8.504e-03
-	   2         1.001229273546924    1.293e-03
-	   3         1.001359678600309    6.216e-04
-	   4         1.001390153311674    2.925e-04
-	   5         1.001389703128183    8.519e-05
-	   6         1.001389460465244    5.884e-05
-	   7         1.001383870640956    4.076e-05
-	   8         1.001379097863352    2.877e-05
-	   9         1.001376116186232    2.159e-05
-	  10         1.001373247044049    1.907e-05
-	  11         1.001367852904465    1.542e-05
-	  12         1.001364291521849    9.764e-06
-	  13         1.001362865245776    5.074e-06
-	  14         1.001361783010291    2.683e-06
-	  15         1.001361950716979    9.316e-07
-	  16         1.001361798342702    4.344e-07
-	  17         1.001361834079930    1.330e-07
-	  18         1.001361837790826    6.665e-08
+	   0         1.000000000000000    2.792e-05
+	   1         1.001485569991262    8.504e-03
+	   2         1.001228669351472    1.292e-03
+	   3         1.001359002578808    6.220e-04
+	   4         1.001389500911639    2.924e-04
+	   5         1.001387144042089    8.506e-05
 
-	Initial  <L|R>  =        1.0013156844
+	Initial  <L|R>  =        1.0013413077
 	Normalizing L...
 	L0 * R0 =        0.0000000000
-	L1 * R1 =        0.9442366323
-	L2 * R2 =        0.0557633677
+	L1 * R1 =        0.9442287214
+	L2 * R2 =        0.0557712786
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =    1.000046092786753
+	Pseudoenergy or Norm of normalized L =    1.000045774897419
 
 	Largest LIA Amplitudes:
-	          6  14         0.6058406901
-	          3   1         0.2453169587
-	          3   0         0.1493002651
-	          5  14        -0.1190734610
-	          6  15        -0.0522710713
-	          2   1         0.0434837481
-	          3   5        -0.0268740698
-	          3   2        -0.0264313787
-	          1   0         0.0254903114
-	          5  15         0.0186678057
+	          6   0         0.6060566918
+	          3  15         0.2449993665
+	          3  14         0.1490687791
+	          5   0        -0.1189052963
+	          6   1        -0.0523094948
+	          2  15         0.0434270106
+	          3  19        -0.0268395976
+	          3  16        -0.0264173967
+	          1  14         0.0255012928
+	          5   1         0.0186605943
 
 	Largest LIjAb Amplitudes:
-	  1   6   0   0         0.0330951616
-	  6   1   0   0         0.0330951616
-	  2   3  15   0        -0.0256065806
-	  3   2   0  15        -0.0256065806
-	  2   2   0  15        -0.0248831867
-	  2   2  15   0        -0.0248831867
-	  1   2   0  15        -0.0238627733
-	  2   1  15   0        -0.0238627733
-	  6   6   0  18        -0.0205672621
-	  6   6  18   0        -0.0205672621
+	  1   6   0   0         0.0331078074
+	  6   1   0   0         0.0331078074
+	  2   3  15   0        -0.0256112174
+	  3   2   0  15        -0.0256112174
+	  2   2   0  15        -0.0248985130
+	  2   2  15   0        -0.0248985130
+	  1   2   0  15        -0.0238802053
+	  2   1  15   0        -0.0238802053
+	  6   6   0  18        -0.0205741935
+	  6   6  18   0        -0.0205741935
 
 	Iterations converged.
 
@@ -1164,65 +973,65 @@ Total time:
 
                  1            2            3            4            5
 
-    1    1.0000000   -0.0000000   -0.0000000  -99.0000000  -99.0000000
+    1    1.0000000   -0.0000000    0.0000000  -99.0000000  -99.0000000
     2    0.0000000    1.0000000   -0.0000000  -99.0000000  -99.0000000
-    3    0.0000000    0.0000000    1.0000000  -99.0000000  -99.0000000
+    3    0.0000000   -0.0000001    1.0000000  -99.0000000  -99.0000000
     4  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000
-    5  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000
+    5  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000
 
 
 	<L|R> overlap matrix with RHF quantities (-99 => 0 by symmetry)
 
                  1            2            3            4            5
 
-    1    1.0000000   -0.0000000    0.0000000  -99.0000000  -99.0000000
+    1    1.0000000    0.0000000   -0.0000000  -99.0000000  -99.0000000
     2    0.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000
     3    0.0000000    0.0000000    1.0000000  -99.0000000  -99.0000000
     4  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000
-    5  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000
+    5  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000
 
 
 
 	Projections for excited state, irrep A, root 0:
-	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000054950
-	<0|Le^(-T)|S><S|Re^T|0>  =    0.9365751717
-	<0|Le^(-T)|D><D|Re^T|0>  =    0.0634193333
-	Sum of above             =    1.0000000000
-	Approx. excitation level =    1.0634138383
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000055030
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9365732895
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0634212088
+	Sum of above             =    1.0000000013
+	Approx. excitation level =    1.0634157072
 
 	Projections for excited state, irrep A, root 1:
-	<0|Le^(-T)|0><0|Re^T|0>  =    0.0002520479
-	<0|Le^(-T)|S><S|Re^T|0>  =    0.9490661798
-	<0|Le^(-T)|D><D|Re^T|0>  =    0.0506817723
-	Sum of above             =    1.0000000000
-	Approx. excitation level =    1.0504297244
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0002520770
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9490670392
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0506808904
+	Sum of above             =    1.0000000065
+	Approx. excitation level =    1.0504288200
 
 	Projections for excited state, irrep A, root 0:
-	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
-	<0|Le^(-T)|S><S|Re^T|0>  =    0.9520821479
-	<0|Le^(-T)|D><D|Re^T|0>  =    0.0479178521
-	Sum of above             =    1.0000000000
-	Approx. excitation level =    1.0479178521
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9520831060
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0479168943
+	Sum of above             =    1.0000000002
+	Approx. excitation level =    1.0479168945
 
 	Projections for excited state, irrep A, root 1:
-	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
-	<0|Le^(-T)|S><S|Re^T|0>  =    0.9449389003
-	<0|Le^(-T)|D><D|Re^T|0>  =    0.0550610997
-	Sum of above             =    1.0000000000
-	Approx. excitation level =    1.0550610997
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9449312354
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0550687639
+	Sum of above             =    0.9999999992
+	Approx. excitation level =    1.0550687631
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:10 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:29 2016
 Module time:
-	user time   =       0.95 seconds =       0.02 minutes
-	system time =       0.61 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.76 seconds =       0.06 minutes
-	system time =       1.98 seconds =       0.03 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.63 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on Leon.local
-*** at Tue Oct 29 14:20:10 2013
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Apr  4 10:21:29 2016
 
 
 			**************************
@@ -1245,34 +1054,32 @@ Total time:
 	Compute Xi       = No
 	Use Zeta         = No
 	Xi connected     = Yes
+	Compute NO       = No
 
-	Nuclear Rep. energy (chkpt)   =   38.253968380680327
-	SCF energy          (chkpt)   = -150.779183872358516
-	Reference energy    (file100) = -150.779183872358487
-	CC2 energy          (CC_INFO) =   -0.383289840884661
-	Total CC2 energy    (CC_INFO) = -151.162473713243145
+	Nuclear Rep. energy (wfn)     =   38.253968380680334
+	SCF energy          (wfn)     = -150.779183872358459
+	Reference energy    (file100) = -150.779183872358317
+	CC2 energy          (CC_INFO) =   -0.383289840905717
+	Total CC2 energy    (CC_INFO) = -151.162473713264035
 	Number of States = 5
 
 	Ground?  State     EOM Energy       R0
 	  Yes     0  A    0.0000000000   1.00000000
-	   No     1  A    0.2492849464  -0.00222235
-	   No     2  A    0.3360709800  -0.01569797
-	   No     1  B    0.2534596315   0.00000000
-	   No     2  B    0.3300021761   0.00000000
+	   No     1  A    0.2492849835   0.00222258
+	   No     2  A    0.3360710565   0.01570027
+	   No     1  B    0.2534596216   0.00000000
+	   No     2  B    0.3300021901   0.00000000
   ==> Properties: Root 0 <==
 
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  Alpha electrons per irrep (n = 2): 5  4  
-  Beta electrons per irrep (n = 2): 5  4  
-  Doubly occupied orbitals per irrep (n = 2): 5  4  
-  Singly occupied orbitals per irrep (n = 2): 0  0  
 
-CC Density OPDM (Spin densities are not correct)
+CC Density OPDM
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the CC density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
@@ -1280,13 +1087,13 @@ Properties computed using the SCF density density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.3278
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.1399     Total:     1.1399
+     X:     0.0000      Y:     0.0000      Z:     1.1398     Total:     1.1398
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.8973     Total:     2.8973
+     X:     0.0000      Y:     0.0000      Z:     2.8972     Total:     2.8972
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -11.6671     YY:   -11.0456     ZZ:    -9.3691
+    XX:   -11.6671     YY:   -11.0457     ZZ:    -9.3692
     XY:    -1.4071     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
@@ -1295,10 +1102,10 @@ Properties computed using the SCF density density matrix
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.07570  4.07570  0.00000 -0.15139
-       2     O     4.07570  4.07570  0.00000 -0.15139
-       3     H     0.42430  0.42430  0.00000  0.15139
-       4     H     0.42430  0.42430  0.00000  0.15139
+       1     O     4.08371  4.08371  0.00000 -0.16743
+       2     O     4.08371  4.08371  0.00000 -0.16743
+       3     H     0.41629  0.41629  0.00000  0.16743
+       4     H     0.41629  0.41629  0.00000  0.16743
 
    Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
@@ -1318,15 +1125,12 @@ Properties computed using the SCF density density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  Alpha electrons per irrep (n = 2): 5  4  
-  Beta electrons per irrep (n = 2): 5  4  
-  Doubly occupied orbitals per irrep (n = 2): 5  4  
-  Singly occupied orbitals per irrep (n = 2): 0  0  
 
-CC Density OPDM (Spin densities are not correct)
+CC Density OPDM
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the CC density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
@@ -1340,19 +1144,19 @@ Properties computed using the SCF density density matrix
      X:     0.0000      Y:     0.0000      Z:    -1.4128     Total:     1.4128
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -13.9068     YY:   -13.2866     ZZ:   -16.4603
-    XY:     0.2627     XZ:     0.0000     YZ:     0.0000
+    XX:   -13.9067     YY:   -13.2865     ZZ:   -16.4603
+    XY:     0.2628     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.6445     YY:     1.2646     ZZ:    -1.9091
-    XY:     0.2627     XZ:     0.0000     YZ:     0.0000
+    XX:     0.6444     YY:     1.2647     ZZ:    -1.9091
+    XY:     0.2628     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     3.86040  3.86040  0.00000  0.27919
-       2     O     3.86040  3.86040  0.00000  0.27919
-       3     H     0.63960  0.63960  0.00000 -0.27919
-       4     H     0.63960  0.63960  0.00000 -0.27919
+       1     O     4.08371  4.08371  0.00000 -0.16743
+       2     O     4.08371  4.08371  0.00000 -0.16743
+       3     H     0.41629  0.41629  0.00000  0.16743
+       4     H     0.41629  0.41629  0.00000  0.16743
 
    Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
@@ -1372,41 +1176,38 @@ Properties computed using the SCF density density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  Alpha electrons per irrep (n = 2): 5  4  
-  Beta electrons per irrep (n = 2): 5  4  
-  Doubly occupied orbitals per irrep (n = 2): 5  4  
-  Singly occupied orbitals per irrep (n = 2): 0  0  
 
-CC Density OPDM (Spin densities are not correct)
+CC Density OPDM
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the CC density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.7769
+     X:     0.0000      Y:     0.0000      Z:    -0.7768
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6907     Total:     0.6907
+     X:     0.0000      Y:     0.0000      Z:     0.6908     Total:     0.6908
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.7557     Total:     1.7557
+     X:     0.0000      Y:     0.0000      Z:     1.7559     Total:     1.7559
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -12.1976     YY:   -13.9982     ZZ:    -9.7608
-    XY:    -0.9806     XZ:     0.0000     YZ:     0.0000
+    XX:   -12.1976     YY:   -13.9980     ZZ:    -9.7604
+    XY:    -0.9808     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.2121     YY:    -2.0127     ZZ:     2.2248
-    XY:    -0.9806     XZ:     0.0000     YZ:     0.0000
+    XX:    -0.2122     YY:    -2.0126     ZZ:     2.2249
+    XY:    -0.9808     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.03237  4.03237  0.00000 -0.06474
-       2     O     4.03237  4.03237  0.00000 -0.06474
-       3     H     0.46763  0.46763  0.00000  0.06474
-       4     H     0.46763  0.46763  0.00000  0.06474
+       1     O     4.08371  4.08371  0.00000 -0.16743
+       2     O     4.08371  4.08371  0.00000 -0.16743
+       3     H     0.41629  0.41629  0.00000  0.16743
+       4     H     0.41629  0.41629  0.00000  0.16743
 
    Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
@@ -1426,41 +1227,38 @@ Properties computed using the SCF density density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  Alpha electrons per irrep (n = 2): 5  4  
-  Beta electrons per irrep (n = 2): 5  4  
-  Doubly occupied orbitals per irrep (n = 2): 5  4  
-  Singly occupied orbitals per irrep (n = 2): 0  0  
 
-CC Density OPDM (Spin densities are not correct)
+CC Density OPDM
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the CC density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.6876
+     X:     0.0000      Y:     0.0000      Z:    -0.6875
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7801     Total:     0.7801
+     X:     0.0000      Y:     0.0000      Z:     0.7802     Total:     0.7802
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9828     Total:     1.9828
+     X:     0.0000      Y:     0.0000      Z:     1.9830     Total:     1.9830
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -11.5843     YY:   -13.9752     ZZ:   -10.6231
-    XY:    -0.4561     XZ:     0.0000     YZ:     0.0000
+    XX:   -11.5842     YY:   -13.9751     ZZ:   -10.6229
+    XY:    -0.4562     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.4766     YY:    -1.9144     ZZ:     1.4378
-    XY:    -0.4561     XZ:     0.0000     YZ:     0.0000
+    XX:     0.4765     YY:    -1.9144     ZZ:     1.4378
+    XY:    -0.4562     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.01840  4.01840  0.00000 -0.03679
-       2     O     4.01840  4.01840  0.00000 -0.03679
-       3     H     0.48160  0.48160  0.00000  0.03679
-       4     H     0.48160  0.48160  0.00000  0.03679
+       1     O     4.08371  4.08371  0.00000 -0.16743
+       2     O     4.08371  4.08371  0.00000 -0.16743
+       3     H     0.41629  0.41629  0.00000  0.16743
+       4     H     0.41629  0.41629  0.00000  0.16743
 
    Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
@@ -1480,41 +1278,38 @@ Properties computed using the SCF density density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  Alpha electrons per irrep (n = 2): 5  4  
-  Beta electrons per irrep (n = 2): 5  4  
-  Doubly occupied orbitals per irrep (n = 2): 5  4  
-  Singly occupied orbitals per irrep (n = 2): 0  0  
 
-CC Density OPDM (Spin densities are not correct)
+CC Density OPDM
 
 
-Properties computed using the SCF density density matrix
+Properties computed using the CC density matrix
+
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.4677
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -1.9942
+     X:     0.0000      Y:     0.0000      Z:    -1.9944
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.5266     Total:     0.5266
+     X:     0.0000      Y:     0.0000      Z:    -0.5267     Total:     0.5267
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -1.3384     Total:     1.3384
+     X:     0.0000      Y:     0.0000      Z:    -1.3387     Total:     1.3387
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -14.2847     YY:   -13.5800     ZZ:   -15.3581
-    XY:    -0.0449     XZ:     0.0000     YZ:     0.0000
+    XX:   -14.2850     YY:   -13.5795     ZZ:   -15.3582
+    XY:    -0.0453     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.1229     YY:     0.8276     ZZ:    -0.9505
-    XY:    -0.0449     XZ:     0.0000     YZ:     0.0000
+    XX:     0.1226     YY:     0.8281     ZZ:    -0.9507
+    XY:    -0.0453     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     3.88225  3.88225  0.00000  0.23551
-       2     O     3.88225  3.88225  0.00000  0.23551
-       3     H     0.61775  0.61775  0.00000 -0.23551
-       4     H     0.61775  0.61775  0.00000 -0.23551
+       1     O     4.08371  4.08371  0.00000 -0.16743
+       2     O     4.08371  4.08371  0.00000 -0.16743
+       3     H     0.41629  0.41629  0.00000  0.16743
+       4     H     0.41629  0.41629  0.00000  0.16743
 
    Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
@@ -1522,139 +1317,154 @@ Properties computed using the SCF density density matrix
 
   Total Occupations:
   HONO-2 :    4  A    1.979
-  HONO-1 :    5  A    1.802
+  HONO-1 :    5  A    1.803
   HONO-0 :    4  B    1.202
   LUNO+0 :    6  A    0.816
   LUNO+1 :    5  B    0.188
   LUNO+2 :    6  B    0.017
   LUNO+3 :    7  A    0.006
 
+I am here
+Doing transition
 
 	Oscillator Strength for 1  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00604265
-	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.00474008
-	Dipole Strength          0.00002864 
-	Oscillator Strength      0.00000476 
-	Einstein A Coefficient  9.50432646e+03  
-	Einstein B Coefficient  3.48485228e+15  
+	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.00604453
+	<n|mu_e|0>               0.00000000 	  0.00000000 	 -0.00469777
+	Dipole Strength          0.00002840 
+	Oscillator Strength      0.00000472 
+	Einstein A Coefficient   9.42242497e+03 
+	Einstein B Coefficient   3.45482077e+15 
+Doing transition
 
 	Length-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00604265
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.32017693
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.31183613
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.00474008
+	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.00604453
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.32011208
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.31184179
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.00469777
 
-	Rotational Strength (au)                 -0.00170642
-	Rotational Strength (10^-40 esu^2 cm^2)  -0.80448233
+	Rotational Strength (au)                 -0.00169994
+	Rotational Strength (10^-40 esu^2 cm^2)  -0.80142800
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.01650073
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.32017693
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.31183613
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.01645059
+	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.01650481
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.32011208
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.31184179
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.01642554
 
-	Rotational Strength (au)                 -0.02088582
-	Rotational Strength (10^-40 esu^2 cm^2)  -9.84648452
+	Rotational Strength (au)                 -0.02087081
+	Rotational Strength (10^-40 esu^2 cm^2)  -9.83940871
+Doing transition
+Doing transition
 
 	Oscillator Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.21034118
-	<n|mu_e|0>               0.00000000 	  0.00000000 	 -0.21841067
-	Dipole Strength          0.04594076 
-	Oscillator Strength      0.01029290 
-	Einstein A Coefficient  3.73517390e+07  
-	Einstein B Coefficient  5.58944874e+18  
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.21035901
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.21838458
+	Dipole Strength          0.04593916 
+	Oscillator Strength      0.01029255 
+	Einstein A Coefficient   3.73504686e+07 
+	Einstein B Coefficient   5.58925481e+18 
+Doing transition
 
 	Length-Gauge Rotational Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.21034118
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.19592863
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.18981818
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.21841067
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.21035901
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.19595003
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.18974388
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.21838458
 
-	Rotational Strength (au)                  0.04133509
-	Rotational Strength (10^-40 esu^2 cm^2)  19.48715974
+	Rotational Strength (au)                  0.04132850
+	Rotational Strength (10^-40 esu^2 cm^2)  19.48405249
 
 	Velocity-Gauge Rotational Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.10728419
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.19592863
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.18981818
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.11157761
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.10727746
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.19595003
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.18974388
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.11156369
 
-	Rotational Strength (au)                  0.06278362
-	Rotational Strength (10^-40 esu^2 cm^2)  29.59893096
+	Rotational Strength (au)                  0.06276879
+	Rotational Strength (10^-40 esu^2 cm^2)  29.59194187
+Doing transition
+Doing transition
 
 	Oscillator Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.09710147 	 -0.06540709 	  0.00000000
-	<n|mu_e|0>              -0.09991361 	 -0.06594617 	  0.00000000
-	Dipole Strength          0.01401510 
-	Oscillator Strength      0.00236818 
-	Einstein A Coefficient  4.88812594e+06  
-	Einstein B Coefficient  1.70516801e+18  
+	<0|mu_e|n>               0.09710180 	  0.06544053 	  0.00000000
+	<n|mu_e|0>               0.09990700 	  0.06592845 	  0.00000000
+	Dipole Strength          0.01401554 
+	Oscillator Strength      0.00236825 
+	Einstein A Coefficient   4.88827775e+06 
+	Einstein B Coefficient   1.70522117e+18 
+Doing transition
 
 	Length-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.09710147 	 -0.06540709 	  0.00000000
-	<n|mu_m|0>               0.08654993 	 -0.04058631 	  0.00000000
-	<0|mu_m|n>*              0.08444746 	 -0.03868894 	  0.00000000
-	<n|mu_e|0>*             -0.09991361 	 -0.06594617 	  0.00000000
+	<0|mu_e|n>               0.09710180 	  0.06544053 	  0.00000000
+	<n|mu_m|0>              -0.08654109 	  0.04057903 	  0.00000000
+	<0|mu_m|n>*             -0.08445379 	  0.03869748 	  0.00000000
+	<n|mu_e|0>*              0.09990700 	  0.06592845 	  0.00000000
 
-	Rotational Strength (au)                 -0.00581778
-	Rotational Strength (10^-40 esu^2 cm^2)  -2.74275364
+	Rotational Strength (au)                 -0.00581702
+	Rotational Strength (10^-40 esu^2 cm^2)  -2.74239700
 
 	Velocity-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.08741413 	 -0.01015407 	  0.00000000
-	<n|mu_m|0>               0.08654993 	 -0.04058631 	  0.00000000
-	<0|mu_m|n>*              0.08444746 	 -0.03868894 	  0.00000000
-	<n|mu_e|0>*             -0.09147288 	 -0.00986560 	  0.00000000
+	<0|mu_e|n>               0.08741322 	  0.01015863 	  0.00000000
+	<n|mu_m|0>              -0.08654109 	  0.04057903 	  0.00000000
+	<0|mu_m|n>*             -0.08445379 	  0.03869748 	  0.00000000
+	<n|mu_e|0>*              0.09147011 	  0.00985726 	  0.00000000
 
-	Rotational Strength (au)                 -0.02859732
-	Rotational Strength (10^-40 esu^2 cm^2)  -13.48202202
+	Rotational Strength (au)                 -0.02859658
+	Rotational Strength (10^-40 esu^2 cm^2)  -13.48167071
+Doing transition
+Doing transition
 
 	Oscillator Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.15195860 	 -0.14713106 	  0.00000000
-	<n|mu_e|0>              -0.15488631 	 -0.15325472 	  0.00000000
-	Dipole Strength          0.04608484 
-	Oscillator Strength      0.01013873 
-	Einstein A Coefficient  3.54754643e+07  
-	Einstein B Coefficient  5.60697817e+18  
+	<0|mu_e|n>              -0.15192758 	 -0.14719604 	  0.00000000
+	<n|mu_e|0>              -0.15458930 	 -0.15339002 	  0.00000000
+	Dipole Strength          0.04606478 
+	Oscillator Strength      0.01013432 
+	Einstein A Coefficient   3.54600309e+07 
+	Einstein B Coefficient   5.60453818e+18 
+Doing transition
 
 	Length-Gauge Rotational Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.15195860 	 -0.14713106 	  0.00000000
-	<n|mu_m|0>              -0.36644595 	 -0.13689559 	  0.00000000
-	<0|mu_m|n>*             -0.35826491 	 -0.13323803 	  0.00000000
-	<n|mu_e|0>*             -0.15488631 	 -0.15325472 	  0.00000000
+	<0|mu_e|n>              -0.15192758 	 -0.14719604 	  0.00000000
+	<n|mu_m|0>              -0.36663204 	 -0.13685806 	  0.00000000
+	<0|mu_m|n>*             -0.35828526 	 -0.13325274 	  0.00000000
+	<n|mu_e|0>*             -0.15458930 	 -0.15339002 	  0.00000000
 
-	Rotational Strength (au)                  0.07586795
-	Rotational Strength (10^-40 esu^2 cm^2)  35.76745336
+	Rotational Strength (au)                  0.07583660
+	Rotational Strength (10^-40 esu^2 cm^2)  35.75267281
 
 	Velocity-Gauge Rotational Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.12040112 	 -0.04646637 	  0.00000000
-	<n|mu_m|0>              -0.36644595 	 -0.13689559 	  0.00000000
-	<0|mu_m|n>*             -0.35826491 	 -0.13323803 	  0.00000000
-	<n|mu_e|0>*             -0.12333346 	 -0.04842963 	  0.00000000
+	<0|mu_e|n>              -0.12039903 	 -0.04647697 	  0.00000000
+	<n|mu_m|0>              -0.36663204 	 -0.13685806 	  0.00000000
+	<0|mu_m|n>*             -0.35828526 	 -0.13325274 	  0.00000000
+	<n|mu_e|0>*             -0.12317046 	 -0.04847774 	  0.00000000
 
-	Rotational Strength (au)                  0.15321151
-	Rotational Strength (10^-40 esu^2 cm^2)  72.23057738
+	Rotational Strength (au)                  0.15316995
+	Rotational Strength (10^-40 esu^2 cm^2)  72.21098563
+Doing transition
+Doing transition
 
 	                   Ground State -> Excited State Transitions
 
 	                   Excitation Energy          OS       RS        RS     Einstein A
 	State   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)
-	 1  A   6.783   54711.7   182.8   0.249285   0.0000  -0.0017  -0.0209  9.504326E+03
-	 2  A   9.145   73759.0   135.6   0.336071   0.0103   0.0413   0.0628  3.735174E+07
-	 1  B   6.897   55628.0   179.8   0.253460   0.0024  -0.0058  -0.0286  4.888126E+06
-	 2  B   8.980   72427.1   138.1   0.330002   0.0101   0.0759   0.1532  3.547546E+07
+	 1  A   6.783   54711.7   182.8   0.249285   0.0000  -0.0017  -0.0209  9.422425E+03
+	 2  A   9.145   73759.1   135.6   0.336071   0.0103   0.0413   0.0628  3.735047E+07
+	 1  B   6.897   55627.9   179.8   0.253460   0.0024  -0.0058  -0.0286  4.888278E+06
+	 2  B   8.980   72427.1   138.1   0.330002   0.0101   0.0758   0.1532  3.546003E+07
 
+Doing transition
 
 	*********************************************************************
 	*********************************************************************
@@ -1681,32 +1491,32 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 1  A to 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.02897626
-	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.02864541
-	Dipole Strength          0.00083004 
-	Oscillator Strength      0.00004802 
-	Einstein A Coefficient   1.16216186e+04 
-	Einstein B Coefficient   1.00987654e+17 
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.02891191
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.02865102
+	Dipole Strength          0.00082836 
+	Oscillator Strength      0.00004793 
+	Einstein A Coefficient   1.15980920e+04 
+	Einstein B Coefficient   1.00783080e+17 
 
 	Length-Gauge Rotational Strength for 1  A to 2  A Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.02897626
-	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01211470
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01145077
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.02864541
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.02891191
+	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01209332
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01138697
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.02865102
 
-	Rotational Strength (au)                 -0.00033953
-	Rotational Strength (10^-40 esu^2 cm^2)  -0.16006703
+	Rotational Strength (au)                 -0.00033794
+	Rotational Strength (10^-40 esu^2 cm^2)  -0.15932180
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.00756523
-	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01211470
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01145077
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.00600200
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.00756873
+	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01209332
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01138697
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.00600580
 
-	Rotational Strength (au)                 -0.00092398
-	Rotational Strength (10^-40 esu^2 cm^2)  -0.43560667
+	Rotational Strength (au)                 -0.00092134
+	Rotational Strength (10^-40 esu^2 cm^2)  -0.43435973
 
 	*** Computing <1 A|X{pq}}|1 B> (LEFT) Transition Density ***
 
@@ -1724,32 +1534,32 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 1  A to 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.41793385 	  0.82964473 	  0.00000000
-	<n|mu_e|0>              -0.42248394 	  0.84121124 	  0.00000000
-	Dipole Strength          0.87447681 
-	Oscillator Strength      0.00243378 
-	Einstein A Coefficient   1.36282187e+03 
-	Einstein B Coefficient   1.06394486e+20 
+	<0|mu_e|n>              -0.41794240 	  0.82952628 	  0.00000000
+	<n|mu_e|0>              -0.42243291 	  0.84107572 	  0.00000000
+	Dipole Strength          0.87424704 
+	Oscillator Strength      0.00243311 
+	Einstein A Coefficient   1.36241775e+03 
+	Einstein B Coefficient   1.06366531e+20 
 
 	Length-Gauge Rotational Strength for 1  A to 1  B Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.41793385 	  0.82964473 	  0.00000000
-	<q|mu_m|p>              -0.06014580 	 -0.03792090 	  0.00000000
-	<p|mu_m|q>*             -0.06049624 	 -0.03755916 	  0.00000000
-	<q|mu_e|p>*             -0.42248394 	  0.84121124 	  0.00000000
+	<p|mu_e|q>              -0.41794240 	  0.82952628 	  0.00000000
+	<q|mu_m|p>              -0.06012807 	 -0.03792748 	  0.00000000
+	<p|mu_m|q>*             -0.06049596 	 -0.03759064 	  0.00000000
+	<q|mu_e|p>*             -0.42243291 	  0.84107572 	  0.00000000
 
-	Rotational Strength (au)                 -0.00618020
-	Rotational Strength (10^-40 esu^2 cm^2)  -2.91361694
+	Rotational Strength (au)                 -0.00619643
+	Rotational Strength (10^-40 esu^2 cm^2)  -2.92126776
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.01060632 	 -0.04433075 	  0.00000000
-	<q|mu_m|p>              -0.06014580 	 -0.03792090 	  0.00000000
-	<p|mu_m|q>*             -0.06049624 	 -0.03755916 	  0.00000000
-	<q|mu_e|p>*             -0.01124659 	 -0.04350995 	  0.00000000
+	<p|mu_e|q>              -0.01060144 	 -0.04430474 	  0.00000000
+	<q|mu_m|p>              -0.06012807 	 -0.03792748 	  0.00000000
+	<p|mu_m|q>*             -0.06049596 	 -0.03759064 	  0.00000000
+	<q|mu_e|p>*             -0.01124558 	 -0.04351728 	  0.00000000
 
-	Rotational Strength (au)                  0.55495934
-	Rotational Strength (10^-40 esu^2 cm^2)  261.63199322
+	Rotational Strength (au)                  0.55501404
+	Rotational Strength (10^-40 esu^2 cm^2)  261.65778514
 
 	*** Computing <1 B|X{pq}}|2 A> (LEFT) Transition Density ***
 
@@ -1767,32 +1577,32 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 1  B to 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.07810048 	  0.57053094 	  0.00000000
-	<n|mu_e|0>              -0.08135837 	  0.57389864 	  0.00000000
-	Dipole Strength          0.33378106 
-	Oscillator Strength      0.01838274 
-	Einstein A Coefficient   4.03088542e+06 
-	Einstein B Coefficient   4.06099549e+19 
+	<0|mu_e|n>              -0.07809921 	  0.57035851 	  0.00000000
+	<n|mu_e|0>              -0.08136070 	  0.57392609 	  0.00000000
+	Dipole Strength          0.33369783 
+	Oscillator Strength      0.01837817 
+	Einstein A Coefficient   4.02989304e+06 
+	Einstein B Coefficient   4.05998296e+19 
 
 	Length-Gauge Rotational Strength for 1  B to 2  A Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.07810048 	  0.57053094 	  0.00000000
-	<q|mu_m|p>              -0.02627533 	  0.36531357 	  0.00000000
-	<p|mu_m|q>*             -0.03292973 	  0.36644121 	  0.00000000
-	<q|mu_e|p>*             -0.08135837 	  0.57389864 	  0.00000000
+	<p|mu_e|q>              -0.07809921 	  0.57035851 	  0.00000000
+	<q|mu_m|p>              -0.02628093 	  0.36530383 	  0.00000000
+	<p|mu_m|q>*             -0.03292278 	  0.36649695 	  0.00000000
+	<q|mu_e|p>*             -0.08136070 	  0.57392609 	  0.00000000
 
-	Rotational Strength (au)                  0.21172702
-	Rotational Strength (10^-40 esu^2 cm^2)  99.81733344
+	Rotational Strength (au)                  0.21171372
+	Rotational Strength (10^-40 esu^2 cm^2)  99.81106745
 
 	Velocity-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.01575440 	  0.05711196 	  0.00000000
-	<q|mu_m|p>              -0.02627533 	  0.36531357 	  0.00000000
-	<p|mu_m|q>*             -0.03292973 	  0.36644121 	  0.00000000
-	<q|mu_e|p>*             -0.01881656 	  0.05385473 	  0.00000000
+	<p|mu_e|q>              -0.01575043 	  0.05707094 	  0.00000000
+	<q|mu_m|p>              -0.02628093 	  0.36530383 	  0.00000000
+	<p|mu_m|q>*             -0.03292278 	  0.36649695 	  0.00000000
+	<q|mu_e|p>*             -0.01881561 	  0.05385495 	  0.00000000
 
-	Rotational Strength (au)                  0.25197472
-	Rotational Strength (10^-40 esu^2 cm^2)  118.79185327
+	Rotational Strength (au)                  0.25189797
+	Rotational Strength (10^-40 esu^2 cm^2)  118.75566983
 
 	*** Computing <1 A|X{pq}}|2 B> (LEFT) Transition Density ***
 
@@ -1810,32 +1620,32 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 1  A to 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.30122532 	  0.19607609 	  0.00000000
-	<n|mu_e|0>              -0.30248013 	  0.20179154 	  0.00000000
-	Dipole Strength          0.13068117 
-	Oscillator Strength      0.00703215 
-	Einstein A Coefficient   1.47207991e+06 
-	Einstein B Coefficient   1.58995133e+19 
+	<0|mu_e|n>               0.30118907 	 -0.19608442 	  0.00000000
+	<n|mu_e|0>               0.30196658 	 -0.20101180 	  0.00000000
+	Dipole Strength          0.13036432 
+	Oscillator Strength      0.00701510 
+	Einstein A Coefficient   1.46850942e+06 
+	Einstein B Coefficient   1.58609630e+19 
 
 	Length-Gauge Rotational Strength for 1  A to 2  B Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.30122532 	  0.19607609 	  0.00000000
-	<q|mu_m|p>              -0.00299844 	 -0.34262090 	  0.00000000
-	<p|mu_m|q>*             -0.00257046 	 -0.34432593 	  0.00000000
-	<q|mu_e|p>*             -0.30248013 	  0.20179154 	  0.00000000
+	<p|mu_e|q>               0.30118907 	 -0.19608442 	  0.00000000
+	<q|mu_m|p>               0.00288867 	  0.34276532 	  0.00000000
+	<p|mu_m|q>*              0.00255011 	  0.34434395 	  0.00000000
+	<q|mu_e|p>*              0.30196658 	 -0.20101180 	  0.00000000
 
-	Rotational Strength (au)                 -0.06749055
-	Rotational Strength (10^-40 esu^2 cm^2)  -31.81798444
+	Rotational Strength (au)                 -0.06739403
+	Rotational Strength (10^-40 esu^2 cm^2)  -31.77247846
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.00221595 	  0.01226600 	  0.00000000
-	<q|mu_m|p>              -0.00299844 	 -0.34262090 	  0.00000000
-	<p|mu_m|q>*             -0.00257046 	 -0.34432593 	  0.00000000
-	<q|mu_e|p>*             -0.00138617 	  0.02771816 	  0.00000000
+	<p|mu_e|q>               0.00222421 	 -0.01226942 	  0.00000000
+	<q|mu_m|p>               0.00288867 	  0.34276532 	  0.00000000
+	<p|mu_m|q>*              0.00255011 	  0.34434395 	  0.00000000
+	<q|mu_e|p>*              0.00133679 	 -0.02764035 	  0.00000000
 
-	Rotational Strength (au)                 -0.08509001
-	Rotational Strength (10^-40 esu^2 cm^2)  -40.11513764
+	Rotational Strength (au)                 -0.08494773
+	Rotational Strength (10^-40 esu^2 cm^2)  -40.04805786
 
 	*** Computing <2 B|X{pq}}|2 A> (LEFT) Transition Density ***
 
@@ -1853,32 +1663,32 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 2  B to 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.37877446 	 -0.79506693 	  0.00000000
-	<n|mu_e|0>               0.38284324 	 -0.80819531 	  0.00000000
-	Dipole Strength          0.78758060 
-	Oscillator Strength      0.00318645 
-	Einstein A Coefficient   3.77071717e+03 
-	Einstein B Coefficient   9.58221333e+19 
+	<0|mu_e|n>              -0.37889824 	  0.79523559 	  0.00000000
+	<n|mu_e|0>              -0.38276990 	  0.80810758 	  0.00000000
+	Dipole Strength          0.78766675 
+	Oscillator Strength      0.00318683 
+	Einstein A Coefficient   3.77124605e+03 
+	Einstein B Coefficient   9.58326143e+19 
 
 	Length-Gauge Rotational Strength for 2  B to 2  A Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.37877446 	 -0.79506693 	  0.00000000
-	<q|mu_m|p>               0.03642813 	  0.02942829 	  0.00000000
-	<p|mu_m|q>*              0.03777928 	  0.02956590 	  0.00000000
-	<q|mu_e|p>*              0.38284324 	 -0.80819531 	  0.00000000
+	<p|mu_e|q>              -0.37889824 	  0.79523559 	  0.00000000
+	<q|mu_m|p>              -0.03642031 	 -0.02940742 	  0.00000000
+	<p|mu_m|q>*             -0.03785298 	 -0.02952481 	  0.00000000
+	<q|mu_e|p>*             -0.38276990 	  0.80810758 	  0.00000000
 
-	Rotational Strength (au)                 -0.00951545
-	Rotational Strength (10^-40 esu^2 cm^2)  -4.48599756
+	Rotational Strength (au)                 -0.00947824
+	Rotational Strength (10^-40 esu^2 cm^2)  -4.46845303
 
 	Velocity-Gauge Rotational Strength for 2  B
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00774957 	  0.03526202 	  0.00000000
-	<q|mu_m|p>               0.03642813 	  0.02942829 	  0.00000000
-	<p|mu_m|q>*              0.03777928 	  0.02956590 	  0.00000000
-	<q|mu_e|p>*              0.00863300 	  0.03123778 	  0.00000000
+	<p|mu_e|q>              -0.00776061 	 -0.03525611 	  0.00000000
+	<q|mu_m|p>              -0.03642031 	 -0.02940742 	  0.00000000
+	<p|mu_m|q>*             -0.03785298 	 -0.02952481 	  0.00000000
+	<q|mu_e|p>*             -0.00863196 	 -0.03123939 	  0.00000000
 
-	Rotational Strength (au)                  0.21171594
-	Rotational Strength (10^-40 esu^2 cm^2)  99.81211021
+	Rotational Strength (au)                  0.21161425
+	Rotational Strength (10^-40 esu^2 cm^2)  99.76416889
 
 	*** Computing <1 B|X{pq}}|2 B> (LEFT) Transition Density ***
 
@@ -1896,63 +1706,64 @@ Properties computed using the SCF density density matrix
 
 	Oscillator Strength for 1  B to 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.32941174
-	<n|mu_e|0>               0.00000000 	  0.00000000 	 -0.32616714
-	Dipole Strength          0.10744328 
-	Oscillator Strength      0.00548265 
-	Einstein A Coefficient   1.03206630e+06 
-	Einstein B Coefficient   1.30722426e+19 
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.32943856
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.32578797
+	Dipole Strength          0.10732712 
+	Oscillator Strength      0.00547673 
+	Einstein A Coefficient   1.03095143e+06 
+	Einstein B Coefficient   1.30581092e+19 
 
 	Length-Gauge Rotational Strength for 1  B to 2  B Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	 -0.32941174
-	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.00915022
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.00881284
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	 -0.32616714
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.32943856
+	<q|mu_m|p>               0.00000000 	  0.00000000 	  0.00913770
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	  0.00882127
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.32578797
 
-	Rotational Strength (au)                  0.00294432
-	Rotational Strength (10^-40 esu^2 cm^2)   1.38808279
+	Rotational Strength (au)                  0.00294209
+	Rotational Strength (10^-40 esu^2 cm^2)   1.38702786
 
 	Velocity-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	 -0.02330792
-	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.00915022
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.00881284
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	 -0.01830770
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.02330585
+	<q|mu_m|p>               0.00000000 	  0.00000000 	  0.00913770
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	  0.00882127
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.01828047
 
-	Rotational Strength (au)                  0.00244711
-	Rotational Strength (10^-40 esu^2 cm^2)   1.15367255
+	Rotational Strength (au)                  0.00244451
+	Rotational Strength (10^-40 esu^2 cm^2)   1.15245053
 
 	                   Ground State -> Excited State Transitions
 
 	                   Excitation Energy          OS       RS        RS     Einstein A
 	State   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)
-	 1  A   6.783   54711.7   182.8   0.249285   0.0000  -0.0017  -0.0209  9.504326E+03
-	 2  A   9.145   73759.0   135.6   0.336071   0.0103   0.0413   0.0628  3.735174E+07
-	 1  B   6.897   55628.0   179.8   0.253460   0.0024  -0.0058  -0.0286  4.888126E+06
-	 2  B   8.980   72427.1   138.1   0.330002   0.0101   0.0759   0.1532  3.547546E+07
+	 1  A   6.783   54711.7   182.8   0.249285   0.0000  -0.0017  -0.0209  9.422425E+03
+	 2  A   9.145   73759.1   135.6   0.336071   0.0103   0.0413   0.0628  3.735047E+07
+	 1  B   6.897   55627.9   179.8   0.253460   0.0024  -0.0058  -0.0286  4.888278E+06
+	 2  B   8.980   72427.1   138.1   0.330002   0.0101   0.0758   0.1532  3.546003E+07
 
 
 	                   Excited State -> Excited State Transitions
 
 	                        Excitation Energy          OS       RS        RS     Einstein A
 	Transition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)
-	  1A->2A   2.362   19047.3   525.0   0.086786   0.0000  -0.0003  -0.0009  1.162162E+04
-	  1A->1B   0.114     916.2 10914.2   0.004175   0.0024  -0.0062   0.5550  1.362822E+03
-	  1B->2A   2.248   18131.1   551.5   0.082611   0.0184   0.2117   0.2520  4.030885E+06
-	  1A->2B   2.196   17715.4   564.5   0.080717   0.0070  -0.0675  -0.0851  1.472080E+06
-	  2B->2A   0.165    1331.9  7507.8   0.006069   0.0032  -0.0095   0.2117  3.770717E+03
-	  1B->2B   2.083   16799.1   595.3   0.076543   0.0055   0.0029   0.0024  1.032066E+06
+	  1A->2A   2.362   19047.3   525.0   0.086786   0.0000  -0.0003  -0.0009  1.159809E+04
+	  1A->1B   0.114     916.2 10914.3   0.004175   0.0024  -0.0062   0.5550  1.362418E+03
+	  1B->2A   2.248   18131.1   551.5   0.082611   0.0184   0.2117   0.2519  4.029893E+06
+	  1A->2B   2.196   17715.4   564.5   0.080717   0.0070  -0.0674  -0.0849  1.468509E+06
+	  2B->2A   0.165    1332.0  7507.7   0.006069   0.0032  -0.0095   0.2116  3.771246E+03
+	  1B->2B   2.083   16799.1   595.3   0.076543   0.0055   0.0029   0.0024  1.030951E+06
 
+I am here
 
-*** tstop() called on Leon.local at Tue Oct 29 14:20:13 2013
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:21:29 2016
 Module time:
-	user time   =       1.25 seconds =       0.02 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.01 seconds =       0.08 minutes
-	system time =       2.32 seconds =       0.04 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.77 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

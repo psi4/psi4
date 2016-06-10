@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef dfocc_h 
@@ -368,7 +373,13 @@ protected:
     void b_ij_cd();
     void b_ia_cd();
     void b_ab_cd();
-    void b_so_non_zero_cd(); // form non-zero so-basis cd ints
+    void b_so_non_zero_cd(); 
+    void cd_aob_cints();
+    void cd_aob_xints();
+    void cd_abcd_cints();
+    void cd_abcd_xints();
+    void ldl_abcd_ints();
+    void ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ);
 
     // OMP2
     void omp2_manager();
@@ -450,6 +461,8 @@ protected:
     void ccsd_Wabef2T2();     
     void ccsd_WabefT2_high_mem();     
     void ccsd_WabefT2_ao_basis();     
+    void ccsd_WabefT2_ldl();     
+    void ccsd_WabefT2_cd();     
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -519,6 +532,7 @@ protected:
     void ccd_WmbejT2();
     void ccd_WabefT2();     
     void ccd_WabefT2_high_mem();     
+    void ccd_WabefT2_ldl();     
     void ccd_t2_amps();
     void ccd_mp2_low();
     void ccd_iterations_low();
@@ -607,6 +621,7 @@ protected:
      int ntri_anti_abBB;
      int nQ;          // numer of aux-basis
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
+     int nQ_cd;      // numer of aux-basis functions for LDL
      int nso2_;       // nso * nso
      int naocc2AA;     // # of active OO pairs 
      int naocc2AB;     // # of active OO pairs 
@@ -670,7 +685,7 @@ protected:
      double cost_3amp; 
      double cost_4amp; 
      double cost_5amp; 
-     double cost_4vex_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
+     double cost_ppl_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
      double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T) 
 
      // Common
@@ -707,6 +722,7 @@ protected:
      double tol_grad;
      double tol_t2;
      double tol_pcg;
+     double tol_ldl;
      double step_max;
      double mograd_max;
      double biggest_mograd;
@@ -835,7 +851,7 @@ protected:
 
      bool df_ints_incore;
      bool t2_incore;
-     bool do_4vex_hm;
+     bool do_ppl_hm;
      bool do_triples_hm;
 
      double **C_pitzerA;     

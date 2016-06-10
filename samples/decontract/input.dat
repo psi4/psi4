@@ -2,25 +2,21 @@
 #! Testing the in line -decontract option for basis sets
 
 
-ref_energy = -460.08989223006836
 memory 250 mb
-
-import cdft
 
 molecule {
 0 1
 CL        0.000000000000  0.000000000000  -0.035925275852
 H         0.000000000000  0.000000000000   1.246511684916
-    symmetry c1
+symmetry c1
 }
 
 set {
-  basis cc-pvdz-decontract
-  df_basis_scf cc-pvdz-jkfit
-  reference rhf
+  basis         cc-pvdz-decontract
+  df_basis_scf  cc-pvdz-jkfit
+  reference     rhf
 
 }
 
 energy('scf')
 
-compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")

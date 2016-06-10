@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <boost/regex.hpp>
@@ -1176,14 +1181,14 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             boost::split(splitLine, *line, boost::is_any_of("\t ,"),token_compress_on);
             int numEntries = splitLine.size();
 
-            // Grab the original label the user used. (H1)
+            // Grab the original label the user used. (H1, O_heavy@17.9991610) re-processed below
             atomLabel = boost::to_upper_copy(splitLine[0]);
 
             bool ghostAtom = false;
             // Do a little check for ghost atoms
             if(regex_match(atomLabel, reMatches, ghostAtom_)) {
                 // We don't know whether the @C or Gh(C) notation matched.  Do a quick check.
-                atomLabel = reMatches[1] == "" ? reMatches[2] : reMatches[1];
+                atomLabel = (reMatches[1] == "" ? reMatches[2] : reMatches[1]);
                 ghostAtom = true;
             }
 
@@ -1198,7 +1203,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             zVal = zVals[atomSym];
             charge = zVal;
 
-            double atomMass = reMatches[5] == "" ? an2masses[(int)zVal] : to_double(reMatches[5]);
+            double atomMass = (reMatches[5] == "" ? an2masses[(int)zVal] : to_double(reMatches[5]));
+
+            // Remove mass specification from label string (H1 => H1, O_heavy@17.9991610 => O_heavy)
+            atomLabel = reMatches[2].str() + reMatches[3].str() + reMatches[4].str();
 
             // Not sure how charge is used right now, but let's zero it anyway...
             if(ghostAtom){
@@ -3561,7 +3569,8 @@ std::string Molecule::full_point_group() const {
   if (pg_with_n == "D_inf_h" || pg_with_n == "C_inf_v" ||
       pg_with_n == "C1"      || pg_with_n == "Cs"      ||
       pg_with_n == "Ci"      || pg_with_n == "Td"      ||
-      pg_with_n == "Oh"      || pg_with_n == "Ih" )
+      pg_with_n == "Oh"      || pg_with_n == "Ih"      ||
+      pg_with_n == "ATOM")
         return pg_with_n;
 
   stringstream n_integer;
@@ -3578,4 +3587,3 @@ std::string Molecule::full_point_group() const {
 int Molecule::natom() const{
     return atoms_.size();
 }
-

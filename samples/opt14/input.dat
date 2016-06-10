@@ -14,7 +14,7 @@ molecule {
  F -0.01961907  0.86977876 -1.50688420
 }
 
-set globals {
+set {
   scf_type pk
   basis 6-31G(d)
   reference rhf

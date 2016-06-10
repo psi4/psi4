@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <cstdlib>
@@ -43,7 +48,6 @@ Vector::Vector()
     dimpi_ = NULL;
     nirrep_ = 0;
     name_ = "";
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(const Vector& c)
@@ -53,7 +57,6 @@ Vector::Vector(const Vector& c)
     alloc();
     copy_from(c);
     name_ = c.name_;
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(int nirreps, int *dimpi)
@@ -62,7 +65,6 @@ Vector::Vector(int nirreps, int *dimpi)
     nirrep_ = nirreps;
     dimpi_ = dimpi;
     alloc();
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(int dim)
@@ -71,7 +73,6 @@ Vector::Vector(int dim)
     nirrep_ = 1;
     dimpi_[0] = dim;
     alloc();
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, int nirreps, int *dimpi)
@@ -83,7 +84,6 @@ Vector::Vector(const std::string& name, int nirreps, int *dimpi)
         dimpi_[h] = dimpi[h];
     alloc();
     name_ = name;
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, int dim)
@@ -93,7 +93,6 @@ Vector::Vector(const std::string& name, int dim)
     dimpi_[0] = dim;
     alloc();
     name_ = name;
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(const Dimension& v)
@@ -102,7 +101,6 @@ Vector::Vector(const Dimension& v)
     dimpi_ = v;
     alloc();
     name_ = v.name();
-    numpy_dims_ = 0;
 }
 
 Vector::Vector(const std::string& name, const Dimension& v)
@@ -111,7 +109,6 @@ Vector::Vector(const std::string& name, const Dimension& v)
     dimpi_ = v;
     alloc();
     name_ = name;
-    numpy_dims_ = 0;
 }
 
 Vector::~Vector()

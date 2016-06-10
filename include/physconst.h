@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*
@@ -69,6 +74,7 @@
 #define pc_hartree2ev 27.21138                /*- Hartree to eV conversion factor -*/
 #define pc_hartree2wavenumbers 219474.6       /*- Hartree to cm$^{-1}$ conversion factor -*/
 #define pc_hartree2kcalmol 627.5095           /*- Hartree to kcal mol$^{-1}$ conversion factor -*/
+#define pc_hartree2kJmol 2625.500             /*- Hartree to kilojoule mol$^{-1}$ conversion factor -*/
 #define pc_hartree2MHz 6.579684E9             /*- Hartree to MHz conversion factor -*/
 #define pc_kcalmol2wavenumbers 349.7551       /*- kcal mol$^{-1}$ to cm$^{-1}$ conversion factor -*/
 #define pc_e0 8.854187817E-12                 /*- Vacuum permittivity (Fm$^{-1}$)-*/

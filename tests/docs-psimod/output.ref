@@ -1,35 +1,38 @@
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta4+ Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
 
-               Git: Rev {c4} c0893a71ce4011b25d8c27b3872c397e90453e5b
+                          Git: Rev {master} dbe9080
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  10776
-    PSI4DATADIR: /Users/loriab/linux/psihub/c4/psi4/objdir/../lib
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Mon Mar 14 15:31:04 2016
 
+    Process ID:  13575
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
     Memory level set to 256.000 MB
 
   ==> Input File <==
 
 --------------------------------------------------------------------------
-
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users. !nosample
+from __future__ import print_function
 import pydoc
 import inspect
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 # Boost Python psi4 module in psi4/src/bin/psi4 -- pure text, all
 with open("autodoc_man_psi4.txt", "w") as f:
@@ -50,7 +53,7 @@ for item in sorted(dir(psi4)):
         if item not in []:
             classes.append(item)
     else:
-        if item not in ['Bohr', 'Balk', 'Ascending', 'Angstrom', 'Descending', 'Failues', 'Success']:
+        if item not in ['Bohr', 'Balk', 'Ascending', 'Angstrom', 'Descending', 'Failure', 'Success', 'EndLoop']:
             psi4fns.append(item)
 
 pts('psi4 module class', 'psi4')
@@ -67,6 +70,7 @@ for item in psi4fns:
 for item in classes:
     pts('psi4 module class', item)
     div = '=' * len(item)
+    f.write('\n\n.. _`sec:psimod_%s`:\n\n' % (item))
     f.write('\n\n' + item + '\n')
     f.write(div + '\n\n')
 

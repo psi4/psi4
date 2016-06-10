@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 // This tells us the Python version number
@@ -132,7 +137,7 @@ namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, Shar
 namespace thermo { PsiReturnType thermo(SharedWavefunction, SharedVector, Options&); }
 
 #ifdef ENABLE_CHEMPS2
-namespace dmrg       { PsiReturnType dmrg(SharedWavefunction, Options&);     }
+namespace dmrg       { SharedWavefunction dmrg(SharedWavefunction, Options&);     }
 #endif
 
 namespace mrcc {
@@ -204,7 +209,7 @@ void py_reopen_outfile()
     else {
         outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
         if (!outfile)
-            throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
+            throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
 }
 
@@ -213,7 +218,7 @@ void py_be_quiet()
     py_close_outfile();
     outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
     if (!outfile)
-        throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
+        throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
 
 std::string py_get_outfile_name()
@@ -510,14 +515,10 @@ double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 #endif
 
 #ifdef ENABLE_CHEMPS2
-double py_psi_dmrg(SharedWavefunction ref_wfn)
+SharedWavefunction py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DMRG");
-    if (dmrg::dmrg(ref_wfn, Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    return dmrg::dmrg(ref_wfn, Process::environment.options);
 }
 #else
 double py_psi_dmrg(SharedWavefunction ref_wfn)
@@ -1212,14 +1213,14 @@ bool psi4_python_module_initialize()
 
     print_version("stdout");
 
-    // Track down the location of PSI4's python script directory.
+    // Track down the location of Psi4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
     std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
     // printf("Python dir is at %s\n", psiDataDirName.c_str());
     if(!boost::filesystem::is_directory(bf_path)) {
-        printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+        printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
         return false;
     }
@@ -1586,6 +1587,27 @@ void Python::finalize()
 //    Py_Finalize();
 }
 
+std::string handle_pyerror()
+{
+    using namespace boost::python;
+    using namespace boost;
+
+    PyObject *exc,*val,*tb;
+    object formatted_list, formatted;
+    PyErr_Fetch(&exc,&val,&tb);
+    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb)); 
+    object traceback(import("traceback"));
+    if (!tb) {
+        object format_exception_only(traceback.attr("format_exception_only"));
+        formatted_list = format_exception_only(hexc,hval);
+    } else {
+        object format_exception(traceback.attr("format_exception"));
+        formatted_list = format_exception(hexc,hval,htb);
+    }
+    formatted = str("\n").join(formatted_list);
+    return extract<std::string>(formatted);
+}
+
 void Python::run(FILE *input)
 {
     using namespace boost::python;
@@ -1614,7 +1636,7 @@ void Python::run(FILE *input)
         Py_SetProgramName(s);
 #endif
 
-        // Track down the location of PSI4's auxiliary directories path
+        // Track down the location of Psi4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
         boost::char_separator<char> sep(":");
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -1626,7 +1648,7 @@ void Python::run(FILE *input)
             boost::filesystem::path bf_path2;
             bf_path2 = boost::filesystem::system_complete(*tok_iter);
             if (!boost::filesystem::is_directory(bf_path2)) {
-                printf("Unable to read the PSI4 Auxililary folder - check the PSIPATH environmental variable\n"
+                printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
                                "      Current value of PSIPATH is %s\n", psiPath.c_str());
                 exit(1);
             }
@@ -1641,14 +1663,14 @@ void Python::run(FILE *input)
         Py_DECREF(path);
         Py_DECREF(sysmod);
 
-        // Track down the location of PSI4's python script directory.
+        // Track down the location of Psi4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPython = psiDataDirName + "/python";
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
         // printf("Python dir is at %s\n", psiDataDirName.c_str());
         if (!boost::filesystem::is_directory(bf_path)) {
-            printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+            printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }
@@ -1732,45 +1754,11 @@ void Python::run(FILE *input)
         }
         catch (error_already_set const& e) {
 
-            //PyErr_Print();  // only shows at stderr, not in outfile
             stringstream whole;
-            whole << endl << "An error has occurred. Traceback:" << endl;
+            whole << "An error has occurred python-side. ";
+            whole << handle_pyerror();
+            cout << whole.str();
 
-            PyObject *pExcType , *pExcValue , *pExcTraceback;
-            PyErr_Fetch(&pExcType, &pExcValue, &pExcTraceback);
-
-            if (pExcType != NULL) {
-                boost::python::handle<> h_type(pExcType);
-                boost::python::str type_pstr(h_type);
-                boost::python::extract<std::string> e_type_pstr(type_pstr);
-                if(e_type_pstr.check())
-                    whole << e_type_pstr();
-                else
-                    whole << "Unknown exception type";
-            }
-            if (pExcValue != NULL) {
-                boost::python::handle<> h_val(pExcValue);
-                boost::python::str a(h_val);
-                boost::python::extract<std::string> returned(a);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << std::string(": Unparseable Python error: ");
-            }
-            if (pExcTraceback != NULL) {
-                boost::python::handle<> h_tb(pExcTraceback);
-                boost::python::object tb(boost::python::import("traceback"));
-                boost::python::object fmt_tb(tb.attr("format_tb"));
-                boost::python::object tb_list(fmt_tb(h_tb));
-                boost::python::object tb_str(boost::python::str("\n").join(tb_list));
-                boost::python::extract<std::string> returned(tb_str);
-                if(returned.check())
-                    whole << ": " << returned();
-                else
-                    whole << ": Unparseable Python traceback";
-            }
-
-            cout << whole.str() << endl << endl;
             outfile->Printf("%s\n\n", whole.str().c_str());
             exit(1);
         }

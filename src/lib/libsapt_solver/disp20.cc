@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt0.h"
@@ -111,7 +116,7 @@ void SAPT0::disp20()
   free_block(T_p_BS);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 }
@@ -139,7 +144,7 @@ void SAPT2::disp20()
     tARBS[0],1);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 
@@ -173,7 +178,7 @@ void SAPT2::disp20()
     free_block(vARBS);
 
     if (print_) {
-      outfile->Printf("    Disp20 (NO)         = %18.12lf H\n",e_no_disp20_);
+      outfile->Printf("    Disp20 (NO)         = %18.12lf [Eh]\n",e_no_disp20_);
       
     }
   }
@@ -313,7 +318,7 @@ void SAPT0::disp20()
     double tval = C_DDOT(ndf_*ndf_,xPQ[0],1,yPQ[0],1);
     e_disp20_ -= tval;
     if (debug_)
-      outfile->Printf("    Disp %2d             = %18.12lf H\n",i+1,-tval);
+      outfile->Printf("    Disp %2d             = %18.12lf [Eh]\n",i+1,-tval);
   }
 
   if (debug_)
@@ -323,7 +328,7 @@ void SAPT0::disp20()
   free_block(yPQ);
 
   if (print_) {
-    outfile->Printf("    Disp20              = %18.12lf H\n",e_disp20_);
+    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
     
   }
 

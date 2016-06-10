@@ -239,7 +239,7 @@ def balanced_error(refrxn, refeq, rrat, m=0.03, p=10.0):
 
 def fancify_mc_tag(mc, latex=False):
     """From the usual MTD-opt1_opt2-bas model chemistry identifier, return
-    string based on fullname, if *latex* is False or latex if *latex is True.
+    string based on fullname, if *latex* is False or latex if *latex* is True.
 
     """
     try:
@@ -1731,7 +1731,7 @@ class Database(object):
         matplotlib available (Canopy or Anaconda) or prints them. Returns a
         dictionary of all saved plot filenames.
 
-        >>>> asdf.plot_bars(['MP2-CP-adz', 'MP2-CP-adtz'], sset=['tt-5min', 'hb-5min', 'mx-5min', 'dd-5min'])
+        >>> asdf.plot_bars(['MP2-CP-adz', 'MP2-CP-adtz'], sset=['tt-5min', 'hb-5min', 'mx-5min', 'dd-5min'])
         """
         # compute errors
         errors = {}
@@ -2050,7 +2050,7 @@ reinitialize
         all those available. Can modify subset *sset* and plotting
         range *xlimit*.
 
-        >>>> asdf.plot_all_flats(sset='tt-5min', xlimit=4.0)
+        >>> asdf.plot_all_flats(sset='tt-5min', xlimit=4.0)
         """
         mcs = self.mcs.keys() if modelchem is None else modelchem
         filedict = OrderedDict()
@@ -2177,7 +2177,7 @@ reinitialize
         matplotlib available (Canopy or Anaconda) or prints them. Returns a
         dictionary of all saved plot filenames.
 
-        >>>>
+        >>>
         """
         # compute errors
         mc = modelchem
@@ -2474,11 +2474,11 @@ reinitialize
     def table_reactions(self, modelchem, benchmark='default', sset='default',
                         failoninc=True,
                         columnplan=['indx', 'tagl', 'bm', 'mc', 'e', 'pe'],
-                        title="""Reaction energies (kcal/mol) for {sset} $\subset$ {dbse} with {mc}""",
+                        title="""Reaction energies [kcal/mol] for {sset} $\subset$ {dbse} with {mc}""",
                         indextitle="""Detailed results for {sset} $\subset$ {dbse} with {mc}""",
                         plotpath='analysis/mols/',
                         standalone=True, theme='rxns', filename=None):
-        """Prepare single LaTeX table to *filename* or return lines if None showing
+        r"""Prepare single LaTeX table to *filename* or return lines if None showing
         the per-reaction results for reactions in *sset* for single or array
         or 'all' *modelchem*, where the last uses self.mcs(), model chemistries
         versus *benchmark*. Use *failoninc* to toggle between command failing
@@ -2881,7 +2881,7 @@ reinitialize
         footnotes = []
         landscape = False
         theme = 'summavg'
-        title = r"""Classification and Performance of model chemistries. Interaction energy (kcal/mol) {{err}} statistics.""".format()
+        title = r"""Classification and Performance of model chemistries. Interaction energy [kcal/mol] {{err}} statistics.""".format()
         return rowplan, columnplan, landscape, footnotes, title, theme
 
     def table_merge_abbr(self, plotpath, subjoin):
@@ -2909,7 +2909,7 @@ reinitialize
         footnotes = [fnreservoir['blankslat']]
         landscape = False
         theme = 'smmerge'
-        title = r"""Interaction energy (kcal/mol) {{err}} subset statistics with computed with {{opt}}{0}.""".format(
+        title = r"""Interaction energy [kcal/mol] {{err}} subset statistics with computed with {{opt}}{0}.""".format(
             '' if subjoin else r""" and {bas}""")
         return rowplan, columnplan, landscape, footnotes, title, theme
 
@@ -2946,7 +2946,7 @@ reinitialize
         footnotes = [fnreservoir['blankslat'], fnreservoir['5min']]
         landscape = True
         theme = 'lgmerge'
-        title = r"""Interaction energy (kcal/mol) {{err}} subset statistics with computed with {{opt}}{0}.""".format(
+        title = r"""Interaction energy [kcal/mol] {{err}} subset statistics with computed with {{opt}}{0}.""".format(
             '' if subjoin else r""" and {bas}""")
         return rowplan, columnplan, landscape, footnotes, title, theme
 

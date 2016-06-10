@@ -146,7 +146,7 @@ def parse_input():
     group.add_argument('--extra-math-flags',
             action='store',
             default=None,
-            help='extra linker flags (usually -Llibdir -llibname type arguments) [default: %(default)s]',
+            help='extra linker flags (usually -Llibdir -llibname type arguments). use equals, quotes, and spaces for correct parsing (e.g., --extra-math-flags="-lm -lgfortran") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--accelerate',
             action='store_true',
@@ -379,7 +379,7 @@ def parse_input():
     group.add_argument('--extra-cc-flags',
             action='store',
             default=None,
-            help='extra C flags [default: %(default)s]',
+            help='extra C flags. use equals, quotes, and spaces for correct parsing (e.g., --extra-cc-flags="-no-prec-div") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--extra-cxx-flags',
             action='store',
@@ -396,7 +396,7 @@ def parse_input():
     group.add_argument('--custom-cc-flags',
             action='store',
             default=None,
-            help='C flags [default: %(default)s]',
+            help='C flags. use equals, quotes, and spaces for correct parsing (e.g., --custom-cc-flags="-dynamic -fPIC") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--custom-cxx-flags',
             action='store',
@@ -750,14 +750,14 @@ def configure_default_compilers(args):
             args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
             args.mpi = 'on'
 
-    if not args.cc and os.environ['CC']:
+    if not args.cc and 'CC' in os.environ:
         args.cc = os.environ['CC']
 
-    if not args.cxx and os.environ['CXX']:
+    if not args.cxx and 'CXX' in os.environ:
         args.cxx = os.environ['CXX']
 
-    if not args.fc and os.environ['FC']:
-        argc.fc = os.environ['FC']
+    if not args.fc and 'FC' in os.environ:
+        args.fc = os.environ['FC']
 
 
 

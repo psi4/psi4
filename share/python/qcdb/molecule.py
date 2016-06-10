@@ -281,7 +281,7 @@ class Molecule(LibmintsMolecule):
         instance.update_geometry()
         return instance
 
-    def save_string_xyz(self, save_ghosts=True):
+    def save_string_xyz(self, save_ghosts=True, save_natom=False):
         """Save a string for a XYZ-style file.
 
         >>> H2OH2O.save_string_xyz()
@@ -303,7 +303,9 @@ class Molecule(LibmintsMolecule):
             for i in range(self.natom()):
                 if self.Z(i):
                     N += 1
-        text = "%d\n" % (N)
+        text = ''
+        if save_natom:
+            text += "%d\n" % (N)
         text += '%d %d %s\n' % (self.molecular_charge(), self.multiplicity(), self.tagline)
 
         for i in range(self.natom()):

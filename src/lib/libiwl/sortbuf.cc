@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 /*!
@@ -26,14 +31,24 @@
 */
 #include <cstdio>
 #include <cmath>
+#include <string>
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
 #include "libparallel/ParallelPrinter.h"
+#include <libqt/qt.h>
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
 #define BIGNUM 40000
+
+#if !defined( EXPLICIT_IOFF )
+#   define EXPLICIT_IOFF(i) ( (i) * ((i) + 1) / 2 )
+#endif
+
+#if !defined( INDEX2 )
+#   define INDEX2(i, j) ( (i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i) )
+#endif
 
 namespace psi {
 
@@ -229,6 +244,183 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 }
 
 /*!
+** sortbuf_pk()
+**
+** Function reads a file of two-electron integrals into
+** core and writes them back out again in canonical order.  Used in
+** Yoshimine PK sort where we have a file containing a few value of pq
+** and all corresponding rs <= pq. We sort to make sure orbitals are
+** directly readable to form Coulomb and exchange matrices, thus with
+** pq >= rs, p >= q and r >= s. In addition, diagonal elements are
+** multiplied by the appropriate factors.
+** The integrals are written to the PK file directly, in the relevant
+** entry, without labels.
+**
+** One interesting issue here is that the intermediate array ('ints')
+** must be big enough to hold the integrals in the current buffer, but
+** we don't generally want it to be much larger than necessary!  Thus
+** we calculate an 'offset' which is the canonical index of the first
+** integral in the buffer, and we use this so that the first integral
+** in the buffer is stored in ints[0].
+**
+**    \param Inbuf       = IWL buffer for input
+**    \param out_tape    = PK file number for output
+**    \param is_exch     = 0 if we are sorting Coulomb, otherwise 1
+**    \param ints        = array to hold integrals in
+**    \param fpq         = first pq for this tape
+**    \param lpq         = last pq for this tape
+**    \param so2rel      = array mapping absolute basis function index to relative
+**                         basis function index within an irrep, so2rel[abs] = rel
+**    \param so2sym      = array mapping absolute basis function index to irrep
+**                         number, so2sym[abs] = sym
+**    \param pksymoff    = array containing the offset in each irrep to convert a
+**                         pq index computed with relative indices to an absolute
+**                         pq index, pqrel = ioff[prel] + qrel, pqabs = pqrel + pksymoff[psym]
+**    \param ioff        = offset array for the left indices
+**    \param num_so      = number of basis functions per irrep
+**    \param qdim        = dimensions for the q index...nvirt for MP2
+**    \param printflg    = 1 for printing, 0 otherwise
+**    \param out     = output file pointer
+**
+** Returns: none
+**
+** N.B. No need to iwl_flush the output buffer...not done in here!!
+** \ingroup IWL
+*/
+void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
+                         unsigned int fpq, unsigned int lpq, int *so2ind, int *so2sym,
+                         int *pksymoff, int printflg, std::string out)
+{
+   Value *valptr;              /* array of integral values */
+   Label *lblptr;              /* array of integral labels */
+   int idx;                    /* index for curr integral (0..ints_per_buf) */
+   int lastbuf;                /* last buffer flag */
+   int pabs, qabs, rabs, sabs;
+   int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+   unsigned long int pq, rs, pqrs, offset, maxind;
+
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   if (printflg) {
+     printer->Printf( "\nsortbuf_pk for pq=%d to %d\n", fpq, lpq);
+   }
+
+   // Compute the index of the lowest pq for offset
+
+   offset = (size_t)fpq * (fpq + 1L) / 2L;
+
+   maxind = INDEX2(lpq, lpq);
+
+//   outfile->Printf("Offset is %lu and maxind is %lu.\n", offset, maxind);
+//
+   lblptr = Inbuf->labels();
+   valptr = Inbuf->values();
+
+   /* Read all integrals from a bucket file,
+    * one buffer at a time until we're done
+      We sort them upon reading in the twoel array */
+
+   do {
+       timer_on("Reading the buckets");
+       Inbuf->fetch();
+       timer_off("Reading the buckets");
+      lastbuf = Inbuf->last_buffer();
+      for (idx=4*Inbuf->index(); Inbuf->index()<Inbuf->buffer_count(); Inbuf->index()++) {
+          pabs = (int) lblptr[idx++];
+          qabs = (int) lblptr[idx++];
+          rabs = (int) lblptr[idx++];
+          sabs = (int) lblptr[idx++];
+
+          // Get indices within symmetry
+
+          prel = so2ind[pabs];
+          qrel = so2ind[qabs];
+          rrel = so2ind[rabs];
+          srel = so2ind[sabs];
+
+          psym = so2sym[pabs];
+          qsym = so2sym[qabs];
+          rsym = so2sym[rabs];
+          ssym = so2sym[sabs];
+
+//DEBUG          outfile->Printf("INT <%d %d|%d %d>\n", pabs, qabs, rabs, sabs);
+
+          if (!is_exch) {
+
+              // We only stored integrals of the relevant symmetry
+              pq = INDEX2(prel, qrel);
+              pq += pksymoff[psym];
+              rs = INDEX2(rrel, srel);
+              rs += pksymoff[rsym];
+              pqrs = INDEX2(pq, rs);
+//DEBUG         if (pqrs > maxind || (pqrs < offset)) {
+//DEBUG             outfile->Printf("pqrs is out of bounds for J\n");
+//DEBUG         }
+              ints[pqrs - offset] += valptr[Inbuf->index()];
+
+          } else {
+              // K (2nd sort, ILJK)
+              if ((psym == qsym) && (rsym == ssym)) {
+                  if ( (prel != qrel) && (rrel != srel)) {
+                      if((psym == ssym) && (qsym == rsym)) {
+                          pq = INDEX2(prel, srel);
+                          pq += pksymoff[psym];
+                          rs = INDEX2(qrel, rrel);
+                          rs += pksymoff[qsym];
+                          pqrs = INDEX2(pq, rs);
+                          if ((pqrs <= maxind) && (pqrs >= offset)) {
+//                              if(rs > pq) {
+//                                outfile->Printf("rs > pq 2nd sort!!\n");
+//                              }
+                              if(prel == srel || qrel == rrel) {
+                                  ints[pqrs - offset] += valptr[Inbuf->index()];
+                              } else {
+                                  ints[pqrs - offset] += 0.5 * valptr[Inbuf->index()];
+                              }
+                          }
+                      }
+                  }
+              }
+              // K (1st sort, IKJL)
+              if ((psym == rsym) && (qsym == ssym)) {
+                  pq = INDEX2(prel, rrel);
+                  pq += pksymoff[psym];
+                  rs = INDEX2(qrel, srel);
+                  rs += pksymoff[qsym];
+                  pqrs = INDEX2(pq, rs);
+                  if ((pqrs <= maxind) && (pqrs >= offset) ) {
+//                      if(rs > pq) {
+//                        outfile->Printf("rs > pq 1st sort!!\n");
+//                      }
+                      if((prel == rrel) || (qrel == srel)) {
+                          ints[pqrs - offset] += valptr[Inbuf->index()];
+                      } else {
+                          ints[pqrs - offset] += 0.5 * valptr[Inbuf->index()];
+                      }
+                  }
+              }
+
+          }
+
+
+          if (printflg)
+            printer->Printf( "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                pabs, qabs, rabs, sabs, pq, rs, pqrs, ints[pqrs-offset]) ;
+      }
+   } while (!lastbuf);
+
+   for(pq = fpq; pq <= lpq; ++pq) {
+       pqrs = INDEX2(pq, pq);
+       ints[pqrs - offset] *= 0.5;
+   }
+
+//DEBUG   outfile->Printf("Final pqrs value %i\n", pqrs);
+   /* That's all we do here. The integral array is now ready
+    * to be written in the appropriate file. */
+
+}
+/*!
 ** sortbuf()
 **
 ** Function reads a file of two-electron integrals into
@@ -278,7 +470,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 ** Returns: none
 **
 ** Revised 6/27/96 by CDS for new IWL format
-** N.B. Now need to iwl_flush the output buffer...not done in here!!
+** N.B. No need to iwl_flush the output buffer...not done in here!!
 ** \ingroup IWL
 */
 void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
@@ -472,5 +664,182 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    
 }
 
+/*!
+** sortbuf_pk()
+**
+** Function reads a file of two-electron integrals into
+** core and writes them back out again in canonical order.  Used in
+** Yoshimine PK sort where we have a file containing a few value of pq
+** and all corresponding rs <= pq. We sort to make sure orbitals are
+** directly readable to form Coulomb and exchange matrices, thus with
+** pq >= rs, p >= q and r >= s. In addition, diagonal elements are
+** multiplied by the appropriate factors.
+** The integrals are written to the PK file directly, in the relevant
+** entry, without labels.
+**
+** One interesting issue here is that the intermediate array ('ints')
+** must be big enough to hold the integrals in the current buffer, but
+** we don't generally want it to be much larger than necessary!  Thus
+** we calculate an 'offset' which is the canonical index of the first
+** integral in the buffer, and we use this so that the first integral
+** in the buffer is stored in ints[0].
+**
+**    \param Inbuf       = IWL buffer for input
+**    \param out_tape    = PK file number for output
+**    \param is_exch     = 0 if we are sorting Coulomb, otherwise 1
+**    \param ints        = array to hold integrals in
+**    \param fpq         = first pq for this tape
+**    \param lpq         = last pq for this tape
+**    \param so2rel      = array mapping absolute basis function index to relative
+**                         basis function index within an irrep, so2rel[abs] = rel
+**    \param so2sym      = array mapping absolute basis function index to irrep
+**                         number, so2sym[abs] = sym
+**    \param pksymoff    = array containing the offset in each irrep to convert a
+**                         pq index computed with relative indices to an absolute
+**                         pq index, pqrel = ioff[prel] + qrel, pqabs = pqrel + pksymoff[psym]
+**    \param ioff        = offset array for the left indices
+**    \param num_so      = number of basis functions per irrep
+**    \param qdim        = dimensions for the q index...nvirt for MP2
+**    \param printflg    = 1 for printing, 0 otherwise
+**    \param out     = output file pointer
+**
+** Returns: none
+**
+** N.B. No need to iwl_flush the output buffer...not done in here!!
+** \ingroup IWL
+*/
+void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
+      double *ints, unsigned int fpq, unsigned int lpq, int* so2ind, int* so2sym,
+      int* pksymoff, int printflg, std::string out)
+{
+   Value *valptr;              /* array of integral values */
+   Label *lblptr;              /* array of integral labels */
+   int idx;                    /* index for curr integral (0..ints_per_buf) */
+   int lastbuf;                /* last buffer flag */
+   int pabs, qabs, rabs, sabs;
+   int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+   unsigned long int pq, rs, pqrs, offset, maxind;
+
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   if (printflg) {
+     printer->Printf( "\nsortbuf_pk for pq=%d to %d\n", fpq, lpq);
+   }
+
+   // Compute the index of the lowest pq for offset
+
+   offset = (size_t)fpq * (fpq + 1L) / 2L;
+
+   maxind = INDEX2(lpq, lpq);
+
+//   outfile->Printf("Offset is %lu and maxind is %lu.\n", offset, maxind);
+//
+   lblptr = Inbuf->labels;
+   valptr = Inbuf->values;
+
+   /* Read all integrals from a bucket file,
+    * one buffer at a time until we're done
+      We sort them upon reading in the twoel array */
+
+   do {
+      timer_on("Reading the buckets");
+      iwl_buf_fetch(Inbuf);
+      timer_off("Reading the buckets");
+      lastbuf = Inbuf->lastbuf;
+      for (idx=4*Inbuf->idx; Inbuf->idx<Inbuf->inbuf; Inbuf->idx++) {
+          pabs = (int) lblptr[idx++];
+          qabs = (int) lblptr[idx++];
+          rabs = (int) lblptr[idx++];
+          sabs = (int) lblptr[idx++];
+
+          // Get indices within symmetry
+
+          prel = so2ind[pabs];
+          qrel = so2ind[qabs];
+          rrel = so2ind[rabs];
+          srel = so2ind[sabs];
+
+          psym = so2sym[pabs];
+          qsym = so2sym[qabs];
+          rsym = so2sym[rabs];
+          ssym = so2sym[sabs];
+
+//DEBUG          outfile->Printf("INT <%d %d|%d %d>\n", pabs, qabs, rabs, sabs);
+
+          if (!is_exch) {
+
+              // We only stored integrals of the relevant symmetry
+              pq = INDEX2(prel, qrel);
+              pq += pksymoff[psym];
+              rs = INDEX2(rrel, srel);
+              rs += pksymoff[rsym];
+              pqrs = INDEX2(pq, rs);
+//DEBUG         if (pqrs > maxind || (pqrs < offset)) {
+//DEBUG             outfile->Printf("pqrs is out of bounds for J\n");
+//DEBUG         }
+              ints[pqrs - offset] += valptr[Inbuf->idx];
+
+          } else {
+              // K (2nd sort, ILJK)
+              if ((psym == qsym) && (rsym == ssym)) {
+                  if ( (prel != qrel) && (rrel != srel)) {
+                      if((psym == ssym) && (qsym == rsym)) {
+                          pq = INDEX2(prel, srel);
+                          pq += pksymoff[psym];
+                          rs = INDEX2(qrel, rrel);
+                          rs += pksymoff[qsym];
+                          pqrs = INDEX2(pq, rs);
+                          if ((pqrs <= maxind) && (pqrs >= offset)) {
+//                              if(rs > pq) {
+//                                outfile->Printf("rs > pq 2nd sort!!\n");
+//                              }
+                              if(prel == srel || qrel == rrel) {
+                                  ints[pqrs - offset] += valptr[Inbuf->idx];
+                              } else {
+                                  ints[pqrs - offset] += 0.5 * valptr[Inbuf->idx];
+                              }
+                          }
+                      }
+                  }
+              }
+              // K (1st sort, IKJL)
+              if ((psym == rsym) && (qsym == ssym)) {
+                  pq = INDEX2(prel, rrel);
+                  pq += pksymoff[psym];
+                  rs = INDEX2(qrel, srel);
+                  rs += pksymoff[qsym];
+                  pqrs = INDEX2(pq, rs);
+                  if ((pqrs <= maxind) && (pqrs >= offset) ) {
+//                      if(rs > pq) {
+//                        outfile->Printf("rs > pq 1st sort!!\n");
+//                      }
+                      if((prel == rrel) || (qrel == srel)) {
+                          ints[pqrs - offset] += valptr[Inbuf->idx];
+                      } else {
+                          ints[pqrs - offset] += 0.5 * valptr[Inbuf->idx];
+                      }
+                  }
+              }
+
+          }
+
+
+          if (printflg)
+            printer->Printf( "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                pabs, qabs, rabs, sabs, pq, rs, pqrs, ints[pqrs-offset]) ;
+      }
+   } while (!lastbuf);
+
+   for(pq = fpq; pq <= lpq; ++pq) {
+       pqrs = INDEX2(pq, pq);
+       ints[pqrs - offset] *= 0.5;
+   }
+
+//DEBUG   outfile->Printf("Final pqrs value %i\n", pqrs);
+   /* That's all we do here. The integral array is now ready
+    * to be written in the appropriate file. */
+
 }
 
+}

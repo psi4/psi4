@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef CIWAVE_H
@@ -110,6 +115,31 @@ public:
      */
     void transform_mcscf_integrals(bool approx_only);
 
+    /**
+     * Rotates the integrals for MCSCF computations, places the integrals in CI order.
+     * @param K         Rotation matrix (active x N)
+     * @param onel_out  one-electron output vector
+     * @param twoel_out two-electron output vector
+     */
+    void rotate_mcscf_integrals(SharedMatrix K, SharedVector onel_out,
+                                SharedVector twoel_out);
+
+    /**
+     * Takes a pitzer order act x act Matrix and converts it into a ci-ordered vector that
+     * CI sigma vectors use.
+     * @param src  Source Matrix - can have irreps
+     * @param dest Destination Vector - should be of size, ncitri = (nact * (nact + 1)) / 2
+     */
+    void pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest);
+
+    /**
+     * Takes a pitzer order act^2 x act^2 Matrix and converts it into a ci-ordered vector that
+     * CI sigma vectors use.
+     * @param src  Source Matrix - Cannot have irreps
+     * @param dest Destination Vector - should be of size, (ncitri * (nctri + 1)) / 2
+     */
+    void pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector dest);
+
     /**!
      * Obtains the OPDM <Iroot| Epq |Jroot> from the ciwave object. If Jroot is
      * negative then Iroot == Jroot, if both roots are -1 then the "special" CI
@@ -124,12 +154,34 @@ public:
                            bool full_space=false);
 
     /**!
+     * Compute the one-particle density matrix between two CIVectors
+     * @param Ivec       The SharedCIVector for I
+     * @param Jvec       The SharedCIVector for J
+     * @param Jroot      Jroot to use
+     * @param Iroot      Iroot to use
+     * @return           AA, BB, and summed OPDM's
+    **/
+    std::vector<SharedMatrix> opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                    int Iroot, int Jroot);
+
+    /**!
      * Obtains the "special" TPDM, other TPDM roots are not held here.
      * @param spin       Selects which spin to return AA, AB, BB, or SUM
      * @param symmetrize Symmetrize the TPDM, only works for SUM currently
      * @return           The request 4D active TPDM
      **/
     SharedMatrix get_tpdm(const std::string& spin = "SUM", bool symmetrize=true);
+
+    /**!
+     * Compute the two-particle density matrix between two CIVectors
+     * @param Ivec       The SharedCIVector for I
+     * @param Jvec       The SharedCIVector for J
+     * @param Jroot      Jroot to use
+     * @param Iroot      Iroot to use
+     * @return           AA, AB, BB, and summed TPDM's
+    **/
+    std::vector<SharedMatrix> tpdm(SharedCIVector Ivec, SharedCIVector Jvec, int Iroot,
+                                                   int Jroot);
 
     /**!
      Builds and returns a new CIvect object.
@@ -161,11 +213,13 @@ public:
      * @param S    Output vector
      * @param cvec Which vector number to use for the C vec
      * @param svec Which vector number to use for the S vec
+     * @param oei  One-electron integrals to use
+     * @param tei  Two-electron integrals to use
      */
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
+    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec,
+               SharedVector oei, SharedVector tei);
 
-
-    SharedMatrix orbital_ci_block(int fi, int fj);
     // Compute functions
     void compute_mcscf();
     void compute_cc();
@@ -204,7 +258,6 @@ private:
 
     // General setup
     void title();
-    void init_ioff();
     void form_strings();
     void set_ciblks();
 
@@ -227,8 +280,10 @@ private:
     boost::shared_ptr<JK> jk_;
 
     /// General transforms
-    void tf_onel_ints();
-    void form_gmat();
+    // void tf_onel_ints();
+    // void form_gmat();
+    void tf_onel_ints(SharedVector onel, SharedVector twoel, SharedVector output);
+    void form_gmat(SharedVector onel, SharedVector twoel, SharedVector output);
     void onel_ints_from_jk();
     double get_twoel(int i, int j, int k, int l);
     double get_onel(int i, int j);
@@ -237,12 +292,12 @@ private:
     void setup_mcscf_ints();
     void transform_mcscf_ints(bool approx_only = false);
     void read_dpd_ci_ints();
+    void rotate_mcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
 
     /// DF integral functions
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints(bool approx_only = false);
-
-
+    void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
@@ -255,7 +310,6 @@ private:
     struct H_zero_block *H0block_;
     int **s1_contrib_, **s2_contrib_, **s3_contrib_;
     int ***OV_;
-    int *ioff_;
     unsigned char ***Occs_;
 
     /// => H0block functions <= //
@@ -339,16 +393,17 @@ private:
     void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
           int *Iaidx, int *Ibidx, double *coeff);
 
+    /// => MCSCF helpers <= //
+
 
     /// => MPn helpers <= //
     void mpn_generator(CIvect &Hd);
 
     /// => Density Matrix helpers <= //
-    std::vector<std::vector<SharedMatrix> > opdm(int root_start, int nroots, int Ifile,
-                                                 int Jfile, bool transden);
+    std::vector<std::vector<SharedMatrix> > opdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                                std::vector<std::tuple<int, int> > states_vec);
     SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt=false);
     void opdm_properties(void);
-
     void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
@@ -363,7 +418,8 @@ private:
     SharedMatrix opdm_a_;
     SharedMatrix opdm_b_;
 
-    std::vector<SharedMatrix> tpdm(int nroots, int Ifirstunit, int Jfirstunit);
+    std::vector<SharedMatrix> tpdm(SharedCIVector Ivec, SharedCIVector Jvec,
+                                   std::vector<std::tuple<int, int, double> > states_vec);
     void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
             int nbf, int nalplists, int nbetlists,
             double *twopdm_aa, double *twopdm_bb, double *twopdm_ab, double **CJ, double **CI, int Ja_list,
@@ -381,4 +437,3 @@ private:
 }}
 
 #endif // CIWAVE_H
-

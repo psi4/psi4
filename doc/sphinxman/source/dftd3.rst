@@ -18,13 +18,34 @@ downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&su
 Installation
 ~~~~~~~~~~~~
 
-Follow the instructions provided with the source to build the DFTD3
-program (essentially, unpack the source, edit the Makefile to select a
-Fortran compiler, and run make). For the moment, you must apply a patch,
-:source:`share/scripts/patch_grimme_dftd3.3.0.2`, to the dftd3 source before building.
-To be used by |PSIfour|, the program binary (``dftd3``) must be found in
-your :envvar:`PATH`. If |PSIfour| is unable to execute the binary, an
-error will be reported.
+DFTD3 is available as conda package. If using the |PSIfour| binary, the
+``dftd3`` executable has already been installed alongside. If using
+|PSIfour| built from source, and anaconda or miniconda has already
+been installed (instructions at :ref:`sec:quickconda`), the ``dftd3``
+executable can be obtained through ``conda install dftd3m``.
+
+To be used by |PSIfour|, the program binary (``dftd3``) must be
+found in your :envvar:`PSIPATH` or :envvar:`PATH` (in that order). If
+|PSIfour| is unable to execute the binary, an error will be reported.
+To preferentially use a particular dftd3 compilation, simply adjust its
+position in the path environment variables. To remove the dftd3 that
+conda installs alongside |PSIfour|, ``conda remove dftd3m``.
+
+.. note:: At present there are two conda packages. ``dftd3`` is the
+   DFTD3 code straight from Grimme and |PSIfour| uses it for -D3
+   and -D3BJ. ``dftd3m`` additionally patches DFTD3 according to
+   [Smith:2016:2197]_ to compute -D3M and -D3MBJ. Eventually this
+   distinction will cease. But for the moment, this documents the
+   distinction. ``dftd3m`` the package is what gets installed alongside
+   the conda |PSIfour| binary. Both packages install an executable
+   with the same name, ``dftd3``.
+
+Alternatively, to build DFTD3 yourself,
+follow the instructions provided with the source
+(essentially, unpack the source, edit the Makefile to select a
+Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can be used 
+as-is; for earlier versions, patches are available: 
+:source:`share/scripts/patch_grimme_dftd3.3.0.2`. 
 
     >>> cd dftd3
     >>> ls 
@@ -166,6 +187,12 @@ program is suppressed; to see it in the output file, set print > 2.
    +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
    | -D3BJ                               | -D3 [#f4]_ w/ newer Becke-Johnson rational damping through ``dftd3``                                    | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]          |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
+   | -D3M                                | alias to -D3MZERO                                                                                       |                                                               |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
+   | -D3MZERO                            | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping through ``dftd3``                 | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]    |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
+   | -D3MBJ                              | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping through ``dftd3``                    | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]          |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------+---------------------------------------------------------------+
 
 .. rubric:: Footnotes
 
@@ -176,6 +203,7 @@ program is suppressed; to see it in the output file, set print > 2.
 .. [#f2] [Grimme:2006:1787]_
 .. [#f3] [Grimme:2010:154104]_
 .. [#f4] [Grimme:2011:1456]_
+.. [#f5] [Smith:2016:2197]_
 
 A few practical examples:
 
@@ -199,7 +227,7 @@ A few practical examples:
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~interface_dftd3.run_dftd3`. (This function
+through the python function :py:func:`~qcdb.interface_dftd3.run_dftd3`. (This function
 is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
 This route is much faster than running a DFT-D energy.
 
@@ -229,7 +257,7 @@ This route is much faster than running a DFT-D energy.
    >>> print E
    -0.00024762
 
-.. autofunction:: interface_dftd3.run_dftd3
+.. autofunction:: qcdb.interface_dftd3.run_dftd3
 
 
 .. comment print_stdout('  -D correction from Py-side')

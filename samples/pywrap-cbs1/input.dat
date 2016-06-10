@@ -7,13 +7,16 @@ Li
 
 }
 
-set globals {
+set {
     reference rohf
     scf_type pk
     df_scf_guess false
 }
 
-e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
+e_cbs = energy(cbs,
+            scf_wfn='scf',
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme=driver_cbs.scf_xtpl_helgaker_3)
 
 clean()
 
@@ -26,15 +29,20 @@ H 1 R
 R = 1
 }
 
-set globals {
+set {
     reference rhf
     guess core
     mp2_type conv
     df_scf_guess true
 }
 
-e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
-
+e_cbs = energy(cbs,
+            corl_wfn='mp2',
+            corl_basis='cc-pV[TQ]Z',
+            corl_scheme=driver_cbs.corl_xtpl_helgaker_2,
+            delta_wfn='ccsd',
+            delta_basis='cc-pV[DT]Z',
+            delta_scheme=driver_cbs.corl_xtpl_helgaker_2)
 clean()
 
 
@@ -43,18 +51,27 @@ molecule {
 He
 }
 
-set globals {
+set {
     reference rhf
     df_scf_guess false
 }
 
-e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
-
+e_cbs = energy(cbs,
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme=driver_cbs.scf_xtpl_helgaker_3,
+            corl_wfn='ccsd',
+            corl_basis='aug-cc-pV[DT]Z',
+            corl_scheme=driver_cbs.corl_xtpl_helgaker_2)
 
 clean()
 
 # Example with default extrapolation schemes
-e_cbs = cbs('mp2', corl_basis='cc-pv[dt]z', delta_wfn='mp5', delta_basis='cc-pVDZ')
+e_cbs = energy(cbs,
+            corl_wfn='mp2',
+            corl_basis='cc-pv[dt]z',
+            delta_wfn='mp5',
+            delta_basis='cc-pVDZ')
+
 
 
 

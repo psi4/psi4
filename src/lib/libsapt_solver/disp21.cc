@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p.h"
@@ -32,7 +37,7 @@ void SAPT2p::disp21()
     "Theta AR Intermediates",aoccA_,nvirA_);
 
   if (debug_) {
-    outfile->Printf("    Disp210             = %18.12lf H\n",e_disp210);
+    outfile->Printf("    Disp210             = %18.12lf [Eh]\n",e_disp210);
     
   }
 
@@ -42,14 +47,14 @@ void SAPT2p::disp21()
     "Theta BS Intermediates",aoccB_,nvirB_);
 
   if (debug_) {
-    outfile->Printf("    Disp201             = %18.12lf H\n\n",e_disp201);
+    outfile->Printf("    Disp201             = %18.12lf [Eh]\n\n",e_disp201);
     
   }
 
   e_disp21_ = e_disp210 + e_disp201;
 
   if (print_) {
-    outfile->Printf("    Disp21              = %18.12lf H\n",e_disp21_);
+    outfile->Printf("    Disp21              = %18.12lf [Eh]\n",e_disp21_);
     
   }
 }
@@ -72,7 +77,7 @@ double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel,
   free_block(gARBS);
 
   if (debug_) {
-    outfile->Printf("\n    Disp21_1            = %18.12lf H\n",energy);
+    outfile->Printf("\n    Disp21_1            = %18.12lf [Eh]\n",energy);
     
   }
 
@@ -97,7 +102,7 @@ double SAPT2p::disp21_2(int ampfile, const char *tlabel,
   free_block(theta_p_AR);
 
   if (debug_) {
-    outfile->Printf("    Disp21_2            = %18.12lf H\n",energy);
+    outfile->Printf("    Disp21_2            = %18.12lf [Eh]\n",energy);
     
   }
 

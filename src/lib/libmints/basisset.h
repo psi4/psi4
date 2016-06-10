@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef _psi_src_lib_libmints_basisset_h_
@@ -144,12 +149,6 @@ public:
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
-    /**
-     * Creates a new basis set object for an atom, from an existing basis set
-     * bs: the basis set to copy data from
-     * center: the atom in bs to copy over
-     */
-    BasisSet(const BasisSet *bs, const int center);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -292,14 +291,6 @@ public:
     /// Return the overall shell number
     int shell_on_center(int center, int shell) const { return center_to_shell_[center] + shell; }
 
-    /** Return a BasisSet object containing all shells at center i
-     *
-     * Used for Atomic HF computations for SAD Guesses
-     *
-     * @param center Atomic center to provide a basis object for.
-     * @returns A new basis set object for the atomic center.
-     */
-    boost::shared_ptr<BasisSet> atomic_basis_set(int center);
 
     /** Returns an empty basis set object.
      *

@@ -17,7 +17,7 @@ def expand_saveas(saveas, def_filename, def_path=os.path.abspath(os.curdir), def
     absolute filename is returned, lacking only file extension. Based on
     analysis of missing parts of *saveas*, path information from *def_path*
     and/or filename information from *def_prefix* + *def_filename* is
-    inserted. *def_prefix* is intended to be something like 'mplthread_'
+    inserted. *def_prefix* is intended to be something like ``mplthread_``
     to identify the type of figure.
 
     """

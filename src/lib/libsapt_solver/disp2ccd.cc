@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "sapt2p.h"
@@ -175,7 +180,7 @@ timer_off("CCD Intra Prep     ");
     mo2noB);
 
   e_disp2d_ccd_ = disp2_ccd;
-  outfile->Printf("    Disp2 (CCD)         = %18.12lf H\n",e_disp2d_ccd_);
+  outfile->Printf("    Disp2 (CCD)         = %18.12lf [Eh]\n",e_disp2d_ccd_);
 
   // => (S) <= //
 
@@ -200,9 +205,9 @@ timer_off("CCD Intra Prep     ");
   e_disp22s_ccd_ = d220s + d202s;
 
   if (print_) {
-    outfile->Printf("\n    Disp220 (S)         = %18.12lf mH\n",d220s*1000.0);
-    outfile->Printf("    Disp202 (S)         = %18.12lf mH\n",d202s*1000.0);
-    outfile->Printf("    Disp22 (S)          = %18.12lf mH\n\n",e_disp22s_ccd_*1000.0);
+    outfile->Printf("\n    Disp220 (S)         = %18.12lf mEh\n",d220s*1000.0);
+    outfile->Printf("    Disp202 (S)         = %18.12lf mEh\n",d202s*1000.0);
+    outfile->Printf("    Disp22 (S)          = %18.12lf mEh\n\n",e_disp22s_ccd_*1000.0);
     
   }
 }
@@ -404,7 +409,7 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
   int occB = noccB_ - foccB_;
 
   if (print_) {
-    outfile->Printf("Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
+    outfile->Printf("Iter      Energy [mEh]        dE [mEh]           RMS [mEh]\n");
     
   }
 
@@ -697,7 +702,7 @@ double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char
   int occA = noccA_ - foccA_;
 
   if (print_) {
-    outfile->Printf("Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
+    outfile->Printf("Iter      Energy [mEh]        dE [mEh]           RMS [mEh]\n");
     
   }
 

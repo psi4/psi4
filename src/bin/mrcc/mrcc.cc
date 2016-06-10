@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include <psi4-dec.h>
@@ -572,7 +577,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options& options, c
 {
     tstart();
 
-    outfile->Printf( "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||
@@ -633,7 +638,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
 {
     tstart();
 
-    outfile->Printf( "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  Psi4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||
@@ -725,7 +730,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
         outfile->Printf( "  WARNING: Integrals were not found on disk. Computing them now.\n");
         outfile->Printf( "           If you modified any of the integrals those modifications\n");
         outfile->Printf( "           will be lost. If you need them file an issue on GitHub:\n");
-        outfile->Printf( "               https://github.com/psi4/psi4public/issues\n\n");
+        outfile->Printf( "               https://github.com/psi4/psi4/issues\n\n");
 
         // Integrals do not exist on disk. Compute them.
         MintsHelper helper(wave->basisset(), options, 0);
@@ -1005,4 +1010,3 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
 //  Process::environment.globals["CC4 CORRELATION ENERGY"] =
 //  Process::environment.globals["CCnn TOTAL ENERGY"] =
 //  Process::environment.globals["CCnn CORRELATION ENERGY"] =
-
