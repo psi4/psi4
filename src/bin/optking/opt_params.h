@@ -56,7 +56,7 @@ struct OPT_PARAMS {
 
   enum INTERFRAGMENT_MODE {FIXED, PRINCIPAL_AXES} interfragment_mode;
 
-  bool generate_intcos_only;
+  bool intcos_generate_exit;
 
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow

@@ -216,7 +216,7 @@ OptReturnType optking(void) {
 #endif
 
     // only generate coordinates and print them out
-    if (Opt_params.generate_intcos_only) {
+    if (Opt_params.intcos_generate_exit) {
       oprintf_out("\tUpon request, generating intcos and halting.\n");
       close_output_dat();
       return OptReturnEndloop;

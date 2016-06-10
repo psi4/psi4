@@ -146,8 +146,8 @@ void set_params(void)
     else if (s == "PRINCIPAL_AXES") Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 // Whether to only generate the internal coordinates and then stop {true, false}
-//  Opt_params.generate_intcos_only;
-    Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
+//  Opt_params.intcos_generate_exit;
+    Opt_params.intcos_generate_exit = options.get_bool("INTCOS_GENERATE_EXIT");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE, LINDH}
     s = options.get_str("INTRAFRAG_HESS");
@@ -389,7 +389,7 @@ void set_params(void)
   Opt_params.keep_intcos = options.get_bool("KEEP_INTCOS");
 
   // if we are running only to generate them, then we assume we'll keep them
-  if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
+  if (Opt_params.intcos_generate_exit && !options["KEEP_INTCOS"].has_changed())
     Opt_params.keep_intcos = true;
 
   // for coordinates with user-specified equilibrium values - this is the force constant
@@ -495,7 +495,7 @@ void set_params(void)
   else if (i == 1) Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 // only generate intcos
-  Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
+  Opt_params.intcos_generate_exit = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
 
 // model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = simple
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_H);
@@ -875,10 +875,10 @@ void print_params_out(void) {
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
   oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
 
-  if (Opt_params.generate_intcos_only)
-    oprintf_out( "generate_intcos_only   = %18s\n", "true");
+  if (Opt_params.intcos_generate_exit)
+    oprintf_out( "intcos_generate_exit   = %18s\n", "true");
   else
-    oprintf_out( "generate_intcos_only   = %18s\n", "false");
+    oprintf_out( "intcos_generate_exit   = %18s\n", "false");
 
   //if (Opt_params.print_params)
   //oprintf_out( "print_params           = %18s\n", "true");
