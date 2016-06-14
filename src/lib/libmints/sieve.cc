@@ -42,8 +42,6 @@ ERISieve::ERISieve(boost::shared_ptr<BasisSet> primary, double sieve) :
 }
 ERISieve::~ERISieve()
 {
-    delete[] function_pair_values_;
-    delete[] shell_pair_values_;
 }
 void ERISieve::common_init()
 {
@@ -204,10 +202,10 @@ void ERISieve::integrals()
     nbf_ = nbf;
     nshell_ = nshell;
 
-    function_pair_values_ = new double[nbf * (unsigned long int)nbf];
-    shell_pair_values_ = new double[nshell * (unsigned long int)nshell];
-    ::memset((void*) function_pair_values_, '\0', sizeof(double) * nbf * nbf);
-    ::memset((void*) shell_pair_values_, '\0', sizeof(double) * nshell * nshell);
+    function_pair_values_.resize(nbf * (size_t) nbf);
+    shell_pair_values_.resize(nshell * (size_t) nshell);
+    ::memset(&function_pair_values_[0], '\0', sizeof(double) * nbf * nbf);
+    ::memset(&shell_pair_values_[0], '\0', sizeof(double) * nshell * nshell);
     max_ = 0.0;
 
     IntegralFactory schwarzfactory(primary_,primary_,primary_,primary_);

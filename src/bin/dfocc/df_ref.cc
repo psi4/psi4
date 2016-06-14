@@ -131,14 +131,15 @@ void DFOCC::df_ref()
       // read integrals from disk if they were generated in the SCF
       else if ( options_.get_str("SCF_TYPE") == "CD") {
           outfile->Printf("\tReading Cholesky vectors from disk ...\n");
-          nQ_ref = Process::environment.globals["NAUX (SCF)"];
+          //nQ_ref = Process::environment.globals["NAUX (SCF)"];
           outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
           //outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ_ref);
 
           // ntri comes from sieve above
+          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+          psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_ref, sizeof(long int));
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
           double** Qmnp = Qmn->pointer();
-          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
           psio_->close(PSIF_DFSCF_BJ,1);
 
