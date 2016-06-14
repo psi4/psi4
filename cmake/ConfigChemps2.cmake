@@ -10,7 +10,7 @@ if(NOT CHEMPS2_FOUND)
 
     find_package (HDF5 QUIET)
     if (NOT HDF5_FOUND)
-        message(FATAL_ERROR "No HDF5 or CheMPS2 found. Build against an existing CheMPS2 with -DCHEMPS2_ROOT=$CONDAENV or skip with -DENABLE_CHEMPS2=OFF")
+        message(FATAL_ERROR "No HDF5, no CheMPS2. Build against an existing CheMPS2 with -DCHEMPS2_ROOT=/path/to/chemps2 or skip with -DENABLE_CHEMPS2=OFF")
     endif()
 
     set(CUSTOM_CHEMPS2_LOCATION ${PROJECT_BINARY_DIR}/interfaces/chemps2)
