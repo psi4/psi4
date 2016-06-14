@@ -1,5 +1,5 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
  * PSI4: an ab initio quantum chemistry software package
  *
