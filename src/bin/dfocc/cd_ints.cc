@@ -132,18 +132,20 @@ void DFOCC::cd_ints()
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "CD" ) {
           outfile->Printf("\tReading Cholesky vectors from disk ...\n");
-          nQ = Process::environment.globals["NAUX (SCF)"];
-          nQ_ref = nQ;
-          outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ);
 
           // ntri comes from sieve above
+          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+          // Read the NAUX from the file
+          psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri_cd));
           double** Qmnp = Qmn->pointer();
-          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ);
           psio_->close(PSIF_DFSCF_BJ,1);
 
+          outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ);
+
+          nQ_ref = nQ;
           bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
           for (long int mn = 0; mn < ntri_cd; mn++) {
               long int m = function_pairs[mn].first;
