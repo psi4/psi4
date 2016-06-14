@@ -32,6 +32,17 @@ if(PYTHONINTERP_FOUND)
                   OUTPUT_VARIABLE _PYTHON_LIB_PATH
                   RESULT_VARIABLE _PYTHON_LIB_RESULT)
 
+   # Get Python module extension
+   execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+                        "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_config_var('SO'))"
+                   OUTPUT_VARIABLE PYTHON_MODULE_EXTENSION
+                   RESULT_VARIABLE _PYTHON_MODULE_EXTENSION)
+
+   # Get Python site-packages directory
+   execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+                        "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_lib())"
+                    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
    set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH} CACHE PATH "Path to a directory")
    set(_PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")

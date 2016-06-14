@@ -14,7 +14,7 @@ if (NOT Ambit_FOUND)
 
     find_package(HDF5 REQUIRED)
     if (NOT HDF5_FOUND)
-        message(FATAL_ERROR "No HDF5, no Ambit. Build against existing with -DAMBIT_ROOT=$CONDAENV or skip with -DENABLE_AMBIT=OFF")
+        message(FATAL_ERROR "No HDF5, no Ambit. Build against existing with -DAMBIT_ROOT=/path/to/ambit or skip with -DENABLE_AMBIT=OFF")
     endif()
 
     set(Ambit_OPENMP OFF)
