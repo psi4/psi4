@@ -30,7 +30,7 @@
 #include "pcmsolver.h"
 #include "PCMInput.h"
 
-extern "C" void host_writer(const char * message, size_t /* message_length */)
+extern "C" void host_writer(const char * message, int /* message_length */)
 {
   psi::outfile->Printf(message);
   psi::outfile->Printf("\n");
