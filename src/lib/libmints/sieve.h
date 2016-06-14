@@ -119,9 +119,9 @@ protected:
     double sieve2_over_max_;
 
     /// |(mn|mn)| values (nbf * nbf)
-    double* function_pair_values_;
+    std::vector<double> function_pair_values_;
     /// max |(MN|MN)| values (nshell * nshell)
-    double* shell_pair_values_;
+    std::vector<double> shell_pair_values_;
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
     std::vector<std::pair<int,int> > function_pairs_;
@@ -247,6 +247,10 @@ public:
   
   // just return the value of the bound for pair m and n
   double shell_pair_value(int m, int n) const;
+  // return the vector of 
+  std::vector<double> shell_pair_values() { return shell_pair_values_;}
+  // return the vector of function pairs
+  std::vector<double> function_pair_values() {return function_pair_values_;}
   
     /// Set debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }

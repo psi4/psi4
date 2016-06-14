@@ -32,6 +32,13 @@
 #include <limits>
 #include <vector>
 #include "cholesky.h"
+#include <psifiles.h>
+#include <psi4-dec.h>
+#include <libpsio/psio.hpp>
+#include <libiwl/iwl.h>
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 namespace psi {
 
@@ -123,7 +130,6 @@ void Cholesky::choleskify()
 
         Q_++;
     }
-
     // Copy into a more permanant Matrix object
     L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
     double** Lp = L_->pointer();
@@ -178,7 +184,6 @@ size_t CholeskyERI::N()
 void CholeskyERI::compute_diagonal(double* target)
 {
     const double* buffer = integral_->buffer();
-
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = 0; N < basisset_->nshell(); N++) {
 
@@ -200,8 +205,6 @@ void CholeskyERI::compute_diagonal(double* target)
 }
 void CholeskyERI::compute_row(int row, double* target)
 {
-    const double* buffer = integral_->buffer();
-
     size_t r = row / basisset_->nbf();
     size_t s = row % basisset_->nbf();
     size_t R = basisset_->function_to_shell(r);
@@ -214,9 +217,11 @@ void CholeskyERI::compute_row(int row, double* target)
 
     size_t oR = r - rstart;
     size_t os = s - sstart;
+    int nshell = basisset_->nshell();
 
+    const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
-        for (size_t N = 0; N < basisset_->nshell(); N++) {
+        for (size_t N = M; N < basisset_->nshell(); N++) {
 
             integral_->compute_shell(M,N,R,S);
 
@@ -228,6 +233,7 @@ void CholeskyERI::compute_row(int row, double* target)
             for (size_t om = 0; om < nM; om++) {
                 for (size_t on = 0; on < nN; on++) {
                     target[(om + mstart) * basisset_->nbf() + (on + nstart)] =
+                    target[(on + nstart) * basisset_->nbf() + (om + mstart)] =
                         buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
                 }
             }
