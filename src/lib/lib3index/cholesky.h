@@ -1,5 +1,5 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
  * PSI4: an ab initio quantum chemistry software package
  *
@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #ifndef THREE_INDEX_CHOLESKY
