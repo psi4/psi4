@@ -253,6 +253,9 @@ class FRAG {
   void freeze(void)   { frozen = true; }
   void unfreeze(void) { frozen = false; }
 
+  // freeze coords within fragments
+  void freeze_coords(void);
+
   /**
    * Compute center of mass of given geometry
    */

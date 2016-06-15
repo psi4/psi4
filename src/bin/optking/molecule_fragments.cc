@@ -124,10 +124,10 @@ void MOLECULE::fragmentize(void) {
   }
 
   // print out fragment information
-  for (i=0; i<fatoms.size(); ++i) {
+  for (std::size_t i=0; i<fatoms.size(); ++i) {
     oprintf_out( "\tDetected frag %d with atoms: ", i+1);
     int cnt = 0;
-    for (j=0; j<fatoms[i].size(); ++j) {
+    for (std::size_t j=0; j<fatoms[i].size(); ++j) {
       oprintf_out(" %d", fatoms[i][j]+1);
       ++cnt;
       if (cnt == 20 && (j != natom-1)) {
@@ -144,10 +144,10 @@ void MOLECULE::fragmentize(void) {
   }
   else { // either connect fragment or split it up
 
-    oprintf_out("\tUnifying fragments since fragment_mode == SINGLE\n");
     // Add connectivity between the closest atoms of disconnected fragments
     // to make one complete superfragment
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
+      oprintf_out("\tUnifying fragments since fragment_mode == SINGLE\n");
       GeomType geom = fragments[0]->g_geom_const_pointer();
       double tval, min;
 
@@ -167,8 +167,8 @@ void MOLECULE::fragmentize(void) {
           if (frag_connectivity[f1][f2]) continue; // already connected
           min = 1.0e12;
 
-          for (int f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
-            for (int f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
+          for (std::size_t f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
+            for (std::size_t f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
               tval = v3d_dist(geom[fatoms[f1][f1_atom]], geom[fatoms[f2][f2_atom]]);
               if (tval < min) {
                 min = tval;
@@ -190,8 +190,8 @@ void MOLECULE::fragmentize(void) {
 
           // Now check for possibly symmetry related atoms which are just as close
           // We need them all to avoid symmetry breaking.
-          for (int f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
-            for (int f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
+          for (std::size_t f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
+            for (std::size_t f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
               tval = v3d_dist(geom[fatoms[f1][f1_atom]], geom[fatoms[f2][f2_atom]]);
               if (fabs(tval - min) < 1.0e-14) {
                 i = fatoms[f1][f1_atom];
@@ -252,7 +252,7 @@ void MOLECULE::fragmentize(void) {
         double **geom_frag = init_matrix(fatoms[ifrag].size(), 3);
         double **grad_frag = init_matrix(fatoms[ifrag].size(), 3);
   
-        for (i=0; i<fatoms[ifrag].size(); ++i) {
+        for (std::size_t i=0; i<fatoms[ifrag].size(); ++i) {
           Z_frag[i] = Z[fatoms[ifrag][i]];
           for (xyz=0; xyz<3; ++xyz) {
             geom_frag[i][xyz] = geom[fatoms[ifrag][i]][xyz];

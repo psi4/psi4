@@ -243,8 +243,9 @@ void MOLECULE::rfo_step(void) {
 
     // Zero steps for frozen fragment.  If user has specified.
     for (std::size_t f=0; f<fragments.size(); ++f) {
-      if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      if (fragments[f]->is_frozen()) {
+        if (iter == 0)
+            oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
         for (i=0; i<fragments[f]->Ncoord(); ++i)
           dq[ g_coord_offset(f) + i ] = 0.0;
       }
