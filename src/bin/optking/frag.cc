@@ -710,6 +710,11 @@ double ** FRAG::compute_constraints(void) const {
   return C;
 }
 
+// freeze coords within fragments
+void FRAG::freeze_coords(void) {
+  for (ULI i=0; i<coords.simples.size(); ++i)
+    coords.simples[i]->freeze();
+}
 
 //// returns G matrix, mass-weighted or not
 void FRAG::compute_G(double **G, bool use_masses) const {

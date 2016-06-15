@@ -206,6 +206,11 @@ OptReturnType optking(void) {
     else
       mol1->form_trivial_coord_combinations(); // Add trivial combinations.
 
+    if (Opt_params.freeze_intrafragment) {
+      mol1->freeze_intrafragments();
+      mol1->freeze_intrafragment_coords();
+    }
+
     if ( Opt_params.coordinates == OPT_PARAMS::BOTH )
       mol1->add_cartesians(); // also adds trivial combos
 
