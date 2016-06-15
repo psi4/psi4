@@ -308,6 +308,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
         cp_ptype_by_level   =  {n: np.zeros(arr_shape) for n in nbody_range}
         nocp_ptype_by_level =  {n: np.zeros(arr_shape) for n in nbody_range}
+        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
 
         cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in nbody_range}
         nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
@@ -343,6 +344,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
             _sum_cluster_ptype_data(ptype, ptype_dict, vmfc_level_list[n],
                                       fragment_slice_dict, fragment_size_dict,
                                       vmfc_ptype_by_level[n], vmfc=True)
+
     # Compute cp energy and ptype
     if do_cp:
         for n in nbody_range:
@@ -439,9 +441,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
             np_final_ptype = ptype_body_dict[max_nbody].copy()
             np_final_ptype -= ptype_body_dict[1]
 
-            ret_ptype = psi4.Matrix(*np_cp_final_ptype.shape)
-            ret_ptype_view = np.asarray(final_ptype)
-            ret_ptype_view[:] = np_final_ptype
+            ret_ptype = psi4.Matrix.from_array(np_final_ptype)
     else:
         ret_ptype = ret_energy
 
