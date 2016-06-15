@@ -598,7 +598,8 @@ double ** MOLECULE::compute_B(void) const {
     int iA = interfragments[I]->g_A_index();
     int iB = interfragments[I]->g_B_index();
 
-    interfragments[I]->compute_B(B, iA, iB);
+    interfragments[I]->compute_B(B, g_interfragment_coord_offset(I),
+        g_atom_offset(iA), g_atom_offset(iB));
   }
   return B;
 }
@@ -765,6 +766,20 @@ int MOLECULE::add_cartesians(void) {
   for (std::size_t f=0; f<fragments.size(); ++f)
     nadded += fragments[f]->add_cartesians();
   return nadded;
+}
+
+// freeze all fragments in molecule
+void MOLECULE::freeze_intrafragments(void) {
+  oprintf_out("\tSetting all fragments to frozen.\n");
+  for (std::size_t f=0; f<fragments.size(); ++f)
+    fragments[f]->freeze();
+}
+
+// Freeze all coordinates within fragments
+void MOLECULE::freeze_intrafragment_coords(void) {
+  oprintf_out("\tSetting all coordinates within each fragment to frozen.\n");
+  for (std::size_t f=0; f<fragments.size(); ++f)
+    fragments[f]->freeze_coords();
 }
 
 // Determine trivial coordinate combinations, i.e., don't combine..

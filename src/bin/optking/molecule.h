@@ -412,6 +412,12 @@ class MOLECULE {
   // freeze interfragment modes that break symmetry
   void freeze_interfragment_asymm(void);
 
+  // freeze all fragments in molecule
+  void freeze_intrafragments(void);
+
+  // Freeze all coordinates within fragments
+  void freeze_intrafragment_coords(void);
+
   // determine whether a linear combination of coords breaks symmetry
   bool coord_combo_is_symmetric(double *coord_combo, int dim);
 
