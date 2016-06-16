@@ -34,7 +34,7 @@ try:
     import numpy as np
 except:
     msg = """
-    NumPy is a runtime requirement for Psi4. Please install Psi4 to proceed.
+    NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
 
     NumPy installation with a package manager can be accomplished by the following lines:
         - conda install numpy
@@ -44,5 +44,12 @@ except:
     """ 
     raise PsiImportError(msg)
 
-
-
+# Import plugin add-ons here for now
+try:
+    import csx4psi
+except ImportError:
+    pass
+try:
+    import v2rdm_casscf
+except ImportError:
+    pass
