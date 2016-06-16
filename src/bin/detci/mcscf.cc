@@ -120,6 +120,8 @@ void CIWavefunction::compute_mcscf()
   diis_manager->set_vector_size(1, DIISEntry::Matrix, x.get());
   int diis_count = 0;
 
+  bool converged = false;
+
   // Energy header
 
   // Iterate
@@ -150,6 +152,7 @@ void CIWavefunction::compute_mcscf()
         (fabs(ediff) < fabs(MCSCF_Parameters_->energy_convergence)) &&
         (iter > 3)){
       outfile->Printf("\n       MCSCF has converged!\n\n");
+      converged = true;
       break;
     }
     old_energy = current_energy;
@@ -206,6 +209,18 @@ void CIWavefunction::compute_mcscf()
   }// End MCSCF
   diis_manager->delete_diis_file();
   diis_manager.reset();
+
+  // Do we die if not converged?
+  if (!converged){
+      outfile->Printf("\nWarning! MCSCF iterations did not fully converge!\n\n");
+
+      // Tricky if it hasnt changed we want to throw
+      if (!options_["DIE_IF_NOT_CONVERGED"].has_changed()){
+        Parameters_->die_if_not_converged = true;
+      }
+      convergence_death();
+  }
+
 
   // Print out the energy
   if (MCSCF_Parameters_->mcscf_type == "DF"){
