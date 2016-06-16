@@ -43,8 +43,9 @@ if (NOT Ambit_FOUND)
             -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
             -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
             -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-            -DENABLE_STATIC=ON
+            -DSTATIC_ONLY=ON
             -DENABLE_PSI4=ON
+            -Boost_USE_STATIC_LIBS=${Boost_USE_STATIC_LIBS}
             -DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}
             -DPSI4_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
@@ -56,6 +57,9 @@ if (NOT Ambit_FOUND)
             PREFIX ${CUSTOM_Ambit_LOCATION}
             GIT_REPOSITORY https://github.com/jturney/ambit
             GIT_TAG v0.1.1-alpha
+            DOWNLOAD_COMMAND ""
+            UPDATE_COMMAND ""
+            SOURCE_DIR "/Users/loriab/linux/ambit"
             CMAKE_ARGS "${AmbitCMakeArgs}"
             INSTALL_DIR "${CUSTOM_Ambit_LOCATION}/install"
             )
