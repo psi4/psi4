@@ -1030,6 +1030,10 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          outfile->Printf( "\nMaximum number of CI iterations reached\n");
          }
 
+      if (converged){
+          Parameters_->diag_h_converged = true;  
+      }
+
       if (converged || iter == maxiter) {
 
          Cvec.buf_lock(buffer1);

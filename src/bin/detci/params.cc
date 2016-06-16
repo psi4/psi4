@@ -154,18 +154,21 @@ void CIWavefunction::get_parameters(Options &options)
      Parameters_->opdm = 1;
      Parameters_->tpdm = 1;
      Parameters_->maxiter = 12;
+     Parameters_->die_if_not_converged = false;
   }
 
   else {
     if (Parameters_->cc) {
       Parameters_->convergence = 1e-5;
       Parameters_->energy_convergence = 1e-7;
-      Parameters_->maxiter = 20;
+      Parameters_->maxiter = 24;
+      Parameters_->die_if_not_converged = true;
     }
     else {
       Parameters_->convergence = 1e-4;
       Parameters_->energy_convergence = 1e-6;
-      Parameters_->maxiter = 12;
+      Parameters_->maxiter = 24;
+      Parameters_->die_if_not_converged = true;
     }
     Parameters_->opdm = 0;
     Parameters_->tpdm = 0;
@@ -173,14 +176,17 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->opdm_diag = 0;
 
-  if (options["MAXITER"].has_changed()) {
-    Parameters_->maxiter = options.get_int("MAXITER");
+  if (options["CI_MAXITER"].has_changed()) {
+    Parameters_->maxiter = options.get_int("CI_MAXITER");
   }
   if (options["R_CONVERGENCE"].has_changed()) {
     Parameters_->convergence = options.get_double("R_CONVERGENCE");
   }
   if (options["E_CONVERGENCE"].has_changed()) {
     Parameters_->energy_convergence = options.get_double("E_CONVERGENCE");
+  }
+  if (options["DIE_IF_NOT_CONVERGED"].has_changed()) {
+    Parameters_->die_if_not_converged = options.get_bool("DIE_IF_NOT_CONVERGED");
   }
 
   Parameters_->multp = molecule_->multiplicity();
