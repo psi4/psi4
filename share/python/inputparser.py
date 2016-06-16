@@ -746,6 +746,7 @@ def process_input(raw_input, print_level=1):
     # imports
     imports = '\n'.join(future_imports) + '\n'
     imports += 'from psi4 import *\n'
+    imports += 'import dependency_check\n'
     imports += 'from p4const import *\n'
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
