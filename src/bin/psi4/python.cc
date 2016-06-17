@@ -126,7 +126,6 @@ namespace gdma { SharedWavefunction     gdma(SharedWavefunction, Options&, const
 #endif
 
 // Matrix returns
-namespace deriv   { SharedMatrix     deriv(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfgrad(SharedWavefunction, Options&); }
 namespace scfgrad { SharedMatrix   scfhess(SharedWavefunction, Options&); }
 
@@ -270,12 +269,6 @@ SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("SCF");
     return scfgrad::scfhess(ref_wfn, Process::environment.options);
-}
-
-SharedMatrix py_psi_deriv(SharedWavefunction ref_wfn)
-{
-    py_psi_prepare_options_for_module("DERIV");
-    return deriv::deriv(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_occ(SharedWavefunction ref_wfn)
@@ -1496,9 +1489,6 @@ BOOST_PYTHON_MODULE (psi4)
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    def("deriv",
-        py_psi_deriv,
-        "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
