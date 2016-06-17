@@ -447,6 +447,9 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     factory_  = wave->matrix_factory();
     molecule_ = wave->molecule();
     natom_    = molecule_->natom();
+    tpdm_presorted_ = false;
+    deriv_density_backtransformed_ = false;
+    ignore_reference_ = false;
 
     // Results go here.
     opdm_contr_ = factory_->create_shared_matrix("One-electron contribution to gradient", natom_, 3);
@@ -595,7 +598,7 @@ SharedMatrix Deriv::compute()
                terms below are computed correctly.  The two-particle terms are computed the same in both cases
                as all spin cases have been collapsed into the a single SO TPDM. */
 
-            if ( !Process::environment.options.get_bool("DERIV_DENSITY_BACKTRANSFORMED") ) {
+            if ( !deriv_density_backtransformed_ ) {
 
                 // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
                 vector<boost::shared_ptr<MOSpace> > spaces;
@@ -610,7 +613,7 @@ SharedMatrix Deriv::compute()
                 dpd_set_default(ints_transform->get_dpd_id());
 
                 // Some codes already presort the tpdm, do not follow this as an example
-                if(Process::environment.options.get_bool("DERIV_TPDM_PRESORTED"))
+                if (tpdm_presorted_)
                     ints_transform->set_tpdm_already_presorted(true);
 
                 ints_transform->backtransform_density();
@@ -750,17 +753,15 @@ SharedMatrix Deriv::compute()
     corr->add(opdm_contr_);
     corr->add(x_contr_);
     corr->add(tpdm_contr_);
-    if (reference_separate) {
-        if ( x_ref_contr_ && opdm_ref_contr_ && tpdm_ref_contr_) {
-            gradient_->add(x_ref_contr_);
-            gradient_->add(opdm_ref_contr_);
-            gradient_->add(tpdm_ref_contr_);
-            SharedMatrix scf_gradient(gradient_->clone());
-            scf_gradient->set_name("Reference Gradient");
-            scf_gradient->print_atom_vector();
-            wfn_->reference_wavefunction()->set_gradient(scf_gradient);
-            corr->print_atom_vector();
-        }
+    if (reference_separate && !ignore_reference_) {
+        gradient_->add(x_ref_contr_);
+        gradient_->add(opdm_ref_contr_);
+        gradient_->add(tpdm_ref_contr_);
+        SharedMatrix scf_gradient(gradient_->clone());
+        scf_gradient->set_name("Reference Gradient");
+        scf_gradient->print_atom_vector();
+        wfn_->reference_wavefunction()->set_gradient(scf_gradient);
+        corr->print_atom_vector();
     }
     gradient_->add(corr);
 
