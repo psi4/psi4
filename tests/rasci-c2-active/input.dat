@@ -16,6 +16,7 @@ molecule c2 {
 
 set {
   wfn detci
+  guess gwh
   basis cc-pVDZ
   e_convergence 10
   d_convergence 10
