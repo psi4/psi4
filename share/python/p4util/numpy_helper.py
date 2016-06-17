@@ -69,7 +69,7 @@ def _dimension_from_list(self, dims, name="New Dimension"):
         ret[i] = dims[i]
     return ret
 
-def _dimension_to_list(dim):
+def _dimension_to_tuple(dim):
     """
     Converts a psi4.Dimension object to a tuple.
     """
@@ -305,15 +305,55 @@ def to_array(matrix, copy=True, dense=False):
         else:
             return np.array(matrix, copy=copy)
 
+def _build_view(matrix):
+    """
+    Builds a view of the vector or matrix
+    """
+    views = to_array(matrix, copy=False, dense=False)
+    if matrix.nirrep() > 1:
+        return tuple(views)
+    else:
+        return views
+
+@property
+def _np_shape(self):
+    if not hasattr(self, '_np_view_data'):
+        self._np_view_data = _build_view(self)
+
+    if self.nirrep() > 1:
+        return tuple(self._np_view_data[x].shape for x in range(self.nirrep()))
+    else:
+        return self._np_view_data.shape
+
+@property
+def _np_view(self):
+    if not hasattr(self, '_np_view_data'):
+        self._np_view_data = _build_view(self)
+
+    return self._np_view_data
 
 # Matirx attributes
 psi4.Matrix.from_array = array_to_matrix
 psi4.Matrix.to_array = to_array
+psi4.Matrix.shape = _np_shape
+psi4.Matrix.np = _np_view
 
 # Vector attributes
 psi4.Vector.from_array = array_to_matrix
 psi4.Vector.to_array = to_array
+psi4.Vector.shape = _np_shape
+psi4.Vector.np = _np_view
 
 # Dimension attributes
 psi4.Dimension.from_list = _dimension_from_list
-psi4.Dimension.to_list = _dimension_to_list
+psi4.Dimension.to_tuple = _dimension_to_tuple
+
+# CIVector attributes
+
+@property
+def _civec_view(self):
+    "Returns a view of the CIVector's buffer"
+    return np.asarray(self)
+
+
+psi4.CIVector.np = _civec_view

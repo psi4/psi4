@@ -513,6 +513,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
            mi_coeff);
         free(mi_iac);  free(mi_ibc); free(mi_iaidx);  free(mi_ibidx);
         free(mi_coeff);
+        Parameters_->diag_h_converged = true;  
         return;
         }
 
