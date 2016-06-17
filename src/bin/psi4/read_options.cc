@@ -264,7 +264,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGENCE", 1e-6);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
-    options.add_int("MAXITER", 12);
+    options.add_int("CI_MAXITER", 24);
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of |detci__ex_level|. -*/
     options.add_bool("FCI",false);

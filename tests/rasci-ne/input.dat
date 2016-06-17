@@ -65,7 +65,7 @@ set {
 }
 
 set detci {
-  maxiter 25
+  ci_maxiter 25
   nat_orbs false
 
   # This keyword is at the heart of the "split-virtual" CISD[TQ].

@@ -260,6 +260,7 @@ private:
     void title();
     void form_strings();
     void set_ciblks();
+    void convergence_death();
 
     /// Sets the ciwavefunction object
     void common_init();

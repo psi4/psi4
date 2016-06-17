@@ -388,6 +388,8 @@ struct params {
    int istop;        /* stop after setting up CI space */
    int print_lvl;    /* print verbosity level */
    int print_ciblks; /* print a summary of the CI blocks? */
+   bool die_if_not_converged;  /* Do we die if we do not converge */
+   bool diag_h_converged;  /* Boolean to set if the diagonalization converges */
    double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
    double energy_convergence;  /* convergence on CI energy */
