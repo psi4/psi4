@@ -210,4 +210,5 @@ PSIF_DFOCC_AMPS             =  277  # DFOCC Amplitudes
 PSIF_DFOCC_DENS             =  278  # DFOCC PDMs
 PSIF_DFOCC_IABC             =  279  # DFOCC (IA|BC)
 PSIF_DFOCC_TEMP             =  280  # DFOCC temporary storage
+PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
 
