@@ -9,6 +9,7 @@ H 0.0 1.0 0.0
 }
 
 set basis 6-31g
+set guess core
 
 
 # first three are e_conv: global, scf module, detci module

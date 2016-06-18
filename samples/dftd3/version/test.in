@@ -36,7 +36,7 @@ refs2['dash']['blyp-d3mzero'] = -0.00186831  #TEST
 refs2['dash']['bp86-d3mbj'] = -0.00433628  #TEST
 refs2['dash']['bp86-d3mzero'] = -0.00097330  #TEST
 refs2['dash']['pbe0-d3mbj'] = -0.00247043  #TEST
-refs2['dash']['pbe0-d3mzero'] = -0.00460830  #-0.00464499  #TEST
+refs2['dash']['pbe0-d3mzero'] = -0.00464499  #TEST
 refs2['dash']['pbe-d3mbj'] = -0.00281366  #TEST
 refs2['dash']['pbe-d3mzero'] = -0.00810989  #-0.00809474  #TEST
 refs2['dash']['wpbe-d3mbj'] = -0.00318894  #TEST
@@ -97,11 +97,11 @@ try:
         compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
         E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
         compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
-except Dftd3Error as e:
+except qcdb.Dftd3Error as e:
     print_stdout("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
     hasD3M = False
 
-hasD3M = False  # temporary until fctl released into superfunctionals list
+#hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
 #   accomodate old and new dftd3 exe? the answer is we can't catch from c-side.
 
@@ -116,6 +116,7 @@ set dft_spherical_points 110
 print_stdout('  Part II: -D correction from C-side')  #TEST
 energy('b3lyp-d2gr', molecule=eeee)
 compare_values(refs['d2gr']['d'], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+# single test below fails for mysterious dft reasons
 compare_values(refs['dft']['d'] + refs['d2gr']['d'], get_variable('DFT TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 #compare_values(refs['dft']['d'] + refs['d2gr']['d'], get_variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
 

@@ -66,8 +66,8 @@ dim2[1] = 0     #TEST
 dim2[2] = 2     #TEST
 
 
-dim1_match = dim1.to_list() == (3, 0, 0)     #TEST
-dim2_match = dim2.to_list() == (3, 0, 2)     #TEST
+dim1_match = dim1.to_tuple() == (3, 0, 0)     #TEST
+dim2_match = dim2.to_tuple() == (3, 0, 2)     #TEST
 compare_values(dim1_match, True, 9, "Dimension to list test 1")     #TEST
 compare_values(dim2_match, True, 9, "Dimension to list test 1")     #TEST
 
