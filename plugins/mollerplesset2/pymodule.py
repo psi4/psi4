@@ -29,9 +29,7 @@ def run_plugin_mp2(name, **kwargs):
         scf_wfn.semicanonicalize()
 
     # Ensure IWL files have been written when not using DF/CD
-    scf_type = psi4.get_option('SCF', 'SCF_TYPE')
-    if ( scf_type == 'PK' or scf_type == 'DIRECT' ):
-        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), scf_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), scf_wfn)
 
     #psi4.set_legacy_wavefunction(scf_wfn)
     returnvalue = psi4.plugin('mollerplesset2.so', scf_wfn)
