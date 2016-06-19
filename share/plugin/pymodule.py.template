@@ -37,6 +37,7 @@ import driver
 from molutil import *
 import p4util
 from p4util.exceptions import *
+from procedures import proc_util
 
 
 def run_@plugin@(name, **kwargs):
@@ -59,6 +60,9 @@ def run_@plugin@(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = driver.scf_helper(name, **kwargs)
+
+    # Ensure IWL files have been written when not using DF/CD
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
