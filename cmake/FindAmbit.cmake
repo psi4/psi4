@@ -25,7 +25,7 @@ foreach (search ${_Ambit_SEARCHES})
     find_path(Ambit_INCLUDE_DIR
             NAMES tensor.h
             ${${search}}
-            PATH_SUFFIXES include)
+            PATH_SUFFIXES include include/ambit)
     find_library(Ambit_LIBRARY
             NAMES ${Ambit_NAMES}
             ${${search}}
@@ -35,7 +35,7 @@ endforeach ()
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Ambit
         FOUND_VAR Ambit_FOUND
-        REQUIRED_VARS Ambit_LIBRARY Ambit_INCLUDE_DIR Ambit_PARSE_DIR
+        REQUIRED_VARS Ambit_LIBRARY Ambit_INCLUDE_DIR
         HDF5_LIBRARIES HDF5_INCLUDE_DIRS)
 
 if (Ambit_FOUND)

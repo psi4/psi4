@@ -39,7 +39,6 @@ activate(singlet_o2)
 set {
     basis cc-pvtz
     df_basis_scf cc-pvtz-jkfit
-    guess core
     print 2
 }
 

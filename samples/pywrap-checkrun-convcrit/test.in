@@ -11,11 +11,12 @@ H 0.0 1.0 0.0
 set basis 6-31g
 set d_convergence 3  #TEST
 set r_convergence 3  #TEST
+set guess core
 
 e_dfscf = -75.96968520716484  #TEST
 e_pkscf = -75.96970096208790  #TEST
 #e_cisd  = -76.1047781401318  #TEST
-e_cisd = -0.13507718  #TEST
+e_cisd = -0.1350772  #TEST
 
 # first three are e_conv: global, scf module, detci module
 # next three are expected accuracy: scf sp, scf under post-scf, post-scf sp
