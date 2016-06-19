@@ -13,6 +13,7 @@ molecule h2o {
 # Conventional to keep angular momentum low
 set {
     scf_type      df
+    e_convergence 1.e-10
 }
 
 h2o.update_geometry()

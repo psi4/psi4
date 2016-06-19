@@ -28,6 +28,9 @@ def run_plugin_mp2(name, **kwargs):
     if psi4.get_global_option('REFERENCE') == 'ROHF':
         scf_wfn.semicanonicalize()
 
+    # Ensure IWL files have been written when not using DF/CD
+    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), scf_wfn)
+
     #psi4.set_legacy_wavefunction(scf_wfn)
     returnvalue = psi4.plugin('mollerplesset2.so', scf_wfn)
 
