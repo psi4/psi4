@@ -519,7 +519,7 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
   signed char *Jbsgn, *Jasgn;
   unsigned int *Jbridx, *Jaridx;
   double C1, C2, Ib_sgn, Ia_sgn;
-  int i, j, oij, ndrc, *Jboij, *Jaoij;
+  int i, j, oij, *Jboij, *Jaoij;
 
   /* loop over Ia in Ia_list */
   if (Ia_list == Ja_list) {

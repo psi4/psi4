@@ -98,7 +98,6 @@ public:
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
      * @param  orbital_name FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL
      * @param  orbitals     SharedMatrix to set
-     * @return C            Returns the appropriate orbitals in the SO basis.
      */
     void set_orbitals(const std::string& orbital_name, SharedMatrix orbitals);
 
@@ -217,10 +216,18 @@ public:
      * @param S    Output vector
      * @param cvec Which vector number to use for the C vec
      * @param svec Which vector number to use for the S vec
+     */
+    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
+
+    /**
+     * Compute a sigma vector
+     * @param C    Input vector
+     * @param S    Output vector
+     * @param cvec Which vector number to use for the C vec
+     * @param svec Which vector number to use for the S vec
      * @param oei  One-electron integrals to use
      * @param tei  Two-electron integrals to use
      */
-    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec,
                SharedVector oei, SharedVector tei);
 

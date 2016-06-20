@@ -58,7 +58,6 @@ void CIWavefunction::diag_h() {
     BIGINT size;
     int nroots, i, j;
     double conv_rms, conv_e, *evals, **evecs, nucrep, edrc, tval;
-    int *tptr;
     double *cbuf;
     char e_label[PSIO_KEYLEN]; /* 80... */
 
@@ -173,7 +172,7 @@ void CIWavefunction::diag_h() {
         CIvect Hd(1, 1, 0, 0, CIblks_, CalcInfo_, Parameters_, H0block_);
 
         double **H, **b;
-        int Ia, Ib, Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
+        int Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
         unsigned long int ii, jj;
         SlaterDeterminant I, J;
         int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx;
