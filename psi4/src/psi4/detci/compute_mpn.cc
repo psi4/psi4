@@ -173,8 +173,8 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   double *mpk_energy, *mp2k_energy, *oei, *tei, *buffer1, *buffer2;
   double tval, Empn = 0.0, **wfn_overlap, Empn2 = 0.0, **cvec_coeff;
   double Empn2a = 0.0;
-  double *cvec_norm, norm, *tmp_coeff, tmp_norm, max_overlap = 1.0;
-  int i, j, k, order, did_vec=0;
+  double *cvec_norm, *tmp_coeff, tmp_norm, max_overlap = 1.0;
+  int i, k, did_vec=0;
   int kvec_offset; /* offset if c_0 is not stored on disk */
 
 

@@ -189,10 +189,10 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
                  int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
                  int cdpirr, int mxv, int nu, int fu, int *fablk, int *lablk,
                  int **dc) {
-    int i, j, ij, k, l;
+    int i, j, k;
     int maxrows = 0, maxcols = 0;
     unsigned long bufsize, maxbufsize;
-    unsigned long size, cur_offset_;
+    unsigned long size;
     // static int first=1;
     /* int in_file, extras, units_used, cur_unit; */
 
@@ -620,8 +620,8 @@ double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum) {
 
 void CIvect::symnormalize(double a, int tvec) {
     int i, j;
-    int blk, buf, irrep, ac, bc, len, upper;
-    double **mat, *arr, phase, tval;
+    int blk, ac, bc, upper;
+    double **mat, *arr, phase;
 
     if (!Ms0_) {
         scale(a, tvec);
@@ -708,7 +708,7 @@ double CIvect::norm(int tvec) {
 double CIvect::operator*(CIvect &b)
 {
    double dotprod=0.0, tval;
-   int i, len, buf;
+   int i, buf;
 
    if (Ms0_) {
       for (buf=0; buf<buf_per_vect_; buf++) {
@@ -3770,7 +3770,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
    int acnt, bcnt;
    int a1, a2, a3, b1, b2, b3;
    int i,j, ii, iii, jj, ij, iijj, ijij;
-   double value, tval, tval2, Kave;
+   double value, tval = 0.0, tval2, Kave;
    struct stringwr *betlist0;
    double k_total; /* total number of K ints in energy expression */
    int k_combo; /* total combination of unique K ints over spin-coupling set */
@@ -4207,7 +4207,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
    int acnt, bcnt;
    int a1, a2, a3, b1, b2, b3;
    int i,j, ii, iii, jj, ij, iijj, ijij;
-   double value, tval, tval2, Kave;
+   double value, tval = 0.0, tval2, Kave;
    struct stringwr *betlist0;
    double k_total; /* total number of K ints in energy expression */
    int k_combo; /* total combination of unique K ints over spin-coupling set */
