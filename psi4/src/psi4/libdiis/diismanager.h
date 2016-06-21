@@ -29,6 +29,7 @@
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
 #include "diisentry.h"
+#include "libmints/mints.h"
 #include <vector>
 #include <map>
 
@@ -37,9 +38,9 @@ namespace psi{
 class DIISEntry;
 class PSIO;
 
-  /**
-     @brief The DIISManager class handles DIIS extrapolations.
-   */
+/**
+   @brief The DIISManager class handles DIIS extrapolations.
+ */
 
 class DIISManager{
     public:
@@ -64,10 +65,29 @@ class DIISManager{
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 
+        // C-style variadic? Why?
         void set_error_vector_size(int numQuantities, ...);
         void set_vector_size(int numQuantities, ...);
         bool extrapolate(int numQuatities, ...);
         bool add_entry(int numQuatities, ...);
+
+        // Wrappers for those who dislike variadic
+        void set_error_vector_size(SharedMatrix error){
+            DIISManager::set_error_vector_size(1, error.get());
+        }
+
+        void set_vector_size(SharedMatrix state){
+            DIISManager::set_vector_size(1, state.get());
+        }
+
+        bool add_entry(SharedMatrix state, SharedMatrix error){
+            return DIISManager::add_entry(2, state.get(), error.get());
+        }
+
+        bool extrapolate(SharedMatrix extrapolated){
+            return DIISManager::extrapolate(1, extrapolated.get());
+        }
+
         int remove_entry();
         void reset_subspace();
         void delete_diis_file();

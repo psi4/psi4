@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libmints/matrix.h"
+#include "libfock/soscf.h"
 #include "globaldefs.h"
 #include "ciwave.h"
 #include "civect.h"
@@ -569,6 +570,43 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
     }
     */
     /* end block-at-a-time stuff */
+
+}
+
+boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(std::string soscf_type){
+    boost::shared_ptr<SOMCSCF> somcscf;
+
+    bool second_order = MCSCF_Parameters_->orbital_so;
+    if (soscf_type == "DF") {
+        transform_dfmcscf_ints(!second_order);
+        somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+    } else if (soscf_type == "CONV") {
+        transform_mcscf_ints(!second_order);
+        somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+    } else{
+        throw PSIEXCEPTION("CIWavefunction::new_mcscf_object: Did not recognize mcscf option.\n");
+    }
+
+    // We assume some kind of ras here.
+    if (Parameters_->wfn != "CASSCF") {
+        std::vector<Dimension> ras_spaces;
+
+        // We only have four spaces currently
+        for (int nras = 0; nras < 4; nras++) {
+            Dimension rasdim = Dimension(nirrep_, "RAS" + psi::to_string(nras));
+            for (int h = 0; h < nirrep_; h++) {
+                rasdim[h] = CalcInfo_->ras_opi[nras][h];
+            }
+            ras_spaces.push_back(rasdim);
+        }
+        somcscf->set_ras(ras_spaces);
+    }
+
+    // Set fzc energy
+    SharedMatrix Cfzc = get_orbitals("FZC");
+    somcscf->set_frozen_orbitals(Cfzc);
+
+    return somcscf;
 
 }
 

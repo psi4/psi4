@@ -64,8 +64,8 @@ public:
     /**
      * Initialize the SOMCSCF object
      * @param jk      JK object to use.
+     * @param AOTOSO  AOTOSO object
      * @param H       Core hamiltonian in the SO basis.
-     * @param casscf  Is this a CAS calculation? (ignore active-active rotations)
      */
     // SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
     SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO,
@@ -216,7 +216,6 @@ public:
      * Initialize the DF SOMCSCF object
      * @param jk      JK object to use.
      * @param df      DFERI object to use.
-     * @param df      AOTOSO object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
     DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
