@@ -44,6 +44,8 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
+typedef boost::shared_ptr<Matrix> SharedMatrix;
+class SOMCSCF;
 
 // Well this is not ideal
 struct _SlaterDetSet;
@@ -245,6 +247,8 @@ public:
      **/
     SharedMatrix hamiltonian(size_t hsize = 0);
 
+    // Returns a new SOMCSCF object
+    boost::shared_ptr<SOMCSCF> new_mcscf_object(std::string soscf_type);
 
 private:
 

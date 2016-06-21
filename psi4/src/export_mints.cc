@@ -251,6 +251,8 @@ void export_mints(py::module& m)
             // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta") = 0.0, py::arg("eigvec") = SharedMatrix()).
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
+            def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring").
+            def("copy", matrix_one(&Matrix::copy), "docstring").
             def("power", &Matrix::power, "docstring").
             def("doublet", &Matrix::doublet).
             def("triplet", &Matrix::triplet).
@@ -1003,6 +1005,7 @@ void export_mints(py::module& m)
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
+        .def("new_mcscf_object", &detci::CIWavefunction::new_mcscf_object, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring");
 

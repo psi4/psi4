@@ -92,6 +92,8 @@ void CIWavefunction::compute_mcscf()
   double old_energy = CalcInfo_->escf;
   std::string itertype = "Initial CI";
   std::string mcscf_type;
+
+  // Energy header
   if (MCSCF_Parameters_->mcscf_type == "DF"){
     mcscf_type = "   @DF-MCSCF";
     outfile->Printf("\n   ==> Starting DF-MCSCF iterations <==\n\n");
@@ -119,10 +121,7 @@ void CIWavefunction::compute_mcscf()
   diis_manager->set_error_vector_size(1, DIISEntry::Matrix, x.get());
   diis_manager->set_vector_size(1, DIISEntry::Matrix, x.get());
   int diis_count = 0;
-
   bool converged = false;
-
-  // Energy header
 
   // Iterate
   for (int iter=1; iter<(MCSCF_Parameters_->max_iter + 1); iter++){
