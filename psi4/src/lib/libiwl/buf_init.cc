@@ -31,10 +31,10 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include <psi4-dec.h> //need outfile
+#include "psi4/include/psi4-dec.h" //need outfile
 
 namespace psi {
 

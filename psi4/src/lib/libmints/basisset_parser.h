@@ -30,7 +30,7 @@
 
 #include <vector>
 #include <string>
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include "gshell.h"
 
 // Forward declare boost boost::shared_ptr

@@ -27,8 +27,8 @@
 
 #include <stdexcept>
 
-#include <compiler.h>
-#include <libqt/qt.h>
+//#include "psi4/include/compiler.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "mints.h"
 

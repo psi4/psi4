@@ -32,7 +32,7 @@
 
 #include "findif.h"
 
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 namespace psi { namespace findif {
 

@@ -33,8 +33,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace psi {
 

@@ -24,9 +24,9 @@
  *
  * @END LICENSE
  */
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "ParallelPrinter.h"
-#include "exception.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace psi {
 

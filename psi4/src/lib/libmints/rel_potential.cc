@@ -25,13 +25,14 @@
  * @END LICENSE
  */
 
-#include <libciomr/libciomr.h>
-
-#include <libmints/mints.h>
-#include <libmints/cdsalclist.h>
-#include "rel_potential.h"
-
-#include <physconst.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/rel_potential.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

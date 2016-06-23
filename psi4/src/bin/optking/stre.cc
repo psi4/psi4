@@ -36,8 +36,8 @@
 
 #include "v3d.h"
 #include "physconst.h"
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "print.h"
 
 namespace opt {

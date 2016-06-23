@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"

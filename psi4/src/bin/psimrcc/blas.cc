@@ -27,12 +27,12 @@
 
 #include <algorithm>
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "debugging.h"
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "blas.h"
 #include "index.h"

@@ -30,10 +30,10 @@
 #include <libthce/thce.h>
 #include <libthce/lreri.h>
 #include <libfock/jk.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psi4-dec.h"
 #include <libdiis/diismanager.h>
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 #include <boost/filesystem.hpp>
 
 #include "fisapt.h"

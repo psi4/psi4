@@ -29,12 +29,19 @@
 #define _psi_src_lib_libmints_onebody_h_
 
 #include <vector>
-#include <exception.h>
-#include "typedefs.h"
-#include "vector3.h"
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python/list.hpp>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "typedefs.h"
+#include "psi4/src/lib/libmints/vector3.h"
+
 #include "pybuffer.h"
-#include "exception.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace psi {
 

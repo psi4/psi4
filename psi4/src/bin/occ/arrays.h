@@ -28,7 +28,7 @@
 #ifndef _psi_src_bin_occ_arrays_h_
 #define _psi_src_bin_occ_arrays_h_
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
 

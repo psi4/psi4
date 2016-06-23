@@ -26,16 +26,16 @@
  */
 
 #include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psi4-dec.h"
 
 #include <libthce/thce.h>
 #include <libthce/lreri.h>
 
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libtrans/integraltransform.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 #include "soscf.h"
 #include "jk.h"

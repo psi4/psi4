@@ -31,8 +31,8 @@
 */
 #include <cstdio>
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

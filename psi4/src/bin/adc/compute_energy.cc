@@ -25,11 +25,11 @@
  * @END LICENSE
  */
 
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include <libtrans/integraltransform.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/mints.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "physconst.h"
 #include "adc.h"
 

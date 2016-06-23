@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 #include <ctime>
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libparallel/parallel.h"
 #include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <psiconfig.h>
-#include <psi4-dec.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "gitversion.h"
 
 namespace psi {

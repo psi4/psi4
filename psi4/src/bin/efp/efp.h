@@ -28,7 +28,7 @@
 #ifndef EFP_H
 #define EFP_H
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace psi { namespace efp {
 

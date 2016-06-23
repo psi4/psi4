@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"

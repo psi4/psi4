@@ -34,9 +34,9 @@
 #include <cstring>
 #include <string>
 #include <cmath>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"

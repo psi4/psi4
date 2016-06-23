@@ -26,18 +26,18 @@
  */
 
 #include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psi4-dec.h"
 #include <libfock/v.h>
 #include <libfock/jk.h>
 #include <libfock/apps.h>
 #include <libfunctional/superfunctional.h>
-#include <psifiles.h>
 #include "libmints/sieve.h"
 #include "libmints/view.h"
 #include "libmints/cdsalclist.h"
+#include "psi4/include/psifiles.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 #include "lib3index/dftensor.h"

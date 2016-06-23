@@ -29,7 +29,7 @@
 #include <libmints/vector.h>
 #include <libfunctional/superfunctional.h>
 #include <libfunctional/functional.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/matrix.h>
 #include <libdisp/dispersion.h>
 

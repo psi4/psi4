@@ -34,12 +34,12 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
-#include <psi4-dec.h>
-#include <psifiles.h>
-#include <physconst.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/physconst.h"
 #include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/factory.h>
 #include <libmints/integral.h>
 #include <libmints/multipolesymmetry.h>

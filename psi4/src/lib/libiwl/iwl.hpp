@@ -2,7 +2,7 @@
 #define _psi_src_lib_libiwl_iwl_hpp_
 
 #include <cstdio>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "config.h"
 
 namespace psi {

@@ -30,15 +30,11 @@
 
 #include <cstdio>
 #include <vector>
-
-namespace boost {
-template<class T>
-class shared_ptr;
-}
+#include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace psi {
-
-
 
 class Molecule;
 class Matrix;

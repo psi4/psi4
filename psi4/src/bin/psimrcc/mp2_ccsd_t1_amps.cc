@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "mp2_ccsd.h"
 #include "blas.h"

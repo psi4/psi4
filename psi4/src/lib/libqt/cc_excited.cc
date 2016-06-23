@@ -35,8 +35,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <psifiles.h>
-#include"psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
 
 namespace psi {
 	

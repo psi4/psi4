@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <libiwl/iwl.h>
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

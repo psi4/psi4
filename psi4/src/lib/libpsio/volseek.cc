@@ -31,10 +31,8 @@
  */
 
 #include <unistd.h>
-#include <libpsio/psio.h>
-#include "psi4-dec.h"
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psi4-dec.h"
 /* This is strictly used to avoid overflow errors on lseek() calls */
 #define PSIO_BIGNUM 10000
 
@@ -53,20 +51,14 @@ namespace psi {
     stream = vol->stream;
     
     /* Set file pointer to beginning of file */
-    boost::shared_ptr<const LibParallel::Communicator> Comm=
-          WorldComm->GetComm();
-    if (Comm->Me() == 0)
         errcod = lseek(stream, (ULI) 0, SEEK_SET);
-    Comm->Bcast(&(errcod), 1, 0);
     if (errcod == -1)
       return (errcod);
     
     /* lseek() through large chunks of the file to avoid offset overflows */
     for (; page > bignum; page -= bignum) {
       total_offset = PSIO_BIGNUM * PSIO_PAGELEN;
-      if (Comm->Me() == 0)
           errcod = lseek(stream, total_offset, SEEK_CUR);
-      Comm->Bcast(&(errcod), 1, 0);
       if (errcod == -1)
         return (errcod);
     }
@@ -75,9 +67,7 @@ namespace psi {
     total_offset = (ULI) page/numvols; /* This should truncate */
     total_offset *= PSIO_PAGELEN;
     total_offset += offset; /* Add the page-relative term */
-    if (Comm->Me() == 0)
         errcod = lseek(stream, total_offset, SEEK_CUR);
-    Comm->Bcast(&(errcod), 1, 0);
     if (errcod == -1)
       return (errcod);
     

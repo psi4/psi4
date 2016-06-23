@@ -46,9 +46,9 @@
 #include <cmath>
 #include <map>
 
-#include <libciomr/libciomr.h>
-#include <libparallel/parallel.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/include/psifiles.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -63,7 +63,7 @@
 #include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \

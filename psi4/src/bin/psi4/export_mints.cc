@@ -55,47 +55,35 @@ using namespace boost::python;
 using namespace psi;
 
 /* Start Numpy __array_interface__
-
 Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
 functions to act on this data. For example we can sum all elements of the
 overlap matrix:
-
 import numpy as np
 ...
 mints = MintsHelper(wfn.basisset())
 overlap = mints.ao_overlap()
 np.sum(wavefunction().Ca())
-
 // Works, returns a numpy array.
 new = np.add(overlap, overlap)
-
 // Does not work as the + operator is not defined for Matrix objects.
 new = overlap + overlap
-
 Note: The AO orbtials are used instead of SO so that the Matrix object has
 only one irreducible representation.
-
 The Vector or Matrix classes can also be wrapped as Numpy array objects:
-
 // Copies the data in the Psi4 Matrix or Vector
 np_S = np.array(overlap)
-
 // Does not copy the data in the Psi4 Matrix or Vector
 // Both Numpy and Psi4 objects share the same data
 np_S = np.array(overlap, copy=False)
 np_S = np.asanyarray(overlap)
-
 Using np.asanyarray is the preferred way of converting Psi4 objects to Numpy
 arrays.  If the data is not copied it is mutable by default and in-place
 operations on the Numpy array will modify the shared data.
-
 As individual irreducible representations are often not of the same size they
 cannot be contained inside a single Numpy array. A python list of Numpy arrays
 can be built to provide irrep functionality to Numpy:
-
 so_overlap = mints.so_overlap()
 np_S = [np.asanyarray(irrep) for irrep in so_overlap.array_interfaces()]
-
 Additional details, tutorials, and examples can be found here:
 https://github.com/dgasmith/psi4numpy
 */

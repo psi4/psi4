@@ -30,7 +30,7 @@
  \ingroup PSIO
  */
 
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 
 namespace psi {
   /*!

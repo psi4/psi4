@@ -31,18 +31,18 @@
 #include <cstdio>
 #include <string>
 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
-#include <libparallel/parallel.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libparallel/parallel.h"
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 #include <libmints/mints.h>
 #include <libmints/writer.h>
 #include <libmints/writer_file_prefix.h>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include <libscf_solver/rhf.h>
 #include <libscf_solver/rohf.h>

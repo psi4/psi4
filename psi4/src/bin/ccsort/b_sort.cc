@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <cmath>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"

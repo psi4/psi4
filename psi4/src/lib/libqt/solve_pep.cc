@@ -34,7 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 	
 #define A_MIN 1.0E-10

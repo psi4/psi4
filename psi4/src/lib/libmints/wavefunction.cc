@@ -29,20 +29,20 @@
 #include <cstdio>
 #include <cmath>
 
-#include <liboptions/liboptions.h>
-#include <libparallel/parallel.h>
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libparallel/parallel.h"
 #include <libmints/view.h>
 
 #include "mints.h"
 #include "orbitalspace.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include <boost/python.hpp>
 #include <boost/python/call.hpp>

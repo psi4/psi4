@@ -28,11 +28,11 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #include "sblock_matrix.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 

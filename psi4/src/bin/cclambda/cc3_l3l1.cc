@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

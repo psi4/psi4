@@ -36,7 +36,7 @@
 #include <string>
 
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "blas.h"
 #include "heff.h"

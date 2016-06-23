@@ -28,7 +28,7 @@
 #ifndef _psi_src_lib_libmints_x2cint_h_
 #define _psi_src_lib_libmints_x2cint_h_
 
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/matrix.h"
 
 #define X2CDEBUG 0
 

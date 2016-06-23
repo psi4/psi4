@@ -32,10 +32,10 @@
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
   
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))

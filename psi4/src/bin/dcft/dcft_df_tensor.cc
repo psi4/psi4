@@ -31,22 +31,22 @@
 #include <cmath>
 #include <sstream>
 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <libmints/view.h>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "dcft.h"
 #include "defines.h"
 #include <vector>
-#include <liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
@@ -57,7 +57,7 @@
 #include <libmints/sieve.h>
 #include <libfock/jk.h>
 #include <libfock/apps.h>
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 #ifdef _OPENMP
 #include <omp.h>

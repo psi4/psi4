@@ -26,9 +26,9 @@
  */
 
 #include "PsiInStream.h"
-#include "psi4-dec.h"
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/include/psi4-dec.h"
+//#include "../libparallel2/Communicator.h"
+//#include "../libparallel2/ParallelEnvironment.h"
 
 namespace psi{
 void Destructor(std::istream* Stream_){}
@@ -44,13 +44,13 @@ void PsiInStream::ReadFromStream(){
       while(std::getline(*Stream_,line))
          Buffer_<<line;
    }
-   int BufferLength=Buffer_.str().size();
+   /*int BufferLength=Buffer_.str().size();
    boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
    Comm->Bcast(&BufferLength,1,WhoIsSpecial());
    char* tempbuffer=new char[BufferLength];
    Comm->Bcast(tempbuffer,BufferLength,WhoIsSpecial());
    Buffer_<<tempbuffer;
-   delete [] tempbuffer;
+   delete [] tempbuffer;*/
 }
 
 

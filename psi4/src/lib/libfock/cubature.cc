@@ -28,8 +28,8 @@
 #include <libmints/mints.h>
 #include "cubature.h"
 #include "gridblocker.h"
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include <vector>
 #include <string>
@@ -37,7 +37,7 @@
 #include <cstdio>
 #include <limits>
 #include <ctype.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace std;
 using namespace psi;

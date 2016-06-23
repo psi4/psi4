@@ -32,7 +32,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "debugging.h"
 
 namespace psi{ namespace psimrcc{

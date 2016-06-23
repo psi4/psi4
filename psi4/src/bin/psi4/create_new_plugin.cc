@@ -38,7 +38,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <psiconfig.h>
 
 using namespace std;

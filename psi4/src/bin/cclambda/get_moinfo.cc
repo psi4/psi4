@@ -31,9 +31,9 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psi4-dec.h"
 #include "libmints/wavefunction.h"
 #include <libmints/basisset.h>
 #include "libmints/molecule.h"

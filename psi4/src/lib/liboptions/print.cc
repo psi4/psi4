@@ -36,14 +36,14 @@
 #include <sstream>
 #include <algorithm>
 #include <assert.h>
-
-#include <exception.h>
-#include <libpsi4util/libpsi4util.h> // Needed for Ref counting, string splitting, and conversions
-#include <libpsi4util/ref.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
+#include "psi4/src/lib/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
+
 
 #include "liboptions.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace psi {
 

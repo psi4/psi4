@@ -27,7 +27,7 @@
 
 #include "3index.h"
 #include "libmints/mints.h"
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 #include <string>
 #include <sstream>

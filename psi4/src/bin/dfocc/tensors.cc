@@ -27,13 +27,13 @@
 
 // Latest revision on April 38, 2013.
 #include <stdio.h>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.hpp>
 #include "tensors.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

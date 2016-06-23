@@ -29,7 +29,7 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here 
 */
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "MOInfo.h"

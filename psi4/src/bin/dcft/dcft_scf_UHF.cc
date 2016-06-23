@@ -30,9 +30,9 @@
 #include <cmath>
 #include <libiwl/iwl.hpp>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/matrix.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/wavefunction.h>
 #include <libtrans/integraltransform.h>
 #include "defines.h"

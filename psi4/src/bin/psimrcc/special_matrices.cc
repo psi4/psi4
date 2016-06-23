@@ -28,10 +28,10 @@
 #include <cstring>
 #include <iostream>
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libqt/qt.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libpsi4util/memory_manager.h>
 
 #include "special_matrices.h"

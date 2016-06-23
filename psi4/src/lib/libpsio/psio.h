@@ -29,7 +29,7 @@
 #define PSIO_H
 
 #include <cstdio>
-#include <libpsio/config.h>
+#include "psi4/src/lib/libpsio/config.h"
 #include <string>
 
 namespace psi {

@@ -26,9 +26,9 @@
  */
 
 #include "integraltransform.h"
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/matrix.h>
 #include <libmints/view.h>
 #include <libmints/wavefunction.h>

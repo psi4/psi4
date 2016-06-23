@@ -30,7 +30,7 @@
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
 #include<libmints/wavefunction.h>
-#include<libqt/qt.h>
+#include"psi4/src/lib/libqt/qt.h"
 #include<sys/times.h>
 #include<libciomr/libciomr.h>
 #ifdef _OPENMP

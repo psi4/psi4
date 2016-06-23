@@ -31,12 +31,12 @@
 */
 
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "libmints/mints.h"
-#include "liboptions/liboptions.h"
-#include "libqt/qt.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "libtrans/integraltransform.h"
 #include "libtrans/mospace.h"
 #include "lib3index/3index.h"

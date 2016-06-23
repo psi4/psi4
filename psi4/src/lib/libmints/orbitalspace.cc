@@ -25,13 +25,21 @@
  * @END LICENSE
  */
 
-#include <psi4-dec.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include "mints.h"
-#include "view.h"
-#include "orbitalspace.h"
-#include "orthog.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/view.h"
+#include "psi4/src/lib/libmints/orbitalspace.h"
+#include "psi4/src/lib/libmints/orthog.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/sobasis.h"
 
 #include <boost/tuple/tuple.hpp>
 

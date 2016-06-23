@@ -1,0 +1,27 @@
+set(LIBINT_CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR})
+find_library(LIBINT_LIBRARY NAMES int PATHS ${LIBINT_CONFIG_PATH}/lib 
+             NO_DEFAULT_PATH)
+find_path(LIBINT_INCLUDE_DIR NAMES libint/libint.h PATHS ${LIBINT_CONFIG_PATH}/include
+             NO_DEFAULT_PATH)
+
+file(READ ${LIBINT_INCLUDE_DIR}/libint/libint.h contents)
+string(REGEX MATCH "define LIBINT_MAX_AM (.|..)" DA_LINE ${contents})
+set(LIBINT_MAX_AM ${CMAKE_MATCH_1})
+foreach(_comp ${LIBINT_FIND_COMPONENTS})
+   if(${_comp} GREATER ${LIBINT_MAX_AM})
+      set(LIBINT_FOUND FALSE)
+      message(STATUS 
+       "Found version of libint does not support the requested angular momentum"
+      )
+   endif()
+endforeach()
+
+add_library(int INTERFACE)
+target_include_directories(int INTERFACE ${LIBINT_INCLUDE_DIR})
+target_link_libraries(int INTERFACE ${LIBINT_LIBRARY})
+
+set(LIBINT_INCLUDE_DIRS ${LIBINT_INCLUDE_DIR})
+set(LIBINT_LIBRARIES ${LIBINT_LIBRARY})
+set(LIBINT_FOUND TRUE)
+
+

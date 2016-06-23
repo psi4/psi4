@@ -27,10 +27,10 @@
 
 #include "dcft.h"
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libiwl/iwl.hpp>
-#include <libmints/molecule.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/include/psifiles.h"
 #include <libtrans/integraltransform.h>
 #include <libdiis/diismanager.h>
 #include "defines.h"

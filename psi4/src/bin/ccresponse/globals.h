@@ -29,7 +29,7 @@
     \ingroup ccresponse
     \brief Enter brief description of file here
 */
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <cstdio>
 
 namespace psi {

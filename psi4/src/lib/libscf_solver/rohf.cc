@@ -32,18 +32,18 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <libfock/jk.h>
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 #include <libmints/view.h>
 #include "rohf.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #define _DEBUG
 

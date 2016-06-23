@@ -28,7 +28,7 @@
 #ifndef RHF_H
 #define RHF_H
 
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "hf.h"
 
 namespace boost {

@@ -29,7 +29,7 @@
 
 #ifdef HAVE_ERD
 
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "erd_eri.h"
 #include "libmints/basisset.h"
 #include "libmints/integral.h"

@@ -53,7 +53,7 @@
 #include <limits.h>
 #include <cmath>
 
-#include "blas_intfc_mangle.h"
+#include "psi4/src/lib/libqt/blas_intfc_mangle.h"
 
 extern "C" {
 

@@ -34,15 +34,15 @@
 #include <sstream>
 #include <utility>
 #include <fstream>
-#include <psifiles.h>
-#include <libpsio/psio.hpp>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.hpp>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/vector3.h>
 #include "mints.h"
-#include <libqt/qt.h>
-#include <psi4-dec.h>
-#include <physconst.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>

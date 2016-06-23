@@ -28,11 +28,10 @@
 #ifndef _psi_src_lib_libmints_factory_h_
 #define _psi_src_lib_libmints_factory_h_
 
-#include <libmints/vector.h>
-#include <libmints/matrix.h>
-#include <libmints/dimension.h>
-
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace boost {
 template<class T> class shared_ptr;

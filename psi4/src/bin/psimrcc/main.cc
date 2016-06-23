@@ -38,23 +38,23 @@
  *  @brief Contains main() and global variables
 */
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 // Standard libraries
 #include <iostream>
 #include <complex>
 #include <cstdlib>
 
 // PSI libraries
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libpsi4util/memory_manager.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 // PSI C++
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 #include "blas.h"
 #include "git.h"

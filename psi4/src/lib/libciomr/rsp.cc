@@ -31,10 +31,10 @@
 ** \ingroup CIOMR
 */
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <cstdlib>
 #include "libciomr.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
   
 extern void tred2(int n,double** a,double* d,double* e,int matz);

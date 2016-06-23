@@ -32,10 +32,10 @@
 */
 
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <boost/shared_ptr.hpp>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "mrcc.h"
 #include "mrccsd_t.h"

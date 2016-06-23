@@ -24,15 +24,13 @@
  *
  * @END LICENSE
  */
-
-#include <psi4-dec.h>
-#include <psiconfig.h>
-#include <libmints/molecule.h>
-#include <libmints/extern.h>
 #include <boost/algorithm/string.hpp>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/extern.h"
 
 //MKL Header
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 

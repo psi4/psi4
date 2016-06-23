@@ -32,13 +32,13 @@
 #include <cmath>
 
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/matrix.h>
 #include <libmints/factory.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "scf.h"
 

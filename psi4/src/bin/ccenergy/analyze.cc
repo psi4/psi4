@@ -33,10 +33,10 @@
 #include <cstdlib>
 #include <cmath>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "libciomr/libciomr.h"
 namespace psi { namespace ccenergy {
 

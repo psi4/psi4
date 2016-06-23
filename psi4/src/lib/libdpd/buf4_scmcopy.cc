@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
 
 namespace psi {

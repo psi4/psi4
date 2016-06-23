@@ -36,7 +36,7 @@
 
 #include "factory.h"
 #include "sobasis.h"
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libparallel/parallel.h"
 #include "libciomr/libciomr.h"
 
 using namespace boost;

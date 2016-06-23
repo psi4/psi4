@@ -31,8 +31,8 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
 
 namespace psi {
 

@@ -31,11 +31,11 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #define EXTERN
 #include "dpd.gbl"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_scm(): Multiplies every element of a four-index dpdbuf by a scalar.

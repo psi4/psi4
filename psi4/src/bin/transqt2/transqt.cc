@@ -60,19 +60,19 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
-#include <psifiles.h>
-#include <psi4-dec.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
 #include "globals.h"
 
 #include <libmints/wavefunction.h>
 #include <libtrans/mospace.h>
 #include <libmints/matrix.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace psi {
 namespace transqt2 {

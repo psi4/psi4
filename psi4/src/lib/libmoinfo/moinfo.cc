@@ -36,16 +36,16 @@
 #include <numeric>
 
 // PSI Libraries
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
-#include <libpsi4util/libpsi4util.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/include/psi4-dec.h"
 #include <libmints/corrtab.h>
 #include <libmints/matrix.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/wavefunction.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
 
 #include "moinfo.h"
 

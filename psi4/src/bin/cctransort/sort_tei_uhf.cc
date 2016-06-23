@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libdpd/dpd.h>
 
 namespace psi{ namespace cctransort {

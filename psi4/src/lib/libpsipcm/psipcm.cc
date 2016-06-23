@@ -26,7 +26,7 @@
  */
 
 #include "psipcm.h"
-#include "psi4-dec.h" //Gives us psi::outfile
+#include "psi4/include/psi4-dec.h" //Gives us psi::outfile
 #include "pcmsolver.h"
 #include "PCMInput.h"
 

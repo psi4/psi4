@@ -26,11 +26,11 @@
  */
 
 #include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <liboptions/liboptions_python.h>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
 #include <libdisp/dispersion.h>

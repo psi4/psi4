@@ -43,16 +43,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <boost/lexical_cast.hpp>
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libqt/slaterdset.h>
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
 #include "civect.h"
 #include "ciwave.h"
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 namespace psi { namespace detci {
 

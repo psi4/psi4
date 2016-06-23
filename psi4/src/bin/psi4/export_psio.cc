@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 using namespace boost;
 using namespace boost::python;

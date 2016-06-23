@@ -33,9 +33,9 @@
 
 #include <cstdio>
 #include <cmath>
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

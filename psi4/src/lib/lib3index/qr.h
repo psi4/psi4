@@ -28,7 +28,7 @@
 #ifndef THREE_INDEX_QR
 #define THREE_INDEX_QR
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <psiconfig.h>
 #include <vector>
 

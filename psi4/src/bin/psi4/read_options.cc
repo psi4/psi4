@@ -29,11 +29,11 @@
     \defgroup PSI4
 */
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <liboptions/liboptions_python.h>
-#include <libparallel/parallel.h>
-#include <physconst.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/include/physconst.h"
+#include "psi4/include/psifiles.h"
 
 namespace psi {
 

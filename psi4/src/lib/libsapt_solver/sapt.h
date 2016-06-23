@@ -29,7 +29,7 @@
 #define SAPT_H
 
 #include <psiconfig.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #ifdef _OPENMP
   #include <omp.h>
@@ -42,11 +42,11 @@
 #define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
 #include <libmints/mints.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libpsio/aiohandler.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <lib3index/3index.h>
 
 namespace boost {

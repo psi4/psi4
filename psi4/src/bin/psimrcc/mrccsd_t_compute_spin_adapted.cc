@@ -33,7 +33,7 @@
 
 #include <cstdlib>
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libmoinfo/libmoinfo.h>
 
 #include "blas.h"

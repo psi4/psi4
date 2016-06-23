@@ -32,11 +32,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.h>
 #include <libdpd/dpd.h>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 

@@ -34,10 +34,9 @@
 **
 */
 
-#include "qt.h"
 #include <stdexcept>
-
-#include "blas_intfc23_mangle.h"
+#include "psi4/src/lib/libqt/blas_intfc23_mangle.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 extern "C" {
 extern void F_DGBMV(char*, int*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);

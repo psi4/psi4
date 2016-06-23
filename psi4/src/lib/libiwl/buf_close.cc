@@ -33,7 +33,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include "iwl.h"
 #include "iwl.hpp"
 

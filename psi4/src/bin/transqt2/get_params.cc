@@ -34,10 +34,10 @@
 #include <cstring>
 #include <cmath>
 #include <string>
-#include <libciomr/libciomr.h>
-#include <liboptions/liboptions.h>
-#include <psifiles.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 

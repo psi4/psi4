@@ -40,12 +40,12 @@
 #include <boost/python/tuple.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include <exception.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libparallel/parallel.h"
 #include <libmints/matrix.h>
 #include <libmints/integral.h>
 #include <libdpd/dpd.h>
@@ -63,7 +63,7 @@
 #include <ctype.h>
 #include <sstream>
 #include <string>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "../libparallel/mpi_wrapper.h"
 #include "../libparallel/local.h"
 using namespace boost;

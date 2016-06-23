@@ -83,9 +83,9 @@
 #include <ctype.h>
 #include <cmath>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libmints/pointgrp.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 using namespace std;
 using namespace psi;

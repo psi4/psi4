@@ -31,11 +31,12 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <libparallel/serialize.h>
-#include <libparallel/parallel.h>
 #include <boost/tuple/tuple.hpp>
-#include "typedefs.h"
-#include <exception.h>
+#include "psi4/src/lib/libparallel/serialize.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -1164,7 +1165,7 @@ public:
 
 #ifdef HAVE_MADNESS
 
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace madness {  namespace archive {
 

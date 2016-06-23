@@ -32,12 +32,12 @@
 #include <libmints/sieve.h>
 #include <libfock/jk.h>
 #include <libfock/apps.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
-#include <psi4-dec.h>
-#include <physconst.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
+#include "psi4/include/psifiles.h"
 
 #ifdef _OPENMP
 #include <omp.h>

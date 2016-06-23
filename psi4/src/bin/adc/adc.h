@@ -32,7 +32,7 @@
 #include <libmints/vector.h>
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #define ID(x) _ints->DPD_ID(x)
 

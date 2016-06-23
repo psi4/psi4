@@ -33,7 +33,7 @@
 #include "libmints/molecule.h"
 #include "libmints/twobody.h"
 #include "libmints/integral.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "../libparallel2/Communicator.h"
 #include "../libparallel2/ParallelEnvironment.h"
 #include "../libparallel2/Algorithms.h"

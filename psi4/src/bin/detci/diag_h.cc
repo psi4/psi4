@@ -28,12 +28,12 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-#include <psifiles.h>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/mints.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libqt/slaterdset.h>
 
 #include "structs.h"

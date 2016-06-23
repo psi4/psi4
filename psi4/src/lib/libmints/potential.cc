@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "mints.h"
 #include "cdsalclist.h"
 #include "potential.h"
 
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

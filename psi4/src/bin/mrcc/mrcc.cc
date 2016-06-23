@@ -25,24 +25,24 @@
  * @END LICENSE
  */
 
-#include <psi4-dec.h>
-#include <libparallel/parallel.h>
-#include <liboptions/liboptions.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libmints/mints.h>
 #include <libmints/view.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.hpp>
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libfock/apps.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <vector>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include <../bin/fnocc/frozen_natural_orbitals.h>
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #include <fstream>
 #include <algorithm>

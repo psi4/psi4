@@ -28,7 +28,7 @@
 #ifndef _psi_src_bin_psimrcc_mrcc_h_
 #define _psi_src_bin_psimrcc_mrcc_h_
 
-#include "liboptions/liboptions.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "manybody.h"
 #include "heff.h"
 

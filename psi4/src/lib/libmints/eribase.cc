@@ -27,13 +27,13 @@
 
 #include <stdexcept>
 #include <string>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "mints.h"
 
-#include <physconst.h>
-#include <exception.h>
+#include "psi4/include/physconst.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/python/tuple.hpp>
 
 // Cancel out restrict keyword for timings

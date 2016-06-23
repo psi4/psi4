@@ -37,7 +37,7 @@
 
 #include <vector>
 #include <string>
-#include "process.h"
+#include "psi4/src/lib/libparallel/process.h"
 #include "libparallel.h"
 
 // Use this to silence "warning: unused parameter" messages from the compiler.

@@ -34,12 +34,12 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libtrans/integraltransform.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libpsi4util/memory_manager.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "psifiles.h"
 
 #include "blas.h"

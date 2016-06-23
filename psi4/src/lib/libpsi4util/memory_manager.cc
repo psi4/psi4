@@ -31,11 +31,11 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
-#include "psi4-dec.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psi4-dec.h"
 #include "memory_manager.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi{
 
 using namespace std;

@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 typedef double real;
 typedef int integer;
 

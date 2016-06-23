@@ -36,18 +36,18 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <psiconfig.h>
-#include <libciomr/libciomr.h>
-#include <liboptions/liboptions.h>
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libparallel/parallel.h"
 #include "libparallel2/ParallelEnvironment.h"
 #include "libparallel2/Communicator.h"
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libmints/wavefunction.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "script.h"
-#include <physconst.h>
-#include <psifiles.h>
+#include "psi4/include/physconst.h"
+#include "psi4/include/psifiles.h"
 
 #include <psi4-def.h>
 

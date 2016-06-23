@@ -30,7 +30,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #define CCTRANSFORM_USE_BLAS
 
@@ -39,9 +39,9 @@
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define four(i,j,k,l) INDEX(INDEX(i,j),INDEX(k,l))
 
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libqt/qt.h"
 #include "psifiles.h"
 
 #include "algebra_interface.h"

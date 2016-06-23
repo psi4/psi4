@@ -35,7 +35,7 @@
 
 //#include "mem.h"
 #include "v3d.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -49,7 +49,7 @@
 #endif
 
 #if defined(OPTKING_PACKAGE_PSI)
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #endif
 
 namespace opt {

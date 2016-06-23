@@ -25,8 +25,8 @@
  * @END LICENSE
  */
 
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"

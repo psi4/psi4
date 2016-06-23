@@ -31,8 +31,8 @@
 */
 #include <stdlib.h>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <math.h>
 #include "MOInfo.h"
 #include "Params.h"

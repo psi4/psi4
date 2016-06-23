@@ -42,15 +42,15 @@
 #include <string>
 #include <limits>
 
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/matrix.h>
 #include <libmints/vector.h>
 #include <libmints/pointgrp.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libefp_solver/efp_solver.h>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "vector3.h"
 #include "coordentry.h"
@@ -58,7 +58,7 @@
 #include "petitelist.h"
 
 #include <masses.h>
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 #include <element_to_Z.h>
 #include "../libparallel2/Communicator.h"
 #include "../libparallel2/ParallelEnvironment.h"
@@ -70,7 +70,7 @@ using namespace boost;
 #include <string>
 #include <sstream>
 #include <iostream>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct

@@ -32,9 +32,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 void DPD::file4_cache_init(void)

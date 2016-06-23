@@ -27,10 +27,10 @@
 
 #include <iostream>
 
-#include <psifiles.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 

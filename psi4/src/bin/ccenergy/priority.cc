@@ -32,8 +32,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libciomr/libciomr.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psifiles.h"
 #include <libdpd/dpd.h>
 #include "ccwave.h"
 namespace psi { namespace ccenergy {

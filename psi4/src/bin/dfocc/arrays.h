@@ -28,10 +28,10 @@
 #ifndef _dfocc_arrays_h_
 #define _dfocc_arrays_h_
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 using namespace boost;
 using namespace psi;

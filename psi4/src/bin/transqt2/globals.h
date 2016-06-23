@@ -33,7 +33,7 @@
 #ifndef _psi_src_bin_transqt2_globals_h
 #define _psi_src_bin_transqt2_globals_h
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #include "MOInfo.h"
 #include "Params.h"

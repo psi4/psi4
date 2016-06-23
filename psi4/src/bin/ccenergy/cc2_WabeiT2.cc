@@ -32,8 +32,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libdpd/dpd.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "Params.h"
 #include "ccwave.h"
 

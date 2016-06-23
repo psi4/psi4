@@ -44,7 +44,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 namespace psi {
 

@@ -79,9 +79,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 
-#include <libmints/pointgrp.h>
+#include "psi4/src/lib/libmints/pointgrp.h"
 
 using namespace std;
 using namespace psi;

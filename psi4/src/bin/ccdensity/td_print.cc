@@ -39,7 +39,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 #define _hartree2nm 0.02194746313710
 

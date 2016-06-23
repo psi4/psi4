@@ -28,7 +28,7 @@
 #ifndef libmints_gridblocker_H
 #define libmints_gridblocker_H
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <psiconfig.h>
 #include <libmints/vector3.h>
 

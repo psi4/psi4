@@ -26,13 +26,13 @@
  */
 
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
 #include "debugging.h"
-#include <libpsi4util/libpsi4util.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/include/psi4-dec.h"
 
 #include <boost/shared_ptr.hpp>
 

@@ -33,8 +33,8 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/mints.h>
 #include "structs.h"
 

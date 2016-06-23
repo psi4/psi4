@@ -30,11 +30,11 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <psifiles.h>
-#include <exception.h>
-#include <liboptions/liboptions.h>
-#include <libpsi4util/libpsi4util.h>
-#include "psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/include/psi4-dec.h"
 #include "moinfo.h"
 
 

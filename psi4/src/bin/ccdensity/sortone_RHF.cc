@@ -32,8 +32,8 @@
 #include <stdio.h>
 #include <libdpd/dpd.h>
 #include <math.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -42,7 +42,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 /*
 ** sortone_rhf(): Place all the components of the 1pdm into a large

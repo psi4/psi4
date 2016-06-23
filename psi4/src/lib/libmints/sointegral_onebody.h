@@ -28,7 +28,7 @@
 #ifndef _psi_src_lib_libmints_sointegral_onebody_h
 #define _psi_src_lib_libmints_sointegral_onebody_h
 
-#include "typedefs.h"
+#include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {
 

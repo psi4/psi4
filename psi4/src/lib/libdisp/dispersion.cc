@@ -34,8 +34,8 @@
 
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
-#include <libmints/molecule.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "dispersion.h"
 #include "dispersion_defines.h"
 #include <boost/algorithm/string.hpp>
@@ -49,8 +49,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
-#include <liboptions/liboptions.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \
          PyErr_Print();       \

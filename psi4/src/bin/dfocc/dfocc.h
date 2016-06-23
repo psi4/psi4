@@ -30,7 +30,7 @@
 
 #include <libmints/wavefunction.h>
 #include <libdiis/diismanager.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "arrays.h"
 #include "tensors.h"
 

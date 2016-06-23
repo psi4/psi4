@@ -42,8 +42,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <boost/lexical_cast.hpp>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "structs.h"
 #include "globals.h"
 #include <iostream>

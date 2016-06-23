@@ -30,8 +30,8 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
 
 namespace psi {

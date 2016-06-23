@@ -35,7 +35,7 @@
 /* gcc 2.7.0 doesn't like #include <cstring> */
 #include "slaterd.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace psi { namespace detci {
 

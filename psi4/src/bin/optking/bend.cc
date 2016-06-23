@@ -37,7 +37,7 @@
 #include "v3d.h"
 #include "physconst.h"
 #include "linear_algebra.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"

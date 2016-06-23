@@ -48,24 +48,24 @@
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
 #include "libparallel/local.h"
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <liboptions/liboptions_python.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <psiconfig.h>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include "script.h"
 #include "psi4.h"
 #include "gitversion.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
 
 #if defined(MAKE_PYTHON_MODULE)
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libmints/wavefunction.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "libparallel2/ParallelEnvironment.h"
 namespace psi {
     int psi_start(int argc, char *argv[]);

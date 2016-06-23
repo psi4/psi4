@@ -31,7 +31,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include "transform.h"
 #include "matrix.h"
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "algebra_interface.h"
 #include "blas.h"
 
@@ -42,8 +42,8 @@
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define four(i,j,k,l) INDEX(INDEX(i,j),INDEX(k,l))
 
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.h>
 #include <libdpd/dpd.h>
 #include "libtrans/integraltransform.h"

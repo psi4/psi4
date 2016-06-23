@@ -28,11 +28,11 @@
 #ifndef _dfocc_tensors_h_
 #define _dfocc_tensors_h_
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libiwl/iwl.h>
 #include <libmints/mints.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))

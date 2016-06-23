@@ -33,12 +33,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libiwl/iwl.h>
 #include "MOInfo.h"
 #define EXTERN
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "globals.h"
 
 namespace psi { namespace ccsort {

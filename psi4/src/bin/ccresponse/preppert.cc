@@ -32,10 +32,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libiwl/iwl.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libmints/mints.h>
 #include "MOInfo.h"
 #include "Params.h"

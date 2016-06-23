@@ -35,7 +35,7 @@
 #include "globals.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include <psi4-dec.h>
+ #include "psi4/include/psi4-dec.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h>
 #endif

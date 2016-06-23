@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <libmints/writer.h>
 #include <libmints/writer_file_prefix.h>

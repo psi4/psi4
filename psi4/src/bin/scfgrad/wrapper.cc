@@ -25,10 +25,10 @@
  * @END LICENSE
  */
 
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include <libmints/mints.h>
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "scf_grad.h"
 
 namespace psi{ 

@@ -39,24 +39,24 @@
 #include <libmints/mints.h>
 
 #include <libfunctional/superfunctional.h>
-#include <psifiles.h>
-#include <physconst.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libparallel/parallel.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/include/physconst.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libparallel/parallel.h"
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <liboptions/liboptions_python.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libfock/jk.h>
 #ifdef HAVE_PCMSOLVER
 #include <libpsipcm/psipcm.h>
 #endif
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "hf.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libefp_solver/efp_solver.h>
 
 #ifdef _OPENMP

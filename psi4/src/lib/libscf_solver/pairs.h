@@ -33,11 +33,11 @@
 #define _psi_src_lib_libscf_solver_pairs_
 
 #include <cstdio>
-#include <libciomr/libciomr.h>
-#include <libparallel/parallel.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "rhf.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #ifdef HAVE_MADNESS
 

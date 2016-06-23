@@ -32,11 +32,10 @@
 
 #include <cstdio>
 #include <unistd.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
-#include "psi4-dec.h"
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/include/psi4-dec.h"
+
 namespace psi {
 
 void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
@@ -77,27 +76,17 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
     this_page_total = size;
   else
     this_page_total = this_page_max;
-  boost::shared_ptr<const LibParallel::Communicator> Comm=
-        WorldComm->GetComm();
   buf_offset = 0;
   if (wrt) {
-     if (Comm->Me() == 0) {
       errcod_uli =:: write(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
-	}
-        Comm->Bcast(&errcod_uli, 1, 0);
     if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
   }
   else {
-	if (Comm->Me() == 0) {
       errcod_uli = ::read(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
-        }
-        Comm->Bcast(&errcod_uli, 1, 0);
     if(errcod_uli != this_page_total)
       psio_error(unit,PSIO_ERROR_READ);
-    else
-      Comm->Bcast(&(buffer[buf_offset]), this_page_total, 0);
   }
 
   /* Total number of bytes remaining to be read/written */
@@ -110,23 +99,15 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
     this_vol = this_page % numvols;
     this_page_total = PSIO_PAGELEN;
     if(wrt) {
-      if (Comm->Me() == 0) {
         errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
-      }
-      Comm->Bcast(&errcod_uli, 1, 0);
       if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-      if (Comm->Me() == 0) {
         errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
-      }
-      Comm->Bcast(&errcod_uli, 1, 0);
       if(errcod_uli != this_page_total)
         psio_error(unit,PSIO_ERROR_READ);
-      else
-        Comm->Bcast(&(buffer[buf_offset]), this_page_total, 0);
     }
     buf_offset += this_page_total;
   }
@@ -136,23 +117,15 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   this_vol = this_page % numvols;
   if(bytes_left) {
     if(wrt) {
-      if (Comm->Me() == 0) {
         errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
-      }
-      Comm->Bcast(&errcod_uli, 1, 0);
       if(errcod_uli != bytes_left) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-      if (Comm->Me() == 0) {
         errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
-      }
-      Comm->Bcast(&errcod_uli, 1, 0);
       if(errcod_uli != bytes_left)
         psio_error(unit,PSIO_ERROR_READ);
-      else
-        Comm->Bcast(&(buffer[buf_offset]), bytes_left, 0);
     }
   }
 }

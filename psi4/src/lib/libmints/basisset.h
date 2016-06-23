@@ -39,7 +39,7 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 

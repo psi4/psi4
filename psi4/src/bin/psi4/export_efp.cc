@@ -27,7 +27,7 @@
 
 #include <boost/python.hpp>
 #include <libefp_solver/efp_solver.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 using namespace boost::python;
 using namespace psi;

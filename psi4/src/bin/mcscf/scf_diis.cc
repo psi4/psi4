@@ -28,8 +28,8 @@
 #include <iostream>
 #include <cstdio>
 
-#include <liboptions/liboptions.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 #include "algebra_interface.h"

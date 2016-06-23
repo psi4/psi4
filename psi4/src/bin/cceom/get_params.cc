@@ -33,10 +33,10 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

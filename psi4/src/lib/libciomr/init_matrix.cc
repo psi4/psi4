@@ -31,12 +31,12 @@
 ** \ingroup CIOMR
 */
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <strings.h>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
   /**

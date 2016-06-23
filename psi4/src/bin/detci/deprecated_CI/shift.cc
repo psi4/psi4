@@ -43,9 +43,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libiwl/iwl.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
 #include "structs.h"
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define EXTERN

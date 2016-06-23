@@ -29,7 +29,7 @@
 #include <libmints/mints.h>
 #include <libfock/cubature.h>
 #include <libfock/points.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 #include <string>
 #include <sstream>

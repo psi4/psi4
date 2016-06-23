@@ -36,11 +36,11 @@
 #include <cmath>
 #include <algorithm>
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 #include "debugging.h"
 #include "matrix.h"

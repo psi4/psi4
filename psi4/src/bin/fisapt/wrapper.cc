@@ -26,7 +26,7 @@
  */
 
 #include <libmints/mints.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "fisapt.h"
 
 using namespace boost;

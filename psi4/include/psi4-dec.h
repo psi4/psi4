@@ -28,11 +28,11 @@
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
 
-#include "libparallel/PsiOutStream.h"
-#include "process.h"
-
 #include <boost/shared_ptr.hpp>
 #include <string>
+
+#include "psi4/src/lib/libparallel/PsiOutStream.h"
+#include "psi4/src/lib/libparallel/process.h"
 
 namespace psi {
 namespace LibParallel{

@@ -26,8 +26,8 @@
  */
 
 #include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psi4-dec.h"
 #include <boost/tuple/tuple_comparison.hpp>
 #include "points.h"
 #include "hamiltonian.h"

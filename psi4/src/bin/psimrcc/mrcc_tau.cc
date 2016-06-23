@@ -35,7 +35,7 @@
 #include "matrix.h"
 #include "blas.h"
 #include "debugging.h"
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 extern FILE* outfile;
 

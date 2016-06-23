@@ -34,13 +34,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "Local.h"
 #include "Params.h"
 #include "MOInfo.h"

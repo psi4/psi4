@@ -32,7 +32,7 @@
 */
 
 #include "psi4.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -40,12 +40,12 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include <getopt.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <psiconfig.h>
 #include "gitversion.h"
 #include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace std;
 
 namespace psi {

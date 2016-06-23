@@ -29,7 +29,7 @@
     \ingroup CCEOM
     \brief Enter brief description of file here 
 */
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"

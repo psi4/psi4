@@ -36,7 +36,7 @@
 #ifndef _psi3_src_lib_libqt_slaterdset_h_
 #define _psi3_src_lib_libqt_slaterdset_h_
 
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 
 namespace psi {
 

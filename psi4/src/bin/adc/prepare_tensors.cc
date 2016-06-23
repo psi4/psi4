@@ -25,11 +25,11 @@
  * @END LICENSE
  */
 
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libtrans/integraltransform.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/mints.h>
 #include "physconst.h"
 #include "adc.h"

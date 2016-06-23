@@ -1,37 +1,14 @@
-set(headers_list "")
-# List of headers
-list(APPEND headers_list quad.h memory_manager.h class_macros.h ref.h
-libpsi4util.h )
-
-# If you want to remove some headers specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM headers_list "")
-else()
-   list(REMOVE_ITEM headers_list "")
-endif()
-# Sort alphabetically
-list(SORT headers_list)
-
-set(sources_list "")
-# List of sources
-list(APPEND sources_list quad.cc stl_string.cc memory_manager.cc exception.cc combinations.cc )
-
-# If you want to remove some sources specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM sources_list "")
-else()
-   list(REMOVE_ITEM sources_list "")
-endif()
-
+set(sources_list quad.cc 
+                 stl_string.cc 
+                 memory_manager.cc 
+                 exception.cc 
+                 combinations.cc 
+)
 
 # Build static library
-add_library(psi4util STATIC ${sources_list})
-# Specify dependencies for the library (if any)
-#add_dependencies(psi4util )
-set_property(GLOBAL APPEND PROPERTY LIBLIST psi4util)
-if(BUILD_CUSTOM_BOOST)
-   add_dependencies(psi4util custom_boost)
-endif()
-
-# Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/psi4/lib/libpsi4util)
+add_library(psi4util ${sources_list})
+target_link_libraries(psi4util options)
+include_directories(${Boost_INCLUDE_DIRS})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
+        DESTINATION psi4/src/lib/libpsi4util
+        FILES_MATCHING PATTERN "*.h")

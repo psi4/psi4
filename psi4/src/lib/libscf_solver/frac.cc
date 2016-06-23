@@ -48,7 +48,7 @@
 #include <utility>
 
 #include <libmints/mints.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>

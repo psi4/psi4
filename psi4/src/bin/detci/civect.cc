@@ -52,14 +52,14 @@
 #include <boost/python.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/python/tuple.hpp>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libmints/mints.h>
 #include "structs.h"
 #include "ci_tol.h"
 #include "civect.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 namespace psi { namespace detci {
 

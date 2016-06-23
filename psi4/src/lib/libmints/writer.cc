@@ -28,14 +28,14 @@
 #include "writer.h"
 #include "view.h"
 #include <libmints/mints.h>
-#include <psi4-dec.h>
-#include <physconst.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
 #include <masses.h>
 
 #include <cstdio>
 #include <utility>
 #include <algorithm>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 using namespace boost;

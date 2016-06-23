@@ -27,12 +27,12 @@
 
 #include <cstdio>
 
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "block_vector.h"
 #include "vector_base.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 

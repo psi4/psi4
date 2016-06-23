@@ -29,7 +29,7 @@
 #include <cstdlib>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "index.h"
 #include "matrix.h"

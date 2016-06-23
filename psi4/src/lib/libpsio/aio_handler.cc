@@ -34,10 +34,10 @@
 #include <unistd.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "aiohandler.h"
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 using namespace std;
 using namespace boost;

@@ -26,9 +26,9 @@
  */
 
 #include "psiconfig.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "mints.h"
-#include "liboptions/liboptions.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "potentialint.h"
 #include <libint/libint.h>
 

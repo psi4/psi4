@@ -28,7 +28,7 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#include <psiconfig.h>
+//#include <psiconfig.h>
 
 /*
  * Example of likely and unlikely

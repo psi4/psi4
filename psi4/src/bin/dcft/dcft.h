@@ -32,14 +32,14 @@
 #include <libmints/vector.h>
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/dimension.h>
 
 #define DCFT_TIMER
 
 // Handy mints timer macros, requires libqt to be included
 #ifdef DCFT_TIMER
-#   include <libqt/qt.h>
+#   include "psi4/src/lib/libqt/qt.h"
 
 #   define dcft_timer_on(a) timer_on((a));
 #   define dcft_timer_off(a) timer_off((a));

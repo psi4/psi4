@@ -52,9 +52,9 @@
 #include <vector>
 #include <string>
 
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 namespace psi{ namespace psimrcc{
 

@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libiwl/iwl.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #define EXTERN

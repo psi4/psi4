@@ -27,9 +27,9 @@
 
 #include <boost/filesystem.hpp>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libmints/mints.h>
 
 #include <boost/tuple/tuple.hpp>

@@ -28,27 +28,15 @@
 #ifndef libmints_typedefs_h
 #define libmints_typedefs_h
 
-#include <compiler.h>
-
 // Handy mints timer macros, requires libqt to be included
 #ifdef MINTS_TIMER
-#   include <libqt/qt.h>
+#   include "psi4/src/lib/libqt/qt.h"
 #   define mints_timer_on(a) timer_on((a));
 #   define mints_timer_off(a) timer_off((a));
 #else
 #   define mints_timer_on(a)
 #   define mints_timer_off(a)
 #endif
-
-
-// Forward declare boost
-namespace boost {
-template <class T>
-class shared_ptr;
-}
-
-// Dimension is lightweight
-#include "dimension.h"
 
 // Forward declare psi
 namespace psi {

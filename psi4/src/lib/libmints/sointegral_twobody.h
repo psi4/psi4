@@ -42,7 +42,7 @@
 #include "dcd.h"
 
 
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <vector>
 
 //#define DebugPrint 1

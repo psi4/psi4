@@ -27,11 +27,11 @@
 
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <lib3index/3index.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psifiles.h"
 #include "corr_grad.h"
 
 #ifdef _OPENMP

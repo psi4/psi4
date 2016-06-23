@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
