@@ -77,7 +77,9 @@ void UHF::common_init()
     Da_     = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_     = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dt_     = SharedMatrix(factory_->create_matrix("D total"));
-    Dtold_  = SharedMatrix(factory_->create_matrix("D total old"));
+    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
+    Dt_old_  = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
@@ -114,7 +116,9 @@ void UHF::finalize()
     }
 
     Dt_.reset();
-    Dtold_.reset();
+    Da_old_.reset();
+    Db_old_.reset();
+    Dt_old_.reset();
     Ga_.reset();
     Gb_.reset();
 
@@ -125,7 +129,9 @@ void UHF::finalize()
 
 void UHF::save_density_and_energy()
 {
-    Dtold_->copy(Dt_);
+    Da_old_->copy(Da_);
+    Db_old_->copy(Db_);
+    Dt_old_->copy(Dt_);
     Eold_ = E_;
 }
 
@@ -371,6 +377,25 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
     R_a.reset();
     R_b.reset();
 
+}
+void UHF::damp_update()
+{
+  for(int h = 0; h < nirrep_; ++h){
+    for(int row = 0; row < Da_->rowspi(h); ++row){
+      for(int col = 0; col < Da_->colspi(h); ++col){
+	double Dold = damping_percentage_ * Da_old_->get(h, row, col);
+	double Dnew = (1.0 - damping_percentage_) * Da_->get(h, row, col);
+	Da_->set(h, row, col, Dold+Dnew);
+      }
+    }
+    for(int row = 0; row < Db_->rowspi(h); ++row){
+      for(int col = 0; col < Db_->colspi(h); ++col){
+	double Dold = damping_percentage_ * Db_old_->get(h, row, col);
+	double Dnew = (1.0 - damping_percentage_) * Db_->get(h, row, col);
+	Db_->set(h, row, col, Dold+Dnew);
+      }
+    }
+  }
 }
 int UHF::soscf_update(void)
 {

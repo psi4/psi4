@@ -42,7 +42,8 @@ namespace scf {
 
 class UHF : public HF {
 protected:
-    SharedMatrix Dt_, Dtold_;
+    SharedMatrix Dt_, Dt_old_;
+    SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_;
 
     void form_initialF();
@@ -78,6 +79,9 @@ protected:
 
     // Compute UHF NOs
     void compute_nos();
+
+    // Damp down the density update
+    virtual void damp_update();
 
     // Second-order convergence code
     void Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
