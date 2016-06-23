@@ -42,8 +42,10 @@ class ROHF : public HF {
 protected:
     SharedMatrix moFeff_;
     SharedMatrix soFeff_;
-    SharedMatrix Dt_old_;
     SharedMatrix Dt_;
+    SharedMatrix Da_old_;
+    SharedMatrix Db_old_;
+    SharedMatrix Dt_old_;
     SharedMatrix Ct_;
     SharedMatrix Ga_;
     SharedMatrix Gb_;
@@ -79,6 +81,9 @@ protected:
     // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix ret);
     virtual int soscf_update(void);
+
+    /** Applies damping to the density update */
+    virtual void damp_update();
 
     void common_init();
 public:

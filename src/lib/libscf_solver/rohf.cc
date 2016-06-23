@@ -78,8 +78,10 @@ void ROHF::common_init()
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
     Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
-    Dt_old_  = SharedMatrix(factory_->create_matrix("D alpha old"));
-    Dt_      = SharedMatrix(factory_->create_matrix("D beta old"));
+    Dt_      = SharedMatrix(factory_->create_matrix("Total SCF density"));
+    Dt_old_  = SharedMatrix(factory_->create_matrix("Old total SCF density"));
+    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
     moFa_    = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
     moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
@@ -259,6 +261,8 @@ void ROHF::finalize()
     Kb_.reset();
     Ga_.reset();
     Gb_.reset();
+    Da_old_.reset();
+    Db_old_.reset();
     Dt_old_.reset();
     Dt_.reset();
     moFa_.reset();
@@ -269,6 +273,8 @@ void ROHF::finalize()
 
 void ROHF::save_density_and_energy()
 {
+    Da_old_->copy(Da_);
+    Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
     Eold_ = E_; // save previous energy
 }
@@ -809,6 +815,27 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
     Hx_left.reset(); Hx_right.reset();
     Cocc.reset(); Cvir.reset();
+}
+
+void ROHF::damp_update()
+{
+  for(int h = 0; h < nirrep_; ++h){
+    for(int row = 0; row < Da_->rowspi(h); ++row){
+      for(int col = 0; col < Da_->colspi(h); ++col){
+	double Dold = damping_percentage_ * Da_old_->get(h, row, col);
+	double Dnew = (1.0 - damping_percentage_) * Da_->get(h, row, col);
+	Da_->set(h, row, col, Dold+Dnew);
+      }
+    }
+    for(int row = 0; row < Db_->rowspi(h); ++row){
+      for(int col = 0; col < Db_->colspi(h); ++col){
+	double Dold = damping_percentage_ * Db_old_->get(h, row, col);
+	double Dnew = (1.0 - damping_percentage_) * Db_->get(h, row, col);
+	Db_->set(h, row, col, Dold+Dnew);
+      }
+    }
+  }
+
 }
 
 int ROHF::soscf_update()
