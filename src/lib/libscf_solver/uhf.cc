@@ -396,6 +396,8 @@ void UHF::damp_update()
       }
     }
   }
+  Dt_->copy(Da_);
+  Dt_->add(Db_);
 }
 int UHF::soscf_update(void)
 {

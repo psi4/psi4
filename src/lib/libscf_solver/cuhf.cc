@@ -108,6 +108,8 @@ void CUHF::damp_update()
       }
     }
   }
+  Dt_->copy(Da_);
+  Dt_->add(Db_);
 }
 
 void CUHF::finalize()
