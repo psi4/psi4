@@ -27,7 +27,7 @@
 
 #include"ccsd.h"
 #include"blas.h"
-#include<libqt/qt.h>
+#include"psi4/src/lib/libqt/qt.h"
 
 using namespace psi;
 

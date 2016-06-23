@@ -57,12 +57,12 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libiwl/iwl.h>
 #include <libdpd/dpd.h>
-#include <psifiles.h>
-#include <libqt/qt.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

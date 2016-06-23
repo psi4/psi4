@@ -27,10 +27,10 @@
 
 #include <cstdlib>
 #include <string.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "matrix.h"
 #include "vector.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace psi;
 
 IntVector::IntVector() {

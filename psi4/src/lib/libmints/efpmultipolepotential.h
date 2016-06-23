@@ -27,6 +27,8 @@
 
 #ifndef _psi_src_lib_libmints_efpmultipolepotential_h_
 #define _psi_src_lib_libmints_efpmultipolepotential_h_
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/osrecur.h"
 
 namespace boost {
 template<class T> class shared_ptr;

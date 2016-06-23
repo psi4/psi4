@@ -27,7 +27,7 @@
 #ifndef PSIFILEIMPL_H_
 #define PSIFILEIMPL_H_
 
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include <fstream>
 
 ///Typedef of std::file modes

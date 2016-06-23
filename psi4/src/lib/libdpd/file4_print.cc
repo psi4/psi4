@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 int DPD::file4_print(dpdfile4 *File, std::string out)

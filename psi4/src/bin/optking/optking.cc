@@ -39,8 +39,8 @@
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-  #include "exception.h"
-  #include <libparallel/parallel.h>
+  #include "psi4/src/lib/libpsi4util/exception.h"
+  #include "psi4/src/lib/libparallel/parallel.h"
 #endif
 
 // Define the return types for optking.

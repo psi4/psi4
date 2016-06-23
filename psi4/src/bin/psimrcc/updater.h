@@ -28,7 +28,7 @@
 #ifndef _psi_src_bin_psimrcc_updater_h_
 #define _psi_src_bin_psimrcc_updater_h_
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 /**
  *  @file updater.h

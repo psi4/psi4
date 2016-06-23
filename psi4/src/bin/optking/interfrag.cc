@@ -33,7 +33,7 @@
 #include "frag.h"
 #include "interfrag.h"
 #include "v3d.h" // for H_guess
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include <sstream>
 
 #include "print.h"

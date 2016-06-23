@@ -26,13 +26,13 @@
  */
 
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
 
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

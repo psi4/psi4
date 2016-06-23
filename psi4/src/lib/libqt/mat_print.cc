@@ -27,8 +27,8 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 /*!
 ** \file
 ** \brief Print a matrix to a file in a formatted style

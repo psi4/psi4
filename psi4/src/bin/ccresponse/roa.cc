@@ -39,10 +39,10 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
-#include <physconst.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <libmints/cdsalclist.h>
 #include <libmints/deriv.h>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 using namespace boost;
 

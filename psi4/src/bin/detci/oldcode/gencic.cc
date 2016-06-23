@@ -42,7 +42,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "structs.h"
 #include "globals.h"
 #include "genci.h"

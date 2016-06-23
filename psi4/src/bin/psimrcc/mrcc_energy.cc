@@ -26,7 +26,7 @@
  */
 
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "mrcc.h"
 #include "matrix.h"
 

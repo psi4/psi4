@@ -34,9 +34,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "qt.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 #define ZERO 1e-13

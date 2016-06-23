@@ -29,7 +29,7 @@
 #include "dcft.h"
 #include <libdpd/dpd.h>
 #include <libmints/matrix.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "defines.h"
 
 namespace psi { namespace dcft{

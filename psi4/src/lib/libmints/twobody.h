@@ -30,7 +30,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/python/list.hpp>
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include "pybuffer.h"
 
 namespace psi {

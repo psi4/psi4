@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "sointegral.h"
 #include "twobody.h"

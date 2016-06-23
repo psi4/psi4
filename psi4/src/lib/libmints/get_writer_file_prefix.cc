@@ -35,8 +35,8 @@
 #include <cstring>
 #include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
-#include <psi4-dec.h>
-#include <libmints/molecule.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/molecule.h"
 
 using namespace boost;
 

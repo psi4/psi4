@@ -38,7 +38,7 @@
 #include "linear_algebra.h"
 #include "atom_data.h"
 #include "physconst.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"

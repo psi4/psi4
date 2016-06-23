@@ -40,9 +40,9 @@
 #include <string>
 #include <map>
 #include <sstream>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
-#include <libparallel/parallel.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libparallel/parallel.h"
 
 namespace psi {
 

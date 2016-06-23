@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "Params.h"
 #include "ccwave.h"
 

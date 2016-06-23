@@ -32,11 +32,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libiwl/iwl.h>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
 #include <libmints/mints.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -45,7 +45,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 #define IOFF_MAX 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))

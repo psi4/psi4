@@ -32,9 +32,9 @@
  *  @brief Contains main() and global variables
 */
 
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
 #include "sort.h"

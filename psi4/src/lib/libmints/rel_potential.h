@@ -29,10 +29,12 @@
 #define _psi_src_lib_libmints_rel_potential_h_
 
 #include <vector>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
 
 namespace psi {
-
+    //TODO:  This is all in typedefs.h ....
     class Matrix;
     class BasisSet;
     class GaussianShell;

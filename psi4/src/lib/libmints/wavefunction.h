@@ -32,9 +32,9 @@
 #include <vector>
 
 #include "typedefs.h"
-#include "exception.h"
-#include <libparallel/parallel.h>
-
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libmints/dimension.h"
 #include <boost/enable_shared_from_this.hpp>
 
 #define MAX_IOFF 30000

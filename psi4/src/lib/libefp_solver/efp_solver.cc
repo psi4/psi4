@@ -30,8 +30,8 @@
 #include <boost/filesystem.hpp>
 
 #include <libmints/mints.h>
-#include <physconst.h>
-#include <psi4-dec.h>
+#include "psi4/include/physconst.h"
+#include "psi4/include/psi4-dec.h"
 
 #include "efp_solver.h"
 

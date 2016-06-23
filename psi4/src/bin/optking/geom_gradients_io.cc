@@ -33,7 +33,7 @@
 #include <cstring>
 #include <sstream>
 #include "molecule.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -41,11 +41,11 @@
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include <psi4-dec.h>
- #include <libmints/molecule.h>
+ #include "psi4/include/psi4-dec.h"
+ #include "psi4/src/lib/libmints/molecule.h"
  #include <libmints/matrix.h>
  #include <libmints/wavefunction.h>
- #include <libparallel/parallel.h>
+ #include "psi4/src/lib/libparallel/parallel.h"
  #include <libmints/writer_file_prefix.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER

@@ -29,9 +29,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "dcft.h"
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
 
 namespace psi{ namespace dcft{

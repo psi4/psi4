@@ -30,8 +30,8 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
 
 namespace psi {

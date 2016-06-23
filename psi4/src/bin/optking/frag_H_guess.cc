@@ -36,7 +36,7 @@
 #include "cov_radii.h"
 #include "physconst.h"
 #include "v3d.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"

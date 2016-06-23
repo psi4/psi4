@@ -33,11 +33,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <boost/shared_ptr.hpp>
-#include <psi4-dec.h>
-#include <psifiles.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/psifiles.h"
 
 #include <unistd.h>
 

@@ -13,7 +13,7 @@
 */
 
 #include <cstdio>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "structs.h"
 #include "CalcInfo.h"
 #include "Parameters.h"

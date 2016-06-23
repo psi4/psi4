@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"

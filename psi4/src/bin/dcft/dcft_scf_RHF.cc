@@ -30,7 +30,7 @@
 #include <cmath>
 #include <libiwl/iwl.hpp>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/matrix.h>
 #include <libmints/wavefunction.h>
 #include <libtrans/integraltransform.h>

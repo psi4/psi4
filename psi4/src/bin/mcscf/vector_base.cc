@@ -28,12 +28,12 @@
 #include <cstring>
 #include <iostream>
 
-#include <libqt/qt.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "vector_base.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 extern FILE* outfile;
 

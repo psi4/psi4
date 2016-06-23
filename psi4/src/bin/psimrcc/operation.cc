@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <cstdio>
 
 #include "blas.h"
 #include "debugging.h"
 #include "matrix.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi{
     
     namespace psimrcc{

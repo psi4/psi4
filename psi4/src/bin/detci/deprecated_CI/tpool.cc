@@ -48,7 +48,7 @@
 #include <cstring>
 #include <boost/lexical_cast.hpp>
 #include <pthread.h>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include "tpool.h"
 #include "structs.h"
 

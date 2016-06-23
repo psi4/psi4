@@ -29,11 +29,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <psi4-dec.h>
-#include <libmints/molecule.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/wavefunction.h>
-#include <liboptions/liboptions.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "moinfo_base.h"
 

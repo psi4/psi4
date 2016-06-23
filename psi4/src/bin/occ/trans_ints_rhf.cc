@@ -25,10 +25,10 @@
  * @END LICENSE
  */
 
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libtrans/integraltransform.h>
 #include <libiwl/iwl.hpp>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #include "occwave.h"
 #include "defines.h"

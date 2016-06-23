@@ -31,7 +31,7 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <math.h>
 
 namespace psi {

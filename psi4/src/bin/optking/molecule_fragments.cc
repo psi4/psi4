@@ -47,7 +47,7 @@
 
 #if defined(OPTKING_PACKAGE_PSI)
  #include <cmath>
- #include <libmints/molecule.h>
+ #include "psi4/src/lib/libmints/molecule.h"
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif

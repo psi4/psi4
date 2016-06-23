@@ -28,7 +28,7 @@
 #ifndef three_index_ps_H
 #define three_index_ps_H
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 namespace boost {
 template <class T>

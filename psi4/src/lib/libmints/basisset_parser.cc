@@ -34,7 +34,7 @@
 
 #include "mints.h"
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include <cstdio>
 #include <fstream>

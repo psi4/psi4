@@ -28,8 +28,8 @@
 #include <cstdlib>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "blas.h"
 #include "mp2_ccsd.h"

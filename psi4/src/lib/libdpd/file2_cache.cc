@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "dpd.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 void DPD::file2_cache_init(void)

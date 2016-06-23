@@ -57,7 +57,7 @@
 
 #include "mints.h"
 
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 using namespace psi;
 

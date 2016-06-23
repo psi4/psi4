@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
-#include <liboptions/liboptions.h>
-#include <libpsio/psio.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <libtrans/integraltransform.h>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <cmath>
 #include "adc.h"
 

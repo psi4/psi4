@@ -38,7 +38,7 @@
 #include "linear_algebra.h"
 #include "atom_data.h"
 #include "physconst.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -46,7 +46,7 @@
 
 #if defined(OPTKING_PACKAGE_PSI)
  #include <cmath>
- #include <libmints/molecule.h>
+ #include "psi4/src/lib/libmints/molecule.h"
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
  #include "EFP.h"

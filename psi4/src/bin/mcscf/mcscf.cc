@@ -39,14 +39,14 @@
 #include <cstdlib>
 
 // PSI C++ libraries
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 // PSI libraries
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libmints/mints.h>
 
 #include "mcscf.h"

@@ -29,8 +29,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 #include <string>
 #include <vector>

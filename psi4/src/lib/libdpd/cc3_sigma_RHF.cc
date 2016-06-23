@@ -33,12 +33,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*

@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "mints.h"
 #include "extern.h"
-#include <physconst.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/physconst.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

@@ -26,10 +26,10 @@
  */
 
 #include <stdexcept>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "mints.h"
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 using namespace psi;
 using namespace boost;

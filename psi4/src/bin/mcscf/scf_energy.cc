@@ -29,8 +29,8 @@
 #include <cmath>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libciomr/libciomr.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 #include "sblock_matrix.h"

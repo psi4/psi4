@@ -72,11 +72,10 @@
 #include <ctime>
 #include <sys/param.h>
 #include <sys/times.h>
-#include <sys/time.h>
-#include <libciomr/libciomr.h>
-#include <psifiles.h>
-#include <psi4-dec.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 /* guess for HZ, if missing */
 #ifndef HZ
 #define HZ 60

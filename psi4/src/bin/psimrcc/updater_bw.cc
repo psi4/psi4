@@ -29,7 +29,7 @@
 //#include "mrcc.h"
 //#include "matrix.h"
 //#include "debugging.h"
-//#include <libpsi4util/libpsi4util.h>
+//#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
 #include "heff.h"

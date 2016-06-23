@@ -27,10 +27,10 @@
 
 #include <cstdlib>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "idmrpt2.h"
 #include "matrix.h"

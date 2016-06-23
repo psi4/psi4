@@ -26,8 +26,8 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <exception.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "matrix.h"
 #include "view.h"

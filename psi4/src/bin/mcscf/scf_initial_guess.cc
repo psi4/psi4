@@ -28,7 +28,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "scf.h"
 

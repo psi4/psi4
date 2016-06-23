@@ -30,8 +30,8 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi { namespace cclambda {
 
 void status(const char *s, std::string out)

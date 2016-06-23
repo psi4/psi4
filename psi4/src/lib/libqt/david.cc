@@ -35,8 +35,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psir/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 namespace psi {
 

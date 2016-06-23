@@ -26,11 +26,11 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "diisentry.h"
 #include <math.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
 #include <sstream>
 
 using namespace std;

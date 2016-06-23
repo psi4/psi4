@@ -35,13 +35,13 @@
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include <liboptions/liboptions_python.h>
 
 using namespace boost;
 using namespace boost::python;
 
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 namespace psi { namespace findif {
 

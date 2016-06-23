@@ -31,11 +31,11 @@
 
 #include <iostream>
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libmoinfo/libmoinfo.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libiwl/iwl.hpp>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 

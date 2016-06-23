@@ -28,7 +28,7 @@
 #ifndef __math_test_cuhf_h__
 #define __math_test_cuhf_h__
 
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "hf.h"
 
 namespace boost {

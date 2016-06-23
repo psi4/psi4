@@ -33,8 +33,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

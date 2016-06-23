@@ -27,7 +27,7 @@
 
 #include "integraltransform.h"
 #include "mospace.h"
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 using namespace boost;
 using namespace psi;

@@ -34,10 +34,10 @@
 #include <cstring>
 #include <cmath>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
-#include <exception.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

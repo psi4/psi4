@@ -24,14 +24,21 @@
  *
  * @END LICENSE
  */
-
-#include <boost/foreach.hpp>
-#include <boost/python/tuple.hpp>
 #include <stdexcept>
-#include <exception.h>
-
-#include "mints.h"
-#include <compiler.h>
+#include <boost/foreach.hpp>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
+#include <boost/python/tuple.hpp>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+//#include "mints.h"
+//#include "psi4/include/compiler.h"
 
 using namespace boost;
 using namespace psi;

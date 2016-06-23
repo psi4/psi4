@@ -25,7 +25,9 @@
  * @END LICENSE
  */
 
-#include "mints.h"
+#include "psi4/src/lib/libmints/efpmultipolepotential.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

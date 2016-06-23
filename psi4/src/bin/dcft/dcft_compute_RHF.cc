@@ -30,9 +30,9 @@
 #include <libdpd/dpd.h>
 #include <libtrans/integraltransform.h>
 #include <libdiis/diismanager.h>
-#include <libpsio/psio.hpp>
-#include <libpsio/psio.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/include/psifiles.h"
 #include "defines.h"
 
 using namespace boost;

@@ -28,11 +28,11 @@
 #include <iostream>
 #include <cmath>
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libiwl/iwl.hpp>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 

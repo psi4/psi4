@@ -28,7 +28,7 @@
 #include "../Timer.h"
 #include "../Table.h"
 #include "../../libparallel2/LibParallel2.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 using std::cout;
 using std::endl;
 

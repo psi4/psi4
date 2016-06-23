@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "defines.h"
 #include "dfocc.h"
 

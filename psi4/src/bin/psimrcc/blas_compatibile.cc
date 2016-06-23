@@ -27,8 +27,8 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include "psi4-dec.h"
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
 #include "index.h"

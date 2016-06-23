@@ -30,7 +30,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {

@@ -29,8 +29,8 @@
 #define __psi4_src_lib_libplugin_plugin_h
 
 #include <libmints/mints.h>
-#include <libparallel/parallel.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/include/psi4-dec.h"
 #include <string>
 
 

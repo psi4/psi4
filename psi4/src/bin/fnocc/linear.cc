@@ -30,7 +30,7 @@
 #include<libmints/matrix.h>
 #include<libpsio/psio.hpp>
 #include<psifiles.h>
-#include<libqt/qt.h>
+#include"psi4/src/lib/libqt/qt.h"
 #ifdef _OPENMP
     #include<omp.h>
 #endif

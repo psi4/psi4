@@ -29,13 +29,13 @@
 #include <cmath>
 
 #include <boost/shared_ptr.hpp>
-#include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 #include "algebra_interface.h"
 #include "blas.h"

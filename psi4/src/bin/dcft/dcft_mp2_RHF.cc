@@ -27,10 +27,10 @@
 
 #include "dcft.h"
 #include "defines.h"
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <vector>
-#include <liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>

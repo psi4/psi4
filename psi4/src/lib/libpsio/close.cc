@@ -35,11 +35,9 @@
 #include <unistd.h>
 #include <cstring>
 #include <cstdlib>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
-#include "psi4-dec.h"
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
@@ -67,12 +65,9 @@ void PSIO::close(unsigned int unit, int keep) {
   /* Close each volume (remove if necessary) and free the path */
   for (i=0; i < this_unit->numvols; i++) {
     int errcod;
-    boost::shared_ptr<const LibParallel::Communicator> Comm=
-          WorldComm->GetComm();
-    if (Comm->Me() == 0) {
+
       errcod = ::close(this_unit->vol[i].stream);
-    }
-    Comm->Bcast(&errcod, 1, 0);
+
     if (errcod == -1)
       psio_error(unit,PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */

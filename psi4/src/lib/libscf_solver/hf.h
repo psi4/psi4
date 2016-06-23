@@ -29,14 +29,14 @@
 #define HF_H
 
 #include <vector>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>
 #include <libmints/vector.h>
 #include <libdiis/diismanager.h>
 #include <libdiis/diisentry.h>
-#include <psi4-dec.h>
-#include <libqt/qt.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libqt/qt.h"
 
 
 namespace boost {

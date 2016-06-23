@@ -30,8 +30,8 @@
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <cmath>
 #include "MOInfo.h"
 #include "Params.h"

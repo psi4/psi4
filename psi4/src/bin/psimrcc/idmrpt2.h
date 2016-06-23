@@ -35,7 +35,7 @@
  ***************************************************************************/
 
 #include "manybody.h"
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 namespace psi{ namespace psimrcc{
 

@@ -32,10 +32,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"

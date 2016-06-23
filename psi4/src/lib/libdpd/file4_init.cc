@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include "dpd.h"
 
 namespace psi {

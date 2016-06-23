@@ -32,9 +32,9 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <exception.h>
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace psi {
 

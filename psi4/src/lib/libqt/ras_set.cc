@@ -33,10 +33,10 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "qt.h"
-#include <psifiles.h>
-#include <liboptions/liboptions.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 namespace psi {
 

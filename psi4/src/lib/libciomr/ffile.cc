@@ -35,8 +35,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <psifiles.h>
-#include "psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 extern char* psi_file_prefix;

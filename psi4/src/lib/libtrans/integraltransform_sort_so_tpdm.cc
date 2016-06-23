@@ -26,7 +26,7 @@
  */
 
 #include "integraltransform.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libdpd/dpd.h>
 #include <libmints/mints.h>
 #include "psifiles.h"

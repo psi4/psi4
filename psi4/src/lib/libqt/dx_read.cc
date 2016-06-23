@@ -42,10 +42,10 @@
 #include <vector>
 #include <utility>
 
-#include <libmints/basisset.h>
-#include "qt.h"
-#include <physconst.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libqt.h"
+#include "psi4/include/physconst.h"
+#include "psi4/include/psi4-dec.h"
 
 
 using namespace boost;

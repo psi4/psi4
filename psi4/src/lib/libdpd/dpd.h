@@ -33,11 +33,11 @@
 #define _psi_src_lib_libdpd_dpd_h
 
 #include <cstdio>
-#include <psifiles.h>
-#include <libpsio/config.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libpsio/config.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 
 // Testing -TDC
 #include "dpdmospace.h"

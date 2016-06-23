@@ -29,11 +29,11 @@
 #include <libmints/sieve.h>
 #include <libmints/mintshelper.h>
 #include <libmints/wavefunction.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <lib3index/cholesky.h>
-#include <psifiles.h>
-#include "psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
 
 #include "defines.h"
 #include "dfocc.h"

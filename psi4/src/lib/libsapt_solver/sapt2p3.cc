@@ -26,7 +26,7 @@
  */
 
 #include "sapt2p3.h"
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 #include <math.h>
 
 namespace psi { namespace sapt {

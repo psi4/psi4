@@ -39,7 +39,7 @@ const char* getIntcoFileName();
 
 #include "package.h"
 #if defined(OPTKING_PACKAGE_PSI)
-  #include <psi4-dec.h>
+  #include "psi4/include/psi4-dec.h"
 #endif
 
 #ifdef EXTERN

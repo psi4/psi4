@@ -34,7 +34,7 @@
 #define _psi_src_bin_detci_globals_h
 
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <string>
 
 /* nice stuff to extern or not to extern properly */

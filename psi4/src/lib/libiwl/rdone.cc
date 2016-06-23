@@ -31,11 +31,11 @@
 */
 #include <cstdio>
 #include <cmath>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
   
 void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,

@@ -44,8 +44,8 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <iostream>
 #include "odometer.h"

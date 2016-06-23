@@ -28,9 +28,9 @@
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <boost/shared_ptr.hpp>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include <liboptions/liboptions_python.h>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include "superfunctional.h"
 
 #define PY_TRY(ptr, command)  \

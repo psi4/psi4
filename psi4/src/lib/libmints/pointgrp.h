@@ -79,8 +79,8 @@
 #ifndef _math_symmetry_pointgrp_h
 #define _math_symmetry_pointgrp_h
 
-#include <libmints/vector3.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libmints/vector3.h"
+#include "psi4/include/psi4-dec.h"
 
 #include <string>
 #include <cstdio>

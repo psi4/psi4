@@ -33,9 +33,9 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <vector>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "dpd.h"
-#include "exception.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 namespace psi {
 

@@ -26,7 +26,7 @@
  */
 
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "mp2_ccsd.h"
 #include "matrix.h"

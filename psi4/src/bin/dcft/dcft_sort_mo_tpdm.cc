@@ -26,9 +26,9 @@
  */
 
 #include <libtrans/integraltransform.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <libiwl/iwl.hpp>
 #include <libtrans/integraltransform_functors.h>
 #include "psifiles.h"

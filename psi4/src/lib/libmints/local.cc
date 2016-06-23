@@ -24,11 +24,12 @@
  *
  * @END LICENSE
  */
-
-#include <libqt/qt.h>
-
-#include "mints.h"
-#include "local.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/local.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
 
 using namespace boost;
 using namespace psi;

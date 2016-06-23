@@ -40,7 +40,7 @@
 #include "opt_data.h"
 #include "physconst.h"
 #include "linear_algebra.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -50,7 +50,7 @@
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace opt {
 
 void FRAG::print_geom(std::string psi_fp, FILE *qc_fp, const int id, bool print_masses) {

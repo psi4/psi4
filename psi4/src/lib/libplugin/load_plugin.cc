@@ -34,8 +34,8 @@
 
 #include "plugin.h"
 
-#include <libparallel/parallel.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 using namespace boost;
 

@@ -28,10 +28,10 @@
 #include <iostream>
 #include <cmath>
 
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 #include "algebra_interface.h"
 #include "blas.h"

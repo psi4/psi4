@@ -87,8 +87,8 @@
 #include <cstring>
 #include <cmath>
 #include <libdpd/dpd.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
 
 namespace psi { namespace cclambda {
 

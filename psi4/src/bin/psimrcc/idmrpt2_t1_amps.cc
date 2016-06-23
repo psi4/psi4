@@ -32,7 +32,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "idmrpt2.h"
 #include "blas.h"

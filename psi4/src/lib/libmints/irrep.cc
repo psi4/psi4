@@ -73,9 +73,9 @@
  *      June, 1993
  */
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libmints/pointgrp.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 #include <stdlib.h>
 

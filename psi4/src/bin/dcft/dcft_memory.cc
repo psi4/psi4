@@ -29,11 +29,11 @@
 #include "defines.h"
 #include <vector>
 #include <cmath>
-#include <liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libtrans/integraltransform.h>
 #include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
 #include <libiwl/iwl.hpp>

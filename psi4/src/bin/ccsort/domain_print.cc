@@ -34,7 +34,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi { namespace ccsort {
 
 void domain_print(int nocc, int natom, int *domain_len, int **domain,

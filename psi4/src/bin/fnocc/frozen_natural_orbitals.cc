@@ -48,7 +48,7 @@
 #include<lib3index/dftensor.h>
 #include<lib3index/cholesky.h>
 #include <libmints/sieve.h>
-#include<libqt/qt.h>
+#include"psi4/src/lib/libqt/qt.h"
 
 #include<libdpd/dpd.h>
 #define ID(x) ints->DPD_ID(x)

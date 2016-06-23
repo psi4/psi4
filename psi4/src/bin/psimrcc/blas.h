@@ -39,7 +39,7 @@
 #include <map>
 #include <utility>
 
-#include "liboptions/liboptions.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 #include "matrixtmp.h"
 #include "operation.h"
 

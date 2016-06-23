@@ -38,9 +38,9 @@
 #define _psi_src_lib_libiwl_iwl_h_
 
 #include <cstdio>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include "config.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 struct iwlbuf {

@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cmath>
 #include <string>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libpsio/psio.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

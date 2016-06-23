@@ -32,12 +32,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libdpd/dpd.h>
 #include <libiwl/iwl.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/wavefunction.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"

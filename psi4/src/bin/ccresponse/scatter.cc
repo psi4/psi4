@@ -43,20 +43,20 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
 #include <vector>
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 #include <libmints/mints.h>
-#include <physconst.h>
-#include <liboptions/liboptions.h>
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/physconst.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 //#include "oldphysconst.h"
 //#include "mass.h"

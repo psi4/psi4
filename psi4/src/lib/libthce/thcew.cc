@@ -39,12 +39,12 @@
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include <libqt/qt.h>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "thce.h"
 #include "thcew.h"
 #include "laplace.h"
 #include "lreri.h"
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #ifdef _OPENMP
 #include <omp.h>

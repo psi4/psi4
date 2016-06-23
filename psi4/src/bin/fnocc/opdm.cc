@@ -27,7 +27,7 @@
 
 #include<libmints/mints.h>
 #include<psifiles.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include"blas.h"
 #include"ccsd.h"
 

@@ -33,12 +33,12 @@
 #include <cstdlib>
 #include <string.h>
 #include <string.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psi4-dec.h"
 #include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/matrix.h>
 #include "MOInfo.h"
 #include "Params.h"

@@ -31,9 +31,9 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <psifiles.h>
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi { namespace ccsort {
 
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,

@@ -31,8 +31,8 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 /* dpd_buf4_print(): Prints out data for all irreps of a dpd

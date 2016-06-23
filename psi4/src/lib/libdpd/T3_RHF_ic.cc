@@ -89,9 +89,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libdpd/dpd.h>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <pthread.h>
 
 namespace psi {

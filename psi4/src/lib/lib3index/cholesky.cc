@@ -27,7 +27,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <libmints/mints.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <math.h>
 #include <limits>
 #include <vector>

@@ -27,9 +27,9 @@
 
 /** Standard library includes */
 #include <fstream>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include "dfocc.h"

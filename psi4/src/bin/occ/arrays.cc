@@ -28,13 +28,13 @@
 // Latest revision on April 25, 2013.
 
 #include <stdio.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "arrays.h"
 
 using namespace boost;
 using namespace psi;
 using namespace std;
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi{ namespace occwave{
   
 

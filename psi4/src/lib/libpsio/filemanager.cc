@@ -26,15 +26,15 @@
  */
 
 #include <boost/thread.hpp>
-
-#include "psio.hpp"
-#include "psio.h"
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
-#include "exception.h"
-#include "psi4-dec.h"
-#include "libparallel/ParallelPrinter.h"
+#include <string>
+#include "psio.hpp"
+#include "psio.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi{
 
 PSIOManager::PSIOManager()

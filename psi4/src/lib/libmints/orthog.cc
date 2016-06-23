@@ -29,7 +29,7 @@
 #include <cmath>
 #include <iterator>
 
-#include <psi4-dec.h>
+#include "psi4/include/psi4-dec.h"
 
 #include "matrix.h"
 #include "vector.h"

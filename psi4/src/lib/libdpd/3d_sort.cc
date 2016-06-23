@@ -73,7 +73,7 @@
 
 #include <cstdio>
 #include "dpd.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi {
 
 void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx,

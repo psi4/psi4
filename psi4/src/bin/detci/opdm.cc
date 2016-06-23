@@ -34,10 +34,10 @@
 #include <cstdlib>
 #include <cmath>
 #include <libmints/mints.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
-#include <psifiles.h>
-#include <physconst.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/include/physconst.h"
 #include "structs.h"
 #include "civect.h"
 #include "ciwave.h"

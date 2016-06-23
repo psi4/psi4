@@ -27,11 +27,11 @@
 
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "mints.h"
 #include "angularmomentum.h"
-#include <physconst.h>
+#include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

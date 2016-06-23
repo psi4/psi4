@@ -29,7 +29,7 @@
 #define __rohf_psi_h__
 
 #include <vector>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "hf.h"
 
 namespace boost {

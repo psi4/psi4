@@ -36,7 +36,7 @@
 #include <libdpd/dpd.h>
 #include "Params.h"
 #include "ccwave.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 namespace psi { namespace ccenergy {
 

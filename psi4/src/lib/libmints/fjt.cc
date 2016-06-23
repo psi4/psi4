@@ -57,8 +57,8 @@
 #include "fjt.h"
 #include "wavefunction.h"
 #include "integralparameters.h"
-#include <libciomr/libciomr.h>
-#include "psi4-dec.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psi4-dec.h"
 using namespace psi;
 using namespace std;
 using namespace boost;

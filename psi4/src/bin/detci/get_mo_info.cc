@@ -32,12 +32,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/wavefunction.h>
-#include <libmints/molecule.h>
+#include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/vector.h>
-#include <libqt/qt.h>
-#include <libpsio/psio.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include <ciwave.h>
 #include "structs.h"
 

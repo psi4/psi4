@@ -29,7 +29,7 @@
     \ingroup CCEOM
     \brief Enter brief description of file here 
 */
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libdpd/dpd.h>
 
 namespace psi { 

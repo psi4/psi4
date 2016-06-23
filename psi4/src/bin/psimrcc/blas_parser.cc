@@ -29,7 +29,7 @@
 #include <cstdio>
 #include "blas.h"
 #include "debugging.h"
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <algorithm>
 
 namespace psi{

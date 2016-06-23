@@ -26,7 +26,7 @@
  */
 
 #include <vector>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include <libmints/mints.h>
 #include <libdpd/dpd.h>
 

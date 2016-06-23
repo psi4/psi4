@@ -27,7 +27,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 #include "mints.h"
 #include <boost/python/tuple.hpp>
 

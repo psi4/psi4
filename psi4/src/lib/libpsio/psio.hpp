@@ -7,7 +7,7 @@
 #include <set>
 #include <queue>
 
-#include <libpsio/config.h>
+#include "psi4/src/lib/libpsio/config.h"
 
 namespace boost {
 template <class T>

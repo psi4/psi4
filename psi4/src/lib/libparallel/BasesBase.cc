@@ -26,9 +26,9 @@
  */
 
 #include "BasesBase.h"
-#include "psi4-dec.h"
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/include/psi4-dec.h"
+//#include "../libparallel2/Communicator.h"
+//#include "../libparallel2/ParallelEnvironment.h"
 
 namespace psi{
 ///Returns the integer of the Lucky MPI process
@@ -38,7 +38,7 @@ int BasesBase::WhoIsSpecial()const{
 
 ///Returns true if this is the lucky MPI process that gets to read/write
 BasesBase::BasesBase(){
-   ImSpecial_=(WorldComm->Original()==WhoIsSpecial());
+   ImSpecial_=true;//(WorldComm->Original()==WhoIsSpecial());
 }
 
 bool BasesBase::ImSpecial()const{return ImSpecial_;}

@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.0)
+project(libderiv_library LANGUAGES C CXX)
+find_package(libint REQUIRED COMPONENTS ${LIBINT_OPT_AM})
+include_directories(${LIBINT_INCLUDE_DIRS})
+file(GLOB FULL_SRC "${CMAKE_BINARY_DIR}/*.cc")
+file(GLOB FULL_HEAD "${CMAKE_BINARY_DIR}/*.h")
+add_library(deriv STATIC ${FULL_SRC})
+
+install(FILES ${FULL_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(TARGETS deriv ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

@@ -25,12 +25,12 @@
  * @END LICENSE
  */
 
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 
 #include "model_space.h"
 #include "moinfo.h"
 #include <cstdio>
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi{
 
 

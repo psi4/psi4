@@ -37,19 +37,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libdpd/dpd.h>
 #include <libiwl/iwl.h>
-#include <liboptions/liboptions.h>
-#include <psi4-dec.h>
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/include/psi4-dec.h"
 #include <cmath>
-#include <psifiles.h>
+#include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #include "globals.h"
-#include <libqt/qt.h>
+#include "psi4/src/lib/libqt/qt.h"
 namespace psi { namespace ccdensity {
 
 void init_io(void);

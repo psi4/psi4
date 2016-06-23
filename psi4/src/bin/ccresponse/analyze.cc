@@ -33,14 +33,14 @@
 #include <cstdlib>
 #include <cmath>
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi { namespace ccresponse {
 
 double **Build_R(void);

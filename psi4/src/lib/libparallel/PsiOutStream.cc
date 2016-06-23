@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 #include "PsiOutStream.h"
-#include <exception.h>
+#include "psi4/src/lib/libpsi4util/exception.h"
 
 #include <stdarg.h>
 #include <stdio.h>

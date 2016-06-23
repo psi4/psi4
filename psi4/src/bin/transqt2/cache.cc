@@ -31,8 +31,8 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libciomr/libciomr.h>
-#include <exception.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 #define EXTERN
 #include "globals.h"
 

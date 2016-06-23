@@ -26,7 +26,7 @@
  */
 
 #include "../ProgressBar.h"
-#include "psi4-dec.h"
+#include "psi4/include/psi4-dec.h"
 namespace psi{
 
 ProgressBar::ProgressBar(const NTask_t NTasks):

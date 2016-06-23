@@ -25,19 +25,23 @@
  * @END LICENSE
  */
 
-#include <psifiles.h>
-#include <psi4-dec.h>
-#include <physconst.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
 
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libparallel/parallel.h>
-#include <liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libmints/rel_potential.h>
-#include <libmints/integral.h>
-
-#include "x2cint.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libparallel/parallel.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libmints/rel_potential.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/x2cint.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/sobasis.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
 
 namespace psi {
 

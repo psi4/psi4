@@ -34,10 +34,10 @@
 #include <cstdlib>
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/psio.hpp>
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include <libiwl/iwl.h>
 #include <libmoinfo/libmoinfo.h>
-#include <libpsi4util/libpsi4util.h>
+#include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psifiles.h"
 
 #define MAX(i,j) ((i>j) ? i : j)

@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-#include <exception.h>
+
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <vector>
 #include <sstream>
-
 #include <cstring>
-
+#include <cstdlib>
+#include "psi4/src/lib/libpsi4util/exception.h"
 using namespace std;
 
 namespace psi {

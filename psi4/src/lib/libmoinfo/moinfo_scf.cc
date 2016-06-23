@@ -31,9 +31,9 @@
 #include <cstring>
 
 #include <libmints/corrtab.h>
-#include <libmints/molecule.h>
-#include <libciomr/libciomr.h>
-#include <liboptions/liboptions.h>
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "moinfo_scf.h"
 

@@ -26,7 +26,7 @@
  */
 
 #include "integraltransform.h"
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <libqt/qt.h>
 #include <libmints/matrix.h>
 #include <libmints/mints.h>

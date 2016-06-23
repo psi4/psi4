@@ -29,7 +29,7 @@
 #include <libdisp/dispersion.h>
 #include "superfunctional.h"
 #include "functional.h"
-#include "libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {

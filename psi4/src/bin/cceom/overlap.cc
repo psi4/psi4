@@ -37,7 +37,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-#include <libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
