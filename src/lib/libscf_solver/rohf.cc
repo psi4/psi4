@@ -78,8 +78,10 @@ void ROHF::common_init()
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
     Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
-    Dt_old_  = SharedMatrix(factory_->create_matrix("D alpha old"));
-    Dt_      = SharedMatrix(factory_->create_matrix("D beta old"));
+    Dt_      = SharedMatrix(factory_->create_matrix("Total SCF density"));
+    Dt_old_  = SharedMatrix(factory_->create_matrix("Old total SCF density"));
+    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
     moFa_    = SharedMatrix(factory_->create_matrix("MO alpha Fock Matrix (MO basis)"));
     moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
@@ -259,6 +261,8 @@ void ROHF::finalize()
     Kb_.reset();
     Ga_.reset();
     Gb_.reset();
+    Da_old_.reset();
+    Db_old_.reset();
     Dt_old_.reset();
     Dt_.reset();
     moFa_.reset();
@@ -269,6 +273,8 @@ void ROHF::finalize()
 
 void ROHF::save_density_and_energy()
 {
+    Da_old_->copy(Da_);
+    Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
     Eold_ = E_; // save previous energy
 }
@@ -809,6 +815,16 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
     Hx_left.reset(); Hx_right.reset();
     Cocc.reset(); Cvir.reset();
+}
+
+void ROHF::damp_update()
+{
+  Da_->scale(1.0 - damping_percentage_);
+  Da_->axpy(damping_percentage_, Da_old_);
+  Db_->scale(1.0 - damping_percentage_);
+  Db_->axpy(damping_percentage_, Db_old_);
+  Dt_->copy(Da_);
+  Dt_->add(Db_);
 }
 
 int ROHF::soscf_update()

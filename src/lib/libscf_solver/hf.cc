@@ -605,7 +605,7 @@ double HF::finalize_E()
 
         save_information();
     } else {
-            outfile->Printf( "  Failed to converged.\n");
+            outfile->Printf( "  Failed to converge.\n");
         E_ = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);
