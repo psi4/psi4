@@ -62,6 +62,7 @@ struct OPT_PARAMS {
 
   enum INTERFRAGMENT_MODE {FIXED, PRINCIPAL_AXES} interfragment_mode;
 
+  //std::vector< std::vector<int> > frag_atoms;
   bool intcos_generate_exit;
 
   bool rfo_follow_root; // whether to do root following
