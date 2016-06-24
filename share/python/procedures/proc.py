@@ -1211,15 +1211,16 @@ def run_dcft_gradient(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['GLOBALS', 'DERTYPE'],
-        ['DERIV', 'DERIV_TPDM_PRESORTED'])
+        ['GLOBALS', 'DERTYPE'])
 
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     dcft_wfn = run_dcft(name, **kwargs)
-    if dcft_wfn.same_a_b_orbs():
-        psi4.set_global_option('DERIV_TPDM_PRESORTED', True)
-    grad = psi4.deriv(dcft_wfn)
+
+    derivobj = psi4.Deriv(dcft_wfn)
+    derivobj.set_tpdm_presorted(True)
+    grad = derivobj.compute()
+
     dcft_wfn.set_gradient(grad)
 
     optstash.restore()
@@ -1667,7 +1668,10 @@ def run_occ_gradient(name, **kwargs):
         ref_wfn.semicanonicalize()
 
     occ_wfn = psi4.occ(ref_wfn)
-    grad = psi4.deriv(occ_wfn)
+
+    derivobj = psi4.Deriv(occ_wfn)
+    grad = derivobj.compute()
+
     occ_wfn.set_gradient(grad)
 
     optstash.restore()
@@ -1900,7 +1904,11 @@ def run_ccenergy_gradient(name, **kwargs):
     psi4.cchbar(ccwfn)
     psi4.cclambda(ccwfn)
     psi4.ccdensity(ccwfn)
-    grad = psi4.deriv(ccwfn)
+
+    derivobj = psi4.Deriv(ccwfn)
+    grad = derivobj.compute()
+    del derivobj
+
     ccwfn.set_gradient(grad)
 
     optstash.restore()
@@ -2375,7 +2383,10 @@ def run_eom_cc_gradient(name, **kwargs):
     psi4.set_local_option('CCDENSITY', 'XI', 'FALSE')
     psi4.cclambda(ref_wfn)
     psi4.ccdensity(ref_wfn)
-    grad = psi4.deriv(ref_wfn)
+
+    derivobj = psi4.Deriv(ref_wfn)
+    grad = derivobj.compute()
+
     ref_wfn.set_gradient(grad)
 
     optstash.restore()

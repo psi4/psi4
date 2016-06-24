@@ -51,7 +51,10 @@ def main(argv):
     info['--has-fortran'] = '@FORTRAN_ENABLED@'
     info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
     info['--has-chemps2'] = '@ENABLE_CHEMPS2@'
-    info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'.replace('${MCONDA}', info['--prefix'])  # aka PLUGIN_INCLUDES
+    if '@ENABLE_CONDA_DEST@' == 'ON':
+        info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'.replace('${MCONDA}', info['--prefix'])  # aka PLUGIN_INCLUDES
+    else:
+        info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'  # aka PLUGIN_INCLUDES
     info['--defines'] = '@PLUGIN_DEFINES@'
     info['--ldflags'] = '@CMAKE_CXX_LINK_FLAGS@'  # aka PLUGIN_LDFLAGS. skipping LIBC_INTERJECT
     info['--flags'] = '@CXX_FLAGS_PLUGIN@'  # aka PLUGIN_FLAGS

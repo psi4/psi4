@@ -1,5 +1,7 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
+print 'This file will not work outside a cmake test environment.'
+
 memory 250 mb
 
 import os

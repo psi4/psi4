@@ -462,10 +462,10 @@ def gen_cmake_command(args):
         command +=   ' -DBOOST_LIBRARYDIR={0}'.format(args.metapackage_dir + '/lib')
         command += ' -DPYTHON_INTERPRETER={0}'.format(args.metapackage_dir + '/bin/python')
         command +=       ' -DCHEMPS2_ROOT={0}'.format(args.metapackage_dir)
-        command +=       ' -DGSL_ROOT_DIR={0}'.format(args.metapackage_dir)
         command +=          ' -DHDF5_ROOT={0}'.format(args.metapackage_dir)
         command +=          ' -DZLIB_ROOT={0}'.format(args.metapackage_dir)
         command +=     ' -DPCMSOLVER_ROOT={0}'.format(args.metapackage_dir)
+        command +=         ' -DAMBIT_ROOT={0}'.format(args.metapackage_dir)
 
     command += translate_cmake('ENABLE_MPI',            args.mpi)
     command += translate_cmake('ENABLE_SGI_MPT',        args.sgi_mpt)

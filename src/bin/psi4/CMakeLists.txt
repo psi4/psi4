@@ -84,8 +84,8 @@ endif()
 # standalone python module bin/psi4.so
 add_executable(psi4so EXCLUDE_FROM_ALL $<TARGET_OBJECTS:psi4_objlib> $<TARGET_OBJECTS:versioned_code_so>)
 set_property(TARGET psi4so PROPERTY LINK_FLAGS "-shared")
-set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4${CMAKE_EXECUTABLE_SUFFIX}.so")
-INSTALL(TARGETS psi4so RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin OPTIONAL)
+set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4${CMAKE_EXECUTABLE_SUFFIX}${PYTHON_MODULE_EXTENSION}")
+INSTALL(TARGETS psi4so RUNTIME DESTINATION ${PYTHON_SITE_PACKAGES} OPTIONAL)
 
 # standalone library src/bin/psi4/libpsi4.so
 #add_library(psi4so SHARED EXCLUDE_FROM_ALL $<TARGET_OBJECTS:psi4_objlib> $<TARGET_OBJECTS:versioned_code_so>)
@@ -100,4 +100,7 @@ if(ENABLE_CHEMPS2)
 endif()
 if(ENABLE_PCMSOLVER)
     target_link_libraries(psi4so PCMSolver::PCMSolver)
+endif()
+if(ENABLE_AMBIT)
+    target_link_libraries(psi4so ${PRE_LIBRARY_OPTION} Ambit::Ambit ${POST_LIBRARY_OPTION})
 endif()

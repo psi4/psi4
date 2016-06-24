@@ -359,6 +359,12 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot,
         return opdm;
     }
 }
+void CIWavefunction::convergence_death(){
+    if (Parameters_->die_if_not_converged){
+        throw PSIEXCEPTION("CIWavefunction: Iterations did not converge!");
+    }
+
+}
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
                                       bool symmetrize) {
     if (!tpdm_called_) {

@@ -264,7 +264,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGENCE", 1e-6);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
-    options.add_int("MAXITER", 12);
+    options.add_int("CI_MAXITER", 24);
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of |detci__ex_level|. -*/
     options.add_bool("FCI",false);
@@ -4404,110 +4404,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CFOUR_ZFIELD", 0);
 
   }
-   if (name=="LIBFRAG"||options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs Many-Body Expansions (MBE)
-       *  and Generalized Many-Body Expansions (GMBE) on a target
-       *  system.  User may specify the fragments manually, or
-       *  one of several fragmentation algorithms may be used.
-       *
-       *  -*/
-
-      /*- SUBSECTION Basic Options -*/
-
-      options.add_str("FRAG_METHOD", "USER_DEFINED",
-            "USER_DEFINED BOND_BASED MONOMER_BASED DISTANCE_BASED");
-      options.add_int("MBE_STARTING_ORDER", 1);
-      options.add_int("MBE_TRUNCATION_ORDER", 2);
-      options.add("MBE_DISTANCE_THRESHOLDS",new ArrayType());
-      options.add_bool("FRACTIONAL_UNIT_CELL",true);
-      options.add("SUPER_CELL_SIDES",new ArrayType());
-      options.add("UNIT_CELL_ANGLES", new ArrayType());
-      options.add("UNIT_CELL_SIDES", new ArrayType());
-
-
-      /*- How are the fragments being formed?
-       *  For the purpose of this keyword a group is a collection of
-       *  atoms that appear together in each fragment.  For example
-       *  one usually does not fragment across a C-H bond so each
-       *  C-H unit will be it's own group.  We also do not fragment
-       *  3, 4, 5, or 6 membered rings, so all atoms in the ring,
-       *  and all H atoms attached to those atoms are a group, hence
-       *  a benzene molecule is one group.
-       *
-       *  USER_DEFINED (Default) Fragments are specified using Psi4's default
-       *        fragment syntax (see for example how to prepare a
-       *        SAPT input)
-       *  BOND_BASED   Fragments are taken to be each unique set of
-       *        groups seperated by at most N bonds.  (N=2 is default)
-       *  DISTANCE_BASED All groups whose center-of-mass is within
-       *        r A (r=3.0 default) of a group are in a fragment along
-       *        with that group
-       *
-       -*/
-
-      /*- How are many-body effects beyond truncation order n
-       *  accounted for?
-       *
-       *  NONE (Default) We ignore them
-       *  POINT_CHARGE Atoms not within the current subsystem are
-       *        replaced with their Mulliken charge
-       *  ITR_POINT_CHARGE Same as POINT_CHARGE except the fragment
-       *        charges are iterated to convergence
-       *  DENSITY  The actual density of each subsystem is used
-       *         as an embedding
-       *  ITR_DENSITY Same as DENSITY, except each fragment's density
-       *         is iterated to convergence
-       *
-       */
-      options.add_str("EMBED_METHOD", "NONE",
-            "NONE POINT_CHARGE ITR_POINT_CHARGE DENSITY ITR_DENSITY");
-
-      /*- How are severed covalent bonds dealt with?
-       *  NONE (Default) Suitable only if no bond is severed
-       *  H_REPLACE A hydrogen atom is placed exactly where the missing
-       *       atom would reside.
-       *  H_SHIFTED A hydrogen atom is placed at the average of a X-Y
-       *       and a X-H bond, where Y is the atom being replaced, and
-       *       X is the atom still present.
-       -*/
-      options.add_str("CAP_METHOD", "NONE", "NONE H_REPLACE H_SHIFT");
-
-      /*- The BSSE method that will be used.
-       *  NONE (Default) means no BSSE correction is being used,
-       *  FULL means the supersystem basis set is used in each
-       *       calculation,
-       *  MBCPN Is the many-body counterpoise correction of Richard,
-       *       Lao, and Herbert and amounts to a MBE on the ghost
-       *       functions
-       *  VMFCN Is the Valiron Meyer functional counterpoise correction
-       *       as suggested by Hirata
-       *        -*/
-      options.add_str("BSSE_METHOD", "NONE", "FULL MBCPN VMFCN NONE");
-
-      /* SUBSECTION More fine-control options*/
-
-      /*- Should we exploit space group symmetry on your molecule?
-       *  For systems that are periodic lattices setting this value
-       *  to true will lead to large computational savings; however,
-       *  it does disable some cost saving tricks, such as better
-       *  initial guesses because I no longer necessarily have all
-       *  the fragments.  Hence only set this to true if you know
-       *  for a fact that your system has space group symmetry.
-       -*/
-      options.add_bool("USE_SPACE_GROUP", false);
-
-      /*- Setting this to a value greater than 1 will cause the
-       * underlying modules [e.g. energy('scf')] to print all of
-       * their contents to file.  For large systems, N, and large
-       * truncation order, n, this is a large amount of text
-       * (equivalent to pasting NC1+ NC2+ NC3+...NCn
-       * Psi4 outputs together, where aCb is "a choose b").  Only
-       * enable it if you are debugging, or really want all that data.
-       * LibFrag will report key properties, such as energy, for
-       * you, by fragment, dimer, etc.
-       */
-      options.add_int("PRINT", 1);
-   }
     if (name == "EFP"|| options.read_globals()) {
         /*- MODULEDESCRIPTION Performs effective fragment potential
         computations through calls to Kaliman's libefp library. -*/
@@ -4537,9 +4433,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_bool("QMEFP_ELST", true);
         /*- Do include polarization energy term in EFP computation? -*/
         options.add_bool("QMEFP_POL", true);
-        /* Do EFP gradient? !expert */
+        /*- Do EFP gradient? !expert -*/
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
-        /* Do turn on QM/EFP terms? !expert */
+        /*- Do turn on QM/EFP terms? !expert -*/
         options.add_bool("QMEFP", false);
     }
     if (name == "DMRG"|| options.read_globals()) {
@@ -4642,9 +4538,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Print out the density matrix in the AO basis -*/
         options.add_bool("DMRG_DENSITY_AO", false);
 
-    }
-    if (name == "DERIV"|| options.read_globals()) {
-        options.add_bool("DERIV_TPDM_PRESORTED", false);
     }
 
   return true;
