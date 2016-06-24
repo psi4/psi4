@@ -55,7 +55,17 @@ if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET OR RESET_FLAGS)
             endif()
             if(ENABLE_STATIC_LINKING)
                 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -static-libstdc++ -static-libgcc -static-intel -wd10237")
+                # for Intel & static, want Fortran_IMPLICIT_LINK for psi4 exe to reduce to:
+                #  -Wl,-Bstatic -lifport -lifcore -lpthread
                 LIST(INSERT CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES 0 "-Wl,-Bstatic")
+                # for Intel & static, want Fortran_IMPLICIT_LINK for psi4.so lib to reduce to:
+                #  -Wl,-Bstatic -lifport -lifcore_pic -lpthread -Wl,-Bdynamic -liomp5
+                #  below computes the correct list, but unable to replace Fortran_IMPLICIT_LINK on per-target basis
+                set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES_PSI4SO ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES})
+                LIST(FIND CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES_PSI4SO "ifcore" IFCORE_IDX)
+                LIST(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES_PSI4SO "ifcore")
+                LIST(INSERT CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES_PSI4SO ${IFCORE_IDX} "ifcore_pic")
+                LIST(APPEND CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES_PSI4SO "-Wl,-Bdynamic" "iomp5")
             endif()
             if(ENABLE_BOUNDS_CHECK)
                 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ftrapuv -check all -fpstkchk")
