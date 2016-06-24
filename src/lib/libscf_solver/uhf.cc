@@ -380,22 +380,10 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
 }
 void UHF::damp_update()
 {
-  for(int h = 0; h < nirrep_; ++h){
-    for(int row = 0; row < Da_->rowspi(h); ++row){
-      for(int col = 0; col < Da_->colspi(h); ++col){
-	double Dold = damping_percentage_ * Da_old_->get(h, row, col);
-	double Dnew = (1.0 - damping_percentage_) * Da_->get(h, row, col);
-	Da_->set(h, row, col, Dold+Dnew);
-      }
-    }
-    for(int row = 0; row < Db_->rowspi(h); ++row){
-      for(int col = 0; col < Db_->colspi(h); ++col){
-	double Dold = damping_percentage_ * Db_old_->get(h, row, col);
-	double Dnew = (1.0 - damping_percentage_) * Db_->get(h, row, col);
-	Db_->set(h, row, col, Dold+Dnew);
-      }
-    }
-  }
+  Da_->scale(1.0 - damping_percentage_);
+  Da_->axpy(damping_percentage_, Da_old_);
+  Db_->scale(1.0 - damping_percentage_);
+  Db_->axpy(damping_percentage_, Db_old_);
   Dt_->copy(Da_);
   Dt_->add(Db_);
 }
