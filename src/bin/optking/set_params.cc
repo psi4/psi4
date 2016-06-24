@@ -151,6 +151,8 @@ void set_params(void)
     if (s == "FIXED")               Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
     else if (s == "PRINCIPAL_AXES") Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
+//  Atoms to define reference points on fragments
+    //Opt_params.frag_atoms = options.get_array("FRAG_ATOMS");
 // Whether to only generate the internal coordinates and then stop {true, false}
 //  Opt_params.intcos_generate_exit;
     Opt_params.intcos_generate_exit = options.get_bool("INTCOS_GENERATE_EXIT");
@@ -420,7 +422,12 @@ void set_params(void)
   // For RFO step, eigenvectors of augmented Hessian are divided by the last
   // element unless it is smaller than this value {double}.  Can be used to eliminate
   // asymmetric steps not otherwise detected (e.g. in degenerate point groups).
+  // For multi-fragment modes, we presume that smaller Delta-E's are possible, and
+  // this threshold should be made larger.
   Opt_params.rfo_normalization_max = options.get_double("RFO_NORMALIZATION_MAX");
+  if (Opt_params.fragment_mode == OPT_PARAMS::MULTI &&
+      !(options["RFO_NORMALIZATION_MAX"].has_changed()))
+    Opt_params.rfo_normalization_max = 1.0e5;
 
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");

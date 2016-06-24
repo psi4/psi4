@@ -2482,6 +2482,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       or via interfragment coordinates. A primary difference is that in ``MULTI`` mode,
       the interfragment coordinates are not redundant. -*/
       options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
+      /*- Which atoms define the reference points for interfragment coordinates? -*/
+      //options.add("FRAG_ATOMS", new ArrayType());
       /*- Do freeze all fragments rigid? -*/
       options.add_bool("FREEZE_INTRAFRAG", false);
       /*- Do freeze all interfragment modes? -*/
