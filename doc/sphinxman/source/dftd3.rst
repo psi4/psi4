@@ -22,23 +22,14 @@ DFTD3 is available as conda package. If using the |PSIfour| binary, the
 ``dftd3`` executable has already been installed alongside. If using
 |PSIfour| built from source, and anaconda or miniconda has already
 been installed (instructions at :ref:`sec:quickconda`), the ``dftd3``
-executable can be obtained through ``conda install dftd3m``.
+executable can be obtained through ``conda install dftd3``.
 
 To be used by |PSIfour|, the program binary (``dftd3``) must be
 found in your :envvar:`PSIPATH` or :envvar:`PATH` (in that order). If
 |PSIfour| is unable to execute the binary, an error will be reported.
 To preferentially use a particular dftd3 compilation, simply adjust its
 position in the path environment variables. To remove the dftd3 that
-conda installs alongside |PSIfour|, ``conda remove dftd3m``.
-
-.. note:: At present there are two conda packages. ``dftd3`` is the
-   DFTD3 code straight from Grimme and |PSIfour| uses it for -D3
-   and -D3BJ. ``dftd3m`` additionally patches DFTD3 according to
-   [Smith:2016:2197]_ to compute -D3M and -D3MBJ. Eventually this
-   distinction will cease. But for the moment, this documents the
-   distinction. ``dftd3m`` the package is what gets installed alongside
-   the conda |PSIfour| binary. Both packages install an executable
-   with the same name, ``dftd3``.
+conda installs alongside |PSIfour|, ``conda remove dftd3``.
 
 Alternatively, to build DFTD3 yourself,
 follow the instructions provided with the source

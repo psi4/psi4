@@ -234,6 +234,17 @@ class Dispersion():
     def build(sstr, ffloat, ffloat1, ffloat2, ffloat3):
         return Dispersion()
 
+class Matrix:
+    pass
+
+class Vector:
+    pass
+
+class Dimension:
+    pass
+
+class CIVector:
+    pass
 
 class Process():
 

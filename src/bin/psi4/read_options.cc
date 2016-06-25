@@ -590,7 +590,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     number of roots).  When the number of vectors on disk reaches
     the value of MAX_NUM_VECS, the Davidson subspace will be
     collapsed to |detci__collapse_size| vectors for each root.  This is very
-    helpful for saving disk space.  Defaults to |detci__maxiter| * |detci__num_roots|
+    helpful for saving disk space.  Defaults to |detci__ci_maxiter| * |detci__num_roots|
     + |detci__num_init_vecs|. -*/
     options.add_int("MAX_NUM_VECS", 0);
 
