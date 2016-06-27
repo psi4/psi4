@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 
 #include <libsapt_solver/sapt0.h>

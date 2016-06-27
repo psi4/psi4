@@ -26,14 +26,14 @@
  */
 
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/mints.h>
-#include "physconst.h"
-#include "adc.h"
 
+#include "psi4/include/physconst.h"
+#include "psi4/src/bin/adc/adc.h"
+#include "psi4/src/lib/libmints/molecule.h"
 //
 //  A3h3p: The frequency independent terms in the response matrix, composed of the CIS part and 3hole-3particle
 //         diagrams which give so-called the diffenential correlation effect in terms of CIS(D) sense, so with  

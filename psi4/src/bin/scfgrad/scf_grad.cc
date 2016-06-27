@@ -25,15 +25,15 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <liboptions/liboptions_python.h>
+#include "psi4/src/lib/liboptions/liboptions_python.h"
 
 #include "psi4/include/psi4-dec.h"
-#include <libfock/v.h>
-#include <libfunctional/superfunctional.h>
-#include <libdisp/dispersion.h>
+#include "psi4/src/lib/libfock/v.h"
+#include "psi4/src/lib/libfunctional/superfunctional.h"
+#include "psi4/src/lib/libdisp/dispersion.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 

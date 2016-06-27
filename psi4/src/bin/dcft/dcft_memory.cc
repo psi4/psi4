@@ -31,12 +31,12 @@
 #include <cmath>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libtrans/integraltransform.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libtrans/mospace.h>
-#include <libdpd/dpd.h>
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libiwl/iwl.hpp"
 
 using namespace boost;
 

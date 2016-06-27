@@ -30,7 +30,7 @@
 
 #endif // STABILITY_H
 
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 namespace boost {
 template<class T> class shared_ptr;

@@ -30,10 +30,7 @@
 
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
-
-namespace boost {
-template<class T> class shared_ptr;
-}
+#include "psi4/src/lib/libmints/twobody.h"
 
 namespace psi {
 

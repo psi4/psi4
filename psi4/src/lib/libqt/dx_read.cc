@@ -43,7 +43,7 @@
 #include <utility>
 
 #include "psi4/src/lib/libmints/basisset.h"
-#include "psi4/src/lib/libqt.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/physconst.h"
 #include "psi4/include/psi4-dec.h"
 

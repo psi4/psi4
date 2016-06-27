@@ -31,7 +31,7 @@
 #include "sblock_vector.h"
 #include "sblock_matrix.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include <libpsi4util/memory_manager.h>
 
 #define STORE_TEI 0

@@ -27,12 +27,12 @@
 
 #include "integraltransform.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libqt/qt.h>
-#include <libmints/matrix.h>
-#include <libmints/mints.h>
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/matrix.h"
+
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #define EXTERN
-#include "libdpd/dpd.gbl"
+#include "psi4/src/lib/libdpd/dpd.gbl"
 
 using namespace psi;
 using namespace boost;

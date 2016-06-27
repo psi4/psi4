@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

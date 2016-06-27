@@ -28,10 +28,10 @@
 /** Standard library includes */
 #include <fstream>
 #include "psi4/include/psifiles.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
+
+#include "psi4/src/lib/libmints/sieve.h"
 #include "dfocc.h"
 
 #ifdef _OPENMP

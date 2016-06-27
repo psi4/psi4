@@ -39,7 +39,7 @@
 #include "hf.h"
 #include "rhf.h"
 #include "uhf.h"
-#include <libfunctional/superfunctional.h>
+#include "psi4/src/lib/libfunctional/superfunctional.h"
 
 namespace boost {
 template<class T> class shared_ptr;

@@ -26,9 +26,9 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 
-#include "physconst.h"
+#include "psi4/include/physconst.h"
 #include "occwave.h"
 
 using namespace boost;

@@ -31,11 +31,11 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "libciomr/libciomr.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "ccwave.h"
 
 namespace psi { namespace ccenergy {

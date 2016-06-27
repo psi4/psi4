@@ -40,10 +40,10 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/corrtab.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/corrtab.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 

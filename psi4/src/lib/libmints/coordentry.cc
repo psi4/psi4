@@ -26,12 +26,12 @@
  */
 
 #include <cmath>
-#include <libmints/vector3.h>
+#include "psi4/src/lib/libmints/vector3.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include <sstream>
 #include <iomanip>
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include "coordentry.h"
+#include "psi4/src/lib/libmints/coordentry.h"
 #include "psi4/include/psi4-dec.h"
 using namespace psi;
 

@@ -30,15 +30,13 @@
 
 #include <vector>
 #include "typedefs.h"
-
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/integral.h"
 namespace psi {
 
-class OneBodyAOInt;
-class ObaraSaikaTwoCenterRecursion;
+class Molecule;
 class GaussianShell;
-class SphericalTransform;
-class BasisSet;
-class Matrix;
 
 /*! \ingroup MINTS
  *  \class QuadrupoleInt

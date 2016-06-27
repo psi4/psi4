@@ -28,16 +28,16 @@
 #include "integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.hpp>
-#include <libmints/matrix.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "psifiles.h"
+#include "psi4/include/psifiles.h"
 #include "mospace.h"
 #define EXTERN
-#include <libdpd/dpd.gbl>
+#include "psi4/src/lib/libdpd/dpd.gbl"
 
 using namespace psi;
 

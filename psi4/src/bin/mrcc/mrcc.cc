@@ -28,15 +28,15 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libmints/mints.h>
-#include <libmints/view.h>
+
+#include "psi4/src/lib/libmints/view.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
-#include <libtrans/integraltransform.h>
-#include <libtrans/mospace.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libfock/apps.h>
+#include "psi4/src/lib/libfock/apps.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include <vector>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"

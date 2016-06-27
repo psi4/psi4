@@ -50,18 +50,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
-#include <libmints/mints.h>
+
 #include "psi4/include/psi4-dec.h"
 
-#include <libtrans/integraltransform.h>
-#include <libthce/thce.h>
-#include <libthce/lreri.h>
-#include <libfock/jk.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libthce/thce.h"
+#include "psi4/src/lib/libthce/lreri.h"
+#include "psi4/src/lib/libfock/jk.h"
 
 #include "structs.h"
 #include "ciwave.h"

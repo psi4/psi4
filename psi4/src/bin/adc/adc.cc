@@ -26,12 +26,13 @@
  */
 
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "adc.h"
+#include "psi4/src/bin/adc/adc.h"
+#include "psi4/src/lib/libmints/molecule.h"
 
 namespace psi{ namespace adc {
 

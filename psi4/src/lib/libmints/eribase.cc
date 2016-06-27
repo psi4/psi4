@@ -29,12 +29,14 @@
 #include <string>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-
-#include "mints.h"
-
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/python/tuple.hpp>
+#include "psi4/src/lib/libmints/eri.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/fjt.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 // Cancel out restrict keyword for timings
 #undef restrict
@@ -1670,8 +1672,6 @@ namespace {
                                       int nprim1, int nprim2, int nprim3, int nprim4,
                                       bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl)
     {
-        UNUSED(sh1eqsh2);
-        UNUSED(sh3eqsh4);
         double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
         double a1, a2, a3, a4;
         int p1, p2, p3, p4, i;

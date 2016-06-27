@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "defines.h"
 #include "occwave.h"
 

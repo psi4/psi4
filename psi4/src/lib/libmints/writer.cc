@@ -24,18 +24,24 @@
  *
  * @END LICENSE
  */
-
-#include "writer.h"
-#include "view.h"
-#include <libmints/mints.h>
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/physconst.h"
-#include <masses.h>
-
 #include <cstdio>
 #include <utility>
 #include <algorithm>
+#include "psi4/src/lib/libmints/writer.h"
+#include "psi4/src/lib/libmints/view.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
+#include "psi4/include/masses.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+
+
 using namespace std;
 using namespace psi;
 using namespace boost;

@@ -35,9 +35,12 @@
 #include <vector>
 #include <utility>
 
-
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "thce.h"

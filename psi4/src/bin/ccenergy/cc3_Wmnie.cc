@@ -29,7 +29,7 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here 
 */
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"

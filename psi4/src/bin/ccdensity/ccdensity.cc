@@ -39,8 +39,8 @@
 #include <cstring>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/include/psi4-dec.h"
 #include <cmath>
@@ -50,6 +50,7 @@
 #include "Frozen.h"
 #include "globals.h"
 #include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
 namespace psi { namespace ccdensity {
 
 void init_io(void);

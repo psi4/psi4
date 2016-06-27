@@ -26,7 +26,8 @@
  */
 
 #include "dpd.h"
-
+using std::string;
+using std::vector;
 namespace psi {
 
 int DPD::pairnum(string pair)

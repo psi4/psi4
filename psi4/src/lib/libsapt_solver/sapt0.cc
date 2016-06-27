@@ -27,6 +27,11 @@
 
 #include "sapt0.h"
 #include "psi4/include/physconst.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
+
 
 namespace psi { namespace sapt {
 

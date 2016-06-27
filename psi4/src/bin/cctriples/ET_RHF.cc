@@ -32,18 +32,18 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include <pthread.h>
-#include <psiconfig.h>
+
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 //MKL Header
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 
@@ -107,7 +107,7 @@ double ET_RHF(void)
   outfile->Printf("    Number of threads for explicit ijk threading: %4d\n\n", nthreads);
 
 // Don't parallelize mkl if explicit threads are used; should be added for acml too.
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
   int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
   outfile->Printf("    MKL num_threads set to 1 for explicit threading.\n\n");
@@ -283,7 +283,7 @@ double ET_RHF(void)
 
   timer_off("ET_RHF");
 
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
   mkl_set_num_threads(old_threads);
 #endif
 

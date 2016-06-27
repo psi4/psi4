@@ -26,7 +26,7 @@
  */
 
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/mints.h>
+
 
 #include "psi4/include/psi4-dec.h"
 

@@ -34,16 +34,15 @@
 #include <cstring>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 #include <pthread.h>
-#include <psiconfig.h>
 #include "dpd.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 //MKL Header
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 
@@ -99,7 +98,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
     p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
     int old_threads = mkl_get_max_threads();
     mkl_set_num_threads(1);
 #endif
@@ -320,7 +319,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     free(thread_data_array);
     free(p_thread);
 
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
     mkl_set_num_threads(old_threads);
 #endif
 

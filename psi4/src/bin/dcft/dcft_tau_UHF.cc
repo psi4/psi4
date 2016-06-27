@@ -26,13 +26,13 @@
  */
 
 #include "dcft.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/include/psifiles.h"
-#include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
 #include "defines.h"
 
 using namespace std;

@@ -28,19 +28,15 @@
 #ifndef _psi_src_lib_libmints_potentialint_h_
 #define _psi_src_lib_libmints_potentialint_h_
 
-#include "mints.h"
-
-namespace boost {
-template<class T> class shared_ptr;
-}
+#include "psi4/src/lib/libmints/potential.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/osrecur.h"
 
 namespace psi{
 
-class BasisSet;
 class GaussianShell;
-class ObaraSaikaTwoCenterRecursion;
 class OneBodyAOInt;
-class PotentialInt;
 class IntegralFactory;
 class SphericalTransform;
 class Vector3;

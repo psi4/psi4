@@ -53,7 +53,7 @@
 #include "globals.h"
 #include <vector>
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
+
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"

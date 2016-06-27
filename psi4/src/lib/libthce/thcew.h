@@ -28,8 +28,8 @@
 #ifndef THCEW_H
 #define THCEW_H
 
-#include <libmints/wavefunction.h>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <map>
 
 namespace psi {

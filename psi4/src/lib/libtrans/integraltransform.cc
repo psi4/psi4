@@ -27,16 +27,16 @@
 
 #include "integraltransform.h"
 #include "mospace.h"
-#include <libdpd/dpd.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #define EXTERN
-#include <libdpd/dpd.gbl>
+#include "psi4/src/lib/libdpd/dpd.gbl"
 
 using namespace boost;
 using namespace psi;

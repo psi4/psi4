@@ -28,8 +28,8 @@
 #ifndef dfocc_h 
 #define dfocc_h 
 
-#include <libmints/wavefunction.h>
-#include <libdiis/diismanager.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
 #include "psi4/include/psifiles.h"
 #include "arrays.h"
 #include "tensors.h"

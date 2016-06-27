@@ -36,28 +36,36 @@
 #include <vector>
 #include <utility>
 
-#include <libmints/mints.h>
 
-#include <libfunctional/superfunctional.h>
+
+#include "psi4/src/lib/libfunctional/superfunctional.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <liboptions/liboptions_python.h>
+#include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/include/psifiles.h"
-#include <libfock/jk.h>
+#include "psi4/src/lib/libfock/jk.h"
 #ifdef HAVE_PCMSOLVER
 #include <libpsipcm/psipcm.h>
 #endif
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/basisset_parser.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/extern.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/oeprop.h"
 #include "hf.h"
 
 #include "psi4/include/psi4-dec.h"
-#include <libefp_solver/efp_solver.h>
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
 
 #ifdef _OPENMP
 #include <omp.h>

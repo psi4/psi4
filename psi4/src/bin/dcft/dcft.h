@@ -28,10 +28,10 @@
 #ifndef _PSI4_SRC_BIN_DCFT_DCFT_H_
 #define _PSI4_SRC_BIN_DCFT_DCFT_H_
 
-#include <libmints/matrix.h>
-#include <libmints/vector.h>
-#include <libmints/wavefunction.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include <libmints/dimension.h>
 

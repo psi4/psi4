@@ -39,7 +39,7 @@
 */
  
 #include <cstdio>
-#include <libmints/mints.h>
+
 #include "structs.h"
 
 namespace psi { namespace detci {

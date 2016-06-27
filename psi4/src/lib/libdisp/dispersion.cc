@@ -32,8 +32,8 @@
 *
 ***********************************************************/
 
-#include <libmints/vector.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "dispersion.h"

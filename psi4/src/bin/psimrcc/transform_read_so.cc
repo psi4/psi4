@@ -45,9 +45,9 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psifiles.h"
+#include "psi4/include/psifiles.h"
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;

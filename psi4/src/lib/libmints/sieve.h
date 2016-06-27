@@ -31,10 +31,9 @@
 // need this for erfc^{-1} in the QQR sieve
 #include <boost/math/special_functions/erf.hpp>
 #include <cfloat>
-
-namespace boost {
-template<class T> class shared_ptr;
-}
+#include <vector>
+#include <utility>
+#include "psi4/src/lib/libmints/vector3.h"
 
 namespace psi {
 

@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "MOInfo.h"
 #include "Params.h"

@@ -28,9 +28,9 @@
 #ifndef INTEGRALTRANSFORM_FUNCTORS_H
 #define INTEGRALTRANSFORM_FUNCTORS_H
 
-#include "libdpd/dpd.h"
-#include "libiwl/iwl.hpp"
-#include "libpsio/psio.hpp"
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace psi{
 

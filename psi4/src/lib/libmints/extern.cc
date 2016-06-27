@@ -24,12 +24,15 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/extern.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/potential.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-
-#include "mints.h"
-#include "extern.h"
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #ifdef _OPENMP

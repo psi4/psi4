@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "fisapt.h"
 

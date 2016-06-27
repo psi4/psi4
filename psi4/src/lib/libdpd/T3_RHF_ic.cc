@@ -90,7 +90,7 @@
 #include <cstring>
 #include <cmath>
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include <pthread.h>
 

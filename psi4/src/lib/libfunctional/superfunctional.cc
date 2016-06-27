@@ -25,8 +25,8 @@
  * @END LICENSE
  */
 
-#include <libmints/vector.h>
-#include <libdisp/dispersion.h>
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libdisp/dispersion.h"
 #include "superfunctional.h"
 #include "functional.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"

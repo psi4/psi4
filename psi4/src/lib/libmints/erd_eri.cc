@@ -25,15 +25,14 @@
  * @END LICENSE
  */
 
-#include "psiconfig.h"
 
 #ifdef HAVE_ERD
 
 #include "psi4/include/psi4-dec.h"
 #include "erd_eri.h"
-#include "libmints/basisset.h"
-#include "libmints/integral.h"
-#include "libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 #define OLDCODE 0
 #define DEBUG 0

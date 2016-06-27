@@ -24,7 +24,7 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -34,14 +34,21 @@
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libmints/view.h>
-
-#include "mints.h"
-#include "orbitalspace.h"
-
+#include "psi4/src/lib/libmints/view.h"
+#include "psi4/src/lib/libmints/orbitalspace.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/sobasis.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/corrtab.h"
 #include "psi4/include/psi4-dec.h"
 
 #include <boost/python.hpp>
@@ -54,7 +61,7 @@
 using namespace boost;
 using namespace psi;
 
-// Globals
+// Globals Seriously? This where we instantiate these.
 size_t ioff[MAX_IOFF];
 double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];

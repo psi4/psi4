@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

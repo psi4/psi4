@@ -36,9 +36,9 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "ccwave.h"
 
 namespace psi { namespace ccenergy {

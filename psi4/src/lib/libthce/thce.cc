@@ -25,8 +25,8 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
-#include <libqt/qt.h>
+
+#include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "thce.h"
 #include "psi4/include/psi4-dec.h"

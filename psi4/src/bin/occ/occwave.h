@@ -28,9 +28,9 @@
 #ifndef occwave_h
 #define occwave_h
 
-#include <libmints/wavefunction.h>
-#include <libdiis/diismanager.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "arrays.h"
 
 using namespace std;

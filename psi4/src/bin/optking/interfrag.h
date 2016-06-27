@@ -34,7 +34,7 @@
 #define _opt_interfrag_h_
 
 #include "linear_algebra.h"
-#include "physconst.h"
+#include "psi4/include/physconst.h"
 
 namespace opt {
 /*

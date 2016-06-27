@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include <libmints/local.h>
-#include <libthce/thce.h>
-#include <libthce/lreri.h>
-#include <libfock/jk.h>
+#include "psi4/src/lib/libthce/thce.h"
+#include "psi4/src/lib/libthce/lreri.h"
+#include "psi4/src/lib/libfock/jk.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
-#include <libdiis/diismanager.h>
+#include "psi4/src/lib/libdiis/diismanager.h"
 #include "psi4/include/physconst.h"
 #include <boost/filesystem.hpp>
 

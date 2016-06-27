@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/include/psi4-dec.h"
@@ -35,13 +35,17 @@
 #include "v.h"
 #include "hamiltonian.h"
 #include "solver.h"
-#include <libscf_solver/hf.h>
-#include <libscf_solver/rhf.h>
+#include "psi4/src/lib/libscf_solver/hf.h"
+#include "psi4/src/lib/libscf_solver/rhf.h"
 
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/multipolesymmetry.h"
 #include <sstream>
 
 #ifdef _OPENMP

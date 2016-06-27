@@ -39,19 +39,19 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
 
-#include <libmints/basisset_parser.h>
-#include <libmints/mints.h>
-#include <libfock/jk.h>
-#include "libtrans/integraltransform.h"
-#include "libdpd/dpd.h"
+#include "psi4/src/lib/libmints/basisset_parser.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "rhf.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi { namespace scf {

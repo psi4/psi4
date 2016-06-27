@@ -27,10 +27,16 @@
 
 #include "3index.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
-#include <libfock/cubature.h>
-#include <libfock/points.h>
+
+#include "psi4/src/lib/libfock/cubature.h"
+#include "psi4/src/lib/libfock/points.h"
 #include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+#include "psi4/src/lib/libmints/pseudospectral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/vector.h"
 
 #include <string>
 #include <sstream>
@@ -42,8 +48,8 @@
 #include <ctype.h>
 
 //MKL Header
-#include <psiconfig.h>
-#if HAVE_MKL
+
+#if __INTEL_MKL__
 #include <mkl.h>
 #endif
 

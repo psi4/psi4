@@ -31,22 +31,17 @@
  * EFP header
  */
 
-#include<libmints/molecule.h>
-#include "../../interfaces/libefp/libefp/src/efp.h"
+#include "psi4/src/lib/libmints/molecule.h"
+
 
 struct efp;
 
 namespace psi {
     class Options;
-}
-
-namespace boost {
-    template<class T> class shared_ptr;
+    class Vector;
 }
 
 namespace psi { 
-
-class Vector;
 
 namespace efp {
 

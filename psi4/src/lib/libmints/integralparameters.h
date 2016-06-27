@@ -28,10 +28,6 @@
 #ifndef LIBMINTS_INTEGRALPARAMETERS_H
 #define LIBMINTS_INTEGRALPARAMETERS_H
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class Vector;

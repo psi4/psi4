@@ -30,7 +30,7 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
+
 #include <libmints/cdsalclist.h>
 #include <libmints/deriv.h>
 

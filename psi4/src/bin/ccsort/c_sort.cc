@@ -29,7 +29,7 @@
     \ingroup CCSORT
     \brief Enter brief description of file here 
 */
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "cubature.h"
 #include "gridblocker.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
@@ -38,6 +38,9 @@
 #include <limits>
 #include <ctype.h>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
 using namespace boost;
 using namespace std;
 using namespace psi;

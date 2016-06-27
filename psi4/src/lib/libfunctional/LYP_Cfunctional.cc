@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/vector.h>
+#include "psi4/src/lib/libmints/vector.h"
 #include "LYP_Cfunctional.h"
 #include "utility.h"
 #include <cmath>

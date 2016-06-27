@@ -26,9 +26,14 @@
  */
 
 #include "3index.h"
-#include <libmints/mints.h>
-#include <libfock/cubature.h>
-#include <libfock/points.h>
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/pseudospectral.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libfock/cubature.h"
+#include "psi4/src/lib/libfock/points.h"
 #include "psi4/src/lib/libqt/qt.h"
 
 #include <string>
@@ -43,7 +48,8 @@
 
 using namespace boost;
 using namespace std;
-using namespace psi;
+
+using ULI=unsigned long int;
 
 namespace psi {
 

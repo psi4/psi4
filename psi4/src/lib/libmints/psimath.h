@@ -36,10 +36,6 @@
 * Rob Parrish 1/25/2010
 **/
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class Matrix;

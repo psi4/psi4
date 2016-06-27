@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <omp.h>
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
   #include <mkl.h>
 #endif
 #include <assert.h>

@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libefp_solver/efp_solver.h>
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 
 using namespace boost::python;

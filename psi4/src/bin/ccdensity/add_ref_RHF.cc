@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <stdio.h>
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

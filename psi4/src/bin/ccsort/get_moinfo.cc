@@ -38,9 +38,9 @@
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"
 #include <libmints/dimension.h>
-#include <libmints/wavefunction.h>
-#include <libmints/basisset.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

@@ -35,6 +35,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
 #include "psi4/include/psi4-dec.h"
+using std::string;
 namespace psi {
 
 /*

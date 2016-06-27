@@ -24,11 +24,10 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/pseudospectral.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-
-#include "mints.h"
-
 #include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

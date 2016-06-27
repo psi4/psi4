@@ -25,12 +25,12 @@
  * @END LICENSE
  */
 
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
-#include <libdiis/diismanager.h>
-#include <libmints/mints.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
+
 #include <libmints/writer.h>
 #include <libmints/writer_file_prefix.h>
 #include "dcft.h"

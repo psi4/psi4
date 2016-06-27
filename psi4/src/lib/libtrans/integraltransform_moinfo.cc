@@ -29,10 +29,10 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/matrix.h>
-#include <libmints/view.h>
-#include <libmints/wavefunction.h>
-#include <libqt/qt.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/view.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libqt/qt.h"
 #include <sstream>
 #include "mospace.h"
 

@@ -31,7 +31,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "tensors.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;

@@ -25,13 +25,17 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include <cmath>
 #include "points.h"
 #include "cubature.h"
-#include "psiconfig.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/vector.h"
+
 namespace psi {
 
 RKSFunctions::RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :

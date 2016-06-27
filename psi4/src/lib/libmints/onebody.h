@@ -45,7 +45,6 @@
 
 namespace psi {
 
-class Matrix;
 class IntegralFactory;
 class BasisSet;
 class GaussianShell;

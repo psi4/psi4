@@ -31,18 +31,13 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <libmints/dimension.h>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libmints/typedefs.h"
 #include "mospace.h"
 
 #ifndef INDEX
     #define INDEX(i,j) (((i)>(j)) ? (((i)*((i)+1)/2)+(j)) : (((j)*((j)+1)/2)+(i)))
 #endif
-
-namespace boost {
-    template <class T>
-    class shared_ptr;
-}
 
 namespace psi{
 
@@ -51,6 +46,7 @@ struct dpdbuf4;
 class Matrix;
 class Dimension;
 class Wavefunction;
+class PSIO;
 
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 

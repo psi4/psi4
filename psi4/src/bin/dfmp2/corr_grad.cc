@@ -25,10 +25,10 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
+
+#include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <lib3index/3index.h>
+#include "psi4/src/lib/lib3index/3index.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/include/psifiles.h"

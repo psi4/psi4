@@ -38,7 +38,7 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include <libmints/factory.h>
 #include <libmints/integral.h>

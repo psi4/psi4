@@ -26,11 +26,10 @@
  */
 
 #include <stdexcept>
-
-//#include "psi4/include/compiler.h"
 #include "psi4/src/lib/libqt/qt.h"
-
-#include "mints.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
 
 using namespace boost;
 using namespace psi;
@@ -104,11 +103,6 @@ TwoBodyAOInt* TwoBodyAOInt::clone()
 
 void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4, int nchunk)
 {
-    UNUSED(s1);
-    UNUSED(s2);
-    UNUSED(s3);
-    UNUSED(s4);
-    UNUSED(nchunk);
     // Integrals assume this normalization is 1.0.
     return;
 #if 0

@@ -35,8 +35,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #define EXTERN
 #include "globals.h"
 

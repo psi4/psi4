@@ -32,7 +32,7 @@
 
 #include "linear_algebra.h"
 #include "atom_data.h"
-#include "physconst.h"
+#include "psi4/include/physconst.h"
 
 #include "print.h"
 #define EXTERN

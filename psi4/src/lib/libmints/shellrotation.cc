@@ -54,16 +54,14 @@
 //
 
 #include <cstdio>
-
-#include "mints.h"
-
 #include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/shellrotation.h"
+#include "psi4/src/lib/libmints/cartesianiter.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
 
 using namespace psi;
-
-namespace psi {
-    
-}
 
 ShellRotation::ShellRotation(int n)
     : n_(n), am_(0), r_(0)

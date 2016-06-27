@@ -33,10 +33,6 @@
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "gshell.h"
 
-// Forward declare boost boost::shared_ptr
-namespace boost {
-template<class T> class shared_ptr;
-}
 
 namespace psi {
 

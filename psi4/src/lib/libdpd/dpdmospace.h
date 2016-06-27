@@ -31,49 +31,50 @@
 
 #include <vector>
 #include <string>
-#include <libmints/mints.h>
+#include "psi4/src/lib/libmints/dimension.h"
 
-using namespace std;
+//Bad, no, don't do this...
+//using namespace std;
 
 namespace psi {
 
-vector<string> dpd_split(const string &indices);
+std::vector<std::string> dpd_split(const std::string &indices);
 
 class DPDMOSpace {
   protected:
     // name of the space
     char label_;
     // list of allowed orbital-index labels
-    vector<string> indices_;
+    std::vector<std::string> indices_;
     // number of irreps
     int nIrrep_;
     // number of orbitals
     int nOrb_;
     // number of orbitals per irrep
-    vector<int> orbPI_;
+    std::vector<int> orbPI_;
     // irrep of each orbital
-    vector<int> orbSym_;
+    std::vector<int> orbSym_;
 
   public:
-    DPDMOSpace(const char label, const string &indices, vector<int> orbspi);
-    DPDMOSpace(const char label, const string &indices, Dimension orbspi);
+    DPDMOSpace(const char label, const std::string &indices, std::vector<int> orbspi);
+    DPDMOSpace(const char label, const std::string &indices, Dimension orbspi);
     DPDMOSpace();
     ~DPDMOSpace();
 
     char label() { return label_; }
-    vector<string> indices() { return indices_; }
+    std::vector<std::string> indices() { return indices_; }
     int nIrrep() { return nIrrep_; }
     int nOrb() { return nOrb_; }
-    vector<int> orbPI() { return orbPI_; }
-    vector<int> orbSym() { return orbSym_; }
+    std::vector<int> orbPI() { return orbPI_; }
+    std::vector<int> orbSym() { return orbSym_; }
 
     void print();
     bool operator==(const char *c);
-    bool operator==(const string &c);
+    bool operator==(const std::string &c);
     bool operator==(DPDMOSpace &lhs);
     friend bool operator==(const char *c, const DPDMOSpace &rhs);
-    friend bool operator==(const string &c, const DPDMOSpace &rhs);
-    vector<string> overlap(DPDMOSpace &rhs);
+    friend bool operator==(const std::string &c, const DPDMOSpace &rhs);
+    std::vector<std::string> overlap(DPDMOSpace &rhs);
 };
 
 } // namespace psi

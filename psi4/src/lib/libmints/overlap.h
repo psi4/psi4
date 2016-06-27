@@ -29,14 +29,13 @@
 #define _psi_src_lib_libmints_overlap_h_
 
 #include <vector>
-#include <libmints/onebody.h> // needed because we derive from OneBodyAOInt
+#include "psi4/src/lib/libmints/onebody.h" // needed because we derive from OneBodyAOInt
+#include "psi4/src/lib/libmints/osrecur.h"
 
 namespace psi {
 
     class BasisSet;
     class GaussianShell;
-    class ObaraSaikaTwoCenterRecursion;
-    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
     class Matrix;

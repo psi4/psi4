@@ -24,9 +24,7 @@
  *
  * @END LICENSE
  */
-
-#include <boost/regex.hpp>
-#include <boost/algorithm/string.hpp>
+//TODO this includes list is way too long, it's time to factor this file
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -34,18 +32,34 @@
 #include <sstream>
 #include <utility>
 #include <fstream>
-#include "psi4/include/psifiles.h"
-#include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
-#include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/vector3.h>
-#include "mints.h"
-#include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/physconst.h"
-
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/physconst.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/oeprop.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/quadrupole.h"
+#include "psi4/src/lib/libmints/multipolesymmetry.h"
+#include "psi4/src/lib/libmints/shellrotation.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/electricfield.h"
+#include "psi4/src/lib/libmints/electrostatic.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/multipoles.h"
+#include "psi4/src/lib/libmints/dipole.h"
 
 using namespace boost;
 using namespace psi;

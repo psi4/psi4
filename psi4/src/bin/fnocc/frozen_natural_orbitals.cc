@@ -46,8 +46,8 @@
 #include"frozen_natural_orbitals.h"
 #include<libciomr/libciomr.h>
 #include<lib3index/dftensor.h>
-#include<lib3index/cholesky.h>
-#include <libmints/sieve.h>
+#include "psi4/src/lib/lib3index/cholesky.h"
+#include "psi4/src/lib/libmints/sieve.h"
 #include"psi4/src/lib/libqt/qt.h"
 
 #include<libdpd/dpd.h>

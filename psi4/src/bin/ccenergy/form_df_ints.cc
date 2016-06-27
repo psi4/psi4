@@ -30,14 +30,14 @@
     \brief Enter brief description of file here 
 */
 
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "libmints/mints.h"
+
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "libtrans/integraltransform.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "libtrans/mospace.h"
 #include "lib3index/3index.h"
 #include "ccwave.h"

@@ -38,6 +38,12 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python.hpp>
 
 #include <stdexcept>
@@ -56,7 +62,7 @@
 #include "dimension.h"
 #include "sobasis.h"
 #include "integral.h"
-#include "symmetry.h"
+#include "psi4/include/symmetry.h"
 #include "gshell.h"
 #include "factory.h"
 #include "basisset_parser.h"

@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

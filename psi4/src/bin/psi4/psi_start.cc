@@ -41,7 +41,7 @@
 #include <boost/filesystem.hpp>
 #include <getopt.h>
 #include "psi4/include/psifiles.h"
-#include <psiconfig.h>
+
 #include "gitversion.h"
 #include <libplugin/plugin.h>
 #include "psi4/src/lib/libparallel/parallel.h"

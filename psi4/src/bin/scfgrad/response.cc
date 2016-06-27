@@ -25,18 +25,18 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/include/psi4-dec.h"
-#include <libfock/v.h>
-#include <libfock/jk.h>
-#include <libfock/apps.h>
-#include <libfunctional/superfunctional.h>
 #include "libmints/sieve.h"
 #include "libmints/view.h"
 #include "libmints/cdsalclist.h"
+#include "psi4/src/lib/libfock/v.h"
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libfock/apps.h"
+#include "psi4/src/lib/libfunctional/superfunctional.h"
 #include "psi4/include/psifiles.h"
 #include "scf_grad.h"
 #include "jk_grad.h"

@@ -40,10 +40,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include <libint/libint.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include <sys/types.h>

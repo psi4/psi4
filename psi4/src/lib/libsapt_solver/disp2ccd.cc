@@ -26,6 +26,9 @@
  */
 
 #include "sapt2p.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+
 
 namespace psi { namespace sapt {
 

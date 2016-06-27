@@ -30,21 +30,21 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/deriv.h>
-#include <libmints/mints.h>
+
 #include <libmints/twobody.h>
 #include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
-#include <libmints/view.h>
+#include "psi4/src/lib/libmints/view.h"
 #include <libmints/pybuffer.h>
 #include <libmints/local.h>
-#include <libmints/vector3.h>
-#include <lib3index/3index.h>
-#include <libscf_solver/hf.h>
-#include <libscf_solver/rhf.h>
+#include "psi4/src/lib/libmints/vector3.h"
+#include "psi4/src/lib/lib3index/3index.h"
+#include "psi4/src/lib/libscf_solver/hf.h"
+#include "psi4/src/lib/libscf_solver/rhf.h"
 #include <libscf_solver/rohf.h>
 #include <libscf_solver/cuhf.h>
 
-#include <libfock/jk.h>
+#include "psi4/src/lib/libfock/jk.h"
 #include <../bin/detci/ciwave.h>
 #include <../bin/detci/civect.h>
 

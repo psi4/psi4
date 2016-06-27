@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include <cstring>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"

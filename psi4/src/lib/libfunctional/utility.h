@@ -28,7 +28,7 @@
 #ifndef FUNCTIONAL_UTILITY
 #define FUNCTIONAL_UTILITY
 
-#include <psiconfig.h>
+
 
 #ifndef HAVE_FUNC_ERF
 double erf(double x);

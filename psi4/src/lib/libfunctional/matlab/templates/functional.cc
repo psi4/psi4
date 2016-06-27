@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/vector.h>
+#include "psi4/src/lib/libmints/vector.h"
 #include "NAMEfunctional.h"
 #include "utility.h"
 #include <cmath>

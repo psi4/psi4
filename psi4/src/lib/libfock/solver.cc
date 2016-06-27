@@ -25,14 +25,15 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
 #include "solver.h"
 #include "points.h"
 #include "hamiltonian.h"
 #include "jk.h"
-
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 

@@ -47,7 +47,7 @@
 #include <cstring>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
+
 #include "structs.h"
 #include "civect.h"
 #include "ciwave.h"

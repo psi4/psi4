@@ -69,14 +69,7 @@ set(sources_list local.cc
                  erd_eri.cc 
                  angularmomentum.cc
 )
-
-if(ENABLE_DKH)
-   list(APPEND sources_list dkh2-dkh4_main.F90)
-endif()
-add_library(mints ${sources_list})
+add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
+psi4_add_library(mints sources_list)
 target_include_directories(mints PUBLIC deriv ${Boost_INCLUDE_DIRS})
-target_link_libraries(mints qt iwl deriv ${Boost_LIBRARIES})
-
-install(TARGETS mints DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION psi4/src/lib/libmints
-        FILES_MATCHING PATTERN "*.h")
+target_link_libraries(mints qt iwl trans dpd deriv ${Boost_LIBRARIES})

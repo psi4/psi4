@@ -34,9 +34,9 @@
 #include <cstring>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/include/psifiles.h"
-#include <libmints/mints.h>
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

@@ -28,11 +28,11 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/pointgrp.h>
-#include <libmints/petitelist.h>
-#include <libmints/cdsalclist.h>
-#include <libmints/factory.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libqt/qt.h"
 
 #include <algorithm>

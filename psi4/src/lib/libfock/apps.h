@@ -27,12 +27,8 @@
 
 #ifndef APPS_H 
 #define APPS_H
-
-#include <libmints/wavefunction.h>
-
-namespace boost {
-template<class T> class shared_ptr;
-}
+#include <boost/tuple/tuple.hpp>
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 namespace psi {
 

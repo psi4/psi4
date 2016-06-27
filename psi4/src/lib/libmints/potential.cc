@@ -26,11 +26,12 @@
  */
 
 #include "psi4/src/lib/libciomr/libciomr.h"
-
-#include "mints.h"
-#include "cdsalclist.h"
-#include "potential.h"
-
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/potential.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/sobasis.h"
 #include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

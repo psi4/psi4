@@ -24,12 +24,17 @@
  *
  * @END LICENSE
  */
-
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <boost/shared_ptr.hpp>
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <liboptions/liboptions_python.h>
+#include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/include/psi4-dec.h"
 #include "superfunctional.h"
 

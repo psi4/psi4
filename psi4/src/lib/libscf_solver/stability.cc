@@ -29,13 +29,14 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libscf_solver/hf.h>
-#include <libfock/jk.h>
-#include <libfock/solver.h>
-#include <libfock/hamiltonian.h>
+#include "psi4/src/lib/libscf_solver/hf.h"
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libfock/solver.h"
+#include "psi4/src/lib/libfock/hamiltonian.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/include/physconst.h"
 
 using namespace boost;

@@ -28,14 +28,14 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libmints/mints.h>
-#include <libmints/view.h>
+
+#include "psi4/src/lib/libmints/view.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libtrans/integraltransform.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 
 using namespace boost;
 

@@ -34,7 +34,7 @@ namespace psi {
 class Matrix;
 class Vector;
 class TwoBodyAOInt;
-
+class BasisSet;
 class Cholesky {
 
 protected:

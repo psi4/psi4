@@ -35,10 +35,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include <libmoinfo/libmoinfo.h>
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include "psifiles.h"
+#include "psi4/include/psifiles.h"
 
 #define MAX(i,j) ((i>j) ? i : j)
 #define MIN(i,j) ((i>j) ? j : i)

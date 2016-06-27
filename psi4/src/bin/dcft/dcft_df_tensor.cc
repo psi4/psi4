@@ -35,10 +35,10 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
-#include <libmints/view.h>
+
+#include "psi4/src/lib/libmints/view.h"
 
 #include "psi4/include/psi4-dec.h"
 
@@ -47,16 +47,16 @@
 #include <vector>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libtrans/integraltransform.h>
-#include <libtrans/mospace.h>
-#include <libdpd/dpd.h>
-#include <libdiis/diismanager.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
 
-#include <lib3index/3index.h>
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
-#include <libfock/jk.h>
-#include <libfock/apps.h>
+#include "psi4/src/lib/lib3index/3index.h"
+
+#include "psi4/src/lib/libmints/sieve.h"
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libfock/apps.h"
 #include "psi4/include/physconst.h"
 
 #ifdef _OPENMP

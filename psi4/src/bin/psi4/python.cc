@@ -42,16 +42,16 @@
 #include <map>
 #include <iomanip>
 
-#include <libefp_solver/efp_solver.h>
-#include <libmints/mints.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
+
+#include "psi4/src/lib/libmints/matrix.h"
 #include <libplugin/plugin.h>
 #include "libparallel/mpi_wrapper.h"
 #include "libparallel/local.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <liboptions/liboptions_python.h>
+#include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include <psiconfig.h>
+
 
 #include "psi4/include/psi4-dec.h"
 #include "script.h"
@@ -64,7 +64,7 @@
 #if defined(MAKE_PYTHON_MODULE)
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/include/psifiles.h"
 #include "libparallel2/ParallelEnvironment.h"
 namespace psi {

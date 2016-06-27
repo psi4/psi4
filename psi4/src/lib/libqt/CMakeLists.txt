@@ -33,8 +33,5 @@ set(sources_list zmat_point.cc
                  v_3.cc 
                  david.cc 
 )
-
-add_library(qt ${sources_list})
+psi4_add_library(qt sources_list)
 target_link_libraries(qt psio ciomr mints)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION psi4/src/lib/libqt
-        FILES_MATCHING PATTERN "*.h")

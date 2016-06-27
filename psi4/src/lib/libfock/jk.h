@@ -30,7 +30,8 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libmints/dimension.h"
 
 namespace psi {
 class MinimalInterface;

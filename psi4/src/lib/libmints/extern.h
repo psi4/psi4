@@ -29,12 +29,14 @@
 #define _psi_src_lib_libmints_extern_potential_h_
 
 #include <vector>
+#include <utility>
 #include "typedefs.h"
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {
 
 class Matrix;
+class Molecule;
 class BasisSet;
 
 /*! \ingroup MINTS

@@ -34,12 +34,7 @@
 #include <string>
 
 #include "typedefs.h"
-#include "libmints/vector3.h"
-
-namespace boost {
-template<class T> class shared_ptr;
-// Forward declarations for boost.python used in the extract_subsets
-}
+#include "psi4/src/lib/libmints/vector3.h"
 
 namespace psi {
 

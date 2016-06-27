@@ -25,10 +25,10 @@
  * @END LICENSE
  */
 
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "dcft.h"
 #include "defines.h"
 

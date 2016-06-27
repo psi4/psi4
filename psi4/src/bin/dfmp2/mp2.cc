@@ -27,11 +27,11 @@
 
 #include "mp2.h"
 #include "corr_grad.h"
-#include <lib3index/3index.h>
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
-#include <libfock/jk.h>
-#include <libfock/apps.h>
+#include "psi4/src/lib/lib3index/3index.h"
+
+#include "psi4/src/lib/libmints/sieve.h"
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libfock/apps.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"

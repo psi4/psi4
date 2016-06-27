@@ -47,7 +47,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include <libmints/mints.h>
+
 
 #include "mcscf.h"
 #include "git.h"

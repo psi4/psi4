@@ -36,15 +36,15 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 
-#include <libmints/mints.h>
+
 #include <libmints/writer.h>
 #include <libmints/writer_file_prefix.h>
 #include "psi4/include/psi4-dec.h"
 
-#include <libscf_solver/rhf.h>
+#include "psi4/src/lib/libscf_solver/rhf.h"
 #include <libscf_solver/rohf.h>
 #include <libscf_solver/uhf.h>
 #include <libscf_solver/cuhf.h>

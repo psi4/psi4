@@ -26,20 +26,18 @@
  */
 //#include <libplugin/plugin.h>
 #include "psi4/include/psi4-dec.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
-#include <libtrans/integraltransform.h>
-#include <libmints/wavefunction.h>
-#include <libmints/mints.h>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+
+#include "psi4/src/lib/libmints/typedefs.h"
 //Header above this comment contains typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libfock/jk.h>
-#include <libdpd/dpd.h>
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libfock/jk.h"
 #include <libmints/writer_file_prefix.h>
 
 #include <stdlib.h>

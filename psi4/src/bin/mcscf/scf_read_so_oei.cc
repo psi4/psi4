@@ -34,7 +34,7 @@
 #include "psi4/include/psifiles.h"
 #include <libmoinfo/libmoinfo.h>
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"

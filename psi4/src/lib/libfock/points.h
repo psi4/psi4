@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <map>
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {

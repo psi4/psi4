@@ -28,7 +28,7 @@
 #ifndef FUNCTIONAL_H
 #define FUNCTIONAL_H
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <map>
 #include <vector>
 

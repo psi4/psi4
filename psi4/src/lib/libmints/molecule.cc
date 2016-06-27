@@ -28,6 +28,12 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -41,35 +47,33 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <string>
+#include <sstream>
 
 #include "psi4/src/lib/libpsio/psio.hpp"
 
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/matrix.h>
-#include <libmints/vector.h>
-#include <libmints/pointgrp.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libefp_solver/efp_solver.h>
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
 #include "psi4/include/psi4-dec.h"
 
-#include "vector3.h"
-#include "coordentry.h"
-#include "corrtab.h"
-#include "petitelist.h"
+#include "psi4/src/lib/libmints/vector3.h"
+#include "psi4/src/lib/libmints/coordentry.h"
+#include "psi4/src/lib/libmints/corrtab.h"
+#include "psi4/src/lib/libmints/petitelist.h"
 
-#include <masses.h>
+#include "psi4/include/masses.h"
 #include "psi4/include/physconst.h"
-#include <element_to_Z.h>
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
+#include "psi4/include/element_to_Z.h"
 
 using namespace std;
 using namespace psi;
 using namespace boost;
 
-#include <string>
-#include <sstream>
-#include <iostream>
+
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 // the third parameter of from_string() should be
@@ -1947,8 +1951,6 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
 {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
-    if (Comm->Me() == 0) {
         boost::shared_ptr<OutFile> printer(new OutFile(filename,TRUNCATE));
 
         int N = natom();
@@ -1966,7 +1968,6 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
                 printer->Printf( "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
 
-    }
 }
 
 std::string Molecule::save_string_xyz_file() const

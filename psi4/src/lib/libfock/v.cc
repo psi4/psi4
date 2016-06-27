@@ -25,19 +25,21 @@
  * @END LICENSE
  */
 
-#include <libmints/mints.h>
-#include <libfunctional/superfunctional.h>
+
+#include "psi4/src/lib/libfunctional/superfunctional.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
 
 #include "cubature.h"
 #include "points.h"
 #include "v.h"
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/integral.h"
 #include <sstream>
-
-using namespace psi;
-
+using ULI=unsigned long int;
 namespace psi {
 
 VBase::VBase(boost::shared_ptr<SuperFunctional> functional,

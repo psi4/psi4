@@ -27,15 +27,10 @@ set(sources_list buf_rd_arr2.cc
                  buf_put.cc 
                  buf_rd_all.cc 
 )
-add_library(iwl ${sources_list})
+psi4_add_library(iwl sources_list)
 target_include_directories(iwl PUBLIC options)
-target_link_libraries(iwl options)
-
 if(APPLE)
-   set_property(GLOBAL APPEND PROPERTY LIBLIST -Wl,-force_load;iwl)
+   target_link_libraries(iwl PRIVATE options "-Wl,-force_load")
 else()
-   set_property(GLOBAL APPEND PROPERTY LIBLIST -Wl,--whole-archive;iwl;-Wl,--no-whole-archive)
+   target_link_libraries(iwl PRIVATE options "-Wl,--whole-archive")
 endif()
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-        DESTINATION psi4/src/lib/libiwl
-        FILES_MATCHING PATTERN "*.h")

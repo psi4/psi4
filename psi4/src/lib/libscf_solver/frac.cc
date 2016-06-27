@@ -47,7 +47,10 @@
 #include <vector>
 #include <utility>
 
-#include <libmints/mints.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/factory.h"
 #include "psi4/src/lib/libqt/qt.h"
 
 #include <boost/tuple/tuple.hpp>
@@ -57,7 +60,6 @@
 
 using namespace boost;
 using namespace std;
-using namespace psi;
 
 namespace psi { namespace scf {
 

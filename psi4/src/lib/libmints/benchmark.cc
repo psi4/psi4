@@ -24,13 +24,14 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/3coverlap.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "mints.h"
 #include <cmath>
 #include <cstdlib>
 #include "psi4/include/psi4-dec.h"
@@ -39,12 +40,10 @@
 #include <string>
 #include <vector>
 
-#include <psiconfig.h>
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-using namespace psi;
 
 namespace psi {
 
@@ -849,7 +848,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
     Timer* qq;
 
     int max_thread_count = 1;
-    #ifdef HAVE_MKL
+    #ifdef __INTEL_MKL__
         max_thread_count = max_threads;
     #endif
 
@@ -885,7 +884,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
         for (size_t op = 0; op < ops3.size(); op++)
             timings3[ops3[op]].resize(N);
 
-        #ifdef HAVE_MKL
+        #ifdef __INTEL_MKL__
             mkl_set_num_threads(thread);
         #endif
 

@@ -33,6 +33,7 @@
 #define _psi_src_lib_libdpd_dpd_h
 
 #include <cstdio>
+#include <string>
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libpsio/config.h"
 #include <boost/shared_ptr.hpp>
@@ -264,7 +265,7 @@ public:
     dpdparams2 **params2;
     dpdparams4 **params4;
 
-    vector<DPDMOSpace> moSpaces;
+   std::vector<DPDMOSpace> moSpaces;
 
     DPD(int dpd_num, int nirreps, long int memory, int cachetype,
         int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
@@ -357,10 +358,10 @@ public:
 
     int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
                   int file_pqnum, int file_rsnum, int anti, const char *label);
-    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs,
-                  string file_pq, string file_rs, int anti, const char *label);
-    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, int anti, const char *label);
-    int pairnum(string);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, std::string pq, std::string rs,
+                  std::string file_pq, std::string file_rs, int anti, const char *label);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, std::string pq, std::string rs, int anti, const char *label);
+    int pairnum(std::string);
     double buf4_trace(dpdbuf4 *Buf);
     int buf4_close(dpdbuf4 *Buf);
     int buf4_mat_irrep_init(dpdbuf4 *Buf, int irrep);
@@ -372,7 +373,7 @@ public:
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                   int pqnum, int rsnum, const char *label);
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-                    string pq, string rs, const char *label);
+                    std::string pq, std::string rs, const char *label);
     int buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                       int pqnum, int rsnum, const char *label);
     int buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,

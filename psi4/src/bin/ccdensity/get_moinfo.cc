@@ -37,9 +37,9 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

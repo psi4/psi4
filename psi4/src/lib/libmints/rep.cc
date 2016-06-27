@@ -57,7 +57,7 @@
 
 #include <cmath>
 
-#include <libmints/pointgrp.h>
+#include "psi4/src/lib/libmints/pointgrp.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 
 using namespace std;

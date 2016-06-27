@@ -36,6 +36,12 @@
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -43,12 +49,12 @@
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libmints/matrix.h>
-#include <libmints/integral.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
@@ -64,8 +70,7 @@
 #include <sstream>
 #include <string>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#include "../libparallel/mpi_wrapper.h"
-#include "../libparallel/local.h"
+
 using namespace boost;
 using namespace psi;
 using namespace std;

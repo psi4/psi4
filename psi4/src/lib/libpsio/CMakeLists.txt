@@ -32,9 +32,6 @@ set(sources_list rw.cc
                  tocread.cc 
                  filescfg.cc 
 )
-
-add_library(psio ${sources_list})
+psi4_add_library(psio sources_list)
 target_include_directories(psio PUBLIC options)
 target_link_libraries(psio options)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION psi4/src/lib/libpsio
-        FILES_MATCHING PATTERN "*.h")

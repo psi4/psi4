@@ -24,11 +24,11 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/3coverlap.h"
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include "psi4/src/lib/libqt/qt.h"
-#include "mints.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include <boost/python/tuple.hpp>
 
 using namespace psi;

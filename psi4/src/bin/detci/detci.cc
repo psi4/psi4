@@ -47,7 +47,7 @@
 */
 
 #include <cstdio>
-#include <libmints/mints.h>
+
 #include "structs.h"
 #include "ciwave.h"
 

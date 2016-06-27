@@ -26,8 +26,10 @@
  */
 
 #include "direct_screening.h"
-
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
 using namespace psi;
 
 DirectScreening::DirectScreening(boost::shared_ptr<BasisSet> basis_in,

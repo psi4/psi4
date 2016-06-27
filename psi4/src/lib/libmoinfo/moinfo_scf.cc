@@ -30,7 +30,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <libmints/corrtab.h>
+#include "psi4/src/lib/libmints/corrtab.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/liboptions/liboptions.h"

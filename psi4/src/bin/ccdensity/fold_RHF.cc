@@ -30,7 +30,7 @@
     \brief Enter brief description of file here 
 */
 #include <stdio.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

@@ -30,11 +30,11 @@
 
 #include <vector>
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libmints/wavefunction.h>
-#include <libmints/basisset.h>
-#include <libmints/vector.h>
-#include <libdiis/diismanager.h>
-#include <libdiis/diisentry.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
+#include "psi4/src/lib/libdiis/diisentry.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libqt/qt.h"
 

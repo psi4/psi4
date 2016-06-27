@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libmints/psimath.h>
+#include "psi4/src/lib/libmints/psimath.h"
 
 using namespace boost::python;
 

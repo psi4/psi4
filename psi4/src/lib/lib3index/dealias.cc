@@ -26,7 +26,7 @@
  */
 
 #include "3index.h"
-#include "libmints/mints.h"
+
 #include "psi4/src/lib/libqt/qt.h"
 
 #include <string>
@@ -37,10 +37,11 @@
 #include <algorithm>
 #include <utility>
 #include <ctype.h>
+#include "psi4/src/lib/libmints/basisset.h"
+
 
 using namespace boost;
 using namespace std;
-using namespace psi;
 
 namespace psi {
 

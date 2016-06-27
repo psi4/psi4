@@ -28,7 +28,7 @@
 #ifndef three_index_df_H
 #define three_index_df_H
 
-#include <libmints/mints.h>
+
 
 namespace boost {
 template<class T>
