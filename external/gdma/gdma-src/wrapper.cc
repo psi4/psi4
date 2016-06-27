@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libparallel/parallel.h"
 #include <libparallel/ParallelPrinter.h>
 #include "psi4/include/psi4-dec.h"
