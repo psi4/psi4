@@ -27,9 +27,9 @@
 
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libtrans/integraltransform.h>
-#include <libmints/mints.h>
-#include <libtrans/mospace.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+
+#include "psi4/src/lib/libtrans/mospace.h"
 #include "adc.h"
 
 namespace psi{ namespace adc {

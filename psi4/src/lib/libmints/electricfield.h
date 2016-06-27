@@ -30,8 +30,11 @@
 
 #include <vector>
 #include "typedefs.h"
-
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/vector3.h"
+#include "psi4/src/lib/libmints/integral.h"
 namespace psi {
+class Molecule;
 
 /*! \ingroup MINTS
  *  \class ElectricFieldInt

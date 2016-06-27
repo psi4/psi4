@@ -25,8 +25,8 @@
  * @END LICENSE
  */
 
-#include <libmints/vector.h>
-#include "integralparameters.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/integralparameters.h"
 
 using namespace psi;
 using namespace boost;

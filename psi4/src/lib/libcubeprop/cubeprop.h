@@ -30,8 +30,8 @@
 
 #include <map>
 
-#include <libmints/typedefs.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 namespace psi {
 

@@ -26,6 +26,13 @@
  */
 
 #include "sapt.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/potential.h"
+#include "psi4/src/lib/libmints/basisset.h"
 
 namespace psi { namespace sapt {
 
@@ -48,7 +55,7 @@ SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 
   psio_ = psio;
 
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
   mkl_set_dynamic(1);
 #endif
 

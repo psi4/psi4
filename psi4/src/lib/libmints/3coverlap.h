@@ -28,18 +28,17 @@
 #ifndef _psi_src_lib_libmints_3coverlap_h
 #define _psi_src_lib_libmints_3coverlap_h
 
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include "pybuffer.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
 
 namespace psi {
 
 class IntegralFactory;
 class BasisSet;
 class GaussianShell;
-class ObaraSaikaThreeCenterRecursion;
 
 /** \ingroup MINTS
     \class ThreeCenterOverlapInt

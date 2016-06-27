@@ -27,8 +27,9 @@
 
 #include "psi4/include/psi4-dec.h"
 
-#include "sointegral.h"
-#include "twobody.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/sointegral_twobody.h"
+#include "psi4/src/lib/libmints/twobody.h"
 #include "basisset.h"
 #include "gshell.h"
 #include "integral.h"
@@ -37,8 +38,6 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-#include "../libparallel2/Communicator.h"
-#include "../libparallel2/ParallelEnvironment.h"
 
 namespace psi {
 
@@ -387,10 +386,8 @@ void TwoBodySOInt::common_init()
 {
     // MPI runtime settings (defaults provided for all communicators)
     nthread_ = Process::environment.get_n_threads();
-    //comm_    = WorldComm->communicator();
-    boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
-    nproc_   = Comm->NProc();
-    me_      = Comm->Me();
+    nproc_   = 1;
+    me_      = 0;
 
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));

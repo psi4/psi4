@@ -29,7 +29,7 @@
 #define WRITER_H
 
 #include <boost/shared_ptr.hpp>
-#include <libmints/vector.h>
+#include "psi4/src/lib/libmints/vector.h"
 #include <string>
 #include "typedefs.h"
 

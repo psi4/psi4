@@ -33,8 +33,6 @@
 #include "matrix.h"
 #include "integral.h"
 
-#include <psiconfig.h>
-
 using namespace psi;
 
 uint64_t binomial(int n, int c1)

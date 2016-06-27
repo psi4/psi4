@@ -44,10 +44,10 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
-#include "libtrans/integraltransform.h"
-#include "psifiles.h"
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/include/psifiles.h"
 
 extern FILE* outfile;
 

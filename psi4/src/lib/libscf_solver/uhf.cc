@@ -34,16 +34,18 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include <libfock/jk.h>
+#include "psi4/src/lib/libfock/jk.h"
 #include "psi4/include/physconst.h"
-#include "libtrans/integraltransform.h"
-#include "libdpd/dpd.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "uhf.h"
 #include "stability.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/factory.h"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>

@@ -30,7 +30,7 @@
     \brief Enter brief description of file here
 */
 #include "psi4/include/psifiles.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 

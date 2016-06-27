@@ -55,10 +55,6 @@
 #ifndef _chemistry_qc_basis_fjt_h
 #define _chemistry_qc_basis_fjt_h
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class CorrelationFactor;

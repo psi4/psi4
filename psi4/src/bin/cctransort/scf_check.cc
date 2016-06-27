@@ -27,8 +27,8 @@
 
 #include <vector>
 #include "psi4/include/psifiles.h"
-#include <libmints/mints.h>
-#include <libdpd/dpd.h>
+
+#include "psi4/src/lib/libdpd/dpd.h"
 
 namespace psi { namespace cctransort {
 

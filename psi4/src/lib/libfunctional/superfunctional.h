@@ -28,15 +28,14 @@
 #ifndef SUPERFUNCTIONAL_H
 #define SUPERFUNCTIONAL_H
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <map>
 #include <vector>
-
+#include "psi4/src/lib/libdisp/dispersion.h"
 namespace psi {
 
 class Options;
 class Functional;
-class Dispersion;
 
 /** 
  * SuperFunctional: High-level semilocal DFA object

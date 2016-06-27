@@ -26,10 +26,12 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libqt/qt.h"
 #include <math.h>
 #include "qr.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h" 
 
 namespace psi {
 

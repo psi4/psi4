@@ -28,7 +28,7 @@
 #ifndef TOTAL_DFMP2_H
 #define TOTAL_DFMP2_H
 
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include <map>
 
 namespace boost {

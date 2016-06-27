@@ -26,7 +26,14 @@
  */
 
 #include "psi4/include/psi4-dec.h"
-#include "mints.h"
+#include "psi4/src/lib/libmints/multipolesymmetry.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/shellrotation.h"
 
 using namespace boost;
 using namespace std;

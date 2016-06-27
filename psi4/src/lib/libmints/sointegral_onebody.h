@@ -31,6 +31,10 @@
 #include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {
+class SOBasisSet;
+class CdSalcList;
+class OneBodyAOInt;
+class IntegralFactory;
 
 class OneBodySOInt
 {

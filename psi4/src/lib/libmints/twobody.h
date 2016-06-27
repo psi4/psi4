@@ -29,6 +29,12 @@
 #define _psi_src_lib_libmints_twobody_h
 
 #include <boost/shared_ptr.hpp>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python/list.hpp>
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "pybuffer.h"

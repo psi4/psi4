@@ -28,12 +28,12 @@
 #include <map>
 #include "dcft.h"
 #include <cmath>
-#include <libiwl/iwl.hpp>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/matrix.h>
-#include <libmints/wavefunction.h>
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "defines.h"
 
 using namespace boost;

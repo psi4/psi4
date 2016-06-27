@@ -33,7 +33,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
+
 #include "slaterd.h"
 #include "ciwave.h"
 

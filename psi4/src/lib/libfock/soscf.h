@@ -46,7 +46,7 @@ abcd              - Virtual indices
 #ifndef SOSCF_H
 #define SOSCF_H
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <map>
 #include <boost/tuple/tuple.hpp>
 

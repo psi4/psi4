@@ -32,12 +32,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "ccwave.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#include "libciomr/libciomr.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 namespace psi { namespace ccenergy {
 
 

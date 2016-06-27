@@ -38,7 +38,7 @@
 #include <string>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"
 #include "MOInfo.h"

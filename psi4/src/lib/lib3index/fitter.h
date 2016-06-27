@@ -29,7 +29,7 @@
 #define THREE_INDEX_FITTER
 
 #include "psi4/include/psi4-dec.h"
-#include <psiconfig.h>
+
 
 namespace psi {
 

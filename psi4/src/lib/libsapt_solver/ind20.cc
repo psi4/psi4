@@ -29,7 +29,7 @@
 #include "sapt2.h"
 
 #include <boost/shared_ptr.hpp>
-#include <libpsio/aiohandler.h>
+#include "psi4/src/lib/libpsio/aiohandler.h"
 
 using namespace boost;
 

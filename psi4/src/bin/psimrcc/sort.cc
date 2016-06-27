@@ -33,14 +33,14 @@
 #include <algorithm>
 
 #include <libmoinfo/libmoinfo.h>
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include <libpsi4util/memory_manager.h>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psifiles.h"
+#include "psi4/include/psifiles.h"
 
 #include "blas.h"
 #include "sort.h"

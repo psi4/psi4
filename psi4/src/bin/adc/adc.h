@@ -28,10 +28,10 @@
 #ifndef ADC_H
 #define ADC_H
 
-#include <libmints/matrix.h>
-#include <libmints/vector.h>
-#include <libmints/wavefunction.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 
 #define ID(x) _ints->DPD_ID(x)

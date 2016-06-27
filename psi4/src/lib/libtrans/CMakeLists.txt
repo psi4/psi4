@@ -1,36 +1,18 @@
-set(headers_list "")
-# List of headers
-list(APPEND headers_list mospace.h integraltransform_functors.h integraltransform.h )
-
-# If you want to remove some headers specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM headers_list "")
-else()
-   list(REMOVE_ITEM headers_list "")
-endif()
-# Sort alphabetically
-list(SORT headers_list)
-
-set(sources_list "")
-# List of sources
-list(APPEND sources_list integraltransform_moinfo.cc integraltransform_tpdm_unrestricted.cc integraltransform_sort_so_tei.cc integraltransform_tpdm.cc integraltransform_oei.cc integraltransform_sort_mo_tpdm.cc integraltransform_tei_2nd_half.cc integraltransform_tei_1st_half.cc integraltransform_sort_so_tpdm.cc integraltransform.cc integraltransform_tpdm_restricted.cc integraltransform_dpd_id.cc mospace.cc integraltransform_tei.cc )
-
-# If you want to remove some sources specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM sources_list "")
-else()
-   list(REMOVE_ITEM sources_list "")
-endif()
-
-
-# Build static library
-add_library(trans STATIC ${sources_list})
-# Specify dependencies for the library (if any)
-add_dependencies(trans mints)
-set_property(GLOBAL APPEND PROPERTY LIBLIST trans)
-if(BUILD_CUSTOM_BOOST)
-   add_dependencies(trans custom_boost)
-endif()
-
-# Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/psi4/lib/libtrans)
+set(sources_list integraltransform_moinfo.cc 
+                 integraltransform_tpdm_unrestricted.cc 
+                 integraltransform_sort_so_tei.cc 
+                 integraltransform_tpdm.cc 
+                 integraltransform_oei.cc 
+                 integraltransform_sort_mo_tpdm.cc 
+                 integraltransform_tei_2nd_half.cc 
+                 integraltransform_tei_1st_half.cc 
+                 integraltransform_sort_so_tpdm.cc 
+                 integraltransform.cc 
+                 integraltransform_tpdm_restricted.cc 
+                 integraltransform_dpd_id.cc 
+                 mospace.cc 
+                 integraltransform_tei.cc 
+)
+psi4_add_library(trans sources_list)
+target_include_directories(trans PUBLIC ${Boost_INCLUDE_DIRS})
+target_link_libraries(trans qt)

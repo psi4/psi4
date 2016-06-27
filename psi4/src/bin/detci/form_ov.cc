@@ -38,7 +38,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/mints.h>
+
 #include "structs.h"
 #include "ciwave.h"
 

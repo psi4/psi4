@@ -29,7 +29,7 @@
 #define PCM_H
 
 #include <vector>
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libpsio/psio.h"
 #include <boost/shared_ptr.hpp>
 

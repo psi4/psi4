@@ -35,7 +35,7 @@
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

@@ -38,38 +38,18 @@
 #   define mints_timer_off(a)
 #endif
 
+namespace boost {
+template<typename T> class shared_ptr;
+}
+
 // Forward declare psi
 namespace psi {
-
-// libmints objects
-class BasisSet;
-class CdSalcList;
-class CoordEntry;
-class CoordValue;
-class GaussianShell;
-class IntegralFactory;
 class Matrix;
-class Molecule;
-class ObaraSaikaTwoCenterRecursion;
-class ObaraSaikaTwoCenterVIDeriv2Recursion;
-class ObaraSaikaTwoCenterElectricField;
-class OneBodyAOInt;
-class TwoBodyAOInt;
-class PointGroup;
-class SimpleVector;
-class SOBasisSet;
-class SphericalTransform;
 class Vector;
-class Vector3;
 class Wavefunction;
-
-// objects from other libraries
-class Chkpt;
-class PSIO;
-
-typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
-typedef boost::shared_ptr<psi::Vector> SharedVector;
-typedef boost::shared_ptr<psi::Wavefunction> SharedWavefunction;
+typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef boost::shared_ptr<Vector> SharedVector;
+typedef boost::shared_ptr<Wavefunction> SharedWavefunction;
 
 // Useful when working with SO-TEIs
 template<typename T>

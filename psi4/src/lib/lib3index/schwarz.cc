@@ -38,10 +38,12 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/mints.h>
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
 
 //MKL Header
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 

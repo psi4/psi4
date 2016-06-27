@@ -31,7 +31,12 @@
 #include <vector>
 #include "typedefs.h"
 
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/onebody.h"
+
 namespace psi {
+class SphericalTransform;
+class Molecule;
 
 /*! \ingroup MINTS
  *  \class DipoleInt

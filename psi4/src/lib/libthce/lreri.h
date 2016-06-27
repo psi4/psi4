@@ -28,14 +28,14 @@
 #ifndef LRERI_H
 #define LRERI_H
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {
 
 class Tensor;
 class CoreTensor;
 class DiskTensor;
-
+class BasisSet;
 class LRERI {
 
 protected:

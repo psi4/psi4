@@ -25,7 +25,10 @@
  * @END LICENSE
  */
 
-#include "mints.h"
+#include "psi4/src/lib/libmints/multipoles.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
 
 using namespace psi;
 

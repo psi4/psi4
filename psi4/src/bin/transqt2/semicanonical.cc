@@ -34,15 +34,15 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #define EXTERN
 #include "globals.h"
 
-#include <libmints/wavefunction.h>
-#include <libtrans/mospace.h>
-#include <libmints/matrix.h>
-#include <libmints/vector.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
 
 // This code is no longer used.  -TDC 12/2015
 

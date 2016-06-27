@@ -36,10 +36,10 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include <libmints/dimension.h>
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/basisset.h>
+#include "psi4/src/lib/libmints/basisset.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"

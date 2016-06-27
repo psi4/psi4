@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <psiconfig.h>
+
 
 #include "plugin.h"
 

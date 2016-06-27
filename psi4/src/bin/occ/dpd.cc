@@ -25,9 +25,9 @@
  * @END LICENSE
  */
 
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 
 #include "defines.h"
 #include "arrays.h"

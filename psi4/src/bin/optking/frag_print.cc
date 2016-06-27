@@ -38,7 +38,7 @@
 #include "atom_data.h"
 #include "cov_radii.h"
 #include "opt_data.h"
-#include "physconst.h"
+#include "psi4/include/physconst.h"
 #include "linear_algebra.h"
 #include "psi4/include/psi4-dec.h"
 #include "print.h"

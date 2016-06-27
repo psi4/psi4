@@ -34,14 +34,15 @@
 #include <cstring>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
 #define EXTERN
 #include "globals.h"
 

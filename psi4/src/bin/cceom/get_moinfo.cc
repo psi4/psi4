@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/include/psi4-dec.h"
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libpsio/psio.h"
 

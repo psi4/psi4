@@ -60,7 +60,7 @@
 
 #include <iostream>
 
-#include <libmints/pointgrp.h>
+#include "psi4/src/lib/libmints/pointgrp.h"
 
 namespace psi {
 

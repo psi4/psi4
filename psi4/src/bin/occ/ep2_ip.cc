@@ -29,7 +29,7 @@
 // it does not work now.
 
 #include "psi4/src/lib/libqt/qt.h"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "occwave.h"
 #include "defines.h"
 

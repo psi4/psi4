@@ -36,7 +36,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include <vector>
 
 #include "MOInfo.h"

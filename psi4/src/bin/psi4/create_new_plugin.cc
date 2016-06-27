@@ -33,13 +33,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
-#include <libmints/basisset.h>
+#include "psi4/src/lib/libmints/basisset.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include "psi4/include/psi4-dec.h"
-#include <psiconfig.h>
+
 
 using namespace std;
 using namespace psi;

@@ -34,10 +34,10 @@
  *
  */
 
-#include "factory.h"
-#include "sobasis.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/sobasis.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include "libciomr/libciomr.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 
 using namespace boost;
 using namespace psi;

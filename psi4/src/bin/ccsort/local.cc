@@ -31,7 +31,7 @@
 */
 
 #include <boost/shared_ptr.hpp>
-#include <libmints/mints.h>
+
 #include "psi4/include/psi4-dec.h"
 #include <cstdio>
 #include <cstdlib>
@@ -40,11 +40,11 @@
 #include <string>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include <libint/libint.h>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include "Local.h"
 #include "MOInfo.h"

@@ -25,18 +25,18 @@
  * @END LICENSE
  */
 
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.h>
-#include <libdiis/diismanager.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdiis/diismanager.h"
 #include "dcft.h"
 #include "defines.h"
 
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libmints/mints.h>
+
 #include "psi4/include/psi4-dec.h"
 
 namespace psi{ namespace dcft{

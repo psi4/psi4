@@ -57,7 +57,7 @@
 
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include <libmints/corrtab.h>
+#include "psi4/src/lib/libmints/corrtab.h"
 
 using namespace std;
 using namespace psi;

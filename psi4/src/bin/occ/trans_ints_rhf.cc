@@ -26,8 +26,8 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-#include <libtrans/integraltransform.h>
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/include/psifiles.h"
 
 #include "occwave.h"

@@ -30,10 +30,12 @@
 
 #include <vector>
 #include "typedefs.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/integral.h"
 
 namespace psi {
-
-class ObaraSaikaTwoCenterMIRecursion;
+class Molecule;
 
 /*! \ingroup MINTS
  *  \class MultipoleInt

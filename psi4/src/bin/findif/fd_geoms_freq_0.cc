@@ -47,7 +47,7 @@
 */
 
 #include "findif.h"
-#include <liboptions/liboptions_python.h>
+#include "psi4/src/lib/liboptions/liboptions_python.h"
 
 
 namespace psi { namespace findif {

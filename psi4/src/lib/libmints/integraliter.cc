@@ -30,7 +30,8 @@
 #include "gshell.h"
 #include "basisset.h"
 #include "sobasis.h"
-#include "sointegral.h"
+#include "sointegral_onebody.h"
+#include "sointegral_twobody.h"
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 

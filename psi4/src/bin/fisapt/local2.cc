@@ -26,7 +26,7 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
+
 #include "local2.h"
 
 using namespace boost;

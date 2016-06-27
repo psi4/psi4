@@ -33,6 +33,8 @@
 #include "psi4/src/lib/libmints/dimension.h"
 
 namespace psi {
+class BasisSet;
+class IntegralFactory;
 
 /**
  * @brief The OrbitalSpace class

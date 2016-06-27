@@ -28,8 +28,8 @@
 #include <fstream>
 #include <math.h>
 
-#include <libtrans/integraltransform.h>
-#include <libtrans/mospace.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libtrans/mospace.h"
 
 #include "occwave.h"
 

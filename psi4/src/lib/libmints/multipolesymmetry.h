@@ -32,11 +32,6 @@
 #include <string>
 #include <map>
 
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi{
 
 class Molecule;

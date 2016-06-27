@@ -26,7 +26,7 @@
  */
 
 #include "mospace.h"
-#include "libciomr/libciomr.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include <vector>
 
 using namespace psi;

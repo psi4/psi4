@@ -35,9 +35,9 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
+
 #include "psi4/include/psi4-dec.h"
 
 #include "mp2.h"

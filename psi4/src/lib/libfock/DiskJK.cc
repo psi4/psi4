@@ -24,16 +24,16 @@
  *
  * @END LICENSE
  */
-#include <libmints/mints.h>
-#include <lib3index/3index.h>
+
+#include "psi4/src/lib/lib3index/3index.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libpsio/aiohandler.h>
+#include "psi4/src/lib/libpsio/aiohandler.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/include/psifiles.h"
-#include <libmints/sieve.h>
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libmints/sieve.h"
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "jk.h"
 #include "jk_independent.h"
 #include "link.h"
@@ -41,8 +41,11 @@
 #include "cubature.h"
 #include "points.h"
 
-#include<lib3index/cholesky.h>
-
+#include "psi4/src/lib/lib3index/cholesky.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/sobasis.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
 #include <sstream>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #ifdef _OPENMP

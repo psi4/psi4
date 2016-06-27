@@ -38,11 +38,15 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/mints.h>
-#include <libmints/psimath.h>
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/psimath.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
 
 //MKL Header
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
 #include <mkl.h>
 #endif
 
@@ -54,7 +58,6 @@
 
 using namespace boost;
 using namespace std;
-using namespace psi;
 
 namespace psi {
 

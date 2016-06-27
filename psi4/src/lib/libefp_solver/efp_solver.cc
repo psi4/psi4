@@ -28,12 +28,16 @@
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
-
-#include <libmints/mints.h>
 #include "psi4/include/physconst.h"
 #include "psi4/include/psi4-dec.h"
-
-#include "efp_solver.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
+#include "efp/efp.h"
 
 boost::regex efpAtomSymbol("A\\d*([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
 boost::smatch reMatches;

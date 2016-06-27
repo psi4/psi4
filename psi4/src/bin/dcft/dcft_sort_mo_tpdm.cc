@@ -25,16 +25,16 @@
  * @END LICENSE
  */
 
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include <libtrans/integraltransform_functors.h>
-#include "psifiles.h"
-#include <libtrans/mospace.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libtrans/mospace.h"
 #define EXTERN
-#include <libdpd/dpd.gbl>
+#include "psi4/src/lib/libdpd/dpd.gbl"
 #include "dcft.h"
 #include "defines.h"
 

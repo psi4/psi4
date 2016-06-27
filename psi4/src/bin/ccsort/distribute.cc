@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/include/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"

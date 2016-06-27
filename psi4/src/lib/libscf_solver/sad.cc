@@ -44,12 +44,14 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
-
-#include <libmints/mints.h>
-#include <libfock/jk.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/factory.h"
 
 #include "hf.h"
 #include "sad.h"

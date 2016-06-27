@@ -29,8 +29,8 @@
 #define libmints_cubature_H
 
 #include "psi4/include/psi4-dec.h"
-#include <psiconfig.h>
-#include <libmints/vector3.h>
+
+#include "psi4/src/lib/libmints/vector3.h"
 
 namespace psi {
 

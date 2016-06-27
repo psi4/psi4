@@ -25,8 +25,10 @@
  * @END LICENSE
  */
 
-#include "mints.h"
-
+#include "psi4/src/lib/libmints/eri.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/fjt.h"
 using namespace boost;
 using namespace psi;
 

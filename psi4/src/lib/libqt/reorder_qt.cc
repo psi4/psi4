@@ -35,8 +35,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/matrix.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/include/psi4-dec.h"
 
 namespace psi {

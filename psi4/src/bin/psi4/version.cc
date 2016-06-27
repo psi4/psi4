@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
-#include <psiconfig.h>
+
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "gitversion.h"

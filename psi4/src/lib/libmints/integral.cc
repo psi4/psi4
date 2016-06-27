@@ -24,12 +24,28 @@
  *
  * @END LICENSE
  */
-
-#include "psiconfig.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/shellrotation.h"
+#include "psi4/src/lib/libmints/cartesianiter.h"
+#include "psi4/src/lib/libmints/rel_potential.h"
+#include "psi4/src/lib/libmints/electricfield.h"
+#include "psi4/src/lib/libmints/tracelessquadrupole.h"
+#include "psi4/src/lib/libmints/efpmultipolepotential.h"
+#include "psi4/src/lib/libmints/eri.h"
+#include "psi4/src/lib/libmints/multipoles.h"
+#include "psi4/src/lib/libmints/quadrupole.h"
+#include "psi4/src/lib/libmints/angularmomentum.h"
+#include "psi4/src/lib/libmints/nabla.h"
+#include "psi4/src/lib/libmints/dipole.h"
+#include "psi4/src/lib/libmints/electrostatic.h"
+#include "psi4/src/lib/libmints/pseudospectral.h"
+#include "psi4/src/lib/libmints/kinetic.h"
+#include "psi4/src/lib/libmints/3coverlap.h"
+#include "psi4/src/lib/libmints/overlap.h"
 #include "psi4/include/psi4-dec.h"
-#include "mints.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "potentialint.h"
+#include "psi4/src/lib/libmints/potentialint.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include <libint/libint.h>
 
 using namespace boost;

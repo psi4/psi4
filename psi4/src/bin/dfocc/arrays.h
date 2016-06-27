@@ -29,8 +29,8 @@
 #define _dfocc_arrays_h_
 
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
-#include <libmints/mints.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+
 #include "psi4/src/lib/libpsio/psio.hpp"
 
 using namespace boost;

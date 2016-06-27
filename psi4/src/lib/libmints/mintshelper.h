@@ -29,13 +29,16 @@
 #define _psi_src_lib_libmints_helper_h
 
 #include <vector>
-#include "wavefunction.h"
-#include "multipolesymmetry.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/multipolesymmetry.h"
 
 namespace psi {
 
 class Options;
 class CdSalcList;
+class CorrelationFactor;
+class TwoBodyAOInt;
+class PetiteList;
 
 /**
 * The MintsHelper object, places molecular integrals

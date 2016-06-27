@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmints/vector.h>
+#include "psi4/src/lib/libmints/vector.h"
 #include "wpbex_functional.h"
 #include "utility.h"
 #include "psi4/include/psi4-dec.h"

@@ -29,7 +29,7 @@
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include <cmath>

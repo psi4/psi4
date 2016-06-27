@@ -28,15 +28,21 @@
 #include <stdio.h>
 #include <math.h>
 #include "psi4/include/psi4-dec.h"
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+#include "psi4/src/lib/libmints/petitelist.h"
 namespace psi  {
 
 /*

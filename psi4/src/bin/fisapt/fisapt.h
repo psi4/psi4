@@ -28,8 +28,8 @@
 #ifndef FISAPT_H
 #define FISAPT_H
 
-#include <libmints/typedefs.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include <map>
 #include <boost/tuple/tuple.hpp>
 

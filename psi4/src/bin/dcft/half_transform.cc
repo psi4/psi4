@@ -27,8 +27,8 @@
 
 
 #include "dcft.h"
-#include <libdpd/dpd.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libdpd/dpd.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "defines.h"
 

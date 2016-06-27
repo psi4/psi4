@@ -41,15 +41,15 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libtrans/mospace.h>
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
 
 /** Required libmints includes */
-#include <libmints/mints.h>
+
 #include <libmints/factory.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 #include "defines.h"
 #include "occwave.h"

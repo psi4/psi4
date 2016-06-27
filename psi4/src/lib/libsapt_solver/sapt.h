@@ -28,32 +28,28 @@
 #ifndef SAPT_H
 #define SAPT_H
 
-#include <psiconfig.h>
+
 #include "psi4/include/psifiles.h"
 
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 
-#ifdef HAVE_MKL
+#ifdef __INTEL_MKL__
   #include <mkl.h>
 #endif
 
 #define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
-#include <libmints/mints.h>
+
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libpsio/aiohandler.h>
+#include "psi4/src/lib/libpsio/aiohandler.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <lib3index/3index.h>
+#include "psi4/src/lib/lib3index/3index.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
-namespace boost {
-
-template<class T> class shared_ptr;
-
-}
 
 namespace psi { namespace sapt {
 

@@ -27,17 +27,15 @@
 
 #ifndef _psi_src_lib_libmints_electrostatic_h_
 #define _psi_src_lib_libmints_electrostatic_h_
+#include "psi4/src/lib/libmints/potential.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
 namespace psi {
 
 class BasisSet;
+class Molecule;
 class GaussianShell;
 class ObaraSaikaTwoCenterRecursion;
 class OneBodyAOInt;
-class PotentialInt;
 class IntegralFactory;
 class SphericalTransform;
 class Vector3;

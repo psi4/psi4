@@ -54,7 +54,14 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include "mints.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/shellrotation.h"
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libmints/cartesianiter.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 
 using namespace boost;

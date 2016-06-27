@@ -35,18 +35,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-
 #include <boost/foreach.hpp>
-
-#include <libtrans/integraltransform.h>
-#include <libdpd/dpd.h>
 #include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 
-#include "mints.h"
-#include "sointegral_twobody.h"
-#include "deriv.h"
-#include "../libparallel/mpi_wrapper.h"
-#include "../libparallel/local.h"
+#include "psi4/src/lib/libmints/sointegral_twobody.h"
+#include "psi4/src/lib/libmints/deriv.h"
+#include "psi4/src/lib/libparallel/mpi_wrapper.h"
+#include "psi4/src/lib/libparallel/local.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+
 using namespace std;
 
 namespace psi {

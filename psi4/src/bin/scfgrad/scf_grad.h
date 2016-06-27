@@ -28,8 +28,8 @@
 #ifndef SCF_GRAD_H
 #define SCF_GRAD_H
 
-#include <libmints/wavefunction.h>
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {
 

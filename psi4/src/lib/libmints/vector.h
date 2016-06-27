@@ -28,14 +28,12 @@
 #ifndef _psi_src_lib_libmints_vector_h
 #define _psi_src_lib_libmints_vector_h
 
-#include "dimension.h"
-
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
 #include <iterator>
-
 #include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libmints/dimension.h"
 
 namespace boost {
 namespace python {
@@ -44,8 +42,6 @@ class tuple;
 }
 
 namespace psi {
-
-class Dimension;
 
 class Matrix;
 

@@ -24,11 +24,13 @@
  *
  * @END LICENSE
  */
+#include "psi4/src/lib/libmints/nabla.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/molecule.h"
 
 #include <stdexcept>
 #include "psi4/src/lib/libciomr/libciomr.h"
-
-#include "mints.h"
 #include "psi4/include/physconst.h"
 
 using namespace psi;

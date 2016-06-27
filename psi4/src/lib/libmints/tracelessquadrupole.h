@@ -30,11 +30,11 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libmints/osrecur.h"
+#include "psi4/src/lib/libmints/onebody.h"
 
 namespace psi {
 
-class OneBodyAOInt;
-class ObaraSaikaTwoCenterRecursion;
 class GaussianShell;
 class SphericalTransform;
 class BasisSet;

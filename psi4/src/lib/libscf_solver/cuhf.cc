@@ -34,11 +34,12 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libmints/mints.h>
-#include <libfock/jk.h>
 
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/factory.h"
 #include "cuhf.h"
 
 using namespace std;

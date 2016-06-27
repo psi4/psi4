@@ -26,7 +26,7 @@
  */
 
 #include "psi4/include/psi4-dec.h"
-#include <libtrans/integraltransform.h>
+#include "psi4/src/lib/libtrans/integraltransform.h"
 #include "adc.h"
 
 namespace psi{ namespace adc{

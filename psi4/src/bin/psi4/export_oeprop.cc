@@ -27,7 +27,7 @@
 
 #include <boost/python.hpp>
 #include <libmints/oeprop.h>
-#include <libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 using namespace boost::python;
 using namespace psi;

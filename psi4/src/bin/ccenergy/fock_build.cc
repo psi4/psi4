@@ -33,15 +33,15 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/psifiles.h"
 #include "MOInfo.h"
 #include "ccwave.h"
 
-#include <libmints/wavefunction.h>
-#include <libtrans/mospace.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libmints/matrix.h"
 
 namespace psi { namespace ccenergy {
 

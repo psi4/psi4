@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 
 #include "occwave.h"
 #include "defines.h"

@@ -26,7 +26,7 @@
  */
 
 #include <vector>
-#include <libmints/mints.h>
+
 
 using namespace std;
 

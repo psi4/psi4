@@ -29,20 +29,16 @@
 #define _psi_src_lib_libmints_potential_h_
 
 #include <vector>
-#include "typedefs.h"
+#include "psi4/src/lib/libmints/typedefs.h"
+#include "psi4/src/lib/libmints/onebody.h"
+#include "psi4/src/lib/libmints/sointegral_onebody.h"
+#include "psi4/src/lib/libmints/osrecur.h"
 
 namespace psi {
-
-    class Matrix;
     class BasisSet;
     class GaussianShell;
-    class ObaraSaikaTwoCenterVIRecursion;
-    class ObaraSaikaTwoCenterVIDerivRecursion;
-    class ObaraSaikaTwoCenterVIDeriv2Recursion;
-    class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
-    class OneBodySOInt;
     class CdSalcList;
 
 /*! \ingroup MINTS

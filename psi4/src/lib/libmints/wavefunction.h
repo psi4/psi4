@@ -30,12 +30,14 @@
 
 #include <stddef.h>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "typedefs.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libmints/dimension.h"
-#include <boost/enable_shared_from_this.hpp>
+
 
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];

@@ -29,7 +29,7 @@
 #define three_index_schwarz_H
 
 #include "psi4/include/psi4-dec.h"
-#include <psiconfig.h>
+
 
 namespace psi {
 

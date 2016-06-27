@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "dpd.h"
-
+using std::string;
 namespace psi {
 
 /* dpd_buf4_init(): Initializes a dpd four-index buffer for reading or writing

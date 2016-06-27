@@ -30,8 +30,8 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-#include <libiwl/iwl.h>
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 
 namespace psi { namespace ccdensity {
 

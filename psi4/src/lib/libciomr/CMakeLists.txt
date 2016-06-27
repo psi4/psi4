@@ -26,9 +26,5 @@ set(sources_list mxmb.cc
                  sq_to_tri.cc 
                  lubksb.cc
 )
-
-add_library(ciomr ${sources_list})
+psi4_add_library(ciomr sources_list)
 target_link_libraries(ciomr parallel)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-        DESTINATION psi4/src/lib/libciomr
-        FILES_MATCHING PATTERN "*.h")

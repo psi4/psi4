@@ -24,12 +24,12 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/src/lib/libmints/electricfield.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include <stdexcept>
 #include <vector>
 #include "psi4/src/lib/libciomr/libciomr.h"
-
-#include "mints.h"
 #include "psi4/include/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

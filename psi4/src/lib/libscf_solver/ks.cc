@@ -36,18 +36,20 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libiwl/iwl.hpp>
+#include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 
-#include <libmints/mints.h>
-#include <libfock/jk.h>
-#include <libfock/v.h>
-#include <libfunctional/superfunctional.h>
-#include <libdisp/dispersion.h>
-#include <lib3index/3index.h>
+
+#include "psi4/src/lib/libfock/jk.h"
+#include "psi4/src/lib/libfock/v.h"
+#include "psi4/src/lib/libfunctional/superfunctional.h"
+#include "psi4/src/lib/libdisp/dispersion.h"
+#include "psi4/src/lib/lib3index/3index.h"
 
 #include "psi4/include/psifiles.h"
 #include "psi4/include/physconst.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/factory.h"
 
 #include "ks.h"
 

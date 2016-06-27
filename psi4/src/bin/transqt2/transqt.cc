@@ -62,16 +62,16 @@
 #include <cstring>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <libiwl/iwl.h>
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libdpd/dpd.h>
+#include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"
 #include "globals.h"
 
-#include <libmints/wavefunction.h>
-#include <libtrans/mospace.h>
-#include <libmints/matrix.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 
 namespace psi {

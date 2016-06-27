@@ -28,7 +28,7 @@
 #ifndef LIBFOCK_DFT_H
 #define LIBFOCK_DFT_H
 
-#include <libmints/typedefs.h>
+#include "psi4/src/lib/libmints/typedefs.h"
 #include <vector>
 #include <map>
 

@@ -26,7 +26,7 @@
  */
 
 #include<libciomr/libciomr.h>
-#include <libefp_solver/efp_solver.h>
+#include "psi4/src/lib/libefp_solver/efp_solver.h"
 #include "efp.h"
 
 namespace psi { namespace efp {

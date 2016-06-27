@@ -33,10 +33,6 @@
 #include "psi4/src/lib/libmints/dimension.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class SOBasisSet;
