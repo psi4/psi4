@@ -26,9 +26,7 @@ ExternalProject_Add(libderiv_library
 )
 
 add_dependencies(libderiv_library libderiv_compiler)
-configure_file("libderivConfig.cmake.in" "libderivConfig.cmake" @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/libderiv/libderivConfig.cmake 
-        DESTINATION ${CMAKE_INSTALL_PREFIX})
+
 install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/lib
         DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/include

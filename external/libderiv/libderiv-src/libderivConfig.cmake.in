@@ -1,10 +1,10 @@
 set(LIBDERIV_CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR})
 find_library(LIBDERIV_LIBRARY NAMES deriv PATHS ${LIBDERIV_CONFIG_PATH}/lib 
              NO_DEFAULT_PATH)
-find_path(LIBDERIV_INCLUDE_DIR NAMES libderiv.h 
+find_path(LIBDERIV_INCLUDE_DIR NAMES libderiv/libderiv.h 
           PATHS ${LIBDERIV_CONFIG_PATH}/include NO_DEFAULT_PATH)
 
-file(READ ${LIBDERIV_INCLUDE_DIR}/libderiv.h contents)
+file(READ ${LIBDERIV_INCLUDE_DIR}/libderiv/libderiv.h contents)
 string(REGEX MATCH "define LIBDERIV_MAX_AM1 (.|..)" DA_LINE ${contents})
 set(LIBINT_MAX_AM ${CMAKE_MATCH_1})
 foreach(_comp ${LIBDERIV_FIND_COMPONENTS})
