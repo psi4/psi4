@@ -38,8 +38,11 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
-#include "libtrans/mospace.h"
-#include "lib3index/3index.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/lib3index/3index.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include "ccwave.h"
 
 namespace psi { namespace ccenergy {

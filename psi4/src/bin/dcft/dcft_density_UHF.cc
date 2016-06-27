@@ -30,9 +30,10 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdiis/diismanager.h"
-
-#include <libmints/writer.h>
-#include <libmints/writer_file_prefix.h>
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/oeprop.h"
+#include "psi4/src/lib/libmints/writer.h"
+#include "psi4/src/lib/libmints/writer_file_prefix.h"
 #include "dcft.h"
 #include "defines.h"
 

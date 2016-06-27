@@ -33,7 +33,11 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/include/psifiles.h"
 #include "corr_grad.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/vector.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

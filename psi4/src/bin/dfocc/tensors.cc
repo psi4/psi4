@@ -34,8 +34,9 @@
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "tensors.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi{ namespace dfoccwave{

@@ -27,14 +27,15 @@
 
 
 #include "psi4/src/lib/libmints/sieve.h"
-#include <libmints/mintshelper.h>
+#include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/lib3index/cholesky.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"
-
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "defines.h"
 #include "dfocc.h"
 #include "tensors.h"

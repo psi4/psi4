@@ -33,8 +33,8 @@
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "arrays.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
+#include "psi4/src/lib/libmints/matrix.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi{ namespace dfoccwave{

@@ -30,7 +30,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
-#include <libtrans/integraltransform_functors.h>
+#include "psi4/src/lib/libtrans/integraltransform_functors.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libtrans/mospace.h"
 #define EXTERN

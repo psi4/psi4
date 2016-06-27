@@ -39,7 +39,7 @@
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
-#include <libmints/dimension.h>
+#include "psi4/src/lib/libmints/dimension.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/matrix.h"

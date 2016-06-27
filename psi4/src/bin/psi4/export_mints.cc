@@ -29,7 +29,7 @@
 #include <boost/python/dict.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <libmints/deriv.h>
+#include "psi4/src/lib/libmints/deriv.h"
 
 #include <libmints/twobody.h>
 #include <libmints/integralparameters.h>

@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include <ciwave.h>
+#include "psi4/src/bin/detci/ciwave.h"
 #include "structs.h"
 
 namespace psi {

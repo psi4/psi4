@@ -28,7 +28,7 @@
 #ifndef _psi_include_psitypes_h_
 #define _psi_include_psitypes_h_
 
-#include <psiconfig.h>
+
 
 /*
   Define Psi data types here

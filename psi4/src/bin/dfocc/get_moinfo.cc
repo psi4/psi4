@@ -31,9 +31,10 @@
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "dfocc.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/molecule.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi{ namespace dfoccwave{

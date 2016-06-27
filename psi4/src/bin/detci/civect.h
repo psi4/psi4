@@ -31,6 +31,13 @@
 */
 #ifndef _psi_src_bin_detci_civect_h
 #define _psi_src_bin_detci_civect_h
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
+#include <boost/python/dict.hpp>
 
 // Forward declarations
 namespace psi { namespace detci {

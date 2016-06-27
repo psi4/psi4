@@ -28,8 +28,8 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "defines.h"
 #include "dfocc.h"
+#include "psi4/src/lib/libmints/matrix.h"
 
-using namespace psi;
 using namespace std;
 
 

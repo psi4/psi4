@@ -26,7 +26,7 @@
  */
 
 #include <vector>
-
+#include "psi4/src/lib/libmints/dimension.h"
 
 using namespace std;
 

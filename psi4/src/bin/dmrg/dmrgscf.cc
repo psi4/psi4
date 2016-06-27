@@ -38,7 +38,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libfock/jk.h"
-#include <libmints/writer_file_prefix.h>
+#include "psi4/src/lib/libmints/writer_file_prefix.h"
+//Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix(std::string name)
 
 #include <stdlib.h>
 #include <iostream>

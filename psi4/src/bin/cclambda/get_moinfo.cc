@@ -34,9 +34,9 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/include/psi4-dec.h"
-#include "libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/basisset.h"
-#include "libmints/molecule.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

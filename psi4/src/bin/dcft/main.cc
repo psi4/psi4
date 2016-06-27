@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "libpsio/psio.h"
+#include "psi4/src/lib/libpsio/psio.h"
 #include "defines.h"
 #include "dcft.h"
 

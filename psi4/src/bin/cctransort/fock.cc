@@ -26,7 +26,8 @@
  */
 
 #include "psi4/src/lib/libdpd/dpd.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 namespace psi { namespace cctransort {
 

@@ -49,13 +49,20 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 #include <boost/python.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/python/tuple.hpp>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
-
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/pybuffer.h"
 #include "structs.h"
 #include "ci_tol.h"
 #include "civect.h"

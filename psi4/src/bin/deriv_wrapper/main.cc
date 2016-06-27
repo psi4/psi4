@@ -31,8 +31,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 
-#include <libmints/cdsalclist.h>
-#include <libmints/deriv.h>
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/deriv.h"
 
 #include "psi4/include/psi4-dec.h"
 

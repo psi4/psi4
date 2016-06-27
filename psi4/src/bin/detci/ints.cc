@@ -57,12 +57,13 @@
 #include "psi4/include/psifiles.h"
 
 #include "psi4/include/psi4-dec.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libthce/thce.h"
 #include "psi4/src/lib/libthce/lreri.h"
 #include "psi4/src/lib/libfock/jk.h"
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "structs.h"
 #include "ciwave.h"
 #include "globaldefs.h"

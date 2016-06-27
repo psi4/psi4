@@ -28,7 +28,9 @@
 #include "mp2.h"
 #include "corr_grad.h"
 #include "psi4/src/lib/lib3index/3index.h"
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libfock/jk.h"
 #include "psi4/src/lib/libfock/apps.h"
@@ -38,7 +40,9 @@
 #include "psi4/include/psi4-dec.h"
 #include "psi4/include/physconst.h"
 #include "psi4/include/psifiles.h"
-
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/oeprop.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

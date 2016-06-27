@@ -28,7 +28,7 @@
 #ifndef CCWAVE_H
 #define CCWAVE_H
 
-#include "libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
