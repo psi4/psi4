@@ -48,7 +48,7 @@
 
 /** Required libmints includes */
 
-#include <libmints/factory.h>
+#include "psi4/src/lib/libmints/factory.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 
 #include "defines.h"

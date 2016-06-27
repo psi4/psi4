@@ -43,6 +43,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/include/physconst.h"
 #include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"

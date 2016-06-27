@@ -34,7 +34,7 @@
 
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include <libqt/slaterdset.h>
+#include "psi4/src/lib/libqt/slaterdset.h"
 
 #include "structs.h"
 #include "slaterd.h"

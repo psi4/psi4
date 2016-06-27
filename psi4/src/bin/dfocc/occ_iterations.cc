@@ -26,9 +26,10 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-
-#include <libmints/writer.h>
-#include <libmints/writer_file_prefix.h>
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/writer.h"
+#include "psi4/src/lib/libmints/writer_file_prefix.h"
 #include "defines.h"
 #include "dfocc.h"
 

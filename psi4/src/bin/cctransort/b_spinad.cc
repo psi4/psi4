@@ -26,8 +26,7 @@
  */
 
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/src/lib/libpsio/psio.h"
-
+#include "psi4/src/lib/libpsio/psio.hpp"
 namespace psi { namespace cctransort {
 
 void b_spinad(boost::shared_ptr<PSIO> psio)

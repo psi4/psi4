@@ -33,7 +33,7 @@
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmints/dimension.h>
+#include "psi4/src/lib/libmints/dimension.h"
 
 #define DCFT_TIMER
 

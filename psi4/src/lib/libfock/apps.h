@@ -27,6 +27,7 @@
 
 #ifndef APPS_H 
 #define APPS_H
+#include <set>
 #include <boost/tuple/tuple.hpp>
 #include "psi4/src/lib/libmints/wavefunction.h"
 

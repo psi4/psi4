@@ -28,9 +28,9 @@
 
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-
-
-#include <libfock/soscf.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libfock/soscf.h"
 #include "psi4/src/lib/libdiis/diismanager.h"
 #include "psi4/src/lib/libdiis/diisentry.h"
 

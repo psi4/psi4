@@ -40,9 +40,9 @@
 #include "psi4/include/physconst.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include <libmints/factory.h>
-#include <libmints/integral.h>
-#include <libmints/multipolesymmetry.h>
+#include "psi4/src/lib/libmints/factory.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/multipolesymmetry.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

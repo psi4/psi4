@@ -35,7 +35,7 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/matrix.h"
-#include <libmints/factory.h>
+#include "psi4/src/lib/libmints/factory.h"
 #include "psi4/include/psifiles.h"
 
 #include "psi4/include/psi4-dec.h"

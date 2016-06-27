@@ -28,7 +28,10 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/twobody.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/include/psi4-dec.h"

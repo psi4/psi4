@@ -34,7 +34,7 @@
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
-#include <libmints/writer_file_prefix.h>
+#include "psi4/src/lib/libmints/writer_file_prefix.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
 

@@ -48,15 +48,14 @@
 
 /** Required libmints includes */
 
-#include <libmints/factory.h>
+#include "psi4/src/lib/libmints/factory.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
-#include<lib3index/dftensor.h>
-
+#include "psi4/src/lib/lib3index/dftensor.h"
+#include "psi4/src/lib/libmints/basisset.h"
 #include "defines.h"
 #include "dfocc.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

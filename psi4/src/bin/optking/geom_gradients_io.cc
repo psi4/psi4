@@ -46,7 +46,7 @@
  #include "psi4/src/lib/libmints/matrix.h"
  #include "psi4/src/lib/libmints/wavefunction.h"
  #include "psi4/src/lib/libparallel/parallel.h"
- #include <libmints/writer_file_prefix.h>
+ #include "psi4/src/lib/libmints/writer_file_prefix.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"

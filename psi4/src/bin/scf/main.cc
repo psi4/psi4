@@ -40,8 +40,8 @@
 #include "psi4/src/lib/libqt/qt.h"
 
 
-#include <libmints/writer.h>
-#include <libmints/writer_file_prefix.h>
+#include "psi4/src/lib/libmints/writer.h"
+#include "psi4/src/lib/libmints/writer_file_prefix.h"
 #include "psi4/include/psi4-dec.h"
 
 #include "psi4/src/lib/libscf_solver/rhf.h"

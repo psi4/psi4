@@ -41,7 +41,7 @@
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include <libqt/slaterdset.h>
+#include "psi4/src/lib/libqt/slaterdset.h"
 
 #include "psi4/include/physconst.h"
 #include "structs.h"

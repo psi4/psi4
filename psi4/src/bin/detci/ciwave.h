@@ -28,14 +28,12 @@
 #ifndef CIWAVE_H
 #define CIWAVE_H
 
-// Forward declarations
-namespace boost {
-template<class T> class shared_ptr;
-}
+#include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 // From psi4
 namespace psi {
-class Wavefunction;
 class Options;
 class JK;
 class DFERI;
