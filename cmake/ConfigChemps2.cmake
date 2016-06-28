@@ -30,6 +30,9 @@ if(NOT CHEMPS2_FOUND)
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
                    -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
+                   -DCMAKE_RANLIB=${CMAKE_RANLIB}
+                   -DCMAKE_AR=${CMAKE_AR}
+                   -DCMAKE_NM=${CMAKE_NM}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")
