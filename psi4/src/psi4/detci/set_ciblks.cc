@@ -53,7 +53,8 @@ void CIWavefunction::set_ciblks()
    int nalp1, nalp3, alpcode, nbet1, nbet3, betcode;
    int nalp4, nbet4, maxblk, xlvl;
    int nas, nbs;
-   int nblocks = 0;
+   int nblocks=0;
+   double orbsum = 0.0;
    int set = 0;
 
    CalcInfo_->num_alp_str = AlphaG_->num_str;

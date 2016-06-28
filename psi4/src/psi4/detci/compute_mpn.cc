@@ -107,7 +107,6 @@ void CIWavefunction::compute_mpn()
 
   }
 
-  H0block_init(CIblks_->vectlen);
   CIvect Hd(Parameters_->icore, 1, 1,
          Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_, H0block_);
 

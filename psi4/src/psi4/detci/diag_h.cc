@@ -185,8 +185,6 @@ void CIWavefunction::diag_h() {
             outfile->Printf("(n.b. this is for debugging purposes only!)\n");
         }
 
-        H0block_init(size);
-
         /* get the diagonal elements of H into an array Hd */
 
         Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
@@ -371,7 +369,6 @@ void CIWavefunction::diag_h() {
 
     else {
         /* prepare the H0 block */
-        H0block_init(size);
 
         CIvect Hd(Parameters_->icore, 1, 1,
                   Parameters_->hd_filenum, CIblks_, CalcInfo_, Parameters_,
@@ -522,7 +519,6 @@ void CIWavefunction::diag_h() {
                          Parameters_->print_lvl);
 
         }
-        H0block_free();
 
     } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
 

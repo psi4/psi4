@@ -120,6 +120,9 @@ void CIWavefunction::common_init() {
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
+
+    // Init H0 block
+    H0block_init(CIblks_->vectlen);
 }
 size_t CIWavefunction::ndet() { return (size_t)CIblks_->vectlen; }
 
@@ -453,6 +456,9 @@ void CIWavefunction::cleanup(void) {
     delete CIblks_;
 
     //delete Parameters_;
+
+    // Free H0block
+    H0block_free();
     delete H0block_;
 
     // CalcInfo free
@@ -467,6 +473,7 @@ void CIWavefunction::cleanup(void) {
     }
     // delete CalcInfo_;
     // delete MCSCF_Parameters_;
+
 
 }
 
@@ -573,18 +580,17 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
 
 }
 
-boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(std::string soscf_type){
+boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
+
     boost::shared_ptr<SOMCSCF> somcscf;
 
     bool second_order = MCSCF_Parameters_->orbital_so;
-    if (soscf_type == "DF") {
+    if (MCSCF_Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(!second_order);
         somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
-    } else if (soscf_type == "CONV") {
+    } else {
         transform_mcscf_ints(!second_order);
         somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
-    } else{
-        throw PSIEXCEPTION("CIWavefunction::new_mcscf_object: Did not recognize mcscf option.\n");
     }
 
     // We assume some kind of ras here.
