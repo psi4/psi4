@@ -1,3 +1,5 @@
+#! dmrg-ci on water
+
 molecule H2O {
  0 1
    O   0.000000000   0.00   0.000000000

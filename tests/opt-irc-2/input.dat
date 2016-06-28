@@ -1,5 +1,5 @@
-# Compute the IRC for HCN <-> NCH interconversion
-# at the RHF/DZP level of theory, and print
+#! Compute the IRC for HCN <-> NCH interconversion at the RHF/DZP level of theory.
+# Print
 # the path to a trajectory file for visualization
 # in Jmol.
 # grep '@IRC' on the output to see a nice printout
