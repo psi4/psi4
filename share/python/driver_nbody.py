@@ -110,7 +110,7 @@ def _print_nbody_energy(energy_body_dict, header):
 def _nbody_gufunc(func, method_string, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
-    This is a generalized univeral function for compute interaction quantities.
+    This is a generalized univeral function for computing interaction quantities.
 
     :returns: *return type of func* |w--w| The interaction data.
 
@@ -119,8 +119,8 @@ def _nbody_gufunc(func, method_string, **kwargs):
     :type func: function
     :param func: ``energy`` || etc.
 
-        Python function that accepts method_string and a molecule and returns a
-        energy, gradient, or Hessian.
+        Python function that accepts method_string and a molecule. Returns a
+        energy, gradient, or Hessian as requested.
 
     :type method_string: string
     :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
@@ -159,7 +159,7 @@ def _nbody_gufunc(func, method_string, **kwargs):
     :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
 
         If True returns the total data (energy/gradient/etc) of the system,
-        otherwise returns interaction data
+        otherwise returns interaction data.
     """
 
     ### ==> Parse some kwargs <==
