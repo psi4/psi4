@@ -15,7 +15,7 @@ Counterpoise Correct
 .. autofunction:: driver_nbody._nbody_gufunc(func, method_string [, molecule, bsse_type, max_nbody, ptype, return_total_data])
 
 
-The nbody function computes counterpoise-corrected two-body interaction energies for complexes composed of arbitrary numbers of monomers.
+The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Valiron-Mayer Function Couterpoise (VMFC) interaction energies for complexes composed of arbitrary numbers of monomers.
 
 
 **Examples :** ::
@@ -40,6 +40,6 @@ The nbody function computes counterpoise-corrected two-body interaction energies
       He 4 0 0
     }
 
-    # Returns nocp energy as its first in the list
+    # Returns the nocp energy as its first in the list
     energy('CCSD(T)', bsse_type=['nocp', 'cp', 'vmfc'], max_nbody=3) 
 
