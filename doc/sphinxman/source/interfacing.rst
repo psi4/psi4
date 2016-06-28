@@ -16,6 +16,7 @@ platform capabilities, *etc*.
    :maxdepth: 2
 
    cfour
+   chemps2
    dftd3
    dkh
    fchk
