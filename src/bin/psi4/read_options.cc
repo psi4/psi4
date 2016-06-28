@@ -4438,8 +4438,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     }
     if (name == "DMRG"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs a DMRG computation
-       *
-       *  -*/
+       through calls to Wouters's CheMPS2 library. -*/
 
         /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
         options.add_int("DMRG_MULTIPLICITY", -1);
