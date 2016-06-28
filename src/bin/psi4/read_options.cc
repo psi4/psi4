@@ -4438,15 +4438,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     }
     if (name == "DMRG"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs a DMRG computation
-       *
-       *  -*/
+       through calls to Wouters's CheMPS2 library. -*/
 
         /*- The DMRG wavefunction multiplicity in the form (2S+1) -*/
-        options.add_int("WFN_MULTP", -1);
+        options.add_int("DMRG_MULTIPLICITY", -1);
 
         /*- The DMRG wavefunction irrep uses the same conventions as PSI4. How convenient :-).
             Just to avoid confusion, it's copied here. It can also be found on
-            http://sebwouters.github.io/CheMPS2/classCheMPS2_1_1Irreps.html .
+            http://sebwouters.github.io/CheMPS2/doxygen/classCheMPS2_1_1Irreps.html .
             Symmetry Conventions        Irrep Number & Name
             Group Number & Name         0     1     2     3     4     5     6     7
             0: c1                       A
@@ -4458,83 +4457,83 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             6: c2h                      Ag     Bg     Au     Bu
             7: d2h                      Ag     B1g     B2g     B3g     Au     B1u     B2u     B3u
         -*/
-        options.add_int("WFN_IRREP", -1);
+        options.add_int("DMRG_IRREP", -1);
 
         /*- The number of reduced renormalized basis states to be
             retained during successive DMRG instructions -*/
-        options.add("DMRG_STATES", new ArrayType());
+        options.add("DMRG_SWEEP_STATES", new ArrayType());
 
         /*- The energy convergence to stop an instruction
             during successive DMRG instructions -*/
-        options.add("DMRG_E_CONVERGENCE", new ArrayType());
+        options.add("DMRG_SWEEP_ENERGY_CONV", new ArrayType());
 
         /*- The density RMS convergence to stop an instruction
             during successive DMRG instructions -*/
-        options.add_double("DMRG_D_CONVERGENCE", 1.e-6);
+        options.add_double("DMRG_SCF_GRAD_THR", 1.e-6);
 
         /*- The maximum number of sweeps to stop an instruction
             during successive DMRG instructions -*/
-        options.add("DMRG_MAXSWEEPS", new ArrayType());
+        options.add("DMRG_SWEEP_MAX_SWEEPS", new ArrayType());
 
         /*- The noiseprefactors for successive DMRG instructions -*/
-        options.add("DMRG_NOISEPREFACTORS", new ArrayType());
+        options.add("DMRG_SWEEP_NOISE_PREFAC", new ArrayType());
 
         /*- The residual tolerances for the Davidson diagonalization during DMRG instructions -*/
-        options.add("DMRG_DVDSON_RTOL", new ArrayType());
+        options.add("DMRG_SWEEP_DVDSON_RTOL", new ArrayType());
 
         /*- Whether or not to print the correlation functions after the DMRG calculation -*/
         options.add_bool("DMRG_PRINT_CORR", false);
 
         /*- Whether or not to create intermediary MPS checkpoints -*/
-        options.add_bool("DMRG_CHKPT", false);
+        options.add_bool("DMRG_MPS_WRITE", false);
 
         /*- Whether or not to store the unitary on disk (convenient for restarting). -*/
-        options.add_bool("DMRG_STORE_UNIT", true);
+        options.add_bool("DMRG_UNITARY_WRITE", true);
 
         /*- Whether or not to use DIIS for DMRG. -*/
-        options.add_bool("DMRG_DO_DIIS", false);
+        options.add_bool("DMRG_DIIS", false);
 
         /*- When the update norm is smaller than this value DIIS starts. -*/
-        options.add_double("DMRG_DIIS_BRANCH", 1e-2);
+        options.add_double("DMRG_SCF_DIIS_THR", 1e-2);
 
         /*- Whether or not to store the DIIS checkpoint on disk (convenient for restarting). -*/
-        options.add_bool("DMRG_STORE_DIIS", true);
+        options.add_bool("DMRG_DIIS_WRITE", true);
 
         /*- Maximum number of DMRG iterations -*/
-        options.add_int("DMRG_MAX_ITER", 100);
+        options.add_int("DMRG_SCF_MAX_ITER", 100);
 
-        /*- Which root is targeted: 1 means ground state, 2 first excited state, etc. -*/
-        options.add_int("DMRG_WHICH_ROOT", 1);
+        /*- Which root is targeted: 0 means ground state, 1 first excited state, etc. -*/
+        options.add_int("DMRG_EXCITATION", 0);
 
         /*- Whether or not to use state-averaging for roots >=2 with DMRG-SCF. -*/
-        options.add_bool("DMRG_STATE_AVG", true);
+        options.add_bool("DMRG_SCF_STATE_AVG", true);
 
         /*- Which active space to use for DMRG calculations:
                --> input with SCF rotations (INPUT);
                --> natural orbitals (NO);
                --> localized and ordered orbitals (LOC) -*/
-        options.add_str("DMRG_ACTIVE_SPACE", "INPUT", "INPUT NO LOC");
+        options.add_str("DMRG_SCF_ACTIVE_SPACE", "INPUT", "INPUT NO LOC");
 
         /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
-        options.add_bool("DMRG_LOC_RANDOM", true);
+        options.add_bool("DMRG_LOCAL_INIT", true);
+
+        /*- Do calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done? -*/
+        options.add_bool("DMRG_CASPT2_CALC", false);
 
         /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
-        options.add_bool("DMRG_CASPT2", false);
-
-        /*- Whether to calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done. -*/
-        options.add_str("DMRG_CASPT2_ORB", "PSEUDOCANONICAL", "PSEUDOCANONICAL ACTIVE");
+        options.add_str("DMRG_CASPT2_ORBS", "PSEUDOCANONICAL", "PSEUDOCANONICAL ACTIVE");
 
         /*- CASPT2 IPEA shift -*/
-        options.add_double("DMRG_IPEA", 0.0);
+        options.add_double("DMRG_CASPT2_IPEA", 0.0);
 
         /*- CASPT2 Imaginary shift -*/
-        options.add_double("DMRG_IMAG_SHIFT", 0.0);
+        options.add_double("DMRG_CASPT2_IMAG", 0.0);
 
         /*- DMRG-CI or converged DMRG-SCF orbitals in molden format -*/
-        options.add_bool("DMRG_MOLDEN", false);
+        options.add_bool("DMRG_MOLDEN_WRITE", false);
 
         /*- Print out the density matrix in the AO basis -*/
-        options.add_bool("DMRG_DENSITY_AO", false);
+        options.add_bool("DMRG_OPDM_AO_PRINT", false);
 
     }
 
