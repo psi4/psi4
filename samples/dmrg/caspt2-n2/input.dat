@@ -1,3 +1,5 @@
+#! dmrg-caspt2 on nitrogen
+
 molecule N2 {
   N       0.0000   0.0000   0.0000
   N       0.0000   0.0000   2.1180

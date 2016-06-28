@@ -1,3 +1,5 @@
+#! optimization with method defined via cbs
+
 # NOTE: gradient calcs accessed through an alias to cbs (e.g., sherrill_gold_standard) aren't matching direct calls to cbs
 
 molecule mol {
