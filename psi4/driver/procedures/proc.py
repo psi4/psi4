@@ -47,6 +47,7 @@ from .roa import *
 from . import proc_util
 from . import empirical_dispersion
 from . import dft_functional
+from . import mcscf
 
 # never import driver, wrappers, or aliases into this file
 
@@ -4009,6 +4010,70 @@ def run_detcas(name, **kwargs):
     core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
     core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
     core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+
+    optstash.restore()
+    return ciwfn
+
+def run_dgascas(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    determinant-based multireference wavefuncations,
+    namely CASSCF and RASSCF.
+    """
+
+    optstash = p4util.OptionsState(
+        ['DETCI', 'WFN'],
+        ['SCF', 'SCF_TYPE']
+        )
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if user_ref not in ['RHF', 'ROHF']:
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if name == 'dgascas':
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+    elif name == 'rasscf':
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+    elif name == 'casscf':
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+    else:
+        raise ValidationError("Run DETCAS: Name %s not understood" % name)
+
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    molecule = ref_wfn.molecule()
+
+    # The DF case
+    if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
+
+        # Do NOT set global options in general, this is a bit of a hack
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'DF')
+
+    # The non-DF case
+    else:
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'PK')
+
+        # Ensure IWL files have been written
+        proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+
+    # Second-order SCF requires non-symmetric density matrix support
+    if psi4.get_option('DETCI', 'MCSCF_SO'):
+        proc_util.check_non_symmetric_jk_density("Second-order MCSCF")
+
+#    ciwfn = psi4.detci(ref_wfn)
+    ciwfn = mcscf.mcscf_solver(ref_wfn)
+
+    # We always would like to print a little dipole information
+    oeprop = psi4.OEProp(ciwfn)
+    oeprop.set_title(name.upper())
+    oeprop.add("DIPOLE")
+    oeprop.compute()
+    psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable(name.upper() + " DIPOLE X"))
+    psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable(name.upper() + " DIPOLE Y"))
+    psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
     return ciwfn

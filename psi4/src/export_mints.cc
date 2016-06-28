@@ -1007,7 +1007,8 @@ void export_mints(py::module& m)
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
         .def("new_mcscf_object", &detci::CIWavefunction::new_mcscf_object, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
-        .def("sigma", py_ci_int_sigma, "docstring");
+        .def("sigma", py_ci_int_sigma, "docstring")
+        .def("cleanup", &detci::CIWavefunction::cleanup, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;

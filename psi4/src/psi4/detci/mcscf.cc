@@ -55,35 +55,7 @@ void CIWavefunction::compute_mcscf()
 
   Parameters_->print_lvl = 0;
 
-  std::shared_ptr<SOMCSCF> somcscf;
-  if (MCSCF_Parameters_->mcscf_type == "DF"){
-    transform_dfmcscf_ints(!MCSCF_Parameters_->orbital_so);
-    somcscf = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
-  }
-  else {
-    transform_mcscf_ints(!MCSCF_Parameters_->orbital_so);
-    somcscf = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
-  }
-
-  // We assume some kind of ras here.
-  if (Parameters_->wfn != "CASSCF"){
-    std::vector<Dimension> ras_spaces;
-
-    // We only have four spaces currently
-    for (int nras = 0; nras < 4; nras++){
-      Dimension rasdim = Dimension(nirrep_, "RAS" + psi::to_string(nras));
-      for (int h = 0; h < nirrep_; h++){
-          rasdim[h] = CalcInfo_->ras_opi[nras][h];
-      }
-      ras_spaces.push_back(rasdim);
-    }
-    somcscf->set_ras(ras_spaces);
-
-  }
-
-  // Set fzc energy
-  SharedMatrix Cfzc = get_orbitals("FZC");
-  somcscf->set_frozen_orbitals(Cfzc);
+  boost::shared_ptr<SOMCSCF> somcscf = new_mcscf_object();
 
   /// => Start traditional two-step MCSCF <= //
   // Parameters

@@ -271,6 +271,7 @@ void CIWavefunction::sigma_free()
          free(SigmaData_->Jsgn[i]);
       }
    }
+   CalcInfo_->sigma_initialized = false;
 // DGAS: Not sure how to free these yet
 //      SigmaData_->Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
 //unsigned char **SigmaData_->Toccs;

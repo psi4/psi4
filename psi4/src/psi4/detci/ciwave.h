@@ -255,7 +255,7 @@ public:
     SharedMatrix hamiltonian(size_t hsize = 0);
 
     // Returns a new SOMCSCF object
-    boost::shared_ptr<SOMCSCF> new_mcscf_object(std::string soscf_type);
+    boost::shared_ptr<SOMCSCF> new_mcscf_object();
 
 private:
 

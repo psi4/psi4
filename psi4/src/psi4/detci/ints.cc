@@ -178,7 +178,7 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
         }
 
     }
-    Uact->print();
+    // Uact->print();
 
 
     // => Setup <= //

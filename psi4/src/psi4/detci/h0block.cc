@@ -868,12 +868,9 @@ void CIWavefunction::H0block_coupling_calc(double E)
          }
     */
 
-    /*
-      free(gamma_1);
-      free(gamma_2);
-      free(delta_2);
-     */
-
+   free(H_12); free(delta_1);
+   free(delta_2); free(gamma_1);
+   free(gamma_2);
 }
 
 
