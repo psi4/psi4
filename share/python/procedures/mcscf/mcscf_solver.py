@@ -31,6 +31,8 @@ def mcscf_solver(ref_wfn):
     scf_energy = eold
     mtype = '   @MCSCF'
     converged = False
+    ediff = 1.e-4
+    orb_grad_rms = 1.e-3
 
     # Grab da options
     mcscf_orb_grad_conv = psi4.get_global_option("MCSCF_R_CONVERGENCE")
@@ -55,7 +57,8 @@ def mcscf_solver(ref_wfn):
 
         # Transform integrals, diagonalize H
         ciwfn.transform_mcscf_integrals(True)
-        nci_iter = ciwfn.diag_h(-1, -1)
+        nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-2)
+
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
         ci_grad_norm = psi4.get_variable("DETCI AVG DVEC NORM")

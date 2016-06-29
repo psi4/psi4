@@ -54,18 +54,19 @@ namespace detci {
 **
 ** Returns: none
 */
-int CIWavefunction::diag_h(double econv, double rconv) {
+int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     BIGINT size;
     int nroots, i, j;
-    double conv_rms, conv_e, *evals, **evecs, nucrep, edrc, tval;
+    double *evals, **evecs, nucrep, edrc, tval;
     double *cbuf;
     char e_label[PSIO_KEYLEN]; /* 80... */
 
     nroots = Parameters_->num_roots;
     Process::environment.globals["DETCI AVG DVEC NORM"] = 0.0;
 
-    if (econv < 0) conv_rms = Parameters_->convergence;
-    if (rconv < 0) conv_e = Parameters_->energy_convergence;
+    if (conv_rms < 0) conv_rms = Parameters_->convergence;
+    if (conv_e < 0) conv_e = Parameters_->energy_convergence;
+
     Parameters_->diag_h_converged = false;
     Parameters_->diag_iters_taken = 0;
 
