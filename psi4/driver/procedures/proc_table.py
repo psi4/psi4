@@ -106,7 +106,6 @@ procedures = {
             'cisdtq'        : proc.run_detci,
             'ci'            : proc.run_detci,  # arbitrary order ci(n)
             'fci'           : proc.run_detci,
-            'dgascas'       : proc.run_dgascas,
             'casscf'        : proc.run_detcas,
             'rasscf'        : proc.run_detcas,
             'adc'           : proc.run_adc,

@@ -231,10 +231,17 @@ public:
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec,
                SharedVector oei, SharedVector tei);
 
+    /**
+     * Prints the large values in a CIVector
+     * @param vec  CIVector to print
+     * @param root Which root?
+     */
+    void print_vector(SharedCIVector vec, int root);
+
     // Compute functions
     void compute_mcscf();
     void compute_cc();
-    bool diag_h(double econv = -1.0, double rconv = -1.0);
+    int diag_h(double econv = -1.0, double rconv = -1.0);
     void compute_mpn();
 
     // Build CI quantities
@@ -244,8 +251,10 @@ public:
     // Extraneous
     void cleanup();
 
+    // Returns a new SOMCSCF object
+    boost::shared_ptr<SOMCSCF> new_mcscf_object();
 
-    // Functions below this line should be used for debug use only
+    /// Functions below this line should be used for debug use only
 
     /**!
      Builds the full CI hamiltonian for debugging purposes. Currently limits itself to a matrix
@@ -253,9 +262,6 @@ public:
      * @ return CI hamiltonian
      **/
     SharedMatrix hamiltonian(size_t hsize = 0);
-
-    // Returns a new SOMCSCF object
-    boost::shared_ptr<SOMCSCF> new_mcscf_object();
 
 private:
 

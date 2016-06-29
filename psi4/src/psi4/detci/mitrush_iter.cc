@@ -78,7 +78,7 @@ extern double buf_xy1(double *c, double *hd, double E, int len);
 **
 */
 void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
-      **betlist, int nroots, double *evals, double conv_rms, double conv_e, 
+      **betlist, int nroots, double *evals, double conv_rms, double conv_e,
       double enuc, double edrc, int maxiter, int maxnvect)
 {
 
@@ -282,7 +282,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    E_est = y / x;  /* should I add fzc here? */
    if (print_ > 2) {
-      outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n", 
+      outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n",
            E_est,E-edrc,E);
        outfile->Printf( "x = %lf  y = %lf\n",x,y);
        }
@@ -314,6 +314,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    outfile->Printf("Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
    outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
+   Process::environment.globals["DETCI AVG DVEC NORM"] = c1norm;
 
 
    iter = 1;
@@ -328,7 +329,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Cvec.read(curr,0);
       /* chknorm = Cvec.checknorm();
       outfile->Printf("Norm of curr CI vect = %lf\n",chknorm);
-     */ 
+     */
       if (print_ > 4) {
          outfile->Printf( "\nC(%2d) vector (symm'd norm'd)\n", iter) ;
          Cvec.print();
@@ -458,7 +459,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
       E_est = y / x;
       if (print_ > 2) {
-        outfile->Printf( "E_est = %12.6lf E = %12.6lf\n", 
+        outfile->Printf( "E_est = %12.6lf E = %12.6lf\n",
                 E_est+edrc+enuc, E+enuc);
         /* outfile->Printf( "x = %lf  y = %lf\n",x,y); */
         }
