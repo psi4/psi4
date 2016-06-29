@@ -57,7 +57,7 @@ endmacro()
 #Macro so I don't have to look at a ton of if statements
 macro(optional_plugin plugin_name)
 string(TOUPPER plugin_name PLUGIN_NAME)
-if(ENABLE_${PLUGIN_NAME})
+if(${ENABLE_${PLUGIN_NAME}})
    find_package(${plugin_name})
    set_property(GLOBAL APPEND PROPERTY PSI4_MODULES ${${PLUGIN_NAME}_LIBRARIES})
 endif()

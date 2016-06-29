@@ -1,19 +1,4 @@
-set(headers_list "")
-# List of headers
-list(APPEND headers_list defines.h dfocc.h tensors.h arrays.h )
-
-# If you want to remove some headers specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM headers_list "")
-else()
-   list(REMOVE_ITEM headers_list "")
-endif()
-# Sort alphabetically
-list(SORT headers_list)
-
-set(sources_list "")
-# List of sources
-list(APPEND sources_list 
+set(sources_list 
 approx_diag_mohess_oo.cc  fock.cc                   mp2_direct.cc
 approx_diag_mohess_vo.cc  fock_so.cc                occ_iterations.cc
 arrays.cc                 get_moinfo.cc             olddf.cc
@@ -53,23 +38,5 @@ omp3_opdm.cc              omp3_tpdm.cc              mp3_pdm_3index_intr.cc
 lccd_iterations.cc        olccd_tpdm.cc             lccd_W_intr.cc
 lccd_pdm_3index_intr.cc   lccd_t2_amps.cc
 )
-
-# If you want to remove some sources specify them explictly here
-if(DEVELOPMENT_CODE)
-   list(REMOVE_ITEM sources_list "")
-else()
-   list(REMOVE_ITEM sources_list "")
-endif()
-
-
-# Build static library
 add_library(dfocc STATIC ${sources_list})
-# Specify dependencies for the library (if any)
-add_dependencies(dfocc mints)
-set_property(GLOBAL APPEND PROPERTY PSILIB dfocc)
-if(BUILD_CUSTOM_BOOST)
-   add_dependencies(dfocc custom_boost)
-endif()
-
-# Sets install directory for all the headers in the list
-install_list_FILES("${headers_list}" include/psi4/bin/dfocc)
+target_link_libraries(dfocc mints)

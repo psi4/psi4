@@ -73,10 +73,8 @@
 #        - Splitting the header is a nightmare (as I can attest to) and is 
 #          required if code gets factored, which really should happen to mints.
 #   - I have pulled most of the forward declarations out of libmints/tyepdefs.h.
-#     I saw many cases where people were forward declaring them again.  The ones
-#     that remain are those required for the actual typedefs.  There really
-#     isn't anything bad about this code wise, but it makes us look like we 
-#     don't understand our own code.  Forward declarations are used incorrectly
+#     I saw many cases where people were forward declaring them again.  In fact,
+#     forward declarations are used incorrectly
 #     all over the code and some clean-up is really needed.
 #   - psiconfig.h is gone.  The macros in it are easily replace by CMake's
 #     add_definitions function and doing so clears up the macro namespace
@@ -236,6 +234,8 @@ ExternalProject_Add(psi4_core
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${PSI4_STAGE_EX}/boost
+              -DENABLE_AMBIT=${ENABLE_AMBIT}
+              -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage

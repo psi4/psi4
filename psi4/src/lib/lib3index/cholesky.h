@@ -27,7 +27,7 @@
 
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
-#include <libmints/sieve.h>
+#include "psi4/src/lib/libmints/sieve.h"
 
 namespace psi {
 

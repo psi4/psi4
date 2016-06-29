@@ -52,7 +52,7 @@
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/sointegral_onebody.h"
 #include "psi4/src/lib/libmints/factory.h"
-
+#include "psi4/src/lib/libfock/jk.h"
 #include "hf.h"
 #include "sad.h"
 
