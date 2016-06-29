@@ -1,3 +1,0 @@
-include(TestingMacros)
-
-add_regression_test(cfour-pywrap-basis "psi;shorttests;cfour;ext-exe-dep")

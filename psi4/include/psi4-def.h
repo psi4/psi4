@@ -30,13 +30,11 @@
 
 // Define the psi namespace global variables here (one time); other
 // references use extern's (in psi4-dec.h) 
-#include <psi4-dec.h>
-#include "libparallel2/ParallelEnvironment.h"
+#include "psi4/include/psi4-dec.h"
 
 namespace psi {
   char *psi_file_prefix;
   std::string outfile_name;
-  boost::shared_ptr<LibParallel::ParallelEnvironment> WorldComm;
   boost::shared_ptr<PsiOutStream> outfile;
   std::string restart_id;
 }

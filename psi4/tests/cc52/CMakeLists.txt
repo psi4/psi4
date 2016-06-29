@@ -1,3 +1,0 @@
-include(TestingMacros)
-
-add_regression_test(cc52 "psi;shorttests;cc;autotest")

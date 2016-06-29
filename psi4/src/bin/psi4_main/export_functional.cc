@@ -28,7 +28,7 @@
 #include <boost/python.hpp>
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libfunctional/superfunctional.h"
-#include <libfunctional/functional.h>
+#include "psi4/src/lib/libfunctional/functional.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libdisp/dispersion.h"

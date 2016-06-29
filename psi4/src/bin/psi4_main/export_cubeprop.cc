@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libcubeprop/cubeprop.h>
+#include "psi4/src/lib/libcubeprop/cubeprop.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 

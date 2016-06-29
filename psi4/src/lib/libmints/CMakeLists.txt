@@ -1,4 +1,4 @@
-find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
+
 
 set(sources_list local.cc 
                  onebody.cc 

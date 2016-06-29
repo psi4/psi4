@@ -39,6 +39,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/bin/detci/ciwave.h"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "structs.h"
 
 namespace psi {

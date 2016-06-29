@@ -26,16 +26,19 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include <libmints/mints.h>
 #include "psi4/src/lib/libqt/qt.h"
 #include <math.h>
 #include <limits>
 #include <vector>
 #include "cholesky.h"
-#include <psifiles.h>
-#include <psi4-dec.h>
-#include <libpsio/psio.hpp>
-#include <libiwl/iwl.h>
+#include "psi4/include/psifiles.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/twobody.h"
 #ifdef _OPENMP
     #include <omp.h>
 #endif
