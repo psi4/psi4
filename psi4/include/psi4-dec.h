@@ -35,9 +35,6 @@
 #include "psi4/src/lib/libparallel/process.h"
 
 namespace psi {
-namespace LibParallel{
-class ParallelEnvironment;
-}
 class PsiOutStream;
 enum PsiReturnType {Success, Failure, Balk, EndLoop};
 extern char *psi_file_prefix;
@@ -48,7 +45,6 @@ extern std::string restart_id;
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-extern boost::shared_ptr<LibParallel::ParallelEnvironment> WorldComm;
 extern boost::shared_ptr<PsiOutStream> outfile;
 void die_if_not_converged();
 }//End namespace psi

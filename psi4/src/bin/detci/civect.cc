@@ -67,7 +67,7 @@
 #include "ci_tol.h"
 #include "civect.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-
+#include "psi4/src/lib/libmints/vector.h"
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);

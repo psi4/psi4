@@ -144,6 +144,13 @@
 #      clutters the build
 #    - src/bin/psi4 is now src/bin/psi4_main so that the target it builds is
 #      the same as the directory name
+#    - For the most part the same set of compiler flags is used throughout. It
+#      amazed me how much people were changing them.  If you absolutely need a
+#      flag for your library to compile add it, similarly if you absolutely
+#      can't have a flag on for your library delete it.  Otherwise, assume the
+#      flags have been set well already.
+#    - The plugin setup stuff has moved to src/bin/psi4/CMakeLists.txt to be
+#      closer to where plugins are configured
 #    General Comments:
 #    - I updated the best practices wiki on good header file practices.  I 
 #      encourage all users to read it so that hopefully our header files never
@@ -169,6 +176,7 @@
 #    - CMAKE_INSTALL_PREFIX The install directory (default: /usr/local)
 #    - CMAKE_BUILD_TYPE Is this Debug, Release, or Profiling
 #    - BUILD_SHARED_LIBS If ON Psi4 libraries will be shared
+#    - CMAKE_PREFIX_PATH List of places find_package should look for packages
 #    - PYTHON_EXECUTABLE Path to the python executable you want to use
 #    - PYTHON_LIBRARY Path to the python library that goes with the exe
 #    - PYTHON_INCLUDE_DIR Path to the python include files    
@@ -221,7 +229,7 @@ list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
-   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/psi4
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
               -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

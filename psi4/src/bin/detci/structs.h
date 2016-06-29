@@ -42,8 +42,9 @@
 #define _psi_src_bin_detci_structs_h
 
 #include <string>
-// #include <libmints/dimension.h>
-#include <libmints/mints.h>
+#include <boost/shared_ptr.hpp>
+#include "psi4/src/lib/libmints/dimension.h"
+#include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi { namespace detci {
 

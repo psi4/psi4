@@ -47,7 +47,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libqt/slaterdset.h"
-
+#include "psi4/src/lib/libmints/vector.h"
 #include "structs.h"
 #include "ci_tol.h"
 #include "civect.h"

@@ -26,7 +26,7 @@
  */
 
 #include <boost/python.hpp>
-#include <libmints/benchmark.h>
+#include "psi4/src/lib/libmints/benchmark.h"
 
 using namespace boost::python;
 

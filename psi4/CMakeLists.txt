@@ -3,6 +3,8 @@ project(psi4 LANGUAGES C CXX VERSION 1.0)
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 include(Psi4Macros)
 
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs REQUIRED)
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
                      thread
 )
@@ -10,6 +12,12 @@ find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 #For some stupid reason boost doesn't add its dependencies to it's list of 
 #requirements like a good CMake program...
 set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
+find_package(Threads)
+find_package(LAPACK REQUIRED)
+find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
+
+set_property(GLOBAL PROPERTY PSI4_MODULES "")
+set_property(GLOBAL PROPERTY LIBLIST "")
 
 optional_plugin(Ambit)
 optional_plugin(PCMSolver)
@@ -18,5 +26,19 @@ optional_plugin(CHEMPS2)
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)
 
-#add_executable(psi4 psi4.cc)
-#target_link_libraries(psi4 ${LIBLIST} ${PSI4_MODULES})
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(psi4 psi4.cc)
+get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
+get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
+add_dependencies(psi4 ${psi4_libraries})
+target_link_libraries(psi4 ${psi4_libraries} 
+                           ${psi4_modules}
+                           ${LIBDERIV_LIBRARIES} 
+                           ${Boost_LIBRARIES}
+                           ${LAPACK_LIBRARIES}
+                           ${PYTHON_LIBRARIES}/config/libpython2.7.so
+                           ${CMAKE_THREAD_LIBS_INIT}
+)
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

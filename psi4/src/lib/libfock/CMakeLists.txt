@@ -17,6 +17,8 @@ set(sources_list apps.cc
                  PSJK.cc 
                  GTFockJK.cc 
                  soscf.cc
+                 PK_workers.cc
+                 PKmanagers.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
 psi4_add_library(fock sources_list)

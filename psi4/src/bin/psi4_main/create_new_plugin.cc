@@ -39,7 +39,8 @@
 #include <cstdlib>
 #include <string>
 #include "psi4/include/psi4-dec.h"
-
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 using namespace std;
 using namespace psi;
@@ -133,14 +134,14 @@ class PluginFileManager{
         // Formatted strings, to be substituted in later
         //std::string format_top_srcdir(PSI_TOP_SRCDIR);
         //std::string format_top_objdir(PSI_TOP_OBJDIR);
-        std::string format_cxx(PLUGIN_CXX);
-        std::string format_defines(PLUGIN_DEFINES);
-        std::string format_flags(PLUGIN_FLAGS);
-        std::string format_includes(PLUGIN_INCLUDES);
-        std::string format_objdir(PLUGIN_OBJDIR);
+        std::string format_cxx(TOSTRING(PLUGIN_CXX));
+        std::string format_defines(TOSTRING(PLUGIN_DEFINES));
+        std::string format_flags(TOSTRING(PLUGIN_FLAGS));
+        std::string format_includes(TOSTRING(PLUGIN_INCLUDES));
+        std::string format_objdir(TOSTRING(PLUGIN_OBJDIR));
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name_);
-        std::string format_ldflags(PLUGIN_LDFLAGS);
+        std::string format_ldflags(TOSTRING(PLUGIN_LDFLAGS));
 
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
         for(iter = files_.begin(); iter != files_.end(); ++iter){

@@ -43,11 +43,11 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "script.h"
+#include "psi4/src/bin/psi4_main/script.h"
 #include "psi4/include/physconst.h"
 #include "psi4/include/psifiles.h"
 
-#include <psi4-def.h>
+#include "psi4/include/psi4-def.h"
 
 #ifdef HAVE_AMBIT
 #include <ambit/tensor.h>
@@ -56,7 +56,6 @@
 #define MAIN
 
 #include "psi4.h"
-#include "script.h"
 
 #ifdef _OPENMP
 #include <omp.h>
