@@ -1,0 +1,15 @@
+include(ExternalProject)
+
+#find_package(libint)
+
+if (true)
+   message(STATUS 
+      "Suitable Libint could not be located, building one instead")
+   ExternalProject_Add(libint_external
+         
+   )
+else()
+    add_library(libint_external INTERFACE)
+endif()
+
+
