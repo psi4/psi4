@@ -30,11 +30,15 @@
 
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "occwave.h"
 #include "defines.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

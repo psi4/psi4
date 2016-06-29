@@ -33,9 +33,10 @@ if(NOT Boost_FOUND)
                                        --with-libraries=${B2_BOOST_COMPONENTS}
                                        --with-python=${PYTHON_EXECUTABLE}
                                        --prefix=${BOOST_INSTALL_PREFIX}
-      BUILD_COMMAND ./b2 threading=multi link=static 
+      #Can't change the fact that boost has warnings....
+      BUILD_COMMAND ./b2 threading=multi link=static  cxxflags=-w
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
-      INSTALL_COMMAND ./b2 install threading=multi link=static 
+      INSTALL_COMMAND ./b2 install threading=multi link=static cxxflags=-w
    )
 else()
     add_library(boost_external INTERFACE)

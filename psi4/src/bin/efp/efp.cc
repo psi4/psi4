@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include<libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libefp_solver/efp_solver.h"
 #include "efp.h"
 

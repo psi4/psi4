@@ -35,7 +35,7 @@
 #include "opt_except.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "v3d.h"
-#include "psi4/include/physconst.h"
+#include "psi4/src/bin/optking/physconst.h"
 #include "psi4/include/psi4-dec.h"
 #include "print.h"
 namespace opt {

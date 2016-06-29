@@ -1,0 +1,35 @@
+find_package(Git QUIET)
+if(GIT_FOUND)
+   execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD 
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                   OUTPUT_VARIABLE PSI4_HASH
+                   OUTPUT_STRIP_TRAILING_WHITESPACE
+   )
+endif()
+
+set(sources_list version.cc
+                 python.cc 
+                 psi_start.cc 
+                 export_psio.cc 
+                 export_mints.cc 
+                 psi_stop.cc 
+                 export_functional.cc 
+                 export_oeprop.cc 
+                 export_plugins.cc 
+                 export_blas_lapack.cc 
+                 export_benchmarks.cc 
+                 export_efp.cc 
+                 export_cubeprop.cc 
+                 clean.cc 
+                 create_new_plugin.cc 
+                 script.cc 
+                 set_memory.cc 
+                 read_options.cc 
+)
+add_definitions(-DGIT_VERSION=${PSI4_HASH} 
+                -DPSI_VERSION=${PROJECT_VERSION}
+                -DPSI_TOP_SRCDIR=${PROJECT_ROOT}
+                -Drestrict=${RESTRICT_KEYWORD}
+)
+psi4_add_binary(psi4_main sources_list)
+target_link_libraries(psi4_main mints)

@@ -28,7 +28,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "index.h"

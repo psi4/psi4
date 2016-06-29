@@ -27,7 +27,7 @@
 
 #include <cstdlib>
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"

@@ -31,7 +31,7 @@
 
 #include <cmath>
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/matrix.h"

@@ -27,13 +27,12 @@
 
 #ifndef LIBFOCK_DFT_H
 #define LIBFOCK_DFT_H
-
 #include "psi4/src/lib/libmints/typedefs.h"
 #include <vector>
 #include <map>
 
 namespace psi {
-
+class BasisSet;
 class Options;
 class DFTGrid;
 class PointFunctions;

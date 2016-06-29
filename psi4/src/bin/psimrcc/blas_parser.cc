@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include <cstdio>
 #include "blas.h"
 #include "debugging.h"

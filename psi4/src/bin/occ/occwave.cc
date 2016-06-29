@@ -30,7 +30,10 @@
 
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libtrans/mospace.h"
-
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include "occwave.h"
 
 using namespace psi;

@@ -27,9 +27,11 @@
 
 // Semicanonicalizing RHF Fock matrix by diagonalizing active-occupied (AOCC-AOCC) and active-virtual (AVIR-AVIR) blocks
 #include "occwave.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

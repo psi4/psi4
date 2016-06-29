@@ -32,29 +32,28 @@
   *
   */
 
-#include"psi4-dec.h"
-#include<psifiles.h>
-#include<libmints/mints.h>
-#include<libmints/mintshelper.h>
-#include<libmints/wavefunction.h>
-#include<libmints/matrix.h>
-#include<libtrans/mospace.h>
-#include<libtrans/integraltransform.h>
-#include<libiwl/iwl.hpp>
-#include"ccsd.h"
-#include"blas.h"
-#include"frozen_natural_orbitals.h"
-#include<libciomr/libciomr.h>
-#include<lib3index/dftensor.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libtrans/mospace.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libiwl/iwl.hpp"
+#include "ccsd.h"
+#include "blas.h"
+#include "frozen_natural_orbitals.h"
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/lib3index/dftensor.h"
 #include "psi4/src/lib/lib3index/cholesky.h"
 #include "psi4/src/lib/libmints/sieve.h"
-#include"psi4/src/lib/libqt/qt.h"
-
-#include<libdpd/dpd.h>
+#include "psi4/src/lib/libqt/qt.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libdpd/dpd.h"
 #define ID(x) ints->DPD_ID(x)
 
-
-using namespace psi;
 using namespace boost;
 
 namespace psi{namespace fnocc{

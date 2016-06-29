@@ -26,13 +26,13 @@
  */
 
 
-#include"psi4-dec.h"
-#include<libmints/vector.h>
-#include<libmints/matrix.h>
-#include<libmints/wavefunction.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include"psi4/src/lib/libqt/qt.h"
 #include<sys/times.h>
-#include<libciomr/libciomr.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
 #ifdef _OPENMP
     #include<omp.h>
 #else
@@ -42,9 +42,9 @@
 
 #include"blas.h"
 #include"ccsd.h"
-#include<libmints/basisset.h>
-#include<libmints/basisset_parser.h>
-#include<lib3index/3index.h>
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/basisset_parser.h"
+#include "psi4/src/lib/lib3index/3index.h"
 
 using namespace psi;
 using namespace boost;

@@ -40,8 +40,10 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include <vector>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#include <../bin/fnocc/frozen_natural_orbitals.h>
-
+#include "psi4/src/bin/fnocc/frozen_natural_orbitals.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/include/psifiles.h"
 
 #include <fstream>

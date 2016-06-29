@@ -33,7 +33,7 @@
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {
-
+class Options;
 class Matrix;
 class BasisSet;
 

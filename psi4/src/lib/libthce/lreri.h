@@ -28,10 +28,14 @@
 #ifndef LRERI_H
 #define LRERI_H
 
+#include <map>
+#include <string>
+#include <boost/shared_ptr.hpp>
 #include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {
 
+class Options;
 class Tensor;
 class CoreTensor;
 class DiskTensor;

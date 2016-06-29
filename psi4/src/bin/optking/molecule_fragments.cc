@@ -38,7 +38,7 @@
 #include "linear_algebra.h"
 #include "v3d.h"
 #include "atom_data.h"
-#include "psi4/include/physconst.h"
+#include "psi4/src/bin/optking/physconst.h"
 #include "cov_radii.h"
 
 #include "print.h"

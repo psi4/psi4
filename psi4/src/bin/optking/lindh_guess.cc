@@ -52,7 +52,7 @@ artificial modes (coming out of RFO diagonalization, e.g.).
 */
 
 #include "molecule.h"
-
+#include "psi4/src/bin/optking/physconst.h"
 #include "v3d.h"
 
 #include "print.h"

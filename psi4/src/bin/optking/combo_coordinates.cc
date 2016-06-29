@@ -31,7 +31,7 @@
 */
 
 #include "coordinates.h"
-#include "psi4/include/physconst.h"
+#include "psi4/src/bin/optking/physconst.h"
 #include <sstream>
 #include "print.h"
 

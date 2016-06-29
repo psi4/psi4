@@ -28,12 +28,12 @@
 #ifndef CCSD_H
 #define CCSD_H
 
-#include"psi4-dec.h"
-#include<libiwl/iwl.h>
-#include<libpsio/psio.hpp>
-#include<libpsio/psio.h>
-#include<libmints/wavefunction.h>
-#include<psifiles.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libiwl/iwl.h"
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libpsio/psio.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
+#include "psi4/include/psifiles.h"
 
 long int Position(long int i,long int j);
 

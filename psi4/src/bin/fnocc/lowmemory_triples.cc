@@ -27,7 +27,7 @@
 
 #include"ccsd.h"
 #include"blas.h"
-#include<libmints/wavefunction.h>
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include"psi4/src/lib/libqt/qt.h"
 #ifdef _OPENMP
    #include<omp.h>

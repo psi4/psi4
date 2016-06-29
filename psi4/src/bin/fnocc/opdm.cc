@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include<libmints/mints.h>
-#include<psifiles.h>
-#include "psi4/src/lib/libqt/qt.h"
-#include"blas.h"
-#include"ccsd.h"
 
-using namespace psi;
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libqt/qt.h"
+#include "blas.h"
+#include "ccsd.h"
+#include "psi4/src/lib/libmints/matrix.h"
+
 
 namespace psi{ namespace fnocc{
 

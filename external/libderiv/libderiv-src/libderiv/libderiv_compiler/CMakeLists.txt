@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(libderiv_compiler LANGUAGES C)
 find_package(libint REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 include_directories(${LIBINT_INCLUDE_DIRS})
-list(APPEND CMAKE_C_FLAGS -lm)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
 math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
 math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
 math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)

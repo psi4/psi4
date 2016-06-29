@@ -31,7 +31,7 @@
 */
 
 #include <cstdio>
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
 #include "matrix.h"

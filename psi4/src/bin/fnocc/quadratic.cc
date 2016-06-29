@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-#include"psi4-dec.h"
-#include<libmints/vector.h>
-#include<libmints/matrix.h>
-#include<libmints/wavefunction.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include"psi4/src/lib/libqt/qt.h"
 #include<sys/times.h>
-#include<libpsio/psio.hpp>
-#include<psifiles.h>
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/include/psifiles.h"
 #ifdef _OPENMP
     #include<omp.h>
 #else

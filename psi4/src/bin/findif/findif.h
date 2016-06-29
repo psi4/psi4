@@ -35,7 +35,11 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 
-namespace psi { namespace findif {
+namespace psi {
+class Molecule;
+class CdSalcList;
+
+namespace findif {
 
 // functions to generate displacements
 std::vector< SharedMatrix > fd_geoms_1_0(boost::shared_ptr<Molecule> mol, Options &options);

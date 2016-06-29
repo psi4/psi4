@@ -34,7 +34,7 @@
 
 #include "frag.h"
 #include "cov_radii.h"
-#include "psi4/include/physconst.h"
+#include "psi4/src/bin/optking/physconst.h"
 #include "v3d.h"
 #include "psi4/include/psi4-dec.h"
 #include "print.h"

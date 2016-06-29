@@ -27,8 +27,8 @@
 
 #ifndef FROZENNO_H
 #define FROZENNO_H
-#include"psi4-dec.h"
-#include<libmints/wavefunction.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/libmints/wavefunction.h"
 
 namespace boost {
 template<class T> class shared_ptr;

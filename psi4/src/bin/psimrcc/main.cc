@@ -47,10 +47,10 @@
 // PSI libraries
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include <libpsi4util/memory_manager.h>
+#include "psi4/src/lib/libpsi4util/memory_manager.h"
 #include "psi4/src/lib/libqt/qt.h"
 
 // PSI C++
