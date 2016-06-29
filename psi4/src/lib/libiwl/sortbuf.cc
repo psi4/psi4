@@ -47,7 +47,7 @@
 #if !defined( INDEX2 )
 #   define INDEX2(i, j) ( (i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i) )
 #endif
-
+#include "psi4/src/lib/libqt/qt.h"
 namespace psi {
 
 void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,

@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "jk.h"
-#include "PKmanagers.h"
+//#include "PKmanagers.h"
 #include "jk_independent.h"
 #include "link.h"
 #include "direct_screening.h"
