@@ -81,10 +81,9 @@ void RBase::set_reference(SharedWavefunction ref_wfn)
 {
     reference_wavefunction_ = ref_wfn;
 
-    outfile->Printf("DGAS Warning! /src/lib/libfock/apps.cc:80 is not currently checking restricted\n");
-    // if (!reference_wavefunction_->same_a_b_dens()) {
-    //     throw PSIEXCEPTION("RBase: Reference is not restricted");
-    // }
+    if (!reference_wavefunction_->same_a_b_dens()) {
+        throw PSIEXCEPTION("RBase: Reference is not restricted");
+    }
 
     Eref_ = reference_wavefunction_->reference_energy();
 
