@@ -61,7 +61,7 @@ namespace psi { namespace detci {
 void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
-      int nroots, int maxiter, int maxnvect, std::string out, int print_lvl)
+      int nroots, int maxiter, int maxnvect)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
    unsigned long det1, N;
@@ -207,7 +207,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    if (Parameters_->nodfile == FALSE &&
      Parameters_->guess_vector == PARM_GUESS_VEC_DFILE) {
      if ((i = Dvec.read_num_vecs()) != nroots) {
-       if (Parameters_->print_lvl) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
+       if (print_) outfile->Printf( "D file contains %d not %d vectors.  Trying another guess.\n", i, nroots);
        dvec_read_fail = true;
        /*
        if (Parameters_->h0blocksize == 0) {
@@ -232,7 +232,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
           L = i;
           Cvec.write_num_vecs(L);
         }
-        if (Parameters_->print_lvl) outfile->Printf( "Using %d vectors \n", L);
+        if (print_) outfile->Printf( "Using %d vectors \n", L);
       }
       if (L < nroots) {
         str = "Restart failed...  ";
@@ -243,7 +243,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         throw PsiException(str,__FILE__,__LINE__);
       }
 
-      if (Parameters_->print_lvl) outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
+      if (print_) outfile->Printf( "\nAttempting Restart with %d vectors\n", L);
 
    /* open detci.dat and write file_offset and file_number array out to
       detci.dat */
@@ -281,13 +281,13 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
       for (i=0; i<L; i++) {
          Sigma.read(i, 0);
-         if (print_lvl > 4) {
+         if (print_ > 4) {
             outfile->Printf( "Sigma[%d] =\n", i);
             Sigma.print();
             }
          for (j=0; j<=i; j++) {
             Cvec.read(j, 0);
-            if (print_lvl > 4) {
+            if (print_ > 4) {
                outfile->Printf( "C[%d] =\n", j);
                Cvec.print();
                }
@@ -297,14 +297,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       Cvec.buf_unlock();
       Sigma.buf_unlock();
 
-      if (print_lvl > 3) {
+      if (print_ > 3) {
          outfile->Printf( "\nG matrix (%2d) = \n", iter);
          print_mat(G, L, L, "outfile");
          }
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
-      if (print_lvl > 4) {
+      if (print_ > 4) {
          outfile->Printf( "\n G eigenvectors and eigenvalues:\n");
          eivout(alpha[iter2], lambda[iter2], L, L, "outfile");
          }
@@ -356,7 +356,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
    /* previous-run d vector */
    else if (Parameters_->guess_vector==PARM_GUESS_VEC_DFILE && !dvec_read_fail) {
-     if (Parameters_->print_lvl) outfile->Printf( "Attempting to use %d previous converged vectors\n",
+     if (print_) outfile->Printf( "Attempting to use %d previous converged vectors\n",
         nroots);
 
      if (Parameters_->nodfile) {
@@ -417,7 +417,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       sm_evals = init_array(L);
 
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      if (Parameters_->print_lvl) outfile->Printf( "Using %d initial trial vectors\n", Parameters_->num_init_vecs);
+      if (print_) outfile->Printf( "Using %d initial trial vectors\n", Parameters_->num_init_vecs);
 
       Cvec.buf_lock(buffer1);
       for (i=0,k=0; i<L && k < Parameters_->num_init_vecs; i++) {
@@ -497,7 +497,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    /* write file_offset and file_number array out to detci.dat */
    //Cvec.write_detfile(CI_VEC);
    //Sigma.write_detfile(SIGMA_VEC);
-   //if (Parameters_->print_lvl > 1)
+   //if (print_ > 1)
    //  outfile->Printf("Restart info written.\n");
 
 
@@ -524,7 +524,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
       Lvec[iter2] = L;
 
-      if (Parameters_->print_lvl > 2) {
+      if (print_ > 2) {
         outfile->Printf( "L[cur] = %3d, L[last] = %3d\n", L,
           iter2 > 0 ? Lvec[iter2-1] : 999);
       }
@@ -535,7 +535,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
 
       for (i=Llast; i<L; i++) {
          Cvec.read(i, 0);
-         if (print_lvl > 3) {
+         if (print_ > 3) {
             outfile->Printf( "b[%d] =\n", i);
             Cvec.print();
             }
@@ -551,7 +551,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
            Sigma.read(i,0);
            }
 
-         if (print_lvl > 3) { /* and this as well */
+         if (print_ > 3) { /* and this as well */
             outfile->Printf( "H * b[%d] = \n", i);
             Sigma.print();
             }
@@ -569,12 +569,12 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
 
-      if (print_lvl > 4) {
+      if (print_ > 4) {
          outfile->Printf( "\n G eigenvectors and eigenvalues:\n");
          eivout(alpha[iter2], lambda[iter2], L, L, "outfile");
          }
 
-      if (print_lvl > 3) {
+      if (print_ > 3) {
         outfile->Printf( "\nG matrix (%2d) = \n", iter);
         print_mat(G, L, L, "outfile");
         }
@@ -593,14 +593,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        zero_mat(sigma_overlap,maxnvect, maxnvect);
        for (i=0; i<L; i++) {
           Sigma.read(i, 0);
-          if (print_lvl > 2) {
+          if (print_ > 2) {
             outfile->Printf("Sigma[%d] = ", i);
             Sigma.print();
 
           }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
-             if (print_lvl > 2) {
+             if (print_ > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
                Sigma2.print();
 
@@ -624,7 +624,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              }
           } /* end loop over k (nroots) */
 
-       if (print_lvl > 2) {
+       if (print_ > 2) {
          outfile->Printf( "\nsigma_overlap matrix (%2d) = \n", iter);
          print_mat(sigma_overlap, L, L, "outfile");
 
@@ -638,7 +638,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        /* solve the L x L eigenvalue problem M a = lambda a for M roots */
        for (k=0; k<nroots; k++) {
           sq_rsp(L, L, M[k], m_lambda[iter2][k], 1, m_alpha[iter2][k], 1.0E-14);
-          if (print_lvl > 2) {
+          if (print_ > 2) {
             outfile->Printf( "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[iter2][k], m_lambda[iter2][k], L, L, "outfile");
             }
@@ -653,14 +653,14 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        zero_mat(sigma_overlap,maxnvect, maxnvect);
        for (i=0; i<L; i++) {
           Sigma.read(i, 0);
-          if (print_lvl > 2) {
+          if (print_ > 2) {
             outfile->Printf("Sigma[%d] = ", i);
             Sigma.print();
 
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
-             if (print_lvl > 2) {
+             if (print_ > 2) {
                outfile->Printf("Sigma2[%d] = ", j);
                Sigma2.print();
 
@@ -782,7 +782,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        Dvec2.buf_unlock();
        L2 = L3 = nroots;
 
-       if (Parameters_->print_lvl > 2) {
+       if (print_ > 2) {
          outfile->Printf( "Gathered vectors 0 to %d and wrote to positions \
             %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
        }
@@ -856,7 +856,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         L = L2;
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
-        if (Parameters_->print_lvl > 2) {
+        if (print_ > 2) {
           outfile->Printf( "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
         }
 
@@ -864,7 +864,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
     /*
         Cvec.write_detfile(CI_VEC);
         Sigma.write_detfile(SIGMA_VEC);
-        if (Parameters_->print_lvl > 1)
+        if (print_ > 1)
           outfile->Printf("Restart info written.\n");
 
     */
@@ -917,7 +917,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
            for (i=0; i<L; i++) {
               Cvec.read(i,0);
               sigma(Cvec, Sigma, oei, tei, i);
-              if (print_lvl > 1) {
+              if (print_ > 1) {
                 outfile->Printf(
                   "Exact Sigma: (redid multiplication) H * b[%d] = \n", i);
                 Sigma.print(outfile);
@@ -938,7 +938,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
 
-        if (print_lvl > 4) {
+        if (print_ > 4) {
            outfile->Printf( "\n G eigenvectors and eigenvalues:\n");
            eivout(alpha[iter2], lambda[iter2], L, L, "outfile");
            }
@@ -946,7 +946,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         Cvec.buf_unlock();
         Sigma.buf_unlock();
 
-        if (print_lvl > 1) {
+        if (print_ > 1) {
            outfile->Printf("  Collapsed Davidson subspace to %d vectors\n",L);
            if (lse_do) {
              outfile->Printf("  Least Squares Extrapolation for Root%c",
@@ -962,7 +962,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         if (Parameters_->update == UPDATE_DAVIDSON) {
           /* form the d part of the correction vector */
           Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec,
-                     Sigma, buffer1, buffer2, root_converged, (print_lvl > 4),
+                     Sigma, buffer1, buffer2, root_converged, (print_ > 4),
                      E_est);
           }
         else if (Parameters_->update == UPDATE_OLSEN) {
@@ -995,7 +995,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              */
              }
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
-          buffer1,buffer2,root_converged,(print_lvl > 4),E_est);
+          buffer1,buffer2,root_converged,(print_ > 4),E_est);
          }
         else {
           throw PsiException("UPDATE option not recognized.  Choose DAVIDSON or OLSEN",__FILE__,__LINE__);
@@ -1014,7 +1014,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             root_converged[i] = 0;
             converged = 0;
             }
-         if (Parameters_->print_lvl) {
+         if (print_) {
             outfile->Printf( "Iter %2d  Root %2d = %13.9lf",
                iter, i+1, (lambda[iter2][i] + enuc + edrc));
             outfile->Printf( "   Delta_E %10.3E   Delta_C %10.3E %c\n",
@@ -1023,7 +1023,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          }
       }
 
-      if ((nroots > 1) && Parameters_->print_lvl) outfile->Printf( "\n");
+      if ((nroots > 1) && print_) outfile->Printf( "\n");
 
       if (iter == maxiter && !Parameters_->mcscf) {
          outfile->Printf( "\nMaximum number of CI iterations reached\n");
@@ -1048,7 +1048,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                Dvec.civ_xpeay(tval, Cvec, i, j);
                }
 
-            if (Parameters_->print_lvl) {
+            if (print_) {
               outfile->Printf( "\n* ROOT %d CI total energy = %17.13lf", i+1,
                  evals[i] + enuc + edrc);
 
@@ -1119,7 +1119,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
              H0block_coupling_calc(lambda[iter2][k]+edrc);
            Dvec.h0block_buf_precon(&tval, k);
            }
-         if (tval < 1.0E-13 && print_lvl > 0) {
+         if (tval < 1.0E-13 && print_ > 0) {
            outfile->Printf("Warning: Norm of "
                   "correction (root %d) is < 1.0E-13\n", k);
            }
@@ -1133,7 +1133,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          tval = sqrt(1.0 / tval);
          Dvec.symnorm(tval,0,0);
 
-         if (print_lvl > 4) {
+         if (print_ > 4) {
             outfile->Printf( "\nsecond d matrix root %d\n", k);
             Dvec.print();
             }

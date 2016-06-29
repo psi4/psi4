@@ -161,7 +161,7 @@ double CIWavefunction::compute_energy() {
 //    if (Parameters_->dipmom) opdm_properties();
     if (Parameters_->opdm_diag) ci_nat_orbs();
     if (Parameters_->tpdm) form_tpdm();
-    if (Parameters_->print_lvl > 0) {
+    if (print_ > 0) {
         outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
         outfile->Printf("\t\t\t - Starship Troopers\n\n");
         outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
@@ -565,7 +565,7 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
             }
           }
         }
-        if (Parameters_->print_lvl > 4 && size < 200) {
+        if (print_ > 4 && size < 200) {
           outfile->Printf( "\nBlock %d %d of ", blk, blk2);
           outfile->Printf( "Hamiltonian matrix:\n");
           print_mat(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],

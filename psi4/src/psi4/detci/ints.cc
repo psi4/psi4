@@ -426,7 +426,7 @@ void CIWavefunction::read_dpd_ci_ints() {
 
     // Read one electron integrals
     iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full, 0,
-              (Parameters_->print_lvl > 4), "outfile");
+              (print_ > 4), "outfile");
 
     // IntegralTransform does not properly order one electron integrals for
     // whatever reason

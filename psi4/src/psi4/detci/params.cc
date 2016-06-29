@@ -68,8 +68,7 @@ void CIWavefunction::get_parameters(Options &options)
 
 
   // CDS-TODO: Check these
-  Parameters_->print_lvl = 1;
-  Parameters_->have_special_conv = 0;
+  print_ = 1;
 
   Parameters_->ex_lvl = options.get_int("EX_LEVEL");
   Parameters_->cc_ex_lvl = options.get_int("CC_EX_LEVEL");
@@ -85,7 +84,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
   if (options["PRINT"].has_changed()) {
-    Parameters_->print_lvl = options.get_int("PRINT");
+    print_ = options.get_int("PRINT");
   }
 
   Parameters_->opentype = PARM_OPENTYPE_UNKNOWN;
@@ -742,15 +741,9 @@ void CIWavefunction::print_parameters(void)
    outfile->Printf( "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
       Parameters_->num_roots, Parameters_->icore);
    outfile->Printf( "   PRINT         =   %6d      FCI          =   %6s\n",
-      Parameters_->print_lvl, Parameters_->fci ? "yes" : "no");
-   if (Parameters_->have_special_conv)
-      outfile->Printf(
-         "   R CONV         = %8.2g    MIXED        =   %6s\n",
-         Parameters_->special_conv, Parameters_->mixed ? "yes" : "no");
-   else
-      outfile->Printf( "   R CONV        = %6.2e      MIXED        =   %6s\n",
-         Parameters_->convergence, Parameters_->mixed ? "yes" : "no");
-
+      print_, Parameters_->fci ? "yes" : "no");
+   outfile->Printf( "   R CONV        = %6.2e      MIXED        =   %6s\n",
+      Parameters_->convergence, Parameters_->mixed ? "yes" : "no");
    outfile->Printf( "   E CONV        = %6.2e      MIXED4       =   %6s\n",
       Parameters_->energy_convergence, Parameters_->mixed4 ? "yes" : "no");
    outfile->Printf( "   R4S           =   %6s      REPL OTF     =   %6s\n",
@@ -959,7 +952,7 @@ void CIWavefunction::set_ras_parameters(void)
      Parameters_->ex_allow.resize(Parameters_->ex_lvl);
      for (i=0; i<Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
 
-     if (Parameters_->print_lvl>2) {
+     if (print_>2) {
        outfile->Printf( "Note: Calculation requested is a full CI.\n");
        outfile->Printf(
                "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
