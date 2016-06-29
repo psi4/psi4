@@ -236,6 +236,7 @@ void export_mints(py::module& m)
             def("sum_of_squares", &Matrix::sum_of_squares, "docstring").
             def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "docstring").
             def("rms", &Matrix::rms, "docstring").
+            def("absmax", &Matrix::absmax, "docstring").
             def("scale_row", &Matrix::scale_row, "docstring").
             def("scale_column", &Matrix::scale_column, "docstring").
             def("transform", matrix_one(&Matrix::transform), "docstring").
@@ -828,6 +829,7 @@ void export_mints(py::module& m)
             def("nbeta", &Wavefunction::nbeta, "docstring").
             def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
             def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
+            def("set_print", &Wavefunction::set_print, "docstring").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
             def_readwrite("cdict", &Wavefunction::cdict);
@@ -1004,6 +1006,7 @@ void export_mints(py::module& m)
         .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
+        .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
         .def("new_mcscf_object", &detci::CIWavefunction::new_mcscf_object, "docstring")
         .def("sigma", py_ci_sigma, "docstring")

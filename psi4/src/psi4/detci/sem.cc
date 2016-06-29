@@ -1030,6 +1030,11 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          }
 
       if (converged){
+          double avg_vec_norm = 0.0;
+          for (i=0; i<nroots; i++){
+            avg_vec_norm += dvecnorm[i] * Parameters_->average_weights[i];
+          }
+          Process::environment.globals["DETCI AVG DVEC NORM"] = avg_vec_norm;
           Parameters_->diag_h_converged = true;
       }
 

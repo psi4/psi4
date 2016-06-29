@@ -215,7 +215,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
             start[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h] - CalcInfo_->ras_opi[3][h];
             end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
         }
-    } else if (orbitals == "POP") {
+    } else if ((orbitals == "POP") || (orbitals == "OA")) {
         for (int h = 0; h < nirrep_; h++) {
             start[h] = 0;
             end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
@@ -240,6 +240,11 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
             start[h] = CalcInfo_->frozen_docc[h];
             end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
         }
+    } else if (orbitals == "AV") {
+        for (int h = 0; h < nirrep_; h++) {
+            start[h] = CalcInfo_->dropped_docc[h];
+            end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
+        }
     } else if (orbitals == "ALL") {
         for (int h = 0; h < nirrep_; h++) {
             start[h] = 0;
@@ -248,7 +253,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
     } else {
         throw PSIEXCEPTION(
             "CIWave: Orbital subset is not defined, should be FZC, DRC, DOCC, "
-            "ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL");
+            "ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, OA, AV, ROT, or ALL");
     }
 }
 
@@ -614,6 +619,27 @@ boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
 
     return somcscf;
 
+}
+
+
+void CIWavefunction::print_vector(SharedCIVector vec, int root){
+  int* mi_iac = init_int_array(Parameters_->nprint);
+  int* mi_ibc = init_int_array(Parameters_->nprint);
+  int* mi_iaidx = init_int_array(Parameters_->nprint);
+  int* mi_ibidx = init_int_array(Parameters_->nprint);
+  double* mi_coeff = init_array(Parameters_->nprint);
+
+  // Print largest CI coefs
+  vec->read(root, 0);
+  vec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+                    mi_coeff, Parameters_->neg_only);
+  print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
+
+  free(mi_iac);
+  free(mi_ibc);
+  free(mi_iaidx);
+  free(mi_ibidx);
+  free(mi_coeff);
 }
 
 }} // End Psi and CIWavefunction spaces

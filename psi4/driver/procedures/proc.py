@@ -4078,7 +4078,6 @@ def run_dgascas(name, **kwargs):
     optstash.restore()
     return ciwfn
 
-
 def run_efp(name, **kwargs):
     """Function encoding sequence of module calls for a pure EFP
     computation (ignore any QM atoms).
