@@ -27,9 +27,9 @@
 
 #include"ccsd.h"
 #include"frozen_natural_orbitals.h"
-#include<libciomr/libciomr.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
+#include "psi4/src/lib/libciomr/libciomr.h"
+#include "psi4/src/lib/libtrans/integraltransform.h"
+#include "psi4/src/lib/libtrans/mospace.h"
 
 using namespace boost;
 

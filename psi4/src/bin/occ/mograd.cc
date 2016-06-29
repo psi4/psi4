@@ -27,9 +27,9 @@
 
 #include "occwave.h"
 #include "defines.h"
+#include "psi4/src/lib/libmints/matrix.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi{ namespace occwave{

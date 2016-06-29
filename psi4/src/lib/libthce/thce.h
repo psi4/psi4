@@ -27,9 +27,9 @@
 
 #ifndef THCE_H
 #define THCE_H
-
+#include <map>
 #include "psi4/src/lib/libmints/typedefs.h"
-
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/tuple/tuple.hpp>
 //#include "boost/tuple/tuple_comparison.hpp"
 

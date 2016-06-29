@@ -32,10 +32,10 @@
 #include <cmath>
 #include <algorithm>
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include <libpsi4util/memory_manager.h>
+#include "psi4/src/lib/libpsi4util/memory_manager.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.h"

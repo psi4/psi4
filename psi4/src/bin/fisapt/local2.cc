@@ -26,11 +26,14 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-
-#include "local2.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/bin/fisapt/local2.h"
 
 using namespace boost;
-using namespace psi;
 
 namespace psi {
 

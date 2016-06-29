@@ -31,7 +31,7 @@
 #include <utility>
 #include <algorithm>
 #include <cstdio>
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 
 #include "scf.h"
 

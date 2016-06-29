@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(libint_compiler LANGUAGES C)
 
-list(APPEND CMAKE_C_FLAGS -lm)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
 math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
 add_definitions(-DLIBINT_NEW_AM=${LIBINT_NEW_AM})
 add_definitions(-DLIBINT_OPT_AM=${LIBINT_OPT_AM})

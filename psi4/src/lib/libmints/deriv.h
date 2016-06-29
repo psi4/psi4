@@ -37,12 +37,7 @@
 
 #include <vector>
 #include "matrix.h"
-#include "cdsalclist.h"
-
-namespace boost {
-template<class T>
-class shared_ptr;
-}
+#include "psi4/src/lib/libmints/cdsalclist.h"
 
 namespace psi {
 

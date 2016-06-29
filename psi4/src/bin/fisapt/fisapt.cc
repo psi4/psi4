@@ -26,7 +26,7 @@
  */
 
 
-#include <libmints/local.h>
+#include "psi4/src/lib/libmints/local.h"
 #include "psi4/src/lib/libthce/thce.h"
 #include "psi4/src/lib/libthce/lreri.h"
 #include "psi4/src/lib/libfock/jk.h"
@@ -35,16 +35,19 @@
 #include "psi4/src/lib/libdiis/diismanager.h"
 #include "psi4/include/physconst.h"
 #include <boost/filesystem.hpp>
-
-#include "fisapt.h"
-#include <libcubeprop/csg.h>
-#include "local2.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/potential.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/bin/fisapt/fisapt.h"
+#include "psi4/src/lib/libcubeprop/csg.h"
+#include "psi4/src/bin/fisapt/local2.h"
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using namespace psi;
 using namespace boost;
 using namespace std;
 

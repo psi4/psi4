@@ -29,7 +29,11 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/extern.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libfock/v.h"
 #include "psi4/src/lib/libfunctional/superfunctional.h"

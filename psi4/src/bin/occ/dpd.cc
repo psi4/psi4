@@ -28,13 +28,12 @@
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-
+#include "psi4/src/lib/libmints/wavefunction.h"
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 namespace psi{ namespace occwave{

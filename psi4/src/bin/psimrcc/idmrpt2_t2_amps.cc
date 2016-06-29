@@ -35,7 +35,7 @@
 #include "idmrpt2.h"
 #include "blas.h"
 #include "debugging.h"
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 
 namespace psi{
     

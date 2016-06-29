@@ -41,13 +41,14 @@
 #include <sstream>
 #include <map>
 #include <iomanip>
-
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
 #include "psi4/src/lib/libefp_solver/efp_solver.h"
-
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libmints/matrix.h"
-#include <libplugin/plugin.h>
-#include "libparallel/mpi_wrapper.h"
-#include "libparallel/local.h"
+#include "psi4/src/lib/libplugin/plugin.h"
+#include "psi4/src/lib/libparallel/mpi_wrapper.h"
+#include "psi4/src/lib/libparallel/local.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
@@ -55,24 +56,23 @@
 
 #include "psi4/include/psi4-dec.h"
 #include "script.h"
-#include "psi4.h"
-#include "gitversion.h"
+#include "psi4/psi4.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#include "../ccenergy/ccwave.h"
-#include "../cclambda/cclambda.h"
+#include "psi4/src/bin/ccenergy/ccwave.h"
+#include "psi4/src/bin/cclambda/cclambda.h"
 
 #if defined(MAKE_PYTHON_MODULE)
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/include/psifiles.h"
-#include "libparallel2/ParallelEnvironment.h"
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
 #endif
-
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 using namespace psi;
 using namespace boost;
 using namespace boost::python;
@@ -86,7 +86,6 @@ void export_psio();
 void export_mints();
 void export_functional();
 void export_oeprop();
-void export_libparallel();
 void export_efp();
 void export_cubeprop();
 
@@ -637,7 +636,7 @@ double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs)
 char const *py_psi_version()
 {
 #ifdef PSI_VERSION
-    return PSI_VERSION;
+    return TOSTRING(PSI_VERSION);
 #else
     return "";
 #endif
@@ -646,7 +645,7 @@ char const *py_psi_version()
 char const *py_psi_git_version()
 {
 #ifdef GIT_VERSION
-    return GIT_VERSION;
+    return TOSTRING(GIT_VERSION);
 #else
     return "";
 #endif
@@ -1191,7 +1190,7 @@ boost::python::dict py_psi_return_array_variable_map()
 
 std::string py_psi_top_srcdir()
 {
-    return PSI_TOP_SRCDIR;
+    return TOSTRING(PSI_TOP_SRCDIR);
 }
 
 #if defined(MAKE_PYTHON_MODULE)
@@ -1547,7 +1546,6 @@ BOOST_PYTHON_MODULE (psi4)
     export_psio();
     export_mints();
     export_functional();
-    export_libparallel();
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 

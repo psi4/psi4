@@ -30,11 +30,21 @@
     \brief miscellaneous
 */
 
-#include "findif.h"
+#include "psi4/src/bin/findif/findif.h"
 
 #include "psi4/include/physconst.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/matrix.h"
 
-namespace psi { namespace findif {
+
+
+namespace psi { 
+using SharedMatrix=boost::shared_ptr<Matrix>;
+namespace findif {
 
 bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
   if (vib1->km < vib2->km)

@@ -31,7 +31,7 @@
 ** \ingroup
 */
 
-#include "psi4.h"
+#include "psi4/psi4.h"
 #include "psi4/include/psi4-dec.h"
 
 #include <cstdio>
@@ -41,13 +41,12 @@
 #include <boost/filesystem.hpp>
 #include <getopt.h>
 #include "psi4/include/psifiles.h"
-
-#include "gitversion.h"
-#include <libplugin/plugin.h>
+#include "psi4/src/lib/libplugin/plugin.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace std;
-
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
@@ -303,14 +302,6 @@ int psi_start(int argc, char *argv[])
     outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
 #endif
 
-    //if(debug)
-    //    setbuf(outfile,NULL);
-
-    // Initialize Yeti's env
-    //yetiEnv.init(WorldComm->me(), ofname.c_str());
-    // This seems a bit daft, but it's necessary to make sure the compiler doesn't
-    // nuke it in the mistaken belief that it's unused; plugins may use it.
-    //yeti::Env::out0() << "";
 
     /* if prefix still NULL - check input file */
     if (fprefix.empty()) {
@@ -330,7 +321,7 @@ int psi_start(int argc, char *argv[])
 
 void print_version(void)
 {
-    printf("%s\n", PSI_VERSION);
+    printf("%s\n", TOSTRING(PSI_VERSION));
 }
 
 /*! Print command-line usage information. */

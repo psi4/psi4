@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 //#include "mrcc.h"
 //#include "matrix.h"
 //#include "debugging.h"

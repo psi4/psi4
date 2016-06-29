@@ -35,7 +35,7 @@
 //#include <string>
 //
 #include <cstdio>
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 
 #include "blas.h"

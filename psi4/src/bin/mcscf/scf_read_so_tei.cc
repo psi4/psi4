@@ -31,7 +31,7 @@
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "scf.h"

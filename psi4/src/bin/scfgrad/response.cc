@@ -40,8 +40,11 @@
 #include "psi4/include/psifiles.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
-#include "lib3index/dftensor.h"
-
+#include "psi4/src/lib/lib3index/dftensor.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/integral.h"
 
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>

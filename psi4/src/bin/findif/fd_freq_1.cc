@@ -37,6 +37,11 @@
 #include "psi4/src/lib/libmints/writer_file_prefix.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
+#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/cdsalclist.h"
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/petitelist.h"
 
 using namespace boost;
 using namespace boost::python;

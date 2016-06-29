@@ -27,12 +27,11 @@
 
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
-
+#include "psi4/src/lib/libpsio/psio.hpp"
 #include "defines.h"
 #include "occwave.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

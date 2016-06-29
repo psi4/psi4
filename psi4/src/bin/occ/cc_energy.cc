@@ -26,12 +26,12 @@
  */
 
 #include "psi4/src/lib/libtrans/integraltransform.h"
-
+#include "psi4/src/lib/libpsio/psio.hpp"
+#include "psi4/src/lib/libmints/matrix.h"
 #include "defines.h"
 #include "occwave.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

@@ -30,7 +30,7 @@
 
 #include <cstring> // for size_t
 
-#include <libpsi4util/memory_manager.h>
+#include "psi4/src/lib/libpsi4util/memory_manager.h"
 #include "vector_base.h"
 
 namespace psi{ namespace mcscf{

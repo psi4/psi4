@@ -37,7 +37,7 @@
 
 #include "linear_algebra.h"
 #include "atom_data.h"
-#include "psi4/include/physconst.h"
+#include "psi4/src/bin/optking/physconst.h"
 #include "IRC_data.h"
 
 #include "print.h"

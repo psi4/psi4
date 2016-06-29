@@ -26,11 +26,10 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-
+#include "psi4/src/lib/libmints/matrix.h"
 #include "occwave.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

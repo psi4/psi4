@@ -27,7 +27,8 @@
 
 
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "fisapt.h"
+#include "psi4/src/bin/fisapt/fisapt.h"
+#include "psi4/include/psi4-dec.h"
 
 using namespace boost;
 

@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "vector_base.h"
-#include <libpsi4util/memory_manager.h>
+#include "psi4/src/lib/libpsi4util/memory_manager.h"
 
 typedef std::vector<int> vecint;
 

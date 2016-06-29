@@ -39,8 +39,6 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include "libparallel2/ParallelEnvironment.h"
-#include "libparallel2/Communicator.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -82,9 +80,6 @@ PSIO *psio = NULL;
 int main(int argc, char **argv)
 {
     using namespace psi;
-    // Initialize the MPI environment
-    WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
-            new LibParallel::ParallelEnvironment(argc, argv));
 
     // Initialize external Ambit library
 #ifdef HAVE_AMBIT

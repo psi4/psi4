@@ -50,12 +50,12 @@
 
 #include "psi4/src/lib/libmints/factory.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
-
+#include "psi4/src/lib/libmints/pointgrp.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include "defines.h"
 #include "occwave.h"
 
 using namespace boost;
-using namespace psi;
 using namespace std;
 
 

@@ -28,10 +28,10 @@
 
 #include "psi4/src/lib/libqt/qt.h"
 
-#include <libsapt_solver/sapt0.h>
-#include <libsapt_solver/sapt2.h>
-#include <libsapt_solver/sapt2p.h>
-#include <libsapt_solver/sapt2p3.h>
+#include "psi4/src/lib/libsapt_solver/sapt0.h"
+#include "psi4/src/lib/libsapt_solver/sapt2.h"
+#include "psi4/src/lib/libsapt_solver/sapt2p.h"
+#include "psi4/src/lib/libsapt_solver/sapt2p3.h"
 //#include <libsapt_solver/sapt_dft.h>
 #include "wrapper.h"
 

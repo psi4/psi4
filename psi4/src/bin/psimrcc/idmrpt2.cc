@@ -28,7 +28,7 @@
 #include <cstdlib>
 
 #include "psi4/include/psi4-dec.h"
-#include <libmoinfo/libmoinfo.h>
+#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 

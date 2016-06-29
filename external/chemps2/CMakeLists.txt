@@ -34,6 +34,7 @@ if(NOT CHEMPS2_FOUND)
                    -DCMAKE_AR=${CMAKE_AR}
                    -DCMAKE_NM=${CMAKE_NM}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                   -DCMAKE_INSTALL_PREFIX:${CMAKE_INSTALL_DIR}
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")
 
@@ -66,3 +67,4 @@ add_definitions(-DENABLE_CHEMPS2=1)
 # certified cmake pattern. Hence INTERFACE_INCLUDE_DIRECTORIES complains
 # that the directories don't exist at configure time. Hence the hack to 
 # create an empty directory.
+

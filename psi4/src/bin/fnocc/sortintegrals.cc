@@ -25,16 +25,14 @@
  * @END LICENSE
  */
 
-#include"psi4-dec.h"
-#include<psifiles.h>
-#include<libiwl/iwl.h>
+#include "psi4/include/psi4-dec.h"
+#include "psi4/include/psifiles.h"
+#include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include"psi4/src/lib/libqt/qt.h"
 
 #include"ccsd.h"
 #include"blas.h"
-
-using namespace psi;
 
 namespace psi{namespace fnocc{
 typedef long int ULI;

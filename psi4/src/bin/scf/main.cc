@@ -45,10 +45,10 @@
 #include "psi4/include/psi4-dec.h"
 
 #include "psi4/src/lib/libscf_solver/rhf.h"
-#include <libscf_solver/rohf.h>
-#include <libscf_solver/uhf.h>
-#include <libscf_solver/cuhf.h>
-#include <libscf_solver/ks.h>
+#include "psi4/src/lib/libscf_solver/rohf.h"
+#include "psi4/src/lib/libscf_solver/uhf.h"
+#include "psi4/src/lib/libscf_solver/cuhf.h"
+#include "psi4/src/lib/libscf_solver/ks.h"
 
 
 using namespace boost;
