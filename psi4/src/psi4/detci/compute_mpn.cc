@@ -246,7 +246,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   Cvec.init_vals(0, 1, &(CalcInfo_->ref_alp_list), &(CalcInfo_->ref_alp_rel),
       &(CalcInfo_->ref_bet_list), &(CalcInfo_->ref_bet_rel), H0block_->blknum,
       &tval);
-  if (Parameters_->print_lvl >= 5) {
+  if (print_ >= 5) {
     outfile->Printf("Zeroth-order wavefunction\n");
     Cvec.print();
   }
@@ -262,7 +262,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   //Sigma.print_zero_blocks();
 
   sigma(Cvec, Sigma, oei, tei, 0);
-  if (Parameters_->print_lvl >= 5) {
+  if (print_ >= 5) {
     outfile->Printf("Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
     Sigma.print();
@@ -289,7 +289,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
 
   Cvec.copy_zero_blocks(Sigma); /* Probably don't need this anymore */
   Cvec.copy(Sigma, (1-kvec_offset), 0);
-  if (Parameters_->print_lvl >= 5) {
+  if (print_ >= 5) {
     outfile->Printf( "Cvec copying Sigma.\n");
     Cvec.print();
   }
@@ -301,7 +301,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
   Hd.buf_unlock();
 
   tval = 0.0;
-  if (Parameters_->print_lvl >= 5) {
+  if (print_ >= 5) {
     outfile->Printf( "Cvec after dcalc2.\n");
     Cvec.print();
   }
@@ -311,7 +311,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
           &(CalcInfo_->ref_bet_rel), H0block_->blknum, &tval);
   Sigma.buf_lock(buffer2);
 
-  if (Parameters_->print_lvl >= 5) {
+  if (print_ >= 5) {
     outfile->Printf( "Cvec after set_vals.\n");
     Cvec.print();
     }

@@ -195,8 +195,8 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
-
-      if (N<100 && Parameters_->print_lvl >=3) {
+ 
+      if (N<100 && print_ >=3) {
         outfile->Printf("\n b matrix\n");
         print_mat(b,L,N,"outfile");
         outfile->Printf("\n sigma matrix\n");
@@ -230,7 +230,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
              }
           } /* end loop over k (nroots) */
 
-         if (Parameters_->print_lvl > 2) {
+         if (print_ > 2) {
            outfile->Printf( "\nsigma_overlap matrix (%2d) = \n", iter-1);
            print_mat(sigma_overlap, L, L, "outfile");
 
@@ -244,7 +244,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
         /* solve the L x L eigenvalue problem M a = lambda a for M roots */
        for (k=0; k<M; k++) {
           sq_rsp(L, L, Mmatrix[k], m_lambda[k], 1, m_alpha[k], 1.0E-14);
-          if (Parameters_->print_lvl > 2) {
+          if (print_ > 2) {
             outfile->Printf( "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[k], m_lambda[k], L, L, "outfile");
             }
@@ -293,8 +293,8 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
-
-        if (N<100 && Parameters_->print_lvl >= 3) {
+        
+        if (N<100 && print_ >= 3) {
         outfile->Printf(" Reformed G matrix (%d)\n",iter-1);
         print_mat(G,L,L,"outfile");
         outfile->Printf("\n");
@@ -315,7 +315,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
             }
          }
 
-      if (N<100 && Parameters_->print_lvl >= 3) {
+      if (N<100 && print_ >= 3) {
         outfile->Printf(" D vectors for iter (%d)\n",iter-1);
         print_mat(d,M,N,"outfile");
         }

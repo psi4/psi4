@@ -53,7 +53,7 @@ namespace psi { namespace detci {
 void CIWavefunction::compute_mcscf()
 {
 
-  Parameters_->print_lvl = 0;
+  print_ = 0;
 
   boost::shared_ptr<SOMCSCF> somcscf = new_mcscf_object();
 

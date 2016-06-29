@@ -105,7 +105,7 @@ void CIWavefunction::form_ov()
 
    /* print out the OV data */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
       for (irrep=0; irrep < nirreps; irrep++) {
          for (fullij=0; fullij<norbs*norbs; fullij++) {
             outfile->Printf( "OV[irrep=%d][oij=%d]:  ", irrep, fullij);

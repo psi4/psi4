@@ -391,7 +391,6 @@ struct params {
    int maxiter;      /* maximum number of allowed iterations */
    int num_roots;    /* number of CI roots to find */
    int istop;        /* stop after setting up CI space */
-   int print_lvl;    /* print verbosity level */
    int print_ciblks; /* print a summary of the CI blocks? */
    bool die_if_not_converged;  /* Do we die if we do not converge */
    bool diag_h_converged;  /* Boolean to set if the diagonalization converges */
@@ -506,8 +505,6 @@ struct params {
    int root;               /* which root to optimize (write opdm/tpdm for) */
    double perturbation_parameter; /* z in H = H0 + z * H1 */
    int z_scale_H;          /* 1(0) if pert. scaling used */
-   int have_special_conv;  /* have a special convergence value from the
-                              command line or the DETCASMAN driver? */
    double special_conv;    /* special convergence value */
    int nthreads;           /* number of threads to use in sigma routines */
    int sf_restrict;        /* 1 if restrict CI space (CI blocks) to

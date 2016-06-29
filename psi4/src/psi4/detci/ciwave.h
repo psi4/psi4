@@ -234,7 +234,7 @@ public:
     // Compute functions
     void compute_mcscf();
     void compute_cc();
-    void diag_h();
+    bool diag_h(double econv = -1.0, double rconv = -1.0);
     void compute_mpn();
 
     // Build CI quantities
@@ -354,8 +354,7 @@ private:
     /// => CI Iterators <= //
     void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           **betlist, int nroots, double *evals, double conv_rms, double conv_e,
-          double enuc, double edrc, int maxiter, int maxnvect, std::string out,
-          int print_lvl);
+          double enuc, double edrc, int maxiter, int maxnvect);
     void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
           double *norm, double *c1norm, double *ovrlap, double *buffer1,
           double *buffer2,
@@ -370,7 +369,7 @@ private:
     void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
-      int nroots, int maxiter, int maxnvect, std::string out, int print_lvl);
+      int nroots, int maxiter, int maxnvect);
     void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
       int *ibetlist, int *ibetidx, int *blknums);
     void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,

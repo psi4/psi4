@@ -689,7 +689,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
     } /* end sigma2 */
 
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -721,7 +721,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
       timer_off("CIWave: s1");
    } /* end sigma1 */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -786,7 +786,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
             }
          }
 
-      if (Parameters_->print_lvl > 3) {
+      if (print_ > 3) {
         outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
            sblock, cblock);
         print_mat(smat, nas, nbs, "outfile");
@@ -873,7 +873,7 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   if (Parameters_->print_lvl > 4) {
+   if (print_ > 4) {
      printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
@@ -994,7 +994,7 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
