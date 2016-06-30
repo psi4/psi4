@@ -53,7 +53,6 @@ class DIIS_helper(object):
         resid[-1] = 1
 
         # Solve pulay equations
-        ci = np.linalg.solve(B, resid)
 
         # Yea, yea this is unstable make it stable
         iszero = np.any(np.diag(B)[:-1] <= 0.0)

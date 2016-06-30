@@ -215,7 +215,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
             start[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h] - CalcInfo_->ras_opi[3][h];
             end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
         }
-    } else if ((orbitals == "POP") || (orbitals == "OA")) {
+    } else if (orbitals == "POP") {
         for (int h = 0; h < nirrep_; h++) {
             start[h] = 0;
             end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
@@ -239,6 +239,11 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
         for (int h = 0; h < nirrep_; h++) {
             start[h] = CalcInfo_->frozen_docc[h];
             end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
+        }
+    } else if (orbitals == "OA") {
+        for (int h = 0; h < nirrep_; h++) {
+            start[h] = CalcInfo_->frozen_docc[h];
+            end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
         }
     } else if (orbitals == "AV") {
         for (int h = 0; h < nirrep_; h++) {

@@ -193,8 +193,9 @@ void export_mints(py::module& m)
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void   (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
     typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
-    typedef void   (Matrix::*matrix_set4)(int, int, int, double);
+    typedef void   (Matrix::*matrix_set1)(double);
     typedef void   (Matrix::*matrix_set3)(int, int, double);
+    typedef void   (Matrix::*matrix_set4)(int, int, int, double);
     typedef double (Matrix::*matrix_get3)(const int&, const int&, const int&) const;
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void   (Matrix::*matrix_load)(const std::string&);
@@ -255,13 +256,14 @@ void export_mints(py::module& m)
             def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring").
             def("copy", matrix_one(&Matrix::copy), "docstring").
             def("power", &Matrix::power, "docstring").
-            def("doublet", &Matrix::doublet).
-            def("triplet", &Matrix::triplet).
             // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
             // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
             //                                  py::arg("transC") = false, "docstring").
+            def("doublet", &Matrix::doublet, "docstring").
+            def("triplet", &Matrix::triplet, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
+            def("set", matrix_set1(&Matrix::set), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
             def("set", matrix_set4(&Matrix::set), "docstring").
             def("set", &Matrix::set_by_python_list, "docstring").
