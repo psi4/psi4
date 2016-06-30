@@ -55,10 +55,8 @@ if (NOT Ambit_FOUND)
 
     ExternalProject_Add(interface_ambit
             PREFIX ${CUSTOM_Ambit_LOCATION}
-            GIT_REPOSITORY https://github.com/loriab/ambit
-            GIT_TAG boost61fix
-            #GIT_REPOSITORY https://github.com/jturney/ambit
-            #GIT_TAG v0.1.1-alpha
+            GIT_REPOSITORY https://github.com/jturney/ambit
+            GIT_TAG 17a3b1e
             CMAKE_ARGS "${AmbitCMakeArgs}"
             INSTALL_DIR "${CUSTOM_Ambit_LOCATION}/install"
             )

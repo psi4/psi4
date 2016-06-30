@@ -18,7 +18,7 @@ if(NOT CHEMPS2_FOUND)
     ExternalProject_Add(interface_chemps2
         PREFIX ${CUSTOM_CHEMPS2_LOCATION}
         GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-        GIT_TAG v1.7
+        GIT_TAG v1.7.1
         CMAKE_ARGS 
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DEXTRA_C_FLAGS=${CMAKE_EXTRA_C_FLAGS}
