@@ -247,6 +247,9 @@ void create_new_plugin(std::string name, const std::string& template_name)
         // Overwrite the existing pymodule file with a more appropriate one
         file_manager.add_file("scf.pymodule.py.template", "pymodule.py");
     }
+    if(template_name_lower == "ambit"){
+        file_manager.add_file("ambit.input.dat.template", "input.dat");
+    }
     file_manager.process();
 }
 
