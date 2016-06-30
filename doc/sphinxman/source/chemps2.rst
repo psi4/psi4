@@ -16,7 +16,7 @@ Interface to CheMPS2 by S. Wouters
 library of S. Wouters, which is based at `GitHub
 <https://github.com/SebWouters/CheMPS2>`_. Consult the excellent
 `documentation <http://sebwouters.github.io/CheMPS2/>`_ for using and
-citing the library.
+`citing <http://sebwouters.github.io/CheMPS2/publications.html>`_ the library.
 
 .. note:: As of late June 2016, DMRG keywords in |PSIfour| have been
    realigned with those of the chemps2 executable, plus a
