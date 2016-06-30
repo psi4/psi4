@@ -102,6 +102,9 @@ try:
     if len(fields) == 2:
         if fields[0].endswith('rc'):
             mmp = ''.join(fields)
+        elif fields[0] == '1.0rc2':
+            # special case. choose offset to allow monotonic versioning
+            mmp = '1.0rc' + str(200 + int(fields[1]))
         else:
             mmp = '.'.join(fields)
     else:
