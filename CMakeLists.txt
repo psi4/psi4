@@ -334,7 +334,7 @@ message(STATUS "Use the commands in setup_command to reproduce this build")
 if(BUILD_CUSTOM_BOOST)
    add_dependencies(psi4 custom_boost)
    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/boost/include/boost DESTINATION include)
-   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/boost/lib/ DESTINATION lib)
+   #install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/boost/lib/ DESTINATION lib)
 endif()
 
 #FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
