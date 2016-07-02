@@ -152,9 +152,28 @@ void set_params(void)
     else if (s == "PRINCIPAL_AXES") Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 //  Atoms to define reference points on fragments
-    //Opt_params.frag_atoms = options.get_array("FRAG_ATOMS");
+    // If already specified, (probably because iter == 0); don't add them.
+    if (options["FRAG_REF_ATOMS"].has_changed() && !Opt_params.frag_ref_atoms.size()) {
+        int nfrag = options["FRAG_REF_ATOMS"].size();
+        for (int F=0; F<nfrag; ++F) {
+            std::vector<std::vector<int> > frag;
+            Opt_params.frag_ref_atoms.push_back(frag);
+            int nref = options["FRAG_REF_ATOMS"][F].size();
+            if (nref > 3)
+                throw("Fragment can have only 3 reference atoms.\n");
+            for (int R=0; R<nref; ++R) {
+                std::vector<int> ref;
+                Opt_params.frag_ref_atoms[F].push_back(ref);
+                for (int A=0; A<(int) options["FRAG_REF_ATOMS"][F][R].size(); ++A) {
+                    int atom = options["FRAG_REF_ATOMS"][F][R][A].to_integer();
+                    Opt_params.frag_ref_atoms[F][R].push_back(atom); // will need decremented on use!
+                }
+            }
+        }
+        Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
+    }
+
 // Whether to only generate the internal coordinates and then stop {true, false}
-//  Opt_params.intcos_generate_exit;
     Opt_params.intcos_generate_exit = options.get_bool("INTCOS_GENERATE_EXIT");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE, LINDH}
@@ -432,7 +451,8 @@ void set_params(void)
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
 
-  Opt_params.symm_tol = 0.01;
+// Symmetry tolerance for whether to follow non-symmetric modes.
+  Opt_params.symm_tol = options.get_double("SYMM_TOL");
 
   // Absolute maximum for value of alpha in RS-RFO
   Opt_params.rsrfo_alpha_max = options.get_double("RSRFO_ALPHA_MAX");
@@ -896,6 +916,17 @@ void print_params_out(void) {
   oprintf_out( "interfragment_mode        = %18s\n", "fixed");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
   oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
+
+  for (int i=0; i<(int) Opt_params.frag_ref_atoms.size(); ++i) {
+      if (i == 0) oprintf_out( "Reference points specified for fragments:\n");
+      oprintf_out( "Fragment %d\n", i);
+      for (int j=0; j<(int) Opt_params.frag_ref_atoms[i].size(); ++j) {
+          oprintf_out( "Reference atom %d: ", j);
+          for (int k=0; k<(int) Opt_params.frag_ref_atoms[i][j].size(); ++k)
+              oprintf_out( "%d ", Opt_params.frag_ref_atoms[i][j][k]);
+          oprintf_out("\n");
+      }
+  }
 
   if (Opt_params.intcos_generate_exit)
     oprintf_out( "intcos_generate_exit   = %18s\n", "true");

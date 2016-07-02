@@ -497,7 +497,7 @@ public:
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize(double tol=0.05);
+    void symmetrize(double tol=0.05, bool suppress_mol_print_in_exc=false);
     /// @}
 
     /**
