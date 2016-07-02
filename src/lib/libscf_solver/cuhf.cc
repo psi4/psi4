@@ -70,7 +70,9 @@ void CUHF::common_init()
     Db_         = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dp_         = SharedMatrix(factory_->create_matrix("D charge"));
     Dt_         = SharedMatrix(factory_->create_matrix("D total"));
-    Dtold_      = SharedMatrix(factory_->create_matrix("D total old"));
+    Da_old_      = SharedMatrix(factory_->create_matrix("D alpha old"));
+    Db_old_      = SharedMatrix(factory_->create_matrix("D beta  old"));
+    Dt_old_      = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_         = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_         = SharedMatrix(factory_->create_matrix("C beta"));
@@ -86,6 +88,16 @@ void CUHF::common_init()
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
 
+}
+
+void CUHF::damp_update()
+{
+  Da_->scale(1.0 - damping_percentage_);
+  Da_->axpy(damping_percentage_, Da_old_);
+  Db_->scale(1.0 - damping_percentage_);
+  Db_->axpy(damping_percentage_, Db_old_);
+  Dt_->copy(Da_);
+  Dt_->add(Db_);
 }
 
 void CUHF::finalize()
@@ -108,7 +120,9 @@ void CUHF::finalize()
     }
 
     Dt_.reset();
-    Dtold_.reset();
+    Da_old_.reset();
+    Db_old_.reset();
+    Dt_old_.reset();
     Dp_.reset();
     Fp_.reset();
     Fm_.reset();
@@ -121,7 +135,9 @@ void CUHF::finalize()
 
 void CUHF::save_density_and_energy()
 {
-    Dtold_->copy(Dt_);
+    Da_old_->copy(Dt_);
+    Db_old_->copy(Dt_);
+    Dt_old_->copy(Dt_);
     Eold_ = E_;
 }
 

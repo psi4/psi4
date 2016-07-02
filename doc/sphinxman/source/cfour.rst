@@ -595,9 +595,9 @@ is specified or default, whether to preserve the scratch directory after
 the computation can be specified with ``energy('cfour', keep=True)`` or
 (the default) ``energy('cfour', keep=False)``. *path* and *keep* are
 keyword arguments that get interpreted by the
-:py:func:`~interface_cfour.run_cfour` function documented below.
+:py:func:`~procedures.interface_cfour.run_cfour` function documented below.
 
-.. autofunction:: interface_cfour.run_cfour(name [, keep, path])
+.. autofunction:: procedures.interface_cfour.run_cfour(name [, keep, path])
 
 .. _`sec:cfourFunctionality`:
 
@@ -922,7 +922,7 @@ the option |cfour__cfour_omp_num_threads| sets the environment variable
 :envvar:`OMP_NUM_THREADS` for only the duration of the Cfour computation.
 That is, portions of an input file that run |PSIfour| modules are
 unaffected.  Additionally, there are a few arguments to the function
-:py:func:`~interface_cfour.run_cfour` that control the Cfour scratch
+:py:func:`~procedures.interface_cfour.run_cfour` that control the Cfour scratch
 directory. 
 
 .. comment Notes to Self

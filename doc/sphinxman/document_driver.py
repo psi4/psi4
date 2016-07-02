@@ -55,12 +55,14 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
             fdriver.write('   :exclude-members: anharmonicity\n')
 #        elif basename == 'interface_dftd3':
 #            fdriver.write('   :exclude-members: run_dftd3\n')
-        elif basename == 'interface_cfour':
-            fdriver.write('   :exclude-members: run_cfour\n')
+#        elif basename == 'interface_cfour':
+#            fdriver.write('   :exclude-members: run_cfour\n')
         elif basename == 'aliases':
             fdriver.write('   :exclude-members: sherrill_gold_standard, allen_focal_point\n')
         elif basename == 'p4util':
             fdriver.write('   :exclude-members: oeprop, cubeprop\n')
+        elif basename == 'procedures':
+            fdriver.write('   :exclude-members: interface_cfour\n')
 
     fdriver.write('\n')
 

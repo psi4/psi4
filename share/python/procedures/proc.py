@@ -2645,7 +2645,7 @@ def run_dmrgscf(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'],
-        ['DMRG', 'DMRG_CASPT2'])
+        ['DMRG', 'DMRG_CASPT2_CALC'])
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2656,7 +2656,7 @@ def run_dmrgscf(name, **kwargs):
     proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if 'CASPT2' in name.upper():
-        psi4.set_local_option("DMRG", "DMRG_CASPT2", True) 
+        psi4.set_local_option("DMRG", "DMRG_CASPT2_CALC", True) 
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2671,7 +2671,7 @@ def run_dmrgci(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'],
-        ['DMRG', 'DMRG_MAX_ITER'])
+        ['DMRG', 'DMRG_SCF_MAX_ITER'])
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2681,7 +2681,7 @@ def run_dmrgci(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    psi4.set_local_option('DMRG', 'DMRG_MAX_ITER', 1)
+    psi4.set_local_option('DMRG', 'DMRG_SCF_MAX_ITER', 1)
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()

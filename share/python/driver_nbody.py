@@ -110,39 +110,56 @@ def _print_nbody_energy(energy_body_dict, header):
 def _nbody_gufunc(func, method_string, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
+    This is a generalized univeral function for computing interaction quantities.
 
-    Parameters
-    ----------
-    func : python function
-        Python function that accepts method_string and a molecule and returns a energy, gradient, or Hessian.
-    method_string : str
-        Lowername to be passed to function
-    molecule : psi4.Molecule (default: Global Molecule)
-        Molecule to use in all computations
-    return_wfn : bool (default: False)
-        Return a wavefunction or not
-    bsse_type : str or list (default: None, this function is not called)
-        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this list is returned by this function.
-    max_nbody : int
-        Maximum n-body to compute, cannot exceede the number of fragments in the moleucle
-    ptype : str
-        Type of the procedure passed in
-    return_total_data : bool (default: False)
-        If True returns the total data (energy/gradient/etc) of the system otherwise returns interaction data
+    :returns: *return type of func* |w--w| The interaction data.
 
-    Returns
-    -------
-    data : return type of func
-        The interaction data
-    wfn : psi4.Wavefunction (optional)
-        A wavefunction with energy/gradient/hessian set appropriotely. This wavefunction also contains 
+    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
-    Notes
-    -----
-    This is a generalized univeral function for compute interaction quantities.
+    :type func: function
+    :param func: ``energy`` || etc.
 
-    Examples
-    --------
+        Python function that accepts method_string and a molecule. Returns a
+        energy, gradient, or Hessian as requested.
+
+    :type method_string: string
+    :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
+
+        First argument, lowercase and usually unlabeled. Indicates the computational
+        method to be passed to func.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type return_wfn: :ref:`boolean <op_py_boolean>`
+    :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        calculation result as the second element of a tuple.
+
+    :type bsse_type: string or list
+    :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
+
+        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
+        list is returned by this function. By default, this function is not called.
+
+    :type max_nbody: int
+    :param max_nbody: ``3`` || etc.
+
+        Maximum n-body to compute, cannot exceed the number of fragments in the moleucle.
+
+    :type ptype: string
+    :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
+
+        Type of the procedure passed in.
+
+    :type return_total_data: :ref:`boolean <op_py_boolean>`
+    :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
+
+        If True returns the total data (energy/gradient/etc) of the system,
+        otherwise returns interaction data.
     """
 
     ### ==> Parse some kwargs <==

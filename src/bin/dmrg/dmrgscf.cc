@@ -433,39 +433,39 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      *   Fetch the options   *
      *************************/
 
-    const int wfn_irrep               = options.get_int("WFN_IRREP");
-    const int wfn_multp               = options.get_int("WFN_MULTP");
-    int * dmrg_states                 = options.get_int_array("DMRG_STATES");
-    const int ndmrg_states            = options["DMRG_STATES"].size();
-    double * dmrg_econv               = options.get_double_array("DMRG_E_CONVERGENCE");
-    const int ndmrg_econv             = options["DMRG_E_CONVERGENCE"].size();
-    int * dmrg_maxsweeps              = options.get_int_array("DMRG_MAXSWEEPS");
-    const int ndmrg_maxsweeps         = options["DMRG_MAXSWEEPS"].size();
-    double * dmrg_noiseprefactors     = options.get_double_array("DMRG_NOISEPREFACTORS");
-    const int ndmrg_noiseprefactors   = options["DMRG_NOISEPREFACTORS"].size();
-    double * dmrg_dvdson_rtol         = options.get_double_array("DMRG_DVDSON_RTOL");
-    const int ndmrg_dvdson_rtol       = options["DMRG_DVDSON_RTOL"].size();
+    const int wfn_irrep               = options.get_int("DMRG_IRREP");
+    const int wfn_multp               = options.get_int("DMRG_MULTIPLICITY");
+    int * dmrg_states                 = options.get_int_array("DMRG_SWEEP_STATES");
+    const int ndmrg_states            = options["DMRG_SWEEP_STATES"].size();
+    double * dmrg_econv               = options.get_double_array("DMRG_SWEEP_ENERGY_CONV");
+    const int ndmrg_econv             = options["DMRG_SWEEP_ENERGY_CONV"].size();
+    int * dmrg_maxsweeps              = options.get_int_array("DMRG_SWEEP_MAX_SWEEPS");
+    const int ndmrg_maxsweeps         = options["DMRG_SWEEP_MAX_SWEEPS"].size();
+    double * dmrg_noiseprefactors     = options.get_double_array("DMRG_SWEEP_NOISE_PREFAC");
+    const int ndmrg_noiseprefactors   = options["DMRG_SWEEP_NOISE_PREFAC"].size();
+    double * dmrg_dvdson_rtol         = options.get_double_array("DMRG_SWEEP_DVDSON_RTOL");
+    const int ndmrg_dvdson_rtol       = options["DMRG_SWEEP_DVDSON_RTOL"].size();
     const bool dmrg_print_corr        = options.get_bool("DMRG_PRINT_CORR");
-    const bool mps_chkpt              = options.get_bool("DMRG_CHKPT");
-    int * frozen_docc                 = options.get_int_array("FROZEN_DOCC");
+    const bool mps_chkpt              = options.get_bool("DMRG_MPS_WRITE");
+    int * frozen_docc                 = options.get_int_array("RESTRICTED_DOCC");
     int * active                      = options.get_int_array("ACTIVE");
-    const double d_convergence        = options.get_double("DMRG_D_CONVERGENCE");
-    const bool dmrg_store_unit        = options.get_bool("DMRG_STORE_UNIT");
-    const bool dmrg_do_diis           = options.get_bool("DMRG_DO_DIIS");
-    const double dmrg_diis_branch     = options.get_double("DMRG_DIIS_BRANCH");
-    const bool dmrg_store_diis        = options.get_bool("DMRG_STORE_DIIS");
-    const int dmrg_max_iter           = options.get_int("DMRG_MAX_ITER");
-    const int dmrg_which_root         = options.get_int("DMRG_WHICH_ROOT");
-    const bool dmrg_state_avg         = options.get_bool("DMRG_STATE_AVG");
-    const string dmrg_active_space    = options.get_str("DMRG_ACTIVE_SPACE");
-    const bool dmrg_loc_random        = options.get_bool("DMRG_LOC_RANDOM");
-    const bool dmrg_caspt2            = options.get_bool("DMRG_CASPT2");
-    const string dmrg_caspt2_orb      = options.get_str("DMRG_CASPT2_ORB");
+    const double d_convergence        = options.get_double("DMRG_SCF_GRAD_THR");
+    const bool dmrg_store_unit        = options.get_bool("DMRG_UNITARY_WRITE");
+    const bool dmrg_do_diis           = options.get_bool("DMRG_DIIS");
+    const double dmrg_diis_branch     = options.get_double("DMRG_SCF_DIIS_THR");
+    const bool dmrg_store_diis        = options.get_bool("DMRG_DIIS_WRITE");
+    const int dmrg_max_iter           = options.get_int("DMRG_SCF_MAX_ITER");
+    const int dmrg_which_root         = options.get_int("DMRG_EXCITATION");
+    const bool dmrg_state_avg         = options.get_bool("DMRG_SCF_STATE_AVG");
+    const string dmrg_active_space    = options.get_str("DMRG_SCF_ACTIVE_SPACE");
+    const bool dmrg_loc_random        = options.get_bool("DMRG_LOCAL_INIT");
+    const bool dmrg_caspt2            = options.get_bool("DMRG_CASPT2_CALC");
+    const string dmrg_caspt2_orb      = options.get_str("DMRG_CASPT2_ORBS");
     const bool PSEUDOCANONICAL        = ( dmrg_caspt2_orb.compare("PSEUDOCANONICAL") == 0 ) ? true : false;
-    const double dmrg_ipea            = options.get_double("DMRG_IPEA");
-    const double dmrg_imag_shift      = options.get_double("DMRG_IMAG_SHIFT");
-    const bool dmrg_molden            = options.get_bool("DMRG_MOLDEN");
-    const bool dmrg_density_ao        = options.get_bool("DMRG_DENSITY_AO");
+    const double dmrg_ipea            = options.get_double("DMRG_CASPT2_IPEA");
+    const double dmrg_imag_shift      = options.get_double("DMRG_CASPT2_IMAG");
+    const bool dmrg_molden            = options.get_bool("DMRG_MOLDEN_WRITE");
+    const bool dmrg_density_ao        = options.get_bool("DMRG_OPDM_AO_PRINT");
     const int dmrg_num_vec_diis       = CheMPS2::DMRGSCF_numDIISvecs;
     const std::string unitaryname     = psi::get_writer_file_prefix( wfn->molecule()->name() ) + ".unitary.h5";
     const std::string diisname        = psi::get_writer_file_prefix( wfn->molecule()->name() ) + ".DIIS.h5";
@@ -480,37 +480,37 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     int * orbspi     = wfn->nmopi();
     int * docc       = wfn->doccpi();
     int * socc       = wfn->soccpi();
-    if ( wfn_irrep<0 )                            { throw PSIEXCEPTION("Option WFN_IRREP (integer) may not be smaller than zero!"); }
-    if ( wfn_multp<1 )                            { throw PSIEXCEPTION("Option WFN_MULTP (integer) should be larger or equal to one: WFN_MULTP = (2S+1) >= 1 !"); }
-    if ( ndmrg_states==0 )                        { throw PSIEXCEPTION("Option DMRG_STATES (integer array) should be set!"); }
-    if ( ndmrg_econv==0 )                         { throw PSIEXCEPTION("Option DMRG_E_CONVERGENCE (double array) should be set!"); }
-    if ( ndmrg_maxsweeps==0 )                     { throw PSIEXCEPTION("Option DMRG_MAXSWEEPS (integer array) should be set!"); }
-    if ( ndmrg_noiseprefactors==0 )               { throw PSIEXCEPTION("Option DMRG_NOISEPREFACTORS (double array) should be set!"); }
-    if ( ndmrg_states!=ndmrg_econv )              { throw PSIEXCEPTION("Options DMRG_STATES (integer array) and DMRG_ECONV (double array) should contain the same number of elements!"); }
-    if ( ndmrg_states!=ndmrg_maxsweeps )          { throw PSIEXCEPTION("Options DMRG_STATES (integer array) and DMRG_MAXSWEEPS (integer array) should contain the same number of elements!"); }
-    if ( ndmrg_states!=ndmrg_noiseprefactors )    { throw PSIEXCEPTION("Options DMRG_STATES (integer array) and DMRG_NOISEPREFACTORS (double array) should contain the same number of elements!"); }
-    if ( ndmrg_states!=ndmrg_dvdson_rtol )        { throw PSIEXCEPTION("Options DMRG_STATES (integer array) and DMRG_DVDSON_RTOL (double array) should contain the same number of elements!"); }
-    if ( options["FROZEN_DOCC"].size() != nirrep ){ throw PSIEXCEPTION("Option FROZEN_DOCC (integer array) should contain as many elements as there are irreps!"); }
+    if ( wfn_irrep<0 )                            { throw PSIEXCEPTION("Option DMRG_IRREP (integer) may not be smaller than zero!"); }
+    if ( wfn_multp<1 )                            { throw PSIEXCEPTION("Option DMRG_MULTIPLICITY (integer) should be larger or equal to one: DMRG_MULTIPLICITY = (2S+1) >= 1 !"); }
+    if ( ndmrg_states==0 )                        { throw PSIEXCEPTION("Option DMRG_SWEEP_STATES (integer array) should be set!"); }
+    if ( ndmrg_econv==0 )                         { throw PSIEXCEPTION("Option DMRG_SWEEP_ENERGY_CONV (double array) should be set!"); }
+    if ( ndmrg_maxsweeps==0 )                     { throw PSIEXCEPTION("Option DMRG_SWEEP_MAX_SWEEPS (integer array) should be set!"); }
+    if ( ndmrg_noiseprefactors==0 )               { throw PSIEXCEPTION("Option DMRG_SWEEP_NOISE_PREFAC (double array) should be set!"); }
+    if ( ndmrg_states!=ndmrg_econv )              { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_ECONV (double array) should contain the same number of elements!"); }
+    if ( ndmrg_states!=ndmrg_maxsweeps )          { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_MAX_SWEEPS (integer array) should contain the same number of elements!"); }
+    if ( ndmrg_states!=ndmrg_noiseprefactors )    { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_NOISE_PREFAC (double array) should contain the same number of elements!"); }
+    if ( ndmrg_states!=ndmrg_dvdson_rtol )        { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_DVDSON_RTOL (double array) should contain the same number of elements!"); }
+    if ( options["RESTRICTED_DOCC"].size() != nirrep ){ throw PSIEXCEPTION("Option RESTRICTED_DOCC (integer array) should contain as many elements as there are irreps!"); }
     if ( options["ACTIVE"].size()      != nirrep ){ throw PSIEXCEPTION("Option ACTIVE (integer array) should contain as many elements as there are irreps!"); }
     for ( int cnt=0; cnt<ndmrg_states; cnt++ ){
        if ( dmrg_states[cnt] < 2 ){
-          throw PSIEXCEPTION("Entries in DMRG_STATES (integer array) should be larger than 1!");
+          throw PSIEXCEPTION("Entries in DMRG_SWEEP_STATES (integer array) should be larger than 1!");
        }
        if ( dmrg_econv[cnt] <= 0.0 ){
           throw PSIEXCEPTION("Entries in DMRG_ECONV (double array) should be positive!");
        }
        if ( dmrg_maxsweeps[cnt] < 1 ){
-          throw PSIEXCEPTION("Entries in DMRG_MAXSWEEPS (integer array) should be positive!");
+          throw PSIEXCEPTION("Entries in DMRG_SWEEP_MAX_SWEEPS (integer array) should be positive!");
        }
        if ( dmrg_dvdson_rtol[cnt] <= 0.0 ){
-          throw PSIEXCEPTION("Entries in DMRG_DVDSON_RTOL (double array) should be positive!");
+          throw PSIEXCEPTION("Entries in DMRG_SWEEP_DVDSON_RTOL (double array) should be positive!");
        }
     }
-    if ( d_convergence<=0.0 )                     { throw PSIEXCEPTION("Option D_CONVERGENCE (double) must be larger than zero!"); }
-    if ( dmrg_diis_branch<=0.0 )                  { throw PSIEXCEPTION("Option DMRG_DIIS_BRANCH (double) must be larger than zero!"); }
-    if ( dmrg_max_iter<1 )                        { throw PSIEXCEPTION("Option DMRG_MAX_ITER (integer) must be larger than zero!"); }
-    if ( dmrg_which_root<1 )                      { throw PSIEXCEPTION("Option DMRG_WHICH_ROOT (integer) must be larger than zero!"); }
-    if (( dmrg_caspt2 ) && ( dmrg_ipea < 0.0 ))   { throw PSIEXCEPTION("Option DMRG_IPEA (double) must be larger than zero!"); }
+    if ( d_convergence<=0.0 )                     { throw PSIEXCEPTION("Option DMRG_SCF_GRAD_THR (double) must be larger than zero!"); }
+    if ( dmrg_diis_branch<=0.0 )                  { throw PSIEXCEPTION("Option DMRG_SCF_DIIS_THR (double) must be larger than zero!"); }
+    if ( dmrg_max_iter<1 )                        { throw PSIEXCEPTION("Option DMRG_SCF_MAX_ITER (integer) must be larger than zero!"); }
+    if ( dmrg_which_root<0 )                      { throw PSIEXCEPTION("Option DMRG_EXCITATION (integer) must be larger than zero!"); }
+    if (( dmrg_caspt2 ) && ( dmrg_ipea < 0.0 ))   { throw PSIEXCEPTION("Option DMRG_CASPT2_IPEA (double) must be larger than zero!"); }
     if (( dmrg_molden ) && (( dmrg_caspt2 ) && ( PSEUDOCANONICAL == false ))){
        throw PSIEXCEPTION("Conflicting options: the molden file requires pseudocanonical orbitals, and caspt2 is requested in the active space orbitals.");
     }
@@ -805,14 +805,14 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
             const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt, psi4TMPpath);
-            for (int state = 0; state < dmrg_which_root; state++){
-                if (state > 0){ theDMRG->newExcitation( fabs( Energy ) ); }
+            for (int state = -1; state < dmrg_which_root; state++){
+                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
                 Energy = theDMRG->Solve();
                 if ( dmrg_state_avg ){ // When SA-DMRGSCF: 2DM += current 2DM
                     theDMRG->calc2DMandCorrelations();
                     CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM );
                 }
-                if ((state == 0) && (dmrg_which_root > 1)){ theDMRG->activateExcitations( dmrg_which_root-1 ); }
+                if ((state == -1) && (dmrg_which_root > 0)){ theDMRG->activateExcitations( dmrg_which_root ); }
             }
             if ( !(dmrg_state_avg) ){ // When SS-DMRGSCF: 2DM += last 2DM
                 theDMRG->calc2DMandCorrelations();
@@ -821,8 +821,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             if ( dmrg_print_corr ){ theDMRG->getCorrelations()->Print(); }
             if ( CheMPS2::DMRG_storeRenormOptrOnDisk ){ theDMRG->deleteStoredOperators(); }
             delete theDMRG;
-            if ((dmrg_state_avg) && (dmrg_which_root > 1)){
-                const double averagingfactor = 1.0 / dmrg_which_root;
+            if ((dmrg_state_avg) && (dmrg_which_root > 0)){
+                const double averagingfactor = 1.0 / (dmrg_which_root+1);
                 for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] *= averagingfactor; }
             }
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
@@ -980,10 +980,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
             const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, false, psi4TMPpath); // Rotated orbital space --> do not use checkpoint
-            for (int state = 0; state < dmrg_which_root; state++){
-                if (state > 0){ theDMRG->newExcitation( fabs( Energy ) ); }
+            for (int state = -1; state < dmrg_which_root; state++){
+                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
                 const double E_CASSCF = theDMRG->Solve();
-                if ((state == 0) && (dmrg_which_root > 1)){ theDMRG->activateExcitations( dmrg_which_root-1 ); }
+                if ((state == -1) && (dmrg_which_root > 0)){ theDMRG->activateExcitations( dmrg_which_root ); }
             }
             theDMRG->calc_rdms_and_correlations( true );
             CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM  );        // 2-RDM

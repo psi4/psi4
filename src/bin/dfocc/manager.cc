@@ -2369,8 +2369,8 @@ void DFOCC::mp3_manager()
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
 	    mp3_pdm_3index_intr();
  	    omp3_opdm();
-	    //omp3_tpdm();
-	    ccl_energy();
+	    omp3_tpdm();
+	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();

@@ -122,7 +122,7 @@ Basic DETCI Keywords
 .. include:: autodir_options_c/globals__restricted_docc.rst
 .. include:: autodir_options_c/globals__restricted_uocc.rst
 .. include:: autodir_options_c/globals__frozen_uocc.rst
-.. include:: autodir_options_c/detci__maxiter.rst
+.. include:: autodir_options_c/detci__ci_maxiter.rst
 .. include:: autodir_options_c/detci__num_roots.rst
 .. include:: autodir_options_c/detci__icore.rst
 .. include:: autodir_options_c/detci__diag_method.rst

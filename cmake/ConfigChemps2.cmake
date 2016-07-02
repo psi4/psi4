@@ -18,7 +18,7 @@ if(NOT CHEMPS2_FOUND)
     ExternalProject_Add(interface_chemps2
         PREFIX ${CUSTOM_CHEMPS2_LOCATION}
         GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-        GIT_TAG v1.7
+        GIT_TAG v1.7.1
         CMAKE_ARGS 
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DEXTRA_C_FLAGS=${CMAKE_EXTRA_C_FLAGS}
@@ -30,6 +30,9 @@ if(NOT CHEMPS2_FOUND)
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
                    -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
+                   -DCMAKE_RANLIB=${CMAKE_RANLIB}
+                   -DCMAKE_AR=${CMAKE_AR}
+                   -DCMAKE_NM=${CMAKE_NM}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")
