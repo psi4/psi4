@@ -291,18 +291,9 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
 
   oprintf_out("\tDifference from target, |x_target - x_achieved| = %.2e\n",tval);
 
-  if (tval > 1.0e-8) {
-    oprintf_out("\tUnsuccessful at orienting fragments!\n");
-    
-    return false;
-  }
-  else {
-    oprintf_out("\tSuccessfully oriented fragments.\n");
-    
-    B->set_geom(B_geom);
-    free_matrix(B_geom);
-    return true;
-  }
+  B->set_geom(B_geom);
+  free_matrix(B_geom);
+  return true;
 }
 
 /* Given the xyz coordinates for three points and R, theta, and phi, returns the

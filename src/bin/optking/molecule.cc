@@ -595,11 +595,11 @@ double ** MOLECULE::compute_B(void) const {
     fragments[f]->compute_B(B, g_coord_offset(f), g_atom_offset(f));
 
   for (std::size_t I=0; I<interfragments.size(); ++I) {
-    int iA = interfragments[I]->g_A_index();
-    int iB = interfragments[I]->g_B_index();
+    int A_off = g_atom_offset( interfragments[I]->g_A_index());
+    int B_off = g_atom_offset( interfragments[I]->g_B_index());
+    int coord_off = g_interfragment_coord_offset(I);
 
-    interfragments[I]->compute_B(B, g_interfragment_coord_offset(I),
-        g_atom_offset(iA), g_atom_offset(iB));
+    interfragments[I]->compute_B(B, coord_off, A_off, B_off);
   }
   return B;
 }
@@ -912,7 +912,7 @@ bool MOLECULE::coord_combo_is_symmetric(double *intco_combo, int dim) {
       for (int intco=0; intco<dim; ++intco)
         displaced_geom[atom][xyz] += 0.1/norm * intco_combo[intco] * B[intco][3*atom+xyz];
 
-  //oprintf_out("Displaced geometry\n");
+  //oprintf_out("Displaced geometry in coord_combo_is_symmetric:\n");
   //oprint_matrix_out(displaced_geom, natom, 3);
 
   bool symm_rfo_step = false;

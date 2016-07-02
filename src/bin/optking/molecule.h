@@ -261,7 +261,7 @@ class MOLECULE {
   }
 
   void write_geom(void);
-  void symmetrize_geom(void);
+  void symmetrize_geom(bool flexible=false);
   void print_geom_out(void);
   void print_geom_out_irc(void);
 

@@ -361,30 +361,30 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
       double **weightA = init_matrix(ndA, fragments[first_frag]->g_natom());
       double **weightB = init_matrix(ndB, fragments[second_frag]->g_natom());
 
-      if (ndA > 0) {
+      if (ndA > 0)
         for (std::size_t i=0; i<A1.size(); ++i)
-          weightA[0][A1[i]] = 1.0;
-      }
-      if (ndA > 1) {
+          weightA[0][A1[i]] = 1.0/A1.size();
+       
+      if (ndA > 1)  
         for (std::size_t i=0; i<A2.size(); ++i) 
-          weightA[1][A2[i]] = 1.0;
-      }
-      if (ndA > 2) {
+          weightA[1][A2[i]] = 1.0/A2.size();
+       
+      if (ndA > 2)  
         for (std::size_t i=0; i<A3.size(); ++i) 
-          weightA[2][A3[i]] = 1.0;
-      }
-      if (ndB > 0) {
+          weightA[2][A3[i]] = 1.0/A3.size();
+       
+      if (ndB > 0)  
         for (std::size_t i=0; i<B1.size(); ++i) 
-          weightB[0][B1[i]] = 1.0;
-      }
-      if (ndB > 1) {
+          weightB[0][B1[i]] = 1.0/B1.size();
+       
+      if (ndB > 1)  
         for (std::size_t i=0; i<B2.size(); ++i) 
-          weightB[1][B2[i]] = 1.0;
-      }
-      if (ndB > 2) {
+          weightB[1][B2[i]] = 1.0/B2.size();
+       
+      if (ndB > 2)  
         for (std::size_t i=0; i<B3.size(); ++i) 
-          weightB[2][B3[i]] = 1.0;
-      }
+          weightB[2][B3[i]] = 1.0/B3.size();
+       
 
       INTERFRAG * one_IF = new INTERFRAG(fragments[first_frag], fragments[second_frag],
       first_frag, second_frag, weightA, weightB, ndA, ndB);
