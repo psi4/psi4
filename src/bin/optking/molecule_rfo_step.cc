@@ -192,7 +192,7 @@ void MOLECULE::rfo_step(void) {
         }
         else {
           tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] );
-          if (fabs(tval) > Opt_params.rfo_normalization_max) { // matching test in code below
+          if (fabs(tval) > Opt_params.rfo_normalization_max) { // matching test in code above
             if (iter == 0)
               oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
             symm_rfo_step = false;
@@ -249,6 +249,21 @@ void MOLECULE::rfo_step(void) {
         for (i=0; i<fragments[f]->Ncoord(); ++i)
           dq[ g_coord_offset(f) + i ] = 0.0;
       }
+    }
+
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
+      if (interfragments[I]->is_frozen()) {
+        if (iter == 0)
+          oprintf_out("\tZero'ing out displacements for frozen interfragment %d\n", I+1);
+        for (int i=0; i<interfragments[I]->Ncoord(); ++i)
+          dq[ g_interfragment_coord_offset(I)+i] = 0;
+      }
+    }
+    // Set dq of frozen interfragment coordinates to hard zero.
+    for (std::size_t I=0; I<interfragments.size(); ++I) {
+      for (int i=0; i< interfragments[I]->Ncoord(); ++i)
+        if (interfragments[I]->is_frozen(i))
+          dq[g_interfragment_coord_offset(I)+i] = 0.0;
     }
 
     // Perhaps not necessary:
@@ -352,7 +367,6 @@ void MOLECULE::rfo_step(void) {
   free_array(Gdq);
   oprintf_out("Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
-
   for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
@@ -375,7 +389,14 @@ void MOLECULE::rfo_step(void) {
   for (std::size_t I=0; I<fb_fragments.size(); ++I)
     fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+  symmetrize_geom(true); // now symmetrize the geometry for next step
+
+  if (Opt_params.print_lvl > 1) {
+    oprintf_out("Symmetrized geometry\n");
+    double **g = g_geom_2D();
+    oprint_matrix_out(g, g_natom(), 3);
+    free_matrix(g);
+  }
 
 /* Test step sizes
   double *x_after = g_geom_array();

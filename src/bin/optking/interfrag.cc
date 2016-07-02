@@ -338,15 +338,19 @@ double * INTERFRAG::coord_values(GeomType new_geom_A, GeomType new_geom_B) {
   return q;
 }
 
-// returns B matrix (internals by 3*natomA + 3*natomB)
+// A_off and B_off are the overall molecule index of the first atom in each fragment
+// If Boff is not provided, we assume B fragment follows immediately after A
+// and produce a mini-B for this set of coordinates only that is 
+// (internals by 3*natomA + 3*natomB)
 void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, 
     int coord_offset, int A_off, int B_off) {
 
   update_reference_points(new_geom_A, new_geom_B);
   int natomA = A->natom;
   int natomB = B->natom;
-
-  //double **B = init_matrix(Ncoord(), 3*(natomA+natomB));
+  if (B_off == 0) B_off = natomA;
+  int A_xyz_off = 3*A_off;
+  int B_xyz_off = 3*B_off;
 
   if (!principal_axes) {
 
@@ -356,14 +360,10 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
   if (D_on[0]) {
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
     for (xyz=0; xyz<3; ++xyz) {
-      for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
-        for (int b=0; b<natomB; ++b) {
-          int atom_b = b + B_off;
-          Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
-        }
-      }
+      for (int a=0; a<natomA; ++a)
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
+      for (int b=0; b<natomB; ++b)
+          Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
     }
     free_matrix(B_ref);
     ++cnt;
@@ -373,14 +373,11 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // theta_A, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[0][xyz];
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[1][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[1][xyz];
       }
-      for (int b=0; b<natomB; ++b) {
-        int atom_b = b + B_off;
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[2][xyz];
-      }
+      for (int b=0; b<natomB; ++b)
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[2][xyz];
     }
     free_matrix(B_ref);
     ++cnt;
@@ -389,14 +386,11 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
   if (D_on[2]) {
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // theta_B, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
-      for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
-      }
+      for (int a=0; a<natomA; ++a)
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
       for (int b=0; b<natomB; ++b) {
-        int atom_b = b + B_off;
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[2][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[1][b] * B_ref[2][xyz];
       }
     }
     free_matrix(B_ref);
@@ -407,14 +401,12 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // tau, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[0][xyz];
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[1][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[1][xyz];
       }
       for (int b=0; b<natomB; ++b) {
-        int atom_b = b + B_off;
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[2][xyz];
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[3][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[2][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[1][b] * B_ref[3][xyz];
       }
     }
     free_matrix(B_ref);
@@ -425,15 +417,12 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // phi_A, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[2][a] * B_ref[0][xyz];
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[1][xyz];
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[2][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[2][a] * B_ref[0][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[1][a] * B_ref[1][xyz];
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[2][xyz];
       }
-      for (int b=0; b<natomB; ++b) {
-        int atom_b = b + B_off;
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[3][xyz];
-      }
+      for (int b=0; b<natomB; ++b)
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[3][xyz];
     }
     free_matrix(B_ref);
     ++cnt;
@@ -442,15 +431,12 @@ void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin
   if (D_on[5]) {
     B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // phi_B, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
-      for (int a=0; a<natomA; ++a) {
-        int atom_a = a + A_off;
-        Bin[coord_offset+cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
-      }
+      for (int a=0; a<natomA; ++a)
+        Bin[coord_offset+cnt][A_xyz_off + 3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
       for (int b=0; b<natomB; ++b) {
-        int atom_b = b + B_off;
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[2][xyz];
-        Bin[coord_offset+cnt][3*atom_b + xyz] += weightB[2][b] * B_ref[3][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[1][b] * B_ref[2][xyz];
+        Bin[coord_offset+cnt][B_xyz_off + 3*b + xyz] += weightB[2][b] * B_ref[3][xyz];
       }
     }
     free_matrix(B_ref);
