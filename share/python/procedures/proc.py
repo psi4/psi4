@@ -2818,7 +2818,7 @@ def run_sapt(name, **kwargs):
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
     psi4.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
-    if name == 'sapt0':
+    if name in ['sapt0', 'ssapt0']:
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2':
         psi4.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
@@ -2853,8 +2853,11 @@ def run_sapt(name, **kwargs):
     from qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
+    for term in ['ELST', 'EXCH', 'IND', 'DISP', 'TOTAL']:
+        psi4.set_variable(' '.join(['SAPT', term, 'ENERGY']), 
+            psi4.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
+    psi4.set_variable('CURRENT ENERGY', psi4.get_variable('SAPT TOTAL ENERGY'))
 
-    #return e_sapt
     return dimer_wfn
 
 
