@@ -30,6 +30,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
    was changed to true. Hence the code now by default uses natural
    orbital truncation to speed up the evaluation of energy terms
    wherever possible, according to literature recommendations.
+   In early July 2016, some total sapt energy psivars were renamed.
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
