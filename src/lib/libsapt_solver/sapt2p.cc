@@ -303,6 +303,9 @@ void SAPT2p::print_results()
     double tot_exch = e_exch10_ + *scal_it * (e_exch11_ + e_exch12_);
     double tot_ind = e_ind20_ + dHF2 + e_ind22_ 
             + *scal_it * (e_exch_ind20_ + e_exch_ind22_);
+    if(e_MP2 != 0.0) {
+      tot_ind += dMP2_2;
+    }
     double tot_ct = e_ind20_ + e_ind22_ +
             *scal_it * (e_exch_ind20_ + e_exch_ind22_);
     double tot_disp = 0.0;
@@ -523,17 +526,14 @@ void SAPT2p::print_results()
     // Only export if not scaled.
     if(scal_it == Xscal.begin()) {
 
-        Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
         Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
         Process::environment.globals["SAPT ELST12,R ENERGY"] = e_elst12_;
 
-        Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
         Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
         Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
         Process::environment.globals["SAPT EXCH11(S^2) ENERGY"] = e_exch11_;
         Process::environment.globals["SAPT EXCH12(S^2) ENERGY"] = e_exch12_;
 
-        Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
         Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
         Process::environment.globals["SAPT IND22 ENERGY"] = e_ind22_;
         Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
@@ -542,39 +542,29 @@ void SAPT2p::print_results()
 
         Process::environment.globals["SAPT CT ENERGY"] = tot_ct;
 
-        Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
         Process::environment.globals["SAPT DISP20 ENERGY"] = e_disp20_;
         Process::environment.globals["SAPT DISP21 ENERGY"] = e_disp21_;
         Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = e_exch_disp20_;
 
-        Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
-        Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
-
         if (mbpt_disp_) {
             Process::environment.globals["SAPT DISP22(SDQ) ENERGY"] = e_disp22sdq_;
             Process::environment.globals["SAPT DISP22(T) ENERGY"] = e_disp22t_;
-            Process::environment.globals["SAPT SAPT2+ ENERGY"] = e_sapt2p_;
             if (nat_orbs_t3_) {
                 Process::environment.globals["SAPT EST.DISP22(T) ENERGY"] = e_est_disp22t_;
             } else {
                 Process::environment.globals["SAPT EST.DISP22(T) ENERGY"] = e_disp22t_;
             }
-            Process::environment.globals["SAPT ENERGY"] = e_sapt2p_;
-            Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
         }
 
         if (ccd_disp_) {
             Process::environment.globals["SAPT DISP2(CCD) ENERGY"] = e_disp2d_ccd_;
             Process::environment.globals["SAPT DISP22(S)(CCD) ENERGY"] = e_disp22s_ccd_;
             Process::environment.globals["SAPT DISP22(T)(CCD) ENERGY"] = e_disp22t_ccd_;
-            Process::environment.globals["SAPT SAPT2+(CCD) ENERGY"] = e_sapt2p_ccd_;
-            Process::environment.globals["SAPT ENERGY"] = e_sapt2p_ccd_;
             if (nat_orbs_t3_) {
                 Process::environment.globals["SAPT EST.DISP22(T)(CCD) ENERGY"] = e_est_disp22t_ccd_;
             } else {
                 Process::environment.globals["SAPT EST.DISP22(T)(CCD) ENERGY"] = e_disp22t_ccd_;
             }
-            Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
         }
     }
   }
