@@ -227,7 +227,7 @@ void SAPT2p::print_results()
       Xscal.push_back(sapt_Xscal);
 
   // Grab the supermolecular MP2 correlation energy if it is here
-  double e_MP2 = Process::environment.globals["SA MP2 CORRELATION ENERGY"];
+  double e_MP2 = Process::environment.globals["SAPT MP2 CORRELATION ENERGY"];
 
   // The main loop, computes everything with all scaling factors in
   // the Xscal vector. Only exports variables once, for the scaling factor

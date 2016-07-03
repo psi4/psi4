@@ -249,7 +249,7 @@ void SAPT2p3::print_results()
       Xscal.push_back(sapt_Xscal);
 
   // Grab the supermolecular MP2 correlation energy if it is here
-  double e_MP2 = Process::environment.globals["SA MP2 CORRELATION ENERGY"];
+  double e_MP2 = Process::environment.globals["SAPT MP2 CORRELATION ENERGY"];
 
   if (e_ind30r_ != 0.0)
     e_exch_ind30r_ = e_ind30r_ * (e_exch_ind30_/e_ind30_);
