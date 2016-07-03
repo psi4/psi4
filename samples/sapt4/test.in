@@ -45,10 +45,11 @@ Eelst = psi4.get_variable("SAPT ELST ENERGY")
 Eexch = psi4.get_variable("SAPT EXCH ENERGY")
 Eind = psi4.get_variable("SAPT IND ENERGY")
 Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ESAPT0 = psi4.get_variable("SAPT SAPT0 ENERGY")
-ESAPT2 = psi4.get_variable("SAPT SAPT2 ENERGY")
-ESAPT2p = psi4.get_variable("SAPT SAPT2+ ENERGY")
-ESAPT2pp3 = psi4.get_variable("SAPT SAPT2+(3) ENERGY")
+ESAPT0 = psi4.get_variable("SAPT0 TOTAL ENERGY")
+ESAPT2 = psi4.get_variable("SAPT2 TOTAL ENERGY")
+ESAPT2p = psi4.get_variable("SAPT2+ TOTAL ENERGY")
+ESAPT2pp3 = psi4.get_variable("SAPT2+(3) TOTAL ENERGY")
+ESAPT = psi4.get_variable("SAPT TOTAL ENERGY")
 
 Eref = [ -0.04076062059,   #TEST
           0.04625663134,   #TEST
@@ -67,3 +68,4 @@ compare_values(Eref[4], ESAPT0, 6, "SAPT0 total")        #TEST
 compare_values(Eref[5], ESAPT2, 6, "SAPT2 total")        #TEST
 compare_values(Eref[6], ESAPT2p, 6, "SAPT2+ total")      #TEST
 compare_values(Eref[7], ESAPT2pp3, 6, "SAPT2+(3) total") #TEST
+compare_values(Eref[7], ESAPT, 6, "SAPT total")          #TEST
