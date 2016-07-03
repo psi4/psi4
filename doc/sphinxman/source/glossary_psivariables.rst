@@ -554,28 +554,39 @@ PSI Variables by Alpha
    Respectively, the dispersion, electrostatics, exchange, and induction
    components of the total electronic interaction energy [H] for the the
    requested SAPT level of theory. The sum of these four components yields
-   :psivar:`SAPT ENERGY <SAPTENERGY>`.
+   :psivar:`SAPT TOTAL ENERGY <SAPTTOTALENERGY>`.
 
-.. psivar:: SAPT ENERGY
+.. psivar:: SAPT TOTAL ENERGY
 
    The total electronic interaction energy [H] for the requested SAPT
    level of theory.
 
-.. psivar:: SAPT SAPT0 ENERGY
-   SAPT SAPT2 ENERGY
-   SAPT SAPT2+ ENERGY
-   SAPT SAPT2+(3) ENERGY
-   SAPT SAPT2+3 ENERGY
+.. psivar:: SAPT0 TOTAL ENERGY
+   SSAPT0 TOTAL ENERGY
+   SAPT2 TOTAL ENERGY
+   SAPT2+ TOTAL ENERGY
+   SAPT2+(3) TOTAL ENERGY
+   SAPT2+3 TOTAL ENERGY
 
    The total electronic interaction energy [H] for the labeled SAPT level
    of theory.
 
-.. psivar:: SAPT SAPT2+(CCD) ENERGY
-   SAPT SAPT2+(3)(CCD) ENERGY
-   SAPT SAPT2+3(CCD) ENERGY
+.. psivar:: SAPT2+(CCD) TOTAL ENERGY
+   SAPT2+(3)(CCD) TOTAL ENERGY
+   SAPT2+3(CCD) TOTAL ENERGY
 
    The total electronic interaction energy [H] for the labeled SAPT level
    of theory that incorporates coupled-cluster dispersion.
+
+.. psivar:: SAPT2+DMP2 TOTAL ENERGY
+   SAPT2+(3)DMP2 TOTAL ENERGY
+   SAPT2+3DMP2 TOTAL ENERGY
+   SAPT2+(CCD)DMP2 TOTAL ENERGY
+   SAPT2+(3)(CCD)DMP2 TOTAL ENERGY
+   SAPT2+3(CCD)DMP2 TOTAL ENERGY
+
+   The total electronic interaction energy [H] for the labeled SAPT level
+   of theory that incorporates MP2 induction correction.
 
 .. psivar:: SCF DIPOLE X
    SCF DIPOLE Y

@@ -738,6 +738,94 @@ void SAPT2p3::print_results()
                 Process::environment.globals["SAPT EST.DISP22(T)(CCD) ENERGY"] = e_disp22t_ccd_;
             }
         }
+
+        // for auto-docs
+        /*- Process::environment.globals["SAPT ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT TOTAL ENERGY"] -*/
+
+        /*- Process::environment.globals["SAPT0 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SSAPT0 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+ ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD) ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+DMP2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD)DMP2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3) ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD) ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)DMP2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD)DMP2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD) ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3DMP2 ELST ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD)DMP2 ELST ENERGY"] -*/
+
+        /*- Process::environment.globals["SAPT0 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SSAPT0 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+ EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD) EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+DMP2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD)DMP2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3) EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD) EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)DMP2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD)DMP2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD) EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3DMP2 EXCH ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD)DMP2 EXCH ENERGY"] -*/
+
+        /*- Process::environment.globals["SAPT0 IND ENERGY"] -*/
+        /*- Process::environment.globals["SSAPT0 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+ IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD) IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+DMP2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD)DMP2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3) IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD) IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)DMP2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD)DMP2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD) IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3DMP2 IND ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD)DMP2 IND ENERGY"] -*/
+
+        /*- Process::environment.globals["SAPT0 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SSAPT0 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+ DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD) DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+DMP2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD)DMP2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3) DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD) DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)DMP2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD)DMP2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD) DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3DMP2 DISP ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD)DMP2 DISP ENERGY"] -*/
+
+        /*- Process::environment.globals["SAPT0 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SSAPT0 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+ TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD) TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+DMP2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(CCD)DMP2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3) TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD) TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)DMP2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+(3)(CCD)DMP2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD) TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3DMP2 TOTAL ENERGY"] -*/
+        /*- Process::environment.globals["SAPT2+3(CCD)DMP2 TOTAL ENERGY"] -*/
+
     }
   }
 
