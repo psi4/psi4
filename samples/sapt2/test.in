@@ -54,7 +54,7 @@ Eelst = psi4.get_variable("SAPT ELST ENERGY")
 Eexch = psi4.get_variable("SAPT EXCH ENERGY")
 Eind  = psi4.get_variable("SAPT IND ENERGY")
 Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
+ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")
 
 Eref = [ -0.00156580384,  #TEST
           0.00393298774,  #TEST

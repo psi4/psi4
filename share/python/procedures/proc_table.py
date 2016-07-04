@@ -62,6 +62,7 @@ procedures = {
             'qchf'          : proc.run_qchf,
             'ccd'           : proc.run_dfocc,
             'sapt0'         : proc.run_sapt,
+            'ssapt0'        : proc.run_sapt,
             'sapt2'         : proc.run_sapt,
             'sapt2+'        : proc.run_sapt,
             'sapt2+(3)'     : proc.run_sapt,

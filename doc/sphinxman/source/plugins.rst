@@ -92,29 +92,33 @@ Creating a New Plugin Using a Conda Pre-compiled Binary
 
 |PSIfour| plugins can also be created using Conda for both |PSIfour| binary and 
 development environment.
-To compile a plugin it is necessary to have a compiler (*e.g.*, ``gcc``) and blas libraries
-(*e.g.*, ``openblas``) installed in the Conda environment used to run |PSIfour|.
-It is recommended to create a new Conda environment with packages `gcc` and `openblas` installed. ::
+To compile a plugin with the default ``Makefile``, it is necessary to have the 
+``gcc`` compiler installed in the Conda distribution or environment (below, 
+``$PSI4CONDA``) used to run |PSIfour|. ::
 
-   >>> conda create -n p4plugenv psi4     # makes environment named p4plugenv with psi4 binary installed
-   >>> source activate p4plugenv          # activate the env so its contents are first in your PATH
-   >>> cd "$(dirname $(which psi4))"/..   # move into env directory
-   >>> #cd $CONDA/envs/p4plugenv          # same effect as line above where $CONDA is path to Miniconda/Anaconda
-   >>> conda install gcc                  # place compilers into expected place
-   # Linux
-   >>> conda install openblas
-   # Mac
-   >>> conda install boost=1.57
+    # prepare
+    >>> bash
+    >>> export PATH=$PSI4CONDA/bin:$PATH  # usually already done from psi4 installation
+    >>> cd "$(dirname $(which psi4))"/..  # move into distribution/environment directory, $PSI4CONDA
+    >>> conda install gcc                 # install compilers into expected place
 
-Once these packages are installed, plugins can be created and compiled. ::
+    # check (yes, next line gives empty result. yes, LD_LIBRARY_PATH irrelevant)
+    >>> echo $PYTHONHOME $PYTHONPATH $DYLD_LIBRARY_PATH $PSIDATADIR
 
-   >>> source activate p4plugenv          # important: activate conda environment
-   >>> psi4 --new-plugin testplugin       # generate new plugin
-   >>> cd testplugin                      # move into plugin directory
-   >>> make                               # compile the plugin to produce testplugin.so
-   >>> psi4                               # run sample input.dat 
+    >>> which python psi4 gcc
+    $PSI4CONDA/bin/python
+    $PSI4CONDA/bin/psi4
+    $PSI4CONDA/bin/gcc
 
-Please note that the conda enviroment must be activated before compilation and execution of
+    # create and compile plugin
+    >>> psi4 --new-plugin testplugin      # generate new plugin
+    >>> cd testplugin                     # move into plugin directory
+    >>> make                              # compile the plugin to product testplugin.so
+    >>> psi4                              # run sample input.dat
+    Attention! This SCF may be density-fitted.
+
+Please note that the conda distribution must be in ``$PATH`` or the
+conda enviroment must be activated before compilation and execution of
 plugins created using this procedure.
 
 Files in a Plugin Directory
