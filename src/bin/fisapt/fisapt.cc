@@ -2324,9 +2324,9 @@ void FISAPT::print_trailer()
     Process::environment.globals["SAPT EXCH ENERGY"] = scalars_["Exchange"];
     Process::environment.globals["SAPT IND ENERGY"] = scalars_["Induction"];
     Process::environment.globals["SAPT DISP ENERGY"] = scalars_["Dispersion"];
-    Process::environment.globals["SAPT SAPT0 ENERGY"] = scalars_["SAPT"];
-    Process::environment.globals["SAPT ENERGY"] = scalars_["SAPT"];
-    Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+    Process::environment.globals["SAPT0 TOTAL ENERGY"] = scalars_["SAPT"];
+    Process::environment.globals["SAPT TOTAL ENERGY"] = scalars_["SAPT"];
+    Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT TOTAL ENERGY"];
 }
 void FISAPT::plot()
 {
