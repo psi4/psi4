@@ -6,8 +6,8 @@
 Binary Distribution
 ===================
 
-|PSIfour| is available as a pre-compiled binary for Linux architectures
-(Mac coming soon) through `Continuum Analytics
+|PSIfour| is available as a pre-compiled binary for Linux and Mac architectures
+through `Continuum Analytics
 <https://store.continuum.io/cshop/anaconda/>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
 full-fledged scientific python environment with package manager `conda
@@ -22,7 +22,7 @@ distribution with same package manger `conda
 
 * built with high-performance math libraries
 
-* lightweight software stack (<100 MB w/o |PSIfour|; <500 MB including |PSIfour|)
+* lightweight software stack (<100 MB w/o |PSIfour|; ~1 GB including |PSIfour|, numpy, and MKL)
 
 * updated nightly so new features accessible
 
@@ -34,7 +34,8 @@ distribution with same package manger `conda
 
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
-For commands to get a default installation, go to :ref:`sec:psi4conda`.
+For commands to get a default installation, go to :ref:`sec:psi4conda`
+or the `psicode downloads page <http://psicode.org/downloads2.html>`_.
 Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
