@@ -54,8 +54,8 @@ the |PSIfour| executable into the main conda environment at
     # Linux
     >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-Linux.sh" --keepalive-time 2
     >>> bash
-    >>> bash Psi4conda-latest-Linux.sh -b -p $HOME/miniconda  # agrees to license terms
-    >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bashrc
+    >>> bash Psi4conda-latest-Linux.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bashrc
     # log out, log back in so conda and psi4 in path
     >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
@@ -64,17 +64,30 @@ the |PSIfour| executable into the main conda environment at
     # Mac
     >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-MacOSX.sh" --keepalive-time 2
     >>> bash
-    >>> bash Psi4conda-latest-MacOSX.sh -b -p $HOME/miniconda  # agrees to license terms
-    >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bash_profile
+    >>> bash Psi4conda-latest-MacOSX.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bash_profile
     # log out, log back in so conda and psi4 in path
     >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+That last command tested that ``psi4`` is in your path, and it's finding
+all the libraries it needs. Now you need only specify a scratch directory
+(see :ref:`sec:Scratch`) by replacing the placeholder in the following:
+
+.. code-block:: bash
+
+    >>> echo "export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files" >> ~/.bashrc
+    # log out, log back in so variable takes effect
+
+All done!
+
+.. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
 
 .. _`sec:condadetails`:
 
 Conda Proficients
 ^^^^^^^^^^^^^^^^^
 
-The `sec:psi4conda` uses a `conda constructor
+The :ref:`sec:psi4conda` uses a `conda constructor
 <https://github.com/conda/constructor>`_ to package up Miniconda,
 the psi4 conda packages, the psi4 add-on conda packages, dependencies
 thereof (possibly from particular channels), and the psi4 channel
@@ -92,20 +105,20 @@ and libc++ vs. libstdc++. So ``conda create -c psi4 -n p4env psi4 dftd3
 v2rdm_casscf`` *should* be equivalent to running the psi4conda installer,
 but I wouldn't count on it. Instead, an `explicit environment spec
 <http://conda.pydata.org/docs/using/envs.html#build-identical-conda-environments-with-urls>`_
-is available for download.
+will be available for download.
 
-.. code-block:: 
+.. code-block:: bash
 
     # Linux
     >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
-    >>> conda create --name p4env --file explicit2-latest-Linux-x86_64.txt
+    >>> conda create --name p4env --file explicitenv2-latest-Linux-x86_64.txt
     >>> source activate p4env
 
-.. code-block:: 
+.. code-block:: bash
 
     # Mac
     >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
-    >>> conda create --name p4env --file explicit2-latest-MacOSX-x86_64.txt
+    >>> conda create --name p4env --file explicitenv2-latest-MacOSX-x86_64.txt
     >>> source activate p4env
 
 .. _`sec:quickconda`:
