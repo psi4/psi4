@@ -115,6 +115,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   } else {
       exch_scale_alpha_ = std::atof(options_.get_str("EXCH_SCALE_ALPHA").c_str());
   }
+  Process::environment.globals["SAPT ALPHA"] = exch_scale_alpha_;
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");
   schwarz_ = options_.get_double("INTS_TOLERANCE");

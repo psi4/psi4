@@ -34,9 +34,79 @@ distribution with same package manger `conda
 
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
-For commands to get a default installation, go to :ref:`sec:quickconda`.
+For commands to get a default installation, go to :ref:`sec:psi4conda`.
+Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
+
+.. _`sec:psi4conda`:
+
+Psi4conda Installer
+^^^^^^^^^^^^^^^^^^^
+
+Sequence of commands to get you to a working |PSIfour| on Linux
+or Mac. Installs Miniconda+Psi4 into ``$HOME/psi4conda`` and
+the |PSIfour| executable into the main conda environment at
+``$HOME/psi4conda/bin/psi4``.
+
+.. code-block:: bash
+
+    # Linux
+    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-Linux.sh" --keepalive-time 2
+    >>> bash
+    >>> bash Psi4conda-latest-Linux.sh -b -p $HOME/miniconda  # agrees to license terms
+    >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bashrc
+    # log out, log back in so conda and psi4 in path
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+.. code-block:: bash
+
+    # Mac
+    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-MacOSX.sh" --keepalive-time 2
+    >>> bash
+    >>> bash Psi4conda-latest-MacOSX.sh -b -p $HOME/miniconda  # agrees to license terms
+    >>> echo "export PATH=$HOME/miniconda/bin:\$PATH" >> ~/.bash_profile
+    # log out, log back in so conda and psi4 in path
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+.. _`sec:condadetails`:
+
+Conda Proficients
+^^^^^^^^^^^^^^^^^
+
+The `sec:psi4conda` uses a `conda constructor
+<https://github.com/conda/constructor>`_ to package up Miniconda,
+the psi4 conda packages, the psi4 add-on conda packages, dependencies
+thereof (possibly from particular channels), and the psi4 channel
+as a default.  This is very convenient for novice users and robust
+against differing channel settings in ``~/.condarc``. But proficient
+conda users may prefer to treat ``psi4`` as a normal conda package and
+not have another large Miniconda installation (including the hefty MKL)
+lying around just for |PSIfour|. Installing just the ``psi4`` package
+itself will get you |PSIfour|, whatever add-ons require linking in to
+|PSIfour| (*e.g.*, CheMPS2 and PCMSolver), and the correct versions of
+packages. However, just the ``psi4`` package won't get you add-ons that
+don't need linking (*e.g.*, DFTD3 and v2rdm_casscf) or dependencies
+from the "right" channels, which can be important for issues of fPIC
+and libc++ vs. libstdc++. So ``conda create -c psi4 -n p4env psi4 dftd3
+v2rdm_casscf`` *should* be equivalent to running the psi4conda installer,
+but I wouldn't count on it. Instead, an `explicit environment spec
+<http://conda.pydata.org/docs/using/envs.html#build-identical-conda-environments-with-urls>`_
+is available for download.
+
+.. code-block:: 
+
+    # Linux
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
+    >>> conda create --name p4env --file explicit2-latest-Linux-x86_64.txt
+    >>> source activate p4env
+
+.. code-block:: 
+
+    # Mac
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
+    >>> conda create --name p4env --file explicit2-latest-MacOSX-x86_64.txt
+    >>> source activate p4env
 
 .. _`sec:quickconda`:
 
@@ -62,7 +132,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
     >>> conda update --yes --all
     >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
-    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/stability2/input.dat  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. Now you need only specify a scratch directory
