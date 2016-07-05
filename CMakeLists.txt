@@ -183,8 +183,8 @@
 #
 #
 
-#Need 3.2 for build_always
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+#Need 3.1 for build_always
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 CXX C)
 include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake

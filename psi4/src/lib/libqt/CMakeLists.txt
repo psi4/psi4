@@ -33,5 +33,6 @@ set(sources_list zmat_point.cc
                  v_3.cc 
                  david.cc 
 )
+add_definitions("-DFC_SYMBOL=2")
 psi4_add_library(qt sources_list)
-target_link_libraries(qt psio ciomr mints)
+target_link_libraries(qt psio ciomr mints ${LAPACK_LIBRARIES})

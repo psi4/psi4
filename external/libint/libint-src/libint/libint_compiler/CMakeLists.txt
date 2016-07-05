@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(libint_compiler LANGUAGES C)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
+find_package(M REQUIRED)
 math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
 add_definitions(-DLIBINT_NEW_AM=${LIBINT_NEW_AM})
 add_definitions(-DLIBINT_OPT_AM=${LIBINT_OPT_AM})
@@ -20,4 +19,5 @@ set(COMPILER_SRC build_libint.c
                  constants.c
 )
 add_executable(libint_compiler ${COMPILER_SRC})
+target_link_libraries(libint_compiler ${LIBM_LIBRARIES})
 install(TARGETS libint_compiler DESTINATION ${CMAKE_INSTALL_PREFIX})

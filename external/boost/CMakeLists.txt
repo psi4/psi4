@@ -9,8 +9,7 @@ if(NOT Boost_FOUND)
    message(STATUS "A suitable version of Boost could not be located.  One will"
                   " be built for you.")
    string(REPLACE ";" "," B2_BOOST_COMPONENTS "${BOOST_COMPONENTS}")
-   
-   string(TOLOWER ${CMAKE_BUILD_TYPE} BOOST_BUILD_TYPE)
+   string(TOLOWER "${CMAKE_BUILD_TYPE}" BOOST_BUILD_TYPE)
 
    if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
       set(BOOST_COMPILER_TYPE "intel-linux")
@@ -28,6 +27,7 @@ if(NOT Boost_FOUND)
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
       URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_1_57_0.tar.bz2
+      URL_HASH MD5=1BE49BEFBDD9A5CE9DEF2983BA3E7B76
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND pwd && ./bootstrap.sh --with-toolset=${BOOST_COMPILER_ID}
                                        --with-libraries=${B2_BOOST_COMPONENTS}
