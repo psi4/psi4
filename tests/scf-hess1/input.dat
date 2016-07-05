@@ -1,4 +1,4 @@
-#! RHF STO-3G water Hessian test, against Psi3 reference values.
+#! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 
 import numpy as np
 
@@ -35,9 +35,36 @@ set {
   print 2
 }
 
+en,wfn = energy('scf', return_wfn=True)
+psi4.scfhess(wfn)
+psi4_hess = np.asarray(wfn.hessian())
+
+if not np.allclose(psi3_hess, psi4_hess, atol=1E-7):
+    raise ValidationError("STO-3G Hessian test failed")
+
+# Clean out scratch files and go again with cc-pVDZ
+psi4.clean()
+
+psi3_hess = np.array([
+    [ 0.4644069,-0.0001622,-0.0000000,-0.2329078, 0.1572370, 0.0000000,-0.2314991,-0.1570748, 0.0000000],
+    [-0.0001622, 0.5691441, 0.0000000, 0.2174186,-0.2838372,-0.0000000,-0.2172564,-0.2853069, 0.0000000],
+    [-0.0000000, 0.0000000, 0.0509099, 0.0000000, 0.0000000,-0.0254596, 0.0000000,-0.0000000,-0.0254502],
+    [-0.2329078, 0.2174186, 0.0000000, 0.2177992,-0.1874277,-0.0000000, 0.0151086,-0.0299909, 0.0000000],
+    [ 0.1572370,-0.2838372, 0.0000000,-0.1874277, 0.3206988, 0.0000000, 0.0301908,-0.0368616,-0.0000000],
+    [ 0.0000000,-0.0000000,-0.0254596,-0.0000000, 0.0000000, 0.0225767, 0.0000000, 0.0000000, 0.0028829],
+    [-0.2314991,-0.2172564, 0.0000000, 0.0151086, 0.0301908, 0.0000000, 0.2163905, 0.1870657,-0.0000000],
+    [-0.1570748,-0.2853069,-0.0000000,-0.0299909,-0.0368616, 0.0000000, 0.1870657, 0.3221685,-0.0000000],
+    [ 0.0000000, 0.0000000,-0.0254502, 0.0000000,-0.0000000, 0.0028829,-0.0000000,-0.0000000, 0.0225673]
+])
+
+set {
+  puream true
+  basis cc-pvdz
+}
+
 energy,wfn = energy('scf', return_wfn=True)
 psi4.scfhess(wfn)
 psi4_hess = np.asarray(wfn.hessian())
 
 if not np.allclose(psi3_hess, psi4_hess, atol=1E-7):
-    raise ValidationError("Hessian test failed")
+    raise ValidationError("cc-pVDZ Hessian test failed")
