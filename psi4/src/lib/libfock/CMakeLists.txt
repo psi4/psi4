@@ -22,5 +22,5 @@ set(sources_list apps.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
 psi4_add_library(fock sources_list)
-target_link_libraries(fock mints)
+target_link_libraries(fock mints functional 3index)
 target_include_directories(fock PUBLIC ${Boost_INCLUDE_DIRS})

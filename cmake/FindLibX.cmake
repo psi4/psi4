@@ -3,7 +3,7 @@
 #linux_include is name of the Linux header file
 #Remaining arguments are used as alternative names for the library
 macro(find_lib_x lib_name mac_include linux_include)
-   string(TOUPPER lib_name LIB_NAME)
+   string(TOUPPER ${lib_name} LIB_NAME)
    if(LIB${LIB_NAME}_INCLUDE_DIR)
       # Already in cache, be silent
       set(LIB${LIB_NAME}_FIND_QUIETLY TRUE)
@@ -45,7 +45,6 @@ macro(find_lib_x lib_name mac_include linux_include)
                                   LIB${LIB_NAME}_LIBRARY 
                                   LIB${LIB_NAME}_INCLUDE_DIR
    )
-
    if(LIB${LIB_NAME}_FOUND)
       set(LIB${LIB_NAME}_LIBRARIES ${LIB${LIB_NAME}_LIBRARY})
    else(LIB${LIB_NAME}_FOUND)

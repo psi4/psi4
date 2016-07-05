@@ -41,4 +41,4 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
                 -DPLUGIN_LDFLAGS=${CMAKE_CXX_LINK_FLAGS}
 )
 psi4_add_binary(psi4_main sources_list)
-target_link_libraries(psi4_main mints)
+target_link_libraries(psi4_main mints cubeprop plugin)

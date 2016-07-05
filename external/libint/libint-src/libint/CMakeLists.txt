@@ -1,5 +1,5 @@
 include(ExternalProject)
-
+message(STATUS "${CMAKE_MODULE_PATH}")
 ExternalProject_Add(libint_compiler
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libint_compiler
    CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -7,6 +7,7 @@ ExternalProject_Add(libint_compiler
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
               -DLIBINT_OPT_AM=${LIBINT_OPT_AM}
               -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+   CMAKE_CACHE_ARGS -DCMAKE_MODULE_PATH:STRING=${CMAKE_MODULE_PATH}
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
 

@@ -10,7 +10,7 @@ set(sources_list uhf.cc
                  stability.cc
 )
 psi4_add_library(scf_solver sources_list)
-target_link_libraries(scf_solver mints)
+target_link_libraries(scf_solver mints diis efp_solver)
 if(ENABLE_PCMSOLVER)
    target_link_libraries(scf_solver psipcm)
 endif()
