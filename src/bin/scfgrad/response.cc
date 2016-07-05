@@ -661,7 +661,6 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             G->add(G->transpose());
             Gpi->transform(C, G, Cocc);
             Gpi->scale(0.5);
-            Gpi->print();
             psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
         }
     }
@@ -847,8 +846,6 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             C_DSCAL(nocc * (size_t) nocc,-0.5, Upqp[0], 1);
             psio_->read(PSIF_HESS,"Uai^A",(char*)Upqp[nocc],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
             psio_->write(PSIF_HESS,"Upi^A",(char*)Upqp[0],nmo * nocc * sizeof(double),next_Upi,&next_Upi);
-            outfile->Printf("PTER %d\n", A);
-            Upi->print();
         }
     }
 
