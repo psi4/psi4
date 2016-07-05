@@ -1331,6 +1331,10 @@ SharedMatrix SCFGrad::compute_hessian()
         }
     }
 
+    SharedMatrix core = hessians["Potential"]->clone();
+    core->add(hessians["Kinetic"]);
+    core->set_name("Core Hessian");
+    core->print();
     hessians["Total"] = total;
     hessians["Total"]->set_name("Total Hessian");
 

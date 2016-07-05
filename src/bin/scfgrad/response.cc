@@ -35,6 +35,7 @@
 #include <libfock/apps.h>
 #include <libfunctional/superfunctional.h>
 #include <psifiles.h>
+#include "libmints/sieve.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 
@@ -66,6 +67,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     boost::shared_ptr<Matrix> C    = Ca_subset("AO","ALL");
     boost::shared_ptr<Matrix> Cocc = Ca_subset("AO","OCC");
     boost::shared_ptr<Matrix> Cvir = Ca_subset("AO","VIR");
+    boost::shared_ptr<Matrix> Dt = Da_subset("AO");
+    double** Dtp = Dt->pointer();
+
     double** Cp  = C->pointer();
     double** Cop = Cocc->pointer();
     double** Cvp = Cvir->pointer();
@@ -102,9 +106,33 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         double** Smiyp = Smiy->pointer();
         double** Smizp = Smiz->pointer();
 
+        boost::shared_ptr<Matrix> Sai(new Matrix("Sai",nvir,nocc));
+        double** Saip = Sai->pointer();
+        boost::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
+        double** Sijp = Sij->pointer();
         boost::shared_ptr<Matrix> Spi(new Matrix("Spi",nmo,nocc));
         double** Spip = Spi->pointer();
+
+        psio_address next_Sai = PSIO_ZERO;
+        psio_address next_Sij = PSIO_ZERO;
+        psio_address next_Smi = PSIO_ZERO;
         psio_address next_Spi = PSIO_ZERO;
+        for (int A = 0; A < 3*natom; A++) {
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+        }
+        for (int A = 0; A < 3*natom; A++) {
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+        }
+        for (int A = 0; A < 3*natom; A++) {
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+        }
+        for (int A = 0; A < 3*natom; A++) {
+            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
+        }
+        next_Smi = PSIO_ZERO;
+        next_Sai = PSIO_ZERO;
+        next_Sij = PSIO_ZERO;
+        next_Spi = PSIO_ZERO;
 
         for (int A = 0; A < natom; A++) {
             Smix->zero();
@@ -175,6 +203,33 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     }
                 }
             }
+            // Smi_x
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            // Smi_y
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smiyp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            // Smi_z
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smizp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+
+            // Sai_x
+            C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smixp[0],nocc,0.0,Saip[0],nocc);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            // Sai_y
+            C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smiyp[0],nocc,0.0,Saip[0],nocc);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            // Sai_z
+            C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smizp[0],nocc,0.0,Saip[0],nocc);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+
+            // Sij_x
+            C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smixp[0],nocc,0.0,Sijp[0],nocc);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            // Sij_y
+            C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smiyp[0],nocc,0.0,Sijp[0],nocc);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            // Sij_z
+            C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smizp[0],nocc,0.0,Sijp[0],nocc);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+
             // Spi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smixp[0],nocc,0.0,Spip[0],nocc);
             psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
@@ -203,6 +258,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         boost::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
         double** Tpip = Tpi->pointer();
         psio_address next_Tpi = PSIO_ZERO;
+
 
         for (int A = 0; A < natom; A++) {
             Tmix->zero();
@@ -273,6 +329,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     }
                 }
             }
+
             // Tpi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
@@ -284,6 +341,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
         }
     }
+
     
     // => Vpi <= //
     {
@@ -301,6 +359,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         boost::shared_ptr<Matrix> Vpi(new Matrix("Vpi",nmo,nocc));
         double** Vpip = Vpi->pointer();
         psio_address next_Vpi = PSIO_ZERO;
+
 
         for (int A = 0; A < natom; A++) {
             Vmix->zero();
@@ -354,449 +413,256 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
         }
     }
-
     // => Jpi/Kpi <= //
     {
-        // => Density matrix <= //
 
-        boost::shared_ptr<Matrix> D(new Matrix("D",nso,nso));
-        double** Dp = D->pointer();
-        C_DGEMM('N','T',nso,nso,nocc,1.0,Cop[0],nocc,Cop[0],nocc,0.0,Dp[0],nso);
+        // TODO add new objects for more threads later
+        boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-        boost::shared_ptr<TwoBodyAOInt> Iint(integral_->eri(1));
-        const double* buffer = Iint->buffer();   
+        int natom = basisset_->molecule()->natom();
 
-        boost::shared_ptr<Matrix> Jmix(new Matrix("Jmix",nso,nocc));
-        boost::shared_ptr<Matrix> Jmiy(new Matrix("Jmiy",nso,nocc));
-        boost::shared_ptr<Matrix> Jmiz(new Matrix("Jmiz",nso,nocc));
-        double** Jmixp = Jmix->pointer();
-        double** Jmiyp = Jmiy->pointer();
-        double** Jmizp = Jmiz->pointer();
-
-        boost::shared_ptr<Matrix> Kmix(new Matrix("Kmix",nso,nocc));
-        boost::shared_ptr<Matrix> Kmiy(new Matrix("Kmiy",nso,nocc));
-        boost::shared_ptr<Matrix> Kmiz(new Matrix("Kmiz",nso,nocc));
-        double** Kmixp = Kmix->pointer();
-        double** Kmiyp = Kmiy->pointer();
-        double** Kmizp = Kmiz->pointer();
-
-        boost::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
-        double** Tpip = Tpi->pointer();
-        psio_address next_Jpi = PSIO_ZERO;
-        psio_address next_Kpi = PSIO_ZERO;
-
-        for (int A = 0; A < 3 * natom; A++) {
-            psio_->write(PSIF_HESS,"Jpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
+        std::vector<SharedMatrix> dGmats;
+        std::vector<double**> pdG;
+        char* label = new char[80];
+        for(int pert = 0; pert < 3*natom; ++pert){
+            sprintf(label, "AO basis derivative G matrix for perturbation %d", pert);
+            SharedMatrix dG(new Matrix(label, nso, nso));
+            dGmats.push_back(dG);
+            pdG.push_back(dG->pointer());
         }
-        for (int A = 0; A < 3 * natom; A++) {
-            psio_->write(PSIF_HESS,"Kpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Kpi,&next_Kpi);
-        }
-        next_Jpi = PSIO_ZERO;
-        next_Kpi = PSIO_ZERO;
+        delete [] label;
 
-        for (int A = 0; A < natom; A++) {
-            Jmix->zero();
-            Jmiy->zero();
-            Jmiz->zero();
-            Kmix->zero();
-            Kmiy->zero();
-            Kmiz->zero();
+        boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
 
-            for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
-            for (int R = 0; R < basisset_->nshell(); R++) {
-            for (int S = 0; S < basisset_->nshell(); S++) {
-                    int aP = basisset_->shell(P).ncenter();
-                    int aQ = basisset_->shell(Q).ncenter();
-                    int aR = basisset_->shell(R).ncenter();
-                    int aS = basisset_->shell(S).ncenter();
 
-                    if (!(aP == A | aQ == A | aR == A | aS == A)) continue;
+        const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
+        size_t npairs = shell_pairs.size();
+        size_t npairs2 = npairs * npairs;
 
-                    Iint->compute_shell_deriv1(P,Q,R,S);
 
-                    int nP = basisset_->shell(P).nfunction();
-                    int nQ = basisset_->shell(Q).nfunction();
-                    int nR = basisset_->shell(R).nfunction();
-                    int nS = basisset_->shell(S).nfunction();
+        const double* buffer = ints->buffer();
 
-                    int cP = basisset_->shell(P).ncartesian();
-                    int cQ = basisset_->shell(Q).ncartesian();
-                    int cR = basisset_->shell(R).ncartesian();
-                    int cS = basisset_->shell(S).ncartesian();
+        for (size_t index = 0L; index < npairs2; index++) {
 
-                    int oP = basisset_->shell(P).function_index();
-                    int oQ = basisset_->shell(Q).function_index();
-                    int oR = basisset_->shell(R).function_index();
-                    int oS = basisset_->shell(S).function_index();
+            size_t PQ = index / npairs;
+            size_t RS = index % npairs;
 
-                    size_t cart_off = cP * cQ * cR * cS;
+            if (RS > PQ) continue;
 
-                    const double* Axp = buffer + 0 * cart_off;
-                    const double* Ayp = buffer + 1 * cart_off;
-                    const double* Azp = buffer + 2 * cart_off;
-                    const double* Cxp = buffer + 3 * cart_off;
-                    const double* Cyp = buffer + 4 * cart_off;
-                    const double* Czp = buffer + 5 * cart_off;
-                    const double* Dxp = buffer + 6 * cart_off;
-                    const double* Dyp = buffer + 7 * cart_off;
-                    const double* Dzp = buffer + 8 * cart_off;
-            
-                    // => J <= //
+            int P = shell_pairs[PQ].first;
+            int Q = shell_pairs[PQ].second;
+            int R = shell_pairs[RS].first;
+            int S = shell_pairs[RS].second;
 
-                    // A
-                    if (aP == A) {
-                        const double* A2xp = Axp;
-                        const double* A2yp = Ayp;
-                        const double* A2zp = Azp;
+            //if (!sieve->shell_significant(P,Q,R,S)) continue;
+            int am1 = basisset_->shell(P).am();
+            int am2 = basisset_->shell(Q).am();
+            int am3 = basisset_->shell(R).am();
+            int am4 = basisset_->shell(S).am();
 
-                        // Ax
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*A2xp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmixp[p + oP],1);
-                        }}
+            // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
+            if (am1 < am2)
+                boost::swap(P,Q);
+            if (am3 < am4)
+                boost::swap(R,S);
+            if( (am1 + am2) > (am3 + am4) ){
+                boost::swap(P,R);
+                boost::swap(Q,S);
+            }
 
-                        // Ay
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*A2yp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmiyp[p + oP],1);
-                        }}
+            ints->compute_shell_deriv1(P,Q,R,S);
 
-                        // Az
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*A2zp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmizp[p + oP],1);
-                        }}
+            const int Psize = basisset_->shell(P).nfunction();
+            const int Qsize = basisset_->shell(Q).nfunction();
+            const int Rsize = basisset_->shell(R).nfunction();
+            const int Ssize = basisset_->shell(S).nfunction();
+
+            const int Pncart = basisset_->shell(P).ncartesian();
+            const int Qncart = basisset_->shell(Q).ncartesian();
+            const int Rncart = basisset_->shell(R).ncartesian();
+            const int Sncart = basisset_->shell(S).ncartesian();
+
+            const int Poff = basisset_->shell(P).function_index();
+            const int Qoff = basisset_->shell(Q).function_index();
+            const int Roff = basisset_->shell(R).function_index();
+            const int Soff = basisset_->shell(S).function_index();
+
+            const int Pcenter = basisset_->shell(P).ncenter();
+            const int Qcenter = basisset_->shell(Q).ncenter();
+            const int Rcenter = basisset_->shell(R).ncenter();
+            const int Scenter = basisset_->shell(S).ncenter();
+
+            double prefactor = 1.0;
+            if (P != Q)   prefactor *= 2.0;
+            if (R != S)   prefactor *= 2.0;
+            if (PQ != RS) prefactor *= 2.0;
+
+            size_t stride = Pncart * Qncart * Rncart * Sncart;
+
+            double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
+            size_t delta;
+            double Ax, Ay, Az;
+            double Bx, By, Bz;
+            double Cx, Cy, Cz;
+            double Dx, Dy, Dz;
+
+            // => Coulomb Term <= //
+
+            Ax = 0.0; Ay = 0.0; Az = 0.0;
+            Bx = 0.0; By = 0.0; Bz = 0.0;
+            Cx = 0.0; Cy = 0.0; Cz = 0.0;
+            Dx = 0.0; Dy = 0.0; Dz = 0.0;
+            delta = 0L;
+            for (int p = Poff; p < Poff+Psize; p++) {
+                for (int q = Qoff; q < Qoff+Qsize; q++) {
+                    for (int r = Roff; r < Roff+Rsize; r++) {
+                        for (int s = Soff; s < Soff+Ssize; s++) {
+                            Dpq = Dtp[p][q];
+                            Drs = Dtp[r][s];
+                            Ax = prefactor * buffer[0 * stride + delta];
+                            Ay = prefactor * buffer[1 * stride + delta];
+                            Az = prefactor * buffer[2 * stride + delta];
+                            Cx = prefactor * buffer[3 * stride + delta];
+                            Cy = prefactor * buffer[4 * stride + delta];
+                            Cz = prefactor * buffer[5 * stride + delta];
+                            Dx = prefactor * buffer[6 * stride + delta];
+                            Dy = prefactor * buffer[7 * stride + delta];
+                            Dz = prefactor * buffer[8 * stride + delta];
+                            Bx = -(Ax + Cx + Dx);
+                            By = -(Ay + Cy + Dy);
+                            Bz = -(Az + Cz + Dz);
+
+                            pdG[Pcenter*3+0][p][q] += Ax * Drs;
+                            pdG[Pcenter*3+0][r][s] += Ax * Dpq;
+                            pdG[Pcenter*3+1][p][q] += Ay * Drs;
+                            pdG[Pcenter*3+1][r][s] += Ay * Dpq;
+                            pdG[Pcenter*3+2][p][q] += Az * Drs;
+                            pdG[Pcenter*3+2][r][s] += Az * Dpq;
+
+                            pdG[Qcenter*3+0][p][q] += Bx * Drs;
+                            pdG[Qcenter*3+0][r][s] += Bx * Dpq;
+                            pdG[Qcenter*3+1][p][q] += By * Drs;
+                            pdG[Qcenter*3+1][r][s] += By * Dpq;
+                            pdG[Qcenter*3+2][p][q] += Bz * Drs;
+                            pdG[Qcenter*3+2][r][s] += Bz * Dpq;
+
+                            pdG[Rcenter*3+0][p][q] += Cx * Drs;
+                            pdG[Rcenter*3+0][r][s] += Cx * Dpq;
+                            pdG[Rcenter*3+1][p][q] += Cy * Drs;
+                            pdG[Rcenter*3+1][r][s] += Cy * Dpq;
+                            pdG[Rcenter*3+2][p][q] += Cz * Drs;
+                            pdG[Rcenter*3+2][r][s] += Cz * Dpq;
+
+                            pdG[Scenter*3+0][p][q] += Dx * Drs;
+                            pdG[Scenter*3+0][r][s] += Dx * Dpq;
+                            pdG[Scenter*3+1][p][q] += Dy * Drs;
+                            pdG[Scenter*3+1][r][s] += Dy * Dpq;
+                            pdG[Scenter*3+2][p][q] += Dz * Drs;
+                            pdG[Scenter*3+2][r][s] += Dz * Dpq;
+                            delta++;
+                        }
                     }
+                }
+            }
 
-                    // B
-                    if (aQ == A) {
-                        const double* A2xp = Axp;
-                        const double* A2yp = Ayp;
-                        const double* A2zp = Azp;
-                        const double* C2xp = Cxp;
-                        const double* C2yp = Cyp;
-                        const double* C2zp = Czp;
-                        const double* D2xp = Dxp;
-                        const double* D2yp = Dyp;
-                        const double* D2zp = Dzp;
+            // => Exchange Term <= //
 
-                        // Bx
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval -= Dp[r + oR][s + oS] * ((*A2xp++) + (*C2xp++) + (*D2xp++)); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmixp[p + oP],1);
-                        }}
+            Ax = 0.0; Ay = 0.0; Az = 0.0;
+            Bx = 0.0; By = 0.0; Bz = 0.0;
+            Cx = 0.0; Cy = 0.0; Cz = 0.0;
+            Dx = 0.0; Dy = 0.0; Dz = 0.0;
+            delta = 0L;
+            prefactor *= -0.25;
+            for (int p = Poff; p < Poff+Psize; p++) {
+                for (int q = Qoff; q < Qoff+Qsize; q++) {
+                    for (int r = Roff; r < Roff+Rsize; r++) {
+                        for (int s = Soff; s < Soff+Ssize; s++) {
+                            Ax = prefactor * buffer[0 * stride + delta];
+                            Ay = prefactor * buffer[1 * stride + delta];
+                            Az = prefactor * buffer[2 * stride + delta];
+                            Cx = prefactor * buffer[3 * stride + delta];
+                            Cy = prefactor * buffer[4 * stride + delta];
+                            Cz = prefactor * buffer[5 * stride + delta];
+                            Dx = prefactor * buffer[6 * stride + delta];
+                            Dy = prefactor * buffer[7 * stride + delta];
+                            Dz = prefactor * buffer[8 * stride + delta];
+                            Bx = -(Ax + Cx + Dx);
+                            By = -(Ay + Cy + Dy);
+                            Bz = -(Az + Cz + Dz);
 
-                        // By
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval -= Dp[r + oR][s + oS] * ((*A2yp++) + (*C2yp++) + (*D2yp++)); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmiyp[p + oP],1);
-                        }}
+                            Dpr = Dtp[p][r];
+                            Dqs = Dtp[q][s];
+                            Dps = Dtp[p][s];
+                            Dqr = Dtp[q][r];
+                            pdG[Pcenter*3+0][p][r] += Ax * Dqs;
+                            pdG[Pcenter*3+0][q][s] += Ax * Dpr;
+                            pdG[Pcenter*3+0][p][s] += Ax * Dqr;
+                            pdG[Pcenter*3+0][q][r] += Ax * Dps;
+                            pdG[Pcenter*3+1][p][r] += Ay * Dqs;
+                            pdG[Pcenter*3+1][q][s] += Ay * Dpr;
+                            pdG[Pcenter*3+1][p][s] += Ay * Dqr;
+                            pdG[Pcenter*3+1][q][r] += Ay * Dps;
+                            pdG[Pcenter*3+2][p][r] += Az * Dqs;
+                            pdG[Pcenter*3+2][q][s] += Az * Dpr;
+                            pdG[Pcenter*3+2][p][s] += Az * Dqr;
+                            pdG[Pcenter*3+2][q][r] += Az * Dps;
 
-                        // Bz
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval -= Dp[r + oR][s + oS] * ((*A2zp++) + (*C2zp++) + (*D2zp++)); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmizp[p + oP],1);
-                        }}
+                            pdG[Qcenter*3+0][p][r] += Bx * Dqs;
+                            pdG[Qcenter*3+0][q][s] += Bx * Dpr;
+                            pdG[Qcenter*3+0][p][s] += Bx * Dqr;
+                            pdG[Qcenter*3+0][q][r] += Bx * Dps;
+                            pdG[Qcenter*3+1][p][r] += By * Dqs;
+                            pdG[Qcenter*3+1][q][s] += By * Dpr;
+                            pdG[Qcenter*3+1][p][s] += By * Dqr;
+                            pdG[Qcenter*3+1][q][r] += By * Dps;
+                            pdG[Qcenter*3+2][p][r] += Bz * Dqs;
+                            pdG[Qcenter*3+2][q][s] += Bz * Dpr;
+                            pdG[Qcenter*3+2][p][s] += Bz * Dqr;
+                            pdG[Qcenter*3+2][q][r] += Bz * Dps;
+
+                            pdG[Rcenter*3+0][p][r] += Cx * Dqs;
+                            pdG[Rcenter*3+0][q][s] += Cx * Dpr;
+                            pdG[Rcenter*3+0][p][s] += Cx * Dqr;
+                            pdG[Rcenter*3+0][q][r] += Cx * Dps;
+                            pdG[Rcenter*3+1][p][r] += Cy * Dqs;
+                            pdG[Rcenter*3+1][q][s] += Cy * Dpr;
+                            pdG[Rcenter*3+1][p][s] += Cy * Dqr;
+                            pdG[Rcenter*3+1][q][r] += Cy * Dps;
+                            pdG[Rcenter*3+2][p][r] += Cz * Dqs;
+                            pdG[Rcenter*3+2][q][s] += Cz * Dpr;
+                            pdG[Rcenter*3+2][p][s] += Cz * Dqr;
+                            pdG[Rcenter*3+2][q][r] += Cz * Dps;
+
+                            pdG[Scenter*3+0][p][r] += Dx * Dqs;
+                            pdG[Scenter*3+0][q][s] += Dx * Dpr;
+                            pdG[Scenter*3+0][p][s] += Dx * Dqr;
+                            pdG[Scenter*3+0][q][r] += Dx * Dps;
+                            pdG[Scenter*3+1][p][r] += Dy * Dqs;
+                            pdG[Scenter*3+1][q][s] += Dy * Dpr;
+                            pdG[Scenter*3+1][p][s] += Dy * Dqr;
+                            pdG[Scenter*3+1][q][r] += Dy * Dps;
+                            pdG[Scenter*3+2][p][r] += Dz * Dqs;
+                            pdG[Scenter*3+2][q][s] += Dz * Dpr;
+                            pdG[Scenter*3+2][p][s] += Dz * Dqr;
+                            pdG[Scenter*3+2][q][r] += Dz * Dps;
+                            delta++;
+                        }
                     }
+                }
+            }
+        } // End shell loops
 
-                    // C
-                    if (aR == A) {
-                        const double* C2xp = Cxp;
-                        const double* C2yp = Cyp;
-                        const double* C2zp = Czp;
-
-                        // Cx
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*C2xp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmixp[p + oP],1);
-                        }}
-
-                        // Cy
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*C2yp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmiyp[p + oP],1);
-                        }}
-
-                        // Cz
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*C2zp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmizp[p + oP],1);
-                        }}
-                    }
-
-                    // D
-                    if (aS == A) {
-                        const double* D2xp = Dxp;
-                        const double* D2yp = Dyp;
-                        const double* D2zp = Dzp;
-
-                        // Dx
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*D2xp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmixp[p + oP],1);
-                        }}
-
-                        // Dy
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*D2yp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmiyp[p + oP],1);
-                        }}
-
-                        // Dz
-                        for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            double Jval = 0.0;
-                            for (int r = 0; r < nR; r++) {
-                            for (int s = 0; s < nS; s++) {
-                                Jval += Dp[r + oR][s + oS] * (*D2zp++); 
-                            }}
-                            C_DAXPY(nocc,Jval,Cop[q + oQ],1,Jmizp[p + oP],1);
-                        }}
-                    }
-
-                    // => K <= //
-
-                    // A
-                    if (aP == A) {
-
-                        // Ax
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2xp = Axp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*A2xp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmixp[p + oP],1);
-                        }}
-
-                        // Ay
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2yp = Ayp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*A2yp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmiyp[p + oP],1);
-                        }}
-
-                        // Az
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2zp = Azp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*A2zp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmizp[p + oP],1);
-                        }}
-                    }
-
-                    // B
-                    if (aQ == A) {
-
-                        // Bx
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2xp = Axp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* C2xp = Cxp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* D2xp = Dxp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval -= Dp[p + oP][s + oS] * ((*A2xp++) + (*C2xp++) + (*D2xp++)); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmixp[p + oP],1);
-                        }}
-
-                        // By
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2yp = Ayp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* C2yp = Cyp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* D2yp = Dyp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval -= Dp[p + oP][s + oS] * ((*A2yp++) + (*C2yp++) + (*D2yp++)); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmiyp[p + oP],1);
-                        }}
-
-                        // Bz
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* A2zp = Azp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* C2zp = Czp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            const double* D2zp = Dzp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval -= Dp[p + oP][s + oS] * ((*A2zp++) + (*C2zp++) + (*D2zp++)); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmizp[p + oP],1);
-                        }}
-                    }
-
-                    // C
-                    if (aR == A) {
-
-                        // Cx
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* C2xp = Cxp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*C2xp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmixp[p + oP],1);
-                        }}
-
-                        // Cy
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* C2yp = Cyp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*C2yp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmiyp[p + oP],1);
-                        }}
-
-                        // Cz
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* C2zp = Czp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*C2zp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmizp[p + oP],1);
-                        }}
-                    }
-
-                    // D
-                    if (aS == A) {
-
-                        // Dx
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* D2xp = Dxp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*D2xp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmixp[p + oP],1);
-                        }}
-
-                        // Dy
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* D2yp = Dyp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*D2yp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmiyp[p + oP],1);
-                        }}
-
-                        // Dz
-                        for (int p = 0; p < nP; p++) {
-                        for (int r = 0; r < nR; r++) {
-                            double Kval = 0.0;
-                            for (int q = 0; q < nQ; q++) {
-                            const double* D2zp = Dzp + p * nQ * nR * nS + q * nR * nS + r * nS;
-                            for (int s = 0; s < nS; s++) {
-                                Kval += Dp[p + oP][s + oS] * (*D2zp++); 
-                            }}
-                            C_DAXPY(nocc,Kval,Cop[r + oR],1,Kmizp[p + oP],1);
-                        }}
-                    }
-            }}}}            
-
-            // Jpi_x
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Jmixp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Jpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
-            // Jpi_y
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Jmiyp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Jpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
-            // Jpi_z
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Jmizp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Jpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
-            // Kpi_x
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Kmixp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Kpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Kpi,&next_Kpi);
-            // Kpi_y
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Kmiyp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Kpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Kpi,&next_Kpi);
-            // Kpi_z
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Kmizp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Kpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Kpi,&next_Kpi);
+        SharedMatrix Gpi = SharedMatrix(new Matrix("MO G Deriv", nmo, nocc));
+        double**pGpi = Gpi->pointer();
+        psio_address next_Gpi = PSIO_ZERO;
+        for(int pert = 0; pert < 3*natom; ++pert){
+            // Symmetrize the derivative Fock contributions
+            SharedMatrix G = dGmats[pert];
+            G->add(G->transpose());
+            Gpi->transform(C, G, Cocc);
+            Gpi->scale(0.5);
+            Gpi->print();
+            psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
         }
     }
 
@@ -816,27 +682,23 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         L.clear();
         R.clear();
 
-        boost::shared_ptr<Matrix> Sii(new Matrix("Sii",nocc,nocc));
-        double** Siip = Sii->pointer();
+        boost::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
+        double** Sijp = Sij->pointer();
         boost::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
         double** Tp = T->pointer();
-        boost::shared_ptr<Matrix> U(new Matrix("T",nmo,nocc));
+        boost::shared_ptr<Matrix> U(new Matrix("Tempai",nmo,nocc));
         double** Up = U->pointer();
 
-        for (int A = 0; A < 3 * natom; A++) {
-            psio_address next_Jpi = psio_get_address(PSIO_ZERO,(A) * (size_t) nmo * nocc * sizeof(double));
-            psio_->write(PSIF_HESS,"J2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Jpi,&next_Jpi);
-        }
-
-        for (int A = 0; A < 3 * natom; A++) {
-            psio_address next_Kpi = psio_get_address(PSIO_ZERO,(A) * (size_t) nmo * nocc * sizeof(double));
-            psio_->write(PSIF_HESS,"K2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Kpi,&next_Kpi);
-        }
+        // Write some placeholder data to PSIO, to get the sizing right
+        psio_address next_Gpi = PSIO_ZERO;
+        for (int A = 0; A < 3 * natom; A++)
+            psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
 
         for (int A = 0; A < max_A; A++) {
             L.push_back(Cocc);
             R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
         }
+
         jk->initialize();
         jk->print_header();
 
@@ -848,49 +710,42 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 R.resize(nA);
             }
             for (int a = 0; a < nA; a++) {
-                psio_address next_Sii = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->read(PSIF_HESS,"Spi^A",(char*)Siip[0],nocc*nocc*sizeof(double),next_Sii,&next_Sii);
-                C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Siip[0],nocc,0.0,R[a]->pointer()[0],nocc);
-                L[a]->print();
-                R[a]->print();
+                psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
+                psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
+                C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
             jk->compute();
             for (int a = 0; a < nA; a++) {
+                // Add the 2J contribution to G
                 C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
-                psio_address next_Jpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"J2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Jpi,&next_Jpi);
-                // Hermitivitize?
+                C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
+
+                // Subtract the K term from G
                 C_DGEMM('N','N',nso,nocc,nso,1.0,K[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
-                psio_address next_Kpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"K2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Kpi,&next_Kpi);
+                C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
+                psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
+                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
             }
         } 
     }
 
     // => Fpi <= //
     {
-        boost::shared_ptr<Matrix> Tpi(new Matrix("T",nmo,nocc));
-        boost::shared_ptr<Matrix> Fpi(new Matrix("F",nmo,nocc));
+        boost::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
+        boost::shared_ptr<Matrix> Fpi(new Matrix("Fpi",nmo,nocc));
         double** Tpip = Tpi->pointer();
         double** Fpip = Fpi->pointer();
-        
-        psio_address next_Tpi = PSIO_ZERO;    
-        psio_address next_Vpi = PSIO_ZERO;    
-        psio_address next_Jpi = PSIO_ZERO;    
-        psio_address next_Kpi = PSIO_ZERO;    
-        psio_address next_Fpi = PSIO_ZERO;    
+
+        psio_address next_Tpi = PSIO_ZERO;
+        psio_address next_Vpi = PSIO_ZERO;
+        psio_address next_Jpi = PSIO_ZERO;
+        psio_address next_Fpi = PSIO_ZERO;
 
         for (int A = 0; A < 3*natom; A++) {
             psio_->read(PSIF_HESS,"Tpi^A",(char*)Fpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
             psio_->read(PSIF_HESS,"Vpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
             Fpi->add(Tpi);
-            psio_->read(PSIF_HESS,"Jpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
-            Tpi->scale(2.0);
-            Fpi->add(Tpi);
-            psio_->read(PSIF_HESS,"Kpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Kpi,&next_Kpi);
-            Tpi->scale(-1.0);
+            psio_->read(PSIF_HESS,"Gpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
             Fpi->add(Tpi);
             psio_->write(PSIF_HESS,"Fpi^A",(char*)Fpip[0],nmo * nocc * sizeof(double),next_Fpi,&next_Fpi);
         }
@@ -902,29 +757,23 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         boost::shared_ptr<Matrix> Bai(new Matrix("B",nvir,nocc));
         double** Taip = Tai->pointer();
         double** Baip = Bai->pointer();
-                
-        psio_address next_Fpi = PSIO_ZERO;    
-        psio_address next_Spi = PSIO_ZERO;    
-        psio_address next_J2pi = PSIO_ZERO;    
-        psio_address next_K2pi = PSIO_ZERO;    
-        psio_address next_Bai = PSIO_ZERO;    
+
+        psio_address next_Fpi = PSIO_ZERO;
+        psio_address next_Spi = PSIO_ZERO;
+        psio_address next_G2pi = PSIO_ZERO;
+        psio_address next_Bai = PSIO_ZERO;
 
         for (int A = 0; A < 3*natom; A++) {
             next_Fpi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
             psio_->read(PSIF_HESS,"Fpi^A",(char*)Baip[0],nvir * nocc * sizeof(double),next_Fpi,&next_Fpi);
             next_Spi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
             psio_->read(PSIF_HESS,"Spi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_Spi,&next_Spi);
-            for (int a = 0; a < nvir; a++) {
-                C_DAXPY(nocc,-evp[a],&Taip[0][a],nvir,&Baip[0][a],nvir);
-            }
-            next_J2pi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
-            psio_->read(PSIF_HESS,"J2pi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_J2pi,&next_J2pi);
-            Tai->scale(2.0);
+            for (int i = 0; i < nocc; i++)
+                C_DAXPY(nvir,-eop[i],&Taip[0][i],nocc,&Baip[0][i],nocc);
+            next_G2pi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
+            psio_->read(PSIF_HESS,"G2pi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_G2pi,&next_G2pi);
             Bai->add(Tai);
-            next_K2pi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
-            psio_->read(PSIF_HESS,"K2pi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_K2pi,&next_K2pi);
-            Tai->scale(-1.0);
-            Bai->add(Tai);
+            Bai->scale(-1.0);
             psio_->write(PSIF_HESS,"Bai^A",(char*)Baip[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
         }
     }    
@@ -987,18 +836,19 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => Upi <= //
     {
         boost::shared_ptr<Matrix> Upi(new Matrix("U",nmo,nocc));
-        double** Upip = Upi->pointer();    
+        double** Upqp = Upi->pointer();
 
         psio_address next_Spi = PSIO_ZERO;    
         psio_address next_Uai = PSIO_ZERO;    
         psio_address next_Upi = PSIO_ZERO;    
 
         for (int A = 0; A < 3*natom; A++) {
-            next_Spi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + 0));
-            psio_->read(PSIF_HESS,"Spi^A",(char*)Upip[0],nocc * nocc * sizeof(double),next_Spi,&next_Spi);
-            C_DSCAL(nocc * (size_t) nocc, -0.5, Upip[0], 1);
-            psio_->read(PSIF_HESS,"Uai^A",(char*)Upip[nocc],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
-            psio_->write(PSIF_HESS,"Upi^A",(char*)Upip[0],nmo * nocc * sizeof(double),next_Upi,&next_Upi);
+            psio_->read(PSIF_HESS,"Sij^A",(char*)Upqp[0],nocc * nocc * sizeof(double),next_Spi,&next_Spi);
+            C_DSCAL(nocc * (size_t) nocc,-0.5, Upqp[0], 1);
+            psio_->read(PSIF_HESS,"Uai^A",(char*)Upqp[nocc],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
+            psio_->write(PSIF_HESS,"Upi^A",(char*)Upqp[0],nmo * nocc * sizeof(double),next_Upi,&next_Upi);
+            outfile->Printf("PTER %d\n", A);
+            Upi->print();
         }
     }
 
@@ -1015,8 +865,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
         }
 
-        boost::shared_ptr<Matrix> Uii(new Matrix("Uii",nocc,nocc));
-        double** Uiip = Uii->pointer();
+        boost::shared_ptr<Matrix> Upi(new Matrix("Upi",nmo,nocc));
+        double** Upip = Upi->pointer();
         boost::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
         double** Tp = T->pointer();
         boost::shared_ptr<Matrix> U(new Matrix("T",nmo,nocc));
@@ -1030,10 +880,11 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 R.resize(nA);
             }
             for (int a = 0; a < nA; a++) {
-                psio_address next_Uii = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->read(PSIF_HESS,"Upi^A",(char*)Uiip[0],nocc*nocc*sizeof(double),next_Uii,&next_Uii);
-                C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Uiip[0],nocc,0.0,R[a]->pointer()[0],nocc);
+                psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
+                psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0],nmo*nocc*sizeof(double),next_Upi,&next_Upi);
+                C_DGEMM('N','N',nso,nocc,nmo,1.0,Cp[0],nmo,Upip[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
+
             jk->compute();
             for (int a = 0; a < nA; a++) {
                 C_DGEMM('N','N',nso,nocc,nso, 4.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
@@ -1051,17 +902,19 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     {
         size_t memory = 0.9 * memory_ / 8L;  
         size_t npi = nmo * (size_t) nocc; 
-        size_t max_a = memory / (2L * npi);
+        size_t max_a = memory / (3L * npi);
         max_a = (max_a > 3 * natom ? 3 * natom : max_a);
         
         boost::shared_ptr<Matrix> L(new Matrix("L",max_a * nmo, nocc));
         boost::shared_ptr<Matrix> R(new Matrix("R",max_a * nmo, nocc));
+        boost::shared_ptr<Matrix> T(new Matrix("T",max_a * nmo, nocc));
         double** Lp = L->pointer();
         double** Rp = R->pointer();
+        double** Tp = T->pointer();
 
         double** Hp = response->pointer(); 
 
-        // U^A F^B 
+        // U^A F^B
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
@@ -1073,33 +926,63 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 for (int a = 0; a < nA; a++) {
                     for (int b = 0; b < nB; b++) {
                         Hp[A + a][B + b] += 4.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
-                    }    
-                } 
+                    }
+                }
             }
         }
-        
-        // U^A U^B 
+
+        // F^A U^B
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
-            psio_->read(PSIF_HESS,"Upi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&nextA);
+            psio_->read(PSIF_HESS,"Fpi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&nextA);
             for (int B = 0; B < 3 * natom; B+=max_a) {
                 int nB = (B + max_a >= 3 * natom ? 3 * natom - B : max_a);
                 psio_address nextB = psio_get_address(PSIO_ZERO, B * npi * sizeof(double));
                 psio_->read(PSIF_HESS,"Upi^A",(char*)Rp[0],sizeof(double) * nB * npi,nextB,&nextB);
                 for (int a = 0; a < nA; a++) {
                     for (int b = 0; b < nB; b++) {
-                        Hp[A + a][B + b] -= 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
-                    }    
-                } 
+                        Hp[A + a][B + b] += 4.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                    }
+                }
+
             }
         }
-        
-        // S^A S^B 
+
+
+        // U^A U^B
+        // N.B. We use the relationship U^a_ia = -U^a_ai - S^a_ai
+        psio_address junk;
+        for (int A = 0; A < 3 * natom; A+=max_a) {
+            int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
+            psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
+            psio_->read(PSIF_HESS,"Upi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&junk);
+            psio_->read(PSIF_HESS,"Spi^A",(char*)Tp[0],sizeof(double) * nA * npi,nextA,&junk);
+            L->add(T);
+            for (int i = 0; i < nocc; i++)
+                C_DSCAL(nA*nmo,eop[i],&Lp[0][i],nocc);
+            for (int B = 0; B < 3 * natom; B+=max_a) {
+                int nB = (B + max_a >= 3 * natom ? 3 * natom - B : max_a);
+                psio_address nextB = psio_get_address(PSIO_ZERO, B * npi * sizeof(double));
+                psio_->read(PSIF_HESS,"Upi^A",(char*)Rp[0],sizeof(double) * nB * npi,nextB,&junk);
+                psio_->read(PSIF_HESS,"Spi^A",(char*)Tp[0],sizeof(double) * nB * npi,nextB,&junk);
+                R->add(T);
+                for (int a = 0; a < nA; a++) {
+                    for (int b = 0; b < nB; b++) {
+                        Hp[A + a][B + b] -= 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                        Hp[B + b][A + a] -= 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                    }
+                }
+            }
+        }
+
+        // S^A S^B
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
             psio_->read(PSIF_HESS,"Spi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&nextA);
+            for (int i = 0; i < nocc; i++)
+                C_DSCAL(nA*nmo,eop[i],&Lp[0][i],nocc);
             for (int B = 0; B < 3 * natom; B+=max_a) {
                 int nB = (B + max_a >= 3 * natom ? 3 * natom - B : max_a);
                 psio_address nextB = psio_get_address(PSIO_ZERO, B * npi * sizeof(double));
@@ -1107,18 +990,19 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 for (int a = 0; a < nA; a++) {
                     for (int b = 0; b < nB; b++) {
                         Hp[A + a][B + b] += 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
-                    }    
-                } 
+                        Hp[B + b][A + a] += 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                    }
+                }
             }
         }
 
-        // U^A U^B \epsilon 
+        // U^A U^B \epsilon
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
             psio_->read(PSIF_HESS,"Upi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&nextA);
+            double* Tp = Lp[0];
             for (int a = 0; a < nA; a++) {
-                double* Tp = Lp[0]; 
                 for (int p = 0; p < nmo; p++) {
                     C_DSCAL(nocc,ep[p],Tp,1);
                     Tp += nocc;
@@ -1130,9 +1014,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 psio_->read(PSIF_HESS,"Upi^A",(char*)Rp[0],sizeof(double) * nB * npi,nextB,&nextB);
                 for (int a = 0; a < nA; a++) {
                     for (int b = 0; b < nB; b++) {
-                        Hp[A + a][B + b] += 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
-                    }    
-                } 
+                        Hp[A + a][B + b] += 4.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                    }
+                }
             }
         }
 
@@ -1147,9 +1031,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 psio_->read(PSIF_HESS,"Qpi^A",(char*)Rp[0],sizeof(double) * nB * npi,nextB,&nextB);
                 for (int a = 0; a < nA; a++) {
                     for (int b = 0; b < nB; b++) {
-                        Hp[A + a][B + b] += 2.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
-                    }    
-                } 
+                        Hp[A + a][B + b] += 4.0 * C_DDOT(npi,Lp[0] + a * npi,1,Rp[0] + b * npi,1);
+                    }
+                }
             }
         }
         
@@ -1157,9 +1041,10 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         // Full symmetrization
         for (int A = 0; A < 3 * natom; A++) {
             for (int B = 0; B < 3 * natom; B++) {
-                Hp[A][B] = Hp[B][A] = Hp[A][B] + Hp[B][A];
+                Hp[A][B] = Hp[B][A] = 0.5*(Hp[A][B] + Hp[B][A]);
             }
         }
+        response->print();
     }
 
     psio_->close(PSIF_HESS,0);
