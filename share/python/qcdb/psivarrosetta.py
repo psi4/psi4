@@ -192,19 +192,19 @@ useme2psivar = {
 
     'Disp20': 'SAPT DISP20 ENERGY',
     'Exch-Disp20': 'SAPT EXCH-DISP20 ENERGY',
-    'Disp20(OS)': 'SAPT DISP20(OS) ENERGY',
-    'Exch-Disp20(OS)': 'SAPT EXCH-DISP20(OS) ENERGY',
-    'Disp20(SS)': 'SAPT DISP20(SS) ENERGY',
-    'Exch-Disp20(SS)': 'SAPT EXCH-DISP20(SS) ENERGY',
+    #'Disp20(OS)': 'SAPT DISP20(OS) ENERGY',
+    #'Exch-Disp20(OS)': 'SAPT EXCH-DISP20(OS) ENERGY',
+    'Disp20(SS)': 'SAPT SAME-SPIN DISP20 ENERGY',
+    'Exch-Disp20(SS)': 'SAPT SAME-SPIN EXCH-DISP20 ENERGY',
     'Disp21': 'SAPT DISP21 ENERGY',
     'Disp22(SDQ)': 'SAPT DISP22(SDQ) ENERGY',  # added for modern parsing, may confuse old usemesapt parsing
-    'Disp22(T)': 'SAPT DISP22(T) ENERGY',  # ditto  # ne'er used
+    #'Disp22(T)': 'SAPT DISP22(T) ENERGY',  # ditto  # ne'er used
     'Disp22(SDQ).1': 'SAPT DISP22(SDQ) ENERGY',
-    'Disp22(T).1': 'SAPT DISP22(T) ENERGY',  # ne'er used  # edited to remove est
+    #'Disp22(T).1': 'SAPT DISP22(T) ENERGY',  # ne'er used  # edited to remove est
     'Est.Disp22(T)': 'SAPT EST.DISP22(T) ENERGY',
     'Disp2(CCD)': 'SAPT DISP2(CCD) ENERGY',
     'Disp22(S)(CCD)': 'SAPT DISP22(S)(CCD) ENERGY',
-    'Disp22(T)(CCD)': 'SAPT DISP22(T)(CCD) ENERGY',  # ne'er used
+    #'Disp22(T)(CCD)': 'SAPT DISP22(T)(CCD) ENERGY',  # ne'er used
     'Est.Disp22(T)(CCD)': 'SAPT EST.DISP22(T)(CCD) ENERGY',
     'Disp30': 'SAPT DISP30 ENERGY',
     'Exch-Disp30': 'SAPT EXCH-DISP30 ENERGY',

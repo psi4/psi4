@@ -52,7 +52,7 @@ if(NOT PCMSolver_FOUND)
       DEPENDS custom_boost
       PREFIX ${CUSTOM_PCMSolver_LOCATION}
       GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-      GIT_TAG v1.1.2
+      GIT_TAG v1.1.3
       CMAKE_ARGS "${PCMSolverCMakeArgs}"
       INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
       )
@@ -60,7 +60,7 @@ if(NOT PCMSolver_FOUND)
     ExternalProject_Add(interface_pcmsolver
       PREFIX ${CUSTOM_PCMSolver_LOCATION}
       GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-      GIT_TAG v1.1.2
+      GIT_TAG v1.1.3
       CMAKE_ARGS "${PCMSolverCMakeArgs}"
       INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
       )

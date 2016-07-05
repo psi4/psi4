@@ -346,31 +346,20 @@ void SAPT0::print_results()
     // Only export if not scaled.
     if(scal_it == Xscal.begin()) {
 
-        Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
         Process::environment.globals["SAPT ELST10,R ENERGY"] = e_elst10_;
 
-        Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
         Process::environment.globals["SAPT EXCH10 ENERGY"] = e_exch10_;
         Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = e_exch10_s2_;
 
-        Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
         Process::environment.globals["SAPT IND20,R ENERGY"] = e_ind20_;
         Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = e_exch_ind20_;
         Process::environment.globals["SAPT HF TOTAL ENERGY"] = eHF_;
         Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
 
-        Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
         Process::environment.globals["SAPT DISP20 ENERGY"] = e_disp20_;
         Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = e_exch_disp20_;
-        Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
-        Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
-        Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
-        Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
-
-        Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
-        Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
-        Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
-
+        Process::environment.globals["SAPT SAME-SPIN DISP20 ENERGY"] = e_disp20_ss_;
+        Process::environment.globals["SAPT SAME-SPIN EXCH-DISP20 ENERGY"] = e_exch_disp20_ss_;
     }
   }
 
