@@ -473,4 +473,10 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
 void OneBodyAOInt::compute_shell_deriv2(int i, int j)
 {
     compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));
+    // Normalize for angular momentum
+    normalize_am(bs1_->shell(i), bs2_->shell(j), nchunk_);
+
+    // Pure angular momentum (6d->5d, ...) transformation
+    if (!force_cartesian_)
+        pure_transform(bs1_->shell(i), bs2_->shell(j), nchunk_);
 }
