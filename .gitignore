@@ -78,9 +78,12 @@ plugins/skeletonwavefunction/input.dat
 
 # Compilation directories that people use
 obj*
+*objdir
 build
 debug
 debug_latest
+*.sh
+TEST
 
 # Other random files people have added.
 svn_source

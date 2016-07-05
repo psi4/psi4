@@ -45,16 +45,6 @@ import driver_cbs
 #from wrappers_cfour import *  # CU
 #from qmmm import *  # CU
 
-# Import plugin add-ons here for now
-try:
-    import csx4psi
-except ImportError:
-    pass
-try:
-    import v2rdm_casscf
-except ImportError:
-    pass
-
 # Python procedures like these can be run directly from the input file or integrated
 # with the energy(), etc. routines by means of lines like those at the end
 # of this file.

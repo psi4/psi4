@@ -122,3 +122,27 @@ def oeprop_validator(prop_list):
             raise ValidationError("OEProp: Feature '%s' is not recognized. %s" % (prop, alternatives))
     
 
+def check_iwl_file_from_scf_type(scf_type, wfn):
+    """
+    Ensures that a IWL file has been written based on input SCF type.
+    """
+
+    if scf_type in ['DF', 'CD', 'PK', 'DIRECT']:
+        mints = psi4.MintsHelper(wfn.basisset())
+        mints.set_print(1)
+        mints.integrals()
+
+def check_non_symmetric_jk_density(name):
+    """
+    Ensure non-symmetric density matrices are supported for the selected JK routine.
+    """
+    scf_type = psi4.get_option('SCF', 'SCF_TYPE')
+    supp_jk_type = ['DF', 'CD', 'PK', 'DIRECT', 'OUT_OF_CORE']
+    supp_string = ', '.join(supp_jk_type[:-1]) + ', or ' + supp_jk_type[-1] + '.'
+
+    if scf_type not in supp_jk_type:
+        raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
+                              "     Please set SCF_TYPE to %s" % (name, supp_string)) 
+
+
+

@@ -29,6 +29,7 @@
 #include <boost/python/dict.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <libmints/deriv.h>
 #include <libmints/mints.h>
 #include <libmints/twobody.h>
 #include <libmints/integralparameters.h>
@@ -446,6 +447,14 @@ void export_mints()
             def(init<SharedMatrix, const Dimension&, const Dimension&, const Dimension&, const Dimension&>()).
             def("__call__", &View::operator(), "docstring");
 
+    class_<Deriv, boost::shared_ptr<Deriv> >("Deriv", "docstring", no_init).
+            def(init<boost::shared_ptr<Wavefunction> >()).
+            def(init<boost::shared_ptr<Wavefunction>, char, bool, bool>()).
+            def("set_tpdm_presorted", &Deriv::set_tpdm_presorted, "docstring").
+            def("set_ignore_reference", &Deriv::set_ignore_reference, "docstring").
+            def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed, "docstring").
+            def("compute", &Deriv::compute, "docstring");
+
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
@@ -635,6 +644,7 @@ void export_mints()
             def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
             def("mo_transform", &MintsHelper::mo_transform, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
+            def("set_print", &MintsHelper::set_print, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");

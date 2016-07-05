@@ -11,7 +11,7 @@ list(APPEND needed_components filesystem python regex serialization system timer
 if(ENABLE_MPI)
    list(APPEND needed_components mpi)
 endif()
-set(Boost_USE_STATIC_LIBS    ON)
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED  ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 if(ENABLE_UNIT_TESTS)

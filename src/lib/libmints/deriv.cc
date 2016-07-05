@@ -447,6 +447,9 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     factory_  = wave->matrix_factory();
     molecule_ = wave->molecule();
     natom_    = molecule_->natom();
+    tpdm_presorted_ = false;
+    deriv_density_backtransformed_ = false;
+    ignore_reference_ = false;
 
     // Results go here.
     opdm_contr_ = factory_->create_shared_matrix("One-electron contribution to gradient", natom_, 3);
@@ -595,31 +598,34 @@ SharedMatrix Deriv::compute()
                terms below are computed correctly.  The two-particle terms are computed the same in both cases
                as all spin cases have been collapsed into the a single SO TPDM. */
 
-            // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
-            vector<boost::shared_ptr<MOSpace> > spaces;
-            spaces.push_back(MOSpace::all);
-            boost::shared_ptr<IntegralTransform> ints_transform = boost::shared_ptr<IntegralTransform>(
-                        new IntegralTransform(wfn_,
-                                              spaces,
-                                              wfn_->same_a_b_orbs() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
-                                              IntegralTransform::DPDOnly,    // Output buffer
-                                              IntegralTransform::QTOrder,    // MO ordering
-                                              IntegralTransform::None));     // Frozen orbitals?
-            dpd_set_default(ints_transform->get_dpd_id());
+            if ( !deriv_density_backtransformed_ ) {
 
-            // Some codes already presort the tpdm, do not follow this as an example
-            if(Process::environment.options.get_bool("DERIV_TPDM_PRESORTED"))
-                ints_transform->set_tpdm_already_presorted(true);
+                // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
+                vector<boost::shared_ptr<MOSpace> > spaces;
+                spaces.push_back(MOSpace::all);
+                boost::shared_ptr<IntegralTransform> ints_transform = boost::shared_ptr<IntegralTransform>(
+                            new IntegralTransform(wfn_,
+                                                  spaces,
+                                                  wfn_->same_a_b_orbs() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
+                                                  IntegralTransform::DPDOnly,    // Output buffer
+                                                  IntegralTransform::QTOrder,    // MO ordering
+                                                  IntegralTransform::None));     // Frozen orbitals?
+                dpd_set_default(ints_transform->get_dpd_id());
 
-            ints_transform->backtransform_density();
+                // Some codes already presort the tpdm, do not follow this as an example
+                if (tpdm_presorted_)
+                    ints_transform->set_tpdm_already_presorted(true);
 
-            Da = factory_->create_shared_matrix("SO-basis OPDM");
-            Db = factory_->create_shared_matrix("NULL");
-            Da->load(_default_psio_lib_, PSIF_AO_OPDM);
-            X = factory_->create_shared_matrix("SO-basis Lagrangian");
-            X->load(_default_psio_lib_, PSIF_AO_OPDM);
-            // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
-            X->scale(0.5);
+                ints_transform->backtransform_density();
+
+                Da = factory_->create_shared_matrix("SO-basis OPDM");
+                Db = factory_->create_shared_matrix("NULL");
+                Da->load(_default_psio_lib_, PSIF_AO_OPDM);
+                X = factory_->create_shared_matrix("SO-basis Lagrangian");
+                X->load(_default_psio_lib_, PSIF_AO_OPDM);
+                // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
+                X->scale(0.5);
+            }
 
             _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
             CorrelatedFunctor functor(TPDMcont_vector);
@@ -634,6 +640,7 @@ SharedMatrix Deriv::compute()
 
         outfile->Printf( "\n");
     }
+
 
     // Now, compute the one electron terms
     for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd) {
@@ -746,7 +753,7 @@ SharedMatrix Deriv::compute()
     corr->add(opdm_contr_);
     corr->add(x_contr_);
     corr->add(tpdm_contr_);
-    if (reference_separate) {
+    if (reference_separate && !ignore_reference_) {
         gradient_->add(x_ref_contr_);
         gradient_->add(opdm_ref_contr_);
         gradient_->add(tpdm_ref_contr_);

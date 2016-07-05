@@ -62,6 +62,7 @@ procedures = {
             'qchf'          : proc.run_qchf,
             'ccd'           : proc.run_dfocc,
             'sapt0'         : proc.run_sapt,
+            'ssapt0'        : proc.run_sapt,
             'sapt2'         : proc.run_sapt,
             'sapt2+'        : proc.run_sapt,
             'sapt2+(3)'     : proc.run_sapt,
@@ -142,8 +143,9 @@ procedures = {
             'acpf'          : proc.run_cepa,
             'aqcc'          : proc.run_cepa,
             'efp'           : proc.run_efp,
-            'dmrgscf'       : proc.run_dmrgscf,
-            'dmrgci'        : proc.run_dmrgci,
+            'dmrg-scf'      : proc.run_dmrgscf,
+            'dmrg-caspt2'   : proc.run_dmrgscf,
+            'dmrg-ci'       : proc.run_dmrgci,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # Aliases are discouraged. If you must add an alias to this list (e.g.,
             #    lccsd/cepa(0)), please search the whole driver to find uses of

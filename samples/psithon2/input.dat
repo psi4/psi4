@@ -1,5 +1,7 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
+print 'This file will not work outside a cmake test environment.'
+
 memory 250 mb
 
 import os
@@ -62,14 +64,12 @@ set myplugin1 {
 
 energy('myplugin1')
 
-compare_values(-74.9455096208439784, get_variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')
 clean()
 
 ###########################
 set basis mysto3g
 set df_basis_scf myccpvdzri
 energy('scf')
-compare_values(-74.9455096190513927, get_variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')
 clean()
 
 ###########################

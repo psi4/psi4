@@ -18,7 +18,6 @@ e_cbs = energy(cbs,
             scf_basis='aug-cc-pV[DTQ]Z',
             scf_scheme=driver_cbs.scf_xtpl_helgaker_3)
 
-compare_values(3.0, get_variable('cbs number'), 6, '[1b]')
 clean()
 
 
@@ -44,7 +43,6 @@ e_cbs = energy(cbs,
             delta_wfn='ccsd',
             delta_basis='cc-pV[DT]Z',
             delta_scheme=driver_cbs.corl_xtpl_helgaker_2)
-compare_values(3.0, get_variable('cbs number'), 6, '[2b]')
 clean()
 
 
@@ -65,7 +63,6 @@ e_cbs = energy(cbs,
             corl_basis='aug-cc-pV[DT]Z',
             corl_scheme=driver_cbs.corl_xtpl_helgaker_2)
 
-compare_values(3.0, get_variable('cbs number'), 6, '[3b]')
 clean()
 
 # Example with default extrapolation schemes
@@ -75,7 +72,6 @@ e_cbs = energy(cbs,
             delta_wfn='mp5',
             delta_basis='cc-pVDZ')
 
-compare_values(2.0, get_variable('cbs number'), 6, '[4b]')
 
 
 

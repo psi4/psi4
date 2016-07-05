@@ -51,12 +51,15 @@ def main(argv):
     info['--has-fortran'] = '@FORTRAN_ENABLED@'
     info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
     info['--has-chemps2'] = '@ENABLE_CHEMPS2@'
-    info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'  # aka PLUGIN_INCLUDES
+    if '@ENABLE_CONDA_DEST@' == 'ON':
+        info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'.replace('${MCONDA}', info['--prefix'])  # aka PLUGIN_INCLUDES
+    else:
+        info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'  # aka PLUGIN_INCLUDES
     info['--defines'] = '@PLUGIN_DEFINES@'
     info['--ldflags'] = '@CMAKE_CXX_LINK_FLAGS@'  # aka PLUGIN_LDFLAGS. skipping LIBC_INTERJECT
     info['--flags'] = '@CXX_FLAGS_PLUGIN@'  # aka PLUGIN_FLAGS
     info['--libs'] = sep_cmake_list('@EXTERNAL_LIBS@')
-    info['--extrafortranflags'] = '@CMAKE_EXTRA_Fortran_FLAGS@'
+    info['--extrafortranflags'] = compute_explicit_fortran('@CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES@', '@CMAKE_CXX_IMPLICIT_LINK_LIBRARIES@')
 
     if len(argv) == 1:
         retstr = """Build conditions of Psi4. Usage:
@@ -78,6 +81,14 @@ def main(argv):
 
 def sep_cmake_list(cmlist):
     return ' '.join(cmlist.split(';'))
+
+def compute_explicit_fortran(fort, cxx):
+    cxxl = cxx.split(';')
+    explicit = []
+    for f in fort.split(';'):
+        if f not in cxxl:
+            explicit.append(f)
+    return ''.join([' -l' + f for f in explicit])
 
 
 if __name__ == '__main__':

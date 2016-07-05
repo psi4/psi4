@@ -1,5 +1,5 @@
 
-# User signal to try pre-built CheMPS2 (and GSL and HDF5)
+# User signal to try pre-built CheMPS2 (and HDF5)
 if (CHEMPS2_ROOT)
     find_package(CHEMPS2)
 endif()
@@ -9,9 +9,8 @@ if(NOT CHEMPS2_FOUND)
     message(STATUS "CheMPS2 not found. The pre-packaged version will be built.")
 
     find_package (HDF5 QUIET)
-    find_package (GSL QUIET)
-    if (NOT GSL_FOUND OR NOT HDF5_FOUND)
-        message(FATAL_ERROR "No GSL or HDF5, no CheMPS2. Build against existing with -DCHEMPS2_ROOT=$CONDAENV or skip with -DENABLE_CHEMPS2=OFF")
+    if (NOT HDF5_FOUND)
+        message(FATAL_ERROR "No HDF5, no CheMPS2. Build against an existing CheMPS2 with -DCHEMPS2_ROOT=/path/to/chemps2 or skip with -DENABLE_CHEMPS2=OFF")
     endif()
 
     set(CUSTOM_CHEMPS2_LOCATION ${PROJECT_BINARY_DIR}/interfaces/chemps2)
@@ -19,16 +18,21 @@ if(NOT CHEMPS2_FOUND)
     ExternalProject_Add(interface_chemps2
         PREFIX ${CUSTOM_CHEMPS2_LOCATION}
         GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-        GIT_TAG v1.5
-        CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        GIT_TAG v1.7.1
+        CMAKE_ARGS 
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                   -DEXTRA_C_FLAGS=${CMAKE_EXTRA_C_FLAGS}
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DEXTRA_CXX_FLAGS=${CMAKE_EXTRA_CXX_FLAGS}
                    -DSTATIC_ONLY=ON
                    -DENABLE_TESTS=OFF
                    -DENABLE_GENERIC=${ENABLE_STATIC_LINKING}
                    -DENABLE_XHOST=${ENABLE_XHOST}
-                   -DLAPACK_LIBRARIES=${BLAS_LIBRARIES}
-                   -DGSL_LIBRARIES=${GSL_LIBRARIES}
                    -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
                    -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
+                   -DCMAKE_RANLIB=${CMAKE_RANLIB}
+                   -DCMAKE_AR=${CMAKE_AR}
+                   -DCMAKE_NM=${CMAKE_NM}
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_INSTALL_LIBDIR=lib
         INSTALL_DIR "${CUSTOM_CHEMPS2_LOCATION}/install")
@@ -37,8 +41,9 @@ if(NOT CHEMPS2_FOUND)
     ExternalProject_Get_Property(interface_chemps2 INSTALL_DIR)
     set(CHEMPS2_LIBRARY "${INSTALL_DIR}/lib/libchemps2.a")
     file(MAKE_DIRECTORY ${INSTALL_DIR}/include/chemps2)  # note [1] below
-    set(CHEMPS2_INCLUDE_DIRS "${INSTALL_DIR}/include" ${GSL_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
-    set(CHEMPS2_LIBRARIES ${CHEMPS2_LIBRARY} ${GSL_LIBRARIES} ${HDF5_LIBRARIES})
+    set(CHEMPS2_INCLUDE_DIRS "${INSTALL_DIR}/include" ${HDF5_INCLUDE_DIRS})
+    set(CHEMPS2_LIBRARIES  "${CHEMPS2_LIBRARY}" "${LAPACK_LIBRARIES}"
+                           "${BLAS_LIBRARIES}" ${HDF5_LIBRARIES})
 
     # Set target for dmrg and psi4 to depend upon as set by find_package
     add_library(CHEMPS2::CHEMPS2 STATIC IMPORTED GLOBAL)

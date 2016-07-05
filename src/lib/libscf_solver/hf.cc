@@ -482,6 +482,21 @@ double HF::finalize_E()
     // Perform wavefunction stability analysis before doing
     // anything on a wavefunction that may not be truly converged.
     if(options_.get_str("STABILITY_ANALYSIS") != "NONE") {
+        // We need the integral file, make sure it is written and
+        // compute it if needed
+        if(options_.get_str("REFERENCE") != "UHF") {
+            psio_->open(PSIF_SO_TEI, PSIO_OPEN_OLD);
+            if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == NULL) {
+                psio_->close(PSIF_SO_TEI,1);
+                outfile->Printf("    SO Integrals not on disk, computing...");
+                boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
+                mints->integrals();
+                outfile->Printf("done.\n");
+            } else {
+                psio_->close(PSIF_SO_TEI,1);
+            }
+
+        }
         bool follow = stability_analysis();
 
         while ( follow && !(attempt_number_ > max_attempts_) ) {
@@ -590,8 +605,7 @@ double HF::finalize_E()
 
         save_information();
     } else {
-            outfile->Printf( "  Failed to converged.\n");
-            outfile->Printf( "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
+            outfile->Printf( "  Failed to converge.\n");
         E_ = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);

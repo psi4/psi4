@@ -28,6 +28,7 @@ my %ExeFolder = (
    "cfour/"     => "cfour",
    "libefp/"    => "libefp",
    "pcmsolver/" => "pcmsolver",
+   "dmrg/"      => "dmrg",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -46,6 +47,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^cfour$/;
     next if $File =~ /^libefp$/;
     next if $File =~ /^pcmsolver$/;
+    next if $File =~ /^dmrg$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }
@@ -84,11 +86,14 @@ foreach my $Dir(readdir TESTS){
     }
     my $SampleInput = $SamplesDirectory."/input.dat";
     open(SAMPLE, ">$SampleInput") or die "\nI can't write to $SampleInput\n";
+    my $TestInput = $SamplesDirectory."/test.in";
+    open(TEST, ">$TestInput") or die "\nI can't write to $TestInput\n";
     my $Description;
     my $TestOnlyNoSample = 0;
     while(<INPUT>){
         # If this line isn't associated with testing, put it in the sample
         print SAMPLE unless /\#TEST/;
+        print TEST;
         # Now we only want to grab the comments.  Move on if this is not a comment.
         next unless s/\#\!//;
         $Description .= $_;
@@ -99,9 +104,11 @@ foreach my $Dir(readdir TESTS){
     }
     close INPUT;
     close SAMPLE;
+    close TEST;
 
     if ($TestOnlyNoSample) {
         unlink $SampleInput or warn "Could not unlink $SampleInput: $!";
+        unlink $TestInput or warn "Could not unlink $TestInput: $!";
         rmdir $SamplesDirectory or die "\nI can't remove $SamplesDirectory\n";
     }
 

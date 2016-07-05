@@ -129,6 +129,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
                 ':' + os.environ.get('PATH'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
+    #   Filter out None values as subprocess will fault on them
+    lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Find out if running from Psi4 for scratch details and such
     try:

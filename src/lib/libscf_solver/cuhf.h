@@ -71,7 +71,8 @@ namespace psi { namespace scf {
 
 class CUHF : public HF {
 protected:
-    SharedMatrix Dt_, Dtold_;
+    SharedMatrix Dt_, Dt_old_;
+    SharedMatrix Da_old_, Db_old_;
     SharedMatrix J_, Ka_, Kb_;
     // Contributions to the Fock matrix from charge and spin density
     SharedMatrix Fp_, Fm_;
@@ -101,6 +102,8 @@ protected:
     void common_init();
 
     void save_density_and_energy();
+
+    virtual void damp_update();
 
     // Finalize memory/files
     virtual void finalize();

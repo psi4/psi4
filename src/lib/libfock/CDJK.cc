@@ -24,7 +24,6 @@
  *
  * @END LICENSE
  */
-
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libpsio/psio.hpp>
@@ -70,23 +69,40 @@ void CDJK::initialize_JK_disk()
 
 void CDJK::initialize_JK_core()
 {
-    // generate CD integrals with lib3index
     timer_on("CD: cholesky decomposition");
     boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
+    int ntri = sieve_->function_pairs().size();
+    /// If user asks to read integrals from disk, just read them from disk.  
+    /// Qmn is only storing upper triangle.
+    /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
+    if(df_ints_io_ == "LOAD")
+    {
+        psio_->open(unit_,PSIO_OPEN_OLD);
+        psio_->read_entry(unit_, "length", (char*)&ncholesky_, sizeof(long int));
+        Qmn_ = SharedMatrix(new Matrix("Qmn (CD Integrals)", ncholesky_ , ntri));
+        double** Qmnp = Qmn_->pointer();
+        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->close(unit_,1);
+        Process::environment.globals["NAUX (SCF)"] = ncholesky_;
+        timer_off("CD: cholesky decomposition");
+        return;
+    }
+
+    ///If user does not want to read from disk, recompute the cholesky integrals
     boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
     Ch->choleskify();
     ncholesky_  = Ch->Q();
+    ULI three_memory = ncholesky_ * ntri;
+    ULI nbf = primary_->nbf();
+
+    ///Kinda silly to check for memory after you perform CD.  
+    ///Most likely redundant as cholesky also checks for memory.  
+    if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
+        throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
     boost::shared_ptr<Matrix> L = Ch->L();
     double ** Lp = L->pointer();
     timer_off("CD: cholesky decomposition");
-
-    int ntri = sieve_->function_pairs().size();
-    ULI three_memory = ncholesky_ * ntri;
-    ULI nbf = primary_->nbf();
-
-    if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
-        throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
     Qmn_ = SharedMatrix(new Matrix("Qmn (CD Integrals)", ncholesky_ , ntri));
 
@@ -104,14 +120,14 @@ void CDJK::initialize_JK_core()
         }
     }
     timer_off("CD: schwarz");
-
     if (df_ints_io_ == "SAVE") {
-        // stick ncholesky in process environment for other codes that may use the integrals
-        Process::environment.globals["NAUX (SCF)"] = (double)ncholesky_;
-
         psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->write_entry(unit_, "length", (char*)&ncholesky_, sizeof(long int));
         psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
         psio_->close(unit_,1);
+        // stick ncholesky in process environment for other codes that may use the integrals
+        // Not sure if this should really be here.  It is here because Ugur uses this option to get the number of cholesky vectors.  
+        Process::environment.globals["NAUX (SCF)"] = ncholesky_;
     }
 }
 void CDJK::manage_JK_core()

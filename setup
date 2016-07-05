@@ -146,7 +146,7 @@ def parse_input():
     group.add_argument('--extra-math-flags',
             action='store',
             default=None,
-            help='extra linker flags (usually -Llibdir -llibname type arguments) [default: %(default)s]',
+            help='extra linker flags (usually -Llibdir -llibname type arguments). use equals, quotes, and spaces for correct parsing (e.g., --extra-math-flags="-lm -lgfortran") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--accelerate',
             action='store_true',
@@ -379,7 +379,7 @@ def parse_input():
     group.add_argument('--extra-cc-flags',
             action='store',
             default=None,
-            help='extra C flags [default: %(default)s]',
+            help='extra C flags. use equals, quotes, and spaces for correct parsing (e.g., --extra-cc-flags="-no-prec-div") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--extra-cxx-flags',
             action='store',
@@ -396,7 +396,7 @@ def parse_input():
     group.add_argument('--custom-cc-flags',
             action='store',
             default=None,
-            help='C flags [default: %(default)s]',
+            help='C flags. use equals, quotes, and spaces for correct parsing (e.g., --custom-cc-flags="-dynamic -fPIC") [default: %(default)s]',
             metavar='STRING')
     group.add_argument('--custom-cxx-flags',
             action='store',
@@ -462,10 +462,10 @@ def gen_cmake_command(args):
         command +=   ' -DBOOST_LIBRARYDIR={0}'.format(args.metapackage_dir + '/lib')
         command += ' -DPYTHON_INTERPRETER={0}'.format(args.metapackage_dir + '/bin/python')
         command +=       ' -DCHEMPS2_ROOT={0}'.format(args.metapackage_dir)
-        command +=       ' -DGSL_ROOT_DIR={0}'.format(args.metapackage_dir)
         command +=          ' -DHDF5_ROOT={0}'.format(args.metapackage_dir)
         command +=          ' -DZLIB_ROOT={0}'.format(args.metapackage_dir)
         command +=     ' -DPCMSOLVER_ROOT={0}'.format(args.metapackage_dir)
+        command +=         ' -DAMBIT_ROOT={0}'.format(args.metapackage_dir)
 
     command += translate_cmake('ENABLE_MPI',            args.mpi)
     command += translate_cmake('ENABLE_SGI_MPT',        args.sgi_mpt)

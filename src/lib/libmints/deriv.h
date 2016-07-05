@@ -37,6 +37,7 @@
 
 #include <vector>
 #include "matrix.h"
+#include "cdsalclist.h"
 
 namespace boost {
 template<class T>
@@ -69,6 +70,8 @@ class Deriv
 
     int natom_;
     bool tpdm_presorted_;
+    bool deriv_density_backtransformed_;
+    bool ignore_reference_;
 
     std::vector<SharedMatrix> dH_;
     std::vector<SharedMatrix> dS_;
@@ -99,8 +102,17 @@ public:
      */
     Deriv(const boost::shared_ptr<Wavefunction>& wave,
           char needed_irreps=0x1,
-          bool project_out_translations=true,
-          bool project_out_rotations=true);
+          bool project_out_translations=false,
+          bool project_out_rotations=false);
+
+    // Is the TPDM already presorted? Default: False
+    void set_tpdm_presorted(bool val) { tpdm_presorted_ = val; }
+
+    // Ignore reference contributions to the gradient? Default: False
+    void set_ignore_reference(bool val) { ignore_reference_ = val; }
+
+    // Is the deriv_density already backtransformed? Default: False
+    void set_deriv_density_backtransformed(bool val) { deriv_density_backtransformed_ = val; }
 
     SharedMatrix compute();
 

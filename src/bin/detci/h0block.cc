@@ -112,6 +112,11 @@ void CIWavefunction::H0block_free(void)
    int i;
 
    if (H0block_->osize) {
+      free_matrix(H0block_->H0b, H0block_->osize);
+      if (Parameters_->precon == PRECON_GEN_DAVIDSON)
+         free(H0block_->H0b_diag_transpose);
+      free_matrix(H0block_->H0b_diag, H0block_->osize);
+      free_matrix(H0block_->tmp1, H0block_->osize);
       free(H0block_->H00);
       free(H0block_->c0b);
       free(H0block_->c0bp);
@@ -122,15 +127,13 @@ void CIWavefunction::H0block_free(void)
       free(H0block_->alpidx);
       free(H0block_->betidx);
       free(H0block_->blknum);
-      if (Parameters_->precon == PRECON_GEN_DAVIDSON)
-        free(H0block_->H0b_diag_transpose);
-      free_matrix(H0block_->H0b, H0block_->osize);
-      if (Parameters_->precon == PRECON_H0BLOCK_INVERT)
-        free_matrix(H0block_->H0b_inv, H0block_->osize);
-    /*  if (Parameters_->precon == PRECON_H0BLOCK_INVERT ||
-          Parameters_->precon == PRECON_H0BLOCK_ITER_INVERT) */
-        free_matrix(H0block_->tmp1, H0block_->osize);
       free(H0block_->pair);
+      if (Parameters_->precon == PRECON_H0BLOCK_INVERT)
+         free_matrix(H0block_->H0b_inv, H0block_->osize);
+      if (Parameters_->h0block_coupling) {
+         free(H0block_->tmp_array1);
+         free(H0block_->tmp_array2);
+         }
       if (H0block_->nbuf) {
          free(H0block_->buf_num);
          for (i=0; i<H0block_->nbuf; i++) free(H0block_->buf_member[i]);
@@ -692,9 +695,6 @@ void CIWavefunction::H0block_fill()
 
    /* fill upper triangle */
    fill_sym_matrix(H0block_->H0b, H0block_->size);
-
-   evals = init_array(H0block_->guess_size);
-   evecs = init_matrix(H0block_->guess_size, H0block_->guess_size);
 
    if (Parameters_->precon == PRECON_GEN_DAVIDSON)
      size = H0block_->size;
