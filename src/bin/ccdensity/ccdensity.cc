@@ -367,7 +367,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
   if ( params.ael && (params.nstates > 1) )
     ael(rho_params);
 */
-  outfile->Printf("I am here\n");
+  // outfile->Printf("I am here\n");
 
   if(params.transition) {
 
@@ -475,7 +475,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 
   }  // End params.transition IF loop
 
-  outfile->Printf("I am here\n");
+  // outfile->Printf("I am here\n");
   dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);

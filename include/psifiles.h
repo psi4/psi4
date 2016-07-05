@@ -219,6 +219,8 @@
 #define PSIF_CC_MIN  PSIF_CC_INFO  /*-  -*/
 #define PSIF_CC_MAX  PSIF_CC2_HET1 /*-  -*/
 
+#define PSIF_WK_PK          165  /*- File to contain wK pre-sorted integrals for PK -*/
+
 #define PSIF_SCF_MOS           180  /*- Save SCF orbitals for re-use later as guess, etc. -*/
 #define PSIF_DFMP2_AIA         181  /*- Unfitted three-index MO ints for DFMP2 -*/
 #define PSIF_DFMP2_QIA         182  /*- Fitted-three index MO ints for DFMP2 -*/
@@ -285,6 +287,8 @@
 #define PSIF_DFOCC_DENS        278  /*- DFOCC PDMs -*/
 #define PSIF_DFOCC_IABC        279  /*- DFOCC (IA|BC) -*/ 
 #define PSIF_DFOCC_TEMP        280  /*- DFOCC temporary storage -*/
+
+#define PSIF_SAD               300  /*- A SAD file (File for SAD related quantities -*/
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */

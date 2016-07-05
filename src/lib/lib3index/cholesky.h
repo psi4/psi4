@@ -27,6 +27,7 @@
 
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
+#include <libmints/sieve.h>
 
 namespace psi {
 
@@ -72,6 +73,7 @@ public:
     virtual void compute_diagonal(double* target) = 0;
     /// Row row of the original square tensor, provided by the subclass
     virtual void compute_row(int row, double* target) = 0;
+
 };
 
 class CholeskyMatrix : public Cholesky {

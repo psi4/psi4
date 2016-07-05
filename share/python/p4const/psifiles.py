@@ -153,6 +153,7 @@ PSIF_CC3_HC1                =  161  # [H,C1]
 PSIF_CC3_HC1ET1             =  162  # [[H,e^T1],C1]
 PSIF_CC3_MISC               =  163  # various intermediates needed in CC3 codes
 PSIF_CC2_HET1               =  164  # [H,e^T1]
+PSIF_WK_PK                  =  165  # File to contain wK pre-sorted integrals for PK
 PSIF_SCF_MOS                =  180  # Save SCF orbitals for re-use later as guess, etc.
 PSIF_DFMP2_AIA              =  181  # Unfitted three-index MO ints for DFMP2
 PSIF_DFMP2_QIA              =  182  # Fitted-three index MO ints for DFMP2
@@ -209,4 +210,5 @@ PSIF_DFOCC_AMPS             =  277  # DFOCC Amplitudes
 PSIF_DFOCC_DENS             =  278  # DFOCC PDMs
 PSIF_DFOCC_IABC             =  279  # DFOCC (IA|BC)
 PSIF_DFOCC_TEMP             =  280  # DFOCC temporary storage
+PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
 

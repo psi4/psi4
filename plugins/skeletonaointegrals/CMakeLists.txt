@@ -12,7 +12,7 @@ add_custom_target(plugin_${PLUG}
     ALL
     DEPENDS ${PSIEXE}
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
-    COMMAND ${PSIEXE} -l ${PROJECT_SOURCE_DIR}/share --new-plugin ${PLUG}
+    COMMAND ${PSIEXE} -l ${PROJECT_SOURCE_DIR}/share --new-plugin ${PLUG} +aointegrals
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CCBD}/${PLUG} ${CCBD}
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
     COMMAND $(MAKE)

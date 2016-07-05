@@ -359,6 +359,12 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot,
         return opdm;
     }
 }
+void CIWavefunction::convergence_death(){
+    if (Parameters_->die_if_not_converged){
+        throw PSIEXCEPTION("CIWavefunction: Iterations did not converge!");
+    }
+
+}
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
                                       bool symmetrize) {
     if (!tpdm_called_) {
@@ -449,6 +455,11 @@ void CIWavefunction::cleanup(void) {
     for (int i = 0, cnt = 0; i < 4; i++) {
         free_int_matrix(CalcInfo_->ras_orbs[i]);
     };
+
+
+    if (Parameters_->mcscf) {
+        ints_.reset();
+    }
     // delete CalcInfo_;
     // delete MCSCF_Parameters_;
 

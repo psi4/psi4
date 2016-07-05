@@ -65,6 +65,7 @@ void CIWavefunction::diag_h() {
 
     conv_rms = Parameters_->convergence;
     conv_e = Parameters_->energy_convergence;
+    Parameters_->diag_h_converged = false;
 
     if (Parameters_->have_special_conv) {
         tval = sqrt(conv_rms) * 10.0;
@@ -161,6 +162,7 @@ void CIWavefunction::diag_h() {
         H.reset();
         evecs.reset();
         evals_v.reset();
+        Parameters_->diag_h_converged = true;
     } /* end RSP section */
 
     /* RSP test of Davidson/Liu (SEM) diagonalization routine */
@@ -358,6 +360,7 @@ void CIWavefunction::diag_h() {
             free(mi_coeff);
             free_matrix(evecs, Parameters_->num_roots);
         }
+        Parameters_->diag_h_converged = true;
 
     } /* end Test of Davidson/Liu section */
 
@@ -518,10 +521,19 @@ void CIWavefunction::diag_h() {
                          Parameters_->maxnvect, "outfile",
                          Parameters_->print_lvl);
 
-            H0block_free();
         }
+        H0block_free();
 
     } /* end the Davidson-Liu/Mitrushenkov-Olsen-Davidson section */
+
+    // Check convergence
+    if (!Parameters_->diag_h_converged){
+       convergence_death(); 
+       if (Parameters_->print_lvl){
+           outfile->Printf("\nWarning! CI diagonalization did not fully converge!\n\n");
+       }
+    }
+
 
 
     // Write out energy to psivars
@@ -600,6 +612,7 @@ void CIWavefunction::diag_h() {
         Process::environment.globals["MCSCF TOTAL ENERGY"] =
             Process::environment.globals["CI TOTAL ENERGY"];
     }
+
 
 }  // end CIWave::diag_h
 }}  // namespace psi::detci

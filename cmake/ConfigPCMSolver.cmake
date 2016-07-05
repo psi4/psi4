@@ -26,11 +26,11 @@ if(NOT PCMSolver_FOUND)
     -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/interfaces
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+    -DEXTRA_FCFLAGS=${PCM_EXTRA_Fortran_FLAGS}
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+    -DEXTRA_CFLAGS=${PCM_EXTRA_C_FLAGS}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+    -DEXTRA_CXXFLAGS=${PCM_EXTRA_CXX_FLAGS}
     -DENABLE_CXX11_SUPPORT=${ENABLE_CXX11_SUPPORT}
     -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
     -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
@@ -45,7 +45,6 @@ if(NOT PCMSolver_FOUND)
     -DZLIB_ROOT=${ZLIB_ROOT}
     -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    -DCMAKE_INSTALL_LIBDIR=lib
     )
   # Make sure PCMSolver gets exact same Boost as Psi4
   if(BUILD_CUSTOM_BOOST)
@@ -53,7 +52,7 @@ if(NOT PCMSolver_FOUND)
       DEPENDS custom_boost
       PREFIX ${CUSTOM_PCMSolver_LOCATION}
       GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-      GIT_TAG v1.1.1
+      GIT_TAG v1.1.3
       CMAKE_ARGS "${PCMSolverCMakeArgs}"
       INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
       )
@@ -61,7 +60,7 @@ if(NOT PCMSolver_FOUND)
     ExternalProject_Add(interface_pcmsolver
       PREFIX ${CUSTOM_PCMSolver_LOCATION}
       GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-      GIT_TAG v1.1.1
+      GIT_TAG v1.1.3
       CMAKE_ARGS "${PCMSolverCMakeArgs}"
       INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
       )

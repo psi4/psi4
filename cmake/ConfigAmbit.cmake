@@ -14,7 +14,7 @@ if (NOT Ambit_FOUND)
 
     find_package(HDF5 REQUIRED)
     if (NOT HDF5_FOUND)
-        message(FATAL_ERROR "No HDF5, no Ambit. Build against existing with -DAMBIT_ROOT=$CONDAENV or skip with -DENABLE_AMBIT=OFF")
+        message(FATAL_ERROR "No HDF5, no Ambit. Build against existing with -DAMBIT_ROOT=/path/to/ambit or skip with -DENABLE_AMBIT=OFF")
     endif()
 
     set(Ambit_OPENMP OFF)
@@ -43,8 +43,9 @@ if (NOT Ambit_FOUND)
             -DHDF5_LIBRARIES=${HDF5_LIBRARIES}
             -DHDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}
             -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-            -DENABLE_STATIC=ON
+            -DSTATIC_ONLY=ON
             -DENABLE_PSI4=ON
+            -Boost_USE_STATIC_LIBS=${Boost_USE_STATIC_LIBS}
             -DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}
             -DPSI4_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
@@ -55,7 +56,7 @@ if (NOT Ambit_FOUND)
     ExternalProject_Add(interface_ambit
             PREFIX ${CUSTOM_Ambit_LOCATION}
             GIT_REPOSITORY https://github.com/jturney/ambit
-            GIT_TAG v0.1.1-alpha
+            GIT_TAG v0.2
             CMAKE_ARGS "${AmbitCMakeArgs}"
             INSTALL_DIR "${CUSTOM_Ambit_LOCATION}/install"
             )

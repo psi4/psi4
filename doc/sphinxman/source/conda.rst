@@ -6,8 +6,8 @@
 Binary Distribution
 ===================
 
-|PSIfour| is available as a pre-compiled binary for Linux architectures
-(Mac coming soon) through `Continuum Analytics
+|PSIfour| is available as a pre-compiled binary for Linux and Mac architectures
+through `Continuum Analytics
 <https://store.continuum.io/cshop/anaconda/>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
 full-fledged scientific python environment with package manager `conda
@@ -22,7 +22,7 @@ distribution with same package manger `conda
 
 * built with high-performance math libraries
 
-* lightweight software stack (<100 MB w/o |PSIfour|; <500 MB including |PSIfour|)
+* lightweight software stack (<100 MB w/o |PSIfour|; ~1 GB including |PSIfour|, numpy, and MKL)
 
 * updated nightly so new features accessible
 
@@ -34,9 +34,93 @@ distribution with same package manger `conda
 
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
-For commands to get a default installation, go to :ref:`sec:quickconda`.
+For commands to get a default installation, go to :ref:`sec:psi4conda`
+or the `psicode downloads page <http://psicode.org/downloads2.html>`_.
+Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
+
+.. _`sec:psi4conda`:
+
+Psi4conda Installer
+^^^^^^^^^^^^^^^^^^^
+
+Sequence of commands to get you to a working |PSIfour| on Linux
+or Mac. Installs Miniconda+Psi4 into ``$HOME/psi4conda`` and
+the |PSIfour| executable into the main conda environment at
+``$HOME/psi4conda/bin/psi4``.
+
+.. code-block:: bash
+
+    # Linux
+    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-Linux.sh" --keepalive-time 2
+    >>> bash
+    >>> bash Psi4conda-latest-Linux.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bashrc
+    # log out, log back in so conda and psi4 in path
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+.. code-block:: bash
+
+    # Mac
+    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-MacOSX.sh" --keepalive-time 2
+    >>> bash
+    >>> bash Psi4conda-latest-MacOSX.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bash_profile
+    # log out, log back in so conda and psi4 in path
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+
+That last command tested that ``psi4`` is in your path, and it's finding
+all the libraries it needs. Now you need only specify a scratch directory
+(see :ref:`sec:Scratch`) by replacing the placeholder in the following:
+
+.. code-block:: bash
+
+    >>> echo "export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files" >> ~/.bashrc
+    # log out, log back in so variable takes effect
+
+All done!
+
+.. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
+
+.. _`sec:condadetails`:
+
+Conda Proficients
+^^^^^^^^^^^^^^^^^
+
+The :ref:`sec:psi4conda` uses a `conda constructor
+<https://github.com/conda/constructor>`_ to package up Miniconda,
+the psi4 conda packages, the psi4 add-on conda packages, dependencies
+thereof (possibly from particular channels), and the psi4 channel
+as a default.  This is very convenient for novice users and robust
+against differing channel settings in ``~/.condarc``. But proficient
+conda users may prefer to treat ``psi4`` as a normal conda package and
+not have another large Miniconda installation (including the hefty MKL)
+lying around just for |PSIfour|. Installing just the ``psi4`` package
+itself will get you |PSIfour|, whatever add-ons require linking in to
+|PSIfour| (*e.g.*, CheMPS2 and PCMSolver), and the correct versions of
+packages. However, just the ``psi4`` package won't get you add-ons that
+don't need linking (*e.g.*, DFTD3 and v2rdm_casscf) or dependencies
+from the "right" channels, which can be important for issues of fPIC
+and libc++ vs. libstdc++. So ``conda create -c psi4 -n p4env psi4 dftd3
+v2rdm_casscf`` *should* be equivalent to running the psi4conda installer,
+but I wouldn't count on it. Instead, an `explicit environment spec
+<http://conda.pydata.org/docs/using/envs.html#build-identical-conda-environments-with-urls>`_
+will be available for download.
+
+.. code-block:: bash
+
+    # Linux
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
+    >>> conda create --name p4env --file explicitenv2-latest-Linux-x86_64.txt
+    >>> source activate p4env
+
+.. code-block:: bash
+
+    # Mac
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
+    >>> conda create --name p4env --file explicitenv2-latest-MacOSX-x86_64.txt
+    >>> source activate p4env
 
 .. _`sec:quickconda`:
 
@@ -62,7 +146,7 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
     >>> conda update --yes --all
     >>> conda config --add channels http://conda.anaconda.org/psi4
     >>> conda install --yes psi4
-    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/stability2/input.dat  # test installation. works b/c PSI_SCRATCH defaults to /tmp
+    >>> psi4 "$(dirname $(which psi4))"/../share/psi4/samples/sapt1/test.in  # test installation. works b/c PSI_SCRATCH defaults to /tmp
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. Now you need only specify a scratch directory
