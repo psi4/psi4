@@ -134,5 +134,4 @@ set(sources_list sortI.cc
                  Gijab.cc 
                  x_xi_intermediates.cc 
 )
-psi4_add_binary(ccdensity sources_list)
-target_link_libraries(ccdensity mints)
+psi4_add_binary(ccdensity sources_list mints)

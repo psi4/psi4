@@ -40,5 +40,10 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
                 -DPLUGIN_OBJDIR=${CMAKE_BINARY_DIR}
                 -DPLUGIN_LDFLAGS=${CMAKE_CXX_LINK_FLAGS}
 )
-psi4_add_binary(psi4_main sources_list)
-target_link_libraries(psi4_main mints cubeprop plugin)
+psi4_add_binary(psi4_main sources_list mints cubeprop plugin parallel detci
+                                       ccresponse ccdensity cchbar fnocc 
+                                       cctriples ccenergy cclambda cceom
+                                       cctransort ccsort fisapt dfmp2 dcft 
+                                       findif mrcc dfocc efp_interface adc
+                                       mcscf occ optking
+)

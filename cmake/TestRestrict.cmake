@@ -10,7 +10,7 @@ macro(test_restrict variable)
        foreach(keyword "__restrict__" "__restrict" "restrict")
            if(NOT test_${variable})
                try_compile(test_${variable} "${CMAKE_BINARY_DIR}"    
-                           "${CMAKE_SOURCE_DIR}/cmake/compilers/test_restrict.c"
+                           "${PSI4_ROOT}/cmake/test_restrict.c"
                            COMPILE_DEFINITIONS "-DTESTRESTRICTDEF=${keyword}" )
                set(last_restrict_keyword ${keyword})
            endif(NOT test_${variable})

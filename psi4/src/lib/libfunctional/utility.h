@@ -28,13 +28,6 @@
 #ifndef FUNCTIONAL_UTILITY
 #define FUNCTIONAL_UTILITY
 
-
-
-#ifndef HAVE_FUNC_ERF
-double erf(double x);
-double erfc(double x);
-#endif
-
 /// heaviside(x) = 1.0 if x >  0
 //                 0.0 if x <= 0
 // for matlab piecewise functions

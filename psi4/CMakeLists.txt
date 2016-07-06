@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 project(psi4 LANGUAGES C CXX VERSION 1.0)
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 include(Psi4Macros)
-
+include(TestRestrict)
+test_restrict(restrict)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
@@ -13,6 +14,7 @@ find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 #requirements like a good CMake program...
 set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
 find_package(Threads)
+find_package(DL)
 find_package(LAPACK REQUIRED)
 find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
@@ -32,11 +34,12 @@ get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
 add_dependencies(psi4 ${psi4_libraries})
 target_link_libraries(psi4 ${psi4_libraries} 
                            ${psi4_modules}
-                           ${LIBDERIV_LIBRARIES} 
-                           ${Boost_LIBRARIES}
+                           ${LIBDERIV_LIBRARIES}
                            ${PYTHON_LIBRARIES}
                            ${CMAKE_THREAD_LIBS_INIT}
+                           ${LAPACK_LIBRARIES}
 )
+
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

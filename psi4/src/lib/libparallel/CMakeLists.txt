@@ -6,7 +6,5 @@ set(sources_list ParallelScanner.cc
                  ParallelPrinter.cc 
                  PsiInStream.cc 
 )
-add_definitions(-DINSTALLEDPSIDATADIR="${CMAKE_INSTALL_PREFIX}")
-psi4_add_library(parallel sources_list)
-target_include_directories(parallel PUBLIC options)
-target_link_libraries(parallel options)
+add_definitions(-DINSTALLEDPSIDATADIR="${CMAKE_INSTALL_PREFIX}/share")
+psi4_add_library(parallel sources_list options)

@@ -37,6 +37,11 @@
 # to avoid if/else logic).  If they are built then their libraries are
 # appended to the PSI4_MODULES variable.
 #
+# In the next pass what should happen is further dependency clean-up.  CMake
+# allows you to set include directories as well as link targets per target. Then
+# when you depend on say libmints all you have to do is append mints via
+# target_include_directories and target_link_libraries.
+#
 #
 # Big changes:
 #   - Libraries that are not part of Psi4 proper are now in external
@@ -211,9 +216,7 @@ option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "The type of our build" Debug)#Change to release
 
 ############################## Compiler Features ###############################
-set(ENABLE_CXX11_SUPPORT ON)
-include(ConfigArchitecture)
-include(ConfigCompilerFlags)
+list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 find_package(OpenMP)
 optional_add_flags(OpenMP_FOUND ${OpenMP_CXX_FLAGS})
 
@@ -246,13 +249,16 @@ ExternalProject_Add(psi4_core
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
    BUILD_ALWAYS 1
-   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage
+   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
+                   DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
 add_dependencies(psi4_core boost_external 
                            libint_external
                            libderiv_external 
                            libefp_external
 )
-install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}
+#Splitting it by folder allows us to avoid an extraneous directory
+install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external
         DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
-include(ConfigInfo)
+install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/psi4
+        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)

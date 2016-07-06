@@ -32,9 +32,6 @@
 #include <string>
 #include <vector>
 
-// Need libint for maximum angular momentum
-#include <libint/libint.h>
-
 #include "gshell.h"
 #include "molecule.h"
 

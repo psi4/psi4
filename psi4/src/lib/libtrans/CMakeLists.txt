@@ -13,6 +13,5 @@ set(sources_list integraltransform_moinfo.cc
                  mospace.cc 
                  integraltransform_tei.cc 
 )
-psi4_add_library(trans sources_list)
+psi4_add_library(trans sources_list qt)
 target_include_directories(trans PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(trans qt)

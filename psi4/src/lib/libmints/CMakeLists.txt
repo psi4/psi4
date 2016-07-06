@@ -1,5 +1,3 @@
-
-
 set(sources_list local.cc 
                  onebody.cc 
                  x2cint.cc 
@@ -70,6 +68,4 @@ set(sources_list local.cc
                  angularmomentum.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
-psi4_add_library(mints sources_list)
-target_include_directories(mints PUBLIC deriv ${Boost_INCLUDE_DIRS})
-target_link_libraries(mints qt iwl trans dpd deriv ${Boost_LIBRARIES})
+psi4_add_library(mints sources_list iwl options psi4util trans)

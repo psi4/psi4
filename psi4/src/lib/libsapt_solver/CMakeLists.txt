@@ -27,5 +27,4 @@ set(sources_list exch-ind-disp30.cc
                  sapt2p3.cc 
                  ind22.cc 
 )
-psi4_add_library(sapt_solver sources_list)
-target_link_libraries(sapt_solver mints)
+psi4_add_library(sapt_solver sources_list mints)

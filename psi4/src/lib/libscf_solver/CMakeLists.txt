@@ -9,11 +9,10 @@ set(sources_list uhf.cc
                  rohf.cc 
                  stability.cc
 )
-psi4_add_library(scf_solver sources_list)
-target_link_libraries(scf_solver mints diis efp_solver)
+psi4_add_library(scf_solver sources_list mints diis efp_solver)
 if(ENABLE_PCMSOLVER)
-   target_link_libraries(scf_solver psipcm)
+   target_link_libraries(scf_solver INTERFACE psipcm)
 endif()
 if(ENABLE_GTFOCK)
-  add_dependencies(scf_solver GTFockInt GTFockCInt)
+  add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()

@@ -6,7 +6,6 @@ if(NOT LIBINT_FOUND)
    message(STATUS 
       "Suitable Libint could not be located, building one instead")
    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-   message(STATUS "${CMAKE_MODULE_PATH}")
    ExternalProject_Add(libint_external
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libint-src
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libint
