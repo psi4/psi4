@@ -94,7 +94,7 @@ matrix:
     addons: &3
       apt:
         sources:
-        - llvm-toolchain-precise-3.7
+        - llvm-toolchain-precise-3.8
         - ubuntu-toolchain-r-test
         - boost-latest
         - george-edison55-precise-backports
@@ -103,7 +103,7 @@ matrix:
         - cmake
         - cmake-data
         - liblapack-dev
-        - clang-3.7
+        - clang-3.8
         - libhdf5-serial-dev
         - libboost-filesystem1.55-dev
         - libboost-chrono1.55-dev
@@ -114,7 +114,7 @@ matrix:
         - libboost-serialization1.55-dev
         - libboost-thread1.55-dev
         - gfortran
-    env: CXX_COMPILER='clang++-3.7' C_COMPILER='clang-3.7' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
 #  - os: linux
 #    compiler: clang
 #    addons: *3
