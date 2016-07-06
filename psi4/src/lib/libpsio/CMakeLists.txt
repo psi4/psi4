@@ -32,6 +32,4 @@ set(sources_list rw.cc
                  tocread.cc 
                  filescfg.cc 
 )
-psi4_add_library(psio sources_list)
-target_include_directories(psio PUBLIC options)
-target_link_libraries(psio options)
+psi4_add_library(psio sources_list options ${Boost_LIBRARIES})

@@ -1,7 +1,14 @@
-#name is w/o lib in front
-#mac_include is name of the MAC header file
-#linux_include is name of the Linux header file
-#Remaining arguments are used as alternative names for the library
+#Code factorization for the Find various libraries for which CMake doesn't
+#want to provide an already found version
+#Syntax:
+#
+# find_lib_x(name mac_include linux_include [OtherName1 [ OtherName2 ...]])
+#
+#    name is w/o lib in front
+#    mac_include is name of the MAC header file
+#    linux_include is name of the Linux header file
+#    Remaining arguments are used as alternative names for the library
+#
 macro(find_lib_x lib_name mac_include linux_include)
    string(TOUPPER ${lib_name} LIB_NAME)
    if(LIB${LIB_NAME}_INCLUDE_DIR)
@@ -24,11 +31,9 @@ macro(find_lib_x lib_name mac_include linux_include)
    endif()
    
    list(APPEND LIB${LIB_NAME}_NAMES ${lib_name} lib${lib_name})
-   set(Extra_Args ${ARGN})
-   list(LENGTH Extra_Args nargs)
-   foreach(name_i RANGE 1 ${nargs})
-       list(GET Extra_Args ${name_i} other_name)
-       list(APPEND LIB${LIB_NAME}_NAMES ${other_name} lib${other_name})
+   set(Extra_Args "${ARGN}")
+   foreach(name_i IN LISTS Extra_Args)
+      list(APPEND LIB${LIB_NAME}_NAMES ${other_name} lib${other_name})
    endforeach()
    find_library(LIB${LIB_NAME}_LIBRARY 
 	     NAMES ${LIB${LIB_NAME}_NAMES}
@@ -37,9 +42,6 @@ macro(find_lib_x lib_name mac_include linux_include)
 	     /usr/local/lib
 	     /lib
    )
-
-   # handle the QUIETLY and REQUIRED arguments and set LIBUTIL_FOUND to TRUE if 
-   # all listed variables are TRUE
    include(FindPackageHandleStandardArgs)
    find_package_handle_standard_args(lib${lib_name} DEFAULT_MSG 
                                   LIB${LIB_NAME}_LIBRARY 

@@ -4,7 +4,4 @@ SET_SOURCE_FILES_PROPERTIES(s1v.cc PROPERTIES COMPILE_FLAGS -O3)
 SET_SOURCE_FILES_PROPERTIES(s2v.cc PROPERTIES COMPILE_FLAGS -O3)
 SET_SOURCE_FILES_PROPERTIES(s3v.cc PROPERTIES COMPILE_FLAGS -O3)
 SET_SOURCE_FILES_PROPERTIES(vector.cc PROPERTIES COMPILE_FLAGS -O3)
-
-# Build static library
-psi4_add_binary(detci sources_list)
-target_link_libraries(detci mints thce trans)
+psi4_add_binary(detci sources_list mints thce trans)

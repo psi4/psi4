@@ -32,19 +32,6 @@
 #include "utility.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 
-// Error Function alternative
-#ifndef HAVE_FUNC_ERF
-double erf(double x)
-{
-    throw psi::PSIEXCEPTION("erf not implemented, get a C99 compiler to run this functional.");
-    return 0.0; 
-}
-double erfc(double x)
-{
-    throw psi::PSIEXCEPTION("erf not implemented, get a C99 compiler to run this functional.");
-    return 0.0; 
-}
-#endif
 
 //                         Internally Defined Routines                        //
 long double xExponential_Integral_Ei( long double x );

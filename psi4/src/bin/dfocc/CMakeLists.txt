@@ -38,5 +38,4 @@ omp3_opdm.cc              omp3_tpdm.cc              mp3_pdm_3index_intr.cc
 lccd_iterations.cc        olccd_tpdm.cc             lccd_W_intr.cc
 lccd_pdm_3index_intr.cc   lccd_t2_amps.cc
 )
-add_library(dfocc STATIC ${sources_list})
-target_link_libraries(dfocc mints)
+psi4_add_binary(dfocc sources_list mints)

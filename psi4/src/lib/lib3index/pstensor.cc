@@ -391,9 +391,6 @@ SharedMatrix PSTensorII::O()
     double* yp = grid_->y();
     double* zp = grid_->z();
 
-    #ifndef HAVE_FUNC_ERF
-        throw PSIEXCEPTION("erf not implemented. Get a C99 compiler.");
-    #else
     for (int Q = 0; Q < naux_; Q++) {
         for (int P = Q; P < naux_; P++) {
             if (P == Q) {

@@ -1,3 +1,2 @@
 set(sources_list wrapper.cc fisapt.cc local2.cc)
-psi4_add_binary(fisapt sources_list)
-target_link_libraries(fisapt mints)
+psi4_add_binary(fisapt sources_list mints)

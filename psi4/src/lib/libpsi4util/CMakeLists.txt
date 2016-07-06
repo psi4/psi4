@@ -4,6 +4,4 @@ set(sources_list quad.cc
                  exception.cc 
                  combinations.cc 
 )
-psi4_add_library(psi4util sources_list)
-target_link_libraries(psi4util options)
-target_include_directories(psi4util PUBLIC options)
+psi4_add_library(psi4util sources_list parallel)

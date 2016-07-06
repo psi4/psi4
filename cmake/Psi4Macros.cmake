@@ -21,17 +21,26 @@ macro(general_add_library libname sources prefix dir)
    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
       DESTINATION psi4/src/${dir}/${prefix}${libname}
       FILES_MATCHING PATTERN "*.h")
+   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
+      DESTINATION psi4/src/${dir}/${prefix}${libname}
+      FILES_MATCHING PATTERN "*.hpp")
    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+   set(depend_name "${ARGN}")
+   foreach(name_i IN LISTS depend_name)
+      target_link_libraries(${libname} INTERFACE ${name_i})
+   endforeach()
+   target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} 
+                                                ${LIBDERIV_INCLUDE_DIRS})
 endmacro(general_add_library libname sources prefix dir)
 
 #Adds a psi4 library that lives in lib
 macro(psi4_add_library libname sources)
-   general_add_library(${libname} ${sources} lib lib) 
+   general_add_library(${libname} ${sources} lib lib ${ARGN}) 
 endmacro(psi4_add_library libname sources)
 
 #Adds a psi4 library that lives in bin
 macro(psi4_add_binary libname sources)
-   general_add_library(${libname} ${sources} "" bin)
+   general_add_library(${libname} ${sources} "" bin ${ARGN})
 endmacro(psi4_add_binary libname sources)
 
 include(CheckCCompilerFlag)

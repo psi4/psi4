@@ -9,6 +9,5 @@ set(sources_list construct_sigma.cc
                  prepare_tensors.cc 
                  init_tensors.cc 
 )
-psi4_add_binary(adc sources_list)
-target_link_libraries(adc mints)
+psi4_add_binary(adc sources_list mints)
 
