@@ -1,0 +1,13 @@
+memory 300 mb
+
+molecule {
+H
+H 1 0.7
+}
+
+set basis 6-31g
+set cfour_memory_size 100000000  # clash with 300 mb above
+
+energy('c4-scf')
+
+

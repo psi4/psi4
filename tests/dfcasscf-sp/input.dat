@@ -1,0 +1,20 @@
+#! CASSCF/6-31G** energy point
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    mcscf_type      df
+    basis           6-31G**
+    reference       rhf
+    restricted_docc [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+}
+
+
+casscf_energy = energy('casscf')
+ref_casscf_energy = -76.073828605037164
+compare_values(ref_casscf_energy, casscf_energy, 6, 'CASSCF Energy')  #TEST

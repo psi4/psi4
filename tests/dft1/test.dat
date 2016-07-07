@@ -1,0 +1,45 @@
+#! DFT Functional Test
+
+memory 250 mb
+
+E11 = -74.9493412744 #TEST
+E12 = -75.3196957567 #TEST
+E13 = -75.3185459160 #TEST
+E14 = -75.3128178610 #TEST
+E21 = -74.9493412744 #TEST
+E22 = -75.3196957567 #TEST
+E23 = -75.3185459160 #TEST
+E24 = -75.3128178610 #TEST
+E31 = -74.6448669477 #TEST
+E32 = -74.9677634492 #TEST
+E33 = -74.9709217377 #TEST
+E34 = -74.9632650037 #TEST
+E41 = -74.4108252721 #TEST
+E42 = -74.8155846044 #TEST
+E43 = -74.8011166756 #TEST
+E44 = -74.7977834552 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+print 2
+basis sto-3g
+
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+set dft_functional wB97
+set dft_omega 0.4
+print  energy('scf')
+
+#set dft_functional wB97X 
+#set dft_omega 0.3
+#print  energy('scf')

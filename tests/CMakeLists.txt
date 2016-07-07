@@ -1,0 +1,156 @@
+#These tests aren't set-up the same way as the others
+set(TestsNotSetUpRight cfour optking)
+find_package(Perl)
+
+# In order to get CTest to run tests in separate categories,
+# labels are used. All tests must carry the label "psi".
+#
+# The following labels are defined:
+#
+#  longtests   = The (as of right now) 4 really long tests
+#  shorttests  = Every test in the test folder less longtests
+#  quicktests  = Proper subset of tests deemed to run quickly (ideally
+#                in 60 seconds or less).  This subset is chosen to provide
+#                one or more tests for each major module, but it does not
+#                necessarily cover all features of every module.
+#
+# It is possible to specify more than one label per test. CMake
+# expects a ;-separated list, e.g. "psi;quicktests;scf"
+# It is mandatory that any test carries a length label!
+# It is suggested to add at least a second label to specify the method tested.
+#
+#  We use ctest -I [start,end] where start is the test number we start with
+#  and end is the test number we end with.  We will then use math to back out
+#  the appropriate starts and ends...
+#
+#
+#  In order to ensure that this works properly, please add your tests to the
+#  appropriate variables given below
+
+foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
+                  castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
+                  cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
+                  cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc14 cc15 cc16 
+                  cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28 
+                  cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 
+                  cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a 
+                  cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8 cc8a cc8b cc8c 
+                  cc9 cc9a cdomp2-1 cdomp2-2 cepa0-grad1 cepa0-grad2 cepa1 
+                  cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1 
+                  cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2 
+                  ci-property cubeprop decontract dcft-grad1 dcft-grad2 
+                  dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
+                  dcft7 dcft8 dcft9 dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
+                  dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
+                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
+                  dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfomp2-1 dfomp2-2 dfomp2-3
+                  dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp3-1 dfomp3-2 
+                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
+                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
+                  dft-freq dft-grad dft-pbe0-2 dft-psivar dft-b3lyp dft1 
+                  dft1-alt dft2 dft3 docs-bases docs-dft docs-psimod extern1 
+                  fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
+                  fd-freq-energy fd-freq-energy-large fd-freq-gradient 
+                  fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
+                  fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
+                  min-input mints1 mints2 mints3 mints4 mints5 mints6 mints8 
+                  mints9 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
+                  mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
+                  mp2-property mpn-bh nbody-he-cluster numpy-array-interface 
+                  ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3 
+                  omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2 
+                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2 
+                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change 
+                  opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9 
+                  opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-freeze-coords 
+                  props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 
+                  psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 
+                  psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2 
+                  pubchem1 pubchem2 pywrap-alias pywrap-all pywrap-basis 
+                  pywrap-cbs1 pywrap-checkrun-convcrit pywrap-checkrun-rhf 
+                  pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
+                  pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap 
+                  pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
+                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
+                  scf-bz2 scf-guess-read scf-bs scf1 scf11-freq-from-energies 
+                  scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
+                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
+                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
+)
+   add_subdirectory(${test_name})
+endforeach()
+
+###### START internal-executable-dependent tests ################
+
+# For code that is distributed with and required for psi4 to build,
+#   and thus should always be tested, but is developed and maintained
+#   externally and dropped into psi4 as version increment, and thus
+#   should get its own subdirectory:
+#   * Follow directory structure described below for ext-exe-dep
+#   * Follow un-qualified inclusion as above for normal tests
+
+add_subdirectory(libefp)
+
+###### END internal-executable-dependent tests ##################
+
+###### START external-executable-dependent tests ################
+
+# Set up groups of test cases analogous to dftd3 below
+#   In particular, new ext-exe-dep tests should
+#   * get their own directory in tests (e.g., tests/dftd3)
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
+#   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
+#   * be sure the exe is listed in the python code below (search 'partition')
+
+# <<<  DFTD3  >>>
+
+find_program(DFTD3_EXECUTABLE
+             NAMES dftd3
+             DOC "Path to Grimme's dftd3 executable")
+
+if(DFTD3_EXECUTABLE)
+   add_subdirectory(dftd3)
+   message(STATUS "dftd3 executable for interfaced DFTD3 found. Test cases added.")
+endif()
+
+# <<<  MRCC  >>>
+
+find_program(MRCC_EXECUTABLE
+             NAMES dmrcc
+             DOC "Path to Kallay's mrcc executable")
+
+if(MRCC_EXECUTABLE)
+   add_subdirectory(mrcc)
+   message(STATUS "dmrcc executable for interfaced MRCC found. Test cases added.")
+endif()
+
+# <<<  CFOUR  >>>
+
+find_program(CFOUR_EXECUTABLE
+             NAMES xcfour
+             DOC "Path to Stanton and Gauss's xcfour executable")
+
+if(CFOUR_EXECUTABLE)
+   add_subdirectory(cfour)
+   message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
+endif()
+
+###### END external-executable-dependent tests ##################
+
+# External module dependent tests
+if(ENABLE_PCMSOLVER)
+   add_subdirectory(pcmsolver)
+endif()
+
+if(NOT PERL_FOUND)
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
+endif()
+
+if(ENABLE_CHEMPS2)
+    add_subdirectory(dmrg)
+endif()
+
+if(ENABLE_GDMA)
+    add_subdirectory(gdma1)
+endif()
+

@@ -1,0 +1,453 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
+
+                          Git: Rev {master} dbe9080
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Mon Mar 14 15:13:47 2016
+
+    Process ID:   9171
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! UHF and broken-symmetry UHF energy for molecular hydrogen.
+
+refENuc  =  0.17639240286333 #TEST 
+refSCF   = -0.82648407747362 #TEST
+refBSSCF = -0.99872135103903 #TEST
+
+molecule h2 {
+0 1
+H
+H 1 3.0
+symmetry c1
+}
+set reference uhf
+set e_convergence 12
+set basis cc-pvdz
+
+thisSCF = energy('scf')
+set guess_mix true
+thisBSSCF = energy('scf')
+
+compare_values(refENuc, h2.nuclear_repulsion_energy(),                      #TEST
+               10, "Nuclear repulsion energy")                              #TEST
+compare_values(refSCF, thisSCF, 10, "Reference energy")                     #TEST
+compare_values(refBSSCF, thisBSSCF, 10, "Reference broken-symmetry energy") #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:48 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000    -1.500000000000     1.007825032070
+           H          0.000000000000     0.000000000000     1.500000000000     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      3.71705  C =      3.71705 [cm^-1]
+  Rotational constants: A = ************  B = 111434.46727  C = 111434.46727 [MHz]
+  Nuclear repulsion =    0.176392402863333
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 6
+    Number of basis function: 10
+    Number of Cartesian functions: 10
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         10      10       0       0       0       0
+   -------------------------------------------------------
+    Total      10      10       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 18
+    Number of basis function: 46
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 2.7004965516E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.80648083886740   -8.06481e-01   1.24628e-02 
+   @DF-UHF iter   2:    -0.82592760804565   -1.94468e-02   2.07783e-03 DIIS
+   @DF-UHF iter   3:    -0.82648405662724   -5.56449e-04   1.52749e-05 DIIS
+   @DF-UHF iter   4:    -0.82648407748726   -2.08600e-08   6.36134e-07 DIIS
+   @DF-UHF iter   5:    -0.82648407752154   -3.42812e-11   1.57365e-10 DIIS
+   @DF-UHF iter   6:    -0.82648407752154    6.66134e-16   1.93082e-13 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   3.108624469E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                3.108624469E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.323331  
+
+    Alpha Virtual:                                                        
+
+       2A     -0.115697     3A      0.594708     4A      0.678624  
+       5A      1.461634     6A      1.461634     7A      1.464098  
+       8A      1.464131     9A      1.464131    10A      1.475445  
+
+    Beta Occupied:                                                        
+
+       1A     -0.323331  
+
+    Beta Virtual:                                                         
+
+       2A     -0.115697     3A      0.594708     4A      0.678624  
+       5A      1.461634     6A      1.461634     7A      1.464098  
+       8A      1.464131     9A      1.464131    10A      1.475445  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+    SOCC [     0 ]
+
+  Energy converged.
+
+  @DF-UHF Final Energy:    -0.82648407752154
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.1763924028633335
+    One-Electron Energy =                  -1.3590907619679626
+    Two-Electron Energy =                   0.3562142815830872
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -0.8264840775215421
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 2.0000000
+  LUNO+0 :    2  A 0.0000000
+  LUNO+1 :    3  A 0.0000000
+  LUNO+2 :    4  A 0.0000000
+  LUNO+3 :    5  A 0.0000000
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:48 2016
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:13:48 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000    -1.500000000000     1.007825032070
+           H          0.000000000000     0.000000000000     1.500000000000     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      3.71705  C =      3.71705 [cm^-1]
+  Rotational constants: A = ************  B = 111434.46727  C = 111434.46727 [MHz]
+  Nuclear repulsion =    0.176392402863334
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 6
+    Number of basis function: 10
+    Number of Cartesian functions: 10
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         10      10       0       0       0       0
+   -------------------------------------------------------
+    Total      10      10       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: 
+    Number of shells: 18
+    Number of basis function: 46
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 2.7004965516E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Mixing alpha HOMO/LUMO orbitals (1,2)
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.99655309223690   -9.96553e-01   4.46561e-03 
+   @DF-UHF iter   2:    -0.99858554682906   -2.03245e-03   1.04498e-03 DIIS
+   @DF-UHF iter   3:    -0.99871960587579   -1.34059e-04   1.05084e-04 DIIS
+   @DF-UHF iter   4:    -0.99872132548771   -1.71961e-06   1.20127e-05 DIIS
+   @DF-UHF iter   5:    -0.99872135069226   -2.52046e-08   1.58942e-06 DIIS
+   @DF-UHF iter   6:    -0.99872135103596   -3.43701e-10   1.25919e-07 DIIS
+   @DF-UHF iter   7:    -0.99872135103894   -2.97207e-12   2.59576e-08 DIIS
+   @DF-UHF iter   8:    -0.99872135103903   -9.68114e-14   1.59562e-12 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   9.948792283E-01
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                9.948792283E-01
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.499196  
+
+    Alpha Virtual:                                                        
+
+       2A      0.074161     3A      0.576221     4A      0.770273  
+       5A      1.442999     6A      1.442999     7A      1.449333  
+       8A      1.573362     9A      1.573362    10A      1.578200  
+
+    Beta Occupied:                                                        
+
+       1A     -0.499196  
+
+    Beta Virtual:                                                         
+
+       2A      0.074161     3A      0.576221     4A      0.770273  
+       5A      1.442999     6A      1.442999     7A      1.449333  
+       8A      1.573362     9A      1.573362    10A      1.578200  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+    SOCC [     0 ]
+
+  Energy converged.
+
+  @DF-UHF Final Energy:    -0.99872135103903
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.1763924028633335
+    One-Electron Energy =                  -1.3518351355714511
+    Two-Electron Energy =                   0.1767213816690849
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -0.9987213510390327
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0715596
+  LUNO+0 :    2  A 0.9284404
+  LUNO+1 :    3  A 0.0000000
+  LUNO+2 :    4  A 0.0000000
+  LUNO+3 :    5  A 0.0000000
+
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:48 2016
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+	Nuclear repulsion energy..........................................PASSED
+	Reference energy..................................................PASSED
+	Reference broken-symmetry energy..................................PASSED
+
+*** PSI4 exiting successfully. Buy a developer a beer!

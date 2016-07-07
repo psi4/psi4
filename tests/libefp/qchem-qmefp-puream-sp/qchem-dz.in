@@ -1,0 +1,42 @@
+$comment
+QM/MM computation of one water molecule in QM part and
+one water + two ammonia molecules in EFP part.
+$end
+
+$molecule
+0 1
+O   0 0 0.118720
+H   -0.753299, 0.0, -0.474880
+H   0.753299, 0.0, -0.474880
+$end
+
+$rem
+exchange hf
+basis cc-pvdz
+jobtype sp
+!purecart 
+scf_guess core
+print_general_basis true
+symmetry off
+maxdiis 0
+mem_total 1024
+THRESH             14
+SCF_CONVERGENCE    12
+efp_coord_xyz 1
+$end
+
+$efp_fragments
+WATER_L
+A01O         -2.139720000000     1.289640000000    -0.964180000000
+A02H         -2.658194609824     0.525744468576    -1.141161057614
+A03H         -1.332754269051     0.982221512086    -0.592730432656
+AMMONIA_L
+A01N          0.987920000000     1.876810000000     2.851740000000
+A02H          1.679416938733     1.196978602573     3.092192389503
+A03H          1.421443808611     2.569152532065     2.276522630264
+AMMONIA_L
+A01N         -4.127940000000    -0.924660000000    -1.283940000000
+A02H         -4.685869756324    -1.093479089748    -2.095340393620
+A03H         -3.583060498642    -1.743214916261    -1.107219104660
+$end
+

@@ -1,0 +1,45 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+memory 500 mb
+
+nucenergy_ref = 9.16819326039
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type      df
+    e_convergence 1.e-10
+}
+
+h2o.update_geometry()
+compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, der_type=1)
+compare_values(wfn_dz.frequencies().get(0), 1809.2345729, 2, "SCF/cc-pVDZ Frequency 1")            #TEST
+compare_values(wfn_dz.frequencies().get(1), 3923.1569958, 2, "SCF/cc-pVDZ Frequency 2")            #TEST
+compare_values(wfn_dz.frequencies().get(2), 4020.1821381, 2, "SCF/cc-pVDZ Frequency 3")            #TEST
+
+# scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
+# compare_values(wfn_tz.frequencies().get(0), 1813.8360744, 4, "SCF/cc-pVTZ Frequency 1")            #TEST
+# compare_values(wfn_tz.frequencies().get(1), 3867.8213943, 4, "SCF/cc-pVTZ Frequency 2")            #TEST
+# compare_values(wfn_tz.frequencies().get(2), 3952.4994821, 4, "SCF/cc-pVTZ Frequency 3")            #TEST
+
+
+# Not yet implemented #TEST
+#scf_dtz = gradient('SCF/cc-pV[23]Z')
+#compare_matrices(ref_scf_dtz, scf_dtz, 6, "SCF/cc-pV[DT]Z Gradient")  #TEST
+#
+#scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
+#compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "SCF/cc-pV[DTQ]Z Gradient")  #TEST
+#
+## MP2 TESTS
+#mp2_dtz = gradient('MP2/cc-pV[DT]Z')
+#compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "MP2/cc-pV[DT]Z Gradient")  #TEST
+
+
