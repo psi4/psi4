@@ -35,13 +35,18 @@ option(ENABLE_ERD "Enables ERD instead of libint" OFF)
 option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(BUILD_SHARED_LIBS "Psi4 libraries will be shared objects" OFF)
-option(ENABLE_XHOST "Enables processor-specific optimization")
-option(ENABLE_CODE_COVERAGE "Enables details on code coverage")
-option(ENABLE_ASAN "Enables address sanitizer")
-option(ENABLE_TSAN "Enables thread sanitizer")
-option(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF)
+option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
+                  "-xHost")
+option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
+                  "-fprofile-arcs" "-ftest-coverage")
+option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF 
+                  "-fsanitize=address" "-fno-omit-fram-pointer")
+option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
+                  "-fsanitize=thread" "-fno-omit-frame-pointer" "-pie")
+option_with_flag(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
+                  "-fsanitize=undefined" "-fno-omit-frame-pointer")
 option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
-option_with_default(CMAKE_BUILD_TYPE "The type of our build" Debug)#Change to release
+option_with_default(CMAKE_BUILD_TYPE "The type of our build" Debug)
 
 ############################## Compiler Features ###############################
 list(APPEND CMAKE_CXX_FLAGS "-std=c++11")

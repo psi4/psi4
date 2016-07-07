@@ -63,6 +63,11 @@ macro(optional_add_flags option)
    endif()
 endmacro()
 
+macro(option_with_flags option msg default)
+    option(${option} ${msg} ${default})
+    optional_add_flags(${option} ${ARGN})
+endmacro()
+
 #Macro so I don't have to look at a ton of if statements
 macro(optional_plugin plugin_name)
 string(TOUPPER plugin_name PLUGIN_NAME)
