@@ -36,6 +36,7 @@
 #include <libfunctional/superfunctional.h>
 #include <psifiles.h>
 #include "libmints/sieve.h"
+#include "libmints/view.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 
@@ -416,21 +417,28 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => Jpi/Kpi <= //
     {
 
-        // TODO add new objects for more threads later
+        size_t memory = 0.9 * memory_ / 8L;
+        size_t max_a = memory / (3L * nso * nso);
+        max_a = (max_a > 3 * natom ? 3 * natom : max_a);
+
         boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
         int natom = basisset_->molecule()->natom();
 
         std::vector<SharedMatrix> dGmats;
-        std::vector<double**> pdG;
-        char* label = new char[80];
+        std::vector<double**> pdG(3*natom);
+        std::vector<bool> pert_incore(3*natom);
+        for(int a = 0; a < max_a; ++a)
+            dGmats.push_back(SharedMatrix(new Matrix("G derivative contribution", nso, nso)));
+
+        SharedMatrix Gpi = SharedMatrix(new Matrix("MO G Deriv", nmo, nocc));
+        double**pGpi = Gpi->pointer();
+        psio_address next_Gpi = PSIO_ZERO;
+        // Write some junk for now, to set the sizing for PSIO
         for(int pert = 0; pert < 3*natom; ++pert){
-            sprintf(label, "AO basis derivative G matrix for perturbation %d", pert);
-            SharedMatrix dG(new Matrix(label, nso, nso));
-            dGmats.push_back(dG);
-            pdG.push_back(dG->pointer());
+            psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
         }
-        delete [] label;
+        next_Gpi = PSIO_ZERO;
 
         boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
 
@@ -442,235 +450,271 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
         const double* buffer = ints->buffer();
 
-        for (size_t index = 0L; index < npairs2; index++) {
+        for (int A = 0; A < 3 * natom; A+=max_a) {
+            int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
 
-            size_t PQ = index / npairs;
-            size_t RS = index % npairs;
-
-            if (RS > PQ) continue;
-
-            int P = shell_pairs[PQ].first;
-            int Q = shell_pairs[PQ].second;
-            int R = shell_pairs[RS].first;
-            int S = shell_pairs[RS].second;
-
-            //if (!sieve->shell_significant(P,Q,R,S)) continue;
-            int am1 = basisset_->shell(P).am();
-            int am2 = basisset_->shell(Q).am();
-            int am3 = basisset_->shell(R).am();
-            int am4 = basisset_->shell(S).am();
-
-            // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
-            if (am1 < am2)
-                boost::swap(P,Q);
-            if (am3 < am4)
-                boost::swap(R,S);
-            if( (am1 + am2) > (am3 + am4) ){
-                boost::swap(P,R);
-                boost::swap(Q,S);
+            // Keep track of which centers are loaded into memory, so we know when to skip
+            std::fill(pert_incore.begin(), pert_incore.end(), false);
+            std::fill(pdG.begin(), pdG.end(), (double**)NULL);
+            for (int a = 0; a < nA; a++){
+                pert_incore[floor((A+a)/3.0)] = true;
+                pdG[A+a] = dGmats[a]->pointer();
+                dGmats[a]->zero();
             }
 
-            ints->compute_shell_deriv1(P,Q,R,S);
+            for (size_t index = 0L; index < npairs2; index++) {
 
-            const int Psize = basisset_->shell(P).nfunction();
-            const int Qsize = basisset_->shell(Q).nfunction();
-            const int Rsize = basisset_->shell(R).nfunction();
-            const int Ssize = basisset_->shell(S).nfunction();
+                size_t PQ = index / npairs;
+                size_t RS = index % npairs;
 
-            const int Pncart = basisset_->shell(P).ncartesian();
-            const int Qncart = basisset_->shell(Q).ncartesian();
-            const int Rncart = basisset_->shell(R).ncartesian();
-            const int Sncart = basisset_->shell(S).ncartesian();
+                if (RS > PQ) continue;
 
-            const int Poff = basisset_->shell(P).function_index();
-            const int Qoff = basisset_->shell(Q).function_index();
-            const int Roff = basisset_->shell(R).function_index();
-            const int Soff = basisset_->shell(S).function_index();
+                int P = shell_pairs[PQ].first;
+                int Q = shell_pairs[PQ].second;
+                int R = shell_pairs[RS].first;
+                int S = shell_pairs[RS].second;
 
-            const int Pcenter = basisset_->shell(P).ncenter();
-            const int Qcenter = basisset_->shell(Q).ncenter();
-            const int Rcenter = basisset_->shell(R).ncenter();
-            const int Scenter = basisset_->shell(S).ncenter();
+                if (!sieve->shell_significant(P,Q,R,S)) continue;
 
-            double prefactor = 1.0;
-            if (P != Q)   prefactor *= 2.0;
-            if (R != S)   prefactor *= 2.0;
-            if (PQ != RS) prefactor *= 2.0;
+                int Pcenter = basisset_->shell(P).ncenter();
+                int Qcenter = basisset_->shell(Q).ncenter();
+                int Rcenter = basisset_->shell(R).ncenter();
+                int Scenter = basisset_->shell(S).ncenter();
+                if(!pert_incore[Pcenter] &&
+                        !pert_incore[Qcenter] &&
+                        !pert_incore[Rcenter] &&
+                        !pert_incore[Scenter])
+                    continue;
 
-            size_t stride = Pncart * Qncart * Rncart * Sncart;
+                int am1 = basisset_->shell(P).am();
+                int am2 = basisset_->shell(Q).am();
+                int am3 = basisset_->shell(R).am();
+                int am4 = basisset_->shell(S).am();
 
-            double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
-            size_t delta;
-            double Ax, Ay, Az;
-            double Bx, By, Bz;
-            double Cx, Cy, Cz;
-            double Dx, Dy, Dz;
+                // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
+                if (am1 < am2){
+                    boost::swap(P,Q);
+                    boost::swap(Pcenter,Qcenter);
+                }
+                if (am3 < am4){
+                    boost::swap(R,S);
+                    boost::swap(Rcenter,Scenter);
+                }
+                if( (am1 + am2) > (am3 + am4) ){
+                    boost::swap(P,R);
+                    boost::swap(Q,S);
+                    boost::swap(Pcenter,Rcenter);
+                    boost::swap(Qcenter,Scenter);
+                }
 
-            // => Coulomb Term <= //
+                ints->compute_shell_deriv1(P,Q,R,S);
 
-            Ax = 0.0; Ay = 0.0; Az = 0.0;
-            Bx = 0.0; By = 0.0; Bz = 0.0;
-            Cx = 0.0; Cy = 0.0; Cz = 0.0;
-            Dx = 0.0; Dy = 0.0; Dz = 0.0;
-            delta = 0L;
-            for (int p = Poff; p < Poff+Psize; p++) {
-                for (int q = Qoff; q < Qoff+Qsize; q++) {
-                    for (int r = Roff; r < Roff+Rsize; r++) {
-                        for (int s = Soff; s < Soff+Ssize; s++) {
-                            Dpq = Dtp[p][q];
-                            Drs = Dtp[r][s];
-                            Ax = prefactor * buffer[0 * stride + delta];
-                            Ay = prefactor * buffer[1 * stride + delta];
-                            Az = prefactor * buffer[2 * stride + delta];
-                            Cx = prefactor * buffer[3 * stride + delta];
-                            Cy = prefactor * buffer[4 * stride + delta];
-                            Cz = prefactor * buffer[5 * stride + delta];
-                            Dx = prefactor * buffer[6 * stride + delta];
-                            Dy = prefactor * buffer[7 * stride + delta];
-                            Dz = prefactor * buffer[8 * stride + delta];
-                            Bx = -(Ax + Cx + Dx);
-                            By = -(Ay + Cy + Dy);
-                            Bz = -(Az + Cz + Dz);
+                const int Psize = basisset_->shell(P).nfunction();
+                const int Qsize = basisset_->shell(Q).nfunction();
+                const int Rsize = basisset_->shell(R).nfunction();
+                const int Ssize = basisset_->shell(S).nfunction();
 
-                            pdG[Pcenter*3+0][p][q] += Ax * Drs;
-                            pdG[Pcenter*3+0][r][s] += Ax * Dpq;
-                            pdG[Pcenter*3+1][p][q] += Ay * Drs;
-                            pdG[Pcenter*3+1][r][s] += Ay * Dpq;
-                            pdG[Pcenter*3+2][p][q] += Az * Drs;
-                            pdG[Pcenter*3+2][r][s] += Az * Dpq;
+                const int Pncart = basisset_->shell(P).ncartesian();
+                const int Qncart = basisset_->shell(Q).ncartesian();
+                const int Rncart = basisset_->shell(R).ncartesian();
+                const int Sncart = basisset_->shell(S).ncartesian();
 
-                            pdG[Qcenter*3+0][p][q] += Bx * Drs;
-                            pdG[Qcenter*3+0][r][s] += Bx * Dpq;
-                            pdG[Qcenter*3+1][p][q] += By * Drs;
-                            pdG[Qcenter*3+1][r][s] += By * Dpq;
-                            pdG[Qcenter*3+2][p][q] += Bz * Drs;
-                            pdG[Qcenter*3+2][r][s] += Bz * Dpq;
+                const int Poff = basisset_->shell(P).function_index();
+                const int Qoff = basisset_->shell(Q).function_index();
+                const int Roff = basisset_->shell(R).function_index();
+                const int Soff = basisset_->shell(S).function_index();
 
-                            pdG[Rcenter*3+0][p][q] += Cx * Drs;
-                            pdG[Rcenter*3+0][r][s] += Cx * Dpq;
-                            pdG[Rcenter*3+1][p][q] += Cy * Drs;
-                            pdG[Rcenter*3+1][r][s] += Cy * Dpq;
-                            pdG[Rcenter*3+2][p][q] += Cz * Drs;
-                            pdG[Rcenter*3+2][r][s] += Cz * Dpq;
 
-                            pdG[Scenter*3+0][p][q] += Dx * Drs;
-                            pdG[Scenter*3+0][r][s] += Dx * Dpq;
-                            pdG[Scenter*3+1][p][q] += Dy * Drs;
-                            pdG[Scenter*3+1][r][s] += Dy * Dpq;
-                            pdG[Scenter*3+2][p][q] += Dz * Drs;
-                            pdG[Scenter*3+2][r][s] += Dz * Dpq;
-                            delta++;
+                double prefactor = 1.0;
+                if (P != Q)   prefactor *= 2.0;
+                if (R != S)   prefactor *= 2.0;
+                if (PQ != RS) prefactor *= 2.0;
+
+                size_t stride = Pncart * Qncart * Rncart * Sncart;
+
+                double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
+                size_t delta;
+                double Ax, Ay, Az;
+                double Bx, By, Bz;
+                double Cx, Cy, Cz;
+                double Dx, Dy, Dz;
+
+                // => Coulomb Term <= //
+
+                Ax = 0.0; Ay = 0.0; Az = 0.0;
+                Bx = 0.0; By = 0.0; Bz = 0.0;
+                Cx = 0.0; Cy = 0.0; Cz = 0.0;
+                Dx = 0.0; Dy = 0.0; Dz = 0.0;
+                delta = 0L;
+                for (int p = Poff; p < Poff+Psize; p++) {
+                    for (int q = Qoff; q < Qoff+Qsize; q++) {
+                        for (int r = Roff; r < Roff+Rsize; r++) {
+                            for (int s = Soff; s < Soff+Ssize; s++) {
+                                Dpq = Dtp[p][q];
+                                Drs = Dtp[r][s];
+                                Ax = prefactor * buffer[0 * stride + delta];
+                                Ay = prefactor * buffer[1 * stride + delta];
+                                Az = prefactor * buffer[2 * stride + delta];
+                                Cx = prefactor * buffer[3 * stride + delta];
+                                Cy = prefactor * buffer[4 * stride + delta];
+                                Cz = prefactor * buffer[5 * stride + delta];
+                                Dx = prefactor * buffer[6 * stride + delta];
+                                Dy = prefactor * buffer[7 * stride + delta];
+                                Dz = prefactor * buffer[8 * stride + delta];
+                                Bx = -(Ax + Cx + Dx);
+                                By = -(Ay + Cy + Dy);
+                                Bz = -(Az + Cz + Dz);
+
+                                if(pert_incore[Pcenter]){
+                                    pdG[Pcenter*3+0][p][q] += Ax * Drs;
+                                    pdG[Pcenter*3+0][r][s] += Ax * Dpq;
+                                    pdG[Pcenter*3+1][p][q] += Ay * Drs;
+                                    pdG[Pcenter*3+1][r][s] += Ay * Dpq;
+                                    pdG[Pcenter*3+2][p][q] += Az * Drs;
+                                    pdG[Pcenter*3+2][r][s] += Az * Dpq;
+                                }
+                                if(pert_incore[Qcenter]){
+                                    pdG[Qcenter*3+0][p][q] += Bx * Drs;
+                                    pdG[Qcenter*3+0][r][s] += Bx * Dpq;
+                                    pdG[Qcenter*3+1][p][q] += By * Drs;
+                                    pdG[Qcenter*3+1][r][s] += By * Dpq;
+                                    pdG[Qcenter*3+2][p][q] += Bz * Drs;
+                                    pdG[Qcenter*3+2][r][s] += Bz * Dpq;
+                                }
+                                if(pert_incore[Rcenter]){
+                                    pdG[Rcenter*3+0][p][q] += Cx * Drs;
+                                    pdG[Rcenter*3+0][r][s] += Cx * Dpq;
+                                    pdG[Rcenter*3+1][p][q] += Cy * Drs;
+                                    pdG[Rcenter*3+1][r][s] += Cy * Dpq;
+                                    pdG[Rcenter*3+2][p][q] += Cz * Drs;
+                                    pdG[Rcenter*3+2][r][s] += Cz * Dpq;
+                                }
+                                if(pert_incore[Scenter]){
+                                    pdG[Scenter*3+0][p][q] += Dx * Drs;
+                                    pdG[Scenter*3+0][r][s] += Dx * Dpq;
+                                    pdG[Scenter*3+1][p][q] += Dy * Drs;
+                                    pdG[Scenter*3+1][r][s] += Dy * Dpq;
+                                    pdG[Scenter*3+2][p][q] += Dz * Drs;
+                                    pdG[Scenter*3+2][r][s] += Dz * Dpq;
+                                }
+                                delta++;
+                            }
                         }
                     }
                 }
-            }
 
-            // => Exchange Term <= //
+                // => Exchange Term <= //
 
-            Ax = 0.0; Ay = 0.0; Az = 0.0;
-            Bx = 0.0; By = 0.0; Bz = 0.0;
-            Cx = 0.0; Cy = 0.0; Cz = 0.0;
-            Dx = 0.0; Dy = 0.0; Dz = 0.0;
-            delta = 0L;
-            prefactor *= -0.25;
-            for (int p = Poff; p < Poff+Psize; p++) {
-                for (int q = Qoff; q < Qoff+Qsize; q++) {
-                    for (int r = Roff; r < Roff+Rsize; r++) {
-                        for (int s = Soff; s < Soff+Ssize; s++) {
-                            Ax = prefactor * buffer[0 * stride + delta];
-                            Ay = prefactor * buffer[1 * stride + delta];
-                            Az = prefactor * buffer[2 * stride + delta];
-                            Cx = prefactor * buffer[3 * stride + delta];
-                            Cy = prefactor * buffer[4 * stride + delta];
-                            Cz = prefactor * buffer[5 * stride + delta];
-                            Dx = prefactor * buffer[6 * stride + delta];
-                            Dy = prefactor * buffer[7 * stride + delta];
-                            Dz = prefactor * buffer[8 * stride + delta];
-                            Bx = -(Ax + Cx + Dx);
-                            By = -(Ay + Cy + Dy);
-                            Bz = -(Az + Cz + Dz);
+                Ax = 0.0; Ay = 0.0; Az = 0.0;
+                Bx = 0.0; By = 0.0; Bz = 0.0;
+                Cx = 0.0; Cy = 0.0; Cz = 0.0;
+                Dx = 0.0; Dy = 0.0; Dz = 0.0;
+                delta = 0L;
+                prefactor *= -0.25;
+                for (int p = Poff; p < Poff+Psize; p++) {
+                    for (int q = Qoff; q < Qoff+Qsize; q++) {
+                        for (int r = Roff; r < Roff+Rsize; r++) {
+                            for (int s = Soff; s < Soff+Ssize; s++) {
+                                Ax = prefactor * buffer[0 * stride + delta];
+                                Ay = prefactor * buffer[1 * stride + delta];
+                                Az = prefactor * buffer[2 * stride + delta];
+                                Cx = prefactor * buffer[3 * stride + delta];
+                                Cy = prefactor * buffer[4 * stride + delta];
+                                Cz = prefactor * buffer[5 * stride + delta];
+                                Dx = prefactor * buffer[6 * stride + delta];
+                                Dy = prefactor * buffer[7 * stride + delta];
+                                Dz = prefactor * buffer[8 * stride + delta];
+                                Bx = -(Ax + Cx + Dx);
+                                By = -(Ay + Cy + Dy);
+                                Bz = -(Az + Cz + Dz);
 
-                            Dpr = Dtp[p][r];
-                            Dqs = Dtp[q][s];
-                            Dps = Dtp[p][s];
-                            Dqr = Dtp[q][r];
-                            pdG[Pcenter*3+0][p][r] += Ax * Dqs;
-                            pdG[Pcenter*3+0][q][s] += Ax * Dpr;
-                            pdG[Pcenter*3+0][p][s] += Ax * Dqr;
-                            pdG[Pcenter*3+0][q][r] += Ax * Dps;
-                            pdG[Pcenter*3+1][p][r] += Ay * Dqs;
-                            pdG[Pcenter*3+1][q][s] += Ay * Dpr;
-                            pdG[Pcenter*3+1][p][s] += Ay * Dqr;
-                            pdG[Pcenter*3+1][q][r] += Ay * Dps;
-                            pdG[Pcenter*3+2][p][r] += Az * Dqs;
-                            pdG[Pcenter*3+2][q][s] += Az * Dpr;
-                            pdG[Pcenter*3+2][p][s] += Az * Dqr;
-                            pdG[Pcenter*3+2][q][r] += Az * Dps;
-
-                            pdG[Qcenter*3+0][p][r] += Bx * Dqs;
-                            pdG[Qcenter*3+0][q][s] += Bx * Dpr;
-                            pdG[Qcenter*3+0][p][s] += Bx * Dqr;
-                            pdG[Qcenter*3+0][q][r] += Bx * Dps;
-                            pdG[Qcenter*3+1][p][r] += By * Dqs;
-                            pdG[Qcenter*3+1][q][s] += By * Dpr;
-                            pdG[Qcenter*3+1][p][s] += By * Dqr;
-                            pdG[Qcenter*3+1][q][r] += By * Dps;
-                            pdG[Qcenter*3+2][p][r] += Bz * Dqs;
-                            pdG[Qcenter*3+2][q][s] += Bz * Dpr;
-                            pdG[Qcenter*3+2][p][s] += Bz * Dqr;
-                            pdG[Qcenter*3+2][q][r] += Bz * Dps;
-
-                            pdG[Rcenter*3+0][p][r] += Cx * Dqs;
-                            pdG[Rcenter*3+0][q][s] += Cx * Dpr;
-                            pdG[Rcenter*3+0][p][s] += Cx * Dqr;
-                            pdG[Rcenter*3+0][q][r] += Cx * Dps;
-                            pdG[Rcenter*3+1][p][r] += Cy * Dqs;
-                            pdG[Rcenter*3+1][q][s] += Cy * Dpr;
-                            pdG[Rcenter*3+1][p][s] += Cy * Dqr;
-                            pdG[Rcenter*3+1][q][r] += Cy * Dps;
-                            pdG[Rcenter*3+2][p][r] += Cz * Dqs;
-                            pdG[Rcenter*3+2][q][s] += Cz * Dpr;
-                            pdG[Rcenter*3+2][p][s] += Cz * Dqr;
-                            pdG[Rcenter*3+2][q][r] += Cz * Dps;
-
-                            pdG[Scenter*3+0][p][r] += Dx * Dqs;
-                            pdG[Scenter*3+0][q][s] += Dx * Dpr;
-                            pdG[Scenter*3+0][p][s] += Dx * Dqr;
-                            pdG[Scenter*3+0][q][r] += Dx * Dps;
-                            pdG[Scenter*3+1][p][r] += Dy * Dqs;
-                            pdG[Scenter*3+1][q][s] += Dy * Dpr;
-                            pdG[Scenter*3+1][p][s] += Dy * Dqr;
-                            pdG[Scenter*3+1][q][r] += Dy * Dps;
-                            pdG[Scenter*3+2][p][r] += Dz * Dqs;
-                            pdG[Scenter*3+2][q][s] += Dz * Dpr;
-                            pdG[Scenter*3+2][p][s] += Dz * Dqr;
-                            pdG[Scenter*3+2][q][r] += Dz * Dps;
-                            delta++;
+                                Dpr = Dtp[p][r];
+                                Dqs = Dtp[q][s];
+                                Dps = Dtp[p][s];
+                                Dqr = Dtp[q][r];
+                                if(pert_incore[Pcenter]){
+                                    pdG[Pcenter*3+0][p][r] += Ax * Dqs;
+                                    pdG[Pcenter*3+0][q][s] += Ax * Dpr;
+                                    pdG[Pcenter*3+0][p][s] += Ax * Dqr;
+                                    pdG[Pcenter*3+0][q][r] += Ax * Dps;
+                                    pdG[Pcenter*3+1][p][r] += Ay * Dqs;
+                                    pdG[Pcenter*3+1][q][s] += Ay * Dpr;
+                                    pdG[Pcenter*3+1][p][s] += Ay * Dqr;
+                                    pdG[Pcenter*3+1][q][r] += Ay * Dps;
+                                    pdG[Pcenter*3+2][p][r] += Az * Dqs;
+                                    pdG[Pcenter*3+2][q][s] += Az * Dpr;
+                                    pdG[Pcenter*3+2][p][s] += Az * Dqr;
+                                    pdG[Pcenter*3+2][q][r] += Az * Dps;
+                                }
+                                if(pert_incore[Qcenter]){
+                                    pdG[Qcenter*3+0][p][r] += Bx * Dqs;
+                                    pdG[Qcenter*3+0][q][s] += Bx * Dpr;
+                                    pdG[Qcenter*3+0][p][s] += Bx * Dqr;
+                                    pdG[Qcenter*3+0][q][r] += Bx * Dps;
+                                    pdG[Qcenter*3+1][p][r] += By * Dqs;
+                                    pdG[Qcenter*3+1][q][s] += By * Dpr;
+                                    pdG[Qcenter*3+1][p][s] += By * Dqr;
+                                    pdG[Qcenter*3+1][q][r] += By * Dps;
+                                    pdG[Qcenter*3+2][p][r] += Bz * Dqs;
+                                    pdG[Qcenter*3+2][q][s] += Bz * Dpr;
+                                    pdG[Qcenter*3+2][p][s] += Bz * Dqr;
+                                    pdG[Qcenter*3+2][q][r] += Bz * Dps;
+                                }
+                                if(pert_incore[Rcenter]){
+                                    pdG[Rcenter*3+0][p][r] += Cx * Dqs;
+                                    pdG[Rcenter*3+0][q][s] += Cx * Dpr;
+                                    pdG[Rcenter*3+0][p][s] += Cx * Dqr;
+                                    pdG[Rcenter*3+0][q][r] += Cx * Dps;
+                                    pdG[Rcenter*3+1][p][r] += Cy * Dqs;
+                                    pdG[Rcenter*3+1][q][s] += Cy * Dpr;
+                                    pdG[Rcenter*3+1][p][s] += Cy * Dqr;
+                                    pdG[Rcenter*3+1][q][r] += Cy * Dps;
+                                    pdG[Rcenter*3+2][p][r] += Cz * Dqs;
+                                    pdG[Rcenter*3+2][q][s] += Cz * Dpr;
+                                    pdG[Rcenter*3+2][p][s] += Cz * Dqr;
+                                    pdG[Rcenter*3+2][q][r] += Cz * Dps;
+                                }
+                                if(pert_incore[Scenter]){
+                                    pdG[Scenter*3+0][p][r] += Dx * Dqs;
+                                    pdG[Scenter*3+0][q][s] += Dx * Dpr;
+                                    pdG[Scenter*3+0][p][s] += Dx * Dqr;
+                                    pdG[Scenter*3+0][q][r] += Dx * Dps;
+                                    pdG[Scenter*3+1][p][r] += Dy * Dqs;
+                                    pdG[Scenter*3+1][q][s] += Dy * Dpr;
+                                    pdG[Scenter*3+1][p][s] += Dy * Dqr;
+                                    pdG[Scenter*3+1][q][r] += Dy * Dps;
+                                    pdG[Scenter*3+2][p][r] += Dz * Dqs;
+                                    pdG[Scenter*3+2][q][s] += Dz * Dpr;
+                                    pdG[Scenter*3+2][p][s] += Dz * Dqr;
+                                    pdG[Scenter*3+2][q][r] += Dz * Dps;
+                                }
+                                delta++;
+                            }
                         }
                     }
                 }
-            }
-        } // End shell loops
+            } // End shell loops
 
-        SharedMatrix Gpi = SharedMatrix(new Matrix("MO G Deriv", nmo, nocc));
-        double**pGpi = Gpi->pointer();
-        psio_address next_Gpi = PSIO_ZERO;
-        for(int pert = 0; pert < 3*natom; ++pert){
-            // Symmetrize the derivative Fock contributions
-            SharedMatrix G = dGmats[pert];
-            G->add(G->transpose());
-            Gpi->transform(C, G, Cocc);
-            Gpi->scale(0.5);
-            psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
-        }
+            for(int a = 0; a < nA; ++a){
+                // Symmetrize the derivative Fock contributions
+                SharedMatrix G = dGmats[a];
+                G->add(G->transpose());
+                Gpi->transform(C, G, Cocc);
+                Gpi->scale(0.5);
+                psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+            }
+        } // End loop over A batches
+
     }
 
     boost::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
+    jk->set_allow_desymmetrization(false);
     size_t mem = 0.9 * memory_ / 8L;
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;
     max_A = (max_A > 3 * natom ? 3 * natom : max_A);
     jk->set_memory(mem);
+    jk->initialize();
 
     // => J2pi/K2pi <= //
     {
@@ -698,7 +742,6 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
         }
 
-        jk->initialize();
         jk->print_header();
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
@@ -713,6 +756,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
                 C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
+
             jk->compute();
             for (int a = 0; a < nA; a++) {
                 // Add the 2J contribution to G
@@ -784,6 +828,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 
         boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_));     
         cphf->set_jk(jk);
+        cphf->set_use_symmetry(false);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
         std::map<std::string, SharedMatrix>& x = cphf->x();
@@ -1041,7 +1086,6 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 Hp[A][B] = Hp[B][A] = 0.5*(Hp[A][B] + Hp[B][A]);
             }
         }
-        response->print();
     }
 
     psio_->close(PSIF_HESS,0);

@@ -65,6 +65,7 @@ RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
     debug_ = options_.get_int("DEBUG");
     bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
+    use_symmetry_ = true;
 }
 RBase::RBase(bool flag) :
     Wavefunction(Process::environment.options)
@@ -72,6 +73,7 @@ RBase::RBase(bool flag) :
     psio_ = _default_psio_lib_;
     throw PSIEXCEPTION("DGAS: Lets not let RMP do dirty hacks!\n");
     outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
+    use_symmetry_ = true;
 }
 RBase::~RBase()
 {
@@ -88,15 +90,27 @@ void RBase::set_reference(SharedWavefunction ref_wfn)
 
     Eref_ = reference_wavefunction_->reference_energy();
 
-    Cocc_  = Ca_subset("SO","OCC");
-    Cfocc_ = Ca_subset("SO","FROZEN_OCC");
-    Caocc_ = Ca_subset("SO","ACTIVE_OCC");
-    Cavir_ = Ca_subset("SO","ACTIVE_VIR");
-    Cfvir_ = Ca_subset("SO","FROZEN_VIR");
-    eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
-    eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
-    eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
-    eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
+    if(use_symmetry_) {
+        Cocc_  = Ca_subset("SO","OCC");
+        Cfocc_ = Ca_subset("SO","FROZEN_OCC");
+        Caocc_ = Ca_subset("SO","ACTIVE_OCC");
+        Cavir_ = Ca_subset("SO","ACTIVE_VIR");
+        Cfvir_ = Ca_subset("SO","FROZEN_VIR");
+        eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
+        eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
+        eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
+        eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
+    } else {
+        Cocc_  = Ca_subset("AO","OCC");
+        Cfocc_ = Ca_subset("AO","FROZEN_OCC");
+        Caocc_ = Ca_subset("AO","ACTIVE_OCC");
+        Cavir_ = Ca_subset("AO","ACTIVE_VIR");
+        Cfvir_ = Ca_subset("AO","FROZEN_VIR");
+        eps_focc_ = epsilon_a_subset("AO","FROZEN_OCC");
+        eps_aocc_ = epsilon_a_subset("AO","ACTIVE_OCC");
+        eps_avir_ = epsilon_a_subset("AO","ACTIVE_VIR");
+        eps_fvir_ = epsilon_a_subset("AO","FROZEN_VIR");
+    }
 
     std::vector<SharedMatrix> Cs;
     Cs.push_back(Cfocc_);

@@ -1712,6 +1712,28 @@ def run_scf_gradient(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
+def run_scf_hessian(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an SCF hessian calculation.
+
+    """
+    optstash = proc_util.scf_set_reference_local(name)
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = run_scf(name, **kwargs)
+
+    badref = psi4.get_option('SCF', 'REFERENCE') in ['UHF', 'ROHF', 'CUHF', 'RKS', 'UKS']
+    badint = psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']
+    if badref or badint:
+        raise ValidationError("Only RHF Hessians, with conventional integrals, are implemented currently")
+    hess = psi4.scfhess(ref_wfn)
+    ref_wfn.set_hessian(hess)
+
+    optstash.restore()
+    return ref_wfn
+
 
 def run_libfock(name, **kwargs):
     """Function encoding sequence of PSI module calls for

@@ -914,7 +914,6 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         timer_off("Hess: V");
-        hessians["Potential"]->print();
     }
 
 
@@ -1063,11 +1062,6 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         timer_off("Hess: T");
-        hessians["Kinetic"]->print();
-        SharedMatrix Hcore = hessians["Kinetic"]->clone();
-        Hcore->add(hessians["Potential"]);
-        Hcore->set_name("Core Hamiltonian Hessian");
-        Hcore->print();
     }
 
     // => Overlap Hessian <= //
@@ -1241,7 +1235,6 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         timer_off("Hess: S");
-        hessians["Overlap"]->print();
     }
     // => Two-Electron Hessian <= //
 
@@ -1292,10 +1285,6 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Coulomb"] = jk_hessians["Coulomb"];
         hessians["Exchange"] = jk_hessians["Exchange"];
         hessians["Exchange"]->scale(-1.0);
-        SharedMatrix tmp = hessians["Coulomb"]->clone();
-        tmp->add(hessians["Exchange"]);
-        tmp->set_name("Two electron hessian");
-        tmp->print();
     }
     timer_off("Hess: JK");
 
@@ -1331,10 +1320,6 @@ SharedMatrix SCFGrad::compute_hessian()
         }
     }
 
-    SharedMatrix core = hessians["Potential"]->clone();
-    core->add(hessians["Kinetic"]);
-    core->set_name("Core Hessian");
-    core->print();
     hessians["Total"] = total;
     hessians["Total"]->set_name("Total Hessian");
 

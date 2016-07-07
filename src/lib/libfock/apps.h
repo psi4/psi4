@@ -72,6 +72,7 @@ protected:
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<VBase> v_;
 
+    bool use_symmetry_;
     double Eref_;
     
 public:
@@ -104,6 +105,7 @@ public:
 
     /// => Setters <= ///
 
+    void set_use_symmetry(bool usesym) { use_symmetry_ = usesym; }
     /// Set convergence behavior
     void set_convergence(double convergence) { convergence_ = convergence; }
 
