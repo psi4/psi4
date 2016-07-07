@@ -9,6 +9,6 @@ if [ $RESULT -eq 0 ]; then
   echo build succeeded
 else
   echo build failed
-  tail -500 build.log
+  cat build.log
   exit 1
 fi
