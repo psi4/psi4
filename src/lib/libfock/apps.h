@@ -77,7 +77,7 @@ protected:
     
 public:
 
-    RBase(SharedWavefunction ref_wfn, Options& options);
+    RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
     // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
     RBase(bool flag);
     virtual ~RBase();
@@ -211,7 +211,7 @@ protected:
     std::set<std::string> tasks_;
 
 public:
-    RCPHF(SharedWavefunction ref_wfn, Options& options);
+    RCPHF(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
     virtual ~RCPHF();
 
     /// Solve for all perturbations currently in b 

@@ -826,9 +826,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         SharedWavefunction wfn(new Wavefunction(options_));
         wfn->shallow_copy(this);
                 
-        boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_));     
+        boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, false));
         cphf->set_jk(jk);
-        cphf->set_use_symmetry(false);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
         std::map<std::string, SharedMatrix>& x = cphf->x();

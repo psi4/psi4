@@ -54,8 +54,9 @@ using namespace boost;
 
 namespace psi {
 
-RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
-    Wavefunction(options)
+RBase::RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry) :
+    Wavefunction(options),
+    use_symmetry_(use_symmetry)
 {
     shallow_copy(ref_wfn);
 
@@ -65,7 +66,6 @@ RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
     debug_ = options_.get_int("DEBUG");
     bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE");
-    use_symmetry_ = true;
 }
 RBase::RBase(bool flag) :
     Wavefunction(Process::environment.options)
@@ -73,7 +73,6 @@ RBase::RBase(bool flag) :
     psio_ = _default_psio_lib_;
     throw PSIEXCEPTION("DGAS: Lets not let RMP do dirty hacks!\n");
     outfile->Printf( "Dirty hack %s\n\n", (flag ? "true" : "false"));
-    use_symmetry_ = true;
 }
 RBase::~RBase()
 {
@@ -145,8 +144,8 @@ void RBase::postiterations()
     jk_.reset();
 }
 
-RCPHF::RCPHF(SharedWavefunction ref_wfn, Options& options) :
-    RBase(ref_wfn, options)
+RCPHF::RCPHF(SharedWavefunction ref_wfn, Options& options, bool use_symmetry) :
+    RBase(ref_wfn, options, use_symmetry)
 {
 }
 RCPHF::~RCPHF()
