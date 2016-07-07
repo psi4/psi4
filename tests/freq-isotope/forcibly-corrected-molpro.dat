@@ -1,0 +1,38 @@
+>>> grep -e 'Entropy' -e ' Molecular Mass' -e 'Rotational Symm' -e '[ETRV][lrovi]' mp.out 
+
+ Molecular Mass:    18.01528 [a.u.]
+ Rotational Symmetry factor  2.0
+ Electronic               0.000              0.000              0.000
+ Translation              0.889              2.981             34.609
+ Rotation                 0.889              2.981             10.673
+ Vibration                0.000              0.006              0.001
+ Volume (RT)              0.592              0.000              0.000
+ Total                    2.370              5.968             45.283
+
+ Molecular Mass:    20.02312 [a.u.]
+ Rotational Symmetry factor  2.0
+ Electronic               0.000              0.000              0.000
+ Translation              0.889              2.981             34.924
+ Rotation                 0.889              2.981             12.592
+ Vibration                0.002              0.056              0.008
+ Volume (RT)              0.592              0.000              0.000
+ Total                    2.372              6.017             47.525
+
+ Molecular Mass:    19.01684 [a.u.]
+ Rotational Symmetry factor  1.0
+ Electronic               0.000              0.000              0.000
+ Translation              0.889              2.981             34.771
+ Rotation                 0.889              2.981             13.055
+ Vibration                0.001              0.018              0.002
+ Volume (RT)              0.592              0.000              0.000
+ Total                    2.371              5.979             47.828
+
+ Molecular Mass:    21.02507 [a.u.]
+ Rotational Symmetry factor  1.0
+ Electronic               0.000              0.000              0.000
+ Translation              0.889              2.981             35.070
+ Rotation                 0.889              2.981             14.520
+ Vibration                0.004              0.086              0.014
+ Volume (RT)              0.592              0.000              0.000
+ Total                    2.374              6.048             49.603
+

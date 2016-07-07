@@ -10,7 +10,7 @@ macro(add_regression_test _name _labels)
     endforeach()
     unset(_labels)
     # This is the psi command to actually run the tests
-    set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
+    set(PSIEXE ${CMAKE_INSTALL_PREFIX}/psi4/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
 
@@ -60,23 +60,11 @@ macro(add_regression_test _name _labels)
         endif()
     endif()
 
-    # Add the test
-    if(MPI_FOUND)
-        # If this was an MPI-build, we test on two processors
-        # RDR: this is really hardcoded, maybe generalize?
-        # In theory would like to make sure all tests run in parallel as well
-        # but... most do not right now...
-        add_test(NAME "${_name}"
-            WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${MPIEXEC}" -n 2 "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
-        )
-    else()
-        # Serial build
-        add_test(NAME "${_name}"
-            WORKING_DIRECTORY "${TEST_RUN_DIR}"
-            COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${PROJECT_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
-        )
-    endif()
+    # Serial build
+    add_test(NAME "${_name}"
+      WORKING_DIRECTORY "${TEST_RUN_DIR}"
+      COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${CMAKE_INSTALL_PREFIX}/psi4" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
+    )
 
     if(labels)
         set_tests_properties(${_name} PROPERTIES LABELS "${labels}")

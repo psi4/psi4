@@ -405,7 +405,6 @@ SharedMatrix PSTensorII::O()
             }
         }
     }
-    #endif
 
     return O_;
 }

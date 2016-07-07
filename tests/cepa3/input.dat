@@ -1,0 +1,38 @@
+#! cc-pvdz H2O Test coupled-pair CISD against DETCI CISD
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+
+set {
+  e_convergence 1e-10
+  d_convergence 1e-10
+  r_convergence 1e-10
+  basis cc-pvdz
+  freeze_core true
+  dipmom true
+  print 2
+}
+
+set qc_module fnocc
+energy('cisd')
+
+corr1 = get_variable("CISD CORRELATION ENERGY")
+dipz1 = get_variable("CISD DIPOLE Z")
+qzz1  = get_variable("CISD QUADRUPOLE ZZ")
+
+set qc_module detci
+property("cisd")
+
+corr2 = get_variable("CI CORRELATION ENERGY")
+dipz2 = get_variable("CI DIPOLE Z")
+qzz2  = get_variable("CI QUADRUPOLE ZZ")
+
+print_variables()
+compare_values(corr1,corr2, 9, "DETCI vs coupled-pair CISD correlation energy")   #TEST
+compare_values(dipz1,dipz2, 5, "DETCI vs coupled-pair CISD Z component of dipole")   #TEST
+compare_values(qzz1,qzz2,   5, "DETCI vs coupled-pair CISD ZZ component of quadrupole")   #TEST
+
+clean()

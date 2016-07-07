@@ -1,0 +1,13 @@
+memory 300 mb
+
+molecule {
+H
+H 1 0.7
+}
+
+set basis 6-31g
+set cfour_deriv_level first      # clash with energy() below (use gradient('c4-scf') to achieve this)
+
+energy('c4-scf')
+
+

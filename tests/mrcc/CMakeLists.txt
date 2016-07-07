@@ -1,0 +1,4 @@
+add_subdirectory(ccsdt)
+add_subdirectory(ccsd_t_)
+add_subdirectory(ccsdt_q_)
+add_subdirectory(optfreq)

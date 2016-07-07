@@ -1,0 +1,297 @@
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 0.5 Driver
+
+                          Git: Rev {master} dbe9080
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Mon Mar 14 15:18:47 2016
+
+    Process ID:  11329
+    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF orbitals and density for water.
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis cc-pvqz
+set df_scf_guess  false
+set scf_type pk
+set cubeprop_tasks ['orbitals','density']
+set cubeprop_orbitals [1,2,3,4,5]
+set cubic_grid_overage [1.0,1.0,1.0]
+
+scf_e, scf_wfn = energy('scf', return_wfn=True)
+cubeprop(scf_wfn)
+
+for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
+    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
+    this_cube = open('Psi_a_%s.cube' % n,'r').read()
+    compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
+
+for s in ['Da','Db','Dt','Ds']:
+    ref_cube = open('%s.cube.ref' % s,'r').read()
+    this_cube = open('%s.cube' % s,'r').read()
+    compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on ds1.sherrill.chemistry.gatech.edu
+*** at Mon Mar 14 15:18:48 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVQZ
+    Number of shells: 35
+    Number of basis function: 115
+    Number of Cartesian functions: 140
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        42      42       0       0       0       0
+     A2        17      17       0       0       0       0
+     B1        23      23       0       0       0       0
+     B2        33      33       0       0       0       0
+   -------------------------------------------------------
+    Total     115     115       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+	Batch   1 pq = [       0,    1731] index = [             0,1499046]
+	Batch   2 pq = [    1731,    1893] index = [       1499046,1792671]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               183
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 5.0902308820E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    0,    2 ]
+
+   @RHF iter   1:   -59.99916580689279   -5.99992e+01   1.67113e-01 
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+   @RHF iter   2:   -65.85188902771031   -5.85272e+00   5.12151e-02 DIIS
+   @RHF iter   3:   -72.82300443137137   -6.97112e+00   5.52933e-02 DIIS
+   @RHF iter   4:   -75.45741708107457   -2.63441e+00   2.11337e-02 DIIS
+   @RHF iter   5:   -76.04542139614395   -5.88004e-01   2.38249e-03 DIIS
+   @RHF iter   6:   -76.05789990188326   -1.24785e-02   7.04587e-04 DIIS
+   @RHF iter   7:   -76.05847753780263   -5.77636e-04   1.43206e-04 DIIS
+   @RHF iter   8:   -76.05851333139420   -3.57936e-05   1.71569e-05 DIIS
+   @RHF iter   9:   -76.05851492291050   -1.59152e-06   5.16614e-06 DIIS
+   @RHF iter  10:   -76.05851502615663   -1.03246e-07   8.86512e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -20.567042     2A1    -1.328481     1B2    -0.691522  
+       3A1    -0.573766     1B1    -0.504848  
+
+    Virtual:                                                              
+
+       4A1     0.113254     2B2     0.168202     3B2     0.436919  
+       5A1     0.463665     6A1     0.485796     2B1     0.584068  
+       7A1     0.599914     4B2     0.609801     1A2     0.651031  
+       3B1     0.714928     8A1     0.856107     5B2     0.905724  
+       9A1     1.090099     6B2     1.134275     7B2     1.356314  
+      10A1     1.417665     4B1     1.474233     2A2     1.484685  
+      11A1     1.585004    12A1     1.674383     8B2     1.904611  
+       5B1     2.066267    13A1     2.181547     3A2     2.280742  
+       9B2     2.348031     6B1     2.418453    14A1     2.467291  
+      10B2     2.512867     4A2     2.553301     7B1     2.559304  
+      11B2     2.627246    15A1     2.658071     5A2     2.816539  
+      16A1     2.842671     8B1     3.045873    12B2     3.090267  
+      13B2     3.248386    17A1     3.360143    18A1     3.379036  
+      14B2     3.578320    19A1     3.856509     9B1     3.948145  
+       6A2     4.149121    10B1     4.215023    20A1     4.237093  
+      15B2     4.407530    21A1     4.494322    22A1     4.552361  
+      11B1     4.646899    16B2     4.809415     7A2     4.815797  
+      17B2     5.273410    23A1     5.351558    12B1     5.991135  
+      24A1     6.071740     8A2     6.201087    18B2     6.252755  
+       9A2     6.569346    25A1     6.709655    19B2     6.951623  
+      20B2     7.179336    13B1     7.243363    14B1     7.328604  
+      10A2     7.418952    26A1     7.428881    21B2     7.454641  
+      27A1     7.568363    22B2     7.983950    15B1     8.037283  
+      28A1     8.085550    16B1     8.102077    11A2     8.190492  
+      29A1     8.226800    23B2     8.247300    12A2     8.313638  
+      30A1     8.400819    24B2     8.554302    17B1     8.739636  
+      13A2     8.755390    31A1     8.832113    25B2     9.061043  
+      32A1     9.185624    26B2     9.262915    33A1    10.053607  
+      18B1    10.132375    27B2    10.185948    34A1    10.375332  
+      19B1    10.579556    14A2    10.632284    35A1    10.674448  
+      28B2    11.112327    15A2    11.281366    36A1    11.513067  
+      20B1    11.618731    29B2    11.620683    21B1    11.847048  
+      37A1    11.967659    22B1    12.158427    38A1    12.254051  
+      16A2    12.291619    30B2    12.422796    31B2    13.373947  
+      39A1    13.421952    23B1    13.982688    17A2    14.315585  
+      40A1    14.362734    32B2    14.419067    41A1    16.145882  
+      33B2    16.508335    42A1    43.886103  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.05851502615663
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.3888158323674702
+    Two-Electron Energy =                  37.5288352762388087
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0585150261565985
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2160
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8031     Total:     0.8031
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.0412     Total:     2.0412
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:49 2016
+Module time:
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+  ==> One Electron Grid Properties (v2.0) <==
+
+  ==> CubicScalarGrid <==
+
+    Filepath     = .
+    Total Points =             4862
+    XYZ Blocking =               10
+    X Points     =               11
+    Y Points     =               26
+    Z Points     =               17
+    X Spacing    =        2.000E-01
+    Y Spacing    =        2.000E-01
+    Z Spacing    =        2.000E-01
+    X Minimum    =       -1.000E+00
+    Y Minimum    =       -2.500E+00
+    Z Minimum    =       -1.151E+00
+    X Maximum    =        1.000E+00
+    Y Maximum    =        2.500E+00
+    Z Maximum    =        2.049E+00
+
+	Comparing MO 1_1-A1...............................................PASSED
+	Comparing MO 2_2-A1...............................................PASSED
+	Comparing MO 3_1-B2...............................................PASSED
+	Comparing MO 4_3-A1...............................................PASSED
+	Comparing MO 5_1-B1...............................................PASSED
+	Comparing Da......................................................PASSED
+	Comparing Db......................................................PASSED
+	Comparing Dt......................................................PASSED
+	Comparing Ds......................................................PASSED
+
+*** PSI4 exiting successfully. Buy a developer a beer!

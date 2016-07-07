@@ -1,0 +1,118 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 35a99d94e312ddfef970e401f8de899948c66316
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  59961
+    PSI4DATADIR: /Users/loriab/linux/psi4_efp_nowcurrent/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# This is a psi4 input file auto-generated from the database() wrapper.
+
+database('scf', 'basic', mode='reap', cp='no', rlxd='no', zpe='no', benchmark='default', linkage=59953, subset=['ch4', 'nh3'], tabulate=['current energy', 'scf total energy'])
+
+
+compare_values(-40.195683412597, DB_RGT['BASIC-ch4-reagent']['SCF TOTAL ENERGY'], 5, 'methane reagent')  #TEST
+compare_values(-56.189487485398, DB_RGT['BASIC-nh3-reagent']['SCF TOTAL ENERGY'], 5, 'ammonia reagent')  #TEST
+compare_values(30241.3052, get_variable('basic database mean absolute deviation'), 2, 'Optimized database through sow/reap')  #TEST
+
+#from pprint import pprint
+#pprint(DB_RGT)
+#pprint(DB_RXN)
+
+--------------------------------------------------------------------------
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Database basic Computation    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Database basic Computation: Reagent BASIC-ch4-reagent //
+  //                          methane                      //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   Database Contributions Map:
+   ---------------------------------------------------------------------------
+   reagent BASIC-ch4-reagent contributes by 1.0000 to reaction BASIC-ch4
+
+DATABASE RESULT: electronic energy =     -40.195683412597
+DATABASE RESULT: variable CURRENT ENERGY value    =     -40.195683412597
+DATABASE RESULT: variable SCF TOTAL ENERGY value    =     -40.195683412597
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Database basic Computation: Reagent BASIC-nh3-reagent //
+  //                          ammonia                      //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   Database Contributions Map:
+   ---------------------------------------------------------------------------
+   reagent BASIC-nh3-reagent contributes by 1.0000 to reaction BASIC-nh3
+
+DATABASE RESULT: electronic energy =     -56.189487485398
+DATABASE RESULT: variable CURRENT ENERGY value    =     -56.189487485398
+DATABASE RESULT: variable SCF TOTAL ENERGY value    =     -56.189487485398
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //       Database basic Results      //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from
+   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.
+   Depending on the nature of the variable, this may or may not make any physical sense.
+
+   ==> Current Energy <==
+
+   --------------------------------------------------------------------------
+               Reaction          Reaction Value                  Reagent 1
+                                                                  Value Wt
+   --------------------------------------------------------------------------
+              BASIC-ch4            -40.19568341            -40.19568341  1
+              BASIC-nh3            -56.18948749            -56.18948749  1
+   --------------------------------------------------------------------------
+
+   ==> Scf Total Energy <==
+
+   --------------------------------------------------------------------------
+               Reaction          Reaction Value                  Reagent 1
+                                                                  Value Wt
+   --------------------------------------------------------------------------
+              BASIC-ch4            -40.19568341            -40.19568341  1
+              BASIC-nh3            -56.18948749            -56.18948749  1
+   --------------------------------------------------------------------------
+
+   ==> Requested Energy <==
+
+   --------------------------------------------------------------------------
+               Reaction     Reaction Energy      Error           Reagent 1
+                               Ref     Calc [kcal/mol]              [H] Wt
+   --------------------------------------------------------------------------
+              BASIC-ch4     0.0000 -25223.1732   -25223.1732     -40.19568341  1
+              BASIC-nh3     0.0000 -35259.4372   -35259.4372     -56.18948749  1
+   --------------------------------------------------------------------------
+            Minimal Dev                       -25223.1732
+            Maximal Dev                       -35259.4372
+        Mean Signed Dev                       -30241.3052
+      Mean Absolute Dev                       30241.3052
+                RMS Dev                       30654.8233
+   --------------------------------------------------------------------------
+
+*** PSI4 exiting successfully. Buy a developer a beer!
