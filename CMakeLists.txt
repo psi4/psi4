@@ -47,7 +47,7 @@ option_with_flag(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
                   "-fsanitize=undefined" "-fno-omit-frame-pointer")
 option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "The type of our build" Debug)
-option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2
+option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 
 ############################## Compiler Features ###############################
 list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
