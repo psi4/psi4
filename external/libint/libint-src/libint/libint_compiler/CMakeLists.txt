@@ -18,6 +18,7 @@ set(COMPILER_SRC build_libint.c
                  mem_man.c
                  constants.c
 )
+add_definitions("-std=c99")
 add_executable(libint_compiler ${COMPILER_SRC})
 target_link_libraries(libint_compiler ${LIBM_LIBRARIES})
 install(TARGETS libint_compiler DESTINATION ${CMAKE_INSTALL_PREFIX})
