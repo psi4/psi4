@@ -261,8 +261,8 @@ before_script:
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
 - ${BOOSTBUILD}
-- python setup --cxx=${CXX_COMPILER} --cc=${C_COMPILER} --fc=${Fortran_COMPILER} --type=${BUILD_TYPE} ${BOOSTSTR} --max-am-eri=4 --chemps2=off objdir
-- cd objdir
+- cmake -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DCMAKE_C_COMPILER=${C_COMPILER} -DFortran_COMPILER=${Fortran_COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DLIBINT_OPT_AM=4 -DENABLE_CHEMPS2=off
+- cd build
 - ../.scripts/travis_build.sh
 script:
 - python ../.scripts/travis_run.py
