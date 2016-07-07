@@ -47,6 +47,7 @@ option_with_flag(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
                   "-fsanitize=undefined" "-fno-omit-frame-pointer")
 option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "The type of our build" Debug)
+option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2
 
 ############################## Compiler Features ###############################
 list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
@@ -80,6 +81,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
+              -DFC_SYMBOL=${FC_SYMBOL}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
