@@ -29,7 +29,11 @@
 #define FISAPT_LOCAL2_H
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {

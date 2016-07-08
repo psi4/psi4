@@ -30,7 +30,11 @@
 
 #include <map>
 #include <string>
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include "psi4/src/lib/libmints/typedefs.h"
 
 namespace psi {

@@ -28,7 +28,11 @@
 #ifndef _psi_src_lib_libmints_integral_h_
 #define _psi_src_lib_libmints_integral_h_
 
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include <vector>
 
 #include "onebody.h"

@@ -34,7 +34,11 @@
 *
 * Created by Robert Parrish on 04/15/2010
 */
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 
 namespace psi { 
 /*! \ingroup LIBMINTS */

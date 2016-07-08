@@ -28,7 +28,11 @@
 #ifndef SRC_LIB_LIBJKFACTORY_SRC_MINIMALINTERFACE_H_
 #define SRC_LIB_LIBJKFACTORY_SRC_MINIMALINTERFACE_H_
 #include <vector>
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 
 class BasisSet;
 class PFock;

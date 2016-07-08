@@ -25,7 +25,11 @@
  * @END LICENSE
  */
 
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include "psi4/include/psi4-dec.h"
 #include "functional.h"
 #include "xfunctional.h"

@@ -36,7 +36,11 @@
 #include <stdlib.h>
 #include <string>
 #include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 
