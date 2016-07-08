@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libmints/matrix.h"
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-
+#include <cmath>
 #include <sstream>
 
 #ifdef _OPENMP
@@ -45,7 +45,6 @@
 
 using namespace boost;
 using namespace std;
-using namespace psi;
 
 namespace psi {
 
