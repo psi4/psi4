@@ -16,6 +16,7 @@ set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
 find_package(Threads)
 find_package(DL)
 find_package(LAPACK REQUIRED)
+find_package(RT REQUIRED)
 find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 set_property(GLOBAL PROPERTY LIBLIST "")
@@ -38,6 +39,7 @@ target_link_libraries(psi4 ${psi4_libraries}
                            ${PYTHON_LIBRARIES}
                            ${CMAKE_THREAD_LIBS_INIT}
                            ${LAPACK_LIBRARIES}
+                           ${LIBRT_LIBRARIES}
 )
 
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
