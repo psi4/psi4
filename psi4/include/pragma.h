@@ -31,7 +31,7 @@ extern "C" {
     #define PRAGMA_WARNING_IGNORE_NONVIRTUAL_DTOR              _Pragma("warning(disable:444")
     #define PRAGMA_WARNING_IGNORE_UNUSED_FUNCTION              //! \todo add me
     #define PRAGMA_WARNING_IGNORE_UNRECOGNIZED_PRAGMA          _Pragma("warning(disable:161")
-    #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+    #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      //! \todo add me
 
 #elif defined(__GNUC__) || defined(__GNUG__)
 

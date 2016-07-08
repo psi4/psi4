@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <utility>
+#include <string>
 #include "typedefs.h"
 #include <boost/tuple/tuple.hpp>
 
