@@ -39,7 +39,11 @@
 #define DEFAULT_SYM_TOL 1.0E-8
 #define FULL_PG_TOL 1.0e-8 // default
 
-#include <boost/shared_ptr.hpp>  // something is going on requiring this header
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 
 #include "coordentry.h"
 

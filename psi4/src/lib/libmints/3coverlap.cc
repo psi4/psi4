@@ -25,7 +25,11 @@
  * @END LICENSE
  */
 #include "psi4/src/lib/libmints/3coverlap.h"
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include <stdexcept>
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/basisset.h"

@@ -37,7 +37,11 @@
 #include <algorithm>
 
 #include "psi4/include/psifiles.h"
-#include <boost/shared_ptr.hpp>
+ #include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <boost/shared_ptr.hpp>
+ PRAGMA_WARNING_POP
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
