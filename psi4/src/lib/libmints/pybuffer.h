@@ -33,6 +33,7 @@
 #include <boost/python/list.hpp>
 #include <sstream>
 #include <string>
+#include <vector>
 
 //#define xtostring( x ) ( ( std::stringstream ) ( std::stringstream() << std::dec << x ) ).str()
 
