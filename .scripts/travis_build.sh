@@ -2,6 +2,7 @@
 
 # The return code will capture an error from ANY of the functions in the pipe
 set -o pipefail
+export VERBOSE=1
 make -j2 install 2>&1 | tee build.log | grep "Building"
 RESULT=$?
 
