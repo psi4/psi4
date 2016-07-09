@@ -1728,8 +1728,31 @@ def run_scf_hessian(name, **kwargs):
     badint = psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']
     if badref or badint:
         raise ValidationError("Only RHF Hessians, with conventional integrals, are implemented currently")
-    hess = psi4.scfhess(ref_wfn)
-    ref_wfn.set_hessian(hess)
+    H = psi4.scfhess(ref_wfn)
+    ref_wfn.set_hessian(H)
+
+    # Temporary freq code.  To be replaced with proper frequency analysis later...
+    import numpy as np
+
+    mol = ref_wfn.molecule()
+    natoms = mol.natom()
+    masses = np.zeros(natoms)
+
+    for atom in range(natoms):
+        masses[atom] = mol.mass(atom)
+
+    m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)
+    mwhess = np.einsum('i,ij,j->ij', m, H, m)
+
+    fcscale = psi_hartree2J / (psi_bohr2m * psi_bohr2m * psi_amu2kg);
+    fc = fcscale * np.linalg.eigvalsh(mwhess)
+    freqs = np.sqrt(np.abs(fc))
+    freqs *= 1.0 / (2.0 * np.pi * psi_c * 100.0)
+    freqs[fc < 0] *= -1
+
+    freqvec = psi4.Vector.from_array(freqs[6:])
+    ref_wfn.set_frequencies(freqvec)
+    # End of temporary freq hack.  Remove me later! 
 
     optstash.restore()
     return ref_wfn
