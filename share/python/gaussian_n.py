@@ -64,7 +64,7 @@ def run_gaussian_2(name, **kwargs):
     psi4.clean()
 
     # scf frequencies for zpe
-    scf_e, ref = driver.frequency('scf', return_wfn=True)
+    scf_e, ref = driver.frequency('scf', return_wfn=True, dertype=1)
 
     # thermodynamic properties
     du = psi4.get_variable('INTERNAL ENERGY CORRECTION')
