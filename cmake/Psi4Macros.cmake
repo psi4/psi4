@@ -17,13 +17,13 @@ endmacro(option_with_default)
 #Common guts to adding a Psi4 library irrespective of bin vs. lib home
 macro(general_add_library libname sources prefix dir)
    add_library(${libname} ${${sources}})
+   set_target_properties(${libname} PROPERTIES 
+       POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
+   )
    install(TARGETS ${libname} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
       DESTINATION psi4/src/${dir}/${prefix}${libname}
-      FILES_MATCHING PATTERN "*.h")
-   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-      DESTINATION psi4/src/${dir}/${prefix}${libname}
-      FILES_MATCHING PATTERN "*.hpp")
+      FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
    set(depend_name "${ARGN}")
    foreach(name_i IN LISTS depend_name)

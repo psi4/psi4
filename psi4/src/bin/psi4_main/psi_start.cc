@@ -23,15 +23,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * @END LICENSE
- */
+ */ 
 
 /*!
 ** \file
 ** \brief Initialize input, output, file prefix, etc.
 ** \ingroup
 */
+#define MAIN
+#include "psi4/psi4.h" 
+#undef MAIN
 
-#include "psi4/psi4.h"
 #include "psi4/include/psi4-dec.h"
 
 #include <cstdio>
@@ -48,7 +50,11 @@ using namespace std;
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 namespace psi {
-
+char *psi_file_prefix;
+std::string outfile_name;
+std::string restart_id;
+bool env_initialized;
+boost::shared_ptr<PsiOutStream> outfile;
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
 void create_new_plugin_makefile();
 void print_version();
@@ -70,11 +76,7 @@ int psi_start(int argc, char *argv[])
 {
     int next_option;
     // Defaults:
-    std::string ifname;
-    std::string ofname;
-    std::string fprefix;
-    std::string templatename;
-    std::string pluginname;
+    std::string ifname,ofname,fprefix,templatename,pluginname;
 #if defined(PSIDEBUG)
     bool debug          = true;
 #else
@@ -85,7 +87,8 @@ int psi_start(int argc, char *argv[])
     clean_only          = false;
     verbose             = false;
     skip_input_preprocess = false;
-    interactive_python  = false;
+    //Using interactive python to distinguish between how Psi4 started
+    //it now is set in python.cc for the module or psi4.cc for the binary
 
     // A string listing of valid short option letters
     const char* const short_options = "ahvVdcwo:p:i:l:s:n:r:mkt";
@@ -272,7 +275,6 @@ int psi_start(int argc, char *argv[])
     /* default prefix is not assigned here yet because need to check input file first */
 
     /* open input and output files */
-#if !defined(MAKE_PYTHON_MODULE)
     infile = NULL;
     if (!interactive_python) {
         if(ifname == "stdin") {
@@ -298,9 +300,7 @@ int psi_start(int argc, char *argv[])
        outfile=boost::shared_ptr<PsiOutStream>
           (new OutFile(ofname,(append?APPEND:TRUNCATE)));
     }
-#else
-    outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
-#endif
+
 
 
     /* if prefix still NULL - check input file */

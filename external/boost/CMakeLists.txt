@@ -23,7 +23,14 @@ if(NOT Boost_FOUND)
    set(BOOST_PREFIX ${CMAKE_BINARY_DIR}/external/boost/boost-src/boost_1_57_0)
    set(BOOST_INSTALL_PREFIX 
        ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external/boost)
-
+   set(BOOST_FLAGS "${CMAKE_CXX_FLAGS} -w")
+   if(BUILD_FPIC)
+      set(BOOST_FLAGS "${BOOST_FLAGS} -fPIC")
+   endif()
+   set(BOOST_LINK "static")
+   if(BUILD_SHARED_LIBS)
+      set(BOOST_LINK "shared")
+   endif()
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
       URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_1_57_0.tar.bz2
@@ -34,9 +41,10 @@ if(NOT Boost_FOUND)
                                        --with-python=${PYTHON_EXECUTABLE}
                                        --prefix=${BOOST_INSTALL_PREFIX}
       #Can't change the fact that boost has warnings....
-      BUILD_COMMAND ./b2 threading=multi link=static  cxxflags=-w
+      BUILD_COMMAND ./b2 threading=multi link=${BOOST_LINK}  cxxflags=${BOOST_FLAGS}
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
-      INSTALL_COMMAND ./b2 install threading=multi link=static cxxflags=-w
+      INSTALL_COMMAND ./b2 install threading=multi link=${BOOST_LINK}
+             cxxflags=${BOOST_FLAGS}
    )
 else()
     add_library(boost_external INTERFACE)

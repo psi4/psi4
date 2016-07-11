@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+ * 
  * @END LICENSE
  */
 
@@ -47,14 +47,11 @@
 #include "psi4/include/physconst.h"
 #include "psi4/include/psifiles.h"
 
-#include "psi4/include/psi4-def.h"
+#include "psi4/include/psi4-dec.h"
 
 #ifdef HAVE_AMBIT
 #include <ambit/tensor.h>
 #endif
-
-#define MAIN
-
 #include "psi4.h"
 
 #ifdef _OPENMP
@@ -105,14 +102,14 @@ int main(int argc, char **argv)
     Script::language = boost::shared_ptr<Script>(new Python);
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
-
+    interactive_python  = false;
     if (psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
     if (!clean_only) print_version("outfile");
 
     // Set the default memory limit for Psi4
     set_memory("outfile");
-
+ 
     // Initialize the I/O library
     psio_init();
 

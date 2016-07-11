@@ -9,6 +9,7 @@ if(NOT LIBEFP_FOUND)
                  -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                  -DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+                 -DBUILD_FPIC=${BUILD_FPIC}
       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage
    )
 else()

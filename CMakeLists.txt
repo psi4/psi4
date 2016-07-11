@@ -14,11 +14,11 @@
 #    - PYTHON_LIBRARY Path to the python library that goes with the exe
 #    - PYTHON_INCLUDE_DIR Path to the python include files    
 #
-#
 
 #Need 3.1 for build_always
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 CXX C)
+set(CMAKE_CXX_STANDARD 11)
 include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/compilers
@@ -48,9 +48,10 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
 option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "The type of our build" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
+option_with_default(BUILD_FPIC
+          "Libraries will be compiled with position independent code" TRUE)
 
 ############################## Compiler Features ###############################
-list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 find_package(OpenMP)
 optional_add_flags(OpenMP_FOUND ${OpenMP_CXX_FLAGS})
 
@@ -67,12 +68,13 @@ list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/psi4
-              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-              -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-              -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} 
+              -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} 
+              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} 
+              -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} 
+              -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
@@ -82,6 +84,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
+
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 

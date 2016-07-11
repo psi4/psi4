@@ -24,12 +24,12 @@
  *
  * @END LICENSE
  */
-
+ 
 /*!
 ** \file
 ** \brief Close input and output, stop input parser
-** \ingroup
-*/
+** \ingroup 
+*/ 
 
 #include <cstdio>
 #include <cstdlib>
