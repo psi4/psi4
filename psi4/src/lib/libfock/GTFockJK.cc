@@ -24,9 +24,26 @@
  *
  * @END LICENSE
  */
+#include "psi4/src/lib/libpsi4util/exception.h"
+#include "psi4/src/lib/libfock/jk.h"
+#ifdef ENABLE_GTFOCK
+#include <GTFock/MinimalInterface.h>
+#else
+namespace psi {
+struct MinimalInterface{
+    MinimalInterface(size_t,bool)
+    {
+        throw PSIEXCEPTION("PSI4 has not been compiled with GTFock support");
+    }
+    void SetP(std::vector<SharedMatrix>&){}
+    void GetJ(std::vector<SharedMatrix>&){}
+    void GetK(std::vector<SharedMatrix>&){}
+    
+};
+}
+#endif
 
-#include "jk.h"
-#include "../libJKFactory/MinimalInterface.h"
+
 namespace psi {
 GTFockJK::GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
       size_t NMats,bool AreSymm):
