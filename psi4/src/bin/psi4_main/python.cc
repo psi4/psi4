@@ -60,8 +60,6 @@
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/bin/ccenergy/ccwave.h"
 #include "psi4/src/bin/cclambda/cclambda.h"
-
-#if defined(MAKE_PYTHON_MODULE)
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -70,7 +68,6 @@ namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
-#endif
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 using namespace psi;
@@ -1193,21 +1190,43 @@ std::string py_psi_top_srcdir()
     return TOSTRING(PSI_TOP_SRCDIR);
 }
 
-#if defined(MAKE_PYTHON_MODULE)
 bool psi4_python_module_initialize()
 {
+    
     static bool initialized = false;
-
+    
     if (initialized) {
         printf("Psi4 already initialized.\n");
         return true;
     }
+    
+    interactive_python = true;
+    
+    // Setup the environment
+    //Process::arguments.initialize(0, 0);
+    Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
 
+
+    // There should only be one of these in Psi4
+    Wavefunction::initialize_singletons();
+
+    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return false;
     print_version("stdout");
 
+    // There is only one timer:
+    timer_init();
+
+    // Initialize the I/O library
+    psio_init();
+
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+    
     // Track down the location of Psi4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
-    std::string psiDataDirWithPython = psiDataDirName + "/psi4";
+    std::string psiDataDirWithPython = psiDataDirName + "/python";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
     // printf("Python dir is at %s\n", psiDataDirName.c_str());
@@ -1248,7 +1267,6 @@ void psi4_python_module_finalize()
     Script::language->finalize();
 
 }
-#endif
 
 void translate_psi_exception(const PsiException& e)
 {
@@ -1271,35 +1289,9 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_o
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
 BOOST_PYTHON_MODULE (psi4)
-{
-#if defined(MAKE_PYTHON_MODULE)
-    // Initialize the world communicator
-    WorldComm = boost::shared_ptr<LibParallel::ParallelEnvironment>(
-          new LibParallel::ParallelEnvironment(0, 0));
-
-    // Setup the environment
-    //Process::arguments.initialize(0, 0);
-    Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-
-    // There is only one timer:
-    timer_init();
-
-    // There should only be one of these in Psi4
-    Wavefunction::initialize_singletons();
-
-    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
-
-    // Initialize the I/O library
-    psio_init();
-
-    // Setup globals options
-    Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, true);
-    Process::environment.options.set_read_globals(false);
-
-    def("initialize", &psi4_python_module_initialize);
-    def("finalize", &psi4_python_module_finalize);
-#endif
+{ 
+   def("initialize", &psi4_python_module_initialize);
+   def("finalize", &psi4_python_module_finalize);
 
 
     register_exception_translator<PsiException>(&translate_psi_exception);

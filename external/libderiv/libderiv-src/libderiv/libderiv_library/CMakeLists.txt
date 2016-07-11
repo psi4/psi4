@@ -5,6 +5,6 @@ include_directories(${LIBINT_INCLUDE_DIRS})
 file(GLOB FULL_SRC "${CMAKE_BINARY_DIR}/*.cc")
 file(GLOB FULL_HEAD "${CMAKE_BINARY_DIR}/*.h")
 add_library(deriv STATIC ${FULL_SRC})
-
+set_target_properties(deriv PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC})
 install(FILES ${FULL_HEAD} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/libderiv)
 install(TARGETS deriv ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

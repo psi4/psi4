@@ -30,18 +30,22 @@ include_directories(${PSI4_ROOT})
 add_subdirectory(src)
 
 include_directories(${Boost_INCLUDE_DIRS})
-add_executable(psi4 psi4.cc)
+add_executable(psi4_exe psi4.cc)
+set_target_properties(psi4_exe PROPERTIES OUTPUT_NAME psi4
+                          INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+)
 get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
 get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
-add_dependencies(psi4 ${psi4_libraries})
-target_link_libraries(psi4 ${psi4_libraries} 
-                           ${psi4_modules}
-                           ${LIBDERIV_LIBRARIES}
-                           ${PYTHON_LIBRARIES}
-                           ${CMAKE_THREAD_LIBS_INIT}
-                           ${LAPACK_LIBRARIES}
+add_dependencies(psi4_exe psi4_main)
+set(psi4_lib_list psi4_main 
+                  ${psi4_modules}
+                  ${LIBDERIV_LIBRARIES}
+                  ${PYTHON_LIBRARIES}
+                  ${CMAKE_THREAD_LIBS_INIT}
+                  ${LAPACK_LIBRARIES}
 )
 
+target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list})   
 install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(TARGETS psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(TARGETS psi4_exe DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

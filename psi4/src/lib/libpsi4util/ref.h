@@ -117,7 +117,7 @@ public:
 	}
 	
 	template<typename T> bool is_zero(T*) {
-		return *_counter == 0;
+		return _counter?*_counter == 0:true;
 	}
 };
 // Reference counting pointer:

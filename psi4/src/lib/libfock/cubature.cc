@@ -2536,9 +2536,15 @@ void StandardGridMgr::Initialize()
 void StandardGridMgr::ReleaseMemory()
 {
     for (size_t i = 0; i < sizeof(SG0_grids_)/sizeof(SG0_grids_[0]); i++)
-        free((void*)SG0_grids_[i]);
+        if(SG0_grids_[i]){
+            free((void*)SG0_grids_[i]);
+            SG0_grids_[i]=NULL;
+        }
     for (size_t i = 0; i < sizeof(SG1_grids_)/sizeof(SG1_grids_[0]); i++)
-        free((void*)SG1_grids_[i]);
+        if(SG1_grids_[i]){
+            free((void*)SG1_grids_[i]);
+            SG1_grids_[i]=NULL;
+        }
 }
 
 void StandardGridMgr::Initialize_SG0()
