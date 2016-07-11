@@ -729,6 +729,7 @@ public:
 class GTFockJK: public JK{
    private:
       ///The actual instance that does the implementing
+
       boost::shared_ptr<MinimalInterface> Impl_;
    protected:
       /// Do we need to backtransform to C1 under the hood?

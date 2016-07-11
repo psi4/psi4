@@ -1264,7 +1264,7 @@ void psi4_python_module_finalize()
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
-    Script::language->finalize();
+    if(Script::language)Script::language->finalize();
 
 }
 
