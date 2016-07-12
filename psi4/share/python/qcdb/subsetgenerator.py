@@ -110,7 +110,7 @@ def genset_allneutral(dbinstance):
 
     """
     eligible = []
-    for rxn, orxn in dbinstance.hrxn.iteritems():
+    for rxn, orxn in dbinstance.hrxn.items():
         if all([True if rgt.charge == 0 else False for rgt in orxn.rxnm['default'].keys()]):
             eligible.append(rxn)
     return eligible
@@ -122,7 +122,7 @@ def genset_anyanion(dbinstance):
 
     """
     eligible = []
-    for rxn, orxn in dbinstance.hrxn.iteritems():
+    for rxn, orxn in dbinstance.hrxn.items():
         for rgt in orxn.rxnm['default'].keys():
             if rgt.charge < 0:
                 eligible.append(rxn)
@@ -136,7 +136,7 @@ def genset_anycation(dbinstance):
 
     """
     eligible = []
-    for rxn, orxn in dbinstance.hrxn.iteritems():
+    for rxn, orxn in dbinstance.hrxn.items():
         for rgt in orxn.rxnm['default'].keys():
             if rgt.charge > 0:
                 eligible.append(rxn)

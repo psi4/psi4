@@ -10,24 +10,24 @@ except ImportError:
 from .modelchems import Method, BasisSet, Error, methods, bases, errors
 
 try:
-    dict.iteritems
+    dict.items
 except AttributeError:
     # Python 3
     def itervalues(d):
         return iter(d.values())
-    def iteritems(d):
+    def items(d):
         return iter(d.items())
 else:
     # Python 2
     def itervalues(d):
         return d.itervalues()
-    def iteritems(d):
-        return d.iteritems()
+    def items(d):
+        return d.items()
 
 mc_archive = {'mtd': methods, 'bas': bases, 'err': errors}
 fancy_mc_archive = {}
 for tier in [methods, bases, errors]:
-    for k, v in iteritems(tier):
+    for k, v in items(tier):
         fancy_mc_archive[k] = v.latex
 
 
@@ -103,7 +103,7 @@ def table_generic(dbse, serrors,
     def table_header(kw, abbr, head1, head0, head2):
         """Form table header"""
         ref = r"""tbl:qcdb-%s-%s""" % (theme, '-'.join([kw[bit] for bit in tag]))
-        fancy_kw = {k: (mc_archive[k][v].latex if k in mc_archive else v) for k, v in iteritems(kw)}
+        fancy_kw = {k: (mc_archive[k][v].latex if k in mc_archive else v) for k, v in items(kw)}
         text.append('')
         text.append(r"""\begingroup""")
         text.append(r"""\squeezetable""")
@@ -149,7 +149,7 @@ def table_generic(dbse, serrors,
                     newcells.append(cell)
             if changed:
                 lines2replace[idx] = '&'.join(newcells)
-        for idx, line in iteritems(lines2replace):
+        for idx, line in items(lines2replace):
             text[idx] = line
 
         # search-and-suppress "blank" lines
@@ -165,7 +165,7 @@ def table_generic(dbse, serrors,
         text.append(r"""\end{ruledtabular}""")
         for idx, fn in enumerate(footnotes):
             text.append(r"""\footnotetext[%d]{%s}""" % (idx + 1, fn))
-        for fn, idx in iteritems(otffootnotes):
+        for fn, idx in items(otffootnotes):
             text.append(r"""\footnotetext[%d]{%s}""" % (idx, fn))
         text.append(r"""\end{%s}""" % ('sidewaystable' if landscape else 'table'))
         text.append(r"""\endgroup""")

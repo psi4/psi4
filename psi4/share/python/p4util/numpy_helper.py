@@ -27,7 +27,9 @@
 
 import numpy as np
 import psi4
-from exceptions import *
+import sys
+if sys.version_info < (3,0):
+    from exceptions import *
 
 
 def _find_dim(arr, ndim):

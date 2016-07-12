@@ -286,7 +286,7 @@ def valerr(data, color=None, title='', xtitle='', view=True,
     emax = -1.0
     linecycler = cycle(['-', '--', '-.', ':'])
     # plot reaction errors and threads
-    for trace, tracedata in data.iteritems():
+    for trace, tracedata in data.items():
         vaxis = []
         vmcdata = []
         verror = []

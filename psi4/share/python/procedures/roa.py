@@ -76,7 +76,7 @@ def run_roa(name, **kwargs):
     if ('roa_computed' in db) and ( db['roa_computed'] ):
         db2 = shelve.open('.database.bak{}'.format(dbno), writeback=True)
         dbno += 1
-        for key,value in db.iteritems():
+        for key,value in db.items():
             db2[key]=value
 
         db2.close()

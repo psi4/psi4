@@ -162,7 +162,8 @@ def search_file(filename, search_path):
 
     """
     file_found = False
-    paths = string.split(search_path, os.pathsep)
+    paths = search_path.split(os.pathsep)
+    #paths = string.split(search_path, os.pathsep)
     for path in paths:
         if os.path.exists(os.path.join(path, filename)):
             file_found = True

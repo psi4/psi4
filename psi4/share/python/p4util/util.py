@@ -431,7 +431,7 @@ def csx2endict():
 
     csxdict = xml2dict()
     enedict = {}
-    for pv, lpv in pv2xml.iteritems():
+    for pv, lpv in pv2xml.items():
         address = blockprefix + lpv[0] + blockmidfix
         indices = [prefix + bit for bit in address]
         try:
@@ -455,5 +455,5 @@ def compare_csx():
         if psi4.get_global_option('WRITE_CSX'):
             enedict = csx2endict()
             compare_integers(len(enedict) >= 2, True, 'CSX harvested')
-            for pv, en in enedict.iteritems():
+            for pv, en in enedict.items():
                 compare_values(psi4.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))

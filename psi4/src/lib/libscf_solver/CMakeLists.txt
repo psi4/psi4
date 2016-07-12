@@ -12,6 +12,7 @@ set(sources_list uhf.cc
 psi4_add_library(scf_solver sources_list mints diis efp_solver)
 if(ENABLE_PCMSOLVER)
    target_link_libraries(scf_solver INTERFACE psipcm)
+   add_definitions("-DENABLE_PCMSOLVER")
 endif()
 if(ENABLE_GTFOCK)
   add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)

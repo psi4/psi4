@@ -217,7 +217,7 @@ def read_options(options):
     options["IMAGESIZE"][0] = str(args.imagesize)
 
     print("Parameters:")
-    for k,v in options.iteritems():
+    for k,v in options.items():
         print("  %-20s %s" % (v[1],v[0]))
 
 
@@ -238,7 +238,7 @@ def write_and_run_vmd_script(options,cube_files):
 
     # Define a map that contains all the values of the VMD parameters
     replacement_map = {}
-    for k,v in options.iteritems():
+    for k,v in options.items():
         key = "PARAM_" + k.upper()
         replacement_map[key] = v[0]
 

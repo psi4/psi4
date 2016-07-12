@@ -214,7 +214,7 @@ useme2psivar = {
     #'deltaHF,r(3)': None,  # ne'er used
     }
 
-psivar2useme = dict((v, k) for k, v in useme2psivar.iteritems())
+psivar2useme = dict((v, k) for k, v in useme2psivar.items())
 
 
 optclue2psivar = {

@@ -80,7 +80,9 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     for basis in BSET:
         try:
             qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
-        except qcdb.BasisSetNotFound, e:
+            raise qcdb.BasisSetNotFound
+        except qcdb.BasisSetNotFound:
+            e=sys.exc_info()[1]
             raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
 
     return (BSET, ZSET)

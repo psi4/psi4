@@ -49,8 +49,8 @@
 #include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libfock/jk.h"
-#ifdef HAVE_PCMSOLVER
-#include <libpsipcm/psipcm.h>
+#ifdef ENABLE_PCMSOLVER
+#include "psi4/src/lib/libpsipcm/psipcm.h"
 #endif
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/libmints/basisset.h"
@@ -341,11 +341,10 @@ void HF::common_init()
 
     frac_enabled_ = (options_.get_int("FRAC_START") != 0);
     frac_performed_ = false;
-
     print_header();
 
     // Initialize PCM object, if requested
-#ifdef HAVE_PCMSOLVER
+#ifdef ENABLE_PCMSOLVER
     if(pcm_enabled_ = (options_.get_bool("PCM")))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
 #endif
