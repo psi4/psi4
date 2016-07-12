@@ -75,8 +75,8 @@ protected:
     double _PBE_mu_;
 
     // B86B
-    double _B86B_bet_;
-    double _B86B_gam_;
+    double _B86B_mu_;
+    double _B86B_k_;
 
     // PW91
     double _PW91_a1_;
