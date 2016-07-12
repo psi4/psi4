@@ -39,6 +39,7 @@ if(NOT Boost_FOUND)
       CONFIGURE_COMMAND pwd && ./bootstrap.sh --with-toolset=${BOOST_COMPILER_ID}
                                        --with-libraries=${B2_BOOST_COMPONENTS}
                                        --with-python=${PYTHON_EXECUTABLE}
+                                       --with-python-root=${PYTHON_INLCUDE_DIRS}
                                        --prefix=${BOOST_INSTALL_PREFIX}
       #Can't change the fact that boost has warnings....
       BUILD_COMMAND ./b2 threading=multi link=${BOOST_LINK}  cxxflags=${BOOST_FLAGS}

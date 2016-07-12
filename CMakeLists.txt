@@ -56,14 +56,21 @@ find_package(OpenMP)
 optional_add_flags(OpenMP_FOUND ${OpenMP_CXX_FLAGS})
 
 ############################## Dependencies ####################################
-find_package(PythonInterp)
-find_package(PythonLibs)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 add_subdirectory(external)
 
 set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
 list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 
+if(NOT BOOST_ROOT)#Boost seriously sucks, why can't it use prefix_path?
+  set(BOOST_ROOT ${PSI4_STAGE_EX}/boost)
+endif()
+
+
 ############################## Main Project ####################################
+
+
 
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
@@ -79,9 +86,13 @@ ExternalProject_Add(psi4_core
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-              -DBOOST_ROOT=${PSI4_STAGE_EX}/boost
+              -DBOOST_ROOT=${BOOST_ROOT}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
+              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
+              -DENABLE_GDMA=${ENABLE_GDMA}
+              -DENABLE_DKH=${ENABLE_DKH}
+              -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
 
@@ -94,11 +105,14 @@ add_dependencies(psi4_core boost_external
                            libint_external
                            libderiv_external 
                            libefp_external
+                           pcmsolver_external
 )
 enable_testing()
 add_subdirectory(tests)
 #Splitting it by folder allows us to avoid an extraneous directory
 install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external
-        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/psi4 USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/psi4 USE_SOURCE_PERMISSIONS)

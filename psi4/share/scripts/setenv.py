@@ -75,7 +75,7 @@ if platform.system() == 'Linux':
             libraries[ack.group(1)] = None
     print('\n  Library dependencies of conda psi4 in current environment:\n%s' % (ans))
 
-    for name, fl in libraries.iteritems():
+    for name, fl in libraries.items():
         #print('%30s    %s' % (name, fl))
         if fl is None:
             print('  ERROR: needed library %s not found. no advice at this time.' % (name))
@@ -209,13 +209,13 @@ if platform.system() == 'Linux':
     respectively. These files are echoed below.""")
     setup = prefix + '/share/psi/scripts/psi4setup.sh'
     with open(setup, 'w') as handle:
-        for ev, val in envarray.iteritems():
+        for ev, val in envarray.items():
             handle.write("""export {}={}\n""".format(ev.upper(), val))
     print("""\n  bash-prompt>>> source {}""".format(setup))
     os.system('cat {}'.format(setup, 'sh'))
     setup = prefix + '/share/psi/scripts/psi4setup.csh'
     with open(setup, 'w') as handle:
-        for ev, val in envarray.iteritems():
+        for ev, val in envarray.items():
             handle.write("""setenv {} {}\n""".format(ev.upper(), val))
     print("""\n  csh-prompt>>> source {}""".format(setup))
     os.system('cat {}'.format(setup))
@@ -241,7 +241,7 @@ compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'SCF e
 
     # <<<  test the environment  >>>
     lenv = os.environ.copy()
-    for ev, val in envarray.iteritems():
+    for ev, val in envarray.items():
         lenv[ev.upper()] = val
     print("""
   Your shell environment has not been changed by this script. A psi4 test

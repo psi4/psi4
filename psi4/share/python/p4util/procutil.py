@@ -50,7 +50,7 @@ def kwargs_lower(kwargs):
     """
     caseless_kwargs = {}
     # items() inefficient on Py2 but this is small dict
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         lkey = key.lower()
         if lkey in ['subset']:  # only kw for which case matters
             lvalue = value
@@ -409,7 +409,7 @@ def expand_psivars(pvdefs):
     """
     verbose = psi4.get_global_option('PRINT')
 
-    for pvar, action in pvdefs.iteritems():
+    for pvar, action in pvdefs.items():
         if verbose >= 2:
             print("""building %s %s""" % (pvar, '.' * (50 - len(pvar))), end='')
 

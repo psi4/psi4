@@ -68,7 +68,7 @@ class QCEssential(object):
         text += """  LaTeX representation: %s\n""" % (self.latex)
         text += """  DOI:                  %s\n""" % (self.doi)
         text += """  Literature citations:\n"""
-        for rol, cit in self.citations.iteritems():
+        for rol, cit in self.citations.items():
             text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
@@ -96,7 +96,7 @@ class Publication(QCEssential):
         text += """  Owner:                %s\n""" % (self.owner)
         text += """  DOI:                  %s\n""" % (self.doi)
         text += """  Literature citations:\n"""
-        for rol, cit in self.citations.iteritems():
+        for rol, cit in self.citations.items():
             text += """    %-17s   %s\n""" % (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
@@ -121,7 +121,7 @@ class BasisSet(QCEssential):
         text += """  CBS build:            %s\n""" % (self.build)
         text += """  DOI:                  %s\n""" % (self.doi)
         text += """  Literature citations:\n"""
-        for rol, cit in self.citations.iteritems():
+        for rol, cit in self.citations.items():
             text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
@@ -143,7 +143,7 @@ class Method(QCEssential):
         text += """  LaTeX representation: %s\n""" % (self.latex)
         text += """  DOI:                  %s\n""" % (self.doi)
         text += """  Literature citations:\n"""
-        for rol, cit in self.citations.iteritems():
+        for rol, cit in self.citations.items():
             text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
@@ -165,7 +165,7 @@ class Error(QCEssential):
         text += """  LaTeX representation: %s\n""" % (self.latex)
         text += """  DOI:                  %s\n""" % (self.doi)
         text += """  Literature citations:\n"""
-        for rol, cit in self.citations.iteritems():
+        for rol, cit in self.citations.items():
             text += """    %17s: %s\n""" (rol, cit.doi)
         text += """  Comment:              %s\n""" % (self.comment)
         text += """\n"""
@@ -187,7 +187,7 @@ class Error(QCEssential):
 #        text += """  LaTeX representation: %s\n""" % (self.latex)
 #        text += """  DOI:                  %s\n""" % (self.doi)
 #        text += """  Literature citations:\n"""
-#        for rol, cit in self.citations.iteritems():
+#        for rol, cit in self.citations.items():
 #            text += """    %17s: %s\n""" (rol, cit.doi)
 #        text += """  Comment:              %s\n""" % (self.comment)
 #        text += """\n"""
