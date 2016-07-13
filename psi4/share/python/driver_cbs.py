@@ -30,6 +30,7 @@ import psi4
 import qcdb
 import p4util
 import driver_util
+import sys
 import p4const
 from p4util.exceptions import *
 from procedures.interface_cfour import cfour_psivar_list
@@ -80,7 +81,6 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     for basis in BSET:
         try:
             qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
-            raise qcdb.BasisSetNotFound
         except qcdb.BasisSetNotFound:
             e=sys.exc_info()[1]
             raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
