@@ -25,7 +25,7 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
+from __future__ import print_function,absolute_import
 """Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
    to obtain a molecule string that can be passed to Molecule. ::
 
@@ -41,7 +41,7 @@ from __future__ import print_function
                                                         with Psi4's Molecule creation
 
 """
-from __future__ import absolute_import
+
 try:
     # Python 2 syntax
     from urllib2 import urlopen
