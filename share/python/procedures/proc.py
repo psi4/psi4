@@ -1725,9 +1725,9 @@ def run_scf_hessian(name, **kwargs):
         ref_wfn = run_scf(name, **kwargs)
 
     badref = psi4.get_option('SCF', 'REFERENCE') in ['UHF', 'ROHF', 'CUHF', 'RKS', 'UKS']
-    badint = psi4.get_option('SCF', 'SCF_TYPE') in ['DF', 'CD']
+    badint = psi4.get_option('SCF', 'SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
-        raise ValidationError("Only RHF Hessians, with conventional integrals, are implemented currently")
+        raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
     H = psi4.scfhess(ref_wfn)
     ref_wfn.set_hessian(H)
 
@@ -1744,13 +1744,23 @@ def run_scf_hessian(name, **kwargs):
     m = np.repeat( np.divide(1.0, np.sqrt(masses)), 3)
     mwhess = np.einsum('i,ij,j->ij', m, H, m)
 
+    # Are we linear?
+    if mol.get_full_point_group() in [ "C_inf_v", "D_inf_h" ]:
+        nexternal = 5
+    else:
+        nexternal = 6
+
     fcscale = psi_hartree2J / (psi_bohr2m * psi_bohr2m * psi_amu2kg);
     fc = fcscale * np.linalg.eigvalsh(mwhess)
-    freqs = np.sqrt(np.abs(fc))
+    # Sort by magnitude of the force constants, to project out rot/vib
+    ordering = np.argsort(np.abs(fc))
+    projected = fc[ordering][nexternal:]
+    freqs = np.sqrt(np.abs(projected))
     freqs *= 1.0 / (2.0 * np.pi * psi_c * 100.0)
-    freqs[fc < 0] *= -1
+    freqs[projected < 0] *= -1
+    freqs.sort()
 
-    freqvec = psi4.Vector.from_array(freqs[6:])
+    freqvec = psi4.Vector.from_array(freqs)
     ref_wfn.set_frequencies(freqvec)
     # End of temporary freq hack.  Remove me later! 
 

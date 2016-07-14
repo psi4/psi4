@@ -1808,21 +1808,21 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
     max_cart_ = ioff[basis1()->max_am()+1] * ioff[basis2()->max_am()+1] * ioff[basis3()->max_am()+1] * ioff[basis4()->max_am()+1];
 
     // Make sure libint is compiled to handle our max AM
-    if (max_am >= LIBINT_MAX_AM) {
+    if (max_am > LIBINT_MAX_AM) {
         outfile->Printf( "ERROR: ERI - libint cannot handle angular momentum this high (%d).\n"
                         "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n"
                         "       LibInt was compiled for angular momentum of: %d\n",max_am,LIBINT_MAX_AM);
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
-    else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
+    else if (deriv_ == 1 && max_am > LIBDERIV_MAX_AM1) {
         outfile->Printf( "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "     In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
     }
-    else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
+    else if (deriv_ == 2 && max_am > LIBDERIV_MAX_AM12) {
         outfile->Printf( "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "       In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"

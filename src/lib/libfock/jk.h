@@ -315,8 +315,6 @@ protected:
 
     // => Required Algorithm-Specific Methods <= //
 
-    /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const = 0;
     /// Setup integrals, files, etc
     virtual void preiterations() = 0;
     /// Compute J/K for current C/D
@@ -362,6 +360,10 @@ public:
                                           Options& options);
     static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
                                           Options& options, std::string jk_type);
+
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const = 0;
 
 
     // => Knobs <= //

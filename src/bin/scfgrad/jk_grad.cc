@@ -1592,7 +1592,743 @@ void DFJKGrad::build_Amn_x_lr_terms()
 }
 void DFJKGrad::compute_hessian()
 {
-    throw PSIEXCEPTION("Not implemented");
+
+    /*
+     * If we define Minv as the inverse metric matrix, and use the identity
+     *
+     *    d Minv          d M
+     *    ------ = -Minv ----- Minv
+     *      dx             dx
+     *
+     * then we get
+     *
+     *    d (mn|A) Minv[A][B] (B|rs)           x                                          x
+     *    -------------------------- = 2 (mn|A)  Minv[A][B] (B|rs)  -  (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+     *                dx
+     *
+     * whose 2 terms we call term1 and term2, respectively.  Indices {m,n,r,s} refer to AOs,
+     * while {A,B,C,D...} are aux basis indices.  The superscripts are just a shorthand for derivatives.  Expanding to get second derivatives, we have
+     *
+     *    d term1           xy                               x             y                                    x                 y
+     *    ------- = 2 (mn|A)   Minv[A][B] (B|rs)  -  2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] (B|rs)
+     *       dy
+     *
+     *    d term2            y             x                                                 y                  x                                                 xy
+     *    ------- = -2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] M[D][E] Minv[E][F] (F|rs)  -  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+     *       dy
+     *
+     * Note that the second term from term1 and the first from term2 are the same, leaving us with 5 terms to implement.  The code below is a first attempt at
+     * this, and uses intermediates that were the first thing that came to mind.  The code needs to be adapted to run out of core (c.f. DFJKGrad::build_gradient())
+     * and should call routines like build_Amn_terms() to generate intermediates, rather than re-coding that stuff here.  We also need to add UHF capabilities.
+     *
+     * Andy Simmonett (07/16)
+     *
+     */
+
+    // => Set up hessians <= //
+    int natom = primary_->molecule()->natom();
+    hessians_.clear();
+    if (do_J_) {
+        hessians_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Hessian",3*natom,3*natom));
+    }
+    if (do_K_) {
+        hessians_["Exchange"] = SharedMatrix(new Matrix("Exchange Hessian",3*natom,3*natom));
+    }
+    if (do_wK_) {
+        hessians_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Hessian",3*natom,3*natom));
+    }
+
+
+    boost::shared_ptr<Molecule> mol = primary_->molecule();
+
+    int np = auxiliary_->nbf();
+    int nso = primary_->nbf();
+    int nauxshell = auxiliary_->nshell();
+    int nshell = primary_->nshell();
+    int natoms = mol->natom();
+    double **JHessp = hessians_["Coulomb"]->pointer();
+    double **KHessp = hessians_["Exchange"]->pointer();
+
+    double **Dtp = Dt_->pointer();
+    double **Cap = Ca_->pointer();
+    double **Cbp = Cb_->pointer();
+
+    int na = Ca_->colspi()[0];
+    boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    metric->form_full_eig_inverse();
+    SharedMatrix PQ = metric->get_metric();
+    double** PQp = PQ->pointer();
+
+    SharedVector c(new Vector("c[A] = (mn|A) D[m][n]", np));
+    double *cp = c->pointer();
+    SharedMatrix dc(new Matrix("dc[x][A] = (mn|A)^x D[m][n]",  3*natoms, np));
+    double **dcp = dc->pointer();
+    SharedMatrix dAij(new Matrix("dAij[x][A,i,j] = (mn|A)^x C[m][i] C[n][j]",  3*natoms, np*na*na));
+    double **dAijp = dAij->pointer();
+    SharedVector d(new Vector("d[A] = Minv[A][B] C[B]", np));
+    double *dp = d->pointer();
+    SharedMatrix dd(new Matrix("dd[x][B] = dc[x][A] Minv[A][B]", 3*natoms, np));
+    double **ddp = dd->pointer();
+    SharedMatrix de(new Matrix("de[x][A] = (A|B)^x d[B] ", 3*natoms, np));
+    double **dep = de->pointer();
+    SharedMatrix deij(new Matrix("deij[x][A,i,j] = (A|B)^x Bij[B,i,j]", 3*natoms, np*na*na));
+    double **deijp = deij->pointer();
+
+    // Build some integral factories
+    boost::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    boost::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+    boost::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
+    boost::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+    SharedMatrix Amn(new Matrix("(A|mn)", np, nso*nso));
+    SharedMatrix Ami(new Matrix("(A|mi)", np, nso*na));
+    SharedMatrix Aij(new Matrix("(A|ij)", np, na*na));
+    SharedMatrix Bij(new Matrix("Minv[B][A] (A|ij)", np, na*na));
+    SharedMatrix Bim(new Matrix("Minv[B][A] (A|im)", np, nso*na));
+    SharedMatrix Bmn(new Matrix("Minv[B][A] (A|mn)", np, nso*nso));
+    SharedMatrix DPQ(new Matrix("B(P|ij) B(Q|ij)", np, np));
+    double **Amnp = Amn->pointer();
+    double **Amip = Ami->pointer();
+    double **Aijp = Aij->pointer();
+    double **Bijp = Bij->pointer();
+    double **Bimp = Bim->pointer();
+    double **Bmnp = Bmn->pointer();
+    double **DPQp = DPQ->pointer();
+
+
+    for (int P = 0; P < nauxshell; ++P){
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
+        for(int M = 0; M < nshell; ++M){
+            int nM = primary_->shell(M).nfunction();
+            int oM = primary_->shell(M).function_index();
+            for(int N = 0; N < nshell; ++N){
+                int nN = primary_->shell(N).nfunction();
+                int oN = primary_->shell(N).function_index();
+
+                Pmnint->compute_shell(P,0,M,N);
+                const double* buffer = Pmnint->buffer();
+
+                for (int p = oP; p < oP+nP; p++) {
+                    for (int m = oM; m < oM+nM; m++) {
+                        for (int n = oN; n < oN+nN; n++) {
+                            Amnp[p][m*nso+n] += (*buffer++);
+                        }
+                    }
+                }
+                // c[A] = (A|mn) D[m][n]
+                C_DGEMV('N', np, nso*(ULI)nso, 1.0, Amnp[0], nso*(ULI)nso, Dtp[0], 1, 0.0, cp, 1);
+                // (A|mj) = (A|mn) C[n][j]
+                C_DGEMM('N','N',np*(ULI)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+                // (A|ij) = (A|mj) C[m][i]
+                #pragma omp parallel for
+                for (int p = 0; p < np; p++) {
+                    C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (ULI) na * na],na);
+                }
+
+            }
+        }
+    }
+
+    // d[A] = Minv[A][B] c[B]
+    C_DGEMV('n', np, np, 1.0, PQp[0], np, cp, 1, 0.0, dp, 1);
+    // B[B][i,j] = Minv[A][B] (A|ij)
+    C_DGEMM('n','n', np, na*na, np, 1.0, PQp[0], np, Aijp[0], na*na, 0.0, Bijp[0], na*na);
+    // B[B][i,n] = B[B][i,j] C[n][j]
+    C_DGEMM('N', 'T', np*(ULI)na, nso, na, 1.0, Bijp[0], na, Cap[0], na, 0.0, Bimp[0], nso);
+    // B[B][m,n] = C[m][i] B[B][i,n]
+    #pragma omp parallel for
+    for (int p = 0; p < np; p++) {
+        C_DGEMM('n', 'n', nso, nso, na, 1.0, Cap[0], na, Bimp[p], nso, 0.0, Bmnp[p], nso);
+    }
+    // D[A][B] = B[A][ij] B[B][ij]
+    C_DGEMM('n','t', np, np, na*na, 1.0, Bijp[0], na*na, Bijp[0], na*na, 0.0, DPQp[0], np);
+
+    int maxp = auxiliary_->max_function_per_shell();
+    int maxm = primary_->max_function_per_shell();
+    SharedMatrix T(new Matrix("T", maxp, maxm*na));
+    double **Tp = T->pointer();
+
+    for (int P = 0; P < nauxshell; ++P){
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
+        int Pcenter = auxiliary_->shell(P).ncenter();
+        int Pncart = auxiliary_->shell(P).ncartesian();
+        int Px = 3 * Pcenter + 0;
+        int Py = 3 * Pcenter + 1;
+        int Pz = 3 * Pcenter + 2;
+        for(int M = 0; M < nshell; ++M){
+            int nM = primary_->shell(M).nfunction();
+            int oM = primary_->shell(M).function_index();
+            int Mcenter = primary_->shell(M).ncenter();
+            int Mncart = primary_->shell(M).ncartesian();
+            int mx = 3 * Mcenter + 0;
+            int my = 3 * Mcenter + 1;
+            int mz = 3 * Mcenter + 2;
+            for(int N = 0; N < nshell; ++N){
+                int nN = primary_->shell(N).nfunction();
+                int oN = primary_->shell(N).function_index();
+                int Ncenter = primary_->shell(N).ncenter();
+                int Nncart = primary_->shell(N).ncartesian();
+                int nx = 3 * Ncenter + 0;
+                int ny = 3 * Ncenter + 1;
+                int nz = 3 * Ncenter + 2;
+
+                size_t stride = Pncart * Mncart * Nncart;
+
+                Pmnint->compute_shell_deriv1(P,0,M,N);
+                const double* buffer = Pmnint->buffer();
+
+                size_t delta = 0L;
+                // Terms for J intermediates
+                // dc[x][A] = D[m][n] (A|mn)^x
+                for (int p = oP; p < oP+nP; p++) {
+                    for (int m = oM; m < oM+nM; m++) {
+                        for (int n = oN; n < oN+nN; n++) {
+                            double Cpmn = Dtp[m][n];
+                            dcp[Px][p] += Cpmn * buffer[0 * stride + delta];
+                            dcp[Py][p] += Cpmn * buffer[1 * stride + delta];
+                            dcp[Pz][p] += Cpmn * buffer[2 * stride + delta];
+                            dcp[mx][p] += Cpmn * buffer[3 * stride + delta];
+                            dcp[my][p] += Cpmn * buffer[4 * stride + delta];
+                            dcp[mz][p] += Cpmn * buffer[5 * stride + delta];
+                            dcp[nx][p] += Cpmn * buffer[6 * stride + delta];
+                            dcp[ny][p] += Cpmn * buffer[7 * stride + delta];
+                            dcp[nz][p] += Cpmn * buffer[8 * stride + delta];
+                            ++delta;
+                        }
+                    }
+                }
+                // Terms for K intermediates
+                // dAij[x][p,i,j] <- (p|mn)^x C[m][i] C[n][j]
+                //
+                // implemented as
+                //
+                // T[p][m,j] <- (p|mn) C[n][j]
+                // dAij[x][p,i,j] <- C[m][i] T[p][m,j]
+                double *ptr = const_cast<double*>(buffer);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+0*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Px][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+1*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Py][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+2*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Pz][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+3*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mx][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+4*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[my][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+5*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mz][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+6*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nx][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+7*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[ny][(p+oP)*na*na], na);
+                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+8*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+                #pragma omp parallel for
+                for(int p = 0; p < nP; ++p)
+                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nz][(p+oP)*na*na], na);
+
+            }
+        }
+    }
+
+    // dd[x][A] = dc[x][B] Minv[B][A]
+    C_DGEMM('N', 'N', 3*natoms, np, np, 1.0, dcp[0], np, PQp[0], np, 0.0, ddp[0], np);
+
+    for (int P = 0; P < nauxshell; ++P){
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
+        int Pcenter = auxiliary_->shell(P).ncenter();
+        int Pncart = auxiliary_->shell(P).ncartesian();
+        int Px = 3 * Pcenter + 0;
+        int Py = 3 * Pcenter + 1;
+        int Pz = 3 * Pcenter + 2;
+        for(int Q = 0; Q < nauxshell; ++Q){
+            int nQ = auxiliary_->shell(Q).nfunction();
+            int oQ = auxiliary_->shell(Q).function_index();
+            int Qcenter = auxiliary_->shell(Q).ncenter();
+            int Qncart = auxiliary_->shell(Q).ncartesian();
+            int Qx = 3 * Qcenter + 0;
+            int Qy = 3 * Qcenter + 1;
+            int Qz = 3 * Qcenter + 2;
+
+            size_t stride = Pncart * Qncart;
+
+            PQint->compute_shell_deriv1(P,0,Q,0);
+            const double* buffer = PQint->buffer();
+
+            size_t delta = 0L;
+            // J term intermediates
+            // de[x][A] = (A|B)^x d[B]
+            for (int p = oP; p < oP+nP; p++) {
+                for (int q = oQ; q < oQ+nQ; q++) {
+                    double dq = dp[q];
+                    dep[Px][p] += dq * buffer[0 * stride + delta];
+                    dep[Py][p] += dq * buffer[1 * stride + delta];
+                    dep[Pz][p] += dq * buffer[2 * stride + delta];
+                    dep[Qx][p] += dq * buffer[3 * stride + delta];
+                    dep[Qy][p] += dq * buffer[4 * stride + delta];
+                    dep[Qz][p] += dq * buffer[5 * stride + delta];
+                    ++delta;
+                }
+            }
+            // K term intermediates
+            // deij[x][A,i,j] <- (A|B)^x Bij[B,i,j]
+            double *ptr = const_cast<double*>(buffer);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+0*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Px][oP*na*na], na*na);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+1*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Py][oP*na*na], na*na);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+2*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Pz][oP*na*na], na*na);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+3*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qx][oP*na*na], na*na);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+4*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qy][oP*na*na], na*na);
+            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+5*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qz][oP*na*na], na*na);
+
+        }
+    }
+
+
+    for (int P = 0; P < nauxshell; ++P){
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
+        int Pcenter = auxiliary_->shell(P).ncenter();
+        int Pncart = auxiliary_->shell(P).ncartesian();
+        int Px = 3 * Pcenter + 0;
+        int Py = 3 * Pcenter + 1;
+        int Pz = 3 * Pcenter + 2;
+        for(int M = 0; M < nshell; ++M){
+            int nM = primary_->shell(M).nfunction();
+            int oM = primary_->shell(M).function_index();
+            int Mcenter = primary_->shell(M).ncenter();
+            int Mncart = primary_->shell(M).ncartesian();
+            int mx = 3 * Mcenter + 0;
+            int my = 3 * Mcenter + 1;
+            int mz = 3 * Mcenter + 2;
+            for(int N = 0; N < nshell; ++N){
+                int nN = primary_->shell(N).nfunction();
+                int oN = primary_->shell(N).function_index();
+                int Ncenter = primary_->shell(N).ncenter();
+                int Nncart = primary_->shell(N).ncartesian();
+                int nx = 3 * Ncenter + 0;
+                int ny = 3 * Ncenter + 1;
+                int nz = 3 * Ncenter + 2;
+
+                size_t stride = Pncart * Mncart * Nncart;
+
+                Pmnint->compute_shell_deriv2(P,0,M,N);
+                const double* buffer = Pmnint->buffer();
+
+                double Pmscale = Pcenter == Mcenter ? 2.0 : 1.0;
+                double Pnscale = Pcenter == Ncenter ? 2.0 : 1.0;
+                double mnscale = Mcenter == Ncenter ? 2.0 : 1.0;
+
+                double PxPx=0.0, PxPy=0.0, PxPz=0.0, PyPy=0.0, PyPz=0.0, PzPz=0.0;
+                double mxmx=0.0, mxmy=0.0, mxmz=0.0, mymy=0.0, mymz=0.0, mzmz=0.0;
+                double nxnx=0.0, nxny=0.0, nxnz=0.0, nyny=0.0, nynz=0.0, nznz=0.0;
+                double Pxmx=0.0, Pxmy=0.0, Pxmz=0.0, Pymx=0.0, Pymy=0.0, Pymz=0.0, Pzmx=0.0, Pzmy=0.0, Pzmz=0.0;
+                double Pxnx=0.0, Pxny=0.0, Pxnz=0.0, Pynx=0.0, Pyny=0.0, Pynz=0.0, Pznx=0.0, Pzny=0.0, Pznz=0.0;
+                double mxnx=0.0, mxny=0.0, mxnz=0.0, mynx=0.0, myny=0.0, mynz=0.0, mznx=0.0, mzny=0.0, mznz=0.0;
+                size_t delta = 0L;
+                for (int p = oP; p < oP+nP; p++) {
+                    for (int m = oM; m < oM+nM; m++) {
+                        for (int n = oN; n < oN+nN; n++) {
+                            double Cpmn = 2.0 * dp[p] * Dtp[m][n];
+                            PxPx += Cpmn * buffer[9  * stride + delta];
+                            PxPy += Cpmn * buffer[10 * stride + delta];
+                            PxPz += Cpmn * buffer[11 * stride + delta];
+                            Pxmx += Cpmn * buffer[12 * stride + delta];
+                            Pxmy += Cpmn * buffer[13 * stride + delta];
+                            Pxmz += Cpmn * buffer[14 * stride + delta];
+                            Pxnx += Cpmn * buffer[15 * stride + delta];
+                            Pxny += Cpmn * buffer[16 * stride + delta];
+                            Pxnz += Cpmn * buffer[17 * stride + delta];
+                            PyPy += Cpmn * buffer[18 * stride + delta];
+                            PyPz += Cpmn * buffer[19 * stride + delta];
+                            Pymx += Cpmn * buffer[20 * stride + delta];
+                            Pymy += Cpmn * buffer[21 * stride + delta];
+                            Pymz += Cpmn * buffer[22 * stride + delta];
+                            Pynx += Cpmn * buffer[23 * stride + delta];
+                            Pyny += Cpmn * buffer[24 * stride + delta];
+                            Pynz += Cpmn * buffer[25 * stride + delta];
+                            PzPz += Cpmn * buffer[26 * stride + delta];
+                            Pzmx += Cpmn * buffer[27 * stride + delta];
+                            Pzmy += Cpmn * buffer[28 * stride + delta];
+                            Pzmz += Cpmn * buffer[29 * stride + delta];
+                            Pznx += Cpmn * buffer[30 * stride + delta];
+                            Pzny += Cpmn * buffer[31 * stride + delta];
+                            Pznz += Cpmn * buffer[32 * stride + delta];
+                            mxmx += Cpmn * buffer[33 * stride + delta];
+                            mxmy += Cpmn * buffer[34 * stride + delta];
+                            mxmz += Cpmn * buffer[35 * stride + delta];
+                            mxnx += Cpmn * buffer[36 * stride + delta];
+                            mxny += Cpmn * buffer[37 * stride + delta];
+                            mxnz += Cpmn * buffer[38 * stride + delta];
+                            mymy += Cpmn * buffer[39 * stride + delta];
+                            mymz += Cpmn * buffer[40 * stride + delta];
+                            mynx += Cpmn * buffer[41 * stride + delta];
+                            myny += Cpmn * buffer[42 * stride + delta];
+                            mynz += Cpmn * buffer[43 * stride + delta];
+                            mzmz += Cpmn * buffer[44 * stride + delta];
+                            mznx += Cpmn * buffer[45 * stride + delta];
+                            mzny += Cpmn * buffer[46 * stride + delta];
+                            mznz += Cpmn * buffer[47 * stride + delta];
+                            nxnx += Cpmn * buffer[48 * stride + delta];
+                            nxny += Cpmn * buffer[49 * stride + delta];
+                            nxnz += Cpmn * buffer[50 * stride + delta];
+                            nyny += Cpmn * buffer[51 * stride + delta];
+                            nynz += Cpmn * buffer[52 * stride + delta];
+                            nznz += Cpmn * buffer[53 * stride + delta];
+                            ++delta;
+                        }
+                    }
+                }
+                JHessp[Px][Px] += PxPx;
+                JHessp[Px][Py] += PxPy;
+                JHessp[Px][Pz] += PxPz;
+                JHessp[Px][mx] += Pmscale*Pxmx;
+                JHessp[Px][my] += Pxmy;
+                JHessp[Px][mz] += Pxmz;
+                JHessp[Px][nx] += Pnscale*Pxnx;
+                JHessp[Px][ny] += Pxny;
+                JHessp[Px][nz] += Pxnz;
+                JHessp[Py][Py] += PyPy;
+                JHessp[Py][Pz] += PyPz;
+                JHessp[Py][mx] += Pymx;
+                JHessp[Py][my] += Pmscale*Pymy;
+                JHessp[Py][mz] += Pymz;
+                JHessp[Py][nx] += Pynx;
+                JHessp[Py][ny] += Pnscale*Pyny;
+                JHessp[Py][nz] += Pynz;
+                JHessp[Pz][Pz] += PzPz;
+                JHessp[Pz][mx] += Pzmx;
+                JHessp[Pz][my] += Pzmy;
+                JHessp[Pz][mz] += Pmscale*Pzmz;
+                JHessp[Pz][nx] += Pznx;
+                JHessp[Pz][ny] += Pzny;
+                JHessp[Pz][nz] += Pnscale*Pznz;
+                JHessp[mx][mx] += mxmx;
+                JHessp[mx][my] += mxmy;
+                JHessp[mx][mz] += mxmz;
+                JHessp[mx][nx] += mnscale*mxnx;
+                JHessp[mx][ny] += mxny;
+                JHessp[mx][nz] += mxnz;
+                JHessp[my][my] += mymy;
+                JHessp[my][mz] += mymz;
+                JHessp[my][nx] += mynx;
+                JHessp[my][ny] += mnscale*myny;
+                JHessp[my][nz] += mynz;
+                JHessp[mz][mz] += mzmz;
+                JHessp[mz][nx] += mznx;
+                JHessp[mz][ny] += mzny;
+                JHessp[mz][nz] += mnscale*mznz;
+                JHessp[nx][nx] += nxnx;
+                JHessp[nx][ny] += nxny;
+                JHessp[nx][nz] += nxnz;
+                JHessp[ny][ny] += nyny;
+                JHessp[ny][nz] += nynz;
+                JHessp[nz][nz] += nznz;
+
+
+                // K terms
+                PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
+                mxmx=0.0; mxmy=0.0; mxmz=0.0; mymy=0.0; mymz=0.0; mzmz=0.0;
+                nxnx=0.0; nxny=0.0; nxnz=0.0; nyny=0.0; nynz=0.0; nznz=0.0;
+                Pxmx=0.0; Pxmy=0.0; Pxmz=0.0; Pymx=0.0; Pymy=0.0; Pymz=0.0; Pzmx=0.0; Pzmy=0.0; Pzmz=0.0;
+                Pxnx=0.0; Pxny=0.0; Pxnz=0.0; Pynx=0.0; Pyny=0.0; Pynz=0.0; Pznx=0.0; Pzny=0.0; Pznz=0.0;
+                mxnx=0.0; mxny=0.0; mxnz=0.0; mynx=0.0; myny=0.0; mynz=0.0; mznx=0.0; mzny=0.0; mznz=0.0;
+                delta = 0L;
+                for (int p = oP; p < oP+nP; p++) {
+                    for (int m = oM; m < oM+nM; m++) {
+                        for (int n = oN; n < oN+nN; n++) {
+                            double Cpmn = 2.0 * Bmnp[p][m*nso+n];
+                            PxPx += Cpmn * buffer[9  * stride + delta];
+                            PxPy += Cpmn * buffer[10 * stride + delta];
+                            PxPz += Cpmn * buffer[11 * stride + delta];
+                            Pxmx += Cpmn * buffer[12 * stride + delta];
+                            Pxmy += Cpmn * buffer[13 * stride + delta];
+                            Pxmz += Cpmn * buffer[14 * stride + delta];
+                            Pxnx += Cpmn * buffer[15 * stride + delta];
+                            Pxny += Cpmn * buffer[16 * stride + delta];
+                            Pxnz += Cpmn * buffer[17 * stride + delta];
+                            PyPy += Cpmn * buffer[18 * stride + delta];
+                            PyPz += Cpmn * buffer[19 * stride + delta];
+                            Pymx += Cpmn * buffer[20 * stride + delta];
+                            Pymy += Cpmn * buffer[21 * stride + delta];
+                            Pymz += Cpmn * buffer[22 * stride + delta];
+                            Pynx += Cpmn * buffer[23 * stride + delta];
+                            Pyny += Cpmn * buffer[24 * stride + delta];
+                            Pynz += Cpmn * buffer[25 * stride + delta];
+                            PzPz += Cpmn * buffer[26 * stride + delta];
+                            Pzmx += Cpmn * buffer[27 * stride + delta];
+                            Pzmy += Cpmn * buffer[28 * stride + delta];
+                            Pzmz += Cpmn * buffer[29 * stride + delta];
+                            Pznx += Cpmn * buffer[30 * stride + delta];
+                            Pzny += Cpmn * buffer[31 * stride + delta];
+                            Pznz += Cpmn * buffer[32 * stride + delta];
+                            mxmx += Cpmn * buffer[33 * stride + delta];
+                            mxmy += Cpmn * buffer[34 * stride + delta];
+                            mxmz += Cpmn * buffer[35 * stride + delta];
+                            mxnx += Cpmn * buffer[36 * stride + delta];
+                            mxny += Cpmn * buffer[37 * stride + delta];
+                            mxnz += Cpmn * buffer[38 * stride + delta];
+                            mymy += Cpmn * buffer[39 * stride + delta];
+                            mymz += Cpmn * buffer[40 * stride + delta];
+                            mynx += Cpmn * buffer[41 * stride + delta];
+                            myny += Cpmn * buffer[42 * stride + delta];
+                            mynz += Cpmn * buffer[43 * stride + delta];
+                            mzmz += Cpmn * buffer[44 * stride + delta];
+                            mznx += Cpmn * buffer[45 * stride + delta];
+                            mzny += Cpmn * buffer[46 * stride + delta];
+                            mznz += Cpmn * buffer[47 * stride + delta];
+                            nxnx += Cpmn * buffer[48 * stride + delta];
+                            nxny += Cpmn * buffer[49 * stride + delta];
+                            nxnz += Cpmn * buffer[50 * stride + delta];
+                            nyny += Cpmn * buffer[51 * stride + delta];
+                            nynz += Cpmn * buffer[52 * stride + delta];
+                            nznz += Cpmn * buffer[53 * stride + delta];
+                            ++delta;
+                        }
+                    }
+                }
+                KHessp[Px][Px] += PxPx;
+                KHessp[Px][Py] += PxPy;
+                KHessp[Px][Pz] += PxPz;
+                KHessp[Px][mx] += Pmscale*Pxmx;
+                KHessp[Px][my] += Pxmy;
+                KHessp[Px][mz] += Pxmz;
+                KHessp[Px][nx] += Pnscale*Pxnx;
+                KHessp[Px][ny] += Pxny;
+                KHessp[Px][nz] += Pxnz;
+                KHessp[Py][Py] += PyPy;
+                KHessp[Py][Pz] += PyPz;
+                KHessp[Py][mx] += Pymx;
+                KHessp[Py][my] += Pmscale*Pymy;
+                KHessp[Py][mz] += Pymz;
+                KHessp[Py][nx] += Pynx;
+                KHessp[Py][ny] += Pnscale*Pyny;
+                KHessp[Py][nz] += Pynz;
+                KHessp[Pz][Pz] += PzPz;
+                KHessp[Pz][mx] += Pzmx;
+                KHessp[Pz][my] += Pzmy;
+                KHessp[Pz][mz] += Pmscale*Pzmz;
+                KHessp[Pz][nx] += Pznx;
+                KHessp[Pz][ny] += Pzny;
+                KHessp[Pz][nz] += Pnscale*Pznz;
+                KHessp[mx][mx] += mxmx;
+                KHessp[mx][my] += mxmy;
+                KHessp[mx][mz] += mxmz;
+                KHessp[mx][nx] += mnscale*mxnx;
+                KHessp[mx][ny] += mxny;
+                KHessp[mx][nz] += mxnz;
+                KHessp[my][my] += mymy;
+                KHessp[my][mz] += mymz;
+                KHessp[my][nx] += mynx;
+                KHessp[my][ny] += mnscale*myny;
+                KHessp[my][nz] += mynz;
+                KHessp[mz][mz] += mzmz;
+                KHessp[mz][nx] += mznx;
+                KHessp[mz][ny] += mzny;
+                KHessp[mz][nz] += mnscale*mznz;
+                KHessp[nx][nx] += nxnx;
+                KHessp[nx][ny] += nxny;
+                KHessp[nx][nz] += nxnz;
+                KHessp[ny][ny] += nyny;
+                KHessp[ny][nz] += nynz;
+                KHessp[nz][nz] += nznz;
+            }
+
+        }
+    }
+
+    for (int P = 0; P < nauxshell; ++P){
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
+        int Pcenter = auxiliary_->shell(P).ncenter();
+        int Pncart = auxiliary_->shell(P).ncartesian();
+        int Px = 3 * Pcenter + 0;
+        int Py = 3 * Pcenter + 1;
+        int Pz = 3 * Pcenter + 2;
+        for(int Q = 0; Q < nauxshell; ++Q){
+            int nQ = auxiliary_->shell(Q).nfunction();
+            int oQ = auxiliary_->shell(Q).function_index();
+            int Qcenter = auxiliary_->shell(Q).ncenter();
+            int Qncart = auxiliary_->shell(Q).ncartesian();
+            int Qx = 3 * Qcenter + 0;
+            int Qy = 3 * Qcenter + 1;
+            int Qz = 3 * Qcenter + 2;
+
+            size_t stride = Pncart * Qncart;
+
+            PQint->compute_shell_deriv2(P,0,Q,0);
+            const double* buffer = PQint->buffer();
+
+            double PQscale = Pcenter == Qcenter ? 2.0 : 1.0;
+
+            double PxPx=0.0, PxPy=0.0, PxPz=0.0, PyPy=0.0, PyPz=0.0, PzPz=0.0;
+            double QxQx=0.0, QxQy=0.0, QxQz=0.0, QyQy=0.0, QyQz=0.0, QzQz=0.0;
+            double PxQx=0.0, PxQy=0.0, PxQz=0.0, PyQx=0.0, PyQy=0.0, PyQz=0.0, PzQx=0.0, PzQy=0.0, PzQz=0.0;
+            size_t delta = 0L;
+            for (int p = oP; p < oP+nP; p++) {
+                for (int q = oQ; q < oQ+nQ; q++) {
+                    double dAdB = -dp[p]*dp[q];
+                    PxPx += dAdB * buffer[9  * stride + delta];
+                    PxPy += dAdB * buffer[10 * stride + delta];
+                    PxPz += dAdB * buffer[11 * stride + delta];
+                    PxQx += dAdB * buffer[12 * stride + delta];
+                    PxQy += dAdB * buffer[13 * stride + delta];
+                    PxQz += dAdB * buffer[14 * stride + delta];
+                    PyPy += dAdB * buffer[18 * stride + delta];
+                    PyPz += dAdB * buffer[19 * stride + delta];
+                    PyQx += dAdB * buffer[20 * stride + delta];
+                    PyQy += dAdB * buffer[21 * stride + delta];
+                    PyQz += dAdB * buffer[22 * stride + delta];
+                    PzPz += dAdB * buffer[26 * stride + delta];
+                    PzQx += dAdB * buffer[27 * stride + delta];
+                    PzQy += dAdB * buffer[28 * stride + delta];
+                    PzQz += dAdB * buffer[29 * stride + delta];
+                    QxQx += dAdB * buffer[33 * stride + delta];
+                    QxQy += dAdB * buffer[34 * stride + delta];
+                    QxQz += dAdB * buffer[35 * stride + delta];
+                    QyQy += dAdB * buffer[39 * stride + delta];
+                    QyQz += dAdB * buffer[40 * stride + delta];
+                    QzQz += dAdB * buffer[44 * stride + delta];
+                    ++delta;
+                }
+
+            }
+            JHessp[Px][Px] += PxPx;
+            JHessp[Px][Py] += PxPy;
+            JHessp[Px][Pz] += PxPz;
+            JHessp[Px][Qx] += PQscale*PxQx;
+            JHessp[Px][Qy] += PxQy;
+            JHessp[Px][Qz] += PxQz;
+            JHessp[Py][Py] += PyPy;
+            JHessp[Py][Pz] += PyPz;
+            JHessp[Py][Qx] += PyQx;
+            JHessp[Py][Qy] += PQscale*PyQy;
+            JHessp[Py][Qz] += PyQz;
+            JHessp[Pz][Pz] += PzPz;
+            JHessp[Pz][Qx] += PzQx;
+            JHessp[Pz][Qy] += PzQy;
+            JHessp[Pz][Qz] += PQscale*PzQz;
+            JHessp[Qx][Qx] += QxQx;
+            JHessp[Qx][Qy] += QxQy;
+            JHessp[Qx][Qz] += QxQz;
+            JHessp[Qy][Qy] += QyQy;
+            JHessp[Qy][Qz] += QyQz;
+            JHessp[Qz][Qz] += QzQz;
+
+            // K terms
+            PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
+            QxQx=0.0; QxQy=0.0; QxQz=0.0; QyQy=0.0; QyQz=0.0; QzQz=0.0;
+            PxQx=0.0; PxQy=0.0; PxQz=0.0; PyQx=0.0; PyQy=0.0; PyQz=0.0; PzQx=0.0; PzQy=0.0; PzQz=0.0;
+            delta = 0L;
+            for (int p = oP; p < oP+nP; p++) {
+                for (int q = oQ; q < oQ+nQ; q++) {
+                    double dAdB = -DPQp[p][q];
+                    PxPx += dAdB * buffer[9  * stride + delta];
+                    PxPy += dAdB * buffer[10 * stride + delta];
+                    PxPz += dAdB * buffer[11 * stride + delta];
+                    PxQx += dAdB * buffer[12 * stride + delta];
+                    PxQy += dAdB * buffer[13 * stride + delta];
+                    PxQz += dAdB * buffer[14 * stride + delta];
+                    PyPy += dAdB * buffer[18 * stride + delta];
+                    PyPz += dAdB * buffer[19 * stride + delta];
+                    PyQx += dAdB * buffer[20 * stride + delta];
+                    PyQy += dAdB * buffer[21 * stride + delta];
+                    PyQz += dAdB * buffer[22 * stride + delta];
+                    PzPz += dAdB * buffer[26 * stride + delta];
+                    PzQx += dAdB * buffer[27 * stride + delta];
+                    PzQy += dAdB * buffer[28 * stride + delta];
+                    PzQz += dAdB * buffer[29 * stride + delta];
+                    QxQx += dAdB * buffer[33 * stride + delta];
+                    QxQy += dAdB * buffer[34 * stride + delta];
+                    QxQz += dAdB * buffer[35 * stride + delta];
+                    QyQy += dAdB * buffer[39 * stride + delta];
+                    QyQz += dAdB * buffer[40 * stride + delta];
+                    QzQz += dAdB * buffer[44 * stride + delta];
+                    ++delta;
+                }
+
+            }
+            KHessp[Px][Px] += PxPx;
+            KHessp[Px][Py] += PxPy;
+            KHessp[Px][Pz] += PxPz;
+            KHessp[Px][Qx] += PQscale*PxQx;
+            KHessp[Px][Qy] += PxQy;
+            KHessp[Px][Qz] += PxQz;
+            KHessp[Py][Py] += PyPy;
+            KHessp[Py][Pz] += PyPz;
+            KHessp[Py][Qx] += PyQx;
+            KHessp[Py][Qy] += PQscale*PyQy;
+            KHessp[Py][Qz] += PyQz;
+            KHessp[Pz][Pz] += PzPz;
+            KHessp[Pz][Qx] += PzQx;
+            KHessp[Pz][Qy] += PzQy;
+            KHessp[Pz][Qz] += PQscale*PzQz;
+            KHessp[Qx][Qx] += QxQx;
+            KHessp[Qx][Qy] += QxQy;
+            KHessp[Qx][Qz] += QxQz;
+            KHessp[Qy][Qy] += QyQy;
+            KHessp[Qy][Qz] += QyQz;
+            KHessp[Qz][Qz] += QzQz;
+
+        }
+    }
+
+
+    // Add permutational symmetry components missing from the above
+    for(int i = 0; i < 3*natoms; ++i){
+        for(int j = 0; j < i; ++j){
+            JHessp[i][j] = JHessp[j][i] = (JHessp[i][j] + JHessp[j][i]);
+            KHessp[i][j] = KHessp[j][i] = (KHessp[i][j] + KHessp[j][i]);
+        }
+    }
+
+
+    // Stitch all the intermediates together to form the actual Hessian contributions
+    SharedMatrix tmp(new Matrix("Tmp [P][i,j]", np, na*na));
+    double **ptmp = tmp->pointer();
+
+    for(int x = 0; x < 3*natoms; ++x){
+        for(int y = 0; y < 3*natoms; ++y){
+            // J terms
+            JHessp[x][y] += 2.0*C_DDOT(np, ddp[x], 1, dcp[y], 1);
+            JHessp[x][y] -= 4.0*C_DDOT(np, ddp[x], 1, dep[y], 1);
+            C_DGEMV('n', np, np, 1.0, PQp[0], np, dep[y], 1, 0.0, ptmp[0], 1);
+            JHessp[x][y] += 2.0*C_DDOT(np, dep[x], 1, ptmp[0], 1);
+
+            // K terms
+            C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, dAijp[y], na*na, 0.0, ptmp[0], na*na);
+            KHessp[x][y] += 2.0*C_DDOT(np*na*na, dAijp[x], 1, ptmp[0], 1);
+            C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, deijp[y], na*na, 0.0, ptmp[0], na*na);
+            KHessp[x][y] -= 4.0*C_DDOT(np*na*na, dAijp[x], 1, ptmp[0], 1);
+            KHessp[x][y] += 2.0*C_DDOT(np*na*na, deijp[x], 1, ptmp[0], 1);
+        }
+    }
+
+    // Make sure the newly added components are symmetric
+    for(int i = 0; i < 3*natoms; ++i){
+        for(int j = 0; j < i; ++j){
+            JHessp[i][j] = JHessp[j][i] = 0.5*(JHessp[i][j] + JHessp[j][i]);
+            KHessp[i][j] = KHessp[j][i] = 0.5*(KHessp[i][j] + KHessp[j][i]);
+        }
+    }
+
+    hessians_["Coulomb"]->scale(0.5);
 }
 
 DirectJKGrad::DirectJKGrad(int deriv, boost::shared_ptr<BasisSet> primary) :

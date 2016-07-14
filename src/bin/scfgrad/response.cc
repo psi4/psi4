@@ -37,8 +37,10 @@
 #include <psifiles.h>
 #include "libmints/sieve.h"
 #include "libmints/view.h"
+#include "libmints/cdsalclist.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
+#include "lib3index/dftensor.h"
 
 
 #include <algorithm>
@@ -69,7 +71,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     boost::shared_ptr<Matrix> Cocc = Ca_subset("AO","OCC");
     boost::shared_ptr<Matrix> Cvir = Ca_subset("AO","VIR");
     boost::shared_ptr<Matrix> Dt = Da_subset("AO");
-    double** Dtp = Dt->pointer();
+    double** Dap = Dt->pointer();
 
     double** Cp  = C->pointer();
     double** Cop = Cocc->pointer();
@@ -421,8 +423,6 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         size_t max_a = memory / (3L * nso * nso);
         max_a = (max_a > 3 * natom ? 3 * natom : max_a);
 
-        boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
-
         int natom = basisset_->molecule()->natom();
 
         std::vector<SharedMatrix> dGmats;
@@ -440,275 +440,620 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
         next_Gpi = PSIO_ZERO;
 
-        boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
+        if(options_.get_str("SCF_TYPE") == "DF"){
+            /*
+             *  The DF algorithm
+             */
+            boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
+                                                                                      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
+                                                                                      "JKFIT", options_.get_str("BASIS"));
 
+            boost::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
+            boost::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+            boost::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
+            boost::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+            int np = auxiliary_->nbf();
+            int nso = basisset_->nbf();
+            int nauxshell = auxiliary_->nshell();
+            int nshell = basisset_->nshell();
+            int maxp = auxiliary_->max_function_per_shell();
 
-        const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
-        size_t npairs = shell_pairs.size();
-        size_t npairs2 = npairs * npairs;
+            SharedMatrix Amn(new Matrix("(A|mn)", np, nso*nso));
+            SharedMatrix Ami(new Matrix("(A|mi)", np, nso*nocc));
+            SharedMatrix Aij(new Matrix("(A|ij)", np, nocc*nocc));
+            SharedMatrix Bmn(new Matrix("Minv[B][A] (A|mn)", np, nso*nso));
+            SharedMatrix Tmn(new Matrix("Tmn", np, nso*nso));
+            SharedMatrix TempP(new Matrix("Temp[P]", 9, maxp));
+            SharedMatrix TempPmn(new Matrix("Temp[P][mn]", maxp, nso*nso));
+            SharedVector c(new Vector("c[A] = (mn|A) D[m][n]", np));
+            SharedVector d(new Vector("d[A] = Minv[A][B] C[B]", np));
+            double **Amnp = Amn->pointer();
+            double **Amip = Ami->pointer();
+            double **Aijp = Aij->pointer();
+            double **Bmnp = Bmn->pointer();
+            double **pTmn = Tmn->pointer();
+            double **pTempP = TempP->pointer();
+            double **pTmpPmn = TempPmn->pointer();
+            double *cp = c->pointer();
+            double *dp = d->pointer();
 
+            // This probably shouldn't be recomputed here; we already needed it to get the
+            // second derivative integrals.  One fine day, this should be refactored.
+            boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+            metric->form_full_eig_inverse();
+            SharedMatrix PQ = metric->get_metric();
+            double** PQp = PQ->pointer();
 
-        const double* buffer = ints->buffer();
+            // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
+            // so we should make better use of those intermediates between the second derivative integrals and these
+            // first derivative terms needed for the Fock matrix derivatives.
+            for (int P = 0; P < nauxshell; ++P){
+                int nP = auxiliary_->shell(P).nfunction();
+                int oP = auxiliary_->shell(P).function_index();
+                for(int M = 0; M < nshell; ++M){
+                    int nM = basisset_->shell(M).nfunction();
+                    int oM = basisset_->shell(M).function_index();
+                    for(int N = 0; N < nshell; ++N){
+                        int nN = basisset_->shell(N).nfunction();
+                        int oN = basisset_->shell(N).function_index();
 
-        for (int A = 0; A < 3 * natom; A+=max_a) {
-            int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
+                        Pmnint->compute_shell(P,0,M,N);
+                        const double* buffer = Pmnint->buffer();
 
-            // Keep track of which centers are loaded into memory, so we know when to skip
-            std::fill(pert_incore.begin(), pert_incore.end(), false);
-            std::fill(pdG.begin(), pdG.end(), (double**)NULL);
-            for (int a = 0; a < nA; a++){
-                pert_incore[floor((A+a)/3.0)] = true;
-                pdG[A+a] = dGmats[a]->pointer();
-                dGmats[a]->zero();
-            }
-
-            for (size_t index = 0L; index < npairs2; index++) {
-
-                size_t PQ = index / npairs;
-                size_t RS = index % npairs;
-
-                if (RS > PQ) continue;
-
-                int P = shell_pairs[PQ].first;
-                int Q = shell_pairs[PQ].second;
-                int R = shell_pairs[RS].first;
-                int S = shell_pairs[RS].second;
-
-                if (!sieve->shell_significant(P,Q,R,S)) continue;
-
-                int Pcenter = basisset_->shell(P).ncenter();
-                int Qcenter = basisset_->shell(Q).ncenter();
-                int Rcenter = basisset_->shell(R).ncenter();
-                int Scenter = basisset_->shell(S).ncenter();
-                if(!pert_incore[Pcenter] &&
-                        !pert_incore[Qcenter] &&
-                        !pert_incore[Rcenter] &&
-                        !pert_incore[Scenter])
-                    continue;
-
-                int am1 = basisset_->shell(P).am();
-                int am2 = basisset_->shell(Q).am();
-                int am3 = basisset_->shell(R).am();
-                int am4 = basisset_->shell(S).am();
-
-                // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
-                if (am1 < am2){
-                    boost::swap(P,Q);
-                    boost::swap(Pcenter,Qcenter);
-                }
-                if (am3 < am4){
-                    boost::swap(R,S);
-                    boost::swap(Rcenter,Scenter);
-                }
-                if( (am1 + am2) > (am3 + am4) ){
-                    boost::swap(P,R);
-                    boost::swap(Q,S);
-                    boost::swap(Pcenter,Rcenter);
-                    boost::swap(Qcenter,Scenter);
-                }
-
-                ints->compute_shell_deriv1(P,Q,R,S);
-
-                const int Psize = basisset_->shell(P).nfunction();
-                const int Qsize = basisset_->shell(Q).nfunction();
-                const int Rsize = basisset_->shell(R).nfunction();
-                const int Ssize = basisset_->shell(S).nfunction();
-
-                const int Pncart = basisset_->shell(P).ncartesian();
-                const int Qncart = basisset_->shell(Q).ncartesian();
-                const int Rncart = basisset_->shell(R).ncartesian();
-                const int Sncart = basisset_->shell(S).ncartesian();
-
-                const int Poff = basisset_->shell(P).function_index();
-                const int Qoff = basisset_->shell(Q).function_index();
-                const int Roff = basisset_->shell(R).function_index();
-                const int Soff = basisset_->shell(S).function_index();
-
-
-                double prefactor = 1.0;
-                if (P != Q)   prefactor *= 2.0;
-                if (R != S)   prefactor *= 2.0;
-                if (PQ != RS) prefactor *= 2.0;
-
-                size_t stride = Pncart * Qncart * Rncart * Sncart;
-
-                double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
-                size_t delta;
-                double Ax, Ay, Az;
-                double Bx, By, Bz;
-                double Cx, Cy, Cz;
-                double Dx, Dy, Dz;
-
-                // => Coulomb Term <= //
-
-                Ax = 0.0; Ay = 0.0; Az = 0.0;
-                Bx = 0.0; By = 0.0; Bz = 0.0;
-                Cx = 0.0; Cy = 0.0; Cz = 0.0;
-                Dx = 0.0; Dy = 0.0; Dz = 0.0;
-                delta = 0L;
-                for (int p = Poff; p < Poff+Psize; p++) {
-                    for (int q = Qoff; q < Qoff+Qsize; q++) {
-                        for (int r = Roff; r < Roff+Rsize; r++) {
-                            for (int s = Soff; s < Soff+Ssize; s++) {
-                                Dpq = Dtp[p][q];
-                                Drs = Dtp[r][s];
-                                Ax = prefactor * buffer[0 * stride + delta];
-                                Ay = prefactor * buffer[1 * stride + delta];
-                                Az = prefactor * buffer[2 * stride + delta];
-                                Cx = prefactor * buffer[3 * stride + delta];
-                                Cy = prefactor * buffer[4 * stride + delta];
-                                Cz = prefactor * buffer[5 * stride + delta];
-                                Dx = prefactor * buffer[6 * stride + delta];
-                                Dy = prefactor * buffer[7 * stride + delta];
-                                Dz = prefactor * buffer[8 * stride + delta];
-                                Bx = -(Ax + Cx + Dx);
-                                By = -(Ay + Cy + Dy);
-                                Bz = -(Az + Cz + Dz);
-
-                                if(pert_incore[Pcenter]){
-                                    pdG[Pcenter*3+0][p][q] += Ax * Drs;
-                                    pdG[Pcenter*3+0][r][s] += Ax * Dpq;
-                                    pdG[Pcenter*3+1][p][q] += Ay * Drs;
-                                    pdG[Pcenter*3+1][r][s] += Ay * Dpq;
-                                    pdG[Pcenter*3+2][p][q] += Az * Drs;
-                                    pdG[Pcenter*3+2][r][s] += Az * Dpq;
+                        for (int p = oP; p < oP+nP; p++) {
+                            for (int m = oM; m < oM+nM; m++) {
+                                for (int n = oN; n < oN+nN; n++) {
+                                    Amnp[p][m*nso+n] += (*buffer++);
                                 }
-                                if(pert_incore[Qcenter]){
-                                    pdG[Qcenter*3+0][p][q] += Bx * Drs;
-                                    pdG[Qcenter*3+0][r][s] += Bx * Dpq;
-                                    pdG[Qcenter*3+1][p][q] += By * Drs;
-                                    pdG[Qcenter*3+1][r][s] += By * Dpq;
-                                    pdG[Qcenter*3+2][p][q] += Bz * Drs;
-                                    pdG[Qcenter*3+2][r][s] += Bz * Dpq;
-                                }
-                                if(pert_incore[Rcenter]){
-                                    pdG[Rcenter*3+0][p][q] += Cx * Drs;
-                                    pdG[Rcenter*3+0][r][s] += Cx * Dpq;
-                                    pdG[Rcenter*3+1][p][q] += Cy * Drs;
-                                    pdG[Rcenter*3+1][r][s] += Cy * Dpq;
-                                    pdG[Rcenter*3+2][p][q] += Cz * Drs;
-                                    pdG[Rcenter*3+2][r][s] += Cz * Dpq;
-                                }
-                                if(pert_incore[Scenter]){
-                                    pdG[Scenter*3+0][p][q] += Dx * Drs;
-                                    pdG[Scenter*3+0][r][s] += Dx * Dpq;
-                                    pdG[Scenter*3+1][p][q] += Dy * Drs;
-                                    pdG[Scenter*3+1][r][s] += Dy * Dpq;
-                                    pdG[Scenter*3+2][p][q] += Dz * Drs;
-                                    pdG[Scenter*3+2][r][s] += Dz * Dpq;
-                                }
-                                delta++;
                             }
+                        }
+                        // c[A] = (A|mn) D[m][n]
+                        C_DGEMV('N', np, nso*(ULI)nso, 1.0, Amnp[0], nso*(ULI)nso, Dap[0], 1, 0.0, cp, 1);
+                        // (A|mj) = (A|mn) C[n][j]
+                        C_DGEMM('N','N',np*(ULI)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
+                        // (A|ij) = (A|mj) C[m][i]
+                        #pragma omp parallel for
+                        for (int p = 0; p < np; p++) {
+                            C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (ULI) nocc * nocc],nocc);
+                        }
+
+                    }
+                }
+            }
+            // d[A] = Minv[A][B] c[B]  (factor of 2, to account for RHF)
+            C_DGEMV('n', np, np, 2.0, PQp[0], np, cp, 1, 0.0, dp, 1);
+
+            // B[B][m,n] = Minv[A][B] (A|mn)
+            C_DGEMM('n','n', np, nso*nso, np, 1.0, PQp[0], np, Amnp[0], nso*nso, 0.0, Bmnp[0], nso*nso);
+
+            // T[p][m,n] = B[p][r,n] D[m,r]
+#pragma omp parallel for
+            for(int p = 0; p < np; ++p)
+                C_DGEMM('t', 'n', nso, nso, nso, 1.0, Dap[0], nso, Bmnp[p], nso, 0.0, pTmn[p], nso);
+
+
+            for (int A = 0; A < 3 * natom; A+=max_a) {
+                int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
+
+                // Keep track of which centers are loaded into memory, so we know when to skip
+                std::fill(pert_incore.begin(), pert_incore.end(), false);
+                std::fill(pdG.begin(), pdG.end(), (double**)NULL);
+                for (int a = 0; a < nA; a++){
+                    pert_incore[floor((A+a)/3.0)] = true;
+                    pdG[A+a] = dGmats[a]->pointer();
+                    dGmats[a]->zero();
+                }
+
+                for (int P = 0; P < nauxshell; ++P){
+                    int nP = auxiliary_->shell(P).nfunction();
+                    int oP = auxiliary_->shell(P).function_index();
+                    int Pcenter = auxiliary_->shell(P).ncenter();
+                    int Pncart = auxiliary_->shell(P).ncartesian();
+                    int Px = 3 * Pcenter + 0;
+                    int Py = 3 * Pcenter + 1;
+                    int Pz = 3 * Pcenter + 2;
+                    for(int Q = 0; Q < nauxshell; ++Q){
+                        int nQ = auxiliary_->shell(Q).nfunction();
+                        int oQ = auxiliary_->shell(Q).function_index();
+                        int Qcenter = auxiliary_->shell(Q).ncenter();
+                        int Qncart = auxiliary_->shell(Q).ncartesian();
+                        int Qx = 3 * Qcenter + 0;
+                        int Qy = 3 * Qcenter + 1;
+                        int Qz = 3 * Qcenter + 2;
+
+                        size_t stride = Pncart * Qncart;
+
+                        if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
+                            continue;
+
+                        PQint->compute_shell_deriv1(P,0,Q,0);
+                        const double* buffer = PQint->buffer();
+
+                        double *ptr = const_cast<double*>(buffer);
+
+                        if(pert_incore[Pcenter]){
+                            // J terms
+                            // Px
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+0*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
+                            // Py
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+1*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Py][0], 1);
+                            // Pz
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+2*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Pz][0], 1);
+
+                            // K terms
+                            // Px
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+0*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Px][0], nso);
+                            // Py
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+1*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Py][0], nso);
+                            // Pz
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+2*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Pz][0], nso);
+
+                        }
+                        if(pert_incore[Qcenter]){
+                            // J terms
+                            // Qx
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+3*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qx][0], 1);
+                            // Qy
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+4*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qy][0], 1);
+                            // Qz
+                            C_DGEMV('n', nP, nQ, 1.0, ptr+5*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                            C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qz][0], 1);
+
+                            // K terms
+                            // Qx
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+3*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qx][0], nso);
+                            // Qy
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+4*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qy][0], nso);
+                            // Qz
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+5*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, 1.0, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qz][0], nso);
+                        }
+
+                    }
+                }
+
+
+                for (int P = 0; P < nauxshell; ++P){
+                    int nP = auxiliary_->shell(P).nfunction();
+                    int oP = auxiliary_->shell(P).function_index();
+                    int Pcenter = auxiliary_->shell(P).ncenter();
+                    int Pncart = auxiliary_->shell(P).ncartesian();
+                    int Px = 3 * Pcenter + 0;
+                    int Py = 3 * Pcenter + 1;
+                    int Pz = 3 * Pcenter + 2;
+                    for(int M = 0; M < nshell; ++M){
+                        int nM = basisset_->shell(M).nfunction();
+                        int oM = basisset_->shell(M).function_index();
+                        int Mcenter = basisset_->shell(M).ncenter();
+                        int Mncart = basisset_->shell(M).ncartesian();
+                        int mx = 3 * Mcenter + 0;
+                        int my = 3 * Mcenter + 1;
+                        int mz = 3 * Mcenter + 2;
+                        for(int N = 0; N < nshell; ++N){
+                            int nN = basisset_->shell(N).nfunction();
+                            int oN = basisset_->shell(N).function_index();
+                            int Ncenter = basisset_->shell(N).ncenter();
+                            int Nncart = basisset_->shell(N).ncartesian();
+                            int nx = 3 * Ncenter + 0;
+                            int ny = 3 * Ncenter + 1;
+                            int nz = 3 * Ncenter + 2;
+
+                            size_t stride = Pncart * Mncart * Nncart;
+
+                            if(!pert_incore[Pcenter] &&
+                                    !pert_incore[Mcenter] &&
+                                    !pert_incore[Ncenter])
+                                continue;
+
+                            Pmnint->compute_shell_deriv1(P,0,M,N);
+                            const double* buffer = Pmnint->buffer();
+
+                            /*
+                             * J terms have 2 contributions:
+                             *      F^x[m][n] <- (P|mn)^x d[P]
+                             * and
+                             *      F^x[r][s] <- D[m][n] (P|mn)^x B[P][r,s]
+                             * The second term factorizes into...
+                             * ... Temp[P] = D[m][n] (P|mn)^x ...
+                             * ... and then F^x[r][s] <- Temp[P] B[P][r,s]  (factor of 2 for RHF)
+                             */
+
+                            for(int x = 0; x < 9; ++ x){
+                                size_t delta = 0L;
+                                for(int p = 0; p < nP; ++p){
+                                    double val = 0.0;
+                                    for(int m = oM; m < nM+oM; ++m){
+                                        for(int n = oN; n < nN+oN; ++n){
+                                            val += Dap[m][n] * buffer[x*stride+delta];
+                                            ++delta;
+                                        }
+                                    }
+                                    pTempP[x][p] = val;
+                                }
+                            }
+
+                            double *ptr = const_cast<double*>(buffer);
+
+                            if(pert_incore[Pcenter]){
+                                // J Terms
+                                size_t delta = 0L;
+                                for(int p = oP; p < oP+nP; ++p){
+                                    for(int m = oM; m < nM+oM; ++m){
+                                        for(int n = oN; n < nN+oN; ++n){
+                                            pdG[Px][m][n] += buffer[0*stride+delta] * dp[p];
+                                            pdG[Py][m][n] += buffer[1*stride+delta] * dp[p];
+                                            pdG[Pz][m][n] += buffer[2*stride+delta] * dp[p];
+                                            ++delta;
+                                        }
+                                    }
+                                }
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[1], 1, 1.0, pdG[Py][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[2], 1, 1.0, pdG[Pz][0], 1);
+                                // K Terms
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+0*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Px][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+1*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Py][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+2*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Pz][oN], nso);
+                            }
+                            if(pert_incore[Mcenter]){
+                                // J Terms
+                                size_t delta = 0L;
+                                for(int p = oP; p < oP+nP; ++p){
+                                    for(int m = oM; m < nM+oM; ++m){
+                                        for(int n = oN; n < nN+oN; ++n){
+                                            pdG[mx][m][n] += buffer[3*stride+delta] * dp[p];
+                                            pdG[my][m][n] += buffer[4*stride+delta] * dp[p];
+                                            pdG[mz][m][n] += buffer[5*stride+delta] * dp[p];
+                                            ++delta;
+                                        }
+                                    }
+                                }
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[3], 1, 1.0, pdG[mx][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[4], 1, 1.0, pdG[my][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[5], 1, 1.0, pdG[mz][0], 1);
+                                // K Terms
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+3*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mx][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+4*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[my][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+5*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mz][oN], nso);
+                            }
+                            if(pert_incore[Ncenter]){
+                                // J Terms
+                                size_t delta = 0L;
+                                for(int p = oP; p < oP+nP; ++p){
+                                    for(int m = oM; m < nM+oM; ++m){
+                                        for(int n = oN; n < nN+oN; ++n){
+                                            pdG[nx][m][n] += buffer[6*stride+delta] * dp[p];
+                                            pdG[ny][m][n] += buffer[7*stride+delta] * dp[p];
+                                            pdG[nz][m][n] += buffer[8*stride+delta] * dp[p];
+                                            ++delta;
+                                        }
+                                    }
+                                }
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[6], 1, 1.0, pdG[nx][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[7], 1, 1.0, pdG[ny][0], 1);
+                                C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[8], 1, 1.0, pdG[nz][0], 1);
+                                // K Terms
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+6*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nx][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+7*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[ny][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2.0, ptr+8*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nz][oN], nso);
+                            }
+
                         }
                     }
                 }
 
-                // => Exchange Term <= //
+                for(int a = 0; a < nA; ++a){
+                    // Symmetrize the derivative Fock contributions
+                    SharedMatrix G = dGmats[a];
+                    G->add(G->transpose());
+                    Gpi->transform(C, G, Cocc);
+                    Gpi->scale(0.5);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                }
 
-                Ax = 0.0; Ay = 0.0; Az = 0.0;
-                Bx = 0.0; By = 0.0; Bz = 0.0;
-                Cx = 0.0; Cy = 0.0; Cz = 0.0;
-                Dx = 0.0; Dy = 0.0; Dz = 0.0;
-                delta = 0L;
-                prefactor *= -0.25;
-                for (int p = Poff; p < Poff+Psize; p++) {
-                    for (int q = Qoff; q < Qoff+Qsize; q++) {
-                        for (int r = Roff; r < Roff+Rsize; r++) {
-                            for (int s = Soff; s < Soff+Ssize; s++) {
-                                Ax = prefactor * buffer[0 * stride + delta];
-                                Ay = prefactor * buffer[1 * stride + delta];
-                                Az = prefactor * buffer[2 * stride + delta];
-                                Cx = prefactor * buffer[3 * stride + delta];
-                                Cy = prefactor * buffer[4 * stride + delta];
-                                Cz = prefactor * buffer[5 * stride + delta];
-                                Dx = prefactor * buffer[6 * stride + delta];
-                                Dy = prefactor * buffer[7 * stride + delta];
-                                Dz = prefactor * buffer[8 * stride + delta];
-                                Bx = -(Ax + Cx + Dx);
-                                By = -(Ay + Cy + Dy);
-                                Bz = -(Az + Cz + Dz);
+            } // End loop over A batches
 
-                                Dpr = Dtp[p][r];
-                                Dqs = Dtp[q][s];
-                                Dps = Dtp[p][s];
-                                Dqr = Dtp[q][r];
-                                if(pert_incore[Pcenter]){
-                                    pdG[Pcenter*3+0][p][r] += Ax * Dqs;
-                                    pdG[Pcenter*3+0][q][s] += Ax * Dpr;
-                                    pdG[Pcenter*3+0][p][s] += Ax * Dqr;
-                                    pdG[Pcenter*3+0][q][r] += Ax * Dps;
-                                    pdG[Pcenter*3+1][p][r] += Ay * Dqs;
-                                    pdG[Pcenter*3+1][q][s] += Ay * Dpr;
-                                    pdG[Pcenter*3+1][p][s] += Ay * Dqr;
-                                    pdG[Pcenter*3+1][q][r] += Ay * Dps;
-                                    pdG[Pcenter*3+2][p][r] += Az * Dqs;
-                                    pdG[Pcenter*3+2][q][s] += Az * Dpr;
-                                    pdG[Pcenter*3+2][p][s] += Az * Dqr;
-                                    pdG[Pcenter*3+2][q][r] += Az * Dps;
+        }else{
+            /*
+             * The conventional integral algorithm
+             */
+
+            boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
+
+            boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
+
+
+            const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
+            size_t npairs = shell_pairs.size();
+            size_t npairs2 = npairs * npairs;
+
+
+            const double* buffer = ints->buffer();
+
+            for (int A = 0; A < 3 * natom; A+=max_a) {
+                int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
+
+                // Keep track of which centers are loaded into memory, so we know when to skip
+                std::fill(pert_incore.begin(), pert_incore.end(), false);
+                std::fill(pdG.begin(), pdG.end(), (double**)NULL);
+                for (int a = 0; a < nA; a++){
+                    pert_incore[floor((A+a)/3.0)] = true;
+                    pdG[A+a] = dGmats[a]->pointer();
+                    dGmats[a]->zero();
+                }
+
+                for (size_t index = 0L; index < npairs2; index++) {
+
+                    size_t PQ = index / npairs;
+                    size_t RS = index % npairs;
+
+                    if (RS > PQ) continue;
+
+                    int P = shell_pairs[PQ].first;
+                    int Q = shell_pairs[PQ].second;
+                    int R = shell_pairs[RS].first;
+                    int S = shell_pairs[RS].second;
+
+                    if (!sieve->shell_significant(P,Q,R,S)) continue;
+
+                    int Pcenter = basisset_->shell(P).ncenter();
+                    int Qcenter = basisset_->shell(Q).ncenter();
+                    int Rcenter = basisset_->shell(R).ncenter();
+                    int Scenter = basisset_->shell(S).ncenter();
+                    if(!pert_incore[Pcenter] &&
+                            !pert_incore[Qcenter] &&
+                            !pert_incore[Rcenter] &&
+                            !pert_incore[Scenter])
+                        continue;
+
+                    int am1 = basisset_->shell(P).am();
+                    int am2 = basisset_->shell(Q).am();
+                    int am3 = basisset_->shell(R).am();
+                    int am4 = basisset_->shell(S).am();
+
+                    // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
+                    if (am1 < am2){
+                        boost::swap(P,Q);
+                        boost::swap(Pcenter,Qcenter);
+                    }
+                    if (am3 < am4){
+                        boost::swap(R,S);
+                        boost::swap(Rcenter,Scenter);
+                    }
+                    if( (am1 + am2) > (am3 + am4) ){
+                        boost::swap(P,R);
+                        boost::swap(Q,S);
+                        boost::swap(Pcenter,Rcenter);
+                        boost::swap(Qcenter,Scenter);
+                    }
+
+                    ints->compute_shell_deriv1(P,Q,R,S);
+
+                    const int Psize = basisset_->shell(P).nfunction();
+                    const int Qsize = basisset_->shell(Q).nfunction();
+                    const int Rsize = basisset_->shell(R).nfunction();
+                    const int Ssize = basisset_->shell(S).nfunction();
+
+                    const int Pncart = basisset_->shell(P).ncartesian();
+                    const int Qncart = basisset_->shell(Q).ncartesian();
+                    const int Rncart = basisset_->shell(R).ncartesian();
+                    const int Sncart = basisset_->shell(S).ncartesian();
+
+                    const int Poff = basisset_->shell(P).function_index();
+                    const int Qoff = basisset_->shell(Q).function_index();
+                    const int Roff = basisset_->shell(R).function_index();
+                    const int Soff = basisset_->shell(S).function_index();
+
+
+                    double prefactor = 1.0;
+                    if (P != Q)   prefactor *= 2.0;
+                    if (R != S)   prefactor *= 2.0;
+                    if (PQ != RS) prefactor *= 2.0;
+
+                    size_t stride = Pncart * Qncart * Rncart * Sncart;
+
+                    double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
+                    size_t delta;
+                    double Ax, Ay, Az;
+                    double Bx, By, Bz;
+                    double Cx, Cy, Cz;
+                    double Dx, Dy, Dz;
+
+                    // => Coulomb Term <= //
+
+                    Ax = 0.0; Ay = 0.0; Az = 0.0;
+                    Bx = 0.0; By = 0.0; Bz = 0.0;
+                    Cx = 0.0; Cy = 0.0; Cz = 0.0;
+                    Dx = 0.0; Dy = 0.0; Dz = 0.0;
+                    delta = 0L;
+                    for (int p = Poff; p < Poff+Psize; p++) {
+                        for (int q = Qoff; q < Qoff+Qsize; q++) {
+                            for (int r = Roff; r < Roff+Rsize; r++) {
+                                for (int s = Soff; s < Soff+Ssize; s++) {
+                                    Dpq = Dap[p][q];
+                                    Drs = Dap[r][s];
+                                    Ax = prefactor * buffer[0 * stride + delta];
+                                    Ay = prefactor * buffer[1 * stride + delta];
+                                    Az = prefactor * buffer[2 * stride + delta];
+                                    Cx = prefactor * buffer[3 * stride + delta];
+                                    Cy = prefactor * buffer[4 * stride + delta];
+                                    Cz = prefactor * buffer[5 * stride + delta];
+                                    Dx = prefactor * buffer[6 * stride + delta];
+                                    Dy = prefactor * buffer[7 * stride + delta];
+                                    Dz = prefactor * buffer[8 * stride + delta];
+                                    Bx = -(Ax + Cx + Dx);
+                                    By = -(Ay + Cy + Dy);
+                                    Bz = -(Az + Cz + Dz);
+
+                                    if(pert_incore[Pcenter]){
+                                        pdG[Pcenter*3+0][p][q] += Ax * Drs;
+                                        pdG[Pcenter*3+0][r][s] += Ax * Dpq;
+                                        pdG[Pcenter*3+1][p][q] += Ay * Drs;
+                                        pdG[Pcenter*3+1][r][s] += Ay * Dpq;
+                                        pdG[Pcenter*3+2][p][q] += Az * Drs;
+                                        pdG[Pcenter*3+2][r][s] += Az * Dpq;
+                                    }
+                                    if(pert_incore[Qcenter]){
+                                        pdG[Qcenter*3+0][p][q] += Bx * Drs;
+                                        pdG[Qcenter*3+0][r][s] += Bx * Dpq;
+                                        pdG[Qcenter*3+1][p][q] += By * Drs;
+                                        pdG[Qcenter*3+1][r][s] += By * Dpq;
+                                        pdG[Qcenter*3+2][p][q] += Bz * Drs;
+                                        pdG[Qcenter*3+2][r][s] += Bz * Dpq;
+                                    }
+                                    if(pert_incore[Rcenter]){
+                                        pdG[Rcenter*3+0][p][q] += Cx * Drs;
+                                        pdG[Rcenter*3+0][r][s] += Cx * Dpq;
+                                        pdG[Rcenter*3+1][p][q] += Cy * Drs;
+                                        pdG[Rcenter*3+1][r][s] += Cy * Dpq;
+                                        pdG[Rcenter*3+2][p][q] += Cz * Drs;
+                                        pdG[Rcenter*3+2][r][s] += Cz * Dpq;
+                                    }
+                                    if(pert_incore[Scenter]){
+                                        pdG[Scenter*3+0][p][q] += Dx * Drs;
+                                        pdG[Scenter*3+0][r][s] += Dx * Dpq;
+                                        pdG[Scenter*3+1][p][q] += Dy * Drs;
+                                        pdG[Scenter*3+1][r][s] += Dy * Dpq;
+                                        pdG[Scenter*3+2][p][q] += Dz * Drs;
+                                        pdG[Scenter*3+2][r][s] += Dz * Dpq;
+                                    }
+                                    delta++;
                                 }
-                                if(pert_incore[Qcenter]){
-                                    pdG[Qcenter*3+0][p][r] += Bx * Dqs;
-                                    pdG[Qcenter*3+0][q][s] += Bx * Dpr;
-                                    pdG[Qcenter*3+0][p][s] += Bx * Dqr;
-                                    pdG[Qcenter*3+0][q][r] += Bx * Dps;
-                                    pdG[Qcenter*3+1][p][r] += By * Dqs;
-                                    pdG[Qcenter*3+1][q][s] += By * Dpr;
-                                    pdG[Qcenter*3+1][p][s] += By * Dqr;
-                                    pdG[Qcenter*3+1][q][r] += By * Dps;
-                                    pdG[Qcenter*3+2][p][r] += Bz * Dqs;
-                                    pdG[Qcenter*3+2][q][s] += Bz * Dpr;
-                                    pdG[Qcenter*3+2][p][s] += Bz * Dqr;
-                                    pdG[Qcenter*3+2][q][r] += Bz * Dps;
-                                }
-                                if(pert_incore[Rcenter]){
-                                    pdG[Rcenter*3+0][p][r] += Cx * Dqs;
-                                    pdG[Rcenter*3+0][q][s] += Cx * Dpr;
-                                    pdG[Rcenter*3+0][p][s] += Cx * Dqr;
-                                    pdG[Rcenter*3+0][q][r] += Cx * Dps;
-                                    pdG[Rcenter*3+1][p][r] += Cy * Dqs;
-                                    pdG[Rcenter*3+1][q][s] += Cy * Dpr;
-                                    pdG[Rcenter*3+1][p][s] += Cy * Dqr;
-                                    pdG[Rcenter*3+1][q][r] += Cy * Dps;
-                                    pdG[Rcenter*3+2][p][r] += Cz * Dqs;
-                                    pdG[Rcenter*3+2][q][s] += Cz * Dpr;
-                                    pdG[Rcenter*3+2][p][s] += Cz * Dqr;
-                                    pdG[Rcenter*3+2][q][r] += Cz * Dps;
-                                }
-                                if(pert_incore[Scenter]){
-                                    pdG[Scenter*3+0][p][r] += Dx * Dqs;
-                                    pdG[Scenter*3+0][q][s] += Dx * Dpr;
-                                    pdG[Scenter*3+0][p][s] += Dx * Dqr;
-                                    pdG[Scenter*3+0][q][r] += Dx * Dps;
-                                    pdG[Scenter*3+1][p][r] += Dy * Dqs;
-                                    pdG[Scenter*3+1][q][s] += Dy * Dpr;
-                                    pdG[Scenter*3+1][p][s] += Dy * Dqr;
-                                    pdG[Scenter*3+1][q][r] += Dy * Dps;
-                                    pdG[Scenter*3+2][p][r] += Dz * Dqs;
-                                    pdG[Scenter*3+2][q][s] += Dz * Dpr;
-                                    pdG[Scenter*3+2][p][s] += Dz * Dqr;
-                                    pdG[Scenter*3+2][q][r] += Dz * Dps;
-                                }
-                                delta++;
                             }
                         }
                     }
+
+                    // => Exchange Term <= //
+
+                    Ax = 0.0; Ay = 0.0; Az = 0.0;
+                    Bx = 0.0; By = 0.0; Bz = 0.0;
+                    Cx = 0.0; Cy = 0.0; Cz = 0.0;
+                    Dx = 0.0; Dy = 0.0; Dz = 0.0;
+                    delta = 0L;
+                    prefactor *= -0.25;
+                    for (int p = Poff; p < Poff+Psize; p++) {
+                        for (int q = Qoff; q < Qoff+Qsize; q++) {
+                            for (int r = Roff; r < Roff+Rsize; r++) {
+                                for (int s = Soff; s < Soff+Ssize; s++) {
+                                    Ax = prefactor * buffer[0 * stride + delta];
+                                    Ay = prefactor * buffer[1 * stride + delta];
+                                    Az = prefactor * buffer[2 * stride + delta];
+                                    Cx = prefactor * buffer[3 * stride + delta];
+                                    Cy = prefactor * buffer[4 * stride + delta];
+                                    Cz = prefactor * buffer[5 * stride + delta];
+                                    Dx = prefactor * buffer[6 * stride + delta];
+                                    Dy = prefactor * buffer[7 * stride + delta];
+                                    Dz = prefactor * buffer[8 * stride + delta];
+                                    Bx = -(Ax + Cx + Dx);
+                                    By = -(Ay + Cy + Dy);
+                                    Bz = -(Az + Cz + Dz);
+
+                                    Dpr = Dap[p][r];
+                                    Dqs = Dap[q][s];
+                                    Dps = Dap[p][s];
+                                    Dqr = Dap[q][r];
+                                    if(pert_incore[Pcenter]){
+                                        pdG[Pcenter*3+0][p][r] += Ax * Dqs;
+                                        pdG[Pcenter*3+0][q][s] += Ax * Dpr;
+                                        pdG[Pcenter*3+0][p][s] += Ax * Dqr;
+                                        pdG[Pcenter*3+0][q][r] += Ax * Dps;
+                                        pdG[Pcenter*3+1][p][r] += Ay * Dqs;
+                                        pdG[Pcenter*3+1][q][s] += Ay * Dpr;
+                                        pdG[Pcenter*3+1][p][s] += Ay * Dqr;
+                                        pdG[Pcenter*3+1][q][r] += Ay * Dps;
+                                        pdG[Pcenter*3+2][p][r] += Az * Dqs;
+                                        pdG[Pcenter*3+2][q][s] += Az * Dpr;
+                                        pdG[Pcenter*3+2][p][s] += Az * Dqr;
+                                        pdG[Pcenter*3+2][q][r] += Az * Dps;
+                                    }
+                                    if(pert_incore[Qcenter]){
+                                        pdG[Qcenter*3+0][p][r] += Bx * Dqs;
+                                        pdG[Qcenter*3+0][q][s] += Bx * Dpr;
+                                        pdG[Qcenter*3+0][p][s] += Bx * Dqr;
+                                        pdG[Qcenter*3+0][q][r] += Bx * Dps;
+                                        pdG[Qcenter*3+1][p][r] += By * Dqs;
+                                        pdG[Qcenter*3+1][q][s] += By * Dpr;
+                                        pdG[Qcenter*3+1][p][s] += By * Dqr;
+                                        pdG[Qcenter*3+1][q][r] += By * Dps;
+                                        pdG[Qcenter*3+2][p][r] += Bz * Dqs;
+                                        pdG[Qcenter*3+2][q][s] += Bz * Dpr;
+                                        pdG[Qcenter*3+2][p][s] += Bz * Dqr;
+                                        pdG[Qcenter*3+2][q][r] += Bz * Dps;
+                                    }
+                                    if(pert_incore[Rcenter]){
+                                        pdG[Rcenter*3+0][p][r] += Cx * Dqs;
+                                        pdG[Rcenter*3+0][q][s] += Cx * Dpr;
+                                        pdG[Rcenter*3+0][p][s] += Cx * Dqr;
+                                        pdG[Rcenter*3+0][q][r] += Cx * Dps;
+                                        pdG[Rcenter*3+1][p][r] += Cy * Dqs;
+                                        pdG[Rcenter*3+1][q][s] += Cy * Dpr;
+                                        pdG[Rcenter*3+1][p][s] += Cy * Dqr;
+                                        pdG[Rcenter*3+1][q][r] += Cy * Dps;
+                                        pdG[Rcenter*3+2][p][r] += Cz * Dqs;
+                                        pdG[Rcenter*3+2][q][s] += Cz * Dpr;
+                                        pdG[Rcenter*3+2][p][s] += Cz * Dqr;
+                                        pdG[Rcenter*3+2][q][r] += Cz * Dps;
+                                    }
+                                    if(pert_incore[Scenter]){
+                                        pdG[Scenter*3+0][p][r] += Dx * Dqs;
+                                        pdG[Scenter*3+0][q][s] += Dx * Dpr;
+                                        pdG[Scenter*3+0][p][s] += Dx * Dqr;
+                                        pdG[Scenter*3+0][q][r] += Dx * Dps;
+                                        pdG[Scenter*3+1][p][r] += Dy * Dqs;
+                                        pdG[Scenter*3+1][q][s] += Dy * Dpr;
+                                        pdG[Scenter*3+1][p][s] += Dy * Dqr;
+                                        pdG[Scenter*3+1][q][r] += Dy * Dps;
+                                        pdG[Scenter*3+2][p][r] += Dz * Dqs;
+                                        pdG[Scenter*3+2][q][s] += Dz * Dpr;
+                                        pdG[Scenter*3+2][p][s] += Dz * Dqr;
+                                        pdG[Scenter*3+2][q][r] += Dz * Dps;
+                                    }
+                                    delta++;
+                                }
+                            }
+                        }
+                    }
+                } // End shell loops
+
+                for(int a = 0; a < nA; ++a){
+                    // Symmetrize the derivative Fock contributions
+                    SharedMatrix G = dGmats[a];
+                    G->add(G->transpose());
+                    Gpi->transform(C, G, Cocc);
+                    Gpi->scale(0.5);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
-            } // End shell loops
+            } // End loop over A batches
 
-            for(int a = 0; a < nA; ++a){
-                // Symmetrize the derivative Fock contributions
-                SharedMatrix G = dGmats[a];
-                G->add(G->transpose());
-                Gpi->transform(C, G, Cocc);
-                Gpi->scale(0.5);
-                psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
-            }
-        } // End loop over A batches
-
+        } // End if density fitted
     }
 
     boost::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
-    jk->set_allow_desymmetrization(false);
     size_t mem = 0.9 * memory_ / 8L;
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;
@@ -716,10 +1061,88 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     jk->set_memory(mem);
     jk->initialize();
 
+
+    /*
+     * This will not trigger currently; only OUT_OF_CORE actually uses symmetry and there's a catch
+     * Py-side to make sure that doesn't get us in here.
+     */
+    bool ignore_symmetry = nirrep_ == 1 || jk->C1();
+
+    Dimension nvirpi = nmopi_ - doccpi_;
+    CdSalcList SALCList(molecule_, factory_, 0xFF, false, false);
+
+
+    /*
+     * The following quantities are only defined if symmetry is to be used
+     */
+    boost::shared_ptr<Matrix> C_so;
+    boost::shared_ptr<Matrix> Cocc_so;
+    // C1 MO -> AO (backward transformation)
+    boost::shared_ptr<Matrix> Cinvao;
+    // C1 MO -> SO (backward transformation)
+    boost::shared_ptr<Matrix> Cinvso;
+    // C1 MO -> Symmetrized MO
+    boost::shared_ptr<Matrix> Cmo2mosym;
+    // SO -> C1 MO (forward transformation)
+    boost::shared_ptr<Matrix> Cso2mofull;
+
+    // for debugging
+    // ignore_symmetry = false;
+
+    if(ignore_symmetry){
+        // This JK object uses no symmetry, so we can just pass it C1 quantities
+        jk->set_allow_desymmetrization(false);
+    }else{
+        C_so = Ca_subset("SO");
+        Cocc_so = Ca_subset("SO", "OCC");
+
+        /*
+         * We need to be able to map symmetric MOs into C1 MOs and vice-versa.  If we call C' the MOs with
+         * symmetry and C the MOs without, we can use the orthonormality to define an inverse transformation matrix
+         *
+         *      Ct S C = 1   =>   Cinv = Ct S
+         *
+         * which allows us to roll back to the SO basis and then forward transform, to get a matrix that will
+         * correctly account for the ordering of the MOs with and without symmetry.
+         */
+        boost::shared_ptr<OneBodyAOInt> aoSint(integral_->ao_overlap());
+        boost::shared_ptr<Matrix> Sao(new Matrix("Sao", nso, nso));
+        aoSint->compute(Sao);
+        double **pS = Sao->pointer();
+
+        // C1 MO -> AO (backward transformation)
+        Cinvao = boost::shared_ptr<Matrix>(new Matrix("Cinvao = Ct_ao Sao", nmo, nso));
+        C_DGEMM('T', 'N', nmo, nso, nso, 1.0, Cp[0], nmo, pS[0], nso, 0.0, Cinvao->pointer()[0], nso);
+
+        // C1 MO -> SO (backward transformation)
+        Cinvso = boost::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nsopi_));
+        for(int h = 0; h < nirrep_; ++h){
+            if(!nsopi_[h]) continue;
+            C_DGEMM('N', 'N', nmo, nsopi_[h], nso, 1.0, Cinvao->pointer()[0], nso, AO2SO_->pointer(h)[0],
+                    nsopi_[h], 0.0, Cinvso->pointer(h)[0], nsopi_[h]);
+        }
+
+        // C1 MO -> Symmetrized MO
+        Cmo2mosym = boost::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nmopi_));
+        for(int h = 0; h < nirrep_; ++h){
+            if(!doccpi_[h] || !nsopi_[h]) continue;
+            C_DGEMM('N', 'N', nmo, nmopi_[h], nsopi_[h], 1.0, Cinvso->pointer(h)[0], nsopi_[h],
+                    C_so->pointer(h)[0], nmopi_[h], 0.0, Cmo2mosym->pointer(h)[0], nmopi_[h]);
+        }
+
+        // SO -> C1 MO (forward transformation)
+        Cso2mofull = boost::shared_ptr<Matrix>(new Matrix(nirrep_, (int*)nsopi_, nmo));
+        for(int h = 0; h < nirrep_; ++h){
+            if(!nsopi_[h]) continue;
+            C_DGEMM('T', 'N', nsopi_[h], nmo, nso, 1.0, AO2SO_->pointer(h)[0],
+                    nsopi_[h], C->pointer()[0], nmo, 0.0, Cso2mofull->pointer(h)[0], nmo);
+        }
+    }
+
     // => J2pi/K2pi <= //
     {
-        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();  
-        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();  
+        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();
+        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();
         const std::vector<boost::shared_ptr<Matrix> >& J = jk->J();
         const std::vector<boost::shared_ptr<Matrix> >& K = jk->K();
         L.clear();
@@ -738,11 +1161,29 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
 
         for (int A = 0; A < max_A; A++) {
-            L.push_back(Cocc);
-            R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
+            if(ignore_symmetry){
+                // Just pass C1 quantities in; this object doesn't respect symmetry anyway
+                L.push_back(Cocc);
+                R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
+            }else{
+                // Add symmetry back into the AO index of the quantities before calling.  The MO index doesn't
+                // matter too much here; it's contracted away during formation of the D matrices.
+                L.push_back(Cocc_so);
+                // This is just a placeholder; to be replaced below
+                R.push_back(Cocc_so);
+            }
         }
 
         jk->print_header();
+
+        if(!ignore_symmetry){
+            U->zero();
+            for (int a = 0; a < 3*natom; a++) {
+                // Initialize the C1 symmetry G2 contributions to zero
+                psio_address next_Gpi = psio_get_address(PSIO_ZERO, a * (size_t) nmo * nocc * sizeof(double));
+                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+            }
+        }
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
             int nA = max_A;
@@ -752,24 +1193,92 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 R.resize(nA);
             }
             for (int a = 0; a < nA; a++) {
-                psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
-                psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
-                C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
+                if(ignore_symmetry){
+                    psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
+                    psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
+                    C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
+                }else{
+                    // Take SALCs of the C1 overlap derivatives, and add symmetry back in to the left index.
+                    // Transform the right index to SOs, analogous to the C1 treatment above.
+
+                    const CdSalc& thissalc = SALCList[a+A];
+                    int salcirrep = thissalc.irrep();
+                    R[a] = boost::shared_ptr<Matrix>(new Matrix("R", nsopi_, doccpi_, salcirrep));
+                    boost::shared_ptr<Matrix> Tmpij(new Matrix(nirrep_, nocc, (int*)doccpi_));
+                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
+                        const CdSalc::Component& salccomponent = thissalc.component(comp);
+                        int salcatom = salccomponent.atom;
+                        int salcxyz = salccomponent.xyz;
+                        double coef = salccomponent.coef;
+                        int pert = 3*salcatom + salcxyz;
+                        psio_address next_Sij= psio_get_address(PSIO_ZERO,pert * (size_t) nocc * nocc * sizeof(double));
+                        psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
+
+                        for(int h = 0; h < nirrep_; ++h){
+                            if(!doccpi_[h]) continue;
+                            C_DGEMM('N', 'N', nocc, doccpi_[h], nocc, 1.0, Sijp[0], nocc,
+                                    Cmo2mosym->pointer(h)[0], nmopi_[h], 0.0, Tmpij->pointer(h)[0], doccpi_[h]);
+                        }
+                        for(int h = 0; h < nirrep_; ++h){
+                            if(!doccpi_[h^salcirrep] || !nsopi_[h]) continue;
+                            C_DGEMM('N', 'N', nsopi_[h], doccpi_[h^salcirrep], nocc, coef, Cso2mofull->pointer(h)[0], nmo,
+                                    Tmpij->pointer(h^salcirrep)[0], doccpi_[h^salcirrep], 1.0, R[a]->pointer(h)[0], doccpi_[h^salcirrep]);
+                        }
+                    }
+                }
+
             }
 
             jk->compute();
-            for (int a = 0; a < nA; a++) {
-                // Add the 2J contribution to G
-                C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
 
-                // Subtract the K term from G
-                C_DGEMM('N','N',nso,nocc,nso,1.0,K[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
-                psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+            for (int a = 0; a < nA; a++) {
+                if(ignore_symmetry){
+                    // Add the 2J contribution to G
+                    C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
+                    C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
+
+                    // Subtract the K term from G
+                    C_DGEMM('N','N',nso,nocc,nso,1.0,K[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
+                    C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
+
+                    psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
+                    psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+                }else{
+                    const CdSalc& thissalc = SALCList[a+A];
+                    int salcirrep = thissalc.irrep();
+                    J[a]->scale(-2.0);
+                    J[a]->add(K[a]);
+
+                    // Transform from SO to C1 MO basis
+                    boost::shared_ptr<Matrix> Fmat(new Matrix("F derivative", nmo, nocc));
+                    boost::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, (int*)nsopi_, nocc));
+                    for(int h = 0; h < nirrep_; ++h){
+                        if(!nsopi_[h] || !nsopi_[h^salcirrep]) continue;
+                        C_DGEMM('N', 'N', nsopi_[h], nocc, nsopi_[h^salcirrep], 1.0, J[a]->pointer(h)[0], nsopi_[h^salcirrep],
+                                Cso2mofull->pointer(h^salcirrep)[0], nmo, 0.0, Tmpso_occ->pointer(h)[0], nocc);
+                    }
+                    for(int h = 0; h < nirrep_; ++h){
+                        if(!nsopi_[h]) continue;
+                        C_DGEMM('T', 'N', nmo, nocc, nsopi_[h], 1.0, Cso2mofull->pointer(h)[0], nmo,
+                                Tmpso_occ->pointer(h)[0], nocc, 1.0, Fmat->pointer()[0], nocc);
+                    }
+
+                    // Distribute from SALCs back to C1 Cartesian derivatives
+                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
+                        const CdSalc::Component& salccomponent = thissalc.component(comp);
+                        int salcatom = salccomponent.atom;
+                        int salcxyz = salccomponent.xyz;
+                        double coef = salccomponent.coef;
+                        int pert = 3*salcatom + salcxyz;
+                        psio_address next_Gpi = psio_get_address(PSIO_ZERO,pert * (size_t) nmo * nocc * sizeof(double));
+                        psio_->read(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+                        C_DAXPY(nmo*nocc, coef, Fmat->pointer()[0], 1, Up[0], 1);
+                        next_Gpi = psio_get_address(PSIO_ZERO,pert * (size_t) nmo * nocc * sizeof(double));
+                        psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+                    }
+                }
             }
-        } 
+        }
     }
 
     // => Fpi <= //
@@ -826,7 +1335,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         SharedWavefunction wfn(new Wavefunction(options_));
         wfn->shallow_copy(this);
                 
-        boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, false));
+        boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, !ignore_symmetry));
         cphf->set_jk(jk);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
@@ -837,6 +1346,16 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
         boost::shared_ptr<Matrix> T(new Matrix("T",nvir,nocc));
         double** Tp = T->pointer();
+
+        if(!ignore_symmetry){
+            T->zero();
+            for (int a = 0; a < 3*natom; a++) {
+                // Initialize the C1 symmetry U terms to zero
+                psio_address next_Uai = psio_get_address(PSIO_ZERO, a * (size_t) nvir * nocc * sizeof(double));
+                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
+            }
+        }
+
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
             int nA = max_A;
@@ -849,15 +1368,48 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             // Fill b
             for (int a = 0; a < nA; a++) {
-                psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                boost::shared_ptr<Matrix> B(new Matrix(ss.str(),nocc,nvir));
-                double** Bp = B->pointer();
-                for (int i = 0; i < nocc; i++) {
-                    C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
+                boost::shared_ptr<Matrix> B;
+                if(ignore_symmetry){
+                    B = boost::shared_ptr<Matrix>(new Matrix(ss.str(),nocc,nvir));
+                    psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
+                    double** Bp = B->pointer();
+                    for (int i = 0; i < nocc; i++) {
+                        C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
+                    }
+                }else{
+                    const CdSalc& thissalc = SALCList[a+A];
+                    int salcirrep = thissalc.irrep();
+                    boost::shared_ptr<Matrix> Tmpmo(new Matrix(nirrep_, nocc, (int*)nvirpi));
+                    B = boost::shared_ptr<Matrix>(new Matrix(ss.str(),doccpi_,nvirpi,salcirrep));
+                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
+                        const CdSalc::Component& salccomponent = thissalc.component(comp);
+                        int salcatom = salccomponent.atom;
+                        int salcxyz = salccomponent.xyz;
+                        double coef = salccomponent.coef;
+                        int pert = 3*salcatom + salcxyz;
+                        psio_address this_Bai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
+                        psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),this_Bai,&this_Bai);
+                        for(int h = 0; h < nirrep_; ++h){
+                            if(!nvirpi[h]) continue;
+
+                            C_DGEMM('T', 'N', nocc, nvirpi[h], nvir, 1.0, Tp[0], nocc,
+                                    &Cmo2mosym->pointer(h)[nocc][doccpi_[h]], nmopi_[h], 0.0, Tmpmo->pointer(h)[0], nvirpi[h]);
+                        }
+                        for(int h = 0; h < nirrep_; ++h){
+                            if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
+
+                            C_DGEMM('T', 'N', doccpi_[h], nvirpi[h^salcirrep], nocc, coef, Cmo2mosym->pointer(h)[0],
+                                    nmopi_[h], Tmpmo->pointer(h^salcirrep)[0], nvirpi[h^salcirrep], 1.0, B->pointer(h)[0], nvirpi[h^salcirrep]);
+                        }
+
+                    }
+
+
                 }
-                b[ss.str()] = B;    
+                //                B->print();
+                b[ss.str()] = B;
             }
 
             cphf->compute_energy();
@@ -868,11 +1420,46 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 ss << "Perturbation " << a + A;
                 boost::shared_ptr<Matrix> X = x[ss.str()]; 
                 double** Xp = X->pointer();
-                for (int i = 0; i < nocc; i++) {
-                    C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
+                if(ignore_symmetry){
+                    for (int i = 0; i < nocc; i++) {
+                        C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
+                    }
+                    psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
+                }else{
+                    // Backtransform Uai from the symmetrized SALC to the C1 Cartesian basis (ACS note: this hasn't been fully tested, but seems correct)
+                    const CdSalc& thissalc = SALCList[a+A];
+                    int salcirrep = thissalc.irrep();
+
+                    boost::shared_ptr<Matrix> Tmpmo_c1(new Matrix(nvir, nocc));
+                    boost::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, nvir, (int*)doccpi_));
+                    for(int h = 0; h < nirrep_; ++h){
+                        if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
+
+                        C_DGEMM('N', 'T', nvir, doccpi_[h], nvirpi[h^salcirrep], 1.0, &Cmo2mosym->pointer(h^salcirrep)[nocc][doccpi_[h^salcirrep]],
+                                nmopi_[h^salcirrep], X->pointer(h)[0], nvirpi[h^salcirrep], 0.0, Tmpso_occ->pointer(h)[0], doccpi_[h]);
+                    }
+                    for(int h = 0; h < nirrep_; ++h){
+                        if(!doccpi_[h]) continue;
+
+                        C_DGEMM('N', 'T', nvir, nocc, doccpi_[h], 1.0, Tmpso_occ->pointer(h)[0], doccpi_[h],
+                                Cmo2mosym->pointer(h)[0], nmopi_[h], 1.0, Tmpmo_c1->pointer()[0], nocc);
+                    }
+                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
+                        const CdSalc::Component& salccomponent = thissalc.component(comp);
+                        int salcatom = salccomponent.atom;
+                        int salcxyz = salccomponent.xyz;
+                        double coef = salccomponent.coef;
+                        int pert = 3*salcatom + salcxyz;
+                        psio_address next_Uai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
+                        psio_->read(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
+                        C_DAXPY(nvir*nocc, coef, Tmpmo_c1->pointer()[0], 1, Tp[0], 1);
+                        next_Uai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
+                        psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
+                    }
                 }
-                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
+
             }
+
         } 
     }
 
@@ -920,6 +1507,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 L.resize(nA);
                 R.resize(nA);
             }
+            // TODO: To get symmetry working, we need to add in machinery to symmetrize and take SALCs, similar to above.
             for (int a = 0; a < nA; a++) {
                 psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
                 psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0],nmo*nocc*sizeof(double),next_Upi,&next_Upi);
