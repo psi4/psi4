@@ -49,7 +49,7 @@ hdo.set_geometry(ogeo)
 dto.update_geometry()
 dto.set_geometry(ogeo)
 
-e, wfn = freq('hf', molecule=h2o, return_wfn=True, dertype=1)
+e, wfn = freq('hf', molecule=h2o, return_wfn=True)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'H2O E0')  #TEST
 compare_values(0.024367, get_variable('ZPVE'), 4, 'H2O ZPVE')  #TEST
 compare_values(0.027199, get_variable('thermal energy correction'), 4, 'H2O dE')  #TEST
@@ -74,7 +74,7 @@ clean()
 
 set t 298.15
 
-freq('hf', molecule=d2o, dertype=1)
+freq('hf', molecule=d2o)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'D2O E0')  #TEST
 compare_values(0.017731, get_variable('ZPVE'), 4, 'D2O ZPVE')  #TEST
 compare_values(0.020566, get_variable('thermal energy correction'), 4, 'D2O dE')  #TEST
@@ -84,7 +84,7 @@ compare_values(47.525, entropy, 2, 'D2O S')  # molpro  #TEST
 
 clean()
 
-e, wfn = freq('hf', molecule=hdo, return_wfn=True, dertype=1)
+e, wfn = freq('hf', molecule=hdo, return_wfn=True)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'HDO E0')  #TEST
 compare_values(0.021103, get_variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
 compare_values(0.023935, get_variable('thermal energy correction'), 4, 'HDO dE')  #TEST
@@ -115,7 +115,7 @@ clean()
 
 psi4.revoke_global_option_changed('rotational_symmetry_number')
 
-freq('hf', molecule=dto, dertype=1)
+freq('hf', molecule=dto)
 compare_values(-74.96590119, get_variable('current energy'), 6, 'DTO E0')  #TEST
 compare_values(0.016317, get_variable('ZPVE'), 4, 'DTO ZPVE')  #TEST
 compare_values(0.019154, get_variable('thermal energy correction'), 4, 'DTO dE')  #TEST
