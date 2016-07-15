@@ -1,6 +1,4 @@
 import numpy as np
-import scipy
-import scipy.linalg
 import psi4
 import os
 
@@ -10,7 +8,7 @@ path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.g
 sys.path.append(path_dir)
 import p4util
 from p4util.exceptions import *
-
+np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=True):
     """
@@ -43,12 +41,13 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     converged = False
 
     fullG = np.zeros((max_iter + 2, max_iter + 2))
-    fullS = np.eye(max_iter + 2)
+    fullS = np.zeros((max_iter + 2, max_iter + 2))
+    fullS[np.diag_indices_from(fullS)] = 1
 
     guesses = []
     sigma_list = []
     guesses.append(approx_step)
-    sigma_list.append(mcscf_obj.Hk(approx_step))
+    sigma_list.append(mcscf_obj.compute_Hk(approx_step))
 
     if print_micro:
         psi4.print_out("\n                             Eigenvalue          Rel dE          dX \n")
@@ -71,11 +70,9 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         # Slice out relevant S and G
         S = fullS[:microi + 1, :microi + 1]
         G = fullG[:microi + 1, :microi + 1]
-        #print G
-        #raise Exception("")
 
         # Diagonalize the subspace
-        # seig, t = np.linalg.eigh(S)
+        # svals, vecs = np.linalg.eigh(S)
 
         # Solve Gv = lSv
         # S = LL.T
@@ -113,8 +110,9 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         lam = abs(vectors[0, idx])
         subspace_vec = vectors[1:, idx]
 
+        # Negative roots should go away?
         if idx > 0 and evals[idx] < -5.0e-6:
-            psi4.print_out('   Warning! AH might follow negative hessians!\n')
+            psi4.print_out('   Warning! AH might follow negative eigenvalues!\n')
 
         diff_val = evals[idx] - old_val
         old_val = evals[idx]
@@ -152,14 +150,16 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         new_dx.apply_denominator(tmp)
 
         guesses.append(new_dx)
-        sigma_list.append(mcscf_obj.Hk(new_dx))
+        sigma_list.append(mcscf_obj.compute_Hk(new_dx))
 
     if print_micro and converged:
         psi4.print_out("\n")
         #    psi4.print_out("      AH converged!       \n\n")
 
-    if not converged:
-        psi4.print_out("      !Warning. Augmented Hessian did not converge.\n")
+    #if not converged:
+    #    psi4.print_out("      !Warning. Augmented Hessian did not converge.\n")
 
     new_guess.scale(-1.0)
+
     return converged, microi, new_guess
+
