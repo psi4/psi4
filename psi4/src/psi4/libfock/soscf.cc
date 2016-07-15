@@ -53,8 +53,9 @@ SOMCSCF::SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) :
     nao_ = AOTOSO->rowspi()[0];
     casscf_ = true;
     has_fzc_ = false;
-    efzc_ = 0.0;
-    edrc_ = 0.0;
+    energy_fzc_ = 0.0;
+    energy_drc_ = 0.0;
+    energy_ci_ = 0.0;
 }
 SOMCSCF::~SOMCSCF()
 {
@@ -63,7 +64,7 @@ void SOMCSCF::transform(bool approx_only)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
-void SOMCSCF::compute_Q()
+SharedMatrix SOMCSCF::compute_Q(SharedMatrix TPDM)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
@@ -109,6 +110,14 @@ void SOMCSCF::set_frozen_orbitals(SharedMatrix Cfzc)
 
         matrices_["FZC_JK_AO"] = J[0]->clone();
         matrices_["Cfzc"] = Cfzc;
+
+        // Compute FZC energy
+        J[0]->add(matrices_["H"]);
+        J[0]->add(matrices_["H"]);
+        SharedMatrix D = Matrix::doublet(Cfzc, Cfzc, false, true);
+        energy_fzc_ = J[0]->vector_dot(D);
+        D.reset();
+
         has_fzc_ = true;
     }
 }
@@ -261,7 +270,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"] = Matrix::triplet(matrices_["C"], J[1], matrices_["C"], true, false, false);
     matrices_["AFock"]->set_name("AFock");
 
-    compute_Q();
+    matrices_["Q"] = compute_Q(matrices_["TPDM"]);
 
     // => Generalized Fock matrix <= //
     matrices_["Fock"] = SharedMatrix(new Matrix("Generalized Fock", nirrep_, nmopi_, nmopi_));
@@ -317,6 +326,28 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             }
         }
     }
+
+    // Compute DRC and CI energy energy
+    energy_drc_ = 0.0;
+    energy_ci_ = 0.0;
+    SharedMatrix Hmo = Matrix::triplet(matrices_["Cocc"], matrices_["H"],
+                                       matrices_["Cocc"], true, false, false);
+    for (int h = 0; h < nirrep_; h++) {
+        for (int i = 0; i < noccpi_[h]; i++) {
+            energy_drc_ += matrices_["IFock"]->get(h, i, i);
+            energy_drc_ += Hmo->get(h, i, i);
+        }
+        for (int t = 0; t < nactpi_[h]; t++) {
+            for (int v = 0; v < nactpi_[h]; v++) {
+                energy_ci_ +=
+                    matrices_["OPDM"]->get(h, t, v) *
+                    matrices_["IFock"]->get(h, t + noccpi_[h], v + noccpi_[h]);
+            }
+        }
+    }
+    energy_ci_ += 0.5 * matrices_["actMO"]->vector_dot(matrices_["TPDM"]);
+    Hmo.reset();
+
     zero_redundant(matrices_["Gradient"]);
     timer_off("SOMCSCF: Compute Gradient");
     matrices_["Precon"] = H_approx_diag();
@@ -491,6 +522,31 @@ SharedMatrix SOMCSCF::H_approx_diag()
     } // End irrep loop
     timer_off("SOMCSCF: Approximate hessian");
     return H;
+}
+SharedMatrix SOMCSCF::compute_AFock(SharedMatrix OPDM){
+    // => Build generalized inactive and active Fock matrices <= //
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+
+    Cl.clear();
+    Cr.clear();
+
+    // For active Fock
+    SharedMatrix CL_COPDM = Matrix::doublet(matrices_["Cact"], OPDM);
+    Cl.push_back(CL_COPDM);
+    Cr.push_back(matrices_["Cact"]);
+
+    jk_->compute();
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    // AFock build
+    K[0]->scale(0.5);
+    J[0]->subtract(K[0]);
+    SharedMatrix AFock = Matrix::triplet(matrices_["C"], J[0], matrices_["C"], true, false, false);
+    AFock->set_name("AFock");
+    return AFock;
 }
 SharedMatrix SOMCSCF::Hk(SharedMatrix x)
 {
@@ -882,14 +938,14 @@ void DFSOMCSCF::set_act_MO()
     matrices_["actMO"] = Matrix::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 }
-void DFSOMCSCF::compute_Q(){
+SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
 
     timer_on("SOMCSCF: DF-Q matrix");
     std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     int nQ = dferi_->size_Q();
     int nact2 = nact_ * nact_;
-    double* TPDMp = matrices_["TPDM"]->pointer()[0];
+    double* TPDMp = TPDM->pointer()[0];
 
     // Load aaQ
     std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
@@ -920,7 +976,7 @@ void DFSOMCSCF::compute_Q(){
     NaQ.reset();
 
     // Symmetry block Q
-    matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
+    SharedMatrix Q(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
 
     int offset_act = 0;
     int offset_nmo = 0;
@@ -930,7 +986,7 @@ void DFSOMCSCF::compute_Q(){
             continue;
         }
 
-        double* Qp = matrices_["Q"]->pointer(h)[0];
+        double* Qp = Q->pointer(h)[0];
         for (int i=0, target=0; i<nactpi_[h]; i++){
             for (int j=0; j<nmopi_[h]; j++){
                 Qp[target++] = denQp[offset_act + i][offset_nmo + j];
@@ -942,6 +998,7 @@ void DFSOMCSCF::compute_Q(){
     timer_off("SOMCSCF: DF-Q matrix");
     // outfile->Printf("Printing the Q matrix\n");
     // matrices_["Q"]->print();
+    return Q;
 }
 void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 {
@@ -1094,48 +1151,7 @@ void DiskSOMCSCF::transform(bool approx_only)
 }
 void DiskSOMCSCF::set_act_MO()
 {
-    dpdbuf4 I, TPDM;
-
-    // => Write active TPDM <= //
-
-    double** TPDMp = matrices_["TPDM"]->pointer();
-    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
-    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
-
-    for (int h=0; h<nirrep_; h++){
-        global_dpd_->buf4_mat_irrep_init(&TPDM, h);
-    }
-
-    // 4 fold symmetry
-    for(int p = 0; p < nact_; p++){
-      int p_sym = TPDM.params->psym[p];
-
-      for(int q = 0; q <= p; q++){
-        int q_sym = TPDM.params->psym[q];
-        int pq_sym = p_sym^q_sym;
-        int pq = TPDM.params->rowidx[p][q];
-
-        for(int r = 0; r < nact_; r++){
-          int r_sym = TPDM.params->psym[r];
-
-          for(int s = 0; s <= r; s++){
-            int s_sym = TPDM.params->psym[s];
-            int rs_sym = r_sym^s_sym;
-            int rs = TPDM.params->colidx[r][s];
-
-            if (pq_sym != rs_sym) continue;
-
-            TPDM.matrix[pq_sym][pq][rs] = TPDMp[p*nact_ + q][r*nact_ + s];
-    }}}}
-
-    for (int h=0; h<nirrep_; h++){
-        global_dpd_->buf4_mat_irrep_wrt(&TPDM, h);
-        global_dpd_->buf4_mat_irrep_close(&TPDM, h);
-    }
-    global_dpd_->buf4_close(&TPDM);
-    psio_->close(PSIF_MCSCF, 1);
+    dpdbuf4 I;
 
     // => Read dense active MO <= //
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -1195,31 +1211,64 @@ void DiskSOMCSCF::set_act_MO()
     global_dpd_->buf4_close(&I);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
-void DiskSOMCSCF::compute_Q()
+SharedMatrix DiskSOMCSCF::compute_Q(SharedMatrix TPDMmat)
 {
     timer_on("SOMCSCF: Q matrix");
+
+    // => Write active TPDM <= //
+    dpdbuf4 TPDM;
+
+    double** TPDMmatp = matrices_["TPDM"]->pointer();
+    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
+                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_init(&TPDM, h);
+    }
+
+    // 4 fold symmetry
+    for(int p = 0; p < nact_; p++){
+      int p_sym = TPDM.params->psym[p];
+
+      for(int q = 0; q <= p; q++){
+        int q_sym = TPDM.params->psym[q];
+        int pq_sym = p_sym^q_sym;
+        int pq = TPDM.params->rowidx[p][q];
+
+        for(int r = 0; r < nact_; r++){
+          int r_sym = TPDM.params->psym[r];
+
+          for(int s = 0; s <= r; s++){
+            int s_sym = TPDM.params->psym[s];
+            int rs_sym = r_sym^s_sym;
+            int rs = TPDM.params->colidx[r][s];
+
+            if (pq_sym != rs_sym) continue;
+
+            TPDM.matrix[pq_sym][pq][rs] = TPDMmatp[p*nact_ + q][r*nact_ + s];
+    }}}}
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_wrt(&TPDM, h);
+        global_dpd_->buf4_mat_irrep_close(&TPDM, h);
+    }
+
     // G_mwxy TPDM_vwxy -> Q_mv
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-    psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
 
     dpdfile2 Q;
     // We init R then a so we need 1, 0 here for index types
     global_dpd_->file2_init(&Q, PSIF_MCSCF, 0, 1, 0, "Q");
 
-    dpdbuf4 G, TPDM;
+    dpdbuf4 G;
     global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X,R]"), 0, "MO Ints (XX|XR)");
 
-    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
-
     global_dpd_->contract442(&TPDM, &G, &Q, 3, 3, 1.0, 0.0);
-    matrices_["Q"] = SharedMatrix(new Matrix(&Q));
-
-    // outfile->Printf("Printing the Q matrix\n");
-    // matrices_["Q"]->print();
+    SharedMatrix Qmat(new Matrix(&Q));
 
     global_dpd_->file2_close(&Q);
     global_dpd_->buf4_close(&TPDM);
@@ -1227,6 +1276,8 @@ void DiskSOMCSCF::compute_Q()
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_MCSCF, 1);
     timer_off("SOMCSCF: Q matrix");
+
+    return Qmat;
 
 }
 void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
@@ -1380,7 +1431,7 @@ IncoreSOMCSCF::IncoreSOMCSCF(std::shared_ptr<JK> jk,
 IncoreSOMCSCF::~IncoreSOMCSCF()
 {
 }
-void IncoreSOMCSCF::compute_Q()
+SharedMatrix IncoreSOMCSCF::compute_Q(SharedMatrix TPDM)
 {
     if (!eri_tensor_set_){
         throw PSIEXCEPTION("IncoreSOMCSCF: Eri tensors were not set!");
@@ -1393,12 +1444,12 @@ void IncoreSOMCSCF::compute_Q()
     double** denQp = denQ->pointer();
 
     int nact3 = nact_ * nact_ * nact_;
-    double** TPDMp = matrices_["TPDM"]->pointer();
+    double** TPDMp = TPDM->pointer();
     double** aaaRp = mo_aaar_->pointer();
     C_DGEMM('N','N',nact_,nmo_,nact3,1.0,TPDMp[0],nact3,aaaRp[0],nact3,1.0,denQp[0],nmo_);
 
     // Symmetry block Q
-    matrices_["Q"] = SharedMatrix(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
+    SharedMatrix Q(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));
 
     int offset_act = 0;
     int offset_nmo = 0;
@@ -1408,7 +1459,7 @@ void IncoreSOMCSCF::compute_Q()
             continue;
         }
 
-        double* Qp = matrices_["Q"]->pointer(h)[0];
+        double* Qp = Q->pointer(h)[0];
         for (int i=0, target=0; i<nactpi_[h]; i++){
             for (int j=0; j<nmopi_[h]; j++){
                 Qp[target++] = denQp[offset_act + i][offset_nmo + j];
@@ -1419,6 +1470,7 @@ void IncoreSOMCSCF::compute_Q()
     }
 
     timer_off("SOMCSCF: Q matrix");
+    return Q;
 }
 void IncoreSOMCSCF::set_act_MO(void)
 {

@@ -142,9 +142,35 @@ public:
     SharedMatrix gradient();
 
     /**
+     * Computes the Q matrix Q_pw = (pt|uv) \Gamma_{tuvw}
+     * @param  TPDM Dense nact*nact by nact*nact symmetrized TPDM
+     * @return      The symmetry blocked Q matrix
+     */
+    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
+
+    /**
+     * Computes the Q matrix AFock_pq = (pq|uv) - 0.5 (pu|qv) \gamma_{uv}
+     * @param  OPDM Dense nact*nact by nact*nact symmetrized OPDM
+     * @return      The symmetry AFock matrix
+     */
+    SharedMatrix compute_AFock(SharedMatrix OPDM);
+
+    /**
      * @return gradient_rms Returns the RMS of the gradient.
      */
     double gradient_rms();
+
+    /**
+     * Zeros out the redundant rotations
+     * @param vector Zero redundant rotations
+     */
+    void zero_redundant(SharedMatrix vector);
+
+    double current_total_energy() { return (energy_drc_ + energy_fzc_ + energy_ci_); }
+    double current_docc_energy() { return (energy_drc_ + energy_fzc_); }
+    double current_ci_energy() { return energy_ci_; }
+    SharedMatrix current_AFock() { return matrices_["AFock"]; }
+    SharedMatrix current_IFock() { return matrices_["IFock"]; }
 
 protected:
 
@@ -153,8 +179,9 @@ protected:
     bool has_fzc_;
 
     /// Doubles
-    double efzc_;
-    double edrc_;
+    double energy_fzc_;
+    double energy_drc_;
+    double energy_ci_;
 
     /// Orbital info
     size_t nocc_;
@@ -186,7 +213,6 @@ protected:
     void check_ras();
 
     /// Zero's out redundant rotations, will chose act or ras.
-    void zero_redundant(SharedMatrix vector);
     void zero_act(SharedMatrix vector);
     void zero_ras(SharedMatrix vector);
 
@@ -197,7 +223,6 @@ protected:
     virtual void set_act_MO();
 
     // Build the Q matrices
-    virtual void compute_Q();
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
 
@@ -228,7 +253,7 @@ protected:
     std::shared_ptr<DFERI> dferi_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
-    virtual void compute_Q();
+    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
 }; // DFSOMCSCF class
@@ -256,7 +281,7 @@ protected:
     std::shared_ptr<PSIO>  psio_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
-    virtual void compute_Q();
+    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
 }; // DiskSOMCSCF class
@@ -282,7 +307,7 @@ public:
 protected:
 
     virtual void set_act_MO();
-    virtual void compute_Q();
+    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
 
     void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);

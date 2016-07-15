@@ -2081,7 +2081,6 @@ def run_dfmp2_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-<<<<<<< 13fd910a0da8bcf082f43ee11269b2d1dc57ee91:psi4/driver/procedures/proc.py
     core.print_out('\n')
     p4util.banner('DFMP2')
     core.print_out('\n')
@@ -2090,11 +2089,6 @@ def run_dfmp2_gradient(name, **kwargs):
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
-=======
-    # psi4.print_out('\n')
-    # p4util.banner('DFMP2')
-    # psi4.print_out('\n')
->>>>>>> CIWave: Added augmented Hessian iterations:psi4/share/psi4/python/procedures/proc.py
 
     dfmp2_wfn = core.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
@@ -3967,6 +3961,36 @@ def run_detcas(name, **kwargs):
     user_ref = core.get_option('DETCI', 'REFERENCE')
     if user_ref not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+
+        ref_optstash = p4util.OptionsState(
+            ['SCF_TYPE'],
+            ['DF_BASIS_SCF'],
+            ['DF_BASIS_MP2'],
+            ['ONEPDM'],
+            ['OPDM_RELAX']
+            )
+
+        psi4.set_global_option('SCF_TYPE', 'DF')
+        psi4.set_global_option('ONEPDM', True)
+        psi4.set_global_option('OPDM_RELAX', False)
+#        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF') and (user_ref == 'RHF'):
+        if False:
+            ref_wfn = run_dfmp2_gradient(name, **kwargs)
+        else:
+            ref_wfn = scf_helper(name, **kwargs)
+
+            # Ensure IWL files have been written
+            if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
+                mints = psi4.MintsHelper(ref_wfn.basisset())
+                mints.set_print(1)
+                mints.integrals()
+
+        ref_optstash.restore()
+
+    #raise Exception("")
 
     if name == 'rasscf':
         core.set_local_option('DETCI', 'WFN', 'RASSCF')

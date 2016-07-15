@@ -566,12 +566,16 @@ void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
         write(tvec, buf);
     }
 }
-void CIvect::divide(SharedCIVector denom, int tvec, int ovec) {
+void CIvect::divide(SharedCIVector denom, double min_val, int tvec, int ovec) {
    for (int buf=0; buf<buf_per_vect_; buf++) {
       denom->read(ovec, buf);
       read(tvec, buf);
       for (size_t i = 0; i < buf_size_[buf]; ++i) {
-          buffer_[i] /= denom->buffer_[i];
+          if (std::fabs(denom->buffer_[i]) > min_val) {
+              buffer_[i] /= denom->buffer_[i];
+          else{
+            buffer_[i] = 0;
+          }
       }
       write(tvec, buf);
   }

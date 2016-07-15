@@ -169,6 +169,8 @@ public:
 
     /**!
      * Obtains the "special" TPDM, other TPDM roots are not held here.
+     * The AA (BB) order: \Gamma_{pqrs} & = \langle 0 | a_{p \alpha}^\dagger a_{r \alpha}^{\dagger} a_{s \alpha} a_{q \alpha} | 0 \rangle
+     * The AB order: \Gamma_{pqrs} & = \langle 0 | a_{p \alpha}^\dagger a_{r \beta}^{\dagger} a_{s \beta} a_{q \alpha} | 0 \rangle
      * @param spin       Selects which spin to return AA, AB, BB, or SUM
      * @param symmetrize Symmetrize the TPDM, only works for SUM currently
      * @return           The request 4D active TPDM
