@@ -161,18 +161,19 @@ class INTERFRAG {
   }
 
   // Fills in B matrix rows. Provide geometries.
-  void compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, int A_off, int B_off);
+  void compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, int coord_offset,
+      int A_off, int B_off);
 
   // Fills in B matrix rows.
-  void compute_B(double **Bin, int A_offset, int B_offset) {
-    compute_B(A->geom, B->geom, Bin, A_offset, B_offset);
+  void compute_B(double **Bin, int coord_offset, int A_offset, int B_offset) {
+    compute_B(A->geom, B->geom, Bin, coord_offset, A_offset, B_offset);
     return;
   }
 
   // allocate and return B matrix only for this interfragment.
   double **compute_B(void) {
     double **Bout = init_matrix(Ncoord(), 3*g_natom());
-    compute_B(A->geom, B->geom, Bout, 0, 0);
+    compute_B(A->geom, B->geom, Bout, 0, 0, 0);
     return Bout;
   }
 

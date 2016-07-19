@@ -127,9 +127,12 @@ void MOLECULE::print_xyz_irc(int point, bool forward) {
 
 // print internal coordinates to text file
 void MOLECULE::print_intco_dat(std::string psi_fp, FILE *qc_fp) {
-   for (std::size_t i=0; i<fragments.size(); ++i) {
+  for (std::size_t i=0; i<fragments.size(); ++i) {
     int first = g_atom_offset(i);
-    oprintf(psi_fp, qc_fp, "F %d %d\n", first+1, first + fragments[i]->g_natom());
+    if (fragments[i]->is_frozen())
+        oprintf(psi_fp, qc_fp, "F* %d %d\n", first+1, first + fragments[i]->g_natom());
+    else
+        oprintf(psi_fp, qc_fp, "F %d %d\n", first+1, first + fragments[i]->g_natom());
     fragments[i]->print_intco_dat(psi_fp, qc_fp, g_atom_offset(i));
   }
 
