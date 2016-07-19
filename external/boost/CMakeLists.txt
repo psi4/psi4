@@ -17,12 +17,13 @@ if(NOT Boost_FOUND)
       set(BOOST_COMPILER_TYPE "gcc")
    elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
       set(BOOST_COMPILER_TYPE "clang")
-   elseif(CMAKE_SYSTEM_NAME MATCHES Darwin)
+   elseif(CMAKE_CXX_COMPILER_ID MATCHES Darwin)
       set(BOOST_COMPILER_TYPE "darwin")
    endif()
    set(BOOST_PREFIX ${CMAKE_BINARY_DIR}/external/boost/boost-src/boost_1_57_0)
    set(BOOST_INSTALL_PREFIX 
        ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external/boost)
+   #Can't change the fact that boost has warnings....   
    set(BOOST_FLAGS "${CMAKE_CXX_FLAGS} -w")
    if(BUILD_FPIC)
       set(BOOST_FLAGS "${BOOST_FLAGS} -fPIC")
@@ -31,21 +32,28 @@ if(NOT Boost_FOUND)
    if(BUILD_SHARED_LIBS)
       set(BOOST_LINK "shared")
    endif()
+   set(USER_CONFIG_JAM "using ${BOOST_COMPILER_TYPE} : : ${CMAKE_CXX_COMPILER} \\;")
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
       URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_1_57_0.tar.bz2
       URL_HASH MD5=1BE49BEFBDD9A5CE9DEF2983BA3E7B76
       BUILD_IN_SOURCE 1
-      CONFIGURE_COMMAND pwd && ./bootstrap.sh --with-toolset=${BOOST_COMPILER_ID}
-                                       --with-libraries=${B2_BOOST_COMPONENTS}
-                                       --with-python=${PYTHON_EXECUTABLE}
-                                       --with-python-root=${PYTHON_INLCUDE_DIRS}
-                                       --prefix=${BOOST_INSTALL_PREFIX}
-      #Can't change the fact that boost has warnings....
-      BUILD_COMMAND ./b2 threading=multi link=${BOOST_LINK}  cxxflags=${BOOST_FLAGS}
+      CONFIGURE_COMMAND
+         ./bootstrap.sh --with-toolset=${BOOST_COMPILER_TYPE}
+                                  --with-libraries=${B2_BOOST_COMPONENTS}
+                                  --with-python=${PYTHON_EXECUTABLE}
+                                  --with-python-root=${PYTHON_INLCUDE_DIRS}
+                                  --prefix=${BOOST_INSTALL_PREFIX}
+
+      BUILD_COMMAND ./b2 threading=multi 
+                         #toolset=${BOOST_TOOLSET} 
+                         link=${BOOST_LINK}   
+                         cxxflags=${BOOST_FLAGS}
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
-      INSTALL_COMMAND ./b2 install threading=multi link=${BOOST_LINK}
-             cxxflags=${BOOST_FLAGS}
+      INSTALL_COMMAND ./b2 install threading=multi 
+                                   #toolset=${BOOST_TOOLSET} 
+                                   link=${BOOST_LINK} 
+                                   cxxflags=${BOOST_FLAGS}
    )
 else()
     add_library(boost_external INTERFACE)
