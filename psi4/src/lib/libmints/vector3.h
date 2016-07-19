@@ -117,6 +117,18 @@ public:
     double& operator[](int i) { return v_[i]; }
     const double& operator[](int i) const { return v_[i]; }
 
+    ///Checks for exact equality (i.e. no tolerances)
+    bool operator==(const Vector3& RHS)const
+    {
+        return (v_[0]==RHS.v_[0] && v_[1]==RHS.v_[1] && v_[2]==RHS.v_[2]);
+    }
+    
+    ///True if the coordinates differ in any bit
+    bool operator!=(const Vector3& RHS)const
+    {
+        return !(*this==RHS);
+    }
+    
     double get(int i) {
         if (i >= 0 && i <= 2) return v_[i];
         else return 0.0;

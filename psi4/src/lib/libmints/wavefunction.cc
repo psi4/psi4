@@ -50,7 +50,7 @@
 #include "psi4/src/lib/libmints/sointegral_onebody.h"
 #include "psi4/src/lib/libmints/corrtab.h"
 #include "psi4/include/psi4-dec.h"
-
+#include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/python.hpp>
 #include <boost/python/call.hpp>
 
@@ -61,19 +61,26 @@
 using namespace boost;
 using namespace psi;
 
-// Globals Seriously? This where we instantiate these.
+// Globals (Seriously? This is where we instantiate these.)
 size_t ioff[MAX_IOFF];
 double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
+Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule,
+                           boost::shared_ptr<BasisSet> basis,
+                           Options& options) : 
+                       options_(options),basisset_(basis),molecule_(molecule)
+{
+    common_init();
+}
+                           
+
 Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
                            Options & options) :
-                           options_(options), molecule_(molecule)
+    Wavefunction(molecule,BasisSet::pyconstruct_orbital(molecule,"BASIS",basis),
+                 options)
 {
-    // Load in molecule and basis
-    basisset_ = BasisSet::pyconstruct_orbital(molecule_, "BASIS", basis);
-    common_init();
 }
 
 Wavefunction::Wavefunction(Options & options) :
@@ -219,7 +226,10 @@ void Wavefunction::deep_copy(const Wavefunction* other)
 void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
-
+    if(!basisset_)
+        throw PSIEXCEPTION("You can't initialize a Wavefunction that doesn't "
+                           "have a basis set");
+    
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
         molecule_->set_point_group(molecule_->find_point_group());

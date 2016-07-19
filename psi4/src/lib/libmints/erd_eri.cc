@@ -26,7 +26,7 @@
  */
 
 
-#ifdef HAVE_ERD
+#ifdef ENABLE_LIBERD
 
 #include "psi4/include/psi4-dec.h"
 #include "erd_eri.h"
@@ -694,4 +694,4 @@ ERDERI::~ERDERI()
 
 } // Namespace
 
-#endif // HAVE_ERD
+#endif // ENABLE_LIBERD

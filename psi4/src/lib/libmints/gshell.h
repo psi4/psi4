@@ -172,6 +172,15 @@ public:
     /// Basis function index where this shell starts.
     int function_index() const      { return start_; }
     void set_function_index(int i)  { start_ = i; }
+    
+    ///True if two ShellInfo instances are exactly equal
+    bool operator==(const ShellInfo& RHS)const;
+    
+    ///True if any part of the two ShellInfo instances is unequal
+    bool operator!=(const ShellInfo& RHS)const
+    {
+        return !(*this==RHS);
+    }
 };
 
 

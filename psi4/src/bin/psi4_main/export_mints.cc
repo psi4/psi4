@@ -24,11 +24,15 @@
  *
  * @END LICENSE
  */
-
+#include "psi4/include/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <boost/python.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
+PRAGMA_WARNING_POP
 #include "psi4/src/lib/libmints/deriv.h"
 
 #include "psi4/src/lib/libmints/twobody.h"
@@ -501,8 +505,29 @@ void export_mints()
             def("original_coef", &GaussianShell::original_coef, "docstring").
             def("erd_coef", &GaussianShell::erd_coef, "docstring").
             def("coef", &GaussianShell::coef, "docstring");
+    
+    enum_<PrimitiveType>("PrimitiveType","docstring")
+       .value("Normalized",Normalized)
+       .value("Unnormalized",Unnormalized)
+       ;
+    
+    enum_ <GaussianType>("GaussianType","docstring")
+       .value("Cartesian",Cartesian)
+       .value("Pure",Pure)
+       ;
+    
+    class_<ShellInfo, boost::shared_ptr<ShellInfo>>("ShellInfo" , init<int,
+                  const std::vector<double>&,
+                  const std::vector<double>&,
+                  GaussianType,
+                  int,
+                  const Vector3&,
+                  int,
+                  PrimitiveType>());
 
-
+    class_<std::vector<ShellInfo>>("BSVec")
+        .def(vector_indexing_suite<std::vector<ShellInfo>>());
+    
     class_<OneBodyAOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
             def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
             add_property("origin", &OneBodyAOInt::origin, &OneBodyAOInt::set_origin, "The origin about which the one body ints are being computed.").
@@ -833,11 +858,23 @@ void export_mints()
     class_<BasisSetParser, boost::shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", "docstring", no_init);
     class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
 
+    using ShellInfoMap=std::map<std::string,std::vector<ShellInfo>>;
+    
+    class_<ShellInfoMap>("ShellInfoMap")
+       .def(map_indexing_suite<ShellInfoMap>());
+    
+    using ShellInfoMapMap=std::map<std::string,ShellInfoMap>;
+    class_<ShellInfoMapMap>("ShellInfoMapMap")
+       .def(map_indexing_suite<ShellInfoMapMap>());
+    
+    
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
     typedef boost::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const boost::shared_ptr<BasisSet>&) const;
-    class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", "docstring", no_init).
+    class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>
+            ("BasisSet", "docstring",init<>()).
+            def(init<const std::string&,boost::shared_ptr<Molecule>,ShellInfoMapMap&>()).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
             def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
@@ -888,9 +925,14 @@ void export_mints()
             def("d", &DFChargeFitter::d, "docstring").
             def("fit", &DFChargeFitter::fit, "docstring");
 
+    using SharedMol=boost::shared_ptr<Molecule>;
+    using SharedBS=boost::shared_ptr<BasisSet>;
+    
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", "docstring", no_init).
-            // def(init<boost::shared_ptr<Molecule>, const std::string&, Options& >()).
+    class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>
+           ("Wavefunction", "docstring",init<Options&>()).
+            def(init<SharedMol, const std::string&, Options&>()).
+            def(init<SharedMol,SharedBS,Options&>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
