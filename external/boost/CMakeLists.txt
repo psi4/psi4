@@ -5,7 +5,7 @@ set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
 
 find_package(Boost 1.57.0 QUIET COMPONENTS ${BOOST_COMPONENTS})
 
-if(NOT Boost_FOUND)
+if(NOT ${Boost_FOUND})
    message(STATUS "A suitable version of Boost could not be located.  One will"
                   " be built for you.")
    string(REPLACE ";" "," B2_BOOST_COMPONENTS "${BOOST_COMPONENTS}")

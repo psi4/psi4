@@ -1,7 +1,7 @@
 include(ExternalProject)
 
 find_package(PCMSolver QUIET)
-if(NOT PCMSolver_FOUND AND ENABLE_PCMSOLVER)
+if((NOT ${PCMSolver_FOUND}) AND ${ENABLE_PCMSOLVER})
   message(STATUS "PCMSolver not found. The pre-packaged version will be built.")
   ExternalProject_Add(pcmsolver_external
        GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
@@ -9,9 +9,9 @@ if(NOT PCMSolver_FOUND AND ENABLE_PCMSOLVER)
        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                   -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external/pcmsolver
                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                  -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+                  -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                  -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+                  -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                   -DENABLE_CXX11_SUPPORT=ON
                   -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
                   -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
