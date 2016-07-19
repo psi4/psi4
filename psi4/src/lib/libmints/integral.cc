@@ -46,6 +46,7 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/potentialint.h"
 #include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/libmints/erd_eri.h"
 #include <libint/libint.h>
 
 using namespace boost;
@@ -260,7 +261,7 @@ OneBodyAOInt* IntegralFactory::electric_field()
 
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 {
-#ifdef HAVE_ERD
+#ifdef ENABLE_LIBERD
     if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif
@@ -269,7 +270,7 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)
 {
-#ifdef HAVE_ERD
+#ifdef ENABLE_LIBERD
     if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif

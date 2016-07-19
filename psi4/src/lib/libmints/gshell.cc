@@ -180,6 +180,23 @@ const char *ShellInfo::amtypes = "spdfghiklmnopqrtuvwxyz";
 const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
 
 
+bool ShellInfo::operator==(const ShellInfo& RHS)const
+{
+    return(l_==RHS.l_ &&
+           puream_==RHS.puream_ &&
+           exp_==RHS.exp_ &&
+           coef_==RHS.coef_ &&
+           erd_coef_==RHS.erd_coef_ &&
+           original_coef_==RHS.erd_coef_ &&
+           nc_==RHS.nc_ &&
+           center_==RHS.center_ &&
+           start_==RHS.start_ &&
+           ncartesian_==RHS.ncartesian_ &&
+           nfunction_==RHS.nfunction_
+    );
+}
+
+
 GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c, const double *ec,
                              const double *e, GaussianType pure,
                              int nc, const double *center, int start)

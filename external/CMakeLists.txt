@@ -1,5 +1,4 @@
-add_subdirectory(boost)
-add_subdirectory(libint)
-add_subdirectory(libderiv)
-add_subdirectory(libefp)
-add_subdirectory(PCMSolver)
+foreach(dir boost libint libderiv libefp PCMSolver chemps2 liberd)
+   add_subdirectory(${dir})
+endforeach()
+

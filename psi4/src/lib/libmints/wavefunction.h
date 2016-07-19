@@ -238,6 +238,11 @@ private:
 
 public:
 
+    /// Constructor for an entirely new wavefunction with an existing basis
+    Wavefunction(boost::shared_ptr<Molecule> molecule,
+                 boost::shared_ptr<BasisSet> basis,
+                 Options& options);
+    
     /// Constructor for an entirely new wavefunction
     Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
                  Options & options);

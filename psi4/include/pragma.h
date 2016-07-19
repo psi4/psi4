@@ -27,11 +27,11 @@ extern "C" {
     #define PRAGMA_WARNING_IGNORE_EXTRA_SEMICOLON              // does not have warning for intel
     #define PRAGMA_WARNING_IGNORE_REDECLARED_INLINE            _Pragma("warning(disable:522)")
     #define PRAGMA_WARNING_IGNORE_UNUSED_LOCAL_TYPEDEFS        //! \todo add me
-    #define PRAGMA_WARNING_IGNORE_GCC_PRAGMA                   _Pragma("warning(disable:2282")
-    #define PRAGMA_WARNING_IGNORE_NONVIRTUAL_DTOR              _Pragma("warning(disable:444")
+    #define PRAGMA_WARNING_IGNORE_GCC_PRAGMA                   _Pragma("warning(disable:2282)")
+    #define PRAGMA_WARNING_IGNORE_NONVIRTUAL_DTOR              _Pragma("warning(disable:444)")
     #define PRAGMA_WARNING_IGNORE_UNUSED_FUNCTION              //! \todo add me
-    #define PRAGMA_WARNING_IGNORE_UNRECOGNIZED_PRAGMA          _Pragma("warning(disable:161")
-    #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      //! \todo add me
+    #define PRAGMA_WARNING_IGNORE_UNRECOGNIZED_PRAGMA          _Pragma("warning(disable:161)")
+    #define PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS      _Pragma("warning(disable:1478)")
 
 #elif defined(__GNUC__) || defined(__GNUG__)
 

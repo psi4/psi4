@@ -68,4 +68,10 @@ set(sources_list local.cc
                  angularmomentum.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
-psi4_add_library(mints sources_list iwl options psi4util trans)
+if(ENABLE_LIBERD)
+   set(INT_LIB_TAR erd)
+endif()
+
+psi4_add_library(mints sources_list iwl options psi4util trans 
+                                    ${INT_LIB_TAR}
+)

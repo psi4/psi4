@@ -28,10 +28,9 @@
 #ifndef psi4_libmints_erd_eri_h_
 #define psi4_libmints_erd_eri_h_
 
-#include "psiconfig.h"
-#ifdef HAVE_ERD
+#ifdef ENABLE_LIBERD
 
-#include "libmints/twobody.h"
+#include "psi4/src/lib/libmints/twobody.h"
 
 typedef int F_INT;
 typedef int F_BOOL;
@@ -140,5 +139,5 @@ public:
 };
 
 }//Namespace
-#endif // HAVE_ERD
+#endif // ENABLE_LIBERD
 #endif // header guard

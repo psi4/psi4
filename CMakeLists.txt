@@ -18,7 +18,7 @@
 #Need 3.1 for build_always
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 CXX C)
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11) Not working with Intel compilers at moment
 include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/compilers
@@ -31,7 +31,7 @@ option(ENABLE_PCMSOLVER "Enbales the PCM solver module" OFF)
 option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_CHEMPS2 "Enables chemps2 for DMRG" OFF)
 option(ENABLE_DKH "Enables DKH integrals" OFF)
-option(ENABLE_ERD "Enables ERD instead of libint" OFF)
+option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
 option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(BUILD_SHARED_LIBS "Psi4 libraries will be shared objects" OFF)
@@ -53,7 +53,7 @@ option_with_default(BUILD_FPIC
 
 ############################## Compiler Features ###############################
 find_package(OpenMP)
-optional_add_flags(OpenMP_FOUND ${OpenMP_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
 
 ############################## Dependencies ####################################
 find_package(PythonInterp REQUIRED)
@@ -70,23 +70,21 @@ endif()
 
 ############################## Main Project ####################################
 
-
-
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/psi4
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
+              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} 
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} 
-              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} 
-              -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} 
               -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
+              -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DENABLE_GTFOCK=${ENABLE_GTFOCK}
@@ -95,7 +93,6 @@ ExternalProject_Add(psi4_core
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
-
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
@@ -106,6 +103,7 @@ add_dependencies(psi4_core boost_external
                            libderiv_external 
                            libefp_external
                            pcmsolver_external
+                           liberd_external
 )
 enable_testing()
 add_subdirectory(tests)
