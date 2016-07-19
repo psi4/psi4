@@ -1,7 +1,7 @@
 include(ExternalProject)
 
 find_package(liberd QUIET)
-if((NOT liberd_FOUND) AND ENABLE_LIBERD)
+if((NOT ${liberd_FOUND}) AND ${ENABLE_LIBERD})
    if(BUILD_FPIC)
       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fPIC")
    endif()

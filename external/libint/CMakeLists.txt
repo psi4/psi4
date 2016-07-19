@@ -2,7 +2,7 @@ include(ExternalProject)
 
 find_package(libint QUIET COMPONENTS ${LIBINT_OPT_AM})
 
-if(NOT LIBINT_FOUND)
+if(NOT ${LIBINT_FOUND})
    message(STATUS 
       "Suitable Libint could not be located, building one instead")
    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
