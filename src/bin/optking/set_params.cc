@@ -151,9 +151,30 @@ void set_params(void)
     if (s == "FIXED")               Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
     else if (s == "PRINCIPAL_AXES") Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
+//  Atoms to define reference points on fragments
+    // If already specified, (probably because iter == 0); don't add them.
+    if (options["FRAG_REF_ATOMS"].has_changed() && !Opt_params.frag_ref_atoms.size()) {
+        int nfrag = options["FRAG_REF_ATOMS"].size();
+        for (int F=0; F<nfrag; ++F) {
+            std::vector<std::vector<int> > frag;
+            Opt_params.frag_ref_atoms.push_back(frag);
+            int nref = options["FRAG_REF_ATOMS"][F].size();
+            if (nref > 3)
+                throw("Fragment can have only 3 reference atoms.\n");
+            for (int R=0; R<nref; ++R) {
+                std::vector<int> ref;
+                Opt_params.frag_ref_atoms[F].push_back(ref);
+                for (int A=0; A<(int) options["FRAG_REF_ATOMS"][F][R].size(); ++A) {
+                    int atom = options["FRAG_REF_ATOMS"][F][R][A].to_integer();
+                    Opt_params.frag_ref_atoms[F][R].push_back(atom); // will need decremented on use!
+                }
+            }
+        }
+        Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
+    }
+
 // Whether to only generate the internal coordinates and then stop {true, false}
-//  Opt_params.generate_intcos_only;
-    Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
+    Opt_params.intcos_generate_exit = options.get_bool("INTCOS_GENERATE_EXIT");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE, LINDH}
     s = options.get_str("INTRAFRAG_HESS");
@@ -395,7 +416,7 @@ void set_params(void)
   Opt_params.keep_intcos = options.get_bool("KEEP_INTCOS");
 
   // if we are running only to generate them, then we assume we'll keep them
-  if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
+  if (Opt_params.intcos_generate_exit && !options["KEEP_INTCOS"].has_changed())
     Opt_params.keep_intcos = true;
 
   // for coordinates with user-specified equilibrium values - this is the force constant
@@ -420,12 +441,18 @@ void set_params(void)
   // For RFO step, eigenvectors of augmented Hessian are divided by the last
   // element unless it is smaller than this value {double}.  Can be used to eliminate
   // asymmetric steps not otherwise detected (e.g. in degenerate point groups).
+  // For multi-fragment modes, we presume that smaller Delta-E's are possible, and
+  // this threshold should be made larger.
   Opt_params.rfo_normalization_max = options.get_double("RFO_NORMALIZATION_MAX");
+  if (Opt_params.fragment_mode == OPT_PARAMS::MULTI &&
+      !(options["RFO_NORMALIZATION_MAX"].has_changed()))
+    Opt_params.rfo_normalization_max = 1.0e5;
 
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = options.get_double("H_UPDATE_DEN_TOL");
 
-  Opt_params.symm_tol = 0.01;
+// Symmetry tolerance for whether to follow non-symmetric modes.
+  Opt_params.symm_tol = options.get_double("SYMM_TOL");
 
   // Absolute maximum for value of alpha in RS-RFO
   Opt_params.rsrfo_alpha_max = options.get_double("RSRFO_ALPHA_MAX");
@@ -501,7 +528,7 @@ void set_params(void)
   else if (i == 1) Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 // only generate intcos
-  Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
+  Opt_params.intcos_generate_exit = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
 
 // model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = simple
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_H);
@@ -890,10 +917,21 @@ void print_params_out(void) {
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
   oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
 
-  if (Opt_params.generate_intcos_only)
-    oprintf_out( "generate_intcos_only   = %18s\n", "true");
+  for (int i=0; i<(int) Opt_params.frag_ref_atoms.size(); ++i) {
+      if (i == 0) oprintf_out( "Reference points specified for fragments:\n");
+      oprintf_out( "Fragment %d\n", i);
+      for (int j=0; j<(int) Opt_params.frag_ref_atoms[i].size(); ++j) {
+          oprintf_out( "Reference atom %d: ", j);
+          for (int k=0; k<(int) Opt_params.frag_ref_atoms[i][j].size(); ++k)
+              oprintf_out( "%d ", Opt_params.frag_ref_atoms[i][j][k]);
+          oprintf_out("\n");
+      }
+  }
+
+  if (Opt_params.intcos_generate_exit)
+    oprintf_out( "intcos_generate_exit   = %18s\n", "true");
   else
-    oprintf_out( "generate_intcos_only   = %18s\n", "false");
+    oprintf_out( "intcos_generate_exit   = %18s\n", "false");
 
   //if (Opt_params.print_params)
   //oprintf_out( "print_params           = %18s\n", "true");

@@ -291,7 +291,7 @@ struct lin_comb
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const Molecule *molecule, double tol)
+int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_print_in_exc)
 {
     // grab references to the Molecule
     const Molecule& mol = *molecule;
@@ -326,12 +326,14 @@ int **compute_atom_map(const Molecule *molecule, double tol)
 
             atom_map[i][g] = mol.atom_at_position1(np, tol);
             if (atom_map[i][g] < 0) {
-                outfile->Printf("ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i + 1);
-                outfile->Printf("  Molecule:\n");
-                mol.print();
-                outfile->Printf("  attempted to find atom at\n");
+                outfile->Printf("\tERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i + 1);
+                if (!suppress_mol_print_in_exc) {
+                  outfile->Printf("  Molecule:\n");
+                  mol.print();
+                }
+                outfile->Printf("\t  attempted to find atom at");
                 outfile->Printf("    %lf %lf %lf\n", np[0], np[1], np[2]);
-                outfile->Printf("  atom_map() throwing PsiException\n");
+                outfile->Printf("\t  atom_map() throwing PsiException\n");
                 throw PsiException("Broken Symmetry", __FILE__, __LINE__);
             }
         }
@@ -340,9 +342,9 @@ int **compute_atom_map(const Molecule *molecule, double tol)
     return atom_map;
 }
 
-int **compute_atom_map(const boost::shared_ptr<Molecule>& molecule, double tol)
+int **compute_atom_map(const boost::shared_ptr<Molecule>& molecule, double tol, bool suppress_mol_print_in_exc)
 {
-    return compute_atom_map(molecule.get(), tol);
+    return compute_atom_map(molecule.get(), tol, suppress_mol_print_in_exc);
 }
 
 void delete_atom_map(int **atom_map, const Molecule *molecule)

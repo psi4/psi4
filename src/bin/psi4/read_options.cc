@@ -2424,6 +2424,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FIXED_DIHEDRAL", "");
       /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
       options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
+      /*- Symmetry tolerance for testing whether a mode is symmetric. -*/
+      options.add_double("SYMM_TOL", 0.05);
 
       /*- SUBSECTION Convergence Control -*/
 
@@ -2482,6 +2484,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       or via interfragment coordinates. A primary difference is that in ``MULTI`` mode,
       the interfragment coordinates are not redundant. -*/
       options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
+      /*- Which atoms define the reference points for interfragment coordinates? -*/
+      options.add("FRAG_REF_ATOMS", new ArrayType());
       /*- Do freeze all fragments rigid? -*/
       options.add_bool("FREEZE_INTRAFRAG", false);
       /*- Do freeze all interfragment modes? -*/
