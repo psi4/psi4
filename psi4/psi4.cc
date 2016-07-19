@@ -49,7 +49,7 @@
 
 #include "psi4/include/psi4-dec.h"
 
-#ifdef HAVE_AMBIT
+#ifdef ENABLE_AMBIT
 #include <ambit/tensor.h>
 #endif
 #include "psi4.h"
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
     using namespace psi;
 
     // Initialize external Ambit library
-#ifdef HAVE_AMBIT
+#ifdef ENABLE_AMBIT
     ambit::initialize(argc, argv);
 #endif
 
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
     Process::environment.legacy_wavefunction().reset();
 
-#ifdef HAVE_AMBIT
+#ifdef ENABLE_AMBIT
     ambit::finalize();
 #endif
 

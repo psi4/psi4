@@ -1,5 +1,5 @@
 include(ExternalProject)
-find_package(Ambit)
+find_package(Ambit QUIET)
 
 if(NOT Ambit_FOUND AND ENABLE_AMBIT)
     message(STATUS "Ambit not found. The pre-packaged version will be build.")
@@ -16,8 +16,10 @@ if(NOT Ambit_FOUND AND ENABLE_AMBIT)
                   -DEXTRA_C_FLAGS=${CMAKE_EXTRA_C_FLAGS}
                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                   -DEXTRA_CXX_FLAGS=${CMAKE_EXTRA_CXX_FLAGS}
-                  #-DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
-                  #-DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
+                  -DBOOST_ROOT=${BOOST_ROOT}
+                  -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+                  -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
+                  -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
                   -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
                   -DENABLE_STATIC=ON
                   -DENABLE_PSI4=ON
@@ -26,10 +28,11 @@ if(NOT Ambit_FOUND AND ENABLE_AMBIT)
                   -DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
                   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/ambit
                   -DCMAKE_INSTALL_LIBDIR=lib
-        INSTALL_DIR ${CMAKE_MAKE_PROGRAM} install 
+        CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
+        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                     DESTDIR ${CMAKE_BINARY_DIR}/stage
     )
-    add_dependencies(external_ambit external_int external_deriv external_boost)
+    add_dependencies(ambit_external boost_external)
 else()
    add_library(ambit_external INTERFACE)
 endif ()
