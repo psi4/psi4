@@ -51,21 +51,26 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
 
+set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
+
 ############################## Compiler Features ###############################
 find_package(OpenMP)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+add_CXX_flags("-std=c++11")
+add_CXX_flags("-std=c++0x")
 
 ############################## Dependencies ####################################
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
-add_subdirectory(external)
-
-set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
-list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 
 if(NOT BOOST_ROOT)#Boost seriously sucks, why can't it use prefix_path?
   set(BOOST_ROOT ${PSI4_STAGE_EX}/boost)
 endif()
+
+add_subdirectory(external)
+
+
+list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 
 
 ############################## Main Project ####################################
@@ -104,6 +109,7 @@ add_dependencies(psi4_core boost_external
                            libefp_external
                            pcmsolver_external
                            liberd_external
+                           ambit_external
 )
 enable_testing()
 add_subdirectory(tests)
