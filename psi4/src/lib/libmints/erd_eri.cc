@@ -38,35 +38,11 @@
 #define DEBUG 0
 
 // Name mangling
-#ifndef USE_FCMANGLE_H
-#define FC_SYMBOL 2
+#include <ERD/ERD_MANGLE.h>
+#define C_ERD__GENER_ERI_BATCH  ERD_MANGLE_GLOBAL_(erd__gener_eri_batch,  ERD__GENER_ERI_BATCH)
+#define C_ERD__MEMORY_CSGTO     ERD_MANGLE_GLOBAL_(erd__memory_csgto,     ERD__MEMORY_CSGTO)
+#define C_ERD__MEMORY_ERI_BATCH ERD_MANGLE_GLOBAL_(erd__memory_eri_batch, ERD__MEMORY_ERI_BATCH)
 
-#if FC_SYMBOL == 1
-#define C_ERD__GENER_ERI_BATCH erd__gener_eri_batch
-#define C_ERD__MEMORY_CSGTO erd__memory_csgto
-#define C_ERD__MEMORY_ERI_BATCH erd__memory_eri_batch
-#elif FC_SYMBOL == 2
-#define C_ERD__GENER_ERI_BATCH erd__gener_eri_batch_
-#define C_ERD__MEMORY_CSGTO erd__memory_csgto_
-#define C_ERD__MEMORY_ERI_BATCH erd__memory_eri_batch_
-#elif FC_SYMBOL == 3
-#define C_ERD__GENER_ERI_BATCH ERD__GENER_ERI_BATCH
-#define C_ERD__MEMORY_CSGTO ERD__MEMORY_CSGTO
-#define C_ERD__MEMORY_ERI_BATCH ERD__MEMORY_ERI_BATCH
-#elif FC_SYMBOL == 4
-#define C_ERD__GENER_ERI_BATCH ERD__GENER_ERI_BATCH_
-#define C_ERD__MEMORY_CSGTO ERD__MEMORY_CSGTO_
-#define C_ERD__MEMORY_ERI_BATCH ERD__MEMORY_ERI_BATCH_
-#else
-#error FC_SYMBOL is not defined
-#endif
-
-#else // USE_FCMANGLE_H
-#include "FCMangle.h"
-#define C_ERD__GENER_ERI_BATCH  FC_GLOBAL_(erd__gener_eri_batch,  ERD__GENER_ERI_BATCH)
-#define C_ERD__MEMORY_CSGTO     FC_GLOBAL_(erd__memory_csgto,     ERD__MEMORY_CSGTO)
-#define C_ERD__MEMORY_ERI_BATCH FC_GLOBAL_(erd__memory_eri_batch, ERD__MEMORY_ERI_BATCH)
-#endif
 
 extern "C" {
 void C_ERD__GENER_ERI_BATCH(const F_INT &imax, const F_INT &zmax, const F_INT &nalpha, const F_INT &ncoeff,

@@ -1,7 +1,7 @@
 include(ExternalProject)
 find_package(Ambit QUIET)
 
-if((NOT ${Ambit_FOUND}) AND ${ENABLE_AMBIT})
+if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
     message(STATUS "Ambit not found. The pre-packaged version will be build.")
 
     ExternalProject_Add(ambit_external

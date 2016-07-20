@@ -3,7 +3,8 @@ include(ExternalProject)
 find_package(libderiv QUIET COMPONENTS ${LIBINT_OPT_AM})
 list(APPEND CMAKE_PREFIX_PATH
      "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external")
-if(NOT ${LIBDERIV_FOUND})
+
+if(NOT LIBDERIV_FOUND)
    message(STATUS 
       "Suitable Libderiv could not be located, building one instead")
    ExternalProject_Add(libderiv_external

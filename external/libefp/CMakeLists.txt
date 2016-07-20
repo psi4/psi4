@@ -1,6 +1,6 @@
 find_package(libefp QUIET)
 
-if(NOT ${LIBEFP_FOUND})
+if(NOT LIBEFP_FOUND)
    message(STATUS "Suitable libefp could not be located, building one instead")
    ExternalProject_Add(libefp_external
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libefp-src

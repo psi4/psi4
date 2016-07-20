@@ -5,7 +5,7 @@ if (CHEMPS2_ROOT)
 endif()
 
 # Build CheMPS2 as external package if pre-built failed or not signaled
-if((NOT ${CHEMPS2_FOUND}) AND ${ENABLE_CHEMPS2})
+if(NOT CHEMPS2_FOUND AND ${ENABLE_CHEMPS2})
     message(STATUS "CheMPS2 not found. The pre-packaged version will be built.")
     include(ExternalProject)
     ExternalProject_Add(chemps2_external

@@ -41,9 +41,15 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
                 -DPLUGIN_LDFLAGS=${CMAKE_CXX_LINK_FLAGS}
 )
 
-#This is special because we want this library to be a .so always so that we
-#can call the Python functions
-add_library(psi4_main SHARED ${sources_list})
+#This library is special because we want this library to be a .so so that we
+#can use the Python interface, even if the rest of Psi4 is static, but need to
+#be able to build it statically for the binary
+if(NOT ENABLE_PYTHON_INTERFACE)
+   
+   add_library(psi4_main SHARED ${sources_list})
+else()
+    add_library(psi4_main STATIC ${sources_list})
+endif()
 
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
 set(PSI4_RPATH ${CMAKE_INSTALL_PREFIX}/lib 
