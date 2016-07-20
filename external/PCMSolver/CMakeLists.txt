@@ -1,7 +1,7 @@
 include(ExternalProject)
 
 find_package(PCMSolver QUIET)
-if((NOT ${PCMSolver_FOUND}) AND ${ENABLE_PCMSOLVER})
+if(NOT PCMSolver_FOUND AND ${ENABLE_PCMSOLVER})
   message(STATUS "PCMSolver not found. The pre-packaged version will be built.")
   ExternalProject_Add(pcmsolver_external
        GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver

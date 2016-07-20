@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 LANGUAGES C CXX VERSION 1.0)
-if(ENABLE_LIBERD)
-   enable_language(Fortran)
-endif()
 
-#set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11) enable if they fix this for Intel
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 include(Psi4Macros)
 include(TestRestrict)
@@ -31,6 +28,7 @@ optional_plugin(Ambit)
 optional_plugin(PCMSolver)
 optional_plugin(CHEMPS2)
 optional_plugin(liberd)
+optional_plugin(dkh)
 
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)

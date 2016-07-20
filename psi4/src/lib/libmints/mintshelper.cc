@@ -49,9 +49,9 @@
 
 using namespace boost;
 
-#ifdef HAVE_DKH
-#include "FCMangle.h"
-#define F_DKH  FC_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
+#ifdef ENABLE_DKH
+#include <DKH/DKH_MANGLE.h>
+#define F_DKH  DKH_MANGLE_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
 
 extern "C" {
     void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
@@ -482,7 +482,7 @@ SharedMatrix MintsHelper::ao_pvp()
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
-#ifdef HAVE_DKH
+#ifdef ENABLE_DKH
     SharedMatrix S = ao_overlap();
     SharedMatrix T = ao_kinetic();
     SharedMatrix Torig = T->clone();
