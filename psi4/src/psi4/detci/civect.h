@@ -145,7 +145,7 @@ class CIvect {
     void axpy(double a, SharedCIVector x, int tvec, int ovec);
     void scale(double a, int tvec);
     void copy(SharedCIVector src, int tvec, int ovec);
-    void divide(SharedCIVector denom, int tvec, int ovec);
+    void divide(SharedCIVector denom, double min_val, int tvec, int ovec);
     void zero(void);
     double vdot(SharedCIVector b, int tvec, int ovec);
     double norm(int tvec);

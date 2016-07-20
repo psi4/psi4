@@ -573,6 +573,7 @@ void CIvect::divide(SharedCIVector denom, double min_val, int tvec, int ovec) {
       for (size_t i = 0; i < buf_size_[buf]; ++i) {
           if (std::fabs(denom->buffer_[i]) > min_val) {
               buffer_[i] /= denom->buffer_[i];
+          }
           else{
             buffer_[i] = 0;
           }

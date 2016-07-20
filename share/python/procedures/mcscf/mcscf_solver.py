@@ -1,3 +1,31 @@
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
+
 import os
 import psi4
 import numpy as np
@@ -120,8 +148,8 @@ def mcscf_solver(ref_wfn):
         # Transform integrals, diagonalize H
         ciwfn.transform_mcscf_integrals(False)
 
-        nci_iter = ciwfn.diag_h(1.e-14, 1.e-14)
-        #nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
+        #nci_iter = ciwfn.diag_h(1.e-14, 1.e-14)
+        nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
@@ -189,8 +217,8 @@ def mcscf_solver(ref_wfn):
         total_step.add(step)
 
         # Do or add DIIS
-#        if (mcscf_iter >= mcscf_diis_start) and not one_step:
-        if False:
+        if (mcscf_iter >= mcscf_diis_start) and not one_step:
+#        if False:
             error = psi4.Matrix.triplet(ciwfn.get_orbitals("OA"),
                                         mcscf_obj.gradient(),
                                         ciwfn.get_orbitals("AV"),
