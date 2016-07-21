@@ -18,6 +18,24 @@ An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
+|PSIfour| is, in many ways, a whole new package compared to Psi3.  
+While some libraries and modules remain the same, the majority of the code has
+been rewritten from scratch based on a powerful set of new libraries written
+in C++.  A totally new Python front-end makes |PSIfour| incredibly user-friendly
+and automates many common tasks such as basis set extrapolation, composite
+methods, running the same computation on every molecule in a test set, etc.
+Density-functional theory, absent in Psi3, is quite efficient
+in |PSIfour|, with many functionals available.  Density fitting is ubiquitous in
+|PSIfour|, leading to some of the most efficient MP2 and CCSD(T) code available.
+|PSIfour| also introduces extensive,
+powerful features for energy component analysis of non-covalent interactions
+via symmetry-adapted perturbation theory.  Orbital-optimized versions of
+perturbation theory and coupled-cluster methods, and their analytic gradients,
+have also been added.  Through external libraries, |PSIfour| gains access to implicit
+solvent (PCM) capabilities, density-matrix renormalization group CI, effective
+fragment potentials, Grimme dispersion corrections, and high-order
+coupled-cluster theory.
+
 In this section, we provide an overview of some of the features of
 |PSIfour| along with the prerequisite steps for running calculations.
 Sec. :ref:`Tutorial <sec:tutorial>` provides a brief tutorial to help new users

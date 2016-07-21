@@ -294,23 +294,38 @@ void MOLECULE::read_geom_grad(void) {
   return;
 }
 
-void MOLECULE::symmetrize_geom(void) {
+void MOLECULE::symmetrize_geom(bool flexible) {
 
 #if defined(OPTKING_PACKAGE_PSI)
+  double symm_tol = Opt_params.symm_tol;
 
   // put matrix into environment.legacy_molecule and it will symmetrize it
   double **geom_2D = g_geom_2D();
-  psi::Process::environment.legacy_molecule()->set_geometry(geom_2D);
+  int max_iter = (flexible ? 10 : 1);
+  bool symmetrized = false;
+  int iter = 0;
 
-  try {
-    psi::Process::environment.legacy_molecule()->symmetrize(Opt_params.symm_tol);
+  while (iter < max_iter && !symmetrized) {
+    try {
+      ++iter;
+      psi::Process::environment.legacy_molecule()->set_geometry(geom_2D);
+      psi::Process::environment.legacy_molecule()->symmetrize(symm_tol, true);
+      oprintf_out("\tSuccessfully symmetrized geometry.\n");
+      symmetrized = true;
+      free_matrix(geom_2D);
+    }
+    catch (psi::PsiException exc) {
+      oprintf_out("\tUnable to symmetrize geometry.\n");
+      if (flexible && iter < 10) {
+        symm_tol *= 1.5;
+        oprintf_out("\tIncreasing symmetry tolerance to %10.4f\n", symm_tol);
+      }
+      else {
+        free_matrix(geom_2D);
+        throw(BROKEN_SYMMETRY_EXCEPT("Broken symmetry in OPT::MOLECULE::SYMMETRIZE_GEOM\n"));
+      }
+    }
   }
-  catch (psi::PsiException exc) {
-    free_matrix(geom_2D);
-    oprintf_out("Could not symmetrize geometry in OPT::MOLECULE::SYMMETRIZE_GEOM()\n");
-    throw(BROKEN_SYMMETRY_EXCEPT("Broken symmetry in OPT::MOLECULE::SYMMETRIZE_GEOM\n"));
-  }
-  free_matrix(geom_2D);
 
   psi::Matrix geom = psi::Process::environment.legacy_molecule()->geometry();
   geom_2D = geom.pointer(); // don't free; it's shared

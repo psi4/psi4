@@ -83,8 +83,8 @@ void FISAPT::common_init()
 
     vectors_["eps_focc"] = reference_->epsilon_a_subset("AO", "FROZEN_OCC");
     vectors_["eps_aocc"] = reference_->epsilon_a_subset("AO", "ACTIVE_OCC");
-    vectors_["eps_avir"] = reference_->epsilon_a_subset("AO", "ACTIVE_OCC");
-    vectors_["eps_focc"] = reference_->epsilon_a_subset("AO", "FROZEN_OCC");
+    vectors_["eps_avir"] = reference_->epsilon_a_subset("AO", "ACTIVE_VIR");
+    vectors_["eps_fvir"] = reference_->epsilon_a_subset("AO", "FROZEN_VIR");
 }
 void FISAPT::compute_energy()
 {
@@ -1082,15 +1082,165 @@ void FISAPT::dHF()
 
     double EHF = EABC - EAC - EBC + EC;
 
+    // => Monomer and dimer energies in the original ABC full system <= //
+
+    // Compute density from A HF localized orbitals
+    boost::shared_ptr<Matrix> LoccA = matrices_["LoccA"];
+    boost::shared_ptr<Matrix> LoccB = matrices_["LoccB"];
+    boost::shared_ptr<Matrix> LD_A = Matrix::doublet(LoccA,LoccA,false,true);
+    boost::shared_ptr<Matrix> LD_B = Matrix::doublet(LoccB,LoccB,false,true);
+
+    // Get J and K from A and B HF localized orbitals while we are at it
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    Cl.clear();
+    Cr.clear();
+
+    Cl.push_back(LoccA);
+    Cr.push_back(LoccA);
+    Cl.push_back(LoccB);
+    Cr.push_back(LoccB);
+
+    jk_->compute();
+
+    boost::shared_ptr<Matrix> LJ_A(J[0]->clone());
+    boost::shared_ptr<Matrix> LK_A(K[0]->clone());
+    boost::shared_ptr<Matrix> LJ_B(J[1]->clone());
+    boost::shared_ptr<Matrix> LK_B(K[1]->clone());
+
+    // We have all the ingredients, now we build everything
+    // Monomer A localised energy
+    double LE_A = 0.0;
+    LE_A += Enuc2p[0][0];
+    boost::shared_ptr<Matrix> LH_A(T->clone());
+    LH_A->copy(T);
+    LH_A->add(V_A);
+    boost::shared_ptr<Matrix> LF_A(LH_A->clone());
+    LF_A->copy(LH_A);
+    LF_A->add(LJ_A);
+    LF_A->add(LJ_A);
+    LF_A->subtract(LK_A);
+    LE_A += LD_A->vector_dot(LH_A) + LD_A->vector_dot(LF_A);
+    LH_A.reset();
+    LF_A.reset();
+
+    // Monomer B localised energy
+    double LE_B = 0.0;
+    LE_B += Enuc2p[1][1];
+    boost::shared_ptr<Matrix> LH_B(T->clone());
+    LH_B->copy(T);
+    LH_B->add(V_B);
+    boost::shared_ptr<Matrix> LF_B(LH_B->clone());
+    LF_B->copy(LH_B);
+    LF_B->add(LJ_B);
+    LF_B->add(LJ_B);
+    LF_B->subtract(LK_B);
+    LE_B += LD_B->vector_dot(LH_B) + LD_B->vector_dot(LF_B);
+    LH_B.reset();
+    LF_B.reset();
+
+    // Dimer AC localised energy
+    double LE_AC = 0.0;
+    LE_AC += Enuc2p[0][0];
+    LE_AC += Enuc2p[0][2];
+    LE_AC += Enuc2p[2][2];
+    LE_AC += Enuc2p[2][0];
+
+    boost::shared_ptr<Matrix> LH_AC(T->clone());
+    LH_AC->copy(T);
+    LH_AC->add(V_A);
+    LH_AC->add(V_C);
+    boost::shared_ptr<Matrix> LF_AC(LH_AC->clone());
+    LF_AC->copy(LH_AC);
+    LF_AC->add(J_C);
+    LF_AC->add(J_C);
+    LF_AC->add(LJ_A);
+    LF_AC->add(LJ_A);
+    LF_AC->subtract(LK_A);
+    LF_AC->subtract(K_C);
+    boost::shared_ptr<Matrix> LD_AC(LD_A->clone());
+    LD_AC->copy(LD_A);
+    LD_AC->add(D_C);
+
+    LE_AC += LD_AC->vector_dot(LH_AC) + LD_AC->vector_dot(LF_AC);
+    LD_AC.reset();
+    LH_AC.reset();
+    LF_AC.reset();
+
+    // Dimer BC localised energy
+    double LE_BC = 0.0;
+    LE_BC += Enuc2p[1][1];
+    LE_BC += Enuc2p[1][2];
+    LE_BC += Enuc2p[2][2];
+    LE_BC += Enuc2p[2][1];
+
+    boost::shared_ptr<Matrix> LH_BC(T->clone());
+    LH_BC->copy(T);
+    LH_BC->add(V_B);
+    LH_BC->add(V_C);
+    boost::shared_ptr<Matrix> LF_BC(LH_BC->clone());
+    LF_BC->copy(LH_BC);
+    LF_BC->add(J_C);
+    LF_BC->add(J_C);
+    LF_BC->add(LJ_B);
+    LF_BC->add(LJ_B);
+    LF_BC->subtract(LK_B);
+    LF_BC->subtract(K_C);
+    boost::shared_ptr<Matrix> LD_BC(LD_B->clone());
+    LD_BC->copy(LD_B);
+    LD_BC->add(D_C);
+
+    LE_BC += LD_BC->vector_dot(LH_BC) + LD_BC->vector_dot(LF_BC);
+    LD_BC.reset();
+    LH_BC.reset();
+    LF_BC.reset();
+
+    // Dimer AB localised energy
+    double LE_BA = 0.0;
+    LE_BA += Enuc2p[1][1];
+    LE_BA += Enuc2p[1][0];
+    LE_BA += Enuc2p[0][0];
+    LE_BA += Enuc2p[0][1];
+
+    boost::shared_ptr<Matrix> LH_BA(T->clone());
+    LH_BA->copy(T);
+    LH_BA->add(V_B);
+    LH_BA->add(V_A);
+    boost::shared_ptr<Matrix> LF_BA(LH_BA->clone());
+    LF_BA->copy(LH_BA);
+    LF_BA->add(LJ_A);
+    LF_BA->add(LJ_A);
+    LF_BA->add(LJ_B);
+    LF_BA->add(LJ_B);
+    LF_BA->subtract(LK_B);
+    LF_BA->subtract(LK_A);
+    boost::shared_ptr<Matrix> LD_BA(LD_B->clone());
+    LD_BA->copy(LD_B);
+    LD_BA->add(LD_A);
+
+    LE_BA += LD_BA->vector_dot(LH_BA) + LD_BA->vector_dot(LF_BA);
+    LD_BA.reset();
+    LH_BA.reset();
+    LF_BA.reset();
+
     // => Print <= //
 
-    outfile->Printf("    E ABC = %24.16E [Eh]\n", EABC);
-    outfile->Printf("    E AC  = %24.16E [Eh]\n", EAC);
-    outfile->Printf("    E BC  = %24.16E [Eh]\n", EBC);
-    outfile->Printf("    E A   = %24.16E [Eh]\n", EA);
-    outfile->Printf("    E B   = %24.16E [Eh]\n", EB);
-    outfile->Printf("    E C   = %24.16E [Eh]\n", EC);
-    outfile->Printf("    E HF  = %24.16E [Eh]\n", EHF);
+    outfile->Printf("    E ABC(HF) = %24.16E [Eh]\n", EABC);
+    outfile->Printf("    E AC(0)   = %24.16E [Eh]\n", EAC);
+    outfile->Printf("    E BC(0)   = %24.16E [Eh]\n", EBC);
+    outfile->Printf("    E A(0)    = %24.16E [Eh]\n", EA);
+    outfile->Printf("    E B(0)    = %24.16E [Eh]\n", EB);
+    outfile->Printf("    E AC(HF)  = %24.16E [Eh]\n", LE_AC);
+    outfile->Printf("    E BC(HF)  = %24.16E [Eh]\n", LE_BC);
+    outfile->Printf("    E AB(HF)  = %24.16E [Eh]\n", LE_BA);
+    outfile->Printf("    E A(HF)   = %24.16E [Eh]\n", LE_A);
+    outfile->Printf("    E B(HF)   = %24.16E [Eh]\n", LE_B);
+    outfile->Printf("    E C       = %24.16E [Eh]\n", EC);
+    outfile->Printf("    E HF      = %24.16E [Eh]\n", EHF);
     outfile->Printf("\n");
 
     scalars_["HF"] = EHF;

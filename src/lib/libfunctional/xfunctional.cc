@@ -59,6 +59,9 @@ void XFunctional::common_init()
     _PBE_kp_ = 0.804;
     _PBE_mu_ = 0.2195149727645171;
 
+    _B86B_mu_ = 0.2449;
+    _B86B_k_ = 0.5757;
+
     _PW91_a1_ = 0.19645 / (2.0 * _k0_);
     _PW91_a2_ = 7.7956 / (2.0 * _k0_);
     _PW91_a3_ = 0.2743 / (4.0 * _k0_ * _k0_);
@@ -94,6 +97,10 @@ void XFunctional::set_parameter(const std::string& key, double val)
         _PBE_kp_ = val;
     } else if (key == "PBE_mu") {
         _PBE_mu_ = val;
+    } else if (key == "B86B_mu") {
+        _B86B_mu_ = val;
+    } else if (key == "B86B_k") {
+        _B86B_k_ = val;
     } else if (key.substr(0,5) == "B97_a") {
         // B97_a0, B97_a1, etc
         int index = atoi(key.substr(5).c_str());
@@ -288,6 +295,20 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
                 }
                 break;
             }
+            case B86B: {
+                double xn = 2*_k0_;
+                double sn = s / xn;
+                double s2 = sn * sn;
+                double mus2 = _B86B_mu_ * s2;
+                double denom = 1.0 + mus2 / _B86B_k_;
+                double denom45 = pow(denom,4./5.);
+                double denom95 = denom45 * denom;
+
+                Fs = 1.0 + mus2 / denom45;
+                Fs_s = (1 / denom45 - 4./5. * mus2 / _B86B_k_ / denom95) * (2. * _B86B_mu_ * sn) / xn;
+
+		break;
+	    }
         }
 
         // > Meta < //
