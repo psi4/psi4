@@ -117,7 +117,7 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
-#ifdef HAVE_GDMA
+#ifdef ENABLE_GDMA
 namespace gdma { SharedWavefunction     gdma(SharedWavefunction, Options&, const std::string &datfilename); }
 #endif
 
@@ -489,7 +489,7 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
     return detci::detci(ref_wfn, Process::environment.options);
 }
 
-#ifdef HAVE_GDMA
+#ifdef ENABLE_GDMA
 double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 {
     py_psi_prepare_options_for_module("GDMA");

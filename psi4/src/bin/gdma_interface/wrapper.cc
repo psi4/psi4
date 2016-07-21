@@ -24,14 +24,14 @@
  *
  * @END LICENSE
  */
-
+#ifdef ENABLE_GDMA 
 #include <boost/python.hpp>
-
+#include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include <libparallel/ParallelPrinter.h>
+#include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/include/psi4-dec.h"
 #include <iostream>
-
+  
 using namespace boost;
 using namespace std;
 
@@ -91,3 +91,4 @@ SharedWavefunction gdma(SharedWavefunction ref_wfn, Options & options, const std
 }
 
 }}
+#endif

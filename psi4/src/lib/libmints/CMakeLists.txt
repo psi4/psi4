@@ -68,9 +68,7 @@ set(sources_list local.cc
                  angularmomentum.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
-psi4_add_library(mints sources_list iwl options psi4util trans 
-                                    erd dkh
-)
+psi4_add_library(mints sources_list iwl options psi4util trans)
 target_include_directories(mints PRIVATE ${LIBERD_INCLUDE_DIRS} 
                                          ${DKH_INCLUDE_DIRS}
 )

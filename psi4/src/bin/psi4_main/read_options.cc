@@ -1243,7 +1243,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         value around 20 (which corresponds to 20\% of the previous iteration's
         density being mixed into the current density)
         could help to solve problems with oscillatory convergence. -*/
-    options.add_double("DAMPING_PERCENTAGE", 100.0);
+    options.add_double("DAMPING_PERCENTAGE", 0.0);
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
         It is recommended to leave damping on until convergence, which is the default.
     **Cfour Interface:** Keyword translates into |cfour__cfour_scf_damping|. -*/

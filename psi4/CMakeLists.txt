@@ -29,6 +29,7 @@ optional_plugin(PCMSolver)
 optional_plugin(CHEMPS2)
 optional_plugin(liberd)
 optional_plugin(dkh)
+optional_plugin(gdma)
 
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)
