@@ -554,6 +554,16 @@ void CIvect::scale(double a, int vec) {
         write(vec, buf);
     }
 }
+void CIvect::shift(double a, int vec) {
+    // this *= a
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(vec, buf);
+        for (size_t i = 0; i < buf_size_[buf]; ++i) {
+            buffer_[i] += a;
+        }
+        write(vec, buf);
+    }
+}
 
 void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
     for (int buf = 0; buf < buf_per_vect_; buf++) {
@@ -699,6 +709,19 @@ double CIvect::norm(int tvec) {
     }
 
     return std::sqrt(dotprod);
+}
+
+void CIvect::vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, int tvec, int xvec, int yvec) {
+    // T += a * X * Y
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        X->read(xvec, buf);
+        Y->read(yvec, buf);
+        read(tvec, buf);
+        for (size_t i=0; i<buf_size_[buf]; i++){
+            buffer_[i] += scale * X->buffer_[i] * Y->buffer_[i];
+        }
+        write(tvec, buf);
+    }
 }
 
 /*

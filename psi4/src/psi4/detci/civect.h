@@ -144,11 +144,15 @@ class CIvect {
     /// BLAS equivalents for CIVectors
     void axpy(double a, SharedCIVector x, int tvec, int ovec);
     void scale(double a, int tvec);
+    void shift(double a, int tvec);
     void copy(SharedCIVector src, int tvec, int ovec);
     void divide(SharedCIVector denom, double min_val, int tvec, int ovec);
     void zero(void);
     double vdot(SharedCIVector b, int tvec, int ovec);
     double norm(int tvec);
+
+    // self += scale * a * b
+    void vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, int tvec, int xvec, int yvec);
 
     /// Specific CIVector operations
     double dcalc3(double lambda, SharedCIVector Hd, int rootnum);

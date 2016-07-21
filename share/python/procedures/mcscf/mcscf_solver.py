@@ -211,7 +211,7 @@ def mcscf_solver(ref_wfn):
 
         maxstep = step.absmax()
         if maxstep > mcscf_steplimit:
-            psi4.print_out('    Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
+            psi4.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
             step.scale(mcscf_steplimit / maxstep)
     
         total_step.add(step)
