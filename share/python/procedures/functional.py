@@ -101,6 +101,29 @@ def build_b88_x_functional(name):
 
     return fun
 
+def build_b86b_x_functional(name):
+
+    # Call this first
+    fun = psi4.Functional.build_base('B86B_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('B86B_X')
+    # Tab in, trailing newlines
+    fun.set_description('    Becke86B GGA Exchange\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # => End User-Customization <= #
+
+    return fun
 
 def build_b3_x_functional(name):
 
@@ -703,6 +726,7 @@ def build_primitive_functional(name):
 functionals = {
         's_x'         : build_s_x_functional,
         'b88_x'       : build_b88_x_functional,
+        'b86b_x'      : build_b86b_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
         'revpbe_x'    : build_revpbe_x_functional,
@@ -1039,6 +1063,37 @@ def build_blyp_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup
 
+def build_b86bpbe_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('B86BPBE')
+    # Tab in, trailing newlines
+    sup.set_description('    B86BPBE GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('B86B_X'))
+    sup.add_c_functional(build_functional('PBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
 
 def build_pw91_superfunctional(name, npoints, deriv):
 
@@ -3471,6 +3526,7 @@ superfunctionals = {
         'vwn3_c'          : build_primitive_superfunctional,
         'svwn'            : build_svwn_superfunctional,
         'blyp'            : build_blyp_superfunctional,
+        'b86bpbe'         : build_b86bpbe_superfunctional,
         'bp86'            : build_bp86_superfunctional,
         'pw91'            : build_pw91_superfunctional,
         'pbe'             : build_pbe_superfunctional,
