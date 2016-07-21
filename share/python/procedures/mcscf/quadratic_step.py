@@ -40,7 +40,7 @@ import p4util
 from p4util.exceptions import *
 np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
-def OCHx(mcscf_obj, ciwfn, C0, vector, mcscf):
+def OCHx(mcscf_obj, ciwfn, C0, vector):
 
     # Build OPDM, < 0 | \gamma | c >
     c_opdm = ciwfn.opdm(C0, vector, 0, 0)[2]
@@ -133,31 +133,23 @@ def COHx(ciwfn, C0, k, output, nact):
     output.scale(2.0, 0)
 
 
-def compute_vector(proj_x, mcscf_obj, mcscf, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2):
+def compute_vector(ci_p, orb_p, mcscf_obj, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2):
 
     # Build up a lot of scratch space because im bad
     scratch1 = ciwfn.new_civector(1, 0, False, True)
     scratch2 = ciwfn.new_civector(1, 0, False, True)
     ci_Ap = ciwfn.new_civector(1, 0, False, True)
     C0vec = ciwfn.new_civector(1, 0, False, True)
-    ci_grad_vec = ciwfn.new_civector(1, 0, False, True)
 
     # Set data
-    ci_grad_vec.np[:] = ci_grad
     ndet = C0.shape[0]
-    ci_p = ciwfn.new_civector(1, 0, False, True)
-    ci_p.np[:] = proj_x[:ndet]
     C0vec.np[:] = C0
 
     # Project P right
-    orig_ci_scale_cp = np.vdot(C0, ci_p.np)
+    orig_ci_scale_cp = C0vec.vdot(ci_p, 0, 0)
     ci_p.axpy(-orig_ci_scale_cp, C0vec, 0, 0)
     ci_p.symnormalize(1.0, 0)
     ci_scale_cp = np.vdot(C0, ci_p.np)
-
-    # Make matrices
-    orb_p = psi4.Matrix.from_array(proj_x[ndet:].reshape(orb_grad.shape))
-    orb_grad = psi4.Matrix.from_array(orb_grad)
 
     # Grab orbital info 
     nact = sum(ciwfn.get_dimension('ACT').to_tuple())
@@ -169,25 +161,26 @@ def compute_vector(proj_x, mcscf_obj, mcscf, ciwfn, orb_grad, ci_grad, C0, dvecs
     ci_Ap.axpy(2.0 * ci_scale_cp, C0vec, 0, 0)
     COHx(ciwfn, C0vec, orb_p, scratch1, nact)
     ci_Ap.axpy(1.0, scratch1, 0, 0)
-    scale = ci_p.vdot(ci_grad_vec, 0, 0)
+    scale = ci_p.vdot(ci_grad, 0, 0)
     scale += 2 * orb_grad.vector_dot(orb_p)
     ci_Ap.axpy(-scale, C0vec, 0, 0)
-    ci_Ap.axpy(-ci_scale_cp, ci_grad_vec, 0, 0)
+    ci_Ap.axpy(-ci_scale_cp, ci_grad, 0, 0)
 
     # Build orb_Ap
-    orb_Ap = OCHx(mcscf_obj, ciwfn, C0vec, ci_p, mcscf)
+    orb_Ap = OCHx(mcscf_obj, ciwfn, C0vec, ci_p)
     orb_Ap.add(mcscf_obj.compute_Hk(orb_p))
     orb_Ap.axpy(-2.0 * ci_scale_cp, orb_grad)
-    orb_Ap = np.array(orb_Ap)
-    orb_Ap[ndocc:, :nact] = 0
+    mcscf_obj.zero_redundant(orb_Ap)
+    #orb_Ap = np.array(orb_Ap)
+    #orb_Ap[ndocc:, :nact] = 0
 
     # Project P left
     proj_scale_cp = ci_Ap.vdot(C0vec, 0, 0)
     ci_Ap.axpy(-proj_scale_cp, C0vec, 0, 0)
 
-    Ap = np.hstack((ci_Ap.np, orb_Ap.ravel()))
+    #Ap = np.hstack((ci_Ap.np, orb_Ap.ravel()))
 
-    return Ap
+    return ci_Ap, orb_Ap
 
 
 def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
@@ -217,21 +210,16 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     mcscf = None
 
     # Grab temps
-    ci_grad = ci_grad
     CI_elec_energy = mcscf_obj.current_total_energy()
-    orb_grad = np.array(mcscf_obj.gradient())
-    diag_hess = np.array(mcscf_obj.H_approx_diag())
+    orb_grad = mcscf_obj.gradient()
     norm_ci_grad = ci_grad.norm(0)
     norm_orb_grad = np.linalg.norm(orb_grad)
     dvecs1_buff[:] = C0
     dvecs1.symnormalize(1.0, 0)
     C0[:] = np.asarray(dvecs1_buff)
 
-    # Gradients
-    grad = -np.hstack((ci_grad.np, orb_grad.ravel()))
-    RHS = grad.ravel()
 
-    # Preconditioners
+    ### Preconditioners
 
     # CI preconditioner
     # 2 * (Hd - E + C0 * C0) - 2.0 * C0 * ci_grad
@@ -241,72 +229,130 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     ci_precon.scale(2.0, 0)
     ci_precon.vector_multiply(-2.0, dvecs1, ci_grad, 0, 0, 0)
 
-    ci_precon = np.array(ci_precon)
-    ci_grad = np.array(ci_grad)
+    orb_precon = mcscf_obj.H_approx_diag()
+
+    ### Compute initial X
+    ci_x = ciwfn.new_civector(1, 0, False, True)
+    ci_x.copy(ci_grad, 0, 0)
+    ci_x.divide(ci_precon, 1.e-8, 0, 0)
+    ci_x.scale(-1.0, 0) 
+
+    orb_x = orb_grad.clone()
+    orb_x.apply_denominator(orb_precon)
+    orb_x.scale(-1.0)
+
+    ### Ax product
+    ci_Ax, orb_Ax = compute_vector(ci_x, orb_x, mcscf_obj, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2)
+
+    ### Compute R, Z, P
+    ci_r = ciwfn.new_civector(1, 0, False, True)
+    ci_r.copy(ci_grad, 0, 0)
+    ci_r.scale(-1.0, 0)
+    ci_r.axpy(-1.0, ci_Ax, 0, 0)
+    ci_r.np[np.abs(ci_r.np) < 1.e-14] = 0
+
+    orb_r = orb_grad.clone()
+    orb_r.scale(-1.0)
+    orb_r.subtract(orb_Ax)
+
+    ci_z = ciwfn.new_civector(1, 0, False, True)
+    ci_z.copy(ci_r, 0, 0)
+    ci_z.divide(ci_precon, 1.e-12, 0, 0)
+
+    orb_z = orb_r.clone()
+    orb_z.apply_denominator(orb_precon)
+
+    ci_p = ciwfn.new_civector(1, 0, False, True)
+    ci_p.copy(ci_z, 0, 0)
+
+    orb_p = orb_z.clone()
     
-    #ci_precon = 2 * (Hd - mcscf_obj.current_total_energy() + C0 * C0)
-#    ci_precon -= 2.0 * C0 * ci_grad
-    orb_precon = diag_hess.copy()
-    precon = np.hstack((ci_precon, orb_precon.ravel()))
+    ci_rel_tol = ci_r.norm(0) ** 2
+    orb_rel_tol = orb_r.sum_of_squares()
+    rel_tol = ci_rel_tol + orb_rel_tol
+    
+    psi4.print_out("\n")
+    psi4.print_out("                 Starting CI RMS = %1.4e   ORB RMS = %1.4e\n" %
+                                        (ci_rel_tol ** 0.5, orb_rel_tol ** 0.5))
 
-    # Initial X
-    ci_x = -ci_grad / ci_precon
-    orb_x = -orb_grad / orb_precon
-    x = RHS / precon
-    x[:ndet][np.abs(x[:ndet]) < 1e-15] = 0
-    ci_x[:ndet][np.abs(x[:ndet]) < 1e-15] = 0
-
-    # Ax product
-    Ax = compute_vector(x, mcscf_obj, mcscf, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2)
-
-    # CG update
-    r = RHS - Ax
-    z = r / precon
-    p = z.copy()
-    r[:ndet][np.abs(x[:ndet]) < 1e-14] = 0
-
-    rel_tol = np.vdot(r, r)
-    print rel_tol
-    raise Exception("")
-
-    # CG loops
+    ### CG loops
     for rot_iter in range(12):
-        rz_old = np.vdot(r, z)
-        p[:ndet][np.abs(p[:ndet]) < 1e-15] = 0
-        Ap = compute_vector(p, mcscf_obj, mcscf, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2)
-        alpha = rz_old / np.vdot(Ap, p)
-        if alpha > 15:
-            print 'Warning! CG Alpha is %f' % alpha
-            break
-        x += alpha * p
-        r -= alpha * Ap
-        z = r / precon
-        rms = ((np.vdot(r, r) / rel_tol) ** 0.5).real
-        print '      Micro Iteration %5d: Rel. RMS = %1.5e' % (rot_iter + 1, rms)
-        if rms < 0.0001:
-            break
-        beta = np.vdot(r, z) / rz_old
-        if beta < 0:
-            print 'Warning! CG Beta is %f, capping at 0' % beta
-            beta = 0
-        p = z + beta * p
 
-    step = x
+        # Compute rz_old
+        rz_old = ci_r.vdot(ci_z, 0, 0)
+        rz_old += orb_r.vector_dot(orb_z)
+
+        # Compute Hessian vector product
+        ci_p.np[:ndet][np.abs(ci_p.np) < 1e-15] = 0
+        ci_Ap, orb_Ap = compute_vector(ci_p, orb_p, mcscf_obj, ciwfn, orb_grad, ci_grad, C0, dvecs1, dvecs2)
+
+        # Compute alpha
+        alpha_denom = ci_Ap.vdot(ci_p, 0, 0)
+        alpha_denom += orb_Ap.vector_dot(orb_p)
+        alpha = rz_old / alpha_denom
+
+        if alpha > 15:
+            psi4.print_out("Warning! CG Alpha is %f\n" % alpha)
+            break
+
+        # Update x, r, z
+        ci_x.axpy(alpha, ci_p, 0, 0)
+        ci_r.axpy(-alpha, ci_Ap, 0, 0)
+        ci_z.copy(ci_r, 0, 0)
+        ci_z.divide(ci_precon, 1.e-15, 0, 0)
+
+        orb_x.axpy(alpha, orb_p)
+        orb_r.axpy(-alpha, orb_Ap)
+        orb_z = orb_r.clone()
+        orb_z.apply_denominator(orb_precon)
+
+        # Compute relative RMS and print
+        ci_numer = ci_r.norm(0) ** 2
+        orb_numer = orb_r.sum_of_squares()
+        rms_numer = ci_numer + orb_numer
+
+        ci_rms = (ci_numer / ci_rel_tol) ** 0.5 
+        orb_rms = (orb_numer / orb_rel_tol) ** 0.5 
+        rms = (rms_numer / rel_tol) ** 0.5
+        
+
+        psi4.print_out("      Micro Iter %2d: Rel. CI RMS = %1.4e   ORB RMS = %1.4e\n" %
+                                            (rot_iter + 1, ci_rms, orb_rms))
+        if rms < 0.0001:
+            psi4.print_out("                 MCSCF microiteration have converged!\n\n")
+            break
+
+        # Compute beta
+        beta_numer = ci_r.vdot(ci_z, 0, 0)
+        beta_numer += orb_r.vector_dot(orb_z)
+        beta = beta_numer / rz_old
+
+        if beta < 0:
+            psi4.print_out("Warning! CG Beta is %f, capping at 0\n" % beta)
+            beta = 0
+
+        # Update p
+        ci_p.scale(beta, 0)
+        ci_p.axpy(1.0, ci_z, 0, 0)
+
+        orb_p.scale(beta)
+        orb_p.axpy(1.0, orb_z)
+
 
     # CI update
-    dvecs1.np[:] = step[:ndet]
-    dvec.axpy(1.0, dvecs1, 0, 0)
+    dvec.axpy(1.0, ci_x, 0, 0)
     norm = dvec.norm(0)
     dvec.symnormalize(1.0 / norm, 0)
 
     # Orbital step
-    orb_step = step[ndet:].reshape(noa, nav)
-    orb_step[docc:, :act] = 0
-    orb_step = psi4.Matrix.from_array(orb_step)
-    orb_step.np[:] *= -1
+    orb_x.scale(-1.0)
+    mcscf_obj.zero_redundant(orb_x)
+
+    rot_iter *= 2
+    rot_iter += 1
 
     return (True,
      rot_iter,
      rot_iter,
-     orb_step)
+     orb_x)
 # okay decompiling quadratic_step.pyc
