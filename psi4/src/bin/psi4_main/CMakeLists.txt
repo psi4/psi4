@@ -44,8 +44,7 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
 #This library is special because we want this library to be a .so so that we
 #can use the Python interface, even if the rest of Psi4 is static, but need to
 #be able to build it statically for the binary
-if(NOT ENABLE_PYTHON_INTERFACE)
-   
+if(ENABLE_PYTHON_INTERFACE)
    add_library(psi4_main SHARED ${sources_list})
 else()
     add_library(psi4_main STATIC ${sources_list})
@@ -75,7 +74,7 @@ target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
     cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
     mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index deriv 
-    int thermo mrcc scf sapt 
+    int thermo mrcc scf sapt gdma_interface
     ${LAPACK_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES}
 )
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 

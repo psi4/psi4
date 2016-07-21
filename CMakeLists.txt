@@ -34,11 +34,12 @@ option(ENABLE_DKH "Enables DKH integrals" OFF)
 option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
 option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
-option(BUILD_SHARED_LIBS "Psi4 libraries will be shared objects" OFF)
+option(BUILD_SHARED_LIBS "All Psi4 libraries will be shared objects" OFF)
+option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
                   "-xHost")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
-                  "-fprofile-arcs" "-ftest-coverage")
+                  "-ftest-coverage")
 option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF 
                   "-fsanitize=address" "-fno-omit-fram-pointer")
 option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
@@ -96,6 +97,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_GDMA=${ENABLE_GDMA}
               -DENABLE_DKH=${ENABLE_DKH}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
+              -DENABLE_PYTHON_INTERFACE=${ENABLE_PYTHON_INTERFACE}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
@@ -110,6 +112,8 @@ add_dependencies(psi4_core boost_external
                            pcmsolver_external
                            liberd_external
                            ambit_external
+                           dkh_external
+                           gdma_external
 )
 enable_testing()
 add_subdirectory(tests)
