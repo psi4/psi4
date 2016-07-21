@@ -1,0 +1,62 @@
+memory 2400 mb heap 500 mb global 1000 mb
+
+start h2o
+geometry 
+zmatrix units angstrom
+O
+H 1 1.0
+H 1 1.0 2 104.5
+end
+end
+
+basis 
+* library sto-3g
+end
+
+dft
+  xc becke86b 1.0 cpbe96 1.0 
+  direct
+  grid lebedev 99 11
+end
+
+task dft energy
+
+dft
+  odft
+end
+
+task dft energy
+
+geometry 
+zmatrix units angstrom
+O
+H 1 1.0
+H 1 1.0 2 104.5
+end
+end
+
+charge 1
+
+dft
+ mult 2
+ odft
+end
+
+task dft energy
+
+geometry 
+zmatrix units angstrom
+O
+H 1 1.0
+H 1 1.0 2 104.5
+end
+end
+
+charge -1
+
+dft
+ mult 2
+ odft
+end
+
+task dft energy

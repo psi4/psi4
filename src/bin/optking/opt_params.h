@@ -35,6 +35,7 @@
 #define _opt_opt_params_h_
 
 #include <string>
+#include <vector>
 
 namespace opt {
 
@@ -61,7 +62,7 @@ struct OPT_PARAMS {
 
   enum INTERFRAGMENT_MODE {FIXED, PRINCIPAL_AXES} interfragment_mode;
 
-  bool generate_intcos_only;
+  bool intcos_generate_exit;
 
   bool rfo_follow_root; // whether to do root following
   int rfo_root;         // which root to follow
@@ -142,6 +143,9 @@ struct OPT_PARAMS {
   std::string fixed_distance_str;
   std::string fixed_bend_str;  
   std::string fixed_dihedral_str;
+
+  // For each fragment, for each reference atom, list of component atoms defining it
+  std::vector<std::vector<std::vector<int> > > frag_ref_atoms;
 
 // ** Unlikely to need modified **
 
