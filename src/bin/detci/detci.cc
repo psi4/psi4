@@ -53,6 +53,7 @@
 
 namespace psi { namespace detci {
 
+
 SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options);
 
 }} // namespace psi::detci
