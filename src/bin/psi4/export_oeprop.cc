@@ -56,7 +56,12 @@ void export_oeprop()
         def("set_Da_so", &OEProp::set_Da_so, "docstring").
         def("set_Db_so", &OEProp::set_Db_so, "docstring").
         def("set_Da_mo", &OEProp::set_Da_mo, "docstring").
-        def("set_Db_mo", &OEProp::set_Db_mo, "docstring");
+        def("set_Db_mo", &OEProp::set_Db_mo, "docstring").
+        def("Vvals",  &OEProp::Vvals,  "The electrostatic potential (in a.u.) at each grid point").
+        def("Exvals", &OEProp::Exvals, "The x component of the field (in a.u.) at each grid point").
+        def("Eyvals", &OEProp::Eyvals, "The y component of the field (in a.u.) at each grid point").
+        def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point");
+
 
     //class_<GridProp, boost::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").
