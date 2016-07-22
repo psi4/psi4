@@ -45,7 +45,8 @@
 #   include <crt_externs.h>
 #   define environ (*_NSGetEnviron())
 #endif
-
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -58,7 +59,7 @@ const std::string empty_;
 void Process::Environment::initialize()
 {
     // If envp is NULL, try to obtain envp from enviorn in unistd.h
-
+  
     string psi4datadir;
 
     // First set some defaults:
@@ -66,7 +67,7 @@ void Process::Environment::initialize()
     //   removes the padding nul characters introduced by the binary
     //   substitution of the conda relocated PSIDATADIR so that
     //   PSIDATADIR + /python forms properly w/o nul in the middle
-    std::string temp = INSTALLEDPSIDATADIR;
+    std::string temp = TOSTRING(INSTALLEDPSIDATADIR);
     environment_["PSIDATADIR"] = std::string(temp.c_str());
     environment_["MAD_NUM_THREADS"] = "1";
 

@@ -62,8 +62,8 @@ set_target_properties(psi4_main PROPERTIES INSTALL_RPATH "${PSI4_RPATH}"
                                            OUTPUT_NAME psi4
 )                              
 
-install(TARGETS psi4_main LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-                          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+install(TARGETS psi4_main LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+                          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
 )
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
         DESTINATION psi4/src/bin/psi4_main
