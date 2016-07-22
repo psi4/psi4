@@ -63,7 +63,7 @@ macro(add_regression_test _name _labels)
     # Serial build
     add_test(NAME "${_name}"
       WORKING_DIRECTORY "${TEST_RUN_DIR}"
-      COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${CMAKE_INSTALL_PREFIX}/psi4" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
+      COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${psi4_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}"
     )
 
     if(labels)
