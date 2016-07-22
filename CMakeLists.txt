@@ -66,6 +66,7 @@ find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 add_CXX_flags("-std=c++11")
 add_CXX_flags("-std=c++0x")
+add_CXX_flags("-std=gnu++11")
 
 ############################## Dependencies ####################################
 find_package(PythonInterp REQUIRED)
