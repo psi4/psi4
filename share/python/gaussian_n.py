@@ -55,7 +55,7 @@ def run_gaussian_2(name, **kwargs):
         ['SCF','SCF_TYPE'])
 
     # override default scf_type
-    psi4.set_local_option('SCF','SCF_TYPE','OUT_OF_CORE')
+    psi4.set_local_option('SCF','SCF_TYPE','PK')
 
     # optimize geometry at scf level
     psi4.clean()
@@ -64,6 +64,7 @@ def run_gaussian_2(name, **kwargs):
     psi4.clean()
 
     # scf frequencies for zpe
+    # NOTE This line should not be needed, but without it there's a seg fault
     scf_e, ref = driver.frequency('scf', return_wfn=True)
 
     # thermodynamic properties
@@ -130,7 +131,6 @@ def run_gaussian_2(name, **kwargs):
     driver.energy('mp2')
     emp2_big = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
-
     eqci       = eqci_6311gdp
     e_delta_g2 = emp2_big + emp2_6311gd - emp2_6311g2dfp - emp2_6311pg_dp
     e_plus     = emp4_6311pg_dp - emp4_6311gd

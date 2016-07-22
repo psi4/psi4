@@ -10,7 +10,7 @@ molecule h2o {
 
 set basis cc-pVDZ
 optimize('scf')
-scf_e, scf_wfn = frequencies('scf', return_wfn=True)
+scf_e, scf_wfn = frequencies('scf', return_wfn=True, dertype=1)
 
 ref_freqs = psi4.Vector(3) #TEST
 ref_freqs.set(0, 0, 1775.65) #TEST

@@ -172,6 +172,8 @@ procedures = {
         },
         'hessian' : {
             # Upon adding a method to this list, add it to the docstring in frequency() below
+            'hf'            : proc.run_scf_hessian,
+            'scf'            : proc.run_scf_hessian,
         },
         'property' : {
             'hf'       : proc.run_scf_property,

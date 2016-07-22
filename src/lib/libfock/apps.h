@@ -72,11 +72,12 @@ protected:
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<VBase> v_;
 
+    bool use_symmetry_;
     double Eref_;
     
 public:
 
-    RBase(SharedWavefunction ref_wfn, Options& options);
+    RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
     // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
     RBase(bool flag);
     virtual ~RBase();
@@ -104,6 +105,7 @@ public:
 
     /// => Setters <= ///
 
+    void set_use_symmetry(bool usesym) { use_symmetry_ = usesym; }
     /// Set convergence behavior
     void set_convergence(double convergence) { convergence_ = convergence; }
 
@@ -209,7 +211,7 @@ protected:
     std::set<std::string> tasks_;
 
 public:
-    RCPHF(SharedWavefunction ref_wfn, Options& options);
+    RCPHF(SharedWavefunction ref_wfn, Options& options, bool use_symmetry=true);
     virtual ~RCPHF();
 
     /// Solve for all perturbations currently in b 

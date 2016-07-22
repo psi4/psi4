@@ -54,8 +54,9 @@ using namespace boost;
 
 namespace psi {
 
-RBase::RBase(SharedWavefunction ref_wfn, Options& options) :
-    Wavefunction(options)
+RBase::RBase(SharedWavefunction ref_wfn, Options& options, bool use_symmetry) :
+    Wavefunction(options),
+    use_symmetry_(use_symmetry)
 {
     shallow_copy(ref_wfn);
 
@@ -88,15 +89,27 @@ void RBase::set_reference(SharedWavefunction ref_wfn)
 
     Eref_ = reference_wavefunction_->reference_energy();
 
-    Cocc_  = Ca_subset("SO","OCC");
-    Cfocc_ = Ca_subset("SO","FROZEN_OCC");
-    Caocc_ = Ca_subset("SO","ACTIVE_OCC");
-    Cavir_ = Ca_subset("SO","ACTIVE_VIR");
-    Cfvir_ = Ca_subset("SO","FROZEN_VIR");
-    eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
-    eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
-    eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
-    eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
+    if(use_symmetry_) {
+        Cocc_  = Ca_subset("SO","OCC");
+        Cfocc_ = Ca_subset("SO","FROZEN_OCC");
+        Caocc_ = Ca_subset("SO","ACTIVE_OCC");
+        Cavir_ = Ca_subset("SO","ACTIVE_VIR");
+        Cfvir_ = Ca_subset("SO","FROZEN_VIR");
+        eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
+        eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
+        eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
+        eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
+    } else {
+        Cocc_  = Ca_subset("AO","OCC");
+        Cfocc_ = Ca_subset("AO","FROZEN_OCC");
+        Caocc_ = Ca_subset("AO","ACTIVE_OCC");
+        Cavir_ = Ca_subset("AO","ACTIVE_VIR");
+        Cfvir_ = Ca_subset("AO","FROZEN_VIR");
+        eps_focc_ = epsilon_a_subset("AO","FROZEN_OCC");
+        eps_aocc_ = epsilon_a_subset("AO","ACTIVE_OCC");
+        eps_avir_ = epsilon_a_subset("AO","ACTIVE_VIR");
+        eps_fvir_ = epsilon_a_subset("AO","FROZEN_VIR");
+    }
 
     std::vector<SharedMatrix> Cs;
     Cs.push_back(Cfocc_);
@@ -131,8 +144,8 @@ void RBase::postiterations()
     jk_.reset();
 }
 
-RCPHF::RCPHF(SharedWavefunction ref_wfn, Options& options) :
-    RBase(ref_wfn, options)
+RCPHF::RCPHF(SharedWavefunction ref_wfn, Options& options, bool use_symmetry) :
+    RBase(ref_wfn, options, use_symmetry)
 {
 }
 RCPHF::~RCPHF()

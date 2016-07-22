@@ -1583,8 +1583,8 @@ def frequency(name, **kwargs):
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
-    .. note:: Analytic hessians are not available. Frequencies will proceed through
-        finite differences according to availability of gradients or energies.
+    .. note:: Analytic hessians are only available for RHF. For all other methods, Frequencies will
+        proceed through finite differences according to availability of gradients or energies.
 
     .. _`table:freq_gen`:
 
