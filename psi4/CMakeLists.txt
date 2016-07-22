@@ -37,7 +37,7 @@ add_subdirectory(src)
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(psi4_exe psi4.cc)
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
-set(PSI4_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+set(PSI4_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
                ${PYTHON_LIB_DIR}
 )
 set_target_properties(psi4_exe PROPERTIES OUTPUT_NAME psi4
@@ -59,6 +59,8 @@ target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list})
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake 
         DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}/psi4)
-install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(TARGETS psi4_exe RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX}
+        PATTERN fsapt EXCLUDE
+)
+install(TARGETS psi4_exe RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})

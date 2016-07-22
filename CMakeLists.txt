@@ -6,7 +6,6 @@
 #    - CMAKE_CXX_FLAGS Any extra C++ flags you want to pass
 #    - Fortran_FLAGS Any extra Fortran flags you want to pass
 #    - CMAKE_BINARY_DIR The build directory (default: build)
-#    - CMAKE_INSTALL_PREFIX The install directory (default: /usr/local)
 #    - CMAKE_BUILD_TYPE Is this Debug, Release, or Profiling
 #    - BUILD_SHARED_LIBS If ON Psi4 libraries will be shared
 #    - CMAKE_PREFIX_PATH List of places find_package should look for packages
@@ -14,10 +13,18 @@
 #    - PYTHON_LIBRARY Path to the python library that goes with the exe
 #    - PYTHON_INCLUDE_DIR Path to the python include files    
 #
+#    CMake by default installs things to:
+#
+#      CMAKE_INSTALL_PREFIX/CMAKE_INSTALL_XDIR
+#
+#    where X is BIN, LIB, or INCLUDE for binaries, libraries, and include files
+#    respectively.  The defaults are bin, lib, and include respectively.
+#
 
 #Need 3.1 for build_always
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 CXX C)
+include(GNUInstallDirs)
 #set(CMAKE_CXX_STANDARD 11) Not working with Intel compilers at moment
 include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
@@ -78,12 +85,15 @@ list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
 
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
-   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/psi4
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} 
-              -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} 
+              -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+              -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+              -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+              -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR} 
               -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
@@ -118,10 +128,8 @@ add_dependencies(psi4_core boost_external
 add_subdirectory(doc)
 enable_testing()
 add_subdirectory(tests)
-#Splitting it by folder allows us to avoid an extraneous directory
-install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/psi4 USE_SOURCE_PERMISSIONS)
-install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/psi4
-        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/psi4 USE_SOURCE_PERMISSIONS)
+        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)

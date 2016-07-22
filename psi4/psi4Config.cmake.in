@@ -13,20 +13,20 @@ macro(psi4_not_found name)
 endmacro()
 
 find_library(PSI4_LIBRARY NAMES mints
-                          PATHS ${PSI4_CONFIG_PATH}/lib 
+                          PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_LIBDIR@ 
                           NO_DEFAULT_PATH
 )
 psi4_not_found(LIBRARY)
 
 
 find_path(PSI4_INCLUDE_DIR NAMES psi4/include/psi4-dec.h 
-                           PATHS ${PSI4_CONFIG_PATH}
+                           PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_INCLUDEDIR@
                            NO_DEFAULT_PATH
 )
 psi4_not_found(INCLUDE_DIR)
 
 find_program(PSI4_EXECUTABLE NAMES psi4 
-                             PATHS ${PSI4_CONFIG_PATH}/bin 
+                             PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_BINDIR@
                              NO_DEFAULT_PATH
 )
 psi4_not_found(EXECUTABLE)

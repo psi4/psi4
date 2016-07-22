@@ -20,9 +20,9 @@ macro(general_add_library libname sources prefix dir)
    set_target_properties(${libname} PROPERTIES 
        POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
    )
-   install(TARGETS ${libname} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+   install(TARGETS ${libname} DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-      DESTINATION psi4/src/${dir}/${prefix}${libname}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4/src/${dir}/${prefix}${libname}
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
    set(depend_name "${ARGN}")
