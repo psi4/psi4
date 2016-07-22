@@ -1764,6 +1764,16 @@ def run_scf_hessian(name, **kwargs):
     ref_wfn.set_frequencies(freqvec)
     # End of temporary freq hack.  Remove me later! 
 
+    # Write Hessian out.  This probably needs a more permanent home, too.
+    # This is a drop-in replacement for the code that lives in findif
+    if psi4.get_option('FINDIF', 'HESSIAN_WRITE'):
+        molname = ref_wfn.molecule().name()
+        prefix = psi4.get_writer_file_prefix(molname)
+        with open(prefix+".hess", 'w') as fp:
+            fp.write("%5d%5d\n" % (natoms, 6*natoms))
+            for row in np.reshape(H, (-1, 3)):
+                fp.write("%20.10f%20.10f%20.10f\n" % tuple(row))
+
     optstash.restore()
     return ref_wfn
 
