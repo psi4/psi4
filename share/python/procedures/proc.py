@@ -2066,6 +2066,7 @@ def run_dft_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
+    scf_wfn.oeprop = oe
 
     optstash.restore()
     return scf_wfn
@@ -2091,6 +2092,7 @@ def run_scf_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
+    scf_wfn.oeprop = oe
 
     optstash.restore()
     return scf_wfn
@@ -2275,6 +2277,7 @@ def run_dfmp2_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
+    dfmp2_wfn.oeprop = oe
 
     optstash.restore()
     return dfmp2_wfn
@@ -2332,6 +2335,7 @@ def run_detci_property(name, **kwargs):
 
     # Compute "the" CI density
     oe.compute()
+    ciwfn.oeprop = oe
 
     # If we have more than one root, compute all data
     if nroots > 1:
@@ -3643,6 +3647,7 @@ def run_detcas(name, **kwargs):
     oeprop.set_title(name.upper())
     oeprop.add("DIPOLE")
     oeprop.compute()
+    ciwfn.oeprop = oeprop
     psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable(name.upper() + " DIPOLE X"))
     psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable(name.upper() + " DIPOLE Y"))
     psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable(name.upper() + " DIPOLE Z"))

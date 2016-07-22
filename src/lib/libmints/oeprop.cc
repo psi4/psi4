@@ -1049,6 +1049,7 @@ void OEProp::compute_esp_over_grid()
     int nbf = basisset_->nbf();
     SharedMatrix ints(new Matrix("Ex integrals", nbf, nbf));
 
+    Vvals_.clear();
     FILE *gridout = fopen("grid_esp.dat", "w");
     if(!gridout)
         throw PSIEXCEPTION("Unable to write to grid_esp.dat");
@@ -1068,6 +1069,7 @@ void OEProp::compute_esp_over_grid()
             if(r > 1.0E-8)
                 Vnuc += mol->Z(i)/r;
         }
+        Vvals_.push_back(Velec+Vnuc);
         fprintf(gridout, "%16.10f\n", Velec+Vnuc);
     }
     fclose(gridout);
@@ -1097,6 +1099,10 @@ void OEProp::compute_field_over_grid()
     intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nbf, nbf)));
     intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nbf, nbf)));
 
+    Exvals_.clear();
+    Eyvals_.clear();
+    Ezvals_.clear();
+
     FILE *gridout = fopen("grid_field.dat", "w");
     if(!gridout)
         throw PSIEXCEPTION("Unable to write to grid_field.dat");
@@ -1113,6 +1119,9 @@ void OEProp::compute_field_over_grid()
         double Ey = Dtot->vector_dot(intmats[1]);
         double Ez = Dtot->vector_dot(intmats[2]);
         Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
+        Exvals_.push_back(Ex+nuc[0]);
+        Eyvals_.push_back(Ey+nuc[1]);
+        Ezvals_.push_back(Ez+nuc[2]);
         fprintf(gridout, "%16.10f %16.10f %16.10f\n", Ex+nuc[0], Ey+nuc[1], Ez+nuc[2]);
     }
     fclose(gridout);

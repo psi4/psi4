@@ -277,6 +277,13 @@ protected:
     /// Whether the origin is on a symmetry axis or not
     bool origin_preserves_symmetry_;
 
+    /// The ESP in a.u., computed at each grid point
+    std::vector<double> Vvals_;
+    /// The field components in a.u. computed at each grid point
+    std::vector<double> Exvals_;
+    std::vector<double> Eyvals_;
+    std::vector<double> Ezvals_;
+
     /// Computes the center for a given property, for the current molecule
     Vector3 compute_center(const double *property) const;
 public:
@@ -294,6 +301,11 @@ public:
 
     /// Compute and print/save the properties
     void compute();
+
+    std::vector<double> Vvals() const { return Vvals_; }
+    std::vector<double> Exvals() const { return Exvals_; }
+    std::vector<double> Eyvals() const { return Eyvals_; }
+    std::vector<double> Ezvals() const { return Ezvals_; }
 };
 
 /**
