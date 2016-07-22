@@ -925,11 +925,11 @@ void OEProp::compute_multipoles(int order, bool transition)
         aompOBI->compute(mp_ints);
 
         if (same_dens_) {
-            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
             Db = Da;
         } else {
-            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
-            Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO");
+            Da = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
+            Db = wfn_->D_subset_helper(Db_so_, Cb_so_, "AO");
         }
     }
 
@@ -1039,15 +1039,15 @@ void OEProp::compute_esp_over_grid()
 
     outfile->Printf( "\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
 
-    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
+    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO"));
+        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "AO"));
     }
 
-    int nao = basisset_->nao();
-    SharedMatrix ints(new Matrix("Ex integrals", nao, nao));
+    int nbf = basisset_->nbf();
+    SharedMatrix ints(new Matrix("Ex integrals", nbf, nbf));
 
     FILE *gridout = fopen("grid_esp.dat", "w");
     if(!gridout)
@@ -1082,20 +1082,20 @@ void OEProp::compute_field_over_grid()
 
     outfile->Printf( "\n Field computed on the grid and written to grid_field.dat\n");
 
-    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "CartAO");
+    SharedMatrix Dtot = wfn_->D_subset_helper(Da_so_, Ca_so_, "AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     }else{
-        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "CartAO"));
+        Dtot->add(wfn_->D_subset_helper(Db_so_, Cb_so_, "AO"));
     }
 
     boost::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
 
-    int nao = basisset_->nao();
+    int nbf = basisset_->nbf();
     std::vector<SharedMatrix> intmats;
-    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nao, nao)));
-    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nao, nao)));
-    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nao, nao)));
+    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nbf, nbf)));
 
     FILE *gridout = fopen("grid_field.dat", "w");
     if(!gridout)
