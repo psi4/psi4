@@ -22,7 +22,7 @@ fdriver = open('source/autodir_psivariables/module__cfour.rst', 'w')
 fdriver.write('\n\n')
 
 psivars = []
-for pyfile in glob.glob(DriverPath + '../../share/python/qcdb/cfour.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/share/python/qcdb/cfour.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)

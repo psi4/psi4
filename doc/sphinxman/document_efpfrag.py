@@ -117,7 +117,7 @@ fdriver.write('\n\n')
 fdriver.write(chemdoodle)
 fdriver.write('\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../share/efpfrag/*.efp'):
+for pyfile in glob.glob(DriverPath + '../../psi4/share/efpfrag/*.efp'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)

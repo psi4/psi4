@@ -15,7 +15,7 @@ no warnings 'deprecated';
 #
 my $DriverPath = "";
 if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
-my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
+my $DriverFile = $DriverPath . "../../psi4/src/bin/psi4_main/read_options.cc";
 
 my $CurrentModule;
 my %Keywords;
