@@ -25,7 +25,7 @@ fdriver.write('=============\n')
 fdriver.write('Python Driver\n')
 fdriver.write('=============\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/share/python/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -68,7 +68,7 @@ for pyfile in glob.glob(DriverPath + '../../share/python/*.py'):
 
 
 # Python-only plugin modules in psi4/share/python
-for basename in os.walk(DriverPath + '../../share/python').next()[1]:
+for basename in os.walk(DriverPath + '../../psi4/share/python').next()[1]:
     div = '=' * len(basename)
 
     if basename not in ['grendel']:
@@ -81,7 +81,7 @@ for basename in os.walk(DriverPath + '../../share/python').next()[1]:
         fdriver.write('   :members:\n')
         fdriver.write('   :undoc-members:\n')
 
-        for pyfile in glob.glob(DriverPath + '../../share/python/' + basename + '/*py'):
+        for pyfile in glob.glob(DriverPath + '../../psi4/share/python/' + basename + '/*py'):
             filename = os.path.split(pyfile)[1]
             basename2 = os.path.splitext(filename)[0]
             div = '=' * len(basename2)

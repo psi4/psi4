@@ -115,6 +115,7 @@ add_dependencies(psi4_core boost_external
                            dkh_external
                            gdma_external
 )
+add_subdirectory(doc)
 enable_testing()
 add_subdirectory(tests)
 #Splitting it by folder allows us to avoid an extraneous directory

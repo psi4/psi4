@@ -1,6 +1,6 @@
 #These tests aren't set-up the same way as the others
 set(TestsNotSetUpRight cfour optking)
-find_package(Perl)
+find_package(Perl QUIET)
 
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".

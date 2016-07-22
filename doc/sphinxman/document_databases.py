@@ -20,7 +20,7 @@ def pts(category, pyfile):
 fdriver = open('source/autodoc_available_databases.rst', 'w')
 fdriver.write('\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../share/databases/*.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/share/databases/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
