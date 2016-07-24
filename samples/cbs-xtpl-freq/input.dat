@@ -19,7 +19,13 @@ set {
 h2o.update_geometry()
 
 # SCF TESTS
-scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, der_type=1)
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, dertype=1)
+#
+# These lines use the analytic frequency algorithm instead, but the angular momentum is too high for
+# the Travis tests.  Uncomment the next four lines if you want to test analytic frequencies and have
+# a version of psi4 compiled with sufficiently high angular momentum.
+#
+##scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True)
 
 # scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
 
