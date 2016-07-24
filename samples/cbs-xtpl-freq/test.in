@@ -20,10 +20,19 @@ h2o.update_geometry()
 compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 # SCF TESTS
-scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, der_type=1)
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, dertype=1)
 compare_values(wfn_dz.frequencies().get(0), 1809.2345729, 2, "SCF/cc-pVDZ Frequency 1")            #TEST
 compare_values(wfn_dz.frequencies().get(1), 3923.1569958, 2, "SCF/cc-pVDZ Frequency 2")            #TEST
 compare_values(wfn_dz.frequencies().get(2), 4020.1821381, 2, "SCF/cc-pVDZ Frequency 3")            #TEST
+#
+# These lines use the analytic frequency algorithm instead, but the angular momentum is too high for
+# the Travis tests.  Uncomment the next four lines if you want to test analytic frequencies and have
+# a version of psi4 compiled with sufficiently high angular momentum.
+#
+##scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True)
+##compare_values(wfn_dz.frequencies().get(0), 1809.279, 2, "SCF/cc-pVDZ Frequency 1")            #TEST
+##compare_values(wfn_dz.frequencies().get(1), 3923.138, 2, "SCF/cc-pVDZ Frequency 2")            #TEST
+##compare_values(wfn_dz.frequencies().get(2), 4020.128, 2, "SCF/cc-pVDZ Frequency 3")            #TEST
 
 # scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True)
 # compare_values(wfn_tz.frequencies().get(0), 1813.8360744, 4, "SCF/cc-pVTZ Frequency 1")            #TEST

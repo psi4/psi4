@@ -2,7 +2,6 @@
 #! evaluated at the nuclear coordinates
 
 
-
 memory 250 mb
  
 molecule bz {
@@ -34,6 +33,14 @@ scf_e, scf_wfn = energy('scf', return_wfn=True)
 oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
 
-    
+
+#
+# Do another test where the origin breaks symmetry; different integrals are used here
+#
+set properties_origin [0, 0.5, 0]
+
+
+oeprop(scf_wfn, "MULTIPOLES(3)")
+
 clean()
 

@@ -35,6 +35,10 @@ set dft_functional wB97X
 set dft_omega 0.3
 V14 = energy('scf')
 
+set dft_functional b86bpbe
+V15 = energy('scf')
+
+set scf_type direct
 set reference uks
 set dft_functional b88_x
 V21 = energy('scf')
@@ -49,6 +53,9 @@ V23 = energy('scf')
 set dft_functional wB97X 
 set dft_omega 0.3
 V24 = energy('scf')
+
+set dft_functional b86bpbe
+V25 = energy('scf')
 
 molecule h2op {
 1 2
@@ -73,6 +80,9 @@ set dft_functional wB97X
 set dft_omega 0.3
 V34 = energy('scf')
 
+set dft_functional b86bpbe
+V35 = energy('scf')
+
 molecule h2om {
 -1 2
 O
@@ -94,3 +104,6 @@ V43 = energy('scf')
 set dft_functional wB97X 
 set dft_omega 0.3
 V44 = energy('scf')
+
+set dft_functional b86bpbe
+V45 = energy('scf')

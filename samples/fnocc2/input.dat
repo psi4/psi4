@@ -11,7 +11,7 @@ set {
     r_convergence 1e-10
     g_convergence gau_verytight
 }
-energy('g2')
+energy('g2',dertype=1)
 
 
 clean()
