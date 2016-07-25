@@ -24,7 +24,7 @@ set {
     mcscf_r_convergence 1.e-4
     mcscf_e_convergence 1.e-5
     ci_maxiter          24
-    h0_blocksize        400
+    h0_blocksize        1000
 }
 
 no3.update_geometry()

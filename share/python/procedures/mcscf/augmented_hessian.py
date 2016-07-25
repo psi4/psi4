@@ -66,6 +66,8 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     # Gears
     min_lambda = 0.3
     converged = False
+    warning_neg = False
+    warning_mult = False
 
     fullG = np.zeros((max_iter + 2, max_iter + 2))
     fullS = np.zeros((max_iter + 2, max_iter + 2))
@@ -130,16 +132,18 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
             raise PsiException("Augmented Hessian: Could not find the correct root!\n"\
                                "Try starting AH when the MCSCF wavefunction is more converged.")
 
-        if np.sum(np.abs(vectors[0]) > min_lambda) > 1:
+        if np.sum(np.abs(vectors[0]) > min_lambda) > 1 and not warning_mult:
             psi4.print_out("   Warning! Multiple eigenvectors found to follow. Following closest to \lambda = 1.\n")
+            warning_mult = True
 
         idx = (np.abs(1 - np.abs(vectors[0]))).argmin()
         lam = abs(vectors[0, idx])
         subspace_vec = vectors[1:, idx]
 
         # Negative roots should go away?
-        if idx > 0 and evals[idx] < -5.0e-6:
+        if idx > 0 and evals[idx] < -5.0e-6 and not warning_neg:
             psi4.print_out('   Warning! AH might follow negative eigenvalues!\n')
+            warning_neg = True
 
         diff_val = evals[idx] - old_val
         old_val = evals[idx]
