@@ -122,3 +122,20 @@ same as those used to specify the molecule's geometry, and the output
 quantities are always in atomic units.  The requested properties will be
 written out in the same order as the grid point specification in grid.dat; see
 the above table for the format and file name of the output.
+
+The grid may be generated in the input file using standard Python loops.  By
+capturing the wavefunction used to evaluate the one-electron properties, the
+values at each grid point may be captured as Python arrays in the input file::
+
+    E, wfn = prop('scf', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+    Vvals = wfn.oeprop.Vvals()
+    Exvals = wfn.oeprop.Exvals()
+    Eyvals = wfn.oeprop.Eyvals()
+    Ezvals = wfn.oeprop.Ezvals()
+
+In this example, the *Vvals* array contains the electrostatic potential at each
+grid point, in the order that the grid was specified, while the *Exvals*,
+*Eyvals* and *Ezvals* arrays contain the *x*, *y* and *z* components of the
+electric field, respectively; all of these arrays can be iterated and
+manipulated using standard Python syntax.  For a complete demonstration of this
+utility, see the :srcsample:`props4` test case.
