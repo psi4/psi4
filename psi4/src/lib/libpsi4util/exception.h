@@ -33,6 +33,7 @@
 #include <sstream>
 #include <string.h>
 #include <boost/current_function.hpp>
+#include <cctype>
 
 namespace psi {
 
