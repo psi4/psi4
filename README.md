@@ -40,3 +40,4 @@ With computationally demanding portions written in C++, Boost exports
 of many C++ classes into Python, and a flexible Python driver, Psi4
 strives to be friendly to both users and developers.
 
+Now with more distelli
