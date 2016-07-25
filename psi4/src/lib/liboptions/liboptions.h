@@ -38,11 +38,11 @@
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE
 #endif
-#include <boost/python/object_fwd.hpp>
 
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
 #include "psi4/src/lib/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
+#include <boost/python/object_fwd.hpp>
 
 
 

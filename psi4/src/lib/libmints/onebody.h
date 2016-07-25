@@ -35,13 +35,13 @@
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE
 #endif
-#include <boost/python/list.hpp>
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "typedefs.h"
 #include "psi4/src/lib/libmints/vector3.h"
 
-#include "pybuffer.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
+#include "pybuffer.h"
+#include <boost/python/list.hpp>
 
 namespace psi {
 
