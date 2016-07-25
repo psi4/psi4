@@ -59,7 +59,7 @@ target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list})
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake 
         DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
 install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX}
         PATTERN fsapt EXCLUDE
 )
