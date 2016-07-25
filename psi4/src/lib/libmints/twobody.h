@@ -39,8 +39,8 @@
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE
 #endif
-#include <boost/python/list.hpp>
 #include "psi4/src/lib/libpsi4util/exception.h"
+#include <boost/python/list.hpp>
 #include "pybuffer.h"
 
 namespace psi {
