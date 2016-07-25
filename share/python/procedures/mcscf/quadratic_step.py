@@ -59,7 +59,7 @@ def OCHx(mcscf_obj, ciwfn, C0, vector):
     c_tpdm.np[:] += tmp_tpdm.T
 
     # Get dim information
-    dim_docc = ciwfn.get_dimension('DRC')
+    dim_docc = ciwfn.get_dimension('DOCC')
     dim_oa = ciwfn.get_dimension('OA')
     dim_av = ciwfn.get_dimension('AV')
     dim_rot = ciwfn.get_dimension('ROT')
@@ -80,14 +80,14 @@ def OCHx(mcscf_obj, ciwfn, C0, vector):
 
         # Build generalized Fock
         if dim_docc[h]:
-            matF.nph[h][:dim_docc[h], :] += IF.nph[h][:, :dim_docc[0]].T
+            matF.nph[h][:dim_docc[h], :] += IF.nph[h][:, :dim_docc[h]].T
             matF.nph[h][:dim_docc[h], :] *= ci_overlap
-            matF.nph[h][:dim_docc[h], :] += rot_AF.nph[h][:, :dim_docc[0]].T
+            matF.nph[h][:dim_docc[h], :] += rot_AF.nph[h][:, :dim_docc[h]].T
             matF.nph[h][:dim_docc[h], :] *= 2
 
         asl = slice(dim_docc[h], dim_oa[h])
         if dim_oa[h] - dim_docc[h]:
-            matF.nph[h][asl, :] = np.dot(c_opdm, IF.nph[h][:, asl].T)
+            matF.nph[h][asl, :] = np.dot(c_opdm.nph[h], IF.nph[h][:, asl].T)
             matF.nph[h][asl, :] += rot_Q.nph[h]
 
         # Build gradient
@@ -120,13 +120,8 @@ def COHx(ciwfn, C0, k, output, nact):
     onel_k = psi4.Vector(ncitri)
     twoel_k = psi4.Vector(ncitri2)
 
-    # Build k as a matrix, not needed? 
-    matK = psi4.Matrix(k.shape[0], k.shape[1])
-    matK_arr = np.asarray(matK)
-    matK_arr.flat[:] = k
-
     # Build rotated ERI's
-    ciwfn.rotate_mcscf_integrals(matK, onel_k, twoel_k)
+    ciwfn.rotate_mcscf_integrals(k, onel_k, twoel_k)
 
     # Sigma computation
     ciwfn.sigma(C0, output, 0, 0, onel_k, twoel_k)
@@ -213,7 +208,6 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     CI_elec_energy = mcscf_obj.current_total_energy()
     orb_grad = mcscf_obj.gradient()
     norm_ci_grad = ci_grad.norm(0)
-    norm_orb_grad = np.linalg.norm(orb_grad)
     dvecs1_buff[:] = C0
     dvecs1.symnormalize(1.0, 0)
     C0[:] = np.asarray(dvecs1_buff)
@@ -274,9 +268,10 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     psi4.print_out("\n")
     psi4.print_out("                 Starting CI RMS = %1.4e   ORB RMS = %1.4e\n" %
                                         (ci_rel_tol ** 0.5, orb_rel_tol ** 0.5))
+    converged = False
 
     ### CG loops
-    for rot_iter in range(12):
+    for rot_iter in range(20):
 
         # Compute rz_old
         rz_old = ci_r.vdot(ci_z, 0, 0)
@@ -320,6 +315,7 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
                                             (rot_iter + 1, ci_rms, orb_rms))
         if rms < 0.0001:
             psi4.print_out("                 MCSCF microiteration have converged!\n\n")
+            converged = True
             break
 
         # Compute beta
@@ -338,6 +334,8 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
         orb_p.scale(beta)
         orb_p.axpy(1.0, orb_z)
 
+    if not converged:
+        psi4.print_out("                 Warning! MCSCF OS microiterations did not converge.\n\n")
 
     # CI update
     dvec.axpy(1.0, ci_x, 0, 0)
@@ -351,8 +349,4 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     rot_iter *= 2
     rot_iter += 1
 
-    return (True,
-     rot_iter,
-     rot_iter,
-     orb_x)
-# okay decompiling quadratic_step.pyc
+    return (True, rot_iter, rot_iter, orb_x)

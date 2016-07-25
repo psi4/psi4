@@ -594,12 +594,11 @@ boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
 
     boost::shared_ptr<SOMCSCF> somcscf;
 
-    bool second_order = MCSCF_Parameters_->orbital_so;
     if (MCSCF_Parameters_->mcscf_type == "DF") {
-        transform_dfmcscf_ints(!second_order);
+        transform_dfmcscf_ints(true);
         somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
     } else {
-        transform_mcscf_ints(!second_order);
+        transform_mcscf_ints(true);
         somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
     }
 

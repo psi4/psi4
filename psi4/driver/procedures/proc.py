@@ -4027,7 +4027,7 @@ def run_detcas(name, **kwargs):
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Second-order SCF requires non-symmetric density matrix support
-    if core.get_option('DETCI', 'MCSCF_SO'):
+    if core.get_option('DETCI', 'MCSCF_ALGORITHM') in ['AH', 'OS']:
         proc_util.check_non_symmetric_jk_density("Second-order MCSCF")
 
     ciwfn = mcscf.mcscf_solver(ref_wfn)

@@ -1446,7 +1446,7 @@ void CIWavefunction::get_mcscf_parameters()
   MCSCF_Parameters_->max_rot = options_.get_double("MCSCF_MAX_ROT");
 
   // orbital-orbital SO options
-  MCSCF_Parameters_->orbital_so = options_.get_bool("MCSCF_SO");
+//  MCSCF_Parameters_->orbital_so = options_.get_bool("MCSCF_SO");
   MCSCF_Parameters_->so_start_grad = options_.get_double("MCSCF_SO_START_GRAD");
   MCSCF_Parameters_->so_start_e = options_.get_double("MCSCF_SO_START_E");
 

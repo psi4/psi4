@@ -166,8 +166,8 @@ public:
      */
     void zero_redundant(SharedMatrix vector);
 
-    double current_total_energy() { return (energy_drc_ + energy_fzc_ + energy_ci_); }
-    double current_docc_energy() { return (energy_drc_ + energy_fzc_); }
+    double current_total_energy() { return (energy_drc_ + energy_ci_); }
+    double current_docc_energy() { return energy_drc_; }
     double current_ci_energy() { return energy_ci_; }
     SharedMatrix current_AFock() { return matrices_["AFock"]; }
     SharedMatrix current_IFock() { return matrices_["IFock"]; }

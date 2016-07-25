@@ -744,7 +744,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- SUBSECTION MCSCF -*/
 
     /*- Convergence criterion for the RMS of the orbital gradient -*/
-    options.add_double("MCSCF_R_CONVERGENCE", 1e-4);
+    options.add_double("MCSCF_R_CONVERGENCE", 1e-5);
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
@@ -754,34 +754,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number MCSCF of iterations -*/
     options.add_int("MCSCF_MAXITER", 30);
 
-    /* - Do we run conventional or density fitted? -*/
-    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
-
-    /*- Convergence algorithm to utilize. This is a flag for the future. !expert-*/
-    options.add_str("MCSCF_ALGORITHM", "TWO_STEP", "ONE_STEP TWO_STEP");
-
-    /*- Do second-order orbital-orbital MCSCF. Without one-step this typically slows
-    the overall computation considerably !expert -*/
-    options.add_bool("MCSCF_SO", false);
-
-    /*- Start second-order orbital-orbital MCSCF based on RMS of orbital gradient !expert -*/
-    options.add_double("MCSCF_SO_START_GRAD", 1e-3);
-
-    /*- Start second-order orbital-orbital MCSCF based on energy convergence !expert-*/
-    options.add_double("MCSCF_SO_START_E", 1e-3);
-
-    /*- Iteration to turn on DIIS -*/
-    options.add_int("MCSCF_DIIS_START", 3);
-
-    /*- How often to do a DIIS extrapolation -*/
-    options.add_int("MCSCF_DIIS_FREQ", 1);
-
-    /*- Maximum number of DIIS vectors -*/
-    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
-
     /*- Maximum value in the rotation matrix. If a value is greater than this number
     all values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);
+
+    /* - Do we run conventional or density fitted? -*/
+    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
+
+    /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
+    to TS for RASSCF. -*/
+    options.add_str("MCSCF_ALGORITHM", "AH", "TS AH OS");
+
+    /*- Start second-order (AH or OS) orbital-orbital MCSCF based on RMS of orbital gradient -*/
+    options.add_double("MCSCF_SO_START_GRAD", 1e-4);
+
+    /*- Start second-order (AH or OS) orbital-orbital MCSCF based on energy convergence -*/
+    options.add_double("MCSCF_SO_START_E", 1e-4);
+
+    /*- Iteration to turn on DIIS for TS convergence -*/
+    options.add_int("MCSCF_DIIS_START", 3);
+
+    /*- How often to do a DIIS extrapolation for TS convergence -*/
+    options.add_int("MCSCF_DIIS_FREQ", 1);
+
+    /*- Maximum number of DIIS vectors for TS convergence -*/
+    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
+
+    /*- DIIS error vector type either, the AO orbital gradient or the orbital rotation update matrix -*/
+    options.add_str("MCSCF_DIIS_ERROR_TYPE", "GRAD", "GRAD UPDATE");
 
     /*- Auxiliary basis set for MCSCF density fitted ERI computations.
     This only effects the "Q" matrix in Helgaker's language.

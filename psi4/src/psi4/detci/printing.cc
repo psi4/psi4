@@ -69,10 +69,6 @@ extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff)
 {
-   int i,j,k;
-   unsigned long *index;
-   double value, abs_value, minval=0.0;
-   unsigned int alp_idx, bet_idx;
    char configstring[CONFIG_STRING_MAX];
    int Ia_abs, Ib_abs;
 
@@ -81,15 +77,15 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
    #endif
 
    /* print out the list of most important determinants */
-   outfile->Printf("\n\nThe %d most important determinants\n\n", nprint) ;
-   for (i=0; i<nprint; i++) {
+   outfile->Printf("\n\n   The %d most important determinants\n\n", nprint) ;
+   for (unsigned int i=0; i<nprint; i++) {
       if (fabs(coeff[i]) < MIN_COEFF) continue;
 
       Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
       Ib_abs = str_rel2abs(Ibidx[i], Iblist[i], BetaG_);
 
       #ifdef FLAG_NONBLOCKS
-      for (j=0, found_inblock=0; j<H0block_->size; j++) {
+      for (unsigned int j=0, found_inblock=0; j<H0block_->size; j++) {
          if (Iaidx[i] == H0block_->alpidx[j] &&
              Ibidx[i] == H0block_->betidx[j] &&
              Ialist[i] == H0block_->alplist[j] &&
@@ -98,7 +94,7 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
             break;
             }
          }
-      outfile->Printf("%c", found_inblock ? ' ' : '*');
+      outfile->Printf("    %c", found_inblock ? ' ' : '*');
       #endif
 
       outfile->Printf("%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i],
@@ -196,7 +192,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
 void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr)
 {
 
-   int ir, i, j, pitzer_orb, rel_orb;
+   int ir, j, pitzer_orb, rel_orb;
 
    /* get Pitzer ordering */
    pitzer_orb = Cinfo->order[orbnum];

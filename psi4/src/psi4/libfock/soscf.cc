@@ -117,6 +117,7 @@ void SOMCSCF::set_frozen_orbitals(SharedMatrix Cfzc)
         SharedMatrix D = Matrix::doublet(Cfzc, Cfzc, false, true);
         energy_fzc_ = J[0]->vector_dot(D);
         D.reset();
+        energy_fzc_ = 0.0;
 
         has_fzc_ = true;
     }
@@ -271,6 +272,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     matrices_["AFock"]->set_name("AFock");
 
     matrices_["Q"] = compute_Q(matrices_["TPDM"]);
+    // matrices_["Q"]->print();
 
     // => Generalized Fock matrix <= //
     matrices_["Fock"] = SharedMatrix(new Matrix("Generalized Fock", nirrep_, nmopi_, nmopi_));
@@ -330,13 +332,17 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     // Compute DRC and CI energy energy
     energy_drc_ = 0.0;
     energy_ci_ = 0.0;
-    SharedMatrix Hmo = Matrix::triplet(matrices_["Cocc"], matrices_["H"],
-                                       matrices_["Cocc"], true, false, false);
+    J[0]->add(matrices_["H"]);
+
+    SharedMatrix tmpD = Matrix::doublet(matrices_["Cocc"], matrices_["Cocc"], false, true);
+    if (has_fzc_){
+        SharedMatrix tmpDf = Matrix::doublet(matrices_["Cfzc"], matrices_["Cfzc"], false, true);
+        tmpD->add(tmpDf);
+    }
+    energy_drc_ = J[0]->vector_dot(tmpD);
+
+    // Compute CI energy
     for (int h = 0; h < nirrep_; h++) {
-        for (int i = 0; i < noccpi_[h]; i++) {
-            energy_drc_ += matrices_["IFock"]->get(h, i, i);
-            energy_drc_ += Hmo->get(h, i, i);
-        }
         for (int t = 0; t < nactpi_[h]; t++) {
             for (int v = 0; v < nactpi_[h]; v++) {
                 energy_ci_ +=
@@ -346,7 +352,10 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
         }
     }
     energy_ci_ += 0.5 * matrices_["actMO"]->vector_dot(matrices_["TPDM"]);
-    Hmo.reset();
+
+    // outfile->Printf("Frozen energy:     %18.12lf\n", energy_fzc_);
+    // outfile->Printf("Restricted energy: %18.12lf\n", energy_drc_);
+    // outfile->Printf("CI energy:         %18.12lf\n", energy_ci_);
 
     zero_redundant(matrices_["Gradient"]);
     timer_off("SOMCSCF: Compute Gradient");
@@ -1216,12 +1225,13 @@ SharedMatrix DiskSOMCSCF::compute_Q(SharedMatrix TPDMmat)
     timer_on("SOMCSCF: Q matrix");
 
     // => Write active TPDM <= //
-    dpdbuf4 TPDM;
+    dpdbuf4 G, TPDM;
+    dpdfile2 Q;
 
-    double** TPDMmatp = matrices_["TPDM"]->pointer();
+    double** TPDMmatp = TPDMmat->pointer();
     psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
     global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"),
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
 
     for (int h=0; h<nirrep_; h++){
@@ -1258,11 +1268,9 @@ SharedMatrix DiskSOMCSCF::compute_Q(SharedMatrix TPDMmat)
     // G_mwxy TPDM_vwxy -> Q_mv
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    dpdfile2 Q;
-    // We init R then a so we need 1, 0 here for index types
+    // We init R then A so we need 1, 0 here for index types
     global_dpd_->file2_init(&Q, PSIF_MCSCF, 0, 1, 0, "Q");
 
-    dpdbuf4 G;
     global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X,R]"), 0, "MO Ints (XX|XR)");
@@ -1273,8 +1281,10 @@ SharedMatrix DiskSOMCSCF::compute_Q(SharedMatrix TPDMmat)
     global_dpd_->file2_close(&Q);
     global_dpd_->buf4_close(&TPDM);
     global_dpd_->buf4_close(&G);
+
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_MCSCF, 1);
+
     timer_off("SOMCSCF: Q matrix");
 
     return Qmat;
