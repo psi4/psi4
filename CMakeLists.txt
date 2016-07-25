@@ -63,11 +63,7 @@ set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
 
 ############################## Compiler Features ###############################
 find_package(OpenMP)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#add_CXX_flags("-std=c++0x")
-#add_CXX_flags("-std=gnu++11")
-add_CXX_flags("-std=c++11")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
 
 ############################## Dependencies ####################################
 find_package(PythonInterp REQUIRED)
