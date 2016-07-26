@@ -1,9 +1,10 @@
 include(ExternalProject)
+set(BOOSTVERMIN 1.55.0)
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
                      thread
 )
 
-find_package(Boost 1.57.0 QUIET COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost ${BOOSTVERMIN} QUIET COMPONENTS ${BOOST_COMPONENTS})
 
 if(NOT Boost_FOUND)
    message(STATUS "A suitable version of Boost could not be located.  One will"
