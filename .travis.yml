@@ -114,7 +114,7 @@ matrix:
         - libboost-serialization1.55-dev
         - libboost-thread1.55-dev
         - gfortran
-    env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran' BUILD_TYPE='debug'
 #  - os: linux
 #    compiler: clang
 #    addons: *3
