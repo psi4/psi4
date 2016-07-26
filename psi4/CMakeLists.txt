@@ -55,6 +55,9 @@ set(psi4_lib_list ${PYTHON_LIBRARIES}
 )
 target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list})   
 
+configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake 

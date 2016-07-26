@@ -32,24 +32,21 @@
 
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#include "gitversion.h"
 namespace psi {
 void print_version(std::string);
-/*! Print PSI version information that was set in configure.ac */
 void print_version(std::string)
 {
   boost::shared_ptr<PsiOutStream> printer=outfile;
   printer->Printf( "    -----------------------------------------------------------------------\n");
   printer->Printf( "          Psi4: An Open-Source Ab Initio Electronic Structure Package\n");
 #ifdef PSI_VERSION
-  printer->Printf( "                              Psi4 %s Driver\n",
-                    TOSTRING(PSI_VERSION));
+  printer->Printf( "                              Psi4 %s Driver\n", PSI_VERSION);
 #endif
 
   // Are we using git? If so,what version string
 #ifdef GIT_VERSION
-  printer->Printf( "\n                          Git: Rev " TOSTRING(GIT_VERSION)"\n");
+  printer->Printf( "\n                          Git: Rev " GIT_VERSION "\n");
 #endif
 
   printer->Printf( "\n");

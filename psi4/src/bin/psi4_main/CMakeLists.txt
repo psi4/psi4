@@ -1,15 +1,16 @@
-find_package(Git QUIET)
-if(GIT_FOUND)
-   execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD 
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                   OUTPUT_VARIABLE PSI4_HASH
-                   OUTPUT_STRIP_TRAILING_WHITESPACE
-   )
-endif()
+# Run the git version script, and update gitversion.h, if it's changed
+add_custom_target(update_version
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+    COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp
+    COMMENT "Generating Git info")
 
-set(sources_list version.cc
-                 python.cc 
-                 export_psio.cc 
+add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
+add_dependencies(versioned_code update_version)
+set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
+target_include_directories(versioned_code PUBLIC ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+ 
+set(sources_list export_psio.cc 
                  export_mints.cc 
                  psi_stop.cc 
                  export_functional.cc 
@@ -24,12 +25,9 @@ set(sources_list version.cc
                  script.cc 
                  set_memory.cc 
                  read_options.cc 
-                 psi_start.cc 
 )
 set(PLUGIN_LDFLAGS ${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT})
-add_definitions(-DGIT_VERSION=${PSI4_HASH} 
-                -DPSI_VERSION=${PROJECT_VERSION}
-                -DPSI_TOP_SRCDIR=${PROJECT_ROOT}
+add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
                 -Drestrict=${RESTRICT_KEYWORD}
 )
 set_source_files_properties(create_new_plugin.cc PROPERTIES
@@ -45,9 +43,9 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
 #can use the Python interface, even if the rest of Psi4 is static, but need to
 #be able to build it statically for the binary
 if(ENABLE_PYTHON_INTERFACE)
-   add_library(psi4_main SHARED ${sources_list})
-else()
-    add_library(psi4_main STATIC ${sources_list})
+   add_library(psi4_main SHARED ${sources_list} $<TARGET_OBJECTS:versioned_code>)
+ else()
+   add_library(psi4_main STATIC ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 endif()
 
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
