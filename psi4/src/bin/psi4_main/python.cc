@@ -56,6 +56,7 @@
 
 #include "psi4/include/psi4-dec.h"
 #include "script.h"
+#include "gitversion.h"
 #include "psi4/psi4.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/bin/ccenergy/ccwave.h"
@@ -633,7 +634,7 @@ double py_psi_thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs)
 char const *py_psi_version()
 {
 #ifdef PSI_VERSION
-    return TOSTRING(PSI_VERSION);
+    return PSI_VERSION;
 #else
     return "";
 #endif
@@ -642,7 +643,7 @@ char const *py_psi_version()
 char const *py_psi_git_version()
 {
 #ifdef GIT_VERSION
-    return TOSTRING(GIT_VERSION);
+    return GIT_VERSION;
 #else
     return "";
 #endif

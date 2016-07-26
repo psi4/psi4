@@ -43,12 +43,11 @@
 #include <boost/filesystem.hpp>
 #include <getopt.h>
 #include "psi4/include/psifiles.h"
+#include "gitversion.h"
 #include "psi4/src/lib/libplugin/plugin.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace std;
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 namespace psi {
 char *psi_file_prefix;
 std::string outfile_name;
@@ -321,7 +320,7 @@ int psi_start(int argc, char *argv[])
 
 void print_version(void)
 {
-    printf("%s\n", TOSTRING(PSI_VERSION));
+    printf("%s\n", PSI_VERSION);
 }
 
 /*! Print command-line usage information. */
