@@ -26,15 +26,15 @@
  */
 
 #include "psipcm.h"
-#include "psi4/include/psi4-dec.h" //Gives us psi::outfile
-#include "pcmsolver.h"
-#include "PCMInput.h"
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/basisset.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libmints/integral.h"
+#include "psi4/src/lib/libmints/petitelist.h"
+#include <PCMInput.h>
 
-extern "C" void host_writer(const char * message, int /* message_length */)
-{
-  psi::outfile->Printf(message);
-  psi::outfile->Printf("\n");
-}
+
 
 namespace psi {
 

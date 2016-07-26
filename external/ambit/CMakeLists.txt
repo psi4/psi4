@@ -6,7 +6,7 @@ if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
 
     ExternalProject_Add(ambit_external
        GIT_REPOSITORY https://github.com/jturney/ambit
-       GIT_TAG v0.1.1-alpha
+       GIT_TAG v0.2
        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                   -DENABLE_OMP=${OpenMP_FOUND}
                   -DENABLE_VECTORIZATION=${ENABLE_VECTORIZATION}

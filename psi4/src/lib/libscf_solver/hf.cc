@@ -49,7 +49,7 @@
 #include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/include/psifiles.h"
 #include "psi4/src/lib/libfock/jk.h"
-#ifdef ENABLE_PCMSOLVER
+#ifdef HAVE_PCMSOLVER
 #include "psi4/src/lib/libpsipcm/psipcm.h"
 #endif
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
@@ -344,7 +344,7 @@ void HF::common_init()
     print_header();
 
     // Initialize PCM object, if requested
-#ifdef ENABLE_PCMSOLVER
+#ifdef HAVE_PCMSOLVER
     if(pcm_enabled_ = (options_.get_bool("PCM")))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
 #endif

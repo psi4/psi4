@@ -69,15 +69,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
-if(NOT BOOST_ROOT)#Boost seriously sucks, why can't it use prefix_path?
-  set(BOOST_ROOT ${PSI4_STAGE_EX}/boost)
-endif()
+#These packages don't believe in configuration files...
+foreach(pkg in boost pcmsolver)
+   string(TOUPPER "${pkg}" PKG)
+   if(NOT ${PKG}_ROOT)
+      set(${PKG}_ROOT ${PSI4_STAGE_EX}/${pkg})
+   endif()
+endforeach()
+
+
 
 add_subdirectory(external)
 
 
 list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
-
 
 ############################## Main Project ####################################
 
@@ -98,6 +103,7 @@ ExternalProject_Add(psi4_core
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
+              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
