@@ -56,10 +56,10 @@ project = u'Psi4'  # u'P\uA731\u026A4'
 copyright = u'2016, The {0} Project'.format(project)
 
 def get_gitversion():
-    file = '../../../src/bin/psi4/gitversion.h'
+    vfile = '../../../psi4_core-prefix/src/psi4_core-build/src/bin/psi4_main/gitversion.h'
 
     try: 
-        f = open(file)
+        f = open(vfile)
     except IOError:
         return ''
 
