@@ -6,18 +6,22 @@ E11 = -74.9493412744 #TEST
 E12 = -75.3196957567 #TEST
 E13 = -75.3185459160 #TEST
 E14 = -75.3128178610 #TEST
+E15 = -75.2976775610 #TEST
 E21 = -74.9493412744 #TEST
 E22 = -75.3196957567 #TEST
 E23 = -75.3185459160 #TEST
 E24 = -75.3128178610 #TEST
+E25 = -75.2976775610 #TEST
 E31 = -74.6448669477 #TEST
 E32 = -74.9677634492 #TEST
 E33 = -74.9709217377 #TEST
 E34 = -74.9632650037 #TEST
+E35 = -74.9473089301 #TEST
 E41 = -74.4108252721 #TEST
 E42 = -74.8155846044 #TEST
 E43 = -74.8011166756 #TEST
 E44 = -74.7977834552 #TEST
+E45 = -74.7903025944 #TEST
 
 molecule h2o {
 0 1
@@ -55,6 +59,11 @@ set dft_omega 0.3
 V14 = energy('scf')
 compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
 
+set dft_functional b86bpbe
+V15 = energy('scf')
+compare_values(E15,V15, 3, "RKS  0 1 b86bpbe Energy") #TEST
+
+set scf_type direct
 set reference uks
 set dft_functional b88_x
 V21 = energy('scf')
@@ -73,6 +82,10 @@ set dft_functional wB97X
 set dft_omega 0.3
 V24 = energy('scf')
 compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
+
+set dft_functional b86bpbe
+V25 = energy('scf')
+compare_values(E25,V25, 3, "UKS  0 1 b86bpbe Energy") #TEST
 
 molecule h2op {
 1 2
@@ -101,6 +114,10 @@ set dft_omega 0.3
 V34 = energy('scf')
 compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
 
+set dft_functional b86bpbe
+V35 = energy('scf')
+compare_values(E35,V35, 3, "UKS  1 2 b86bpbe Energy") #TEST
+
 molecule h2om {
 -1 2
 O
@@ -126,3 +143,7 @@ set dft_functional wB97X
 set dft_omega 0.3
 V44 = energy('scf')
 compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
+
+set dft_functional b86bpbe
+V45 = energy('scf')
+compare_values(E45,V45, 3, "UKS -1 2 b86bpbe Energy") #TEST

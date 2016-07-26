@@ -153,7 +153,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_man_psi4.txt
         DEPENDS ${psi4_SOURCE_DIR}/psi4/src/*/*/*.cc
                 ${psi4_SOURCE_DIR}/tests/docs-psimod/input.dat
-                ${CMAKE_INSTALL_PREFIX}/psi4/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+                ${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc psi4 module")
 
 
@@ -182,7 +182,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_disp.rst
         DEPENDS ${psi4_SOURCE_DIR}/psi4/share/python/procedures/functional.py
                 ${psi4_SOURCE_DIR}/tests/docs-dft/input.dat
-                ${CMAKE_INSTALL_PREFIX}/psi4/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+                ${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
 
 
@@ -195,7 +195,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${psi4_SOURCE_DIR}/psi4/share/python/p4util/basislistdunning.py
                 ${psi4_SOURCE_DIR}/psi4/share/python/p4util/basislistother.py
                 ${psi4_SOURCE_DIR}/tests/docs-bases/input.dat
-                ${CMAKE_INSTALL_PREFIX}/psi4/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+                ${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
 
 
