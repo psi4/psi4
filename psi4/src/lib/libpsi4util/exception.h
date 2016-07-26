@@ -28,12 +28,13 @@
 #ifndef _psi4_exception_h_
 #define _psi4_exception_h_
 
+#include <cctype>
 #include <exception>
 #include <stdexcept>
 #include <sstream>
 #include <string.h>
 #include <boost/current_function.hpp>
-#include <cctype>
+
 
 namespace psi {
 
