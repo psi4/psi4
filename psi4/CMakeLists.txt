@@ -11,7 +11,8 @@ find_package(PythonLibs REQUIRED)
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
                      thread
 )
-find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+set(BOOSTVERMIN 1.55.0)
+find_package(Boost ${BOOSTVERMIN} QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 #For some stupid reason boost doesn't add its dependencies to it's list of 
 #requirements like a good CMake program...
 set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
