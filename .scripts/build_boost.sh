@@ -1,28 +1,10 @@
 #!/usr/bin/env bash
 
-if [ $# -lt "1" ]
+if [ $# -lt "3" ]
 then
-  echo You must provide the GCC version number
+  echo You must provide the compiler name, version number and c++ compile command
   exit 1
 fi 
 
-mkdir boost_build
 
-cd boost_build
-
-tar -xjvf ../boost/boost_1_57_0.tar.bz2 >& /dev/null
-
-cd boost_1_57_0
-
-echo "using gcc : ${1} : g++-${1} ;" > ${HOME}/user-config.jam
-
-./bootstrap.sh \
-      --with-libraries="filesystem,python,regex,serialization,system,timer,chrono,thread" \
-      --with-toolset=gcc \
-      --prefix=/Users/andysim/travis/build/boost_comp
-
-./b2 -j2 -q --toolset=gcc
-
-cd ..
-
-cd ..
+echo "using ${1} : ${2} : ${3} : ;" > ${HOME}/user-config.jam
