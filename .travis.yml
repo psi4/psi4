@@ -10,7 +10,6 @@ matrix:
         sources:
         - llvm-toolchain-precise-3.5
         - ubuntu-toolchain-r-test
-        - boost-latest
         - george-edison55-precise-backports
         packages:
         - python-numpy
@@ -19,14 +18,6 @@ matrix:
         - liblapack-dev
         - clang-3.5
         - libhdf5-serial-dev
-        - libboost-filesystem1.55-dev
-        - libboost-chrono1.55-dev
-        - libboost-system1.55-dev
-        - libboost-timer1.55-dev
-        - libboost-python1.55-dev
-        - libboost-regex1.55-dev
-        - libboost-serialization1.55-dev
-        - libboost-thread1.55-dev
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.5'
@@ -43,7 +34,6 @@ matrix:
         sources:
         - llvm-toolchain-precise-3.8
         - ubuntu-toolchain-r-test
-        - boost-latest
         - george-edison55-precise-backports
         packages:
         - python-numpy
@@ -52,14 +42,6 @@ matrix:
         - liblapack-dev
         - clang-3.8
         - libhdf5-serial-dev
-        - libboost-filesystem1.55-dev
-        - libboost-chrono1.55-dev
-        - libboost-system1.55-dev
-        - libboost-timer1.55-dev
-        - libboost-python1.55-dev
-        - libboost-regex1.55-dev
-        - libboost-serialization1.55-dev
-        - libboost-thread1.55-dev
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.8'
@@ -150,6 +132,8 @@ before_script:
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
 - export FC=${Fortran_COMPILER}
+- export CTEST_OUTPUT_ON_FAILURE=1
+- export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/boost_install/lib:${LD_LIBRARY_PATH}
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
@@ -163,6 +147,7 @@ before_script:
     -DLIBINT_OPT_AM=4 
     -DENABLE_CHEMPS2=off 
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
+    -DBOOST_ROOT=${TRAVIS_BUILD_DIR}/boost_install
 - cd build
 - ../.scripts/travis_build.sh
 script:
