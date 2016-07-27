@@ -34,9 +34,9 @@ include(Psi4Macros)
 no_in_source()
 
 ############################## Options #########################################
-option(ENABLE_PCMSOLVER "Enbales the PCM solver module" OFF)
+option(ENABLE_PCMSOLVER "Enables the PCMSolver module" OFF)
 option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
-option(ENABLE_CHEMPS2 "Enables chemps2 for DMRG" OFF)
+option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
 option(ENABLE_DKH "Enables DKH integrals" OFF)
 option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
 option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
@@ -97,6 +97,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR} 
+              -DLIBINT_OPT_AM=${LIBINT_OPT_AM}
               -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
