@@ -17,7 +17,6 @@ find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
 find_package(Threads)
 find_package(DL)
-find_package(LAPACK REQUIRED)
 find_package(RT REQUIRED)
 list(APPEND Boost_LIBRARIES ${LIBRT_LIBRARIES})#again boost has failed...
 find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
