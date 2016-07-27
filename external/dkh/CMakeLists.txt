@@ -1,5 +1,5 @@
 include(ExternalProject)
-option(ENABLE_BOUDNS_CHECK "Enables bounds check in Fortran" OFF)
+option(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF)
 find_package(dkh QUIET)
 
 if(NOT DKH_FOUND AND ${ENABLE_DKH})
@@ -13,6 +13,7 @@ if(NOT DKH_FOUND AND ${ENABLE_DKH})
                  -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                  -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                  -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/dkh
+                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                       DESTDIR=${CMAKE_BINARY_DIR}/stage
    )

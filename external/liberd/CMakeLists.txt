@@ -13,6 +13,7 @@ if(NOT liberd_FOUND AND ${ENABLE_LIBERD})
                  -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                  -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
      INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                      DESTDIR=${CMAKE_BINARY_DIR}/stage
       ) 

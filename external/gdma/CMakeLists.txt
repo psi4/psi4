@@ -13,6 +13,7 @@ if(NOT GDMA_FOUND AND ${ENABLE_GDMA})
                  -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                  -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
                  -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/gdma
+                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                       DESTDIR=${CMAKE_BINARY_DIR}/stage
    )
