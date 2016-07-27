@@ -14,7 +14,7 @@ set(sources_list ${sources_folder}/ai_disp.c ${sources_folder}/balance.c
 )
 
 # Build static library
-add_library(efp STATIC ${sources_list})
+add_library(efp ${sources_list})
 set_target_properties(efp PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
                                      COMPILE_FLAGS "-O1 -std=c99")
 

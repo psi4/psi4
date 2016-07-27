@@ -67,12 +67,13 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DESTINATION psi4/src/bin/psi4_main
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
+message(STATUS ${CHEMPS2_LIBRARIES})
 set_property(GLOBAL APPEND PROPERTY LIBLIST psi4_main)
 target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
     cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
     mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index deriv 
-    int thermo mrcc scf sapt gdma_interface
+    int thermo mrcc scf sapt gdma_interface dmrg
     ${LAPACK_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES}
 )
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 

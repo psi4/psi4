@@ -70,7 +70,7 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 #These packages don't believe in configuration files...
-foreach(pkg in boost pcmsolver)
+foreach(pkg in boost pcmsolver chemps2)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
       set(${PKG}_ROOT ${PSI4_STAGE_EX}/${pkg})
@@ -105,6 +105,7 @@ ExternalProject_Add(psi4_core
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DCHEMPS2_ROOT=${CHEMPS2_ROOT}
               -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
@@ -129,6 +130,7 @@ add_dependencies(psi4_core boost_external
                            ambit_external
                            dkh_external
                            gdma_external
+                           chemps2_external
 )
 add_subdirectory(doc)
 enable_testing()

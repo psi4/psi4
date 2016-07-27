@@ -24,6 +24,7 @@
  *
  * @END LICENSE
  */
+#ifdef ENABLE_PCMSOLVER
 
 #include "psipcm.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -435,3 +436,4 @@ SharedMatrix PCM::compute_V_electronic()
 }
 
 } // psi namespace
+#endif

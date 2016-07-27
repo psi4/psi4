@@ -3,9 +3,11 @@ include(ExternalProject)
 find_package(PCMSolver QUIET)
 if(NOT PCMSolver_FOUND AND ${ENABLE_PCMSOLVER})
   message(STATUS "PCMSolver not found. The pre-packaged version will be built.")
+  set(ENABLE_STATIC (NOT ${BUILD_SHARED_LIBS}))
+
   ExternalProject_Add(pcmsolver_external
        GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-       GIT_TAG v1.1.7
+       GIT_TAG v1.1.4
        UPDATE_COMMAND ""
        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/pcmsolver
@@ -21,8 +23,8 @@ if(NOT PCMSolver_FOUND AND ${ENABLE_PCMSOLVER})
                   -DENABLE_TIMER=OFF
                   -DBUILD_STANDALONE=OFF
                   -DENABLE_FORTRAN_API=OFF
-                  -DSTATIC_LIBRARY_ONLY=ON
-                  -DENABLE_GENERIC=${ENABLE_STATIC_LINKING}
+                  -DSTATIC_LIBRARY_ONLY=${ENABLE_STATIC}
+                  -DENABLE_GENERIC=${ENABLE_STATIC}
                   -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                       DESTDIR=${CMAKE_BINARY_DIR}/stage

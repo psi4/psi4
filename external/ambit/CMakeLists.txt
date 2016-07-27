@@ -3,7 +3,7 @@ find_package(Ambit QUIET)
 
 if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
     message(STATUS "Ambit not found. The pre-packaged version will be build.")
-
+    set(ENABLE_STATIC (NOT ${BUILD_SHARED_LIBS}))
     ExternalProject_Add(ambit_external
        GIT_REPOSITORY https://github.com/jturney/ambit
        GIT_TAG v0.2
@@ -21,7 +21,7 @@ if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
                   -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
                   -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
                   -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-                  -DENABLE_STATIC=ON
+                  -DENABLE_STATIC=${ENABLE_STATIC}
                   -DENABLE_PSI4=ON
                   -DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}/psi4
                   -DPSI4_BINARY_DIR=${CMAKE_BINARY_DIR}

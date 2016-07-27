@@ -24,7 +24,13 @@
  *
  * @END LICENSE
  */
+#ifdef ENABLE_CHEMPS2
+
 //#include <libplugin/plugin.h>
+#include "psi4/src/lib/libmints/matrix.h"
+#include "psi4/src/lib/libmints/vector.h"
+#include "psi4/src/lib/libmints/writer.h"
+#include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/include/psi4-dec.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/include/psifiles.h"
@@ -45,13 +51,13 @@
 #include <iostream>
 #include <fstream>
 
-#include "chemps2/Irreps.h"
-#include "chemps2/Problem.h"
-#include "chemps2/CASSCF.h"
-#include "chemps2/Initialize.h"
-#include "chemps2/EdmistonRuedenberg.h"
-#include "chemps2/CASPT2.h"
-#include "chemps2/Lapack.h"
+#include <chemps2/Irreps.h>
+#include <chemps2/Problem.h>
+#include <chemps2/CASSCF.h>
+#include <chemps2/Initialize.h>
+#include <chemps2/EdmistonRuedenberg.h>
+#include <chemps2/CASPT2.h>
+#include <chemps2/Lapack.h>
 
 using namespace std;
 
@@ -1114,3 +1120,4 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 }
 
 }} // End Namespaces
+#endif

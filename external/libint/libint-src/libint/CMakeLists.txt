@@ -20,6 +20,7 @@ ExternalProject_Add(libint_library
                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                -DBUILD_FPIC=${BUILD_FPIC}
+               -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
     DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/src
     DOWNLOAD_COMMAND ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/libint_compiler
     LOG_DOWNLOAD 1

@@ -27,6 +27,7 @@
 
 #ifndef PCM_H
 #define PCM_H
+#ifdef ENABLE_PCMSOLVER
 
 #include <vector>
 #include "psi4/src/lib/libpsio/psio.hpp"
@@ -102,4 +103,5 @@ class PCM {
 typedef boost::shared_ptr<psi::PCM> SharedPCM;
 
 } // psi
+#endif
 #endif
