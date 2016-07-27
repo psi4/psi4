@@ -28,7 +28,7 @@ include(GNUInstallDirs)
 #set(CMAKE_CXX_STANDARD 11) Not working with Intel compilers at moment
 include(ExternalProject)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
-                              ${CMAKE_SOURCE_DIR}/cmake/compilers
+                              ${CMAKE_SOURCE_DIR}/cmake/math
 )
 include(Psi4Macros)
 no_in_source()
@@ -43,6 +43,8 @@ option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(BUILD_SHARED_LIBS "All Psi4 libraries will be shared objects" OFF)
 option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
+option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
+option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
                   "-xHost")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
@@ -69,6 +71,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
+set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
+set(BLAS_LANG "CXX")
+set(LAPACK_LANG "CXX")
+include(ConfigMath)
+
+message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
 #These packages don't believe in configuration files...
 foreach(pkg in boost pcmsolver chemps2)
    string(TOUPPER "${pkg}" PKG)
@@ -102,6 +110,8 @@ ExternalProject_Add(psi4_core
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+              -DLAPACK_LIBARIES=${LAPACK_LIBRARIES}
+              -DLAPACK_INCLUDE_DIR=${LAPACK_INCLUDE_DIR}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}

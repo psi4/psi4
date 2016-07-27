@@ -67,7 +67,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DESTINATION psi4/src/bin/psi4_main
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
-message(STATUS ${CHEMPS2_LIBRARIES})
+
 set_property(GLOBAL APPEND PROPERTY LIBLIST psi4_main)
 target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
