@@ -381,6 +381,7 @@ struct params {
    std::string wfn;    /* wavefunction type: CI, DETCAS, etc. */
    std::string ref;    /* reference type (RHF, ROHF); ROHF with MULTP=1
                           is an open-shell singlet */
+   std::string mcscf_type; /*Type of MCSCF computation DF or CONV */
    int multp;        /* multiplicity (2S+1) */
    int ex_lvl;       /* excitation level */
    int val_ex_lvl;   /* valence excitation level, used for RAS's */
@@ -616,25 +617,6 @@ struct sigma_data {
     int max_dim;
 };
 
-/*
-** Structs for MCSCF variables
-*/
-struct mcscf_params {
-    double rms_grad_convergence; /* convergence on RMS of orbital grad           */
-    double energy_convergence;   /* convergence on CI energy                     */
-    int max_iter;                /* maximum number of casscf iterations          */
-    std::string mcscf_type;      /* Is this df?                                  */
-    std::string algorithm;       /* What convergence algorithm do we use?        */
-    double max_rot;              /* Maximum value in the rotation matrix         */
-
-    bool orbital_so;             /* Do we do second-order orbital orbital?       */
-    double so_start_grad;        /* RMS of orbital grad threshold for one-step   */
-    double so_start_e;           /* energy convergence threshold for one-step    */
-
-    int diis_start;              /* Start DIIS at this iteration                 */
-    int diis_freq;               /* Do DIIS every n steps                        */
-    int diis_max_vecs;           /* Maximum number of DIIS vectors               */
-};
 
 }} // namespace psi::detci
 

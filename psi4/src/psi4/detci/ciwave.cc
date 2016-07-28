@@ -69,7 +69,6 @@ void CIWavefunction::common_init() {
 
     // Build and set structs
     sme_first_call_ = 1;
-    MCSCF_Parameters_ = new mcscf_params();
     CIblks_ = new ci_blks();
     SigmaData_ = new sigma_data();
     CalcInfo_ = new calcinfo();
@@ -83,9 +82,6 @@ void CIWavefunction::common_init() {
 
     print_parameters();
     print_ras_parameters();
-
-    // MCSCF_Params
-    get_mcscf_parameters();
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
@@ -111,6 +107,7 @@ void CIWavefunction::common_init() {
     // Set information
     ints_init_ = false;
     df_ints_init_ = false;
+    cleaned_up_ = false;
 
     // Form strings
     outfile->Printf("\n   ==> Setting up CI strings <==\n\n");
@@ -137,20 +134,15 @@ double CIWavefunction::compute_energy() {
         return 0.0;
     }
 
-    // MCSCF is special, we let it handle a lot of its own issues
-    if (Parameters_->mcscf) {
-        compute_mcscf();
-    } else {
-        // Transform and set ci integrals
-        transform_ci_integrals();
+    // Transform and set ci integrals
+    transform_ci_integrals();
 
-        if (Parameters_->mpn) {
-            compute_mpn();
-        } else if (Parameters_->cc) {
-            compute_cc();
-        } else {
-            diag_h();
-        }
+    if (Parameters_->mpn) {
+        compute_mpn();
+    } else if (Parameters_->cc) {
+        compute_cc();
+    } else {
+        diag_h();
     }
 
     // Finished CI, setting wavefunction parameters
@@ -158,7 +150,6 @@ double CIWavefunction::compute_energy() {
         form_opdm();
     }
 
-//    if (Parameters_->dipmom) opdm_properties();
     if (Parameters_->opdm_diag) ci_nat_orbs();
     if (Parameters_->tpdm) form_tpdm();
     if (print_ > 0) {
@@ -450,40 +441,44 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 */
 void CIWavefunction::cleanup(void) {
 
-    // Free Bendazzoli OV arrays
-    // if (Parameters_->bendazzoli) free(OV);
+    // Make sure we dont double clean
+    if (!cleaned_up_){
 
-    // DGAS main areas to track size of
-    // Free strings and graphs
+        // Free Bendazzoli OV arrays
+        // if (Parameters_->bendazzoli) free(OV);
 
-    // Free objects built in common_init
-    if (CalcInfo_->sigma_initialized) sigma_free();
-    delete SigmaData_;
+        // DGAS main areas to track size of
+        // Free strings and graphs
 
-    free_int_matrix(CIblks_->decode);
-    free(CIblks_->first_iablk);
-    free(CIblks_->last_iablk);
-    delete CIblks_;
+        // Free objects built in common_init
+        if (CalcInfo_->sigma_initialized) sigma_free();
+        delete SigmaData_;
 
-    //delete Parameters_;
+        free_int_matrix(CIblks_->decode);
+        free(CIblks_->first_iablk);
+        free(CIblks_->last_iablk);
+        delete CIblks_;
 
-    // Free H0block
-    H0block_free();
-    delete H0block_;
+        //delete Parameters_;
 
-    // CalcInfo free
-    free_int_matrix(CalcInfo_->ras_opi);
-    for (int i = 0, cnt = 0; i < 4; i++) {
-        free_int_matrix(CalcInfo_->ras_orbs[i]);
-    };
+        // Free H0block
+        H0block_free();
+        delete H0block_;
+
+        // CalcInfo free
+        free_int_matrix(CalcInfo_->ras_opi);
+        for (int i = 0, cnt = 0; i < 4; i++) {
+            free_int_matrix(CalcInfo_->ras_orbs[i]);
+        };
 
 
-    if (Parameters_->mcscf) {
-        ints_.reset();
+        if (Parameters_->mcscf) {
+            ints_.reset();
+        }
+        // delete CalcInfo_;
+
+        cleaned_up_ = true;
     }
-    // delete CalcInfo_;
-    // delete MCSCF_Parameters_;
-
 
 }
 
@@ -594,7 +589,7 @@ boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
 
     boost::shared_ptr<SOMCSCF> somcscf;
 
-    if (MCSCF_Parameters_->mcscf_type == "DF") {
+    if (Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(true);
         somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
     } else {

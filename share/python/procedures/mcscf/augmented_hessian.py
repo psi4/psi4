@@ -43,18 +43,18 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     | 0,  g.T | | 1/l | =   | 1/l |
     | g,  H/l | | X   | = e | X   |
 
-    Where g is the gradient, H is the orbital Hessian, X is our orbital update step, 
+    Where g is the gradient, H is the orbital Hessian, X is our orbital update step,
     and l is the eigenvalue.
 
     In some ways this is the subspace reduction of the full MCSCF Hessian where the
     CC part has been solved exactly. When this occurs the OC and CO elements collapse
     to the above and the CC Hessian becomes diagonally dominant.
-   
-    We can solve this through Davidson iterations where we condition the edges. It's the 
+
+    We can solve this through Davidson iterations where we condition the edges. It's the
     Pulay equations all over again, just iterative.
 
     Watch out for lambdas that are zero. Looking for the lambda that is ~1.
- 
+
     """
 
     # Unpack information
@@ -86,7 +86,7 @@ def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     for microi in range(1, max_iter + 1):
 
         # Gradient
-        fullG[0,microi] = guesses[-1].vector_dot(orb_grad)
+        fullG[0, microi] = guesses[-1].vector_dot(orb_grad)
         for i in range(microi):
             fullG[i + 1, microi] = guesses[-1].vector_dot(sigma_list[i])
             fullS[i + 1, microi] = guesses[-1].vector_dot(guesses[i])

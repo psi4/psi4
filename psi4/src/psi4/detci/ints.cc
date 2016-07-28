@@ -143,7 +143,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
     df_ints_init_ = true;
 }
 void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
-    if (MCSCF_Parameters_->mcscf_type == "DF") {
+    if (Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(approx_only);
     } else {
         transform_mcscf_ints(approx_only);
@@ -195,7 +195,7 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
 
     pitzer_to_ci_order_onel(rot_onel, tmponel);
 
-    if (MCSCF_Parameters_->mcscf_type == "DF") {
+    if (Parameters_->mcscf_type == "DF") {
         rotate_dfmcscf_twoel_ints(Uact, twoel_out);
     } else {
         rotate_mcscf_twoel_ints(Uact, twoel_out);
