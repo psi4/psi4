@@ -75,8 +75,6 @@ set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
-
-message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
 #These packages don't believe in configuration files...
 foreach(pkg in boost pcmsolver chemps2)
    string(TOUPPER "${pkg}" PKG)
@@ -110,8 +108,8 @@ ExternalProject_Add(psi4_core
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
-              -DLAPACK_LIBARIES=${LAPACK_LIBRARIES}
-              -DLAPACK_INCLUDE_DIR=${LAPACK_INCLUDE_DIR}
+              -DLAPACK_LIBRARIES=${LAPACK_LIBRARIES}
+              -DLAPACK_INCLUDE_DIRS=${LAPACK_INCLUDE_DIRS}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
@@ -126,6 +124,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_PYTHON_INTERFACE=${ENABLE_PYTHON_INTERFACE}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
+              -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
