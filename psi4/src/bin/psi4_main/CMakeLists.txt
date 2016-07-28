@@ -42,27 +42,19 @@ set_source_files_properties(create_new_plugin.cc PROPERTIES
 #This library is special because we want this library to be a .so so that we
 #can use the Python interface, even if the rest of Psi4 is static, but need to
 #be able to build it statically for the binary
+set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 if(ENABLE_PYTHON_INTERFACE)
-   add_library(psi4_main SHARED ${sources_list} $<TARGET_OBJECTS:versioned_code>)
+   add_library(psi4_main SHARED ${psi4_all_sources})
  else()
-   add_library(psi4_main STATIC ${sources_list} $<TARGET_OBJECTS:versioned_code>)
+   add_library(psi4_main STATIC ${psi4_all_sources})
 endif()
 
-set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
-set(PSI4_RPATH ${CMAKE_INSTALL_PREFIX}/lib 
-               ${PSI4_EXTERNAL}/boost/lib
-               ${PSI4_EXTERNAL}/libderiv/lib
-               ${PSI4_EXTERNAL}/libint/lib
-               ${PSI4_EXTERNAL}/libefp/lib
-)
-set_target_properties(psi4_main PROPERTIES INSTALL_RPATH "${PSI4_RPATH}"
-                                           PREFIX ""
-                                           OUTPUT_NAME psi4
-)                              
+set(psi4_destination ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
-install(TARGETS psi4_main LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-                          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+install(TARGETS psi4_main LIBRARY DESTINATION ${psi4_destination}
+                          RUNTIME DESTINATION ${psi4_destination}
 )
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
         DESTINATION psi4/src/bin/psi4_main
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
@@ -74,8 +66,40 @@ target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
     mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index deriv 
     int thermo mrcc scf sapt gdma_interface dmrg
-    ${LAPACK_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES}
+    ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES}
 )
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 
                                             ${LIBDERIV_INCLUDE_DIRS}
 )
+
+
+################################################################################
+#  Stuff below this is for RPaths and doesn't work quite right
+################################################################################
+
+
+if(BUILD_SHARED_LIBS)
+   #Add both the build and install RPaths so we can test from build dir
+   set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
+   set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage/${PSI4_EXTERNAL})
+   foreach(ex_proj boost libderiv libint libefp)
+      set(PSI4_RPATH 
+         "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
+   endforeach()
+endif()
+
+#The other big source of RPaths are the math libraries
+foreach(math_comp "${LAPACK_LIBRARIES};${BLAS_LIBRARIES}")
+    get_filename_component(math_lib ${math_comp} DIRECTORY)
+    set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
+endforeach()
+
+
+set_target_properties(psi4_main PROPERTIES INSTALL_RPATH "${PSI4_RPATH}"
+                                           INSTALL_RPATH_USE_LINK_PATH TRUE
+                                           BUILD_WITH_INSTALL_RPATH TRUE
+                                           PREFIX ""
+                                           OUTPUT_NAME psi4
+)                              
+
+

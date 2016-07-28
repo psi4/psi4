@@ -1063,32 +1063,36 @@ boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
     return empty; // charges not added to process.h for environment - yet(?)
 }
 
+std::string to_upper(const std::string& key)
+{
+ string uppercase_key = key;
+ std::transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+ return uppercase_key;
+}
+
+bool py_psi_has_variable(const std::string& key)
+{
+    return Process::environment.globals.count(to_upper(key));
+}
+
 double py_psi_get_variable(const std::string& key)
 {
-    string uppercase_key = key;
-    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
-    return Process::environment.globals[uppercase_key];
+    return Process::environment.globals[to_upper(key)];
 }
 
 SharedMatrix py_psi_get_array_variable(const std::string& key)
 {
-    string uppercase_key = key;
-    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
-    return Process::environment.arrays[uppercase_key];
+    return Process::environment.arrays[to_upper(key)];
 }
 
 void py_psi_set_variable(const std::string& key, double val)
 {
-    string uppercase_key = key;
-    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
-    Process::environment.globals[uppercase_key] = val;
+    Process::environment.globals[to_upper(key)] = val;
 }
 
 void py_psi_set_array_variable(const std::string& key, SharedMatrix val)
 {
-    string uppercase_key = key;
-    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
-    Process::environment.arrays[uppercase_key] = val;
+    Process::environment.arrays[to_upper(key)] = val;
 }
 
 void py_psi_clean_variable_map()
@@ -1449,6 +1453,7 @@ BOOST_PYTHON_MODULE (psi4)
         "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
     // These return/set/print PSI variables found in Process::environment.globals
+    def("has_variable",py_psi_has_variable,"Returns true if the PSI variable exists/is set.");
     def("get_variable",
         py_psi_get_variable,
         "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
