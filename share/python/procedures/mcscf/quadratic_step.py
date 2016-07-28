@@ -28,7 +28,6 @@
 import numpy as np
 import psi4
 import os
-from MCSCF import *
 
 # Shoody rel imports
 import sys
@@ -146,7 +145,7 @@ def compute_vector(ci_p, orb_p, mcscf_obj, ciwfn, orb_grad, ci_grad, C0, dvecs1,
     ci_p.symnormalize(1.0, 0)
     ci_scale_cp = np.vdot(C0, ci_p.np)
 
-    # Grab orbital info 
+    # Grab orbital info
     nact = sum(ciwfn.get_dimension('ACT').to_tuple())
     ndocc = sum(ciwfn.get_dimension('DRC').to_tuple())
     nvir = sum(ciwfn.get_dimension('VIR').to_tuple())
@@ -166,14 +165,10 @@ def compute_vector(ci_p, orb_p, mcscf_obj, ciwfn, orb_grad, ci_grad, C0, dvecs1,
     orb_Ap.add(mcscf_obj.compute_Hk(orb_p))
     orb_Ap.axpy(-2.0 * ci_scale_cp, orb_grad)
     mcscf_obj.zero_redundant(orb_Ap)
-    #orb_Ap = np.array(orb_Ap)
-    #orb_Ap[ndocc:, :nact] = 0
 
     # Project P left
     proj_scale_cp = ci_Ap.vdot(C0vec, 0, 0)
     ci_Ap.axpy(-proj_scale_cp, C0vec, 0, 0)
-
-    #Ap = np.hstack((ci_Ap.np, orb_Ap.ravel()))
 
     return ci_Ap, orb_Ap
 
@@ -229,7 +224,7 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     ci_x = ciwfn.new_civector(1, 0, False, True)
     ci_x.copy(ci_grad, 0, 0)
     ci_x.divide(ci_precon, 1.e-8, 0, 0)
-    ci_x.scale(-1.0, 0) 
+    ci_x.scale(-1.0, 0)
 
     orb_x = orb_grad.clone()
     orb_x.apply_denominator(orb_precon)
@@ -260,11 +255,11 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
     ci_p.copy(ci_z, 0, 0)
 
     orb_p = orb_z.clone()
-    
+
     ci_rel_tol = ci_r.norm(0) ** 2
     orb_rel_tol = orb_r.sum_of_squares()
     rel_tol = ci_rel_tol + orb_rel_tol
-    
+
     psi4.print_out("\n")
     psi4.print_out("                 Starting CI RMS = %1.4e   ORB RMS = %1.4e\n" %
                                         (ci_rel_tol ** 0.5, orb_rel_tol ** 0.5))
@@ -306,10 +301,10 @@ def qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj):
         orb_numer = orb_r.sum_of_squares()
         rms_numer = ci_numer + orb_numer
 
-        ci_rms = (ci_numer / ci_rel_tol) ** 0.5 
-        orb_rms = (orb_numer / orb_rel_tol) ** 0.5 
+        ci_rms = (ci_numer / ci_rel_tol) ** 0.5
+        orb_rms = (orb_numer / orb_rel_tol) ** 0.5
         rms = (rms_numer / rel_tol) ** 0.5
-        
+
 
         psi4.print_out("      Micro Iter %2d: Rel. CI RMS = %1.4e   ORB RMS = %1.4e\n" %
                                             (rot_iter + 1, ci_rms, orb_rms))

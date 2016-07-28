@@ -43,7 +43,7 @@ np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 import scipy.linalg
 
 def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype):
-    psi4.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" % 
+    psi4.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
 def mcscf_solver(ref_wfn):
@@ -55,7 +55,7 @@ def mcscf_solver(ref_wfn):
     # Hush a lot of CI output
     ciwfn.set_print(0)
 
-    # Begin with a normal two-step    
+    # Begin with a normal two-step
     step_type = 'Initial CI'
     total_step = psi4.Matrix("Total step", ciwfn.get_dimension('OA'), ciwfn.get_dimension('AV'))
     start_orbs = ciwfn.get_orbitals("ROT").clone()
@@ -69,7 +69,7 @@ def mcscf_solver(ref_wfn):
     mcscf_d_file = psi4.get_option("DETCI", "CI_FILE_START") + 3
     mcscf_nroots = psi4.get_option("DETCI", "NUM_ROOTS")
     mcscf_wavefunction_type = psi4.get_option("DETCI", "WFN")
-    mcscf_ndet = ciwfn.ndet() 
+    mcscf_ndet = ciwfn.ndet()
     mcscf_nuclear_energy = ciwfn.molecule().nuclear_repulsion_energy()
     mcscf_steplimit = psi4.get_option("DETCI", "MCSCF_MAX_ROT")
 
@@ -80,13 +80,13 @@ def mcscf_solver(ref_wfn):
     mcscf_diis_max_vecs = psi4.get_option("DETCI", "MCSCF_DIIS_MAX_VECS")
 
     # One-step info
-    mcscf_target_conv_type = psi4.get_option("DETCI", "MCSCF_ALGORITHM") 
-    mcscf_so_start_grad = psi4.get_option("DETCI", "MCSCF_SO_START_GRAD") 
-    mcscf_so_start_e = psi4.get_option("DETCI", "MCSCF_SO_START_E") 
+    mcscf_target_conv_type = psi4.get_option("DETCI", "MCSCF_ALGORITHM")
+    mcscf_so_start_grad = psi4.get_option("DETCI", "MCSCF_SO_START_GRAD")
+    mcscf_so_start_e = psi4.get_option("DETCI", "MCSCF_SO_START_E")
     mcscf_current_step_type = 'Initial CI'
 
-    # Start with SCF energy and other params 
-    scf_energy = psi4.get_variable("HF TOTAL ENERGY") 
+    # Start with SCF energy and other params
+    scf_energy = psi4.get_variable("HF TOTAL ENERGY")
     eold = scf_energy
     converged = False
     one_step = False
@@ -97,7 +97,7 @@ def mcscf_solver(ref_wfn):
     ediff = 1.e-4
     orb_grad_rms = 1.e-3
 
-    # Grab needed objects 
+    # Grab needed objects
     diis_obj = diis_helper.DIIS_helper(mcscf_diis_max_vecs)
     mcscf_obj = ciwfn.new_mcscf_object()
 
@@ -106,7 +106,7 @@ def mcscf_solver(ref_wfn):
         psi4.print_out("\n  Warning! Only the TS algorithm for RASSCF wavefunction is currently supported.\n")
         psi4.print_out("             Switching to the TS algorithm.\n\n")
         mcscf_target_conv_type = "TS"
-    
+
     if (mcscf_target_conv_type != "TS") and (mcscf_type == "CONV"):
         psi4.print_out("\n  Warning! One-step and augmented Hessian algorithms are only implemented for DF.\n")
         psi4.print_out("             Switching to the TS algorithm.\n\n")
@@ -119,7 +119,7 @@ def mcscf_solver(ref_wfn):
         psi4.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
     else:
         mtype = "   @DF-MCSCF"
-        psi4.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n") 
+        psi4.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
         psi4.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
 
     # Iterate !
@@ -133,21 +133,18 @@ def mcscf_solver(ref_wfn):
         ciwfn.form_tpdm()
         ci_grad_rms = psi4.get_variable("DETCI AVG DVEC NORM")
 
-        # Update MCSCF object    
+        # Update MCSCF object
         mcscf_obj.update(ciwfn.get_orbitals("DOCC"), ciwfn.get_orbitals("ACT"),
                          ciwfn.get_orbitals("VIR"), ciwfn.get_opdm(-1, -1, "SUM", False),
                          ciwfn.get_tpdm("SUM", True))
-        current_energy = psi4.get_variable('CURRENT ENERGY') 
-  
-        #mcscf_obj.gradient().print_out() 
-        #mcscf_obj.current_IFock().print_out()
-        #mcscf_obj.current_AFock().print_out()
+        current_energy = psi4.get_variable('CURRENT ENERGY')
+
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
 
         # Print iterations
         print_iteration(mtype, mcscf_iter, current_energy, ediff, orb_grad_rms, ci_grad_rms,
-                        nci_iter, norb_iter, mcscf_current_step_type) 
+                        nci_iter, norb_iter, mcscf_current_step_type)
         eold = current_energy
 
         if mcscf_current_step_type == 'Initial CI':
@@ -165,8 +162,8 @@ def mcscf_solver(ref_wfn):
         # Which orbital convergence are we doing?
         if mcscf_current_step_type == 'AH':
             converged, norb_iter, step = ah_iteration(mcscf_obj, print_micro=False)
-            norb_iter += 1     # Initial gradient
-                
+            norb_iter += 1
+
             if converged:
                 step_type = 'AH'
                 one_step = True
@@ -184,7 +181,7 @@ def mcscf_solver(ref_wfn):
         if maxstep > mcscf_steplimit:
             psi4.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
             step.scale(mcscf_steplimit / maxstep)
-    
+
         total_step.add(step)
 
         # Do or add DIIS
@@ -204,8 +201,8 @@ def mcscf_solver(ref_wfn):
             if not (mcscf_iter % mcscf_diis_freq):
                 total_step = diis_obj.extrapolate()
                 mcscf_current_step_type = 'TS, DIIS'
-   
-        # Finall rotate and set orbitals 
+
+        # Finall rotate and set orbitals
         orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
         ciwfn.set_orbitals("ROT", orbs_mat)
 
@@ -238,8 +235,8 @@ def mcscf_solver(ref_wfn):
         ci_grad = ciwfn.new_civector(1, mcscf_d_file + 1, True, True)
         ci_grad.set_nvec(1)
         ci_grad.init_io_files(True)
-  
-    # Loop for onestep 
+
+    # Loop for onestep
     for mcscf_iter in one_step_iters:
 
         # Transform integrals and update the MCSCF object
@@ -260,7 +257,7 @@ def mcscf_solver(ref_wfn):
         psi4.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
         psi4.set_variable("CURRENT ENERGY", current_energy)
 
-        docc_energy = mcscf_obj.current_docc_energy()        
+        docc_energy = mcscf_obj.current_docc_energy()
         ci_energy = mcscf_obj.current_ci_energy()
 
         # Compute CI gradient
@@ -274,7 +271,7 @@ def mcscf_solver(ref_wfn):
         ediff = current_energy - eold
 
         print_iteration(mtype, mcscf_iter, current_energy, ediff, orb_grad_rms, ci_grad_rms,
-                        nci_iter, norb_iter, mcscf_current_step_type) 
+                        nci_iter, norb_iter, mcscf_current_step_type)
         mcscf_current_step_type = 'OS'
 
         eold = current_energy
@@ -312,7 +309,7 @@ def mcscf_solver(ref_wfn):
     if mcscf_target_conv_type != 'SO':
         dvec = ciwfn.new_civector(1, 53, True, True)
         dvec.set_nvec(mcscf_nroots)
-        dvec.init_io_files(True)  
+        dvec.init_io_files(True)
 
     for root in range(mcscf_nroots):
         psi4.print_out("\n   ==> CI root %2d information <==\n\n" % (root + 1))
@@ -328,23 +325,22 @@ def mcscf_solver(ref_wfn):
         nocc = nocc[::-1]
 
         irrep_info = ['??' for x in range(nocc.shape[0])]
-        
+
         cnt = 0
         for ln in range(nocc.shape[0] // 3 + 1):
-            psi4.print_out("    ")
             for sp in range(3):
                 if cnt >= nocc.shape[0]: break
 
-                psi4.print_out("   %2s%8.6f" % (irrep_info[cnt], nocc[cnt])) 
+                psi4.print_out("      %4s  % 8.6f" % (irrep_info[cnt], nocc[cnt]))
                 cnt += 1
             psi4.print_out("\n")
 
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
 
- 
-    ciwfn.cleanup() 
+
+    ciwfn.cleanup()
     del diis_obj
     del mcscf_obj
     return ciwfn
-    
+

@@ -717,6 +717,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->diis_freq = options.get_int("DIIS_FREQ");
   Parameters_->diis_min_vecs = options.get_int("DIIS_MIN_VECS");
   Parameters_->diis_max_vecs = options.get_int("DIIS_MAX_VECS");
+  Parameters_->mcscf_type = options_.get_str("MCSCF_TYPE");
 }
 
 
@@ -1432,28 +1433,6 @@ void CIWavefunction::print_ras_parameters(void)
 
   outfile->Printf(
      "         ---------------------------------------------------------\n\n");
-}
-
-void CIWavefunction::get_mcscf_parameters()
-{
-
-  // Convergence
-  MCSCF_Parameters_->rms_grad_convergence = options_.get_double("MCSCF_R_CONVERGENCE");
-  MCSCF_Parameters_->energy_convergence = options_.get_double("MCSCF_E_CONVERGENCE");
-  MCSCF_Parameters_->max_iter = options_.get_int("MCSCF_MAXITER");
-  MCSCF_Parameters_->mcscf_type = options_.get_str("MCSCF_TYPE");
-  MCSCF_Parameters_->algorithm = options_.get_str("MCSCF_ALGORITHM");
-  MCSCF_Parameters_->max_rot = options_.get_double("MCSCF_MAX_ROT");
-
-  // orbital-orbital SO options
-//  MCSCF_Parameters_->orbital_so = options_.get_bool("MCSCF_SO");
-  MCSCF_Parameters_->so_start_grad = options_.get_double("MCSCF_SO_START_GRAD");
-  MCSCF_Parameters_->so_start_e = options_.get_double("MCSCF_SO_START_E");
-
-  // DIIS options for two step
-  MCSCF_Parameters_->diis_start = options_.get_int("MCSCF_DIIS_START");
-  MCSCF_Parameters_->diis_freq = options_.get_int("MCSCF_DIIS_FREQ");
-  MCSCF_Parameters_->diis_max_vecs = options_.get_int("MCSCF_DIIS_MAX_VECS");
 }
 
 }} // namespace psi::detci

@@ -241,7 +241,6 @@ public:
     void print_vector(SharedCIVector vec, int root);
 
     // Compute functions
-    void compute_mcscf();
     void compute_cc();
     int diag_h(double econv = -1.0, double rconv = -1.0);
     void compute_mpn();
@@ -272,7 +271,6 @@ private:
     /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);
-    void get_mcscf_parameters();
     void print_parameters();
     void set_ras_parameters();
     void print_ras_parameters();
@@ -285,6 +283,7 @@ private:
 
     /// Sets the ciwavefunction object
     void common_init();
+    bool cleaned_up_;
 
     /// Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);
@@ -323,7 +322,6 @@ private:
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
-    struct mcscf_params *MCSCF_Parameters_;
     struct calcinfo *CalcInfo_;
     struct params *Parameters_;
     struct ci_blks *CIblks_;
