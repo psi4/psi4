@@ -946,6 +946,9 @@ def optimize(name, **kwargs):
     >>> #     embarrassingly parallel fashion
     >>> optimize('hf', dertype='energy', mode='sow')
 
+    >>> # [4] Can automatically perform complete basis set extrapolations
+    >>> optimize('MP2/cc-pV([D,T]+d)Z')
+
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
@@ -1229,6 +1232,9 @@ def hessian(name, **kwargs):
     else:
         irrep = driver_util.parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
         irrep -= 1  # A1 irrep is externally 1, internally 0
+        if dertype == 2:
+            psi4.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
+            dertype = 1
 
     # Does an analytic procedure exist for the requested method?
     if dertype == 2:

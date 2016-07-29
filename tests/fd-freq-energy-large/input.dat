@@ -161,7 +161,7 @@ set {
  disp_size 0.010
 }
 
-scf_e, scf_wfn = frequencies('scf', irrep=2, return_wfn=True)
+scf_e, scf_wfn = frequencies('scf', irrep=2, return_wfn=True, dertype='energy')
 fd_freqs = scf_wfn.frequencies()
 clean()
 
