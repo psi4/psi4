@@ -53,11 +53,11 @@ option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF 
-                  "-fsanitize=address" "-fno-omit-fram-pointer")
+                  "-fsanitize=address -fno-omit-frame-pointer")
 option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
-                  "-fsanitize=thread" "-fno-omit-frame-pointer" "-pie")
+                  "-fsanitize=thread -fno-omit-frame-pointer -pie")
 option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
-                  "-fsanitize=undefined" "-fno-omit-frame-pointer")
+                  "-fsanitize=undefined -fno-omit-frame-pointer")
 option_with_default(LIBINT_OPT_AM "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "The type of our build" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)

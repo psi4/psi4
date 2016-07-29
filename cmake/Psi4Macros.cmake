@@ -97,29 +97,39 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
 #Checks if C flags are valid, if so adds them to CMAKE_C_FLAGS
+#Input should be a list of flags to try.  If two flags are to be tried together
+#enclose them in quotes, e.g. "-L/path/to/dir -lmylib" is tried as a single
+#flag, whereas "-L/path/to/dir" "-lmylib" is tried as two separate flags
 #
 #Syntax: add_C_flags(<flags to add>)
 #
-macro(add_C_flags FLAGS)
-   unset(test_option)
-   CHECK_C_COMPILER_FLAG("${FLAGS} -Werror" test_option)
-   if(${test_option})
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
-      message(STATUS "Appending CMAKE_C_FLAGS: ${FLAGS}")
-   endif()
+macro(add_C_flags)
+   set(flags_to_try "${ARGN}")
+   foreach(flag_i IN LISTS flags_to_try)
+      unset(test_option)
+      CHECK_C_COMPILER_FLAG("${flag_i} -Werror" test_option)
+      if(${test_option})
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
+         message(STATUS "Appending CMAKE_C_FLAGS: ${FLAGS}")
+      endif()
+   endforeach()
 endmacro()
 
 #Checks if CXX flags are valid, if so adds them to CMAKE_CXX_FLAGS
+#See add_C_flags for more info on syntax
 #
 #Syntax: add_CXX_flags(<flags to add>)
 #
-macro(add_CXX_flags FLAGS)
-   unset(test_option)
-   CHECK_CXX_COMPILER_FLAG("${FLAGS} -Werror" test_option)
-   if(${test_option})
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-      message(STATUS "Appending CMAKE_CXX_FLAGS: ${FLAGS}")
-   endif()
+macro(add_CXX_flags)
+   set(flags_to_try "${ARGN}")
+   foreach(flag_i IN LISTS flags_to_try)
+      unset(test_option)
+      CHECK_CXX_COMPILER_FLAG("${FLAGS} -Werror" test_option)
+      if(${test_option})
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
+         message(STATUS "Appending CMAKE_CXX_FLAGS: ${FLAGS}")
+      endif()
+   endforeach()
 endmacro()
 
 #Macro for adding flags common to both C and CXX, if the compiler supports them
