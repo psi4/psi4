@@ -339,7 +339,9 @@ def mcscf_solver(ref_wfn):
         ciwfn.print_vector(dvec, root)
 
 
-    ciwfn.cleanup()
+    if psi4.get_option("DETCI", "MCSCF_CLEANUP"):
+        ciwfn.cleanup()
+
     del diis_obj
     del mcscf_obj
     return ciwfn

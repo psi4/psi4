@@ -788,6 +788,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_MCSCF", "");
 
+    /* Cleanup the MCSCF object at the end of a run? */
+    options.add_bool("MCSCF_CLEANUP", true);
+
 
   }
 
