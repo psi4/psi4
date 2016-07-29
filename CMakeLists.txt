@@ -45,6 +45,9 @@ option(BUILD_SHARED_LIBS "All Psi4 libraries will be shared objects" OFF)
 option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   option(ENABLE_ACCELERATE "Forces use of accelerate framework on Mac" ON)
+endif()
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
                   "-xHost")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF

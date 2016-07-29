@@ -10,7 +10,13 @@
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # -----------------------------------------------------------------------------
-
+if(ENABLE_ACCELERATE)
+   message(STATUS "Using Mac OS X Accelerate Framework")
+   set(EXTERNAL_LIBS ${EXTERNAL_LIBS} "-framework accelerate")
+   # We now set BLAS_FOUND and LAPACK_FOUND to TRUE
+   set(BLAS_FOUND TRUE)
+   set(LAPACK_FOUND TRUE)
+endif()
 
 if(ENABLE_64BIT_INTEGERS)
     set(MATH_LIB_SEARCH_ORDER MKL ACML)
