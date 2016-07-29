@@ -42,7 +42,7 @@ if(NOT Boost_FOUND)
          ./bootstrap.sh --with-toolset=${BOOST_COMPILER_TYPE}
                                   --with-libraries=${B2_BOOST_COMPONENTS}
                                   --with-python=${PYTHON_EXECUTABLE}
-                                  --with-python-root=${PYTHON_INLCUDE_DIRS}
+                                  --with-python-root=${PYTHON_INLCUDE_DIR}
                                   --prefix=${BOOST_INSTALL_PREFIX}
 
       BUILD_COMMAND ./b2 threading=multi 
