@@ -15,7 +15,7 @@ if(NOT CHEMPS2_FOUND AND ${ENABLE_CHEMPS2})
                    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                    -DSTATIC_ONLY=${ENABLE_STATIC}
                    -DENABLE_TESTS=OFF
-                   -DENABLE_GENERIC=${ENABLE_STATIC}
+                   -DENABLE_GENERIC=OFF
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DCMAKE_RANLIB=${CMAKE_RANLIB}
                    -DCMAKE_AR=${CMAKE_AR}
