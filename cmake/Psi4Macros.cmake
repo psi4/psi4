@@ -3,18 +3,6 @@
 ###functions/macros.  If you find repetitive code throughout the build scripts
 ###this is the place to add it (make sure you document it too).
 
-#Guard against in-source builds
-#
-# Syntax no_in_source()
-#
-macro(no_in_source)
-if(${CMAKE_BINARY_DIR}==${CMAKE_SOURCE_DIR})
-   message(WARNING "In-source builds are prohibited. Making a build directory")
-   set(CMAKE_BINARY_DIR build)
-   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
-endif()
-endmacro(no_in_source)
-
 #Macro for printing an option in a consistent manner
 #
 #Syntax: print_option(<option to print> <was specified>)
@@ -47,7 +35,6 @@ if(NOT DEFINED ${variable})
    set(${variable} ${default} CACHE STRING ${msge})
 endif()
 endmacro(option_with_default)
-
 
 #Common guts to adding a Psi4 library irrespective of bin vs. lib home
 #NOTE: list of sources is a CMake list
@@ -99,20 +86,36 @@ include(CheckCXXCompilerFlag)
 #Checks if C flags are valid, if so adds them to CMAKE_C_FLAGS
 #Input should be a list of flags to try.  If two flags are to be tried together
 #enclose them in quotes, e.g. "-L/path/to/dir -lmylib" is tried as a single
-#flag, whereas "-L/path/to/dir" "-lmylib" is tried as two separate flags
+#flag, whereas "-L/path/to/dir" "-lmylib" is tried as two separate flags.
+#The first list item to succeed is added to CMAKE_C_FLAGS, then try loop
+#breaks. Warning issued if no flags in list suceed.
 #
 #Syntax: add_C_flags(<flags to add>)
 #
 macro(add_C_flags)
+   set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
+   set(CMAKE_REQUIRED_QUIET ON)
    set(flags_to_try "${ARGN}")
-   foreach(flag_i IN LISTS flags_to_try)
-      unset(test_option)
+   foreach(flag_i IN LISTS flags_to_try ITEMS -brillig)
+      if(${flag_i} STREQUAL "-brillig")
+         message(WARNING "Option unfulfilled as none of ${flags_to_try} valid")
+         break()
+      endif()
+      unset(test_option CACHE)
       CHECK_C_COMPILER_FLAG("${flag_i} -Werror" test_option)
-      if(${test_option})
-         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
-         message(STATUS "Appending CMAKE_C_FLAGS: ${FLAGS}")
+      if(test_option)
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag_i}")
+         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+            message(STATUS "Performing Test CMAKE_C_FLAGS [${flag_i}] - Success, Appending")
+         endif()
+         break()
+      else()
+         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+            message(STATUS "Performing Test CMAKE_C_FLAGS [${flag_i}] - Failed")
+         endif()
       endif()
    endforeach()
+   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
 endmacro()
 
 #Checks if CXX flags are valid, if so adds them to CMAKE_CXX_FLAGS
@@ -121,15 +124,29 @@ endmacro()
 #Syntax: add_CXX_flags(<flags to add>)
 #
 macro(add_CXX_flags)
+   set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
+   set(CMAKE_REQUIRED_QUIET ON)
    set(flags_to_try "${ARGN}")
-   foreach(flag_i IN LISTS flags_to_try)
-      unset(test_option)
-      CHECK_CXX_COMPILER_FLAG("${FLAGS} -Werror" test_option)
-      if(${test_option})
-         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-         message(STATUS "Appending CMAKE_CXX_FLAGS: ${FLAGS}")
+   foreach(flag_i IN LISTS flags_to_try ITEMS -brillig)
+      if(${flag_i} STREQUAL "-brillig")
+         message(WARNING "Option unfulfilled as none of ${flags_to_try} valid")
+         break()
+      endif()
+      unset(test_option CACHE)
+      CHECK_CXX_COMPILER_FLAG("${flag_i} -Werror" test_option)
+      if(test_option)
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_i}")
+         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+            message(STATUS "Performing Test CMAKE_CXX_FLAGS [${flag_i}] - Success, Appending")
+         endif()
+         break()
+      else()
+         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+            message(STATUS "Performing Test CMAKE_CXX_FLAGS [${flag_i}] - Failed")
+         endif()
       endif()
    endforeach()
+   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
 endmacro()
 
 #Macro for adding flags common to both C and CXX, if the compiler supports them
@@ -141,20 +158,6 @@ macro(add_flags FLAGS)
    add_CXX_flags(${FLAGS})
 endmacro()
 
-#Adds flags if compiler recognizes them and the option is true.  Flags are not
-#necessarily governed by an option, e.g. restrict keyword
-#
-#Syntax: optional_add_flags(<option> <flags to add>)
-#
-macro(optional_add_flags option)
-   set(Extra_Args ${ARGN})
-   list(LENGTH Extra_Args nargs)
-   if(${option} AND (${nargs} GREATER 0))
-      list(GET Extra_Args 0 FLAGS)
-      add_flags(${FLAGS})
-   endif()
-endmacro()
-
 #Defines an option that if enabled turns on some compiler flags
 #
 #Syntax: option_with_flags(<option> <description> <default value> <flags>)
@@ -162,7 +165,9 @@ endmacro()
 macro(option_with_flags option msg default)
     print_option(${option} ${default})
     option(${option} ${msg} ${default})
-    optional_add_flags(${option} ${ARGN})
+    if(${${option}})
+       add_flags("${ARGN}")
+    endif()
 endmacro()
 
 #Macro so I don't have to look at a ton of if statements for adding each plugin
