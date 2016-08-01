@@ -66,6 +66,12 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->meta_type_ = XFunctional::Meta_None;
         x->sr_type_   = XFunctional::SR_None;
         fun = static_cast<Functional*>(x);
+    } else if (alias == "PW86_X") {
+        XFunctional* x = new XFunctional();
+        x->gga_type_  = XFunctional::PW86;
+        x->meta_type_ = XFunctional::Meta_None;
+        x->sr_type_   = XFunctional::SR_None;
+        fun = static_cast<Functional*>(x);
     } else if (alias == "PBE_X") {
         XFunctional* x = new XFunctional();
         x->gga_type_  = XFunctional::PBE;

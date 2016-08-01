@@ -62,6 +62,10 @@ void XFunctional::common_init()
     _B86B_mu_ = 0.2449;
     _B86B_k_ = 0.5757;
 
+    _PW86_m_ = 1./15.;
+    _PW86_b_ = 14.;
+    _PW86_c_ = 0.2;
+
     _PW91_a1_ = 0.19645 / (2.0 * _k0_);
     _PW91_a2_ = 7.7956 / (2.0 * _k0_);
     _PW91_a3_ = 0.2743 / (4.0 * _k0_ * _k0_);
@@ -101,6 +105,12 @@ void XFunctional::set_parameter(const std::string& key, double val)
         _B86B_mu_ = val;
     } else if (key == "B86B_k") {
         _B86B_k_ = val;
+    } else if (key == "PW86_m") {
+        _PW86_m_ = val;
+    } else if (key == "PW86_b") {
+        _PW86_b_ = val;
+    } else if (key == "PW86_c") {
+        _PW86_c_ = val;
     } else if (key.substr(0,5) == "B97_a") {
         // B97_a0, B97_a1, etc
         int index = atoi(key.substr(5).c_str());
@@ -306,6 +316,20 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
 
                 Fs = 1.0 + mus2 / denom45;
                 Fs_s = (1 / denom45 - 4./5. * mus2 / _B86B_k_ / denom95) * (2. * _B86B_mu_ * sn) / xn;
+
+		break;
+	    }
+            case PW86: {
+                double xn = 2*_k0_;
+                double sn = s / xn;
+                double s2 = sn * sn;
+                double s4 = s2 * s2;
+                double s6 = s4 * s2;
+                double asum = 1.0 + 0.0864 * s2 / _PW86_m_ + _PW86_b_ * s4 + _PW86_c_ * s6;
+                double asum_s = 2. * 0.0864 * sn / _PW86_m_ + 4. * _PW86_b_ * s2 * sn + 6. * _PW86_c_ * s4 * sn;
+
+                Fs = pow(asum,_PW86_m_);
+                Fs_s = _PW86_m_ * (Fs / asum) * asum_s / xn;
 
 		break;
 	    }
