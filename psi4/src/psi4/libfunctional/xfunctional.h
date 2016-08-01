@@ -45,7 +45,7 @@ friend class Functional;
 * Fake polymorphic behavior
 **/ 
 public:
-    enum GGA_Type { GGA_None, B88, PBE, RPBE, SOGGA, PW91, B97, B86B}; 
+    enum GGA_Type { GGA_None, B88, PBE, RPBE, SOGGA, PW91, B97, B86B, PW86}; 
     enum Meta_Type { Meta_None, Becke };
     enum SR_Type { SR_None, LSDA, GGA, Meta }; 
 
@@ -77,6 +77,11 @@ protected:
     // B86B
     double _B86B_mu_;
     double _B86B_k_;
+
+    // PW86
+    double _PW86_m_;
+    double _PW86_b_;
+    double _PW86_c_;
 
     // PW91
     double _PW91_a1_;
