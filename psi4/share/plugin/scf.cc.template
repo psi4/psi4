@@ -27,10 +27,9 @@
  * @END LICENSE
  */
 
-#include <psi4-dec.h>
-#include <liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include "scf.h"
+#include "psi4/include/psi4-dec.h"
+#include "psi4/src/lib/liboptions/liboptions.h"
+#include "psi4/src/lib/libscf_solver/scf.h"
 
 namespace psi{ namespace @plugin@ {
 
