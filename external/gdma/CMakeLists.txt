@@ -1,5 +1,5 @@
 include(ExternalProject)
-option(ENABLE_BOUDNS_CHECK "Enables bounds check in Fortran" OFF)
+option(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF)
 find_package(gdma QUIET)
 
 if(NOT GDMA_FOUND AND ${ENABLE_GDMA})
