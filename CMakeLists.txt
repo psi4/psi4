@@ -31,7 +31,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math
 )
 include(Psi4Macros)
-no_in_source()
+include(autocmake_safeguards)
 
 ############################## Options #########################################
 option(ENABLE_PCMSOLVER "Enables the PCMSolver module" OFF)

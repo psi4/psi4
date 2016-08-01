@@ -26,7 +26,7 @@ set(sources_list export_psio.cc
                  set_memory.cc 
                  read_options.cc 
 )
-set(PLUGIN_LDFLAGS ${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT})
+set(PLUGIN_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT}")
 set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${Boost_INCLUDE_DIR} -I${PYTHON_INCLUDE_DIR} ")
 message(STATUS "${PLUGIN_INCLUDES}")
 add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
