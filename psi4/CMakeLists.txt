@@ -56,6 +56,7 @@ set(psi4_lib_list ${PYTHON_LIBRARIES}
                   ${LIBDERIV_LIBRARIES}
                   ${CMAKE_THREAD_LIBS_INIT}
                   ${LAPACK_LIBRARIES}
+                  ${BLAS_LIBRARIES}
 )
 target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)  
 

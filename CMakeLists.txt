@@ -45,9 +45,6 @@ option(BUILD_SHARED_LIBS "All Psi4 libraries will be shared objects" OFF)
 option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-   option(ENABLE_ACCELERATE "Forces use of accelerate framework on Mac" ON)
-endif()
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
                   "-xHost")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
@@ -117,6 +114,8 @@ ExternalProject_Add(psi4_core
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DLAPACK_LIBRARIES=${LAPACK_LIBRARIES}
               -DLAPACK_INCLUDE_DIRS=${LAPACK_INCLUDE_DIRS}
+              -DBLAS_LIBRARIES=${BLAS_LIBRARIES}
+              -DBLAS_INCLUDE_DIRS=${BLAS_INCLUDE_DIRS}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
