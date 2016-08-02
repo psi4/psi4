@@ -148,6 +148,16 @@ public:
      */
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
 
+
+    /**
+     * Computes the Qk matrix Q_pw = (pt|uv)^k \Gamma_{tuvw} with rotated integrals
+     * @param  TPDM Dense nact*nact by nact*nact symmetrized TPDM
+     * @param  U    The full rotation matrix U
+     * @param  Uact The active portion of the matrix U
+     * @return      The symmetry blocked Q matrix
+     */
+    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+
     /**
      * Computes the Q matrix AFock_pq = (pq|uv) - 0.5 (pu|qv) \gamma_{uv}
      * @param  OPDM Dense nact*nact by nact*nact symmetrized OPDM
@@ -222,9 +232,6 @@ protected:
     // Grab actMO (dense)
     virtual void set_act_MO();
 
-    // Build the Q matrices
-    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
-
 
 }; // SOMCSCF class
 
@@ -254,7 +261,7 @@ protected:
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
 }; // DFSOMCSCF class
 
@@ -282,7 +289,7 @@ protected:
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
 }; // DiskSOMCSCF class
 
@@ -308,7 +315,7 @@ protected:
 
     virtual void set_act_MO();
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual void compute_Qk(SharedMatrix U, SharedMatrix Uact);
+    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
     void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
     bool eri_tensor_set_;
