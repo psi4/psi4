@@ -89,8 +89,8 @@ def mcscf_solver(ref_wfn):
     scf_energy = psi4.get_variable("HF TOTAL ENERGY")
     eold = scf_energy
     converged = False
-    one_step = False
     norb_iter = 1
+    ah_step = False
     qc_step = False
 
     # Fake info to start with the inital diagonalization
@@ -104,11 +104,6 @@ def mcscf_solver(ref_wfn):
     # Limited RAS functionality
     if psi4.get_local_option("DETCI", "WFN") == "RASSCF" and mcscf_target_conv_type != "TS":
         psi4.print_out("\n  Warning! Only the TS algorithm for RASSCF wavefunction is currently supported.\n")
-        psi4.print_out("             Switching to the TS algorithm.\n\n")
-        mcscf_target_conv_type = "TS"
-
-    if (mcscf_target_conv_type != "TS") and (mcscf_type == "CONV"):
-        psi4.print_out("\n  Warning! One-step and augmented Hessian algorithms are only implemented for DF.\n")
         psi4.print_out("             Switching to the TS algorithm.\n\n")
         mcscf_target_conv_type = "TS"
 
@@ -160,18 +155,16 @@ def mcscf_solver(ref_wfn):
 
 
         # Which orbital convergence are we doing?
-        if mcscf_current_step_type == 'AH':
+        if ah_step:
             converged, norb_iter, step = ah_iteration(mcscf_obj, print_micro=False)
             norb_iter += 1
 
             if converged:
-                step_type = 'AH'
-                one_step = True
+                mcscf_current_step_type = 'AH'
             else:
                 psi4.print_out("      !Warning. Augmented Hessian did not converge. Taking an approx step.\n")
                 step = mcscf_obj.approx_solve()
-                step_type = 'TS'
-                one_step = False
+                mcscf_current_step_type = 'TS, AH failure'
 
         else:
             step = mcscf_obj.approx_solve()
@@ -211,7 +204,7 @@ def mcscf_solver(ref_wfn):
                 (mcscf_iter >= 3):
 
             if mcscf_target_conv_type == 'AH':
-                mcscf_current_step_type = 'AH'
+                ah_step = True
             elif mcscf_target_conv_type == 'OS':
                 mcscf_current_step_type = 'OS, Prep'
                 break

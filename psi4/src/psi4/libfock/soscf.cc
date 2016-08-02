@@ -68,7 +68,7 @@ SharedMatrix SOMCSCF::compute_Q(SharedMatrix TPDM)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
-void SOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
+SharedMatrix SOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact)
 {
     throw PSIEXCEPTION("The SOMCSCF object must be initilized as a DF or Disk object.");
 }
@@ -647,7 +647,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     ret->scale(2.0);
 
     /// Build Qk
-    compute_Qk(U, Uact);
+    matrices_["Qk"] = compute_Qk(matrices_["TPDM"], U, Uact);
     // outfile->Printf("Active Fock\n");
     // matrices_["Qk"]->print();
 
@@ -1009,7 +1009,7 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
     // matrices_["Q"]->print();
     return Q;
 }
-void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
+SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact)
 {
     timer_on("SOMCSCF: DF-Qk matrix");
     // Remove U symmetry
@@ -1024,7 +1024,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     int nQ = dferi_->size_Q();
     int nact2 = nact_*nact_;
     int nact3 = nact2*nact_;
-    double* TPDMp = matrices_["TPDM"]->pointer()[0];
+    double* TPDMp = TPDM->pointer()[0];
     std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // Read NaQ
@@ -1119,7 +1119,8 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
 
     // Symm block Qk
-    matrices_["Qk"] = Matrix::doublet(matrices_["Q"], U, false, true);
+    SharedMatrix tQ = compute_Q(TPDM);
+    SharedMatrix Qk = Matrix::doublet(tQ, U, false, true);
     // dQk->print();
 
     int offset_act = 0;
@@ -1139,6 +1140,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     // matrices_["Qk"]->print();
     timer_off("SOMCSCF: DF-Qk matrix");
 
+    return Qk;
 
 }// End DFSOMCSCF object
 
@@ -1290,24 +1292,61 @@ SharedMatrix DiskSOMCSCF::compute_Q(SharedMatrix TPDMmat)
     return Qmat;
 
 }
-void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
+SharedMatrix DiskSOMCSCF::compute_Qk(SharedMatrix TPDMmat, SharedMatrix U, SharedMatrix Uact)
 {
-    //timer_on("SOMCSCF: Qk matrix");
+    timer_on("SOMCSCF: Qk matrix");
     // \TPDM_{vwxy}\kappa_{mo}g_{owxy}
     // \TPDM_{vwxy}(\kappa_{wo}g_{moxy} +\kappa_{xo}g_{mwoy} + \kappa_{yo}g_{mwxo})
 
-    /*
-    outfile->Printf("Init files\n");
-    Uact->print();
+    bool debug = false;
+
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_MCSCF, PSIO_OPEN_OLD);
 
     dpdfile2 Qk, dpdUact;
     dpdbuf4 G, Gk, TPDM;
 
+    // Write out the incoming TPDM
+    double** TPDMmatp = TPDMmat->pointer();
+    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"), 0, "CI Qk TPDM (XX|XX)");
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_init(&TPDM, h);
+    }
+
+    // 4 fold symmetry
+    for(int p = 0; p < nact_; p++){
+      int p_sym = TPDM.params->psym[p];
+
+      // for(int q = 0; q <= p; q++){
+      for(int q = 0; q < nact_; q++){
+        int q_sym = TPDM.params->psym[q];
+        int pq_sym = p_sym^q_sym;
+        int pq = TPDM.params->rowidx[p][q];
+
+        for(int r = 0; r < nact_; r++){
+          int r_sym = TPDM.params->psym[r];
+
+          for(int s = 0; s < nact_; s++){
+          // for(int s = 0; s <= r; s++){
+            int s_sym = TPDM.params->psym[s];
+            int rs_sym = r_sym^s_sym;
+            int rs = TPDM.params->colidx[r][s];
+
+            if (pq_sym != rs_sym) continue;
+
+            TPDM.matrix[pq_sym][pq][rs] = TPDMmatp[p*nact_ + q][r*nact_ + s];
+    }}}}
+
+    for (int h=0; h<nirrep_; h++){
+        global_dpd_->buf4_mat_irrep_wrt(&TPDM, h);
+        global_dpd_->buf4_mat_irrep_close(&TPDM, h);
+    }
+
     // We init R then a so we need 1, 0 here for index types
     global_dpd_->file2_init(&dpdUact, PSIF_MCSCF, 0, 1, 0, "Uact");
-    // Uact->print();
 
     // Copy SharedMatrix Uact into Ua
     global_dpd_->file2_mat_init(&dpdUact);
@@ -1321,8 +1360,6 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 
     global_dpd_->file2_mat_wrt(&dpdUact);
     global_dpd_->file2_mat_close(&dpdUact);
-    SharedMatrix(new Matrix(&dpdUact))->print();
-    outfile->Printf("Wrote Uact\n");
 
 
     // Rotate the two electron integrals
@@ -1331,55 +1368,39 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"), 0, "Rotated MO Ints (XX|XR)");
 
 
-    // \kappa_{yo}g_{mwxo} -> Gk_{mwxy}
+    // \kappa_{uP}g_{tPvR} -> Gk_{tuvR}
     global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0,
                 ints_->DPD_ID("[X,R]"), ints_->DPD_ID("[X,R]"),
                 ints_->DPD_ID("[X,R]"), ints_->DPD_ID("[X,R]"), 0, "MO Ints (XR|XR)");
 
-    outfile->Printf("About to contract\n");
-    global_dpd_->contract244(&dpdUact, &G, &Gk, 1, 1, 0, 1.0, 0.0);
+    global_dpd_->contract424(&G, &dpdUact, &Gk, 1, 1, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&G);
-    outfile->Printf("First contraction done\n\n");
 
-    // Sneaky code
-    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
-    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
-
-    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
-    SharedMatrix(new Matrix(&Qk))->print();
-    global_dpd_->buf4_close(&TPDM);
-    global_dpd_->file2_close(&Qk);
-    // End sneaky code
+    if (debug){
+        outfile->Printf("First contraction done\n\n");
+        global_dpd_->buf4_print(&Gk, "outfile", 1);
+    }
 
 
-    // \kappa_{xo}g_{mwoy} -> Gk_{mwxy}
-    global_dpd_->buf4_sort(&Gk, PSIF_MCSCF, qprs,
-        ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
-        "Tran Copy Ints (XX|XR)");
-
+    // \kappa_{tP}g_{PuvR} -> Gk_{tuvR}
+    global_dpd_->buf4_copy(&Gk, PSIF_MCSCF, "Tran Copy Ints (XX|XR)");
+    global_dpd_->buf4_close(&Gk);
     global_dpd_->buf4_init(&G, PSIF_MCSCF, 0,
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"), 0, "Tran Copy Ints (XX|XR)");
+    global_dpd_->buf4_sort_axpy(&G, PSIF_MCSCF, qprs,
+                            ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+                            "Rotated MO Ints (XX|XR)", 1.0);
 
-    outfile->Printf("About to contract\n");
-    global_dpd_->buf4_axpy(&G, &Gk, 1.0);
+    global_dpd_->buf4_init(&Gk, PSIF_MCSCF, 0,
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"),
+                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,R]"), 0, "Rotated MO Ints (XX|XR)");
     global_dpd_->buf4_close(&G);
-    outfile->Printf("Second contraction done\n\n");
+    if (debug){
+        outfile->Printf("Second contraction done\n\n");
+        global_dpd_->buf4_print(&Gk, "outfile", 1);
+    }
 
-    // Sneaky code
-    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
-    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
-
-    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
-    SharedMatrix(new Matrix(&Qk))->print();
-    global_dpd_->buf4_close(&TPDM);
-    global_dpd_->file2_close(&Qk);
-    // throw PSIEXCEPTION("DOES NOT WORK YET!");
-    // End sneaky code
 
 
     // \kappa_{wo}g_{moxy}
@@ -1387,16 +1408,43 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
                 ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[R,R]"),
                 ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[R>=R]+"), 0, "MO Ints (XX|RR)");
 
-    outfile->Printf("About to contract\n");
-    // global_dpd_->contract424(&G, &dpdUact, &Gk, 2, 1, 0, 1.0, 1.0);
-    global_dpd_->contract244(&dpdUact, &G, &Gk, 1, 2, 0, 1.0, 1.0);
-    outfile->Printf("Third contraction done\n");
+    global_dpd_->contract244(&dpdUact, &G, &Gk, 1, 2, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
-    outfile->Printf("Third contraction done\n");
     global_dpd_->file2_close(&dpdUact);
-    outfile->Printf("Third contraction done\n");
+    if (debug){
+        outfile->Printf("Third contraction done\n\n");
+        global_dpd_->buf4_print(&Gk, "outfile", 1);
+    }
+
+    // \Gamma_{tuvw}g_{tuvR} -> Qk_{wR}
+    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
+    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
+
+    global_dpd_->buf4_close(&TPDM);
+    global_dpd_->buf4_close(&Gk);
 
 
+    SharedMatrix Qkmat = SharedMatrix(new Matrix(&Qk));
+    global_dpd_->file2_close(&Qk);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_MCSCF, 1);
+
+    // Qkmat->print();
+    // Transform last index
+    SharedMatrix Qmat = compute_Q(TPDMmat);
+    Qkmat->gemm(false, false, -1.0, Qmat, U, 1.0);
+    if (debug){
+        Qkmat->print();
+
+    }
+    timer_off("SOMCSCF: Qk matrix");
+
+    return Qkmat;
+    // End sneaky code
+
+
+    /*
     // \TPDM_{vwxy}(gk_{moxy})
     global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
     global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
@@ -1426,7 +1474,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     timer_off("SOMCSCF: Qk matrix");
     */
 
-    throw PSIEXCEPTION("DiskSOMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
+    // throw PSIEXCEPTION("DiskSOMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
 
 }// End DiskSOMCSCF object
 
@@ -1491,7 +1539,7 @@ void IncoreSOMCSCF::set_act_MO(void)
         throw PSIEXCEPTION("IncoreSOMCSCF: ERI tensors were not set!");
     }
 }
-void IncoreSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
+SharedMatrix IncoreSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact)
 {
     throw PSIEXCEPTION("IncoreSOMCSCF::Qk: Qk does not yet.");
 }
