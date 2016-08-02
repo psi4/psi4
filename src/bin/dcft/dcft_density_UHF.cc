@@ -2166,7 +2166,7 @@ DCFTSolver::write_molden_file() {
     SharedVector dummy_a(new Vector("Dummy Vector Alpha", nirrep_, nmopi_));
     SharedVector dummy_b(new Vector("Dummy Vector Beta", nirrep_, nmopi_));
 
-    molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals);
+    molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, false);
 
 }
 
