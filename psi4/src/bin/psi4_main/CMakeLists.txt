@@ -28,7 +28,7 @@ set(sources_list export_psio.cc
 )
 
 set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${Boost_INCLUDE_DIR} -I${PYTHON_INCLUDE_DIR} ")
-message(STATUS "${PLUGIN_INCLUDES}")
+
 add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
     -Drestrict=${RESTRICT_KEYWORD}
     -DPLUGIN_CXX=${CMAKE_CXX_COMPILER}
@@ -36,7 +36,7 @@ add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
     -DPLUGIN_FLAGS=${CMAKE_CXX_FLAGS}
     -DPLUGIN_DEFINES="-fPIC"
     -DPLUGIN_OBJDIR=${CMAKE_BINARY_DIR}
-    -DPLUGIN_LDFLAGS=${CMAKE_CXX_LINK_FLAGS}
+    -DPLUGIN_LDFLAGS="${CMAKE_CXX_LINK_FLAGS}"
 )
 
 #This library is special because we want this library to be a .so so that we
