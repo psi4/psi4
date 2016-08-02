@@ -31,7 +31,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math
 )
 include(Psi4Macros)
-include(autocmake_safeguards)
+
 
 ############################## Options #########################################
 option(ENABLE_PCMSOLVER "Enables the PCMSolver module" OFF)
@@ -65,6 +65,10 @@ option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
 
 set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
+
+###### Now that options are set make sure they are rationale ###################
+message(STATUS "${CMAKE_BUILD_TYPE}")
+include(autocmake_safeguards)
 
 ############################## Compiler Features ###############################
 find_package(OpenMP)
