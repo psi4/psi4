@@ -331,7 +331,7 @@ void DFOCC::save_mo_to_wfn()
 	eps_orbA->to_shared_vector(dummy_a);
 
 	// write
-	molden->write(filename, aAONO, aAONO, dummy_a, dummy_a, aevals, aevals, false);
+	molden->write(filename, aAONO, aAONO, dummy_a, dummy_a, aevals, aevals, true);
 
 	//free
 	aAONO.reset();
@@ -386,7 +386,7 @@ void DFOCC::save_mo_to_wfn()
 	eps_orbB->to_shared_vector(dummy_b);
 
 	// write
-	molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, false);
+	molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, true);
 
 	// free
 	aAONO.reset();

@@ -265,7 +265,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
 }
 
 
-void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB, bool novirtual)
+void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB, bool dovirtual)
 {
     boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
@@ -398,10 +398,10 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     // Number of MOs to write
     int nmoh[wavefunction_->nirrep()];
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
-	if (novirtual)
-	    nmoh[h] = wavefunction_->doccpi()[h]+wavefunction_->soccpi()[h];
-	else
+	if (dovirtual)
 	    nmoh[h] = wavefunction_->nmopi()[h];
+	else
+	    nmoh[h] = wavefunction_->doccpi()[h]+wavefunction_->soccpi()[h];
     }
 
     // do alpha's
