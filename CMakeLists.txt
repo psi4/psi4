@@ -46,7 +46,7 @@ option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
-                  "-xHost")
+                  "-xHost" "-march=native")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF 
@@ -93,7 +93,7 @@ add_subdirectory(external)
 
 
 list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
-
+message(STATUS "${CMAKE_CXX_FLAGS}")
 ############################## Main Project ####################################
 
 ExternalProject_Add(psi4_core
