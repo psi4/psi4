@@ -28,8 +28,8 @@ also used to pass information between |PSIfour| and WebMO, if |PSIfour|
 computations are invoked using the WebMO GUI.  The filename of the 
 Molden file ends in ".molden", and the prefix is determined by 
 |globals__writer_file_label| (if set), or else by the name of the output
-file plus the name of the current molecule. If |scf__molden_novirtual|
-is set to true, the unoccupied orbitals are not written to the Molden
+file plus the name of the current molecule. If |scf__molden_with_virtual|
+is set to false, the unoccupied orbitals are not written to the Molden
 file.
 
 .. autofunction:: driver.molden(wfn, filename)
@@ -39,5 +39,5 @@ Options
 
 .. include:: autodir_options_c/scf__molden_write.rst
 .. include:: autodir_options_c/globals__writer_file_label.rst
-.. include:: autodir_options_c/scf__molden_novirtual.rst
+.. include:: autodir_options_c/scf__molden_with_virtual.rst
 
