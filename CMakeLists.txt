@@ -93,7 +93,6 @@ add_subdirectory(external)
 
 
 list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
-message(STATUS "${CMAKE_CXX_FLAGS}")
 ############################## Main Project ####################################
 
 ExternalProject_Add(psi4_core
@@ -112,10 +111,6 @@ ExternalProject_Add(psi4_core
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
-              -DLAPACK_LIBRARIES=${LAPACK_LIBRARIES}
-              -DLAPACK_INCLUDE_DIRS=${LAPACK_INCLUDE_DIRS}
-              -DBLAS_LIBRARIES=${BLAS_LIBRARIES}
-              -DBLAS_INCLUDE_DIRS=${BLAS_INCLUDE_DIRS}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
@@ -131,7 +126,11 @@ ExternalProject_Add(psi4_core
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
-   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
+   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+                    -DLAPACK_LIBRARIES:LIST=${LAPACK_LIBRARIES}
+                    -DLAPACK_INCLUDE_DIRS:LIST=${LAPACK_INCLUDE_DIRS}
+                    -DBLAS_LIBRARIES:LIST=${BLAS_LIBRARIES}
+                    -DBLAS_INCLUDE_DIRS:LIST=${BLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
