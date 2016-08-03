@@ -20,8 +20,8 @@ endmacro()
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
 macro(option_with_print variable msge default)
-print_option(${variable} ${default})
-option(${variable} ${msge} ${default})
+   print_option(${variable} ${default})
+   option(${variable} ${msge} ${default})
 endmacro(option_with_print)
 
 #Wraps an option with a default other than ON/OFF and prints it
@@ -36,7 +36,6 @@ macro(option_with_default variable msge default)
 print_option(${variable} ${default})
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
    set(${variable} ${default} CACHE STRING ${msge} FORCE)
-   message(STATUS "${${variable}}")
 endif()
 endmacro(option_with_default)
 
@@ -87,17 +86,13 @@ endmacro(psi4_add_binary libname sources)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
-#Checks if C flags are valid, if so adds them to CMAKE_C_FLAGS
-#Input should be a list of flags to try.  If two flags are to be tried together
-#enclose them in quotes, e.g. "-L/path/to/dir -lmylib" is tried as a single
-#flag, whereas "-L/path/to/dir" "-lmylib" is tried as two separate flags.
-#The first list item to succeed is added to CMAKE_C_FLAGS, then try loop
-#breaks. Warning issued if no flags in list suceed.
+
+#The guts of the next two functions, use the wrappers please
 #
-#Syntax: add_C_flags(<flags to add>)
+#Syntax: add_C_or_CXX_flags(<True for C, False for CXX>)
 #
-macro(add_C_flags)
-   set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
+macro(add_C_or_CXX_flags is_C)
+set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
    set(CMAKE_REQUIRED_QUIET ON)
    set(flags_to_try "${ARGN}")
    foreach(flag_i IN LISTS flags_to_try ITEMS -brillig)
@@ -106,20 +101,43 @@ macro(add_C_flags)
          break()
       endif()
       unset(test_option CACHE)
-      CHECK_C_COMPILER_FLAG("${flag_i} -Werror" test_option)
-      if(test_option)
-         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag_i}")
-         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
-            message(STATUS "Performing Test CMAKE_C_FLAGS [${flag_i}] - Success, Appending")
-         endif()
-         break()
+      if(${is_C})
+          CHECK_C_COMPILER_FLAG("${flag_i} -Werror" test_option)
+          set(description_to_print CMAKE_C_FLAGS)
       else()
-         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
-            message(STATUS "Performing Test CMAKE_C_FLAGS [${flag_i}] - Failed")
-         endif()
+          CHECK_CXX_COMPILER_FLAG("${flag_i} -Werror" test_option)
+          set(description_to_print CMAKE_CXX_FLAGS)
+      endif()
+      set(msg_base "Performing Test ${description_to_print} [${flag_i}] -")
+      if(${test_option})
+        set(${description_to_print} "${${description_to_print}} ${flag_i}")
+        if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+           message(STATUS  "${msg_base} Success, Appending")
+        endif()
+        break()
+      else()
+        if(NOT CMAKE_REQUIRED_QUIET_SAVE)
+           message(STATUS "${msg_base} Failed")
+        endif()
       endif()
    endforeach()
-   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
+   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})  
+endmacro()
+
+
+
+#Checks if C flags are valid, if so adds them to CMAKE_C_FLAGS
+#Input should be a list of flags to try.  If two flags are to be tried together
+#enclose them in quotes, e.g. "-L/path/to/dir -lmylib" is tried as a single
+#flag, whereas "-L/path/to/dir" "-lmylib" is tried as two separate flags.
+#The first list item to succeed is added to CMAKE_C_FLAGS, then try loop
+#breaks. Warning issued if no flags in list succeed.
+#
+#
+#Syntax: add_C_flags(<flags to add>)
+#
+macro(add_C_flags)
+   add_C_or_CXX_flags(TRUE ${ARGN})
 endmacro()
 
 #Checks if CXX flags are valid, if so adds them to CMAKE_CXX_FLAGS
@@ -128,29 +146,7 @@ endmacro()
 #Syntax: add_CXX_flags(<flags to add>)
 #
 macro(add_CXX_flags)
-   set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
-   set(CMAKE_REQUIRED_QUIET ON)
-   set(flags_to_try "${ARGN}")
-   foreach(flag_i IN LISTS flags_to_try ITEMS -brillig)
-      if(${flag_i} STREQUAL "-brillig")
-         message(WARNING "Option unfulfilled as none of ${flags_to_try} valid")
-         break()
-      endif()
-      unset(test_option CACHE)
-      CHECK_CXX_COMPILER_FLAG("${flag_i} -Werror" test_option)
-      if(test_option)
-         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_i}")
-         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
-            message(STATUS "Performing Test CMAKE_CXX_FLAGS [${flag_i}] - Success, Appending")
-         endif()
-         break()
-      else()
-         if(NOT CMAKE_REQUIRED_QUIET_SAVE)
-            message(STATUS "Performing Test CMAKE_CXX_FLAGS [${flag_i}] - Failed")
-         endif()
-      endif()
-   endforeach()
-   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
+    add_C_or_CXX_flags(FALSE ${ARGN})
 endmacro()
 
 #Macro for adding flags common to both C and CXX, if the compiler supports them
