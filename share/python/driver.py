@@ -1822,7 +1822,7 @@ def molden(wfn, filename, density_a=None, density_b=None):
 
         # At this point occupation number will be difficult to build, lets set them to zero
         mw = psi4.MoldenWriter(wfn)
-        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, True)
 
 
 # Aliases
