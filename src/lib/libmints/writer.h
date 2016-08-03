@@ -76,7 +76,7 @@ class MoldenWriter
     boost::shared_ptr<Wavefunction> wavefunction_;
 
 public:
-    void write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB);
+    void write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB, bool dovirtual);
     void writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob);
     MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction);
 

@@ -115,7 +115,7 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
        HF* hf = (HF*)scf.get();
        SharedVector occA = hf->occupation_a();
        SharedVector occB = hf->occupation_b();
-       molden->write(filename, scf->Ca(), scf->Cb(), scf->epsilon_a(), scf->epsilon_b(),occA,occB);
+       molden->write(filename, scf->Ca(), scf->Cb(), scf->epsilon_a(), scf->epsilon_b(),occA,occB,options.get_bool("MOLDEN_WITH_VIRTUAL"));
     }
 
     // Print molecular orbitals
