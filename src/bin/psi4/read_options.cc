@@ -1210,7 +1210,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
-    /* Write all the MOs to the MOLDEN file (false) or discard the unoccupied MOs (true). */
+    /*- Write all the MOs to the MOLDEN file (false) or discard the unoccupied MOs (true). -*/
     options.add_bool("MOLDEN_NOVIRTUAL", false);
     /*- If true, then repeat the specified guess procedure for the orbitals every time -
     even during a geometry optimization. -*/
