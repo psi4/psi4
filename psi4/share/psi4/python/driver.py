@@ -1828,7 +1828,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None):
             occb = psi4.Vector(wfn.nmopi())
 
         mw = psi4.MoldenWriter(wfn)
-        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
+        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, True)
 
 
 # Aliases
