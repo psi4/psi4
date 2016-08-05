@@ -61,7 +61,7 @@ macro(general_add_library libname sources dir)
    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
    set(depend_name "${ARGN}")
    foreach(name_i IN LISTS depend_name)
-      target_link_libraries(${libname} INTERFACE ${name_i})
+      target_link_libraries(${libname} PUBLIC ${name_i})
    endforeach()
    target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} 
                                                 ${LIBDERIV_INCLUDE_DIRS})
