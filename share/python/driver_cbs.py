@@ -351,83 +351,83 @@ def return_energy_components():
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY'}
     VARH['mp2.5'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY'}
     VARH['mp3'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY'}
     VARH['mp4(sdq)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
                        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY'}
     VARH['mp4'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
                        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
                             'mp4': 'MP4(SDTQ) TOTAL ENERGY'}
     VARH['omp2'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'omp2': 'OMP2 TOTAL ENERGY'}
     VARH['omp2.5'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                          'omp2.5': 'OMP2.5 TOTAL ENERGY'}
     VARH['omp3'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
                            'omp3': 'OMP3 TOTAL ENERGY'}
     VARH['olccd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'olccd': 'OLCCD TOTAL ENERGY'}
     VARH['lccd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'lccd': 'LCCD TOTAL ENERGY'}
     VARH['lccsd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'lccsd': 'LCCSD TOTAL ENERGY'}
     VARH['cepa(0)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                         'cepa(0)': 'CEPA(0) TOTAL ENERGY'}
     VARH['cepa(1)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                         'cepa(1)': 'CEPA(1) TOTAL ENERGY'}
     VARH['cepa(3)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                         'cepa(3)': 'CEPA(3) TOTAL ENERGY'}
     VARH['acpf'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'acpf': 'ACPF TOTAL ENERGY'}
     VARH['aqcc'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'aqcc': 'AQCC TOTAL ENERGY'}
     VARH['qcisd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
                        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
                           'qcisd': 'QCISD TOTAL ENERGY'}
     VARH['cc2'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                             'cc2': 'CC2 TOTAL ENERGY'}
     VARH['ccsd'] = {
@@ -435,24 +435,24 @@ def return_energy_components():
                             'mp2': 'MP2 TOTAL ENERGY',
                            'ccsd': 'CCSD TOTAL ENERGY'}
     VARH['bccd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'bccd': 'CCSD TOTAL ENERGY'}
     VARH['cc3'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                             'cc3': 'CC3 TOTAL ENERGY'}
     VARH['fno-ccsd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                        'fno-ccsd': 'CCSD TOTAL ENERGY'}
     VARH['fno-ccsd(t)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'ccsd': 'CCSD TOTAL ENERGY',
                     'fno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['qcisd(t)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
@@ -465,44 +465,44 @@ def return_energy_components():
                            'ccsd': 'CCSD TOTAL ENERGY',
                         'ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['bccd(t)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'ccsd': 'CCSD TOTAL ENERGY',
                         'bccd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['cisd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                            'cisd': 'CISD TOTAL ENERGY'}
     VARH['cisdt'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                           'cisdt': 'CISDT TOTAL ENERGY'}
     VARH['cisdtq'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                          'cisdtq': 'CISDTQ TOTAL ENERGY'}
     VARH['fci'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'fci': 'FCI TOTAL ENERGY'}
     VARH['mrccsd'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                          'mrccsd': 'CCSD TOTAL ENERGY'}
     VARH['mrccsd(t)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                          'mrccsd': 'CCSD TOTAL ENERGY',
                       'mrccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['mrccsdt'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                         'mrccsdt': 'CCSDT TOTAL ENERGY'}
     VARH['mrccsdt(q)'] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                         'mrccsdt': 'CCSDT TOTAL ENERGY',
                      'mrccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
 
     for cilevel in range(2, 99):
         VARH['ci%s' % (str(cilevel))] = {
-                            'scf': 'SCF TOTAL ENERGY',
+                             'hf': 'HF TOTAL ENERGY',
           'ci%s' % (str(cilevel)): 'CI TOTAL ENERGY'}
 
     for mplevel in range(5, 99):
@@ -576,6 +576,7 @@ def complete_basis_set(func, label, **kwargs):
            :columns: 5
 
            * scf
+           * hf
            * mp2
            * mp2.5
            * mp3
