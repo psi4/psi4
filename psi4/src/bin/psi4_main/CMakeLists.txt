@@ -48,7 +48,10 @@ if(ENABLE_PYTHON_INTERFACE)
  else()
    add_library(psi4_main STATIC ${psi4_all_sources})
 endif()
-
+if(TARGET gdma::gdma)
+    target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
+message("IS gmda 3")
+endif()
 set(psi4_destination ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
 install(TARGETS psi4_main LIBRARY DESTINATION ${psi4_destination}

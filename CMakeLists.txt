@@ -39,7 +39,7 @@ option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
 option(ENABLE_DKH "Enables DKH integrals" OFF)
 option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
-option(ENABLE_GDMA "Enables Stone's GDMA multipole code" OFF)
+option(ENABLE_gdma "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(BUILD_SHARED_LIBS "All Psi4 libraries will be shared objects" OFF)
 option(ENABLE_PYTHON_INTERFACE "Final library will be shared" ON)
@@ -61,7 +61,7 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
 
-set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external)
+set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external)
 
 ###### Now that options are set make sure they are rationale ###################
 message(STATUS "${CMAKE_BUILD_TYPE}")
@@ -119,7 +119,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DENABLE_GTFOCK=${ENABLE_GTFOCK}
-              -DENABLE_GDMA=${ENABLE_GDMA}
+              -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_DKH=${ENABLE_DKH}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
               -DENABLE_PYTHON_INTERFACE=${ENABLE_PYTHON_INTERFACE}
