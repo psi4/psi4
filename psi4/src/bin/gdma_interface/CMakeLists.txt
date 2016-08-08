@@ -1,3 +1,6 @@
 set(sources_list wrapper.cc)
 psi4_add_binary(gdma_interface sources_list mints)
-target_include_directories(gdma_interface PRIVATE ${GDMA_INCLUDE_DIRS})
+if(TARGET gdma::gdma)
+    target_compile_definitions(gdma_interface PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
+message("IS gmda 2")
+endif()

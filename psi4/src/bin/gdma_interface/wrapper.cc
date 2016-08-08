@@ -24,7 +24,7 @@
  *
  * @END LICENSE
  */
-#ifdef ENABLE_GDMA 
+#ifdef USING_gdma 
 #include <boost/python.hpp>
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libparallel/parallel.h"
@@ -43,9 +43,9 @@ extern "C" {
   double get_tot_value(int addr);
 };
 
-namespace psi { namespace gdma {
+namespace psi { namespace gdma_interface {
 
-SharedWavefunction gdma(SharedWavefunction ref_wfn, Options & options, const std::string &datfilename)
+SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options, const std::string &datfilename)
 {
     outfile->Flush();
     run_gdma(outfile_name.c_str(), datfilename.c_str());

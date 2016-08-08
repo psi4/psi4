@@ -28,13 +28,33 @@ optional_plugin(PCMSolver)
 optional_plugin(CHEMPS2)
 optional_plugin(liberd)
 optional_plugin(dkh)
-optional_plugin(gdma)
+#optional_plugin(gdma)
+#include(get_gdma)
+
+
+if(${ENABLE_gdma})
+    find_package(gdma CONFIG REQUIRED
+                 HINTS ${CMAKE_PREFIX_PATH}/gdma)
+    message("gdma found w/i ${CMAKE_PREFIX_PATH}")
+else()
+    message("gdma not enabled ${CMAKE_PREFIX_PATH}")
+endif()
+if(TARGET gdma::gdma)
+include(echo_target)
+print_target_vars(gdma)
+print_target(gdma::gdma)
+endif()
 
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)
 
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(psi4_exe psi4.cc)
+
+if(TARGET gdma::gdma)
+    target_link_libraries(psi4_exe PUBLIC gdma::gdma)  # not sure about PPI
+endif()
+
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
 
 set(psi4_install_lib ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})

@@ -150,7 +150,7 @@ if(ENABLE_CHEMPS2)
     add_subdirectory(dmrg)
 endif()
 
-if(ENABLE_GDMA)
+if(ENABLE_gdma)
     add_subdirectory(gdma1)
 endif()
 

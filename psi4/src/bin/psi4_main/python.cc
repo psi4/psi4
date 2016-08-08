@@ -118,8 +118,8 @@ namespace fnocc { SharedWavefunction fnocc(SharedWavefunction, Options&); }
 namespace occwave { SharedWavefunction occwave(SharedWavefunction, Options&); }
 namespace mcscf { SharedWavefunction mcscf(SharedWavefunction, Options&); }
 namespace scf { SharedWavefunction     scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
-#ifdef ENABLE_GDMA
-namespace gdma { SharedWavefunction     gdma(SharedWavefunction, Options&, const std::string &datfilename); }
+#ifdef USING_gdma
+namespace gdma_interface { SharedWavefunction     gdma_interface(SharedWavefunction, Options&, const std::string &datfilename); }
 #endif
 
 // Matrix returns
@@ -490,11 +490,11 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn)
     return detci::detci(ref_wfn, Process::environment.options);
 }
 
-#ifdef ENABLE_GDMA
+#ifdef USING_gdma
 double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 {
     py_psi_prepare_options_for_module("GDMA");
-    gdma::gdma(ref_wfn, Process::environment.options, datfilename);
+    gdma_interface::gdma_interface(ref_wfn, Process::environment.options, datfilename);
     return 0.0;
 }
 #else
