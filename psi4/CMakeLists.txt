@@ -23,14 +23,20 @@ find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 set_property(GLOBAL PROPERTY LIBLIST "")
 
-optional_plugin(Ambit)
-optional_plugin(PCMSolver)
-optional_plugin(CHEMPS2)
-optional_plugin(liberd)
-optional_plugin(dkh)
+#optional_plugin(Ambit)
+#optional_plugin(PCMSolver)
+#optional_plugin(CHEMPS2)
+#optional_plugin(liberd)
+#optional_plugin(dkh)
 #optional_plugin(gdma)
 #include(get_gdma)
 
+
+if(${ENABLE_CHEMPS2})
+   find_package(CHEMPS2 REQUIRED)
+#   set_property(GLOBAL APPEND PROPERTY PSI4_MODULES ${${PLUGIN_NAME}_LIBRARIES})
+   add_definitions(-DENABLE_CHEMPS2)
+endif()
 
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
@@ -68,17 +74,34 @@ set_target_properties(psi4_exe PROPERTIES OUTPUT_NAME psi4
                           BUILD_WITH_INSTALL_RPATH TRUE
 )
 get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
-get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
-add_dependencies(psi4_exe psi4_main)
-set(psi4_lib_list ${PYTHON_LIBRARIES}
-                  psi4_main 
-                  ${psi4_modules}
-                  ${LIBDERIV_LIBRARIES}
-                  ${CMAKE_THREAD_LIBS_INIT}
-                  ${LAPACK_LIBRARIES}
-                  ${BLAS_LIBRARIES}
-)
-target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)  
+message("LIBS: PYTHON   ${PYTHON_LIBRARIES}")
+message("LIBS: PSI4     ${psi4_libraries}")
+message("LIBS: CHEMPS2  ${CHEMPS2_LIBRARIES}")
+message("LIBS: GDMA")
+message("LIBS: DERIV    ${LIBDERIV_LIBRARIES}")
+message("LIBS: THREAD   ${CMAKE_THREAD_LIBS_INIT}")
+message("LIBS: LAPACK   ${LAPACK_LIBRARIES}")
+message("LIBS: BLAS     ${BLAS_LIBRARIES}")
+message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
+
+target_link_libraries(psi4_exe PRIVATE ${PYTHON_LIBRARIES})
+target_link_libraries(psi4_exe PRIVATE psi4_main)
+target_link_libraries(psi4_exe PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(psi4_exe PRIVATE ${LAPACK_LIBRARIES})
+target_link_libraries(psi4_exe PRIVATE ${BLAS_LIBRARIES})
+
+#get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
+#why twicetarget_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)  
+#add_dependencies(psi4_exe psi4_main)
+#set(psi4_lib_list ${PYTHON_LIBRARIES}
+#                  psi4_main 
+#                  ${psi4_modules}
+#                  ${LIBDERIV_LIBRARIES}
+#                  ${CMAKE_THREAD_LIBS_INIT}
+#                  ${LAPACK_LIBRARIES}
+#                  ${BLAS_LIBRARIES}
+#)
+#target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)  
 
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config 
