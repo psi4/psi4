@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(psi4 LANGUAGES C CXX VERSION 1.0)
+# no Fortran in psi4-core proper, but language needs to be declared
+#   for CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES to be populated so
+#   Fortran add-ons can be linked
+project(psi4-core LANGUAGES C CXX Fortran VERSION 1.0)
 
 #set(CMAKE_CXX_STANDARD 11) enable if they fix this for Intel
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
@@ -57,9 +60,6 @@ add_subdirectory(src)
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(psi4_exe psi4.cc)
 
-if(TARGET gdma::gdma)
-    target_link_libraries(psi4_exe PUBLIC gdma::gdma)  # not sure about PPI
-endif()
 
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
 
