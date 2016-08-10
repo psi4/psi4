@@ -1,6 +1,5 @@
 set(sources_list wrapper.cc)
 psi4_add_binary(gdma_interface sources_list mints)
 if(TARGET gdma::gdma)
-    target_compile_definitions(gdma_interface PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
-message("IS gmda 2")
+    target_link_libraries(gdma_interface PUBLIC gdma::gdma)
 endif()

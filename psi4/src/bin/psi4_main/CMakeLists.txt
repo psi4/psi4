@@ -43,7 +43,6 @@ set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 add_library(psi4_main STATIC ${psi4_all_sources})
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
-message("IS gmda 3")
 endif()
 
 install(TARGETS psi4_main ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
