@@ -37,7 +37,7 @@
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/onebody.h"
 #include "psi4/src/lib/libefp_solver/efp_solver.h"
-#include <efp/efp.h>
+#include <efp.h>
 
 boost::regex efpAtomSymbol("A\\d*([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
 boost::smatch reMatches;

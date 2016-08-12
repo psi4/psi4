@@ -53,6 +53,11 @@ include(echo_target)
 print_target_vars(gdma)
 print_target(gdma::gdma)
 endif()
+find_package(libefp CONFIG REQUIRED
+                  HINTS ${CMAKE_PREFIX_PATH}/libefp)
+message("libefp found w/i ${CMAKE_PREFIX_PATH}")
+print_target_vars(libefp)
+print_target(libefp::efp)
 
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)
