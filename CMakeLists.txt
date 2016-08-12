@@ -24,16 +24,16 @@
 #Need 3.1 for build_always
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(psi4 CXX C)
-include(GNUInstallDirs)
 #set(CMAKE_CXX_STANDARD 11) Not working with Intel compilers at moment
-include(ExternalProject)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math
 )
+include(GNUInstallDirs)
+include(ExternalProject)
+
+################################### Options ####################################
 include(Psi4Macros)
-
-
-############################## Options #########################################
 option(ENABLE_PCMSOLVER "Enables the PCMSolver module" OFF)
 option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
@@ -41,7 +41,7 @@ option(ENABLE_DKH "Enables DKH integrals" OFF)
 option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code" OFF)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
-option(BUILD_SHARED_LIBS "Internally built Psi4 add-on libraries will be shared objects" OFF)
+option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
@@ -59,18 +59,17 @@ option_with_default(CMAKE_BUILD_TYPE "The type of our build" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
+option_with_print(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external)
 
-###### Now that options are set make sure they are rationale ###################
-message(STATUS "${CMAKE_BUILD_TYPE}")
+######################### Process & Validate Options ###########################
 include(autocmake_safeguards)
+include(autocmake_omp)
+#include(autocmake_static_library)
 
-############################## Compiler Features ###############################
-find_package(OpenMP)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++11")
-
-############################## Dependencies ####################################
+################################# Dependencies #################################
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
@@ -92,7 +91,7 @@ add_subdirectory(external)
 
 
 list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
-############################## Main Project ####################################
+################################# Main Project #################################
 
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
@@ -121,7 +120,6 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_DKH=${ENABLE_DKH}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
-              -DENABLE_PYTHON_INTERFACE=${ENABLE_PYTHON_INTERFACE}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
