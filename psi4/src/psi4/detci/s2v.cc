@@ -74,17 +74,23 @@ void s2_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
   double tval;
   double *Sptr, *Cptr;
 
-  /* loop over I_a */
+  /* loop over all alpha strings Ia that belong to list Ia_list (irrep, block
+   * of alpha strings) */
   for (Ia = alplist[Ia_list], Ia_idx = 0; Ia_idx < nas; Ia_idx++, Ia++) {
     Sptr = S[Ia_idx];
     zero_arr(F, Ja_list_nas);
 
     /* loop over excitations E^a_{kl} from |A(I_a)> */
+
+    /* first loop over the K_a lists to block the excited strings by
+     * irrep or RAS code */
     for (Ka_list = 0; Ka_list < nlists; Ka_list++) {
       Iacnt = Ia->cnt[Ka_list];
       Iaridx = Ia->ridx[Ka_list];
       Iasgn = Ia->sgn[Ka_list];
       Iaij = Ia->ij[Ka_list];
+
+      /* Now loop over excited strings that belong to the given block Ka_list */
       for (Ia_ex = 0; Ia_ex < Iacnt; Ia_ex++) {
         kl = *Iaij++;
         Ka_idx = *Iaridx++;
