@@ -27,7 +27,13 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here
+    \brief Code to compute the sigma2 contribution of sigma
+
+    \sigma_2(Ia, Ib) = 
+      \sum_{Ja} \sum_{kl} <Ja|E^a_{kl}|Ia>
+                          \times [ h_{kl} - 0.5*\sum_j (kj|jl) ] C(Ja,Ib)
+      + 0.5 * \sum_{Ja} \sum_{ijkl} <Ja|E^a_{ij} E^a_{kl}|Ia>
+                                    \times (ij|kl) C(Ja,Ib)
 */
 
 #include <cstdio>
