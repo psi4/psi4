@@ -51,6 +51,10 @@ int form_ilist_rotf(int *Cnt, int **Ridx, signed char **Sn, int **Ij, int nas,
 **
 ** Calculate a block of the sigma3 vector in equation (9c) of
 ** Olsen, Roos, et al.  For diagonal blocks of sigma.
+** 
+** alplist and betlist refer to the alpha and beta lists for a particular
+** alpha and beta codes (the combination of which specifies the current
+** block of sigma)
 **
 ** currently assumes that (ij|ij)'s have not been halved
 ** Try to get the Olsen vector version working....again!!!!
