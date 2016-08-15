@@ -27,8 +27,12 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here
+    \brief Code to compute the sigma_3 part of sigma
+
+    \sigma_3(Ia,Ib) = \sum_{Ja,Jb} \sum_{ijkl} 
+                      <Jb|E^b_{ij}|Ib> <Ja|E^a_{kl}|Ia> (ij|kl) C(Ja,Jb)
 */
+
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
