@@ -253,7 +253,7 @@ public:
     void cleanup();
 
     // Returns a new SOMCSCF object
-    boost::shared_ptr<SOMCSCF> new_mcscf_object();
+    boost::shared_ptr<SOMCSCF> mcscf_object();
 
     /// Functions below this line should be used for debug use only
 
@@ -294,15 +294,17 @@ private:
     /// => Integrals <= ///
     bool ints_init_;
     bool df_ints_init_;
+    bool mcscf_object_init_;
+    bool fzc_fock_computed_;
     std::shared_ptr<IntegralTransform> ints_; // Non-DF
     std::shared_ptr<MOSpace> rot_space_;
     std::shared_ptr<MOSpace> act_space_;
     std::shared_ptr<DFERI> dferi_; // DF
     std::shared_ptr<JK> jk_;
+    std::shared_ptr<SOMCSCF> somcscf_;
 
     /// General transforms
-    // void tf_onel_ints();
-    // void form_gmat();
+    void init_mcscf_object();
     void tf_onel_ints(SharedVector onel, SharedVector twoel, SharedVector output);
     void form_gmat(SharedVector onel, SharedVector twoel, SharedVector output);
     void onel_ints_from_jk();
@@ -319,6 +321,7 @@ private:
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints(bool approx_only = false);
     void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
+
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;

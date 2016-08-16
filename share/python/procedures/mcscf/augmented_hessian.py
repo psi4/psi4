@@ -37,7 +37,7 @@ import p4util
 from p4util.exceptions import *
 np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
-def ah_iteration(mcscf_obj, tol=5e-3, max_iter=15, lindep=1e-14, print_micro=True):
+def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=True):
     """
     Solve the generalized eigenvalue problem:
     | 0,  g.T | | 1/l | =   | 1/l |

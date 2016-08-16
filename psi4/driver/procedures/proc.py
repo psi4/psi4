@@ -3974,10 +3974,9 @@ def run_detcas(name, **kwargs):
             )
 
         psi4.set_global_option('SCF_TYPE', 'DF')
-        psi4.set_global_option('ONEPDM', True)
-        psi4.set_global_option('OPDM_RELAX', False)
-#        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF') and (user_ref == 'RHF'):
-        if False:
+        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF') and (user_ref == 'RHF'):
+            psi4.set_global_option('ONEPDM', True)
+            psi4.set_global_option('OPDM_RELAX', False)
             ref_wfn = run_dfmp2_gradient(name, **kwargs)
         else:
             ref_wfn = scf_helper(name, **kwargs)

@@ -799,6 +799,8 @@ void export_mints(py::module& m)
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
             def("basis_projection", &Wavefunction::basis_projection, "docstring").
+            def("H", &Wavefunction::H, "docstring").
+            def("S", &Wavefunction::S, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
@@ -1009,7 +1011,7 @@ void export_mints(py::module& m)
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
-        .def("new_mcscf_object", &detci::CIWavefunction::new_mcscf_object, "docstring")
+        .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring")
         .def("cleanup", &detci::CIWavefunction::cleanup, "docstring");

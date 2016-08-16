@@ -53,7 +53,7 @@ SOMCSCF::SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) :
     nao_ = AOTOSO->rowspi()[0];
     casscf_ = true;
     has_fzc_ = false;
-    energy_fzc_ = 0.0;
+    compute_IFock_ = true;
     energy_drc_ = 0.0;
     energy_ci_ = 0.0;
 }
@@ -111,16 +111,13 @@ void SOMCSCF::set_frozen_orbitals(SharedMatrix Cfzc)
         matrices_["FZC_JK_AO"] = J[0]->clone();
         matrices_["Cfzc"] = Cfzc;
 
-        // Compute FZC energy
-        J[0]->add(matrices_["H"]);
-        J[0]->add(matrices_["H"]);
-        SharedMatrix D = Matrix::doublet(Cfzc, Cfzc, false, true);
-        energy_fzc_ = J[0]->vector_dot(D);
-        D.reset();
-        energy_fzc_ = 0.0;
-
         has_fzc_ = true;
     }
+}
+void SOMCSCF::set_AO_IFock(SharedMatrix IFock)
+{
+    matrices_["AO_IFock"] = IFock->clone();
+    compute_IFock_ = false;
 }
 double SOMCSCF::rhf_energy(SharedMatrix C)
 {
@@ -150,44 +147,26 @@ double SOMCSCF::rhf_energy(SharedMatrix C)
 SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x)
 {
 
-    SharedMatrix tmp(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
+    SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
 
     // Form full antisymmetric matrix
     for (size_t h=0; h<nirrep_; h++){
 
         if (!noapi_[h] || !navpi_[h]) continue;
-        double** tp = tmp->pointer(h);
+        double** Up = U->pointer(h);
         double**  xp = x->pointer(h);
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i=0, target=0; i<noapi_[h]; i++){
             for (size_t a=fmax(noccpi_[h], i); a<nmopi_[h]; a++){
-                tp[i][a] = xp[i][a-noccpi_[h]];
-                tp[a][i] = -1.0 * xp[i][a-noccpi_[h]];
+                Up[i][a] = xp[i][a-noccpi_[h]];
+                Up[a][i] = -1.0 * xp[i][a-noccpi_[h]];
             }
         }
     }
 
-    // Build exp(U) = 1 + U + 1/2 U U + 1/6 U U U
-    SharedMatrix U = tmp->clone();
-
-    for (size_t h=0; h<nirrep_; h++){
-        if (!U->rowspi()[h]) continue;
-        double** Up = U->pointer(h);
-        for (size_t i=0; i<(U->colspi()[h]); i++){
-            Up[i][i] += 1.0;
-        }
-    }
-
-    U->gemm(false, false, 0.5, tmp, tmp, 1.0);
-
-    SharedMatrix tmp_third = Matrix::triplet(tmp, tmp, tmp);
-    tmp_third->scale(1.0/6.0);
-    U->add(tmp_third);
-    tmp_third.reset();
-
-    // We did not fully exponentiate the matrix, need to orthogonalize
-    U->schmidt();
+    // Build exp(U)
+    U->expm(2, true);
 
     // C' = C U
     SharedMatrix Cp = Matrix::doublet(C, U);
@@ -241,35 +220,45 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
     Cl.clear();
     Cr.clear();
 
-    // For inactive Fock
-    Cl.push_back(matrices_["Cocc"]);
-    Cr.push_back(matrices_["Cocc"]);
-
     // For active Fock
     SharedMatrix CL_COPDM = Matrix::doublet(matrices_["Cact"], matrices_["OPDM"]);
     Cl.push_back(CL_COPDM);
     Cr.push_back(matrices_["Cact"]);
+
+    if (compute_IFock_){
+        // For inactive Fock
+        Cl.push_back(matrices_["Cocc"]);
+        Cr.push_back(matrices_["Cocc"]);
+    }
 
     jk_->compute();
 
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
 
-    // IFock build
-    J[0]->scale(2.0);
-    J[0]->subtract(K[0]);
-    J[0]->add(matrices_["H"]);
-    if (has_fzc_){
-        J[0]->add(matrices_["FZC_JK_AO"]);
-    }
-    matrices_["IFock"] = Matrix::triplet(matrices_["C"], J[0], matrices_["C"], true, false, false);
-    matrices_["IFock"]->set_name("IFock");
 
     // AFock build
-    K[1]->scale(0.5);
-    J[1]->subtract(K[1]);
-    matrices_["AFock"] = Matrix::triplet(matrices_["C"], J[1], matrices_["C"], true, false, false);
+    K[0]->scale(0.5);
+    J[0]->subtract(K[0]);
+    matrices_["AFock"] = Matrix::triplet(matrices_["C"], J[0], matrices_["C"], true, false, false);
     matrices_["AFock"]->set_name("AFock");
+
+    // IFock build
+    if (compute_IFock_) {
+        J[1]->scale(2.0);
+        J[1]->subtract(K[1]);
+        J[1]->add(matrices_["H"]);
+        if (has_fzc_) {
+            J[1]->add(matrices_["FZC_JK_AO"]);
+        }
+        matrices_["IFock"] = Matrix::triplet(matrices_["C"], J[1], matrices_["C"],
+                                             true, false, false);
+        matrices_["IFock"]->set_name("IFock");
+    } else {
+        matrices_["IFock"] = Matrix::triplet(matrices_["C"], matrices_["AO_IFock"],
+                                             matrices_["C"], true, false, false);
+        matrices_["IFock"]->set_name("IFock");
+    }
 
     matrices_["Q"] = compute_Q(matrices_["TPDM"]);
     // matrices_["Q"]->print();
@@ -1441,40 +1430,6 @@ SharedMatrix DiskSOMCSCF::compute_Qk(SharedMatrix TPDMmat, SharedMatrix U, Share
     timer_off("SOMCSCF: Qk matrix");
 
     return Qkmat;
-    // End sneaky code
-
-
-    /*
-    // \TPDM_{vwxy}(gk_{moxy})
-    global_dpd_->file2_init(&Qk, PSIF_MCSCF, 0, 1, 0, "Qk");
-    global_dpd_->buf4_init(&TPDM, PSIF_MCSCF, 0,
-                ints_->DPD_ID("[X,X]"), ints_->DPD_ID("[X,X]"),
-                ints_->DPD_ID("[X>=X]+"), ints_->DPD_ID("[X>=X]+"), 0, "CI TPDM (XX|XX)");
-
-    global_dpd_->contract442(&TPDM, &Gk, &Qk, 3, 3, 1.0, 0.0);
-    global_dpd_->buf4_close(&Gk);
-    global_dpd_->buf4_close(&TPDM);
-
-    outfile->Printf("Fourth contraction\n");
-
-    // outfile->Printf("Printing the Q matrix\n");
-    // matrices_["Q"]->print();
-
-    outfile->Printf("Read Qk\n");
-    matrices_["Qk"] = SharedMatrix(new Matrix(&Qk));
-    global_dpd_->file2_close(&Qk);
-
-    // \TPDM_{vwxy}\kappa_{mo}g_{owxy} -> Qk
-    matrices_["Qk"]->doublet(matrices_["Q"], U, false, true);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-    psio_->close(PSIF_MCSCF, 1);
-
-    matrices_["Qk"]->print();
-    timer_off("SOMCSCF: Qk matrix");
-    */
-
-    // throw PSIEXCEPTION("DiskSOMCSCF::Qk: Qk does not work quite yet, check back in after the break.");
 
 }// End DiskSOMCSCF object
 

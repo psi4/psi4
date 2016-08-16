@@ -99,7 +99,7 @@ def mcscf_solver(ref_wfn):
 
     # Grab needed objects
     diis_obj = diis_helper.DIIS_helper(mcscf_diis_max_vecs)
-    mcscf_obj = ciwfn.new_mcscf_object()
+    mcscf_obj = ciwfn.mcscf_object()
 
     # Limited RAS functionality
     if psi4.get_local_option("DETCI", "WFN") == "RASSCF" and mcscf_target_conv_type != "TS":
@@ -195,7 +195,7 @@ def mcscf_solver(ref_wfn):
                 total_step = diis_obj.extrapolate()
                 mcscf_current_step_type = 'TS, DIIS'
 
-        # Finall rotate and set orbitals
+        # Finally rotate and set orbitals
         orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
         ciwfn.set_orbitals("ROT", orbs_mat)
 
@@ -300,12 +300,11 @@ def mcscf_solver(ref_wfn):
 
     # Print out CI vector information
     if mcscf_target_conv_type != 'SO':
-        dvec = ciwfn.new_civector(1, 53, True, True)
-        dvec.set_nvec(mcscf_nroots)
+        dvec = ciwfn.new_civector(mcscf_nroots, mcscf_d_file, True, True)
         dvec.init_io_files(True)
 
     for root in range(mcscf_nroots):
-        psi4.print_out("\n   ==> CI root %2d information <==\n\n" % (root + 1))
+        psi4.print_out("\n   ==> CI root %d information <==\n\n" % (root + 1))
 
         # Print total energy
         root_e = psi4.get_variable("CI ROOT %d TOTAL ENERGY" % (root + 1))

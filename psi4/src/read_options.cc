@@ -763,7 +763,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
     to TS for RASSCF. -*/
-    options.add_str("MCSCF_ALGORITHM", "AH", "TS AH OS");
+    options.add_str("MCSCF_ALGORITHM", "TS", "TS AH OS");
 
     /*- Start second-order (AH or OS) orbital-orbital MCSCF based on RMS of orbital gradient -*/
     options.add_double("MCSCF_SO_START_GRAD", 1e-4);

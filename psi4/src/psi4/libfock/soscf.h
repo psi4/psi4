@@ -86,6 +86,14 @@ public:
     void set_frozen_orbitals(SharedMatrix Cfzc);
 
     /**
+     * Sets the AO based IFock matrix. It should be noted that SOMCSCF will never compute
+     * the IFock matrix again, therefore this should be updated on every update() call.
+     * Frozen core orbitals should be included
+     * @param IFock The AO based IFock matrix
+     */
+    void set_AO_IFock(SharedMatrix IFock);
+
+    /**
      * Rotate the current orbitals for a given rotation matrix.
      * @param  C The orbital matrix to rotate.
      * @param  x The [oa, av] non-redundant orbital rotation parameters.
@@ -111,6 +119,13 @@ public:
     */
     void update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
                 SharedMatrix OPDM, SharedMatrix TPDM);
+
+    /**
+     * Sets the occupied Fock Matrix
+     * @param occ_Fock The current doubly occupied Fock matrix
+     */
+    void set_occ_fock(SharedMatrix occ_Fock);
+
     /**
      * Returns the approximate diagonal hessian.
      * @return Hdiag The [oa, av] block of the diagonal hessian.
@@ -187,25 +202,25 @@ protected:
     /// Parameters
     bool casscf_;
     bool has_fzc_;
+    bool compute_IFock_;
 
     /// Doubles
-    double energy_fzc_;
     double energy_drc_;
     double energy_ci_;
 
     /// Orbital info
     size_t nocc_;
-    Dimension noccpi_;
     size_t nact_;
-    Dimension nactpi_;
     size_t nvir_;
+    Dimension noccpi_;
+    Dimension nactpi_;
     Dimension nvirpi_;
 
     size_t nirrep_;
     size_t nmo_;
-    Dimension nmopi_;
     size_t nso_;
     size_t nao_;
+    Dimension nmopi_;
     Dimension nsopi_;
 
     // Non-redunant rotatations
