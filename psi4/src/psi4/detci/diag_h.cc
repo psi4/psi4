@@ -122,7 +122,9 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             }
             Dvec->setarray(tmp_buff, size);
             Dvec->write(root, 0);
-            evals[root] = evals_vp[root];
+
+            // evals doesnt want edrc, but H *has* drc in it
+            evals[root] = evals_vp[root] - edrc;
         }
         delete[] tmp_buff;
 

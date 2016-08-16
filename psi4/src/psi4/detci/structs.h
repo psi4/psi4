@@ -376,6 +376,7 @@ struct calcinfo {
    std::vector<double> scfeigvala;    /* For ZAPTn, alpha and beta eigenvalues different */
    std::vector<double> scfeigvalb;    /* in SOCC space */
    SharedMatrix so_onel_ints; /* Pitzer-order one-electron integrals */
+   SharedMatrix fzc_so_onel_ints; /* Pitzer-order frozen one-electron integrals */
    SharedVector onel_ints;    /* CI-order one-electron integrals */
    SharedVector tf_onel_ints; /* CI-order transformed (avg) one-electron integrals */
    SharedVector gmat;         /* CI-order onel ints in RAS g matrix form, not symmetry packed */

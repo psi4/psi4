@@ -107,7 +107,9 @@ void CIWavefunction::common_init() {
     // Set information
     ints_init_ = false;
     df_ints_init_ = false;
+    mcscf_object_init_ = false;
     cleaned_up_ = false;
+    fzc_fock_computed_ = false;
 
     // Form strings
     outfile->Printf("\n   ==> Setting up CI strings <==\n\n");
@@ -120,6 +122,10 @@ void CIWavefunction::common_init() {
 
     // Init H0 block
     H0block_init(CIblks_->vectlen);
+
+    if (CIblks_->vectlen < 2){
+        throw PSIEXCEPTION("CIWavefunction: Must have more than one determinant!");
+    }
 }
 size_t CIWavefunction::ndet() { return (size_t)CIblks_->vectlen; }
 
@@ -393,7 +399,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
       double** retp = ret->pointer();
 
       // Symmetrize
-      for (int p=0, target=0; p<nact; p++) {
+      for (int p=0; p<nact; p++) {
       for (int q=0; q<=p; q++) {
       for (int r=0; r<=p; r++) {
 
@@ -467,7 +473,7 @@ void CIWavefunction::cleanup(void) {
 
         // CalcInfo free
         free_int_matrix(CalcInfo_->ras_opi);
-        for (int i = 0, cnt = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             free_int_matrix(CalcInfo_->ras_orbs[i]);
         };
 
@@ -585,16 +591,14 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
 
 }
 
-boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
-
-    boost::shared_ptr<SOMCSCF> somcscf;
+void CIWavefunction::init_mcscf_object(){
 
     if (Parameters_->mcscf_type == "DF") {
-        transform_dfmcscf_ints(true);
-        somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+        if (!df_ints_init_) setup_dfmcscf_ints();
+        somcscf_ = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
     } else {
-        transform_mcscf_ints(true);
-        somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+        if (!ints_init_) setup_mcscf_ints();
+        somcscf_ = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
     }
 
     // We assume some kind of ras here.
@@ -609,15 +613,20 @@ boost::shared_ptr<SOMCSCF> CIWavefunction::new_mcscf_object(){
             }
             ras_spaces.push_back(rasdim);
         }
-        somcscf->set_ras(ras_spaces);
+        somcscf_->set_ras(ras_spaces);
     }
 
     // Set fzc energy
     SharedMatrix Cfzc = get_orbitals("FZC");
-    somcscf->set_frozen_orbitals(Cfzc);
+    somcscf_->set_frozen_orbitals(Cfzc);
+    mcscf_object_init_ = true;
+}
 
-    return somcscf;
-
+boost::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object(){
+    if (!mcscf_object_init_){
+        init_mcscf_object();
+    }
+    return somcscf_;
 }
 
 
