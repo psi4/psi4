@@ -520,7 +520,11 @@ void CIWavefunction::get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
+<<<<<<< 2eb6b525a7c860946543cf91bc5b6153756b94d5:psi4/src/psi4/detci/params.cc
       str += std::to_string(Parameters_->ex_lvl) ;
+=======
+      str += std::to_string( Parameters_->ex_lvl) ;
+>>>>>>> CIWave: Boost be gone:src/bin/detci/params.cc
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());
