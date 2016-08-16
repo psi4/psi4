@@ -607,7 +607,7 @@ void CIWavefunction::init_mcscf_object(){
 
         // We only have four spaces currently
         for (int nras = 0; nras < 4; nras++) {
-            Dimension rasdim = Dimension(nirrep_, "RAS" + psi::to_string(nras));
+            Dimension rasdim = Dimension(nirrep_, "RAS" + std::to_string(nras));
             for (int h = 0; h < nirrep_; h++) {
                 rasdim[h] = CalcInfo_->ras_opi[nras][h];
             }
