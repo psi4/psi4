@@ -45,7 +45,6 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libiwl/iwl.h"
-#include <libint/libint.h>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
@@ -205,21 +204,12 @@ void local_init(Options & options)
     print_mat(D, nso, nso, outfile);
   */
 
-
-  /* Compute the length of each AM block */
-  l_length = init_int_array(LIBINT_MAX_AM);
-  l_length[0] = 1;
-  for(l=1; l < LIBINT_MAX_AM; l++) {
-    if(puream) l_length[l] = 2 * l + 1;
-    else l_length[l] = l_length[l-1] + l + 1;
-  }
-
   /* Set up the atom->AO and AO->atom lookups */
   aostart = init_int_array(natom);
   aostop = init_int_array(natom);
   for(i=0,atom=-1,offset=0; i<nshell; i++) {
     am = wfn->basisset()->shell(i).am();
-    shell_length = l_length[am];
+    shell_length = wfn->basisset()->shell(i).nfunction();
     
 
     if(atom != wfn->basisset()->shell(i).ncenter()) {
