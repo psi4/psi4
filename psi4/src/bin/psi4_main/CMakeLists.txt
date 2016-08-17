@@ -62,6 +62,10 @@ target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 
                                             ${LIBDERIV_INCLUDE_DIRS}
 )
+target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS})
+#                                            ${LIBDERIV_INCLUDE_DIRS}
+#)
+target_include_directories(psi4_main PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
 
 ################################################################################

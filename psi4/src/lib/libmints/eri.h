@@ -29,7 +29,7 @@
 #define _psi_src_lib_libmints_eri_h
 
 #include <libint/libint.h>
-#include <libderiv/libderiv.h>
+#include <libint/libderiv.h>
 #include "psi4/src/lib/libmints/twobody.h"
 
 namespace psi {
