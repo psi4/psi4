@@ -134,7 +134,6 @@ ExternalProject_Add(psi4_core
 )
 add_dependencies(psi4_core boost_external 
                            libint_external
-                           libderiv_external 
                            libefp_external
                            pcmsolver_external
                            liberd_external

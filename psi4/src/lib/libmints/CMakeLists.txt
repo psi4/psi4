@@ -72,4 +72,5 @@ psi4_add_library(mints sources_list iwl options psi4util trans)
 target_include_directories(mints PRIVATE ${LIBERD_INCLUDE_DIRS} 
                                          ${DKH_INCLUDE_DIRS}
 )
-target_link_libraries(mints PUBLIC ${LIBDERIV_LIBRARIES})
+#target_link_libraries(mints PUBLIC libint::libint)
+target_link_libraries(mints PRIVATE libint::libint)
