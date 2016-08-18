@@ -7,14 +7,14 @@ spherical
 !
 !
 ! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr:
-! F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple 
-!    zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy 
+! F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple
+!    zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy
 !    7, 3297 (2005).
-! 
-! C. Hattig, Phys. Chem. Chem. Phys., Optimization of auxiliary basis sets for RI-MP2 and RI-CC2  
+!
+! C. Hattig, Phys. Chem. Chem. Phys., Optimization of auxiliary basis sets for RI-MP2 and RI-CC2
 !    calculations: Core-valence and quintuple-z basis sets for H to Ar and QZVPP basis sets for Li to Kr
 !    7, 59 (2005).
-! 
+!
 !
 
 ****
@@ -776,7 +776,7 @@ S  1  1.00
 S  1  1.00
  0.0665549  1.0
 P  1  1.00
- 217       1.0
+ 217.0       1.0
 P  1  1.00
  45.651    1.0
 P  1  1.00
@@ -3586,4 +3586,3 @@ D  1  1.00
 F  1  1.00
  0.208885  1.0
 ****
-
