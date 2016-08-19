@@ -11,7 +11,7 @@ if(${ENABLE_gdma})
         include(ExternalProject)
         message(STATUS "Suitable gdma could not be located, building one instead.")
         ExternalProject_Add(gdma_external
-            GIT_REPOSITORY https://github.com/loriab/gdma  # TODO switch origin to psi4 when ready
+            GIT_REPOSITORY https://github.com/psi4/gdma
             #GIT_TAG v1.7.1  # TODO tag when stable
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/gdma
@@ -21,6 +21,7 @@ if(${ENABLE_gdma})
                        -DCMAKE_INSTALL_LIBDIR=lib
                        #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
+                       # OpenMP irrelevant
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}

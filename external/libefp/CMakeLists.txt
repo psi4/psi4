@@ -8,7 +8,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
-        GIT_REPOSITORY https://github.com/psi4/libefp  # TODO switch origin to psi4 when ready
+        GIT_REPOSITORY https://github.com/psi4/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
@@ -22,6 +22,7 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                   -DFRAGLIB_UNDERSCORE_L=OFF
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} 
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
