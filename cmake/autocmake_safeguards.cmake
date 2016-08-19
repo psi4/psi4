@@ -1,6 +1,6 @@
 # Downloaded from
 #   https://github.com/coderefinery/autocmake/blob/master/modules/safeguards.cmake
-# * changed test of in-source message
+# * changed text of in-source message
 
 #.rst:
 #
