@@ -16,6 +16,7 @@ if(NOT CHEMPS2_FOUND AND ${ENABLE_CHEMPS2})
                    -DSTATIC_ONLY=${ENABLE_STATIC}
                    -DENABLE_TESTS=OFF
                    -DENABLE_GENERIC=OFF
+                   -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DCMAKE_RANLIB=${CMAKE_RANLIB}
                    -DCMAKE_AR=${CMAKE_AR}
