@@ -1,6 +1,7 @@
 # Downloaded from
 #   https://github.com/coderefinery/autocmake/blob/master/modules/omp.cmake
 # * moved option up
+# * toggled option default to ON
 
 #.rst:
 #

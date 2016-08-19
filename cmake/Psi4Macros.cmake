@@ -85,12 +85,18 @@ endmacro(psi4_add_binary libname sources)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-
+if(CMAKE_Fortran_COMPILER)
+    include(CheckFortranCompilerFlag)  # CMake >= 3.3, so local copy in cmake/
+endif()
 
 #The guts of the next two functions, use the wrappers please
 #
 #Syntax: add_C_or_CXX_flags(<True for C, False for CXX>)
 #
+# Note: resist adding -Werror to the check_X_compiler_flag calls,
+#   as (i) the flag for Intel is actually -diag-error warn, (ii)
+#   Intel ifort doesn't define -Werror, and (iii) passing it
+#   changes REQUIRED_DEFINITIONS.
 macro(add_C_or_CXX_flags is_C)
 set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
    set(CMAKE_REQUIRED_QUIET ON)
@@ -101,12 +107,15 @@ set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
          break()
       endif()
       unset(test_option CACHE)
-      if(${is_C})
-          CHECK_C_COMPILER_FLAG("${flag_i} -Werror" test_option)
+      if(${is_C} EQUAL 0)
+          CHECK_C_COMPILER_FLAG("${flag_i}" test_option)
           set(description_to_print CMAKE_C_FLAGS)
-      else()
-          CHECK_CXX_COMPILER_FLAG("${flag_i} -Werror" test_option)
+      elseif(${is_C} EQUAL 1)
+          CHECK_CXX_COMPILER_FLAG("${flag_i}" test_option)
           set(description_to_print CMAKE_CXX_FLAGS)
+      elseif(${is_C} EQUAL 2)
+          CHECK_Fortran_COMPILER_FLAG("${flag_i}" test_option)
+          set(description_to_print CMAKE_Fortran_FLAGS)
       endif()
       set(msg_base "Performing Test ${description_to_print} [${flag_i}] -")
       if(${test_option})
@@ -137,7 +146,7 @@ endmacro()
 #Syntax: add_C_flags(<flags to add>)
 #
 macro(add_C_flags)
-   add_C_or_CXX_flags(TRUE ${ARGN})
+   add_C_or_CXX_flags(0 ${ARGN})
 endmacro()
 
 #Checks if CXX flags are valid, if so adds them to CMAKE_CXX_FLAGS
@@ -146,7 +155,16 @@ endmacro()
 #Syntax: add_CXX_flags(<flags to add>)
 #
 macro(add_CXX_flags)
-    add_C_or_CXX_flags(FALSE ${ARGN})
+    add_C_or_CXX_flags(1 ${ARGN})
+endmacro()
+
+#Checks if Fortran flags are valid, if so adds them to CMAKE_Fortran_FLAGS
+#See add_C_flags for more info on syntax
+#
+#Syntax: add_Fortran_flags(<flags to add>)
+#
+macro(add_Fortran_flags)
+    add_C_or_CXX_flags(2 ${ARGN})
 endmacro()
 
 #Macro for adding flags common to both C and CXX, if the compiler supports them
@@ -154,8 +172,15 @@ endmacro()
 #Syntax: add_flags(<flags to add>)
 #
 macro(add_flags FLAGS)
-   add_C_flags(${FLAGS})
-   add_CXX_flags(${FLAGS})
+    if(CMAKE_C_COMPILER)
+        add_C_flags(${FLAGS})
+    endif()
+    if(CMAKE_CXX_COMPILER)
+        add_CXX_flags(${FLAGS})
+    endif()
+    if(CMAKE_Fortran_COMPILER)
+        add_Fortran_flags(${FLAGS})
+    endif()
 endmacro()
 
 #Defines an option that if enabled turns on some compiler flags
