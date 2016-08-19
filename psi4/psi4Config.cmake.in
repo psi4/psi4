@@ -56,7 +56,7 @@ foreach(_comp ${PSI4_FIND_COMPONENTS})
 endforeach()
 
 
-find_package(libderiv REQUIRED COMPONENTS @LIBINT_OPT_AM@)
+find_package(libderiv REQUIRED COMPONENTS @MAX_AM_ERI@)
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
                      thread
 )

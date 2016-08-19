@@ -74,7 +74,7 @@ With the newest CMake rewrite there are three steps: configuration, build, and i
        - `ENABLE_LIBERD` Enables ERD library in addition to libint (requires Fortran)
        - `ENABLE_GDMA` Enables Stone's GDMA multipole code (requires Fortran)
        - `ENABLE_AMBIT` Enables the Ambit tensor library
-       - `LIBINT_OPT_AM` The maximum angular momentum for libint
+       - `MAX_AM_ERI` The maximum angular momentum for libint
 
 2.  Build
     - After you ran the configure command, and it ran successfully, change to the build directory and run:
