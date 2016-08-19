@@ -23,7 +23,7 @@ find_package(DL)
 find_package(RT REQUIRED)
 list(APPEND Boost_LIBRARIES ${LIBRT_LIBRARIES})#again boost has failed...
 #find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
-find_package(libint CONFIG REQUIRED COMPONENTS ${LIBINT_OPT_AM}
+find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
                   HINTS ${CMAKE_PREFIX_PATH}/libint)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
