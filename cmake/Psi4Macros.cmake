@@ -50,7 +50,7 @@ macro(general_add_library libname sources dir)
    if(${dir} MATCHES lib)
       set(prefix lib)
    endif()
-   add_library(${libname} ${${sources}})
+   add_library(${libname} STATIC ${${sources}})
    set_target_properties(${libname} PROPERTIES 
        POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
    )
@@ -58,13 +58,12 @@ macro(general_add_library libname sources dir)
    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
       DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4/src/${dir}/${prefix}${libname}
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-   set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+#   set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
    set(depend_name "${ARGN}")
    foreach(name_i IN LISTS depend_name)
-      target_link_libraries(${libname} PUBLIC ${name_i})
+      target_link_libraries(${libname} PRIVATE ${name_i})
    endforeach()
-   target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} 
-                                                ${LIBDERIV_INCLUDE_DIRS})
+   target_include_directories(${libname} PRIVATE ${Boost_INCLUDE_DIRS})
 endmacro(general_add_library libname sources prefix dir)
 
 #Adds a psi4 library that lives in lib

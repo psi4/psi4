@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+#project(psi4-core LANGUAGES C CXX Fortran VERSION 1.0)
+project(psi4-core LANGUAGES C CXX VERSION 1.0)
 # no Fortran in psi4-core proper, but language needs to be declared
 #   for CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES to be populated so
-#   Fortran add-ons can be linked
-project(psi4-core LANGUAGES C CXX Fortran VERSION 1.0)
+#   static Fortran add-ons can be linked
+if(${Fortran_ENABLED})
+    enable_language(Fortran)
+endif()
 
 #set(CMAKE_CXX_STANDARD 11) enable if they fix this for Intel
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
@@ -22,21 +26,17 @@ find_package(Threads)
 find_package(DL)
 find_package(RT REQUIRED)
 list(APPEND Boost_LIBRARIES ${LIBRT_LIBRARIES})#again boost has failed...
-#find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
-                  HINTS ${CMAKE_PREFIX_PATH}/libint)
+                    HINTS ${CMAKE_PREFIX_PATH}/libint)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
-set_property(GLOBAL PROPERTY LIBLIST "")
+#set_property(GLOBAL PROPERTY LIBLIST "")
 
 #optional_plugin(Ambit)
 #optional_plugin(PCMSolver)
 #optional_plugin(CHEMPS2)
 #optional_plugin(liberd)
 #optional_plugin(dkh)
-#optional_plugin(gdma)
-#include(get_gdma)
-
 
 if(${ENABLE_CHEMPS2})
    find_package(CHEMPS2 REQUIRED)
@@ -46,21 +46,10 @@ endif()
 
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
-                 HINTS ${CMAKE_PREFIX_PATH}/gdma)
-    message("gdma found w/i ${CMAKE_PREFIX_PATH}")
-else()
-    message("gdma not enabled ${CMAKE_PREFIX_PATH}")
-endif()
-if(TARGET gdma::gdma)
-include(echo_target)
-print_target_vars(gdma)
-print_target(gdma::gdma)
+                      HINTS ${CMAKE_PREFIX_PATH}/gdma)
 endif()
 find_package(libefp CONFIG REQUIRED
-                  HINTS ${CMAKE_PREFIX_PATH}/libefp)
-message("libefp found w/i ${CMAKE_PREFIX_PATH}")
-print_target_vars(libefp)
-print_target(libefp::efp)
+                    HINTS ${CMAKE_PREFIX_PATH}/libefp)
 
 include_directories(${PSI4_ROOT})
 add_subdirectory(src)
@@ -81,16 +70,7 @@ set_target_properties(psi4_exe PROPERTIES OUTPUT_NAME psi4
                           INSTALL_RPATH_USE_LINK_PATH TRUE
                           BUILD_WITH_INSTALL_RPATH TRUE
 )
-get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
-message("LIBS: PYTHON   ${PYTHON_LIBRARIES}")
-message("LIBS: PSI4     ${psi4_libraries}")
-message("LIBS: CHEMPS2  ${CHEMPS2_LIBRARIES}")
-message("LIBS: GDMA")
-message("LIBS: DERIV    ${LIBDERIV_LIBRARIES}")
-message("LIBS: THREAD   ${CMAKE_THREAD_LIBS_INIT}")
-message("LIBS: LAPACK   ${LAPACK_LIBRARIES}")
-message("LIBS: BLAS     ${BLAS_LIBRARIES}")
-message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
+#get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
 
 target_link_libraries(psi4_exe PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(psi4_exe PRIVATE psi4_main)

@@ -45,26 +45,24 @@ if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
 
-install(TARGETS psi4_main ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+
+install(TARGETS psi4_main
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
         DESTINATION psi4/src/bin/psi4_main
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
-set_property(GLOBAL APPEND PROPERTY LIBLIST psi4_main)
+#set_property(GLOBAL APPEND PROPERTY LIBLIST psi4_main)
 target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
     cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
-    mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index deriv 
-    int thermo mrcc scf sapt gdma_interface dmrg
-)
-target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 
-                                            ${LIBDERIV_INCLUDE_DIRS}
+    mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
+    thermo mrcc scf sapt gdma_interface dmrg
 )
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS})
-#                                            ${LIBDERIV_INCLUDE_DIRS}
-#)
 target_include_directories(psi4_main PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
 
@@ -75,7 +73,7 @@ target_include_directories(psi4_main PRIVATE $<TARGET_PROPERTY:libint::libint,IN
 #Add both the build and install RPaths so we can test from build dir
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
 set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage/${PSI4_EXTERNAL})
-foreach(ex_proj boost libderiv libint libefp)
+foreach(ex_proj boost)
    set(PSI4_RPATH 
       "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
 endforeach()
