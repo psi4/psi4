@@ -32,7 +32,7 @@
 #include "gshell.h"
 
 #include "psi4/src/lib/libmints/wavefunction.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace psi;
 

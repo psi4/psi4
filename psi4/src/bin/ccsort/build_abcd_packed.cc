@@ -40,7 +40,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi { namespace ccsort {
 
@@ -154,7 +154,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   }
 
   outfile->Printf( "\tSorting File: %s nbuckets = %d\n", B.label, nbuckets);
-  
+
 
   next = PSIO_ZERO;
   for(n=0; n < nbuckets; n++) { /* nbuckets = number of passes */

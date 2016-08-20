@@ -30,7 +30,7 @@
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
 */
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -59,7 +59,7 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -67,7 +67,7 @@
 #include "dimension.h"
 #include "sobasis.h"
 #include "integral.h"
-#include "psi4/include/symmetry.h"
+#include "psi4/symmetry.h"
 #include "gshell.h"
 #include "factory.h"
 #include "basisset_parser.h"

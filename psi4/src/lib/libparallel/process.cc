@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 #include <boost/algorithm/string.hpp>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/extern.h"
 
@@ -59,7 +59,7 @@ const std::string empty_;
 void Process::Environment::initialize()
 {
     // If envp is NULL, try to obtain envp from enviorn in unistd.h
-  
+
     string psi4datadir;
 
     // First set some defaults:

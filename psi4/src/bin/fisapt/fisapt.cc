@@ -31,9 +31,9 @@
 #include "psi4/src/lib/libthce/lreri.h"
 #include "psi4/src/lib/libfock/jk.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libdiis/diismanager.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include <boost/filesystem.hpp>
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -1472,7 +1472,7 @@ void FISAPT::exch()
     outfile->Printf("    Exch10              = %18.12lf [Eh]\n",Exch10_n);
     outfile->Printf("\n");
     //fflush(outfile);
-    
+
     if (options_.get_bool("sSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_,3.0);
@@ -1723,7 +1723,7 @@ void FISAPT::ind()
     scalars_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
     scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
     scalars_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
-   
+
     if (options_.get_bool("sSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20r_AB = scale * ExchInd20r_AB;
@@ -3324,19 +3324,19 @@ void FISAPT::find()
     double ExchInd20u_AB = 0.0;
     double ExchInd20u_BA = 0.0;
 
-    
+
     int sna = 0;
     int snB = 0;
     int snb = 0;
     int snA = 0;
-    
+
     if (options_.get_bool("sSAPT0_SCALE")) {
         sna = na;
         snB = nB;
         snb = nb;
         snA = nA;
     }
-    
+
     boost::shared_ptr<Matrix> sExchInd20u_AB_terms(new Matrix("sExchInd20 [A<-B] (a x B)", sna, snB + snb));
     boost::shared_ptr<Matrix> sExchInd20u_BA_terms(new Matrix("sExchInd20 [B<-A] (A x b)", snA + sna, snb));
     double** sExchInd20u_AB_termsp = sExchInd20u_AB_terms->pointer();
@@ -3352,7 +3352,7 @@ void FISAPT::find()
 
     double Indu_AB = 0.0;
     double Indu_BA = 0.0;
-    
+
     boost::shared_ptr<Matrix> sIndu_AB_terms(new Matrix("sInd [A<-B] (a x B)", sna, snB + snb));
     boost::shared_ptr<Matrix> sIndu_BA_terms(new Matrix("sInd [B<-A] (A x b)", snA + sna, snb));
     double** sIndu_AB_termsp = sIndu_AB_terms->pointer();
@@ -3439,7 +3439,7 @@ void FISAPT::find()
         }
 
     }
-    
+
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
     outfile->Printf("    Ind20,u (A<-B)      = %18.12lf [Eh]\n",Ind20u_AB);
@@ -3627,10 +3627,10 @@ void FISAPT::find()
         double Sdelta = IndHF / IndSAPT0;
         double SrAB = (ind_resp ? 1.0 : (scalars_["Ind20,r (A<-B)"] + scalars_["Exch-Ind20,r (A<-B)"]) / (scalars_["Ind20,u (A<-B)"] + scalars_["Exch-Ind20,u (A<-B)"]));
         double SrBA = (ind_resp ? 1.0 : (scalars_["Ind20,r (B<-A)"] + scalars_["Exch-Ind20,r (B<-A)"]) / (scalars_["Ind20,u (B<-A)"] + scalars_["Exch-Ind20,u (B<-A)"]));
-        
+
         double sIndHF = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + dHF;
         double sIndSAPT0 = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"];
-        
+
         double sSdelta = sIndHF / IndSAPT0;
 
         double sSrAB = (ind_resp ? 1.0 : (scalars_["Ind20,r (A<-B)"] + scalars_["sExch-Ind20,r (A<-B)"]) / (scalars_["Ind20,u (A<-B)"] + scalars_["sExch-Ind20,u (A<-B)"]));
@@ -3687,7 +3687,7 @@ void FISAPT::find()
             ExchInd20BAp[A][b+nB] = ExchInd20BA2p[A][b];
         }
     }
-    
+
     matrices_["sIndAB_AB"] = boost::shared_ptr<Matrix>(new Matrix("sIndAB_AB", snA + sna, snB + snb));
     matrices_["sIndBA_AB"] = boost::shared_ptr<Matrix>(new Matrix("sIndBA_AB", snA + sna, snB + snb));
     double** sEABp = matrices_["sIndAB_AB"]->pointer();
@@ -3744,14 +3744,14 @@ void FISAPT::fdisp()
 
     matrices_["Disp_AB"] = boost::shared_ptr<Matrix>(new Matrix("Disp_AB", nA + nfa + na, nB + nfb + nb));
     double** Ep = matrices_["Disp_AB"]->pointer();
-    
+
     int snA = 0;
     int snfa = 0;
     int sna = 0;
     int snB = 0;
     int snfb = 0;
     int snb = 0;
-    
+
     if (options_.get_bool("sSAPT0_SCALE")) {
         snA = nA;
         snfa = nfa;
@@ -3759,8 +3759,8 @@ void FISAPT::fdisp()
         snB = nB;
         snfb = nfb;
         snb = nb;
-    } 
-    
+    }
+
     matrices_["sDisp_AB"] = boost::shared_ptr<Matrix>(new Matrix("Disp_AB", snA + snfa + sna, snB + snfb + snb));
     double** sEp = matrices_["sDisp_AB"]->pointer();
 
@@ -4157,7 +4157,7 @@ void FISAPT::fdisp()
     double** UBp = Uaocc_B->pointer();
 
     // ==> Master Loop <== //
-    
+
     double scale = 1.0;
     if (options_.get_bool("sSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
@@ -4277,14 +4277,14 @@ void FISAPT::fdisp()
                                      E_exch_disp20p[a][b];
         }
     }
-    
+
     if (options_.get_bool("sSAPT0_SCALE")) {
-        
+
         boost::shared_ptr<Matrix> sE_exch_disp20(new Matrix("sE_exch_disp20", na, nb));
         sE_exch_disp20->copy(E_exch_disp20);
         double** sE_exch_disp20p = sE_exch_disp20->pointer();
         sE_exch_disp20->scale(sSAPT0_scale_);
-    
+
         for (int a = 0; a < na; a++) {
             for (int b = 0; b < nb; b++) {
                 sEp[a+nfa+nA][b+nfb+nB] = E_disp20p[a][b] +
@@ -4314,7 +4314,7 @@ void FISAPT::fdrop()
 
     boost::filesystem::path dir(filepath);
     boost::filesystem::create_directory(dir);
-    
+
     std::stringstream ss;
     ss << filepath << "geom.xyz";
     primary_->molecule()->save_xyz_file(ss.str(), true);
@@ -4326,7 +4326,7 @@ void FISAPT::fdrop()
     matrices_["IndAB_AB"]->set_name("IndAB");
     matrices_["IndBA_AB"]->set_name("IndBA");
     matrices_["Disp_AB"]->set_name("Disp");
-    
+
     drop(vectors_["ZA"],filepath);
     drop(vectors_["ZB"],filepath);
     drop(matrices_["Qocc0A"],filepath);
@@ -4336,14 +4336,14 @@ void FISAPT::fdrop()
     drop(matrices_["IndAB_AB"],filepath);
     drop(matrices_["IndBA_AB"],filepath);
     drop(matrices_["Disp_AB"],filepath);
-    
-    
+
+
     if (options_.get_bool("sSAPT0_SCALE")) {
         std::string sSAPT_filepath = options_.get_str("FISAPT_FsSAPT_FILEPATH");
         outfile->Printf("    sF-SAPT Data Filepath = %s\n\n", sSAPT_filepath.c_str());
-    
+
         boost::filesystem::path sSAPTdir(sSAPT_filepath);
-        boost::filesystem::create_directory(sSAPTdir);     
+        boost::filesystem::create_directory(sSAPTdir);
 
         std::stringstream sSAPT_ss;
         sSAPT_ss << sSAPT_filepath << "geom.xyz";

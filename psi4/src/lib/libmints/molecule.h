@@ -39,7 +39,7 @@
 #define DEFAULT_SYM_TOL 1.0E-8
 #define FULL_PG_TOL 1.0e-8 // default
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -254,7 +254,7 @@ public:
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom() const; 
+    int natom() const;
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
@@ -617,7 +617,7 @@ public:
     // => Fragment Composition <= //
 
     /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] = <Afirst,Alast+1>)
-    const std::vector<std::pair<int, int> >& fragments() const { return fragments_; } 
+    const std::vector<std::pair<int, int> >& fragments() const { return fragments_; }
     /// A list describing how to handle each fragment
     const std::vector<FragmentType>& fragment_types() const { return fragment_types_; }
     /// The charge of each fragment

@@ -28,7 +28,7 @@
 #ifndef THREE_INDEX_QR
 #define THREE_INDEX_QR
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include <vector>
 
@@ -37,7 +37,7 @@ namespace psi {
 class Matrix;
 class Vector;
 
-/*! 
+/*!
  * First pass of QR decompostion for rank compression
  * Hermitian only, wastes some memory
  * Uses Householder reflections, as that sounds cooler
@@ -50,20 +50,20 @@ protected:
     /// Debug flag (defaults to 0)
     int debug_;
 
-    /// Termination condition 
+    /// Termination condition
     double delta_;
-    /// Original matrix (untouched) 
-    SharedMatrix A_; 
-    /// Q factor, partial 
+    /// Original matrix (untouched)
+    SharedMatrix A_;
+    /// Q factor, partial
     SharedMatrix Q_;
     /// R factor, full
     SharedMatrix R_;
     /// Pivots
-    std::vector<int> pivots_; 
+    std::vector<int> pivots_;
     /// P factor, partial
-    SharedMatrix P_; 
-    /// N factor, partial 
-    SharedMatrix N_; 
+    SharedMatrix P_;
+    /// N factor, partial
+    SharedMatrix N_;
 
     void form_QR();
     void form_PN();

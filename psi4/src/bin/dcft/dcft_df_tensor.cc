@@ -31,7 +31,7 @@
 #include <cmath>
 #include <sstream>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
@@ -40,7 +40,7 @@
 #include "psi4/src/lib/libmints/twobody.h"
 #include "psi4/src/lib/libmints/view.h"
 #include "psi4/src/lib/libmints/integral.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "dcft.h"
 #include "defines.h"
@@ -57,7 +57,7 @@
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libfock/jk.h"
 #include "psi4/src/lib/libfock/apps.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 #ifdef _OPENMP
 #include <omp.h>

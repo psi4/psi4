@@ -37,9 +37,9 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
@@ -276,7 +276,7 @@ void get_params(Options & options)
     outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
   outfile->Printf( "\n");
-  
+
 }
 
 }} // namespace psi::ccsort

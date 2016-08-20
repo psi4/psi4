@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /* sorts C vectors each iteration to prepare for hbar contractions */
 
@@ -40,7 +40,7 @@
 #include "globals.h"
 
 namespace psi { namespace cceom {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 void sort_C(int C_index, int C_irr) {
   dpdbuf4 CMNEF, Cmnef, CMnEf, CMnfE, CMneF, C2;
@@ -74,7 +74,7 @@ void sort_C(int C_index, int C_irr) {
     sprintf(lbl, "%s %d", "CMnEf", C_index);
     global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_sort(&CMnEf, PSIF_EOM_TMP, prqs, 10, 10, "CMEnf");
-    /* Copy used in WmnieSD */ 
+    /* Copy used in WmnieSD */
     global_dpd_->buf4_sort(&CMnEf, PSIF_EOM_TMP, qprs, 0, 5, "CnMEf");
     /* Copy of current C vector used in WmnieSD and WabefDD */
     global_dpd_->buf4_sort(&CMnEf, PSIF_EOM_TMP, pqsr, 0, 5, "CMnfE");
@@ -130,7 +130,7 @@ void sort_C(int C_index, int C_irr) {
     global_dpd_->buf4_close(&CMnEf);
 
     global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
-    global_dpd_->buf4_scm(&CMnEf, 2.0); 
+    global_dpd_->buf4_scm(&CMnEf, 2.0);
     global_dpd_->buf4_init(&CMnfE, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnfE");
     global_dpd_->buf4_axpy(&CMnfE, &CMnEf, -1.0);
     global_dpd_->buf4_close(&CMnfE);

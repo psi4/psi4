@@ -46,7 +46,7 @@
 using namespace boost;
 using namespace boost::python;
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 namespace psi { namespace findif {
 
@@ -270,7 +270,7 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
 
     // To store gradients in SALC displacement coordinates.
     double **grads_adapted = block_matrix(Ndisp_pi[h], salcs_pi[h].size());
-    
+
     // Build B matrix / sqrt(masses).
     SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
     double **B_irr = B_irr_shared->pointer();
@@ -403,7 +403,7 @@ SharedMatrix fd_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
 
   // double **Hx = block_matrix(3*Natom, 3*Natom);
   SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3*Natom, 3*Natom));
-  double** Hx = mat_Hx->pointer(); 
+  double** Hx = mat_Hx->pointer();
 
   // Hx = Bt H B
   for (int i=0; i<Nsalc_all; ++i)

@@ -30,9 +30,9 @@
   \brief Print eigenvectors and eigenvalues to output file
   \ingroup CIOMR
 */
- 
+
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 

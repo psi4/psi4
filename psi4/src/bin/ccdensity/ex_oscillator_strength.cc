@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
@@ -49,7 +49,7 @@
 using namespace std;
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
 {
@@ -215,7 +215,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
   outfile->Printf("\n\tOscillator Strength for %d%3s to %d%3s\n",S->root+1,
           moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
   outfile->Printf("\t                              X    \t       Y    \t       Z\n");
-  
+
 
   if((params.ref == 0) || (params.ref == 1)) {
 
@@ -271,7 +271,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
 
   /* Use |w2 - w1| for oscillator strengths */
      // We view excitation energies as positive,
-     // so we want to substract the lower state's energy from the 
+     // so we want to substract the lower state's energy from the
      // higher state's.
      // U should be the higher-energy excited state.
   delta_ee = U->cceom_energy - S->cceom_energy;
@@ -312,7 +312,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
   outfile->Printf("\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
   outfile->Printf("\tEinstein A Coefficient   %11.8e \n",einstein_a);
   outfile->Printf("\tEinstein B Coefficient   %11.8e \n",einstein_b);
-  
+
 
   if((params.ref == 0) || (params.ref == 1)) {
     free_block(MUX_MO);

@@ -37,7 +37,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/matrix.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -72,10 +72,10 @@ void kinetic(boost::shared_ptr<Wavefunction> wfn)
 
   /* doccpi array must include frozen orbitals for reorder_qt() */
   doccpi = init_int_array(moinfo.nirreps);
-  for(h=0; h < moinfo.nirreps; h++) 
+  for(h=0; h < moinfo.nirreps; h++)
       doccpi[h] = moinfo.frdocc[h] + moinfo.clsdpi[h];
 
-  reorder_qt(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, 
+  reorder_qt(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
              order, moinfo.orbspi, moinfo.nirreps);
 
   /*** Reorder the SCF eigenvectors to QT ordering */
@@ -117,7 +117,7 @@ void kinetic(boost::shared_ptr<Wavefunction> wfn)
           tcorr += T[i][j] * moinfo.opdm[i][j];
 
   /*** Compute the SCF kinetic energy ***/
-  
+
   tref = 0.0;
   nclsd = moinfo.nfzc + moinfo.nclsd;
   for(i=0; i < nclsd; i++)
@@ -130,7 +130,7 @@ void kinetic(boost::shared_ptr<Wavefunction> wfn)
   vtot = moinfo.eref + moinfo.ecc - ttot;
   vref = moinfo.eref - tref;
   vcorr = moinfo.ecc - tcorr;
-  
+
   outfile->Printf("\n\tVirial Theorem Data:\n");
   outfile->Printf(  "\t--------------------\n");
   outfile->Printf("\tKinetic energy (ref)   = %20.15f\n", tref);
@@ -141,7 +141,7 @@ void kinetic(boost::shared_ptr<Wavefunction> wfn)
   outfile->Printf("\t-V/T (corr)            = %20.15f\n", -vcorr/tcorr);
   outfile->Printf("\t-V/T (total)           = %20.15f\n", -vtot/ttot);
 
-  
+
 
   /*** Release memory ***/
   free_block(X);

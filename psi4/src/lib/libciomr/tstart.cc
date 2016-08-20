@@ -38,7 +38,7 @@
 #include <string>
 #include <ctime>
 #define EXTERN
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <sys/times.h>
 
 namespace psi {

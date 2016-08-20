@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /* T3_UHF_AAA(): Computes all connected and disconnected T3(IJK,ABC)
@@ -35,7 +35,7 @@
 ** intermediates.  This function will work for AAA or BBB spin cases,
 ** with either RHF/ROHF or UHF orbitals.
 **
-** Arguments: 
+** Arguments:
 **
 **   double ***W: The target connected triples amplitudes in an
 **   nirreps x AB x C array.  The memory for this must be allocated
@@ -81,10 +81,10 @@
 **
 **   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   int *occpi: Number of occupied orbitals per irrep lookup array.
 **
 **   int *occ_off: Offset lookup for translating between absolute and
@@ -108,11 +108,11 @@
 #include <math.h>
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi { namespace cctriples {
 
-    void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, 
+    void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
 		    dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ, dpdfile2 *fAB,
 		    int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega)
     {
@@ -251,7 +251,7 @@ namespace psi { namespace cctriples {
 	/* -t_ijcd * F_kdab */
 	Gkd = Gk ^ Gd; /*changed */
 	Gab = Gkd ^ GF;
-	Gc = Gij ^ Gd ^ GC; 
+	Gc = Gij ^ Gd ^ GC;
 
 	cd = C2->col_offset[Gij][Gc];
 	kd = F->row_offset[Gkd][K];
@@ -263,7 +263,7 @@ namespace psi { namespace cctriples {
 	ncols = virtpi[Gc];
 	nlinks = virtpi[Gd];
 
-	if(nrows && ncols && nlinks) 
+	if(nrows && ncols && nlinks)
 	  C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 		  &(C2->matrix[Gij][ij][cd]), nlinks, 1.0, W[Gab][0], ncols);
 
@@ -275,18 +275,18 @@ namespace psi { namespace cctriples {
 
 	/* -t_ilab * E_jklc */
 	Gil = Gi ^ Gl; /* changed */
-	Gab = Gil ^ GC; 
-	Gc = Gjk ^ Gl ^ GE; 
+	Gab = Gil ^ GC;
+	Gc = Gjk ^ Gl ^ GE;
 
 	lc = E->col_offset[Gjk][Gl];
 	il = C2->row_offset[Gil][I];
- 
+
 	nrows = C2->params->coltot[Gil^GC];
 	ncols = virtpi[Gc];
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gil][il], nrows,
 		  &(E->matrix[Gjk][jk][lc]), ncols, 1.0, W[Gab][0], ncols);
 
 	/* +t_jlab * E_iklc */
@@ -302,7 +302,7 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gjl][jl], nrows,
 		  &(E->matrix[Gik][ik][lc]), ncols, 1.0, W[Gab][0], ncols);
 
 	/* +t_klab * E_jilc */
@@ -318,7 +318,7 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gkl][kl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gkl][kl], nrows,
 		  &(E->matrix[Gji][ji][lc]), ncols, 1.0, W[Gab][0], ncols);
 
       }
@@ -346,9 +346,9 @@ namespace psi { namespace cctriples {
 	global_dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
 
 	/* +t_ikbd * F_jdca */
-	Gjd = Gj ^ Gd; 
-	Gca = Gjd ^ GF ; 
-	Gb = Gik ^ Gd ^ GC;      
+	Gjd = Gj ^ Gd;
+	Gca = Gjd ^ GF ;
+	Gb = Gik ^ Gd ^ GC;
 
 	bd = C2->col_offset[Gik][Gb];
 	jd = F->row_offset[Gjd][J];
@@ -367,9 +367,9 @@ namespace psi { namespace cctriples {
 	global_dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
 
 	/* -t_ijbd * F_kdca */
-	Gkd = Gk ^ Gd; 
-	Gca = Gkd ^ GF; 
-	Gb = Gij ^ Gd ^ GC;      
+	Gkd = Gk ^ Gd;
+	Gca = Gkd ^ GF;
+	Gb = Gij ^ Gd ^ GC;
 
 	bd = C2->col_offset[Gij][Gb];
 	kd = F->row_offset[Gkd][K];
@@ -390,9 +390,9 @@ namespace psi { namespace cctriples {
 
       for(Gl=0; Gl < nirreps; Gl++) {
 	/* -t_ilca * E_jklb */
-	Gil = Gi ^ Gl; 
+	Gil = Gi ^ Gl;
 	Gca = Gil ^ GC;
-	Gb = Gjk ^ Gl ^ GE;     
+	Gb = Gjk ^ Gl ^ GE;
 
 	lb = E->col_offset[Gjk][Gl];
 	il = C2->row_offset[Gil][I];
@@ -402,13 +402,13 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gil][il], nrows,
 		  &(E->matrix[Gjk][jk][lb]), ncols, 1.0, W2[Gca][0], ncols);
 
 	/* +t_jlca * E_iklb */
 	Gjl = Gj ^ Gl;
 	Gca = Gjl ^ GC;
-	Gb = Gik ^ Gl^ GE; 
+	Gb = Gik ^ Gl^ GE;
 
 	lb = E->col_offset[Gik][Gl];
 	jl = C2->row_offset[Gjl][J];
@@ -418,13 +418,13 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gjl][jl], nrows,
 		  &(E->matrix[Gik][ik][lb]), ncols, 1.0, W2[Gca][0], ncols);
 
 	/* +t_klca * E_jilb */
-	Gkl = Gk ^ Gl; 
-	Gca = Gkl ^ GC; 
-	Gb = Gji ^ Gl ^ GE;      
+	Gkl = Gk ^ Gl;
+	Gca = Gkl ^ GC;
+	Gb = Gji ^ Gl ^ GE;
 
 	lb = E->col_offset[Gji][Gl];
 	kl = C2->row_offset[Gkl][K];
@@ -434,12 +434,12 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gkl][kl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gkl][kl], nrows,
 		  &(E->matrix[Gji][ji][lb]), ncols, 1.0, W2[Gca][0], ncols);
       }
 
       global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
+		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
 		  vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
 
       for(Gab=0; Gab < nirreps; Gab++) {
@@ -453,7 +453,7 @@ namespace psi { namespace cctriples {
 	/* -t_kjad * F_idcb */
 	Gid = Gi ^ Gd;
 	Gcb = Gid ^ GF;
-	Ga = Gkj ^ Gd ^ GC;     
+	Ga = Gkj ^ Gd ^ GC;
 
 	ad = C2->col_offset[Gkj][Ga];
 	id = F->row_offset[Gid][I];
@@ -474,7 +474,7 @@ namespace psi { namespace cctriples {
 	/* -t_ikad * F_jdcb */
 	Gjd = Gj ^ Gd;
 	Gcb = Gjd ^ GF;
-	Ga = Gik ^ Gd ^ GC;     
+	Ga = Gik ^ Gd ^ GC;
 
 	ad = C2->col_offset[Gik][Ga];
 	jd = F->row_offset[Gjd][J];
@@ -495,7 +495,7 @@ namespace psi { namespace cctriples {
 	/* +t_ijad * F_kdcb */
 	Gkd = Gk ^ Gd;
 	Gcb = Gkd ^ GF;
-	Ga = Gij ^ Gd ^ GC;     
+	Ga = Gij ^ Gd ^ GC;
 
 	ad = C2->col_offset[Gij][Ga];
 	kd = F->row_offset[Gkd][K];
@@ -517,9 +517,9 @@ namespace psi { namespace cctriples {
 
       for(Gl=0; Gl < nirreps; Gl++) {
 	/* +t_ilcb * E_jkla */
-	Gil = Gi ^ Gl; 
-	Gcb  = Gil ^ GC; 
-	Ga = Gjk ^ Gl ^ GE;       
+	Gil = Gi ^ Gl;
+	Gcb  = Gil ^ GC;
+	Ga = Gjk ^ Gl ^ GE;
 
 	la = E->col_offset[Gjk][Gl];
 	il = C2->row_offset[Gil][I];
@@ -529,13 +529,13 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, C2->matrix[Gil][il], nrows,
 		  &(E->matrix[Gjk][jk][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
 	/* -t_jlcb * E_ikla */
-	Gjl = Gj ^ Gl; 
-	Gcb = Gjl ^ GC; 
-	Ga = Gik ^ Gl ^ GE;       
+	Gjl = Gj ^ Gl;
+	Gcb = Gjl ^ GC;
+	Ga = Gik ^ Gl ^ GE;
 
 	la = E->col_offset[Gik][Gl];
 	jl = C2->row_offset[Gjl][J];
@@ -545,13 +545,13 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gjl][jl], nrows,
 		  &(E->matrix[Gik][ik][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
 	/* -t_klcb * E_jila */
-	Gkl = Gk ^ Gl; 
-	Gcb = Gkl ^ GC; 
-	Ga = Gji ^ Gl ^ GE;      
+	Gkl = Gk ^ Gl;
+	Gcb = Gkl ^ GC;
+	Ga = Gji ^ Gl ^ GE;
 
 	la = E->col_offset[Gji][Gl];
 	kl = C2->row_offset[Gkl][K];
@@ -561,13 +561,13 @@ namespace psi { namespace cctriples {
 	nlinks = occpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gkl][kl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, C2->matrix[Gkl][kl], nrows,
 		  &(E->matrix[Gji][ji][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
       }
 
       global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
-		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
+		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
 		  vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
 
       /**** Compute disconnected T3s for given ijk ****/

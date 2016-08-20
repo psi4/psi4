@@ -27,13 +27,13 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -65,7 +65,7 @@ void sort_tei(void)
   if(params.ref == 2) { /*** UHF ***/
     distribute_uhf("AA", PSIF_MO_AA_TEI, FIRST_TMP, tolerance, keep);
 
-    
+
 
     global_dpd_->file4_init_nocache(&A, PSIF_CC_AINTS, 0, 0, 0, "A <IJ|KL>");
     file_build(&A, FIRST_TMP, tolerance, 1, 1, 1, 0);
@@ -217,7 +217,7 @@ void sort_tei(void)
     }
   }
 
-  
+
 }
 
 }} // namespace psi::ccsort

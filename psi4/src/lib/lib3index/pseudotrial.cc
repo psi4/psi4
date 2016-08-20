@@ -26,7 +26,7 @@
  */
 
 #include "3index.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libfock/cubature.h"
 #include "psi4/src/lib/libfock/points.h"
@@ -58,7 +58,7 @@
 #include <omp.h>
 #endif
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -70,7 +70,7 @@ using namespace psi;
 
 namespace psi {
 
-PseudoTrial::PseudoTrial() : 
+PseudoTrial::PseudoTrial() :
     options_(Process::environment.options)
 {
     common_init();
@@ -83,19 +83,19 @@ PseudoTrial::~PseudoTrial()
 void PseudoTrial::common_init()
 {
     print_header();
-    
+
 
     debug_ = options_.get_int("DEBUG");
-    print_ = options_.get_int("PRINT");   
+    print_ = options_.get_int("PRINT");
     min_S_primary_ = options_.get_double("PS_MIN_S_PRIMARY");
     min_S_dealias_ = options_.get_double("PS_MIN_S_DEALIAS");
 
     form_molecule();
-    
+
 
     form_bases();
     form_grid();
-    
+
 
     form_Spp();
     form_Spd();
@@ -143,7 +143,7 @@ void PseudoTrial::print_header()
     outfile->Printf("\t\t                  21 May 2011                     \n");
     outfile->Printf("\t\t                                                  \n");
     outfile->Printf("\t\t--------------------------------------------------\n\n");
-    
+
 }
 
 void PseudoTrial::form_molecule()
@@ -158,8 +158,8 @@ void PseudoTrial::form_bases()
     molecule_->set_basis_all_atoms(options_.get_str("BASIS"),"BASIS");
     primary_ = BasisSet::pyconstruct_orbital(molecule_,
         "BASIS", options_.get_str("BASIS"));
-    nso_ = primary_->nbf();   
- 
+    nso_ = primary_->nbf();
+
     outfile->Printf(" => Primary Basis Set <= \n\n");
     primary_->print_by_level("outfile",print_);
 
@@ -172,7 +172,7 @@ void PseudoTrial::form_bases()
         dealias_ = d->dealiasSet();
 
     } else {
-        outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
+        outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str());
         // basis access translated but code defunct
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
         dealias_ = BasisSet::pyconstruct_auxiliary(molecule_,
@@ -279,8 +279,8 @@ void PseudoTrial::form_Sdd4()
 
 void PseudoTrial::form_Xpp()
 {
-    SharedMatrix St(new Matrix("Temporary S", nso_, nso_));        
-    SharedMatrix Xt(new Matrix("Temporary X", nso_, nso_));        
+    SharedMatrix St(new Matrix("Temporary S", nso_, nso_));
+    SharedMatrix Xt(new Matrix("Temporary X", nso_, nso_));
     boost::shared_ptr<Vector> st(new Vector("s", nso_));
 
     double** Stp = St->pointer();
@@ -291,7 +291,7 @@ void PseudoTrial::form_Xpp()
 
     St->diagonalize(Xt, st);
 
-    if (debug_) 
+    if (debug_)
         Xt->eivprint(st);
 
     nmo_ = 0;
@@ -301,9 +301,9 @@ void PseudoTrial::form_Xpp()
             nmo_++;
     }
 
-    Xpp_ = SharedMatrix(new Matrix("X Matrix (primary x primary')", nso_, nmo_)); 
-    double** Xp = Xpp_->pointer();    
- 
+    Xpp_ = SharedMatrix(new Matrix("X Matrix (primary x primary')", nso_, nmo_));
+    double** Xp = Xpp_->pointer();
+
     int m = 0;
     for (int i = 0; i < nso_; i++) {
         if (stp[i] > min_S_primary_) {
@@ -343,8 +343,8 @@ void PseudoTrial::form_Xdd()
         return;
     }
 
-    SharedMatrix St(new Matrix("Temporary S", ndealias_, ndealias_));        
-    SharedMatrix Xt(new Matrix("Temporary X", ndealias_, ndealias_));        
+    SharedMatrix St(new Matrix("Temporary S", ndealias_, ndealias_));
+    SharedMatrix Xt(new Matrix("Temporary X", ndealias_, ndealias_));
     boost::shared_ptr<Vector> st(new Vector("s", ndealias_));
 
     double** Stp = St->pointer();
@@ -355,7 +355,7 @@ void PseudoTrial::form_Xdd()
 
     St->diagonalize(Xt, st);
 
-    if (debug_) 
+    if (debug_)
         Xt->eivprint(st);
 
     ndealias2_ = 0;
@@ -366,9 +366,9 @@ void PseudoTrial::form_Xdd()
     }
     naug2_ = nmo_ + ndealias2_;
 
-    Xdd_ = SharedMatrix(new Matrix("X Matrix (dealias x dealias')", ndealias_, ndealias2_)); 
-    double** Xp = Xdd_->pointer();    
- 
+    Xdd_ = SharedMatrix(new Matrix("X Matrix (dealias x dealias')", ndealias_, ndealias2_));
+    double** Xp = Xdd_->pointer();
+
     int m = 0;
     for (int i = 0; i < ndealias_; i++) {
         if (stp[i] > min_S_dealias_) {
@@ -392,20 +392,20 @@ void PseudoTrial::form_Sa()
 
     for (int m = 0; m < nso_; m++) {
         C_DCOPY(nso_, Sppp[m], 1, Sap[m], 1);
-    } 
+    }
 
     for (int m = 0; m < nso_; m++) {
         C_DCOPY(ndealias_, Spdp[m], 1, &Sap[m][nso_], 1);
-    } 
-    
+    }
+
     for (int m = 0; m < nso_; m++) {
         C_DCOPY(ndealias_, Spdp[m], 1, &Sap[nso_][m], naug_);
     }
 
     for (int a = 0; a < ndealias_; a++) {
         C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nso_ + a][nso_], 1);
-    } 
-   
+    }
+
     if (debug_)
         Sa_->print();
 }
@@ -429,11 +429,11 @@ void PseudoTrial::form_Sa3()
 
     C_DGEMM('T','N',nmo_,ndealias_,nso_,1.0,Xp[0],nmo_,Spdp[0],ndealias_,0.0,&Sap[0][nmo_], nmo_ + ndealias_);
     C_DGEMM('T','N',ndealias_,nmo_,nso_,1.0,Spdp[0],ndealias_,Xp[0],nmo_,0.0,&Sap[nmo_][0], nmo_ + ndealias_);
-    
+
     for (int a = 0; a < ndealias_; a++) {
         C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nmo_ + a][nmo_], 1);
-    } 
-   
+    }
+
     if (debug_)
         Sa3_->print();
 }
@@ -453,10 +453,10 @@ void PseudoTrial::form_Sa4()
     C_DGEMM('N','T',nmo_,ndealias_,nmo_,1.0,Sap[0], nmo_ + ndealias_, Cp[0], nmo_,1.0,&Sap[0][nmo_], nmo_ + ndealias_);
     C_DGEMM('N','N',ndealias_,nmo_,nmo_,1.0,Cp[0],nmo_,Sap[0],nmo_ + ndealias_,1.0,&Sap[nmo_][0], nmo_ + ndealias_);
 
-    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
-    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
-    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
- 
+    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_);
+    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_);
+    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_);
+
     if (debug_)
         Sa4_->print();
 }
@@ -537,7 +537,7 @@ void PseudoTrial::form_Rd()
         for (int Q = 0; Q < ndealias_; Q++)
             Rp[Q][i] = bpoints[i][Q];
     }
-    
+
     #endif
 
     if (debug_)
@@ -594,7 +594,7 @@ void PseudoTrial::form_Ra()
     }
 
     Ra_ = SharedMatrix(new Matrix("R Augmented (primary' + dealias' x points)", naug2_, naux_));
-    double** Rap = Ra_->pointer(); 
+    double** Rap = Ra_->pointer();
 
     double** Rpp = Rp2_->pointer();
     double** Rdp = Rd2_->pointer();
@@ -644,14 +644,14 @@ void PseudoTrial::form_Q()
     C_DPOTRF('L',naug2_,Cinvp[0],naug2_);
     C_DPOTRI('L',naug2_,Cinvp[0],naug2_);
     Cinv_->copy_upper_to_lower();
-    
+
     if (debug_)
         Cinv_->print();
 
     C_DGEMM('N','N',naug2_,naux_,naug2_,1.0,Cinvp[0],naug2_,Rtp[0],naux_,0.0,Qfullp[0],naux_);
 
     if (debug_)
-        Qfull_->print(); 
+        Qfull_->print();
 
     C_DGEMM('N','N',nmo_,naux_,naug2_,1.0,Pp[0],naug2_,Qfullp[0],naux_,0.0,Qmop[0],naux_);
 
@@ -689,13 +689,13 @@ void PseudoTrial::form_SX()
     double** SXp = SX_->pointer();
     double** Sp = Spp_->pointer();
     double** Xp = Xpp_->pointer();
-    
+
     C_DGEMM('N','N',nso_,nmo_,nso_,1.0,Sp[0],nso_,Xp[0],nmo_,0.0,SXp[0],nmo_);
 
     if (debug_)
         SX_->pointer();
-}   
-    
+}
+
 void PseudoTrial::form_A()
 {
     A_ = SharedMatrix(new Matrix("A (primary-primary x points)", nso_ * nso_, naux_));
@@ -716,7 +716,7 @@ void PseudoTrial::form_A()
         T->zero();
         ints->compute(T);
 
-        C_DCOPY(nso_ * nso_, Tp[0], 1, &Ap[0][P], naux_);        
+        C_DCOPY(nso_ * nso_, Tp[0], 1, &Ap[0][P], naux_);
     }
 
     if (debug_)
@@ -753,9 +753,9 @@ void PseudoTrial::form_Ips()
     if (debug_)
         T_->print();
 
-    C_DGEMM('N','T',nso_*nso_,nso_*nso_,naux_,1.0,Tp[0],naux_,Ap[0],naux_,0.0,Ip[0],nso_*nso_); 
-   
-    Ips_->print(); 
+    C_DGEMM('N','T',nso_*nso_,nso_*nso_,naux_,1.0,Tp[0],naux_,Ap[0],naux_,0.0,Ip[0],nso_*nso_);
+
+    Ips_->print();
 }
 
 void PseudoTrial::verify()
@@ -771,11 +771,11 @@ void PseudoTrial::verify()
     E->print();
 }
 
-SharedMatrix PseudoTrial::getI() const { return I_; }    
-SharedMatrix PseudoTrial::getIPS() const { return Ips_; }    
+SharedMatrix PseudoTrial::getI() const { return I_; }
+SharedMatrix PseudoTrial::getIPS() const { return Ips_; }
 
-SharedMatrix PseudoTrial::getQ() const { return Q_; }    
-SharedMatrix PseudoTrial::getR() const { return R_; }    
-SharedMatrix PseudoTrial::getA() const { return A_; }    
+SharedMatrix PseudoTrial::getQ() const { return Q_; }
+SharedMatrix PseudoTrial::getR() const { return R_; }
+SharedMatrix PseudoTrial::getA() const { return A_; }
 
 }

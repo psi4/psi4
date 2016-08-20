@@ -31,7 +31,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libtrans/integraltransform_functors.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libtrans/mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"

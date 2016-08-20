@@ -27,13 +27,13 @@
 
 
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libthce/thce.h"
 #include "psi4/src/lib/libthce/lreri.h"
 
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libmints/matrix.h"

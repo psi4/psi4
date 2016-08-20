@@ -31,7 +31,7 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "libciomr.h"
 #include <cstdlib>
 #include "psi4/src/lib/libqt/qt.h"

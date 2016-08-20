@@ -36,9 +36,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"

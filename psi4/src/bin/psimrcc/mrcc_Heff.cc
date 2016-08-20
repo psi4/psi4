@@ -32,9 +32,9 @@
 #include "blas.h"
 #include "debugging.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -71,8 +71,8 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     )
     double delta_energy = current_energy-old_energy;
-    converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") && 
-                 delta_t2_amps < options_.get_double("R_CONVERGENCE") && 
+    converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") &&
+                 delta_t2_amps < options_.get_double("R_CONVERGENCE") &&
                  fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
 ///    TODO fix this code which is temporarly not working

@@ -34,7 +34,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/include/psi4-dec.h" //need outfile
+#include "psi4/psi4-dec.h" //need outfile
 
 namespace psi {
 
@@ -49,7 +49,7 @@ IWL::IWL()
         ints_per_buf_ * sizeof(Value);
     lastbuf_ = 0;
     inbuf_ = 0;
-    idx_ = 0;    
+    idx_ = 0;
 }
 
 IWL::IWL(PSIO *psio, int it, double coff, int oldfile, int readflag):
@@ -61,7 +61,7 @@ IWL::IWL(PSIO *psio, int it, double coff, int oldfile, int readflag):
 void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag)
 {
     psio_ = psio;
-    
+
     /*! set up buffer info */
     itap_ = it;
     bufpos_ = PSIO_ZERO;
@@ -86,7 +86,7 @@ void IWL::init(PSIO *psio, int it, double coff, int oldfile, int readflag)
         outfile->Printf("iwl_buf_init: Can't open file %d\n", itap_);
         psio_->close(itap_,0);
         return;
-    } 
+    }
 
     /*! go ahead and read a buffer */
     if (readflag) fetch();
@@ -136,11 +136,11 @@ void iwl_buf_init(struct iwlbuf *Buf, int itape, double cutoff,
     outfile->Printf("iwl_buf_init: Can't open file %d\n", Buf->itap);
     psio_close(Buf->itap,0);
     return;
-  } 
+  }
 
   /*! go ahead and read a buffer */
   if (readflag) iwl_buf_fetch(Buf);
-  
+
 }
 
 }

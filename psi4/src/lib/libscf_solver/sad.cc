@@ -40,13 +40,13 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/petitelist.h"
 #include "psi4/src/lib/libmints/integral.h"
@@ -85,7 +85,7 @@ void SADGuess::common_init()
 }
 void SADGuess::compute_guess()
 {
-    
+
     timer_on("SAD Guess");
     form_D();
     form_C();

@@ -54,7 +54,7 @@
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "script.h"
 #include "gitversion.h"
 #include "psi4/psi4.h"
@@ -64,7 +64,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
@@ -1197,16 +1197,16 @@ std::string py_psi_top_srcdir()
 
 bool psi4_python_module_initialize()
 {
-    
+
     static bool initialized = false;
-    
+
     if (initialized) {
         printf("Psi4 already initialized.\n");
         return true;
     }
-    
+
     interactive_python = true;
-    
+
     // Setup the environment
     //Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
@@ -1228,7 +1228,7 @@ bool psi4_python_module_initialize()
     Process::environment.options.set_read_globals(true);
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
-    
+
     // Track down the location of Psi4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
     std::string psiDataDirWithPython = psiDataDirName + "/python";
@@ -1294,7 +1294,7 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_o
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
 BOOST_PYTHON_MODULE (psi4)
-{ 
+{
    def("initialize", &psi4_python_module_initialize);
    def("finalize", &psi4_python_module_finalize);
 
@@ -1447,7 +1447,7 @@ BOOST_PYTHON_MODULE (psi4)
         "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
     def("revoke_global_option_changed",
         py_psi_revoke_global_option_changed,
-        "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option."); 
+        "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
     def("revoke_local_option_changed",
         py_psi_revoke_local_option_changed,
         "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
@@ -1581,7 +1581,7 @@ std::string handle_pyerror()
     PyObject *exc,*val,*tb;
     object formatted_list, formatted;
     PyErr_Fetch(&exc,&val,&tb);
-    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb)); 
+    handle<> hexc(exc),hval(allow_null(val)),htb(allow_null(tb));
     object traceback(import("traceback"));
     if (!tb) {
         object format_exception_only(traceback.attr("format_exception_only"));

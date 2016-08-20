@@ -26,12 +26,12 @@
  */
 
 #include <cstdlib>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <cstdio>
 
 #include "sblock_vector.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 
@@ -94,7 +94,7 @@ void SBlockVector::check(const char* cstr)
 {
   if(!is_allocated()){
     outfile->Printf("\n\n  Error: SBlockVector operation '%s' is using an uninitialized matrix",cstr);
-    
+
     exit(PSI_RETURN_FAILURE);
   }
 }

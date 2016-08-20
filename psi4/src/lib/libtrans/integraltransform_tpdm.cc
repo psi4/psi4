@@ -34,7 +34,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"

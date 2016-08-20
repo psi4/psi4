@@ -35,15 +35,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
-	
+
 /*!
 ** cc_wfn(): Checks if the given wavefunction string is a coupled-cluster
-** type and returns 1 if yes and 0 if no.  
+** type and returns 1 if yes and 0 if no.
 **
-** Note: "coupled-cluster type" means it is handled by PSI like the 
+** Note: "coupled-cluster type" means it is handled by PSI like the
 ** coupled-cluster codes, not necessarily that it is literally a
 ** coupled-cluster wavefunction
 **
@@ -56,7 +56,7 @@ namespace psi {
 int cc_wfn(const char *wfn)
 {
   if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") ||
-       !strcmp(wfn, "BCCD")     || !strcmp(wfn, "BCCD_T") || 
+       !strcmp(wfn, "BCCD")     || !strcmp(wfn, "BCCD_T") ||
        !strcmp(wfn, "CC2")      || !strcmp(wfn, "CC3")    ||
        !strcmp(wfn, "EOM_CCSD") || !strcmp(wfn, "LEOM_CCSD") ||
        !strcmp(wfn, "EOM_CC2")  || !strcmp(wfn, "EOM_CC3") ||

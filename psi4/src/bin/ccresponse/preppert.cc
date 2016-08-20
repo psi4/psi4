@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/src/lib/libmints/basisset.h"
@@ -51,7 +51,7 @@ namespace psi { namespace ccresponse {
 
 void sort_pert(const char *pert, double **pertints, int irrep);
 
-/* preppert(): Prepare DPD structures for all currently needed one-electron 
+/* preppert(): Prepare DPD structures for all currently needed one-electron
 ** property integrals in the MO basis.
 **
 ** -TDC, 6/11
@@ -66,7 +66,7 @@ void preppert(boost::shared_ptr<BasisSet> primary)
   cartcomp[1] = strdup("Y");
   cartcomp[2] = strdup("Z");
   char lbl[32];
- 
+
   MintsHelper mints(primary, Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_dipole();
   vector<SharedMatrix> nabla = mints.so_nabla();

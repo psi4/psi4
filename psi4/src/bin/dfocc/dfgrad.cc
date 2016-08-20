@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -44,7 +44,7 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::dfgrad()
-{      
+{
 
 //===========================================================================================
 //============================ Preliminaries ================================================
@@ -53,12 +53,12 @@ void DFOCC::dfgrad()
     tstart();
     title_grad();
     outfile->Printf("\tAnalytic gradients computation is starting...\n");
-    
-    if (wfn_type_ == "DF-OMP2") { 
+
+    if (wfn_type_ == "DF-OMP2") {
         tpdm_tilde();
         back_trans();
     }
-    else { 
+    else {
         tpdm_tilde_cc();
         back_trans_cc();
     }
@@ -66,8 +66,8 @@ void DFOCC::dfgrad()
 //===========================================================================================
 //============================ Gradient =====================================================
 //===========================================================================================
-    outfile->Printf("\tComputing analytic gradients...\n");  
-    
+    outfile->Printf("\tComputing analytic gradients...\n");
+
 
     gradient_terms.push_back("Nuclear");
     gradient_terms.push_back("Kinetic");
@@ -95,11 +95,11 @@ void DFOCC::dfgrad()
 
     for (int i = 0; i < gradient_terms.size(); i++) {
         if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]); 
+            total->add(gradients[gradient_terms[i]]);
         }
     }
 
-    gradients["Total"] = total; 
+    gradients["Total"] = total;
     gradients["Total"]->set_name("Total Gradient");
 
     // OEI grad
@@ -125,7 +125,7 @@ void DFOCC::dfgrad()
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
             if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector(); 
+                gradients[gradient_terms[i]]->print_atom_vector();
             }
         }
     } else {
@@ -134,8 +134,8 @@ void DFOCC::dfgrad()
 
     gradient_ = total;
 
-//outfile->Printf("\tdfgrad is done. \n"); 
-}// end dfgrad 
+//outfile->Printf("\tdfgrad is done. \n");
+}// end dfgrad
 
 }} // End Namespaces
 

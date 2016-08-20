@@ -58,16 +58,16 @@
 #include "psi4/src/lib/libmints/pointgrp.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libefp_solver/efp_solver.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libmints/vector3.h"
 #include "psi4/src/lib/libmints/coordentry.h"
 #include "psi4/src/lib/libmints/corrtab.h"
 #include "psi4/src/lib/libmints/petitelist.h"
 
-#include "psi4/include/masses.h"
-#include "psi4/include/physconst.h"
-#include "psi4/include/element_to_Z.h"
+#include "psi4/masses.h"
+#include "psi4/physconst.h"
+#include "psi4/element_to_Z.h"
 
 using namespace std;
 using namespace psi;

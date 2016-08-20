@@ -41,8 +41,8 @@
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 
 #include "psi4/src/lib/libmints/basisset_parser.h"
 #include "psi4/src/lib/libmints/matrix.h"

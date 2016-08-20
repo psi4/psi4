@@ -34,7 +34,7 @@
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/extern.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libfock/v.h"
 #include "psi4/src/lib/libfunctional/superfunctional.h"
 #include "psi4/src/lib/libdisp/dispersion.h"
@@ -1230,7 +1230,7 @@ SharedMatrix SCFGrad::compute_hessian()
                     }
                 }
             }
-        } 
+        }
         // Symmetrize the result
         int dim = hessians["Overlap"]->rowdim();
         for (int row = 0; row < dim; ++row){

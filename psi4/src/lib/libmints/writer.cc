@@ -29,9 +29,9 @@
 #include <algorithm>
 #include "psi4/src/lib/libmints/writer.h"
 #include "psi4/src/lib/libmints/view.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/physconst.h"
-#include "psi4/include/masses.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
+#include "psi4/masses.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/pointgrp.h"
@@ -82,7 +82,7 @@ MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
 }
 void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob)
 {
-    //Same as MO Writer below 
+    //Same as MO Writer below
     boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
     int atom;
@@ -122,14 +122,14 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
         // An empty line separates atoms
         printer->Printf("\n");
     }
-    /* Natural Orbital Transformation to AO basis 
+    /* Natural Orbital Transformation to AO basis
      *N  (mo x no)
      *1st Half Transform
      *N' (so x no) = C (so x mo) x N (mo x no)
-     *Fully transformed 
+     *Fully transformed
      *N'' (ao x no) = S (ao x no) x N'(so x no)
      */
-    //setup 
+    //setup
     // get the "S" transformation matrix, ao by so
     boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     SharedMatrix aotoso = pl->aotoso();
@@ -144,7 +144,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
     //New N's
     SharedMatrix Naprime(new Matrix("Na' ", sos, nos));
     SharedMatrix Nbprime(new Matrix("Nb' ", sos, nos));
-    // do N' = C x N 
+    // do N' = C x N
     Naprime->gemm(false, false, 1.0, Ca,Na, 0.0);
     Nbprime->gemm(false, false, 1.0, Cb,Na, 0.0);
     //Fully transformed
@@ -153,7 +153,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
     // do N'' = S x N'
     NaFT->gemm(false,false,1.0,aotoso,Naprime,0.0);
     NbFT->gemm(false,false,1.0,aotoso,Nbprime,0.0);
-    
+
     // The order Molden expects
     //     P: x, y, z
     //    5D: D 0, D+1, D-1, D+2, D-2
@@ -627,7 +627,7 @@ void FCHKWriter::write(const std::string &filename)
     const double cartD[6][6] = {
         //             0    1    2    3    4    5
         // Psi4:      XX   XY   XZ   YY   YZ   ZZ
-        // Expected:  XX   YY   ZZ   XY   XZ   YZ 
+        // Expected:  XX   YY   ZZ   XY   XZ   YZ
          /* 0 */   { pf1, 0.0, 0.0, 0.0, 0.0, 0.0 },
          /* 1 */   { 0.0, 0.0, 0.0, pf1, 0.0, 0.0 },
          /* 2 */   { 0.0, 0.0, 0.0, 0.0, 0.0, pf1 },

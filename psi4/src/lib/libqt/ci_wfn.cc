@@ -35,10 +35,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
-	
+
 /*!
 ** ci_wfn(): Examine the wavefunction type and return 1 if a CI/MCSCF-type,
 ** otherwise 0
@@ -52,10 +52,10 @@ namespace psi {
 int ci_wfn(char *wfn)
 {
 
-  if (strcmp(wfn, "CI")==0     || strcmp(wfn, "DETCAS")==0 || 
+  if (strcmp(wfn, "CI")==0     || strcmp(wfn, "DETCAS")==0 ||
       strcmp(wfn, "CASSCF")==0 || strcmp(wfn, "RASSCF")==0 ||
       strcmp(wfn, "DETCI")==0 || strcmp(wfn, "MCSCF")==0 ||
-      strcmp(wfn, "OOCCD")==0 || strcmp(wfn,"ZAPTN")==0) 
+      strcmp(wfn, "OOCCD")==0 || strcmp(wfn,"ZAPTN")==0)
   {
     return(1);
   }

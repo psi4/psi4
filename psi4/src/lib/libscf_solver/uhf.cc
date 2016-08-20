@@ -39,7 +39,7 @@
 
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/libfock/jk.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "uhf.h"

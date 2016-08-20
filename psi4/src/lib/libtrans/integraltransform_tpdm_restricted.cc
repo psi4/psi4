@@ -34,7 +34,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"
@@ -68,7 +68,7 @@ IntegralTransform::backtransform_tpdm_restricted()
 
     if(print_) {
         outfile->Printf( "\tStarting first half-transformation.\n");
-        
+
     }
 
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_OLD);
@@ -100,7 +100,7 @@ IntegralTransform::backtransform_tpdm_restricted()
             outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
             outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
             outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-            
+
         }
 
         global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -148,7 +148,7 @@ IntegralTransform::backtransform_tpdm_restricted()
 
     if(print_) {
         outfile->Printf( "\tSorting half-transformed TPDM.\n");
-        
+
     }
 
     global_dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"),
@@ -159,7 +159,7 @@ IntegralTransform::backtransform_tpdm_restricted()
 
     if(print_){
         outfile->Printf( "\tFirst half integral transformation complete.\n");
-        
+
     }
 
     psio_->open(PSIF_AO_TPDM, PSIO_OPEN_NEW);
@@ -190,7 +190,7 @@ IntegralTransform::backtransform_tpdm_restricted()
             outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
             outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
             outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-            
+
         }
 
         global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);

@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -137,7 +137,7 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
   }
 
   outfile->Printf( "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
-  
+
 
   next = PSIO_ZERO;
   for(n=0; n < nbuckets; n++) { /* nbuckets = number of passes */

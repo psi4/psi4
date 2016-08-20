@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
  *   diag() diagonalized Hbar with Davidson-Liu algorithm to obtain
@@ -46,11 +46,11 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi { namespace cceom {
-#include "psi4/include/physconst.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/physconst.h"
+#include "psi4/psifiles.h"
 
 extern void test_dpd();
 extern void rzero(int C_irr, int *converged);
@@ -140,7 +140,7 @@ void diag(void) {
   int get_right_ev = 1, get_left_ev = 0, first_irrep=1;
   int L,h,i,j,k,a,nirreps,errcod,C_irr;
   double norm, tval, **G, *work, *evals_complex, **alpha, **evectors_left;
-  double *lambda, *lambda_old, totalE, **G_old, **alpha_old; 
+  double *lambda, *lambda_old, totalE, **G_old, **alpha_old;
   int num_vecs, cc3_index, num_cc3_restarts = 0, ignore_G_old=0;
   double ra, rb, r2aa, r2bb, r2ab, cc3_eval, cc3_last_converged_eval=0.0, C0, S0, R0;
   int cc3_stage; /* 0=eom_ccsd; 1=eom_cc3 (reuse sigmas), 2=recompute sigma */
@@ -151,7 +151,7 @@ void diag(void) {
 #ifdef TIME_CCEOM
 timer_on("HBAR_EXTRA");
 #endif
-  if (params.wfn == "EOM_CC2") cc2_hbar_extra();  
+  if (params.wfn == "EOM_CC2") cc2_hbar_extra();
   else hbar_extra(); /* sort hbar matrix elements for sigma equations */
 #ifdef TIME_CCEOM
 timer_off("HBAR_EXTRA");
@@ -294,7 +294,7 @@ timer_off("INIT GUESS");
         dpd_file2_close(&Cme);
       }
     }
-    
+
 #endif
 
     /* Setup and zero initial C2 and S2 vector to go with Hbar_SS */
@@ -307,7 +307,7 @@ timer_off("INIT GUESS");
     }
 
 #ifdef EOM_DEBUG
-    check_sum("reset", 0, 0); /* reset checksum */ 
+    check_sum("reset", 0, 0); /* reset checksum */
 #endif
 
     converged = init_int_array(eom_params.cs_per_irrep[C_irr]);
@@ -320,7 +320,7 @@ timer_off("INIT GUESS");
     vectors_per_root = eom_params.vectors_per_root; /* used for CCSD */
 
     while ((keep_going == 1) && (iter < eom_params.max_iter)) {
-      outfile->Printf("Iter=%-4d L=%-4d", iter+1, L); 
+      outfile->Printf("Iter=%-4d L=%-4d", iter+1, L);
       keep_going = 0;
       numCs = L_start_iter = L;
       num_converged = 0;
@@ -357,8 +357,8 @@ timer_off("INIT GUESS");
           }
         }
         timer_off("SIGMA ALL");
-#else 
-        if (params.wfn == "EOM_CC2") cc2_sigma(i,C_irr);  
+#else
+        if (params.wfn == "EOM_CC2") cc2_sigma(i,C_irr);
         else {
           sigmaSS(i,C_irr);
           sigmaSD(i,C_irr);
@@ -374,7 +374,7 @@ timer_off("INIT GUESS");
         if (params.full_matrix) {
           sigma00(i,C_irr);
           sigma0S(i,C_irr);
-          sigma0D(i,C_irr); 
+          sigma0D(i,C_irr);
           sigmaS0(i,C_irr);
           sigmaSS_full(i,C_irr);
           sigmaD0(i,C_irr);
@@ -412,7 +412,7 @@ timer_off("INIT GUESS");
           global_dpd_->buf4_close(&SIJAB);
           global_dpd_->buf4_close(&Sijab);
           global_dpd_->buf4_close(&SIjAb);
-          
+
         }
       }
 
@@ -574,7 +574,7 @@ timer_off("INIT GUESS");
           G_old[i][j] = G[i][j];
       }
 
-      /* Diagonalize G Matrix */ 
+      /* Diagonalize G Matrix */
       lambda = init_array(L);        /* holds real part of eigenvalues of G */
       alpha = block_matrix(L,L);     /* will hold eigenvectors of G */
       dgeev_eom(L, G, lambda, alpha);
@@ -665,7 +665,7 @@ timer_off("INIT GUESS");
             global_dpd_->file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             global_dpd_->file2_close(&CME);
             global_dpd_->file2_close(&SIA);
-  
+
             sprintf(lbl, "%s %d", "CMnEf", i);
             global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
@@ -706,7 +706,7 @@ timer_off("INIT GUESS");
             global_dpd_->file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             global_dpd_->file2_close(&CME);
             global_dpd_->file2_close(&SIA);
-  
+
             sprintf(lbl, "%s %d", "CMnEf", i);
             global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
@@ -754,7 +754,7 @@ timer_off("INIT GUESS");
 #ifdef TIME_CCEOM
       timer_off("CALC RES");
 #endif /* timing */
-    /* moved back down 8-06 why was this ever before residual norm? 
+    /* moved back down 8-06 why was this ever before residual norm?
 	if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
 	else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]); */
 
@@ -906,7 +906,7 @@ timer_off("INIT GUESS");
           eom_params.cs_per_irrep[C_irr] = 1; /* only get 1 CC3 solution */
           keep_going = 1;
           already_sigma = 0;
-          ignore_G_old = 1; 
+          ignore_G_old = 1;
           iter = 0;
           cc3_stage = 1;
           vectors_per_root = eom_params.vectors_cc3;
@@ -983,7 +983,7 @@ timer_off("INIT GUESS");
       outfile->Printf("                (eV)     (cm^-1)     (au)             (au)\n");
       for (i=0;i<eom_params.cs_per_irrep[C_irr];++i) {
         if (converged[i] == 1) {
-          if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc; 
+          if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc;
           else totalE =lambda_old[i]+moinfo.eref;
 
           // save a list of all converged energies in order by irrep and then energy
@@ -996,7 +996,7 @@ timer_off("INIT GUESS");
           std::stringstream s;
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
           Process::environment.globals[s.str()] = totalE;
-					
+
           outfile->Printf("EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
              lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers, lambda_old[i], totalE);
 
@@ -1205,9 +1205,9 @@ void init_S2(int i, int C_irr) {
     sprintf(lbl, "%s %d", "SIJAB", i);
     global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", i);
-    if (params.eom_ref == 1) 
+    if (params.eom_ref == 1)
       global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
-    else if (params.eom_ref == 2) 
+    else if (params.eom_ref == 2)
       global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
 
     sprintf(lbl, "%s %d", "SIjAb", i);

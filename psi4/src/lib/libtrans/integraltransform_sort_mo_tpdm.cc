@@ -31,7 +31,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "integraltransform_functors.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"
@@ -58,7 +58,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     if(print_){
         outfile->Printf( "\tPresorting MO-basis TPDM.\n");
-        
+
     }
 
     dpdfile4 I;
@@ -120,7 +120,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     if(print_) {
         outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        
+
     }
 
     next = PSIO_ZERO;
@@ -202,7 +202,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     if(print_){
         outfile->Printf( "\tPresorting MO-basis TPDMs.\n");
-        
+
     }
 
     dpdfile4 I;
@@ -264,7 +264,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     if(print_) {
         outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        
+
     }
 
     // The alpha - alpha spin case
@@ -313,7 +313,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if(print_) {
         outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        
+
     }
     next = PSIO_ZERO;
     for(int n=0; n < nBuckets; ++n) { /* nbuckets = number of passes */
@@ -362,7 +362,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if(print_) {
         outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        
+
     }
     next = PSIO_ZERO;
     for(int n=0; n < nBuckets; ++n) { /* nbuckets = number of passes */

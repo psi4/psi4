@@ -32,7 +32,7 @@
 #include <sstream>
 #include <vector>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/sointegral_onebody.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include <boost/foreach.hpp>
 #include "x2cint.h"

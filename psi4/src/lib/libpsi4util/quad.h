@@ -28,7 +28,7 @@
 #ifndef QUAD_H
 #define QUAD_H
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
 
@@ -36,7 +36,7 @@ class Quadrature {
     protected:
         /// Number of points in this quadrature rule
         int npoints_;
-        /// Current index in the quadrature rule 
+        /// Current index in the quadrature rule
         int index_;
         /// Set of points (arbitrary domain)
         double* t_;

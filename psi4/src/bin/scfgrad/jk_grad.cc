@@ -31,7 +31,7 @@
 #include "psi4/src/lib/lib3index/3index.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "jk_grad.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/basisset.h"
@@ -2765,7 +2765,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute2(std::ve
         size_t delta;
 
         // => Coulomb Term <= //
-        
+
         double AxAx=0.0, AxAy=0.0, AxAz=0.0, AyAy=0.0, AyAz=0.0, AzAz=0.0;
         double BxBx=0.0, BxBy=0.0, BxBz=0.0, ByBy=0.0, ByBz=0.0, BzBz=0.0;
         double CxCx=0.0, CxCy=0.0, CxCz=0.0, CyCy=0.0, CyCz=0.0, CzCz=0.0;

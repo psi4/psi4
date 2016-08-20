@@ -33,7 +33,7 @@
 #include "psio.hpp"
 #include "psio.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi{
 
@@ -79,7 +79,7 @@ std::string PSIOManager::get_file_path(int fileno)
 }
 void PSIOManager::set_specific_retention(int fileno, bool retain)
 {
-    if (retain) { 
+    if (retain) {
         specific_retains_.insert(fileno);
     }
     else {

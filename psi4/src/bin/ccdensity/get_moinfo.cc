@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -284,7 +284,7 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
                 moinfo.eref+moinfo.ecc);
     }
 
-    
+
 }
 
 /* Frees memory allocated in get_moinfo(). */

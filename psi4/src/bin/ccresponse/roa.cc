@@ -30,8 +30,8 @@
     \brief Compute the three tensors needed for Raman Optical Activity.
 
     ROA requires the following polarizability tensors:
-      (1) electric-dipole/electric-dipole; 
-      (2) electric-dipole/electric-quadrupole; and 
+      (1) electric-dipole/electric-dipole;
+      (2) electric-dipole/electric-quadrupole; and
       (3) electric-dipole/magnetic-dipole.
 
   -TDC, August 2009
@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -59,7 +59,7 @@ void linresp(double *tensor, double A, double B,
 
 void roa(void)
 {
-  double ***tensor_rl, ***tensor_pl, **tensor0, ***tensor_rr; 
+  double ***tensor_rl, ***tensor_pl, **tensor0, ***tensor_rr;
   double ****tensor_rQ, ***tensor_rQ0, ***tensor_rQ1;
   double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
   char **cartcomp, pert[32], pert_x[32], pert_y[32];
@@ -71,9 +71,9 @@ void roa(void)
   double value;
 
   /* Booleans for convenience */
-  if(params.gauge == "LENGTH" || params.gauge == "BOTH") 
+  if(params.gauge == "LENGTH" || params.gauge == "BOTH")
     compute_rl=1;
-  if(params.gauge == "VELOCITY" || params.gauge == "BOTH") 
+  if(params.gauge == "VELOCITY" || params.gauge == "BOTH")
     compute_pl=1;
 
   cartcomp = (char **) malloc(3 * sizeof(char *));
@@ -120,7 +120,7 @@ void roa(void)
         compute_X(pert, moinfo.l_irreps[alpha], 0);
       }
 
-      outfile->Printf( "\n\tComputing %s tensor.\n", lbl1); 
+      outfile->Printf( "\n\tComputing %s tensor.\n", lbl1);
       for(alpha=0; alpha < 3; alpha ++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -137,7 +137,7 @@ void roa(void)
         psio_close(j,0);
         psio_open(j,0);
       }
-    }    
+    }
     else {
       outfile->Printf( "Using %s tensor found on disk.\n", lbl1);
       psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
@@ -169,11 +169,11 @@ void roa(void)
     sprintf(lbl3, "1/2 <<Mu;Mu>>_(%5.3f)", params.omega[i]);
     sprintf(lbl4, "1/2 <<Mu;Q>>_(%5.3f)", params.omega[i]);
 
-    if(!params.restart || 
+    if(!params.restart ||
        ( (compute_rl && !psio_tocscan(PSIF_CC_INFO,lbl1)) ||
-         (compute_pl && !psio_tocscan(PSIF_CC_INFO,lbl2)) || 
-         !psio_tocscan(PSIF_CC_INFO,lbl3) || 
-         !psio_tocscan(PSIF_CC_INFO,lbl4) 
+         (compute_pl && !psio_tocscan(PSIF_CC_INFO,lbl2)) ||
+         !psio_tocscan(PSIF_CC_INFO,lbl3) ||
+         !psio_tocscan(PSIF_CC_INFO,lbl4)
        )
       ) {
 
@@ -235,12 +235,12 @@ void roa(void)
       }
 
       outfile->Printf( "\n");
-      outfile->Printf( "\tComputing %s tensor.\n", lbl3); 
+      outfile->Printf( "\tComputing %s tensor.\n", lbl3);
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
           sprintf(pert_y, "Mu_%1s", cartcomp[beta]);
-          linresp(&tensor_rr[i][alpha][beta], -1.0, 0.0, 
+          linresp(&tensor_rr[i][alpha][beta], -1.0, 0.0,
                   pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                   pert_y, moinfo.mu_irreps[beta], +params.omega[i]);
         }
@@ -248,12 +248,12 @@ void roa(void)
       psio_write_entry(PSIF_CC_INFO, lbl3, (char *) tensor_rr[0], 9*sizeof(double));
 
       if(compute_rl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl1);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-            linresp(&tensor_rl0[alpha][beta], +0.5, 0.0, 
+            linresp(&tensor_rl0[alpha][beta], +0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -261,12 +261,12 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl2);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L_%1s", cartcomp[beta]);
-	    linresp(&tensor_pl0[alpha][beta], -0.5, 0.0, 
+	    linresp(&tensor_pl0[alpha][beta], -0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
@@ -274,22 +274,22 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
-      outfile->Printf( "\tComputing %s tensor.\n", lbl4); 
+      outfile->Printf( "\tComputing %s tensor.\n", lbl4);
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           for(gamma=0; gamma < 3; gamma++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "Q_%1s%1s", cartcomp[beta], cartcomp[gamma]);
-            linresp(&tensor_rQ0[alpha][beta][gamma], -0.5, 0.0, 
+            linresp(&tensor_rQ0[alpha][beta][gamma], -0.5, 0.0,
                   pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
-                  pert_y, moinfo.mu_irreps[beta]^moinfo.mu_irreps[gamma], 
+                  pert_y, moinfo.mu_irreps[beta]^moinfo.mu_irreps[gamma],
                   params.omega[i]);
           }
         }
       }
       next = PSIO_ZERO;
-      for(alpha=0; alpha < 3; alpha++) 
-        psio_write(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
+      for(alpha=0; alpha < 3; alpha++)
+        psio_write(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0],
                    9*sizeof(double), next, &next);
 
       /* Clean up disk space */
@@ -300,22 +300,22 @@ void roa(void)
     }
     else {
       outfile->Printf( "\n");
-      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3); 
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3);
       psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rr[i][0], 9*sizeof(double));
 
       if(compute_rl) {
-	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1);
 	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2);
 	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
-      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl4); 
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl4);
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
-        psio_read(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
+        psio_read(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0],
                   9*sizeof(double), next, & next);
 
     }
@@ -323,8 +323,8 @@ void roa(void)
     sprintf(lbl1, "1/2 <<Mu;L*>>_(%5.3f)", params.omega[i]);
     sprintf(lbl2, "1/2 <<P*;L*>>_(%5.3f)", params.omega[i]);
     sprintf(lbl3, "<<Mu;Q>>_(%5.3f)", -params.omega[i]);
-    if(!params.restart || 
-       ( (compute_rl && !psio_tocscan(PSIF_CC_INFO,lbl1)) || 
+    if(!params.restart ||
+       ( (compute_rl && !psio_tocscan(PSIF_CC_INFO,lbl1)) ||
          (compute_pl && !psio_tocscan(PSIF_CC_INFO,lbl2)) ||
          !psio_tocscan(PSIF_CC_INFO,lbl3) )
       ) {
@@ -363,12 +363,12 @@ void roa(void)
 
       outfile->Printf( "\n");
       if(compute_rl) {
-	outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
+	outfile->Printf( "\tComputing %s tensor.\n", lbl1);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-	    linresp(&tensor_rl1[alpha][beta], +0.5, 0.0, 
+	    linresp(&tensor_rl1[alpha][beta], +0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
@@ -376,12 +376,12 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
+	outfile->Printf( "\tComputing %s tensor.\n", lbl2);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
             sprintf(pert_y, "L*_%1s", cartcomp[beta]);
-	    linresp(&tensor_pl1[alpha][beta], -0.5, 0.0, 
+	    linresp(&tensor_pl1[alpha][beta], -0.5, 0.0,
                     pert_x, moinfo.mu_irreps[alpha], params.omega[i],
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
@@ -389,15 +389,15 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
-      outfile->Printf( "\tComputing %s tensor.\n", lbl3); 
+      outfile->Printf( "\tComputing %s tensor.\n", lbl3);
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           for(gamma=0; gamma < 3; gamma++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
             sprintf(pert_y, "Q_%1s%1s", cartcomp[beta], cartcomp[gamma]);
-            linresp(&tensor_rQ1[alpha][beta][gamma], -0.5, 0.0, 
+            linresp(&tensor_rQ1[alpha][beta][gamma], -0.5, 0.0,
                   pert_x, moinfo.mu_irreps[alpha], +params.omega[i],
-                  pert_y, moinfo.mu_irreps[beta]^moinfo.mu_irreps[gamma], 
+                  pert_y, moinfo.mu_irreps[beta]^moinfo.mu_irreps[gamma],
                   -params.omega[i]);
           }
         }
@@ -416,18 +416,18 @@ void roa(void)
     else {
       outfile->Printf( "\n");
       if(compute_rl) {
-	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1);
 	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2);
 	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
-      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3); 
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3);
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
-        psio_read(PSIF_CC_INFO, lbl3, (char *) tensor_rQ1[alpha][0], 
+        psio_read(PSIF_CC_INFO, lbl3, (char *) tensor_rQ1[alpha][0],
                   9*sizeof(double), next, &next);
     }
 
@@ -463,7 +463,7 @@ void roa(void)
     mat_print(tensor_rr[i], 3, 3, "outfile");
 
     if(compute_rl) {
-      if (params.wfn == "CC2") 
+      if (params.wfn == "CC2")
 	outfile->Printf( "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
       else if(params.wfn == "CCSD")
 	outfile->Printf( "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
@@ -476,7 +476,7 @@ void roa(void)
 
     if(compute_pl) {
 
-      if (params.wfn == "CC2") 
+      if (params.wfn == "CC2")
 	outfile->Printf( "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
       else if(params.wfn == "CCSD")
 	outfile->Printf( "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");

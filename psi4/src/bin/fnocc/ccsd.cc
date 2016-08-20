@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -122,7 +122,7 @@ void CoupledCluster::common_init() {
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
 
-  // get paramters from input 
+  // get paramters from input
   e_conv   = options_.get_double("E_CONVERGENCE");
   r_conv   = options_.get_double("R_CONVERGENCE");
   maxiter = options_.get_int("MAXITER");
@@ -239,7 +239,7 @@ double CoupledCluster::compute_energy() {
 
   }
 
-  // free some memory before triples 
+  // free some memory before triples
   free(integrals);
   free(w1);
   free(I1);
@@ -343,7 +343,7 @@ double CoupledCluster::compute_energy() {
 }
 
 void CoupledCluster::WriteBanner(){
-  
+
   outfile->Printf("\n\n");
   outfile->Printf(     "        *****************************************************\n");
   outfile->Printf(     "        *                                                   *\n");
@@ -361,7 +361,7 @@ void CoupledCluster::WriteBanner(){
   outfile->Printf(     "        *                                                   *\n");
   outfile->Printf(     "        *****************************************************\n");
   outfile->Printf("\n\n");
-  
+
   WriteOptions();
 }
 void CoupledCluster::WriteOptions(){
@@ -408,7 +408,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   }
   outfile->Printf(
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  
+
 
   // zero residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_NEW);
@@ -486,7 +486,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       time_t iter_stop = time(NULL);
       outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
-      
+
       iter++;
 
       // energy and amplitude convergence check
@@ -620,7 +620,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   outfile->Printf("  Time per iteration:              %10.2lf s (user)\n",(user_stop-user_start)/iter);
   outfile->Printf("                                   %10.2lf s (system)\n",(sys_stop-sys_start)/iter);
   outfile->Printf("                                   %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  
+
 
   return Success;
 }
@@ -628,7 +628,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 /*===================================================================
 
   determine tiling for vabcd and vabci diagrams for the cpu
-  this determines the size of blocks of integrals that 
+  this determines the size of blocks of integrals that
   can be read into cpu memory.
 
 ===================================================================*/
@@ -642,7 +642,7 @@ void CoupledCluster::DefineTilingCPU(){
   // number of doubles in total memory
   long int ndoubles = memory/8L;
 
-  // minus storage for other necessary buffers 
+  // minus storage for other necessary buffers
   long int oovv = o*o*v*v;
   ndoubles -= o*o*v*v+2L*(oovv+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
@@ -679,8 +679,8 @@ void CoupledCluster::DefineTilingCPU(){
   }
   lasttile = fulltile - (ntiles-1L)*tilesize;
 
-  outfile->Printf("        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
-  
+  outfile->Printf("        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles);
+
 
   // ov^3 type 1:
   if (v>ndoubles){
@@ -696,8 +696,8 @@ void CoupledCluster::DefineTilingCPU(){
   }
   lastov2tile = ov2 - (nov2tiles-1L)*ov2tilesize;
 
-  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n",nov2tiles); 
-  
+  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n",nov2tiles);
+
 
   // ov^3 type 2:
   if (v*v > ndoubles){
@@ -712,8 +712,8 @@ void CoupledCluster::DefineTilingCPU(){
      if ( novtiles*ovtilesize < ov ) ovtilesize++;
   }
   lastovtile = ov - (novtiles-1L)*ovtilesize;
-  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles); 
-  
+  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles);
+
 }
 
 /*===================================================================
@@ -784,7 +784,7 @@ void CoupledCluster::AllocateMemory() {
      outfile->Printf("\n");
      outfile->Printf("  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
      outfile->Printf("\n");
-     
+
      t2_on_disk = true;
      DefineTilingCPU();
      dim = 0;
@@ -860,7 +860,7 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
   C_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
-  
+
   for (i=0; i<o; i++){
       C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
@@ -976,7 +976,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
- 
+
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
@@ -1074,7 +1074,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
 }
 
 // a refactored version of I2p(ab,ci) that avoids ov^3 storage.
-// it turns out that most of the resulting term can be dumped in 
+// it turns out that most of the resulting term can be dumped in
 // with other terms.  all we're left with is this 2o^3v^2 term
 // and another o^3v^2 term that was added to I2piajk
 void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
@@ -1162,7 +1162,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
 
   // build I1'(i,j)
   F_DGEMM('t','n',o,o,ov2,2.0,tempt,ov2,integrals,ov2,0.0,I1p,o);
-  
+
   // only n^4
   if (isccsd) {
      psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
@@ -2066,13 +2066,13 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)-        ");
 }
- 
+
 void CoupledCluster::MP4_SDQ(){
   boost::shared_ptr<PSIO> psio(new PSIO());
   int o = ndoccact;
   int v = nvirt;
 
-  // cc diagrams split up as tasks 
+  // cc diagrams split up as tasks
   // (define here so i don't get free errors when doing only mp4)
   DefineTasks();
 
@@ -2153,7 +2153,7 @@ void CoupledCluster::MP4_SDQ(){
           double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
           double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
           double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
- 
+
           emp2 += delta_emp2;
           emp2_os += delta_emp2_os;
           emp2_ss += delta_emp2_ss;
@@ -2163,7 +2163,7 @@ void CoupledCluster::MP4_SDQ(){
           outfile->Printf("        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
           outfile->Printf("        MP2 FNO correction:             %20.12lf\n",delta_emp2);
       }
- 
+
       outfile->Printf("\n");
       outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
       outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
@@ -2190,7 +2190,7 @@ void CoupledCluster::MP4_SDQ(){
           double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
           double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
           double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
- 
+
           emp2 += delta_emp2;
           emp2_os += delta_emp2_os;
           emp2_ss += delta_emp2_ss;
@@ -2200,7 +2200,7 @@ void CoupledCluster::MP4_SDQ(){
           outfile->Printf("        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
           outfile->Printf("        MP2 FNO correction:             %20.12lf\n",delta_emp2);
       }
- 
+
       outfile->Printf("\n");
       outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
       outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);

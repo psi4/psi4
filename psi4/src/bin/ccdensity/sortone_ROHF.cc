@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include "psi4/src/lib/libdpd/dpd.h"
@@ -42,7 +42,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 /*
 ** sortone_rohf(): Place all the components of the 1pdm into a large
@@ -61,7 +61,7 @@ void sortone_ROHF(struct RHO_Params rho_params)
 {
   int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
   int row, col, i, j, I, J, a, b, A, B, p, q;
-  int *occpi, *virtpi, *occ_off, *vir_off; 
+  int *occpi, *virtpi, *occ_off, *vir_off;
   int *occ_sym, *vir_sym, *openpi;
   int *qt_occ, *qt_vir;
   double chksum, value;
@@ -151,10 +151,10 @@ void sortone_ROHF(struct RHO_Params rho_params)
 
   /* Sort B components */
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-  global_dpd_->file2_mat_init(&D); 
+  global_dpd_->file2_mat_init(&D);
   global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
-      for(i=0; i < (occpi[h] - openpi[h]); i++) { 
+      for(i=0; i < (occpi[h] - openpi[h]); i++) {
           I = qt_occ[occ_off[h] + i];
           for(j=0; j < (occpi[h] - openpi[h]); j++) {
               J = qt_occ[occ_off[h] + j];

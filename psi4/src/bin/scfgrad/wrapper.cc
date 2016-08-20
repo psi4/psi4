@@ -25,13 +25,13 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "scf_grad.h"
 
-namespace psi{ 
+namespace psi{
 namespace scfgrad {
 
 SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
@@ -43,7 +43,7 @@ SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
 
     Process::environment.arrays["SCF TOTAL GRADIENT"] = G;
     Process::environment.arrays["CURRENT GRADIENT"] = G;
-    Process::environment.set_gradient(G); 
+    Process::environment.set_gradient(G);
 
     tstop();
     return G;

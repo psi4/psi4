@@ -35,13 +35,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <strings.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <unistd.h>
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>
 #endif
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
 

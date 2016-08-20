@@ -36,8 +36,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/dimension.h"
 #include "psi4/src/lib/libmints/molecule.h"
@@ -400,7 +400,7 @@ void get_moinfo(SharedWavefunction wfn, Options& options)
         outfile->Printf("\n\tNuclear Rep. energy (wfn)   =  %20.14f\n", moinfo.enuc);
         outfile->Printf(  "\tSCF energy          (wfn)   =  %20.14f\n", escf);
     }
- 
+
 }
 
 void cleanup(void)

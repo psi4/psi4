@@ -28,7 +28,7 @@
 #include "dcft.h"
 #include "defines.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 
 namespace psi{ namespace dcft{

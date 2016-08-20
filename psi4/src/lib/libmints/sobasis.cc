@@ -34,7 +34,7 @@
 #include "dimension.h"
 
 #include "matrix.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <cstdio>
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 using namespace boost;

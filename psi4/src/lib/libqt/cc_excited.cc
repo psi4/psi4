@@ -35,24 +35,24 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
-	
+
 /*!
-** cc_excited(): This function takes a WFN string and returns 1 if the WFN 
+** cc_excited(): This function takes a WFN string and returns 1 if the WFN
 ** is an excited-state method and 0 if the WFN is a ground-state method.
 **
 ** \param *wfn = wavefunction string
-** 
+**
 ** Returns: 1 if an excited state method, else 0
 ** \ingroup QT
 */
 int cc_excited(const char *wfn)
 {
-  if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") || !strcmp(wfn, "BCCD") 
-    || !strcmp(wfn, "BCCD_T")   || !strcmp(wfn, "CC2")    || !strcmp(wfn, "CC3") 
+  if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") || !strcmp(wfn, "BCCD")
+    || !strcmp(wfn, "BCCD_T")   || !strcmp(wfn, "CC2")    || !strcmp(wfn, "CC3")
     || !strcmp(wfn, "CCSD_MVD") || !strcmp(wfn, "CCSD_AT")) {
     return 0;
   }

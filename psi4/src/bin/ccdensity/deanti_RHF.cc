@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-/*! \file 
+/*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <stdio.h>
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -108,7 +108,7 @@ namespace psi { namespace ccdensity {
 	global_dpd_->file2_close(&D);
 
 	outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
-	
+
       }
 
       /* E_ijkl = (2 Gijkl - Gijlk) <ij|kl> */
@@ -159,7 +159,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&G2);
       global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
       global_dpd_->buf4_sort_axpy(&G2, PSIF_CC_GAMMA, prsq, 0, 5, "2 Gijab - Gijba", -1);
-      global_dpd_->buf4_close(&G2);  
+      global_dpd_->buf4_close(&G2);
 
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "2 Gijab - Gijba");
       global_dpd_->buf4_scmcopy(&G1, PSIF_CC_GAMMA, "GIjAb", 2);
@@ -172,7 +172,7 @@ namespace psi { namespace ccdensity {
       }
 
       global_dpd_->buf4_close(&G1);
-  
+
       /* G'_IbJa = 2 GIBJA + 2 GIbJa */
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
       global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
@@ -222,7 +222,7 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "2 Gabcd - Gabdc");
       global_dpd_->buf4_copy(&G1, PSIF_CC_GAMMA, "GAbCd");
-      if(!params.aobasis) {  
+      if(!params.aobasis) {
 	global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
 	two_energy = global_dpd_->buf4_dot(&B, &G1);
 	global_dpd_->buf4_close(&B);

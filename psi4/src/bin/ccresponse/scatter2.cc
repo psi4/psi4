@@ -30,8 +30,8 @@
     \brief Handle the three tensors needed for Raman Optical Activity Scattering.
 
     ROA Scattering requires the following polarizability tensors for displaced geometries:
-      (1) electric-dipole/electric-dipole; 
-      (2) electric-dipole/electric-quadrupole; and 
+      (1) electric-dipole/electric-dipole;
+      (2) electric-dipole/electric-quadrupole; and
       (3) electric-dipole/magnetic-dipole.
 
   -TDC, August 2009
@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -79,10 +79,10 @@ void scatter2(void)
 	 /*
 	  *  This will involve aquiring other pieces of needed data (like the reference geomertry
 	  *  number of atoms, etc) using PSI4 style objects, probably.
-      *  
+      *
       *  Also, the Hessian matrix and dipole moment derivatives are needed as well,
 	  *  which for now can just be read in from files in the top level roa job directory,
-	  *  either by python then fed into the "scatter" function, or simply just read in by 
+	  *  either by python then fed into the "scatter" function, or simply just read in by
       *  the "scatter" function.
 	  *
 	  */
@@ -95,7 +95,7 @@ std::vector < SharedMatrix > compute_tensor_deriv(std::vector < SharedMatrix > t
 	/* Set up the Vector of Atom_Coord Derivative Tensors */
 	std::vector < SharedMatrix > der_tensors;
 
-	/* Set up a temporary matrix. This convolutedly grabs the 
+	/* Set up a temporary matrix. This convolutedly grabs the
  	*  appropriate size.  Polarizability and Opt. Rotation tensors are 3x3,
  	*  but the Dipole/Quad. is 3x9, I think.
  	*/

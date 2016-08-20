@@ -36,8 +36,8 @@
 #include <string>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -134,7 +134,7 @@ void get_params(Options & options)
     outfile->Printf( "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
     outfile->Printf( "\tCache Level     =\t%d\n", params.cachelev);
     outfile->Printf( "\tCache Type      =\t%s\n", "LRU");
-    
+
   }
 }
 

@@ -28,12 +28,12 @@
 #ifndef CCSD_H
 #define CCSD_H
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 long int Position(long int i,long int j);
 
@@ -104,7 +104,7 @@ class CoupledCluster: public Wavefunction{
     /// mp4 triples
     void mp4_triples();
     double emp4_t;
-  
+
     void WriteBanner();
     void WriteOptions();
 
@@ -185,11 +185,11 @@ class CoupledCluster: public Wavefunction{
     /// maximum number of iterations
     long int maxiter;
 
-    /// energy convergence 
+    /// energy convergence
     double e_conv;
 
     /// amplitude convergence
-    double r_conv; 
+    double r_conv;
 
     /// orbital energies
     double *eps;
@@ -313,7 +313,7 @@ class CoupledPair : public CoupledCluster{
     /// update t2 amplitudes
     void UpdateT2();
 
-    /// scs functions 
+    /// scs functions
     void SCS_CEPA();
 
     /// compute opdm - only valid for cisd, acpf, aqcc, and cepa(0)

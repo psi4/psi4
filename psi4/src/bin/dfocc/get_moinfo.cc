@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "dfocc.h"
@@ -40,8 +40,8 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::get_moinfo()
-{      
-  //outfile->Printf("\n get_moinfo is starting... \n"); 
+{
+  //outfile->Printf("\n get_moinfo is starting... \n");
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -61,12 +61,12 @@ if (reference_ == "RESTRICTED") {
 
 	// Read in nuclear repulsion energy
 	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
-	
+
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
-	
+
         // figure out number of MO spaces
         nfrzc = frzcpi_[0];
         nfrzv = frzvpi_[0];
@@ -74,10 +74,10 @@ if (reference_ == "RESTRICTED") {
 	nvirA = nmo_ - noccA;   	      // Number of virtual orbitals
 	naoccA = noccA - nfrzc; 	      // Number of active occupied orbitals
 	navirA = nvirA - nfrzv;               // Number of active virtual orbitals
-        nocc2AA = noccA * noccA;              // Number of all OCC-OCC pairs 
-        nvir2AA = nvirA * nvirA;              // Number of all VIR-VIR pairs 
-        naocc2AA = naoccA * naoccA;           // Number of active OCC-OCC pairs 
-        navir2AA = navirA * navirA;           // Number of active VIR-VIR pairs 
+        nocc2AA = noccA * noccA;              // Number of all OCC-OCC pairs
+        nvir2AA = nvirA * nvirA;              // Number of all VIR-VIR pairs
+        naocc2AA = naoccA * naoccA;           // Number of active OCC-OCC pairs
+        navir2AA = navirA * navirA;           // Number of active VIR-VIR pairs
         navoAA = naoccA * navirA;             // Number of active OCC-VIR pairs
         nvoAA = noccA * nvirA;                // Number of all OCC-VIR pairs
 	namo = nmo_- nfrzc - nfrzv; 	      // Number of active  orbitals
@@ -88,7 +88,7 @@ if (reference_ == "RESTRICTED") {
         nso2_ = nso_ * nso_;
         ntri_ijAA = 0.5*naoccA*(naoccA+1);
         ntri_abAA = 0.5*navirA*(navirA+1);
-    
+
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
@@ -118,12 +118,12 @@ if (reference_ == "RESTRICTED") {
             msd_oo_scale=options_.get_double("OO_SCALE");
         }
         else {
-            //msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
-            msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) ); 
+            //msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) );
+            msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) );
             msd_oo_scale /= 3.0;
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
                 outfile->Printf("\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-                
+
             }
         }
 
@@ -137,14 +137,14 @@ if (reference_ == "RESTRICTED") {
         }
         if (print_ > 2) CmoA->print();
 
-        // build mo coeff blocks 
+        // build mo coeff blocks
         CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
         CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
         CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
         CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
         mo_coeff_blocks();
 
-}// if (reference_ == "RESTRICTED") 
+}// if (reference_ == "RESTRICTED")
 
 //===========================================================================================
 //========================= UHF =============================================================
@@ -166,7 +166,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 	// Read in nuclear repulsion energy
 	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
-	
+
 	// Read SCF energy
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
@@ -183,18 +183,18 @@ else if (reference_ == "UNRESTRICTED") {
 	naoccB = noccB - nfrzc; 	        // Number of active occupied orbitals
 	navirA = nvirA - nfrzv; 		// Number of active virtual orbitals
 	navirB = nvirB - nfrzv; 	        // Number of active virtual orbitals
-        nocc2AA = noccA * noccA;                // Number of all OCC-OCC pairs 
-        nocc2AB = noccA * noccB;                // Number of all OCC-OCC pairs 
-        nocc2BB = noccB * noccB;                // Number of all OCC-OCC pairs 
-        nvir2AA = nvirA * nvirA;                // Number of all VIR-VIR pairs 
-        nvir2AB = nvirA * nvirB;                // Number of all VIR-VIR pairs 
-        nvir2BB = nvirB * nvirB;                // Number of all VIR-VIR pairs 
-        naocc2AA = naoccA * naoccA;              // Number of active OCC-OCC pairs 
-        naocc2AB = naoccA * naoccB;              // Number of active OCC-OCC pairs 
-        naocc2BB = naoccB * naoccB;              // Number of active OCC-OCC pairs 
-        navir2AA = navirA * navirA;              // Number of active VIR-VIR pairs 
-        navir2AB = navirA * navirB;              // Number of active VIR-VIR pairs 
-        navir2BB = navirB * navirB;              // Number of active VIR-VIR pairs 
+        nocc2AA = noccA * noccA;                // Number of all OCC-OCC pairs
+        nocc2AB = noccA * noccB;                // Number of all OCC-OCC pairs
+        nocc2BB = noccB * noccB;                // Number of all OCC-OCC pairs
+        nvir2AA = nvirA * nvirA;                // Number of all VIR-VIR pairs
+        nvir2AB = nvirA * nvirB;                // Number of all VIR-VIR pairs
+        nvir2BB = nvirB * nvirB;                // Number of all VIR-VIR pairs
+        naocc2AA = naoccA * naoccA;              // Number of active OCC-OCC pairs
+        naocc2AB = naoccA * naoccB;              // Number of active OCC-OCC pairs
+        naocc2BB = naoccB * naoccB;              // Number of active OCC-OCC pairs
+        navir2AA = navirA * navirA;              // Number of active VIR-VIR pairs
+        navir2AB = navirA * navirB;              // Number of active VIR-VIR pairs
+        navir2BB = navirB * navirB;              // Number of active VIR-VIR pairs
         navoAA = naoccA * navirA;                // Number of active OCC-VIR pairs
         navoBA = naoccA * navirB;                // Number of active OCC-VIR pairs
         navoAB = naoccB * navirA;                // Number of active OCC-VIR pairs
@@ -268,16 +268,16 @@ else if (reference_ == "UNRESTRICTED") {
             msd_oo_scale=options_.get_double("OO_SCALE");
         }
         else {
-            //double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
-            //double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(1,1) - FockB->get(0,0) ); 
-            double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) ); 
-            double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(nfrzc+1,nfrzc+1) - FockB->get(nfrzc,nfrzc) ); 
+            //double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) );
+            //double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(1,1) - FockB->get(0,0) );
+            double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) );
+            double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(nfrzc+1,nfrzc+1) - FockB->get(nfrzc,nfrzc) );
             scaleA /= 3.0;
             scaleB /= 3.0;
             msd_oo_scale = 0.5 * (scaleA + scaleB);
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
                 outfile->Printf("\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-                
+
             }
         }
 
@@ -320,8 +320,8 @@ else if (reference_ == "UNRESTRICTED") {
         FockA->transform(FsoA, CmoA);
         FockB->transform(FsoB, CmoB);
     }
-    
-}// end else if (reference_ == "UNRESTRICTED") 
+
+}// end else if (reference_ == "UNRESTRICTED")
 
 /********************************************************************************************/
 /************************** Create all required matrice *************************************/
@@ -335,7 +335,7 @@ else if (reference_ == "UNRESTRICTED") {
 	Tso_->zero();
 	Vso_->zero();
 	Sso_->zero();
-	
+
 	// Read SO-basis one-electron integrals
 	double *so_ints = init_array(ntri_so);
         IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
@@ -345,7 +345,7 @@ else if (reference_ == "UNRESTRICTED") {
         IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, "outfile");
         Sso_->set(so_ints);
         free(so_ints);
-	Hso_->copy(Tso_); 
+	Hso_->copy(Tso_);
 	Hso_->add(Vso_);
         Tso_.reset();
         Vso_.reset();
@@ -356,12 +356,12 @@ else if (reference_ == "UNRESTRICTED") {
         Sso->set(Sso_);
         Sso_.reset();
 
-//outfile->Printf("\n get_moinfo is done. \n"); 
+//outfile->Printf("\n get_moinfo is done. \n");
 }// end get_moinfo
 
 //======================================================================
 //      MO COEFFIENT BLOCKS
-//======================================================================             
+//======================================================================
 void DFOCC::mo_coeff_blocks()
 {
   // RHF
@@ -393,9 +393,9 @@ void DFOCC::mo_coeff_blocks()
                  CavirA->set(mu, a, CmoA->get(mu, a + noccA));
              }
         }
-  }// if (reference_ == "RESTRICTED") 
+  }// if (reference_ == "RESTRICTED")
 
-//======================================================================             
+//======================================================================
   // UHF
   else if (reference_ == "UNRESTRICTED") {
         // Build Cocc
@@ -420,7 +420,7 @@ void DFOCC::mo_coeff_blocks()
                  CvirA->set(mu, a, CmoA->get(mu, a + noccA));
              }
         }
- 
+
         // Beta
         for (int mu = 0; mu < nso_; mu++) {
              for (int a = 0; a < nvirB; a++) {
@@ -450,20 +450,20 @@ void DFOCC::mo_coeff_blocks()
                  CavirA->set(mu, a, CmoA->get(mu, a + noccA));
              }
         }
- 
+
         // Beta
         for (int mu = 0; mu < nso_; mu++) {
              for (int a = 0; a < navirB; a++) {
                  CavirB->set(mu, a, CmoB->get(mu, a + noccB));
              }
         }
-  }// end else if (reference_ == "UNRESTRICTED") 
+  }// end else if (reference_ == "UNRESTRICTED")
 
 }// end of mo_coeff_blocks
 
 //======================================================================
 //      Remove a binary file
-//======================================================================             
+//======================================================================
 void DFOCC::remove_binary_file(int fileno)
 {
       ostringstream convert;

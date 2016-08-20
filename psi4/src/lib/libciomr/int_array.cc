@@ -28,28 +28,28 @@
 /*!
 ** \file
 ** \brief This file includes the integer versions of several psi routines
-** for handling arrays and matrices of doubles 
+** for handling arrays and matrices of doubles
 **
 ** David Sherrill, 1996
 **
 ** \ingroup CIOMR
 */
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
 #include <strings.h>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!
-** init_int_array(): Allocates memory for one-D array of ints of dimension 
+** init_int_array(): Allocates memory for one-D array of ints of dimension
 ** 'size' and returns pointer to 1st element.  Zeroes all elements.
 **
 ** Just modified the init_array() routine to do int's instead.
-** This will avoid the temptation to allocate 5 integers by  
-**    p = (int *) init_array(5/2), which is bad.             
+** This will avoid the temptation to allocate 5 integers by
+**    p = (int *) init_array(5/2), which is bad.
 **
 ** \param size = length of array to allocate
 **
@@ -91,13 +91,13 @@ void zero_int_array(int *a, int size)
 
 /*!
 ** init_int_matrix():
-** Function initializes (allocates and clears) a matrix of integers with 
-** dimensions 'rows' by 'cols' and returns a pointer to it (ptr to first 
+** Function initializes (allocates and clears) a matrix of integers with
+** dimensions 'rows' by 'cols' and returns a pointer to it (ptr to first
 ** row ptr). The matrix layout is blocked, i.e. like produced by block_matrix()
 **
 ** \param rows = number of rows
 ** \param cols = number of columns
-** 
+**
 ** Returns: pointer to first row of newly-allocated integer block matrix
 **
 ** \ingroup CIOMR
@@ -108,13 +108,13 @@ int **init_int_matrix(int rows, int cols)
    int i;
 
    if ((array = (int **) malloc(sizeof(int *)*rows))==NULL) {
-     outfile->Printf("init_int_matrix: trouble allocating memory \n"); 
+     outfile->Printf("init_int_matrix: trouble allocating memory \n");
      outfile->Printf("rows = %d\n", rows);
      exit(PSI_RETURN_FAILURE);
    }
 
    if ((array[0] = (int *) malloc (sizeof(int)*cols*rows))==NULL) {
-     outfile->Printf("init_int_matrix: trouble allocating memory \n"); 
+     outfile->Printf("init_int_matrix: trouble allocating memory \n");
      outfile->Printf("rows = %d, cols = %d", rows, cols);
      exit(PSI_RETURN_FAILURE) ;
    }
@@ -150,7 +150,7 @@ void free_int_matrix(int **array)
 ** \param array = pointer to integer matrix
 ** \param rows  = number of rows in matrix
 ** \param cols  = number of columns in matrix
-** 
+**
 ** Returns: none
 **
 ** \ingroup CIOMR

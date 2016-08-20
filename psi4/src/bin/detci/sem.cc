@@ -43,7 +43,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <boost/lexical_cast.hpp>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libqt/slaterdset.h"
@@ -52,7 +52,7 @@
 #include "ci_tol.h"
 #include "civect.h"
 #include "ciwave.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 namespace psi { namespace detci {
 
@@ -1031,7 +1031,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          }
 
       if (converged){
-          Parameters_->diag_h_converged = true;  
+          Parameters_->diag_h_converged = true;
       }
 
       if (converged || iter == maxiter) {

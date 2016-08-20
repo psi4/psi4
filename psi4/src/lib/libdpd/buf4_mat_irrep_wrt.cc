@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_mat_irrep_wrt(): Writes an entire irrep from disk into a dpd

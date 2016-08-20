@@ -32,7 +32,7 @@
 #include "psi4/src/lib/libmints/twobody.h"
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/sieve.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "defines.h"
 #include "dfocc.h"
@@ -48,7 +48,7 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::trans_corr()
-{   
+{
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -97,9 +97,9 @@ void DFOCC::trans_corr()
 
 //=======================================================
 //          trans for mp2 energy
-//=======================================================          
+//=======================================================
 void DFOCC::trans_mp2()
-{   
+{
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -111,13 +111,13 @@ void DFOCC::trans_mp2()
     timer_off("Form B(Q,ia)");
     bQso.reset();
 }
-    
+
 //=======================================================
 //          DF CC
-//=======================================================          
+//=======================================================
 void DFOCC::df_corr()
-{   
-    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
+{
+    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n");
 
     // Read in the basis set informations
     boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
@@ -144,7 +144,7 @@ void DFOCC::df_corr()
 
 //=======================================================
 //          form J(P,Q)^-1/2
-//=======================================================          
+//=======================================================
 void DFOCC::formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
 
@@ -208,7 +208,7 @@ void DFOCC::formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<Basi
     double **J = block_matrix(nQ, nQ);
     J_mhalf = block_matrix(nQ, nQ);
     const double *Jbuffer = Jint->buffer();
-    
+
     // Compute J_PQ metric
     int index = 0;
     for (int MU=0; MU < auxiliary_->nshell(); ++MU) {
@@ -269,12 +269,12 @@ void DFOCC::formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<Basi
 
 //=======================================================
 //          form b(Q, mu nu)
-//=======================================================          
+//=======================================================
 void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
-    double** Ap = block_matrix(nQ, nso2_); 
-    double** Bp = block_matrix(nQ, nso2_); 
+    double** Ap = block_matrix(nQ, nso2_);
+    double** Bp = block_matrix(nQ, nso2_);
 
     int nthreads = 1;
     #ifdef _OPENMP
@@ -356,10 +356,10 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++, index++) {
-                         //Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n]; 
-                         //Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n]; 
-                         Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index]; 
-                         Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index]; 
+                         //Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n];
+                         //Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n];
+                         Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
+                         Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
                     }
                 }
             }
@@ -407,7 +407,7 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
 
     /*
     // Build C(Q, mu nu)
-    double** Cp = block_matrix(nQ, nso2_); 
+    double** Cp = block_matrix(nQ, nso2_);
     C_DGEMM('N','N', nQ, nso2_, nQ, 1.0, J_mhalf[0], nQ, Ap[0], nso2_, 0.0, Cp[0], nso2_);
     free_block(J_mhalf);
     free_block(Ap);
@@ -422,7 +422,7 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
 
 //=======================================================
 //          form b(Q,ij) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ij()
 {
     bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mI)", nQ, nso_ * naoccA));
@@ -447,7 +447,7 @@ void DFOCC::b_ij()
 
 //=======================================================
 //          form b(Q,ij) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_oo()
 {
     bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mO)", nQ, nso_ * noccA));
@@ -484,7 +484,7 @@ void DFOCC::b_oo()
 
 //=======================================================
 //          form b(Q,ia) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ia()
 {
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
@@ -511,7 +511,7 @@ void DFOCC::b_ia()
 
 //=======================================================
 //          form b(Q,ov) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_ov()
 {
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA));
@@ -550,7 +550,7 @@ void DFOCC::b_ov()
 
 //=======================================================
 //          form b(Q,ab) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ab()
 {
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
@@ -575,7 +575,7 @@ void DFOCC::b_ab()
 
 //=======================================================
 //          form b(Q,vv) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_vv()
 {
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
@@ -612,7 +612,7 @@ void DFOCC::b_vv()
 
 //=======================================================
 //          form c(Q,ij): active
-//=======================================================          
+//=======================================================
 void DFOCC::c_ij()
 {
     cQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mI)", nQ, nso_ * naoccA));
@@ -637,7 +637,7 @@ void DFOCC::c_ij()
 
 //=======================================================
 //          form c(Q,ij): all
-//=======================================================          
+//=======================================================
 void DFOCC::c_oo()
 {
     cQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mO)", nQ, nso_ * noccA));
@@ -662,7 +662,7 @@ void DFOCC::c_oo()
 
 //=======================================================
 //          form c(Q,ia) : active
-//=======================================================          
+//=======================================================
 void DFOCC::c_ia()
 {
     cQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mA)", nQ, nso_ * navirA));
@@ -687,7 +687,7 @@ void DFOCC::c_ia()
 
 //=======================================================
 //          form c(Q,ia) : all
-//=======================================================          
+//=======================================================
 void DFOCC::c_ov()
 {
     cQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mV)", nQ, nso_ * nvirA));
@@ -712,7 +712,7 @@ void DFOCC::c_ov()
 
 //=======================================================
 //          form c(Q,ab) : active
-//=======================================================          
+//=======================================================
 void DFOCC::c_ab()
 {
     cQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|AB)", nQ, navirA * navirA));
@@ -733,7 +733,7 @@ void DFOCC::c_ab()
 
 //=======================================================
 //          form c(Q,ab) : all
-//=======================================================          
+//=======================================================
 void DFOCC::c_vv()
 {
     cQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|VV)", nQ, nvirA * nvirA));
@@ -754,7 +754,7 @@ void DFOCC::c_vv()
 
 //=======================================================
 //          Trans OEI ints
-//=======================================================          
+//=======================================================
 void DFOCC::trans_oei()
 {
     // Alpha
@@ -782,7 +782,7 @@ void DFOCC::trans_oei()
 
 //=======================================================
 //       Form non-zero DF ints: Experimental
-//=======================================================          
+//=======================================================
 void DFOCC::b_so_non_zero()
 {
 
@@ -800,7 +800,7 @@ void DFOCC::b_so_non_zero()
     for(int Q = 0 ; Q < nQ; ++Q){
         for(int m = 0 ; m < nso_; ++m){
             for(int n = 0 ; n < nso_; ++n){
-                int mn = n + (m * nso_); 
+                int mn = n + (m * nso_);
 		if (fabs(bQso->get(Q,mn)) > int_cutoff_) ndf_nz++;
             }
         }
@@ -821,12 +821,12 @@ void DFOCC::b_so_non_zero()
     for(int Q = 0 ; Q < nQ; ++Q){
         for(int m = 0 ; m < nso_; ++m){
             for(int n = 0 ; n < nso_; ++n){
-                int mn = n + (m * nso_); 
+                int mn = n + (m * nso_);
 
 		if (fabs(bQso->get(Q,mn)) > int_cutoff_) {
 		    K->set(ndf_nz, 0, bQso->get(Q,mn));
 		    ndf_nz++;
-		    //if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n); 
+		    //if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n);
 		}
 
             }
@@ -844,10 +844,10 @@ void DFOCC::b_so_non_zero()
     #pragma omp parallel for
     for(int m = 0 ; m < nso_; ++m){
         for(int n = 0 ; n < nso_; ++n){
-            int mn = n + (m * nso_); 
+            int mn = n + (m * nso_);
             for(int l = 0 ; l < nso_; ++l){
                 for(int s = 0 ; s < nso_; ++s){
-                    int ls = s + (l * nso_); 
+                    int ls = s + (l * nso_);
 		    if (fabs(L->get(mn,ls)) > int_cutoff_) ndf_nz++;
 		}
             }
@@ -868,11 +868,11 @@ void DFOCC::b_so_non_zero()
     #pragma omp parallel for
     for(int m = 0 ; m < nso_; ++m){
         for(int n = 0 ; n <=m; ++n){
-            int mn2 = n + (m * nso_); 
+            int mn2 = n + (m * nso_);
 	    int mn = index2(m,n);
             for(int l = 0 ; l < nso_; ++l){
                 for(int s = 0 ; s <=l; ++s){
-                    int ls2 = s + (l * nso_); 
+                    int ls2 = s + (l * nso_);
 	            int ls = index2(l,s);
 
 		    if (mn >= ls ) {
@@ -900,7 +900,7 @@ void DFOCC::b_so_non_zero()
     #pragma omp parallel for
     for(int m = 0 ; m < nso_; ++m){
         for(int n = 0 ; n < nso_; ++n){
-            int mn = n + (m * nso_); 
+            int mn = n + (m * nso_);
 	    double sum = 0.0;
             for(int Q = 0 ; Q < nQ; ++Q){
                 sum += bQso->get(Q,mn) * bQso->get(Q,mn);
@@ -970,8 +970,8 @@ void DFOCC::b_so_non_zero()
 } // end b_so_non_zero
 
 //=======================================================
-//       Form LDL ABCD ints: Experimental 
-//=======================================================          
+//       Form LDL ABCD ints: Experimental
+//=======================================================
 void DFOCC::ldl_abcd_ints()
 {
     timer_on("LDL <AB|CD>");
@@ -1057,9 +1057,9 @@ void DFOCC::ldl_abcd_ints()
 	n2o->set(i,i);
     }
 
-    // Descending ordering for D 
+    // Descending ordering for D
     for(int i=0; i< (n-1); i++) {
-        for(int j = (i+1); j < n; j++) { 
+        for(int j = (i+1); j < n; j++) {
             if (fabs(D->get(i)) < fabs(D->get(j))) {
                 double temp= D->get(i);
          	D->set(i,D->get(j));
@@ -1107,7 +1107,7 @@ void DFOCC::ldl_abcd_ints()
     L1->set(0,1.0);
     #pragma omp parallel for
     for(int i = Q+1; i < n; i++) {
-	double value = R1->get(i)/D->get(Q); 
+	double value = R1->get(i)/D->get(Q);
 	L1->set(i,value);
     }
 
@@ -1122,7 +1122,7 @@ void DFOCC::ldl_abcd_ints()
 //========================= Head of the Loop ===============================================
 //==========================================================================================
     // Start Iterations
-    do 
+    do
     {
         // increment Q
         Q++;
@@ -1143,13 +1143,13 @@ void DFOCC::ldl_abcd_ints()
 	    int i_new = o2n->get(i);
             for(int j = 0; j < nQ_cd; j++) {
 	    	L->set(i,j,L2->get(i_new,j));
-	     }	
+	     }
     	}
     	L2.reset();
 
-        // Descending ordering for D 
+        // Descending ordering for D
         for(int i=Q; i < (n-1); i++) {
-            for(int j = (i+1); j < n; j++) { 
+            for(int j = (i+1); j < n; j++) {
                 if (fabs(D->get(i)) < fabs(D->get(j))) {
                     double temp = D->get(i);
          	    D->set(i,D->get(j));
@@ -1162,7 +1162,7 @@ void DFOCC::ldl_abcd_ints()
 		    n2o->set(j,i_org);
 	        }
 	    }
-        }  
+        }
 	*/
 
         // Choose the dmax
@@ -1170,10 +1170,10 @@ void DFOCC::ldl_abcd_ints()
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
 	    if (fabs(D->get(i)) > dmax) {
-                dmax = fabs(D->get(i)); 
+                dmax = fabs(D->get(i));
 	    }
         }
-	
+
         // Print
         outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
 
@@ -1193,14 +1193,14 @@ void DFOCC::ldl_abcd_ints()
 
 	// check dmax
 	if (dmax <= tol_ldl) break;
-	
+
         // Form U1
 	// U[Q](P) = L(P,Q)*D(P)
         U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
         #pragma omp parallel for
         for(int P = 0; P < nQ_cd; P++) {
 	    U1->set(P,L->get(Q,P)*D->get(P));
-        } 
+        }
 
         // Compute the off-diagonal: Part-1
 	// R(ab,Q) = <ab|Q>
@@ -1225,7 +1225,7 @@ void DFOCC::ldl_abcd_ints()
         }
 
         // Compute the off-diagonal: Part-2
-	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P) 
+	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P)
 	R1->gemv(false, L, U1, -1.0, 1.0);
         U1.reset();
 
@@ -1235,11 +1235,11 @@ void DFOCC::ldl_abcd_ints()
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
 	    if (fabs(D->get(Q)) > tol_ldl) {
-	        double value = R1->get(i)/D->get(Q); 
+	        double value = R1->get(i)/D->get(Q);
 	        L1->set(i,value);
 	    }
         }
-	
+
         // Form the global L matrix
         nQ_cd++;
         L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
@@ -1274,7 +1274,7 @@ void DFOCC::ldl_abcd_ints()
     for(int Q = 0; Q < nQ_cd; Q++) {
         for(int i = 0; i < n; i++) {
 	    U->set(Q,i,L->get(i,Q)*D->get(Q));
-	}	
+	}
     }
 
     // Revert L to the original ordering
@@ -1285,7 +1285,7 @@ void DFOCC::ldl_abcd_ints()
 	int i_new = o2n->get(i);
         for(int j = 0; j < nQ_cd; j++) {
 	    L->set(i,j,L2->get(i_new,j));
-	}	
+	}
     }
     L2.reset();
 
@@ -1297,7 +1297,7 @@ void DFOCC::ldl_abcd_ints()
         for(int j = 0; j < n; j++) {
 	    int j_new = o2n->get(j);
 	    U->set(i,j,L2->get(i,j_new));
-	}	
+	}
     }
     L2.reset();
 
@@ -1310,13 +1310,13 @@ void DFOCC::ldl_abcd_ints()
     LU = SharedTensor2d(new Tensor2d("LU", n, n));
     LU->gemm(false,false,L,U,1.0,0.0);
 
-    // Form exact <AB|CD> 
+    // Form exact <AB|CD>
     J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
     J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
     K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
     K->sort(1324, J, 1.0, 0.0);
     J.reset();
-    
+
     // Final Results
     L->print();
     U->print();
@@ -1342,8 +1342,8 @@ void DFOCC::ldl_abcd_ints()
 } // end ldl_abcd_ints
 
 //=======================================================
-//       Form LDL PQRS ints: Experimental 
-//=======================================================          
+//       Form LDL PQRS ints: Experimental
+//=======================================================
 void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 {
     timer_on("LDL <PQ|RS>");
@@ -1424,9 +1424,9 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 	n2o->set(i,i);
     }
 
-    // Descending ordering for D 
+    // Descending ordering for D
     for(int i=0; i< (n-1); i++) {
-        for(int j = (i+1); j < n; j++) { 
+        for(int j = (i+1); j < n; j++) {
             if (fabs(D->get(i)) < fabs(D->get(j))) {
                 double temp= D->get(i);
          	D->set(i,D->get(j));
@@ -1474,7 +1474,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
     L1->set(0,1.0);
     #pragma omp parallel for
     for(int i = Q+1; i < n; i++) {
-	double value = R1->get(i)/D->get(Q); 
+	double value = R1->get(i)/D->get(Q);
 	L1->set(i,value);
     }
 
@@ -1489,7 +1489,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 //========================= Head of the Loop ===============================================
 //==========================================================================================
     // Start Iterations
-    do 
+    do
     {
         // increment Q
         Q++;
@@ -1509,13 +1509,13 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 	    int i_new = o2n->get(i);
             for(int j = 0; j < nQ_cd; j++) {
 	    	L->set(i,j,L2->get(i_new,j));
-	     }	
+	     }
     	}
     	L2.reset();
 
-        // Descending ordering for D 
+        // Descending ordering for D
         for(int i=Q; i < (n-1); i++) {
-            for(int j = (i+1); j < n; j++) { 
+            for(int j = (i+1); j < n; j++) {
                 if (fabs(D->get(i)) < fabs(D->get(j))) {
                     double temp = D->get(i);
          	    D->set(i,D->get(j));
@@ -1528,17 +1528,17 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 		    n2o->set(j,i_org);
 	        }
 	    }
-        }  
+        }
 
         // Choose the dmax
         dmax = fabs(D->get(Q));
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
 	    if (fabs(D->get(i)) > dmax) {
-                dmax = fabs(D->get(i)); 
+                dmax = fabs(D->get(i));
 	    }
         }
-	
+
         // Print
         //outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
 
@@ -1556,13 +1556,13 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 
 	// check dmax
 	if (dmax <= tol_ldl) break;
-	
+
         // Form U1
 	// U[Q](P) = L(P,Q)*D(P)
         U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
         for(int P = 0; P < nQ_cd; P++) {
 	    U1->set(P,L->get(Q,P)*D->get(P));
-        } 
+        }
 
         // Compute the off-diagonal: Part-1
 	// R(ab,Q) = <ab|Q>
@@ -1584,7 +1584,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
         }
 
         // Compute the off-diagonal: Part-2
-	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P) 
+	// R(ab,Q) -= \sum_{P=0 to Q-1} L(ab,P) * L(Q,P) * D(P)
 	R1->gemv(false, L, U1, -1.0, 1.0);
         U1.reset();
 
@@ -1594,11 +1594,11 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
 	    if (fabs(D->get(Q)) > tol_ldl) {
-	        double value = R1->get(i)/D->get(Q); 
+	        double value = R1->get(i)/D->get(Q);
 	        L1->set(i,value);
 	    }
         }
-	
+
         // Form the global L matrix
         nQ_cd++;
         L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
@@ -1633,7 +1633,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
     for(int Q = 0; Q < nQ_cd; Q++) {
         for(int i = 0; i < n; i++) {
 	    U->set(Q,i,L->get(i,Q)*D->get(Q));
-	}	
+	}
     }
 
     // Revert L to the original ordering
@@ -1644,7 +1644,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 	int i_new = o2n->get(i);
         for(int j = 0; j < nQ_cd; j++) {
 	    L->set(i,j,L2->get(i_new,j));
-	}	
+	}
     }
     L2.reset();
 
@@ -1656,7 +1656,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
         for(int j = 0; j < n; j++) {
 	    int j_new = o2n->get(j);
 	    U->set(i,j,L2->get(i,j_new));
-	}	
+	}
     }
     L2.reset();
 
@@ -1669,13 +1669,13 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
     LU = SharedTensor2d(new Tensor2d("LU", n, n));
     LU->gemm(false,false,L,U,1.0,0.0);
 
-    // Form exact <AB|CD> 
+    // Form exact <AB|CD>
     J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
     J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
     K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
     K->sort(1324, J, 1.0, 0.0);
     J.reset();
-    
+
     // Final Results
     L->print();
     U->print();
@@ -1701,8 +1701,8 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 } // end ldl_pqrs_ints
 
 //=======================================================
-//       Form CD (MN|LS) ints 
-//=======================================================          
+//       Form CD (MN|LS) ints
+//=======================================================
 void DFOCC::cd_aob_cints()
 {
     timer_on("CD (MN|LS)");
@@ -1725,7 +1725,7 @@ void DFOCC::cd_aob_cints()
     bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Initial dimension
-    size_t n = dim1 * dim2; 
+    size_t n = dim1 * dim2;
     size_t Q = 0;
 
     outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
@@ -1813,7 +1813,7 @@ void DFOCC::cd_aob_cints()
                 sum += bQ->get(P,ab) * bQ->get(P,cd);
 	    }
 	    L[Q][i] = sum;
-        }  
+        }
 
         // [(ab|Q) - L_ab^P L_Q^P]
         for (size_t P = 0; P < Q; P++) {
@@ -1856,7 +1856,7 @@ void DFOCC::cd_aob_cints()
         for(size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
 	    U->set(PP,ii,L[P][i]);
-	}	
+	}
     }
 
     // Write L matrix
@@ -1870,7 +1870,7 @@ void DFOCC::cd_aob_cints()
     LU->print();
     LU.reset();
 
-    // Form exact (AB|CD) 
+    // Form exact (AB|CD)
     J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
     J->print();
@@ -1887,8 +1887,8 @@ void DFOCC::cd_aob_cints()
 } // end cd_aob_cints
 
 //=======================================================
-//       Form CD (AB|CD) ints 
-//=======================================================          
+//       Form CD (AB|CD) ints
+//=======================================================
 void DFOCC::cd_abcd_cints()
 {
     timer_on("CD (AB|CD)");
@@ -1913,8 +1913,8 @@ void DFOCC::cd_abcd_cints()
     bQ->read(psio_, PSIF_DFOCC_INTS);
 
     // Initial dimension
-    //size_t n = dim1 * dim2; 
-    size_t n = ntri_abAA; 
+    //size_t n = dim1 * dim2;
+    size_t n = ntri_abAA;
     size_t Q = 0;
 
     outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
@@ -2015,7 +2015,7 @@ void DFOCC::cd_abcd_cints()
                 sum += bQ->get(P,ab) * bQ->get(P,cd);
 	    }
 	    L[Q][i] = sum;
-        }  
+        }
 	*/
         #pragma omp parallel for
         for(size_t i = 0; i < n; i++) {
@@ -2024,7 +2024,7 @@ void DFOCC::cd_abcd_cints()
                 sum += bQ->get(P,i) * bQ->get(P,pivot);
 	    }
 	    L[Q][i] = sum;
-        }  
+        }
 
         // [(ab|Q) - L_ab^P L_Q^P]
         for (size_t P = 0; P < Q; P++) {
@@ -2067,7 +2067,7 @@ void DFOCC::cd_abcd_cints()
         for(size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
 	    U->set(PP,ii,L[P][i]);
-	}	
+	}
     }
 
     // Write L matrix
@@ -2081,7 +2081,7 @@ void DFOCC::cd_abcd_cints()
     LU->print();
     LU.reset();
 
-    // Form exact (AB|CD) 
+    // Form exact (AB|CD)
     //J = SharedTensor2d(new Tensor2d("J (AB|CD)", dim1, dim2, dim1, dim2));
     J = SharedTensor2d(new Tensor2d("J (A>=B|C>=D)", n_, n_));
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
@@ -2099,8 +2099,8 @@ void DFOCC::cd_abcd_cints()
 } // end cd_abcd_cints
 
 //=======================================================
-//       Form CD <AB|CD> ints 
-//=======================================================          
+//       Form CD <AB|CD> ints
+//=======================================================
 void DFOCC::cd_abcd_xints()
 {
     timer_on("CD <AB|CD>");
@@ -2123,7 +2123,7 @@ void DFOCC::cd_abcd_xints()
     bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Initial dimension
-    size_t n = dim1 * dim2; 
+    size_t n = dim1 * dim2;
     size_t Q = 0;
 
     outfile->Printf("\tNumber of complete CD factors:   %5li\n",n);
@@ -2213,7 +2213,7 @@ void DFOCC::cd_abcd_xints()
                 sum += bQ->get(P,ac) * bQ->get(P,bd);
 	    }
 	    L[Q][i] = sum;
-        }  
+        }
 
         // [(ab|Q) - L_ab^P L_Q^P]
         for (size_t P = 0; P < Q; P++) {
@@ -2256,7 +2256,7 @@ void DFOCC::cd_abcd_xints()
         for(size_t i = 0; i < n; i++) {
             int ii = static_cast<int>(i);
 	    U->set(PP,ii,L[P][i]);
-	}	
+	}
     }
 
     // Write L matrix
@@ -2270,7 +2270,7 @@ void DFOCC::cd_abcd_xints()
     LU->print();
     LU.reset();
 
-    // Form exact <AB|CD> 
+    // Form exact <AB|CD>
     J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
     K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));

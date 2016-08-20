@@ -29,7 +29,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libmints/view.h"
 #include "psi4/src/lib/libmints/cdsalclist.h"
@@ -37,7 +37,7 @@
 #include "psi4/src/lib/libfock/jk.h"
 #include "psi4/src/lib/libfock/apps.h"
 #include "psi4/src/lib/libfunctional/superfunctional.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 #include "psi4/src/lib/lib3index/dftensor.h"
@@ -92,7 +92,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     int nmo   = C->colspi()[0];
 
     // => Target <= //
-    
+
     boost::shared_ptr<Matrix> response(new Matrix("RHF Response",3*natom,3*natom));
 
     // => Response Utility File <= //
@@ -103,7 +103,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     {
         // Overlap derivatives
         boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();   
+        const double* buffer = Sint->buffer();
 
         boost::shared_ptr<Matrix> Smix(new Matrix("Smix",nso,nocc));
         boost::shared_ptr<Matrix> Smiy(new Matrix("Smiy",nso,nocc));
@@ -155,9 +155,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     int oP = basisset_->shell(P).function_index();
                     int oQ = basisset_->shell(Q).function_index();
                     const double* buffer2;
-                    if (aP == A) { 
+                    if (aP == A) {
                         // Px
-                        buffer2 = buffer + 0 * nP * nQ;                       
+                        buffer2 = buffer + 0 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
@@ -171,41 +171,41 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Pz
-                        buffer2 = buffer + 2 * nP * nQ;                       
+                        buffer2 = buffer + 2 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
                             }
-                        } 
+                        }
                     }
-                    if (aQ == A) { 
+                    if (aQ == A) {
                         // Qx
-                        buffer2 = buffer + 3 * nP * nQ;                       
+                        buffer2 = buffer + 3 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Qy
-                        buffer2 = buffer + 4 * nP * nQ;                       
+                        buffer2 = buffer + 4 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Qz
-                        buffer2 = buffer + 5 * nP * nQ;                       
+                        buffer2 = buffer + 5 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -252,7 +252,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     {
         // Kinetic derivatives
         boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();   
+        const double* buffer = Tint->buffer();
 
         boost::shared_ptr<Matrix> Tmix(new Matrix("Tmix",nso,nocc));
         boost::shared_ptr<Matrix> Tmiy(new Matrix("Tmiy",nso,nocc));
@@ -281,57 +281,57 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     int oP = basisset_->shell(P).function_index();
                     int oQ = basisset_->shell(Q).function_index();
                     const double* buffer2;
-                    if (aP == A) { 
+                    if (aP == A) {
                         // Px
-                        buffer2 = buffer + 0 * nP * nQ;                       
+                        buffer2 = buffer + 0 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
-                            } 
-                        } 
+                            }
+                        }
                         // Py
-                        buffer2 = buffer + 1 * nP * nQ;                       
+                        buffer2 = buffer + 1 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Pz
-                        buffer2 = buffer + 2 * nP * nQ;                       
+                        buffer2 = buffer + 2 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
                             }
-                        } 
+                        }
                     }
-                    if (aQ == A) { 
+                    if (aQ == A) {
                         // Qx
-                        buffer2 = buffer + 3 * nP * nQ;                       
+                        buffer2 = buffer + 3 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Qy
-                        buffer2 = buffer + 4 * nP * nQ;                       
+                        buffer2 = buffer + 4 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
                             }
-                        } 
+                        }
                         // Qz
-                        buffer2 = buffer + 5 * nP * nQ;                       
+                        buffer2 = buffer + 5 * nP * nQ;
                         for (int p = 0; p < nP; p++) {
                             for (int q = 0; q < nQ; q++) {
                                 C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
                                 C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
-                            } 
-                        } 
+                            }
+                        }
                     }
                 }
             }
@@ -348,12 +348,12 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
     }
 
-    
+
     // => Vpi <= //
     {
         // Potential derivatives
         boost::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
-        const double* buffer = Vint->buffer();   
+        const double* buffer = Vint->buffer();
 
         boost::shared_ptr<Matrix> Vmix(new Matrix("Vmix",nso,nocc));
         boost::shared_ptr<Matrix> Vmiy(new Matrix("Vmiy",nso,nocc));
@@ -389,22 +389,22 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
                             C_DAXPY(nocc,(*buf_x++),Cop[q + oQ],1,Vmixp[p + oP],1);
-                        } 
-                    } 
+                        }
+                    }
 
                     // Ay
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
                             C_DAXPY(nocc,(*buf_y++),Cop[q + oQ],1,Vmiyp[p + oP],1);
-                        } 
-                    } 
+                        }
+                    }
 
                     // Az
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
                             C_DAXPY(nocc,(*buf_z++),Cop[q + oQ],1,Vmizp[p + oP],1);
-                        } 
-                    } 
+                        }
+                    }
                 }
             }
 
@@ -1331,21 +1331,21 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             Bai->scale(-1.0);
             psio_->write(PSIF_HESS,"Bai^A",(char*)Baip[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
         }
-    }    
+    }
 
     // => CPHF (Uai) <= //
     {
         SharedWavefunction wfn(new Wavefunction(options_));
         wfn->shallow_copy(this);
-                
+
         boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, !ignore_symmetry));
         cphf->set_jk(jk);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
         std::map<std::string, SharedMatrix>& x = cphf->x();
 
-        psio_address next_Bai = PSIO_ZERO;    
-        psio_address next_Uai = PSIO_ZERO;    
+        psio_address next_Bai = PSIO_ZERO;
+        psio_address next_Uai = PSIO_ZERO;
 
         boost::shared_ptr<Matrix> T(new Matrix("T",nvir,nocc));
         double** Tp = T->pointer();
@@ -1365,7 +1365,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             if (A + max_A >= 3 * natom) {
                 nA = 3 * natom - A;
             }
-            
+
             x.clear();
             b.clear();
 
@@ -1416,12 +1416,12 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             }
 
             cphf->compute_energy();
-            
+
             // Result in x
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                boost::shared_ptr<Matrix> X = x[ss.str()]; 
+                boost::shared_ptr<Matrix> X = x[ss.str()];
                 double** Xp = X->pointer();
                 if(ignore_symmetry){
                     for (int i = 0; i < nocc; i++) {
@@ -1463,7 +1463,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             }
 
-        } 
+        }
     }
 
     // => Upi <= //
@@ -1471,9 +1471,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         boost::shared_ptr<Matrix> Upi(new Matrix("U",nmo,nocc));
         double** Upqp = Upi->pointer();
 
-        psio_address next_Spi = PSIO_ZERO;    
-        psio_address next_Uai = PSIO_ZERO;    
-        psio_address next_Upi = PSIO_ZERO;    
+        psio_address next_Spi = PSIO_ZERO;
+        psio_address next_Uai = PSIO_ZERO;
+        psio_address next_Upi = PSIO_ZERO;
 
         for (int A = 0; A < 3*natom; A++) {
             psio_->read(PSIF_HESS,"Sij^A",(char*)Upqp[0],nocc * nocc * sizeof(double),next_Spi,&next_Spi);
@@ -1485,8 +1485,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Qpi <= //
     {
-        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();  
-        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();  
+        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();
+        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();
         const std::vector<boost::shared_ptr<Matrix> >& J = jk->J();
         const std::vector<boost::shared_ptr<Matrix> >& K = jk->K();
         L.clear();
@@ -1526,17 +1526,17 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 psio_address next_Qpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
                 psio_->write(PSIF_HESS,"Qpi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Qpi,&next_Qpi);
             }
-        } 
+        }
     }
     jk.reset();
 
     // => Zipper <= //
     {
-        size_t memory = 0.9 * memory_ / 8L;  
-        size_t npi = nmo * (size_t) nocc; 
+        size_t memory = 0.9 * memory_ / 8L;
+        size_t npi = nmo * (size_t) nocc;
         size_t max_a = memory / (3L * npi);
         max_a = (max_a > 3 * natom ? 3 * natom : max_a);
-        
+
         boost::shared_ptr<Matrix> L(new Matrix("L",max_a * nmo, nocc));
         boost::shared_ptr<Matrix> R(new Matrix("R",max_a * nmo, nocc));
         boost::shared_ptr<Matrix> T(new Matrix("T",max_a * nmo, nocc));
@@ -1544,7 +1544,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         double** Rp = R->pointer();
         double** Tp = T->pointer();
 
-        double** Hp = response->pointer(); 
+        double** Hp = response->pointer();
 
         // U^A F^B
         for (int A = 0; A < 3 * natom; A+=max_a) {
@@ -1652,7 +1652,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             }
         }
 
-        // U^A Q^B 
+        // U^A Q^B
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
@@ -1668,8 +1668,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 }
             }
         }
-        
-            
+
+
         // Full symmetrization
         for (int A = 0; A < 3 * natom; A++) {
             for (int B = 0; B < 3 * natom; B++) {

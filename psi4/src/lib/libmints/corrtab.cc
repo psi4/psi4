@@ -55,7 +55,7 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libmints/corrtab.h"
 

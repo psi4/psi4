@@ -27,11 +27,11 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include "psi4/src/lib/libiwl/iwl.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -122,7 +122,7 @@ void distribute(void)
   iwl_buf_close(&EBuf, 1);
   iwl_buf_close(&FBuf, 1);
 
-  
+
 }
 
 

@@ -29,7 +29,7 @@
 #include <string>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/python/tuple.hpp>
 #include "psi4/src/lib/libmints/eri.h"

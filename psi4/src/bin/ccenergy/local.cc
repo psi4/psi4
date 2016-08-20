@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
@@ -39,7 +39,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Local.h"
 #include "Params.h"
 #include "MOInfo.h"
@@ -47,7 +47,7 @@
 
 namespace psi { namespace ccenergy {
 
-/*! 
+/*!
 ** local_init(): Set up parameters of local excitation domains.
 **
 ** The orbital domains constructed here are based on those described
@@ -57,7 +57,7 @@ namespace psi { namespace ccenergy {
 ** of single occupied orbital domains.  "Weak pairs", which are
 ** defined as pair domains whose individual occupied orbital domains
 ** have no atoms in common, are identified (cf. int *weak_pairs).
-** 
+**
 ** TDC, Jan-June 2002
 */
 
@@ -77,13 +77,13 @@ void CCEnergyWavefunction::local_init(void)
           local_.nocc*local_.nocc*sizeof(int));
 
   outfile->Printf( "    Localization parameters ready.\n\n");
-  
+
 }
 
 void CCEnergyWavefunction::local_done(void)
 {
   outfile->Printf( "    Local parameters free.\n");
-  
+
 }
 
 void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1)
@@ -246,7 +246,7 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2)
 
   for(i=0,ij=0; i<nocc; i++) {
     for(j=0; j<nocc; j++,ij++) {
- 
+
       if(!local_.weak_pairs[ij]) {
 
 	/* Transform the virtuals to the redundant projected virtual basis */

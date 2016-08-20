@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -34,7 +34,7 @@
 #include "psi4/src/lib/libtrans/mospace.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libiwl/iwl.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #ifdef _OPENMP
     #include<omp.h>
 #else

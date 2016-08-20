@@ -26,7 +26,7 @@
  */
 
 #include "sapt0.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/twobody.h"
@@ -178,7 +178,7 @@ void SAPT0::print_header()
   outfile->Printf("    NVIR A     = %9d\n",nvirA_);
   outfile->Printf("    NVIR B     = %9d\n",nvirB_);
   outfile->Printf("\n");
-  
+
 }
 
 void SAPT0::print_results()
@@ -211,7 +211,7 @@ void SAPT0::print_results()
 
     double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_);
 
-    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
+    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ +
                *scal_it * (e_exch_ind20_ + e_exch_disp20_);
     double e_sSAPT0 = 0.0;
     double elst_sSAPT0 = 0.0;
@@ -228,10 +228,10 @@ void SAPT0::print_results()
     }
 
     double tot_elst = e_elst10_;
-    double tot_exch = e_exch10_; 
+    double tot_exch = e_exch10_;
     double tot_ind = e_ind20_ + dHF2 + *scal_it * e_exch_ind20_;
     double tot_disp = e_disp20_ + *scal_it * e_exch_disp20_;
-  
+
     if(scal_it == Xscal.begin()) {
         outfile->Printf("\n    SAPT Results \n");
     } else {
@@ -376,7 +376,7 @@ void SAPT0::check_memory()
 
   if (debug_) {
     outfile->Printf("    Using %8.1lf MB Memory\n\n",memory);
-    
+
   }
 
   bool fail = false;
@@ -525,7 +525,7 @@ void SAPT0::df_integrals()
   if (debug_) {
     outfile->Printf("Requires storage of %ld doubles\n",mem_tot);
     outfile->Printf("Max nso x nso block is %ld\n\n",max_size);
-    
+
   }
 
   int size = 0;
@@ -592,7 +592,7 @@ void SAPT0::df_integrals()
       outfile->Printf("Block %2d : PQ %4d - %4d : %d\n",i,PQ_start[i],
         PQ_stop[i],block_length[i]);
     outfile->Printf("\n");
-    
+
   }
 
   boost::shared_ptr<IntegralFactory> rifactory =
@@ -1040,7 +1040,7 @@ void SAPT0::df_integrals_aio()
   if (debug_) {
     outfile->Printf("Requires storage of %ld doubles\n",mem_tot);
     outfile->Printf("Max nso x nso block is %ld\n\n",max_size);
-    
+
   }
 
   int size = 0;
@@ -1107,7 +1107,7 @@ void SAPT0::df_integrals_aio()
       outfile->Printf("Block %2d : PQ %4d - %4d : %d\n",i,PQ_start[i],
         PQ_stop[i],block_length[i]);
     outfile->Printf("\n");
-    
+
   }
 
   boost::shared_ptr<IntegralFactory> rifactory =

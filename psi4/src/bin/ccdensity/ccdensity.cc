@@ -42,9 +42,9 @@
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <cmath>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -306,7 +306,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
       dipole(ref_wfn);
 
       if(params.onepdm_grid_dump) dx_write(ref_wfn, options, moinfo.opdm);
- 
+
       dump_RHF(&OutBuf, rho_params[i]);
 
       iwl_buf_flush(&OutBuf, 1);
@@ -372,7 +372,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 
   if(params.transition) {
 
-    MintsHelper mints(ref_wfn->basisset(), options, 0); 
+    MintsHelper mints(ref_wfn->basisset(), options, 0);
     get_td_params(options);
     for(i=0; i < params.nstates; i++) {
       td_setup(td_params[i]);
@@ -392,8 +392,8 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 
     /* Excited State Transition Data */
        //  The convention is that the transition is one of absorption.
-       //  That is to say - we always go from a lower excited state 
-       //  to a higher one - which maintains a defintion for 
+       //  That is to say - we always go from a lower excited state
+       //  to a higher one - which maintains a defintion for
        //  labeling the LTD and the RTD.
     int j;
 
@@ -405,7 +405,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
       outfile->Printf("\t************                                             ************\n");
       outfile->Printf("\t*********************************************************************\n");
       outfile->Printf("\t*********************************************************************\n\n");
-      
+
 
       std::vector<struct XTD_Params> xtd_params;
       struct XTD_Params xtd_data;
@@ -427,7 +427,7 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
 /*
           outfile->Printf( "State %d%s Energy = %20.12lf\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],td_params[state1].cceom_energy);
-          outfile->Printf( "State %d%s Energy = %20.12lf\n", 
+          outfile->Printf( "State %d%s Energy = %20.12lf\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state2].irrep],td_params[state2].cceom_energy);
 */
 
@@ -437,27 +437,27 @@ PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& option
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           ex_td_setup(td_params[state1],td_params[state2]);
           outfile->Printf("\t\t*** LTD Setup complete.\n");
-          
+
 
           ex_tdensity('l',td_params[state1],td_params[state2]);
 
           //- Clean out Amp Files (Might not be necessary, but seems to be.)
           ex_td_cleanup();
 
-          //- <Ly|O|Rx> (y>x) 
+          //- <Ly|O|Rx> (y>x)
           outfile->Printf("\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (RIGHT) Transition Density ***\n\n",
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep],
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep]);
           ex_td_setup(td_params[state2],td_params[state1]);
           outfile->Printf("\t\t*** RTD Setup complete.\n");
-          
+
 
           ex_tdensity('r',td_params[state2],td_params[state1]);
 
           outfile->Printf("\n\t*** %d%s -> %d%s transition densities complete.\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
-          
+
           //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           ex_oscillator_strength(ref_wfn, &(td_params[state1]),&(td_params[state2]), &xtd_data);
           if(params.ref == 0) {

@@ -20,8 +20,8 @@
  *@END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "PKmanagers.h"
@@ -579,7 +579,7 @@ void PKMgrDisk::batch_sizing() {
             // The last batch disappeared thus we need to correct batch_for_pq
             for(size_t i = 0; i < batch_for_pq_.size(); ++i) {
               if(batch_for_pq_[i] == lastb) batch_for_pq_[i]--;
-            }  
+            }
         }
     }
 
@@ -956,8 +956,8 @@ void PKMgrYoshimine::prestripe_files() {
     num_iwlbuf += batch_ind_min().size();
     size_t iwlsize_bytes = num_iwlbuf * iwl_int_size_;
     size_t iwlsize = iwlsize_bytes / sizeof(double) + 1;
-    // We need to check whether iwlsize bytes can actually fit 
-    // in memory. 
+    // We need to check whether iwlsize bytes can actually fit
+    // in memory.
     size_t safemem = memory() * 9 / 10;
     size_t nrows = iwlsize / safemem;
     size_t leftover = iwlsize % safemem;
@@ -1655,7 +1655,7 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, std::string exch, std::vec
                         } else if (p == q || r == s) {
                             fac = 0.5;
                         }
-//DEBUG                       bool prt = (p == 0 && r == 0) || (q == 0 && r == 0) || (p == 0 && s == 0) || (s == 0 && q == 0); 
+//DEBUG                       bool prt = (p == 0 && r == 0) || (q == 0 && r == 0) || (p == 0 && s == 0) || (s == 0 && q == 0);
 //DEBUG                       if(exch == "wK" && prt) {
 //DEBUG                         outfile->Printf("PK int (%d %d|%d %d) = %20.16f\n",p,q,r,s,*j_ptr);
 //DEBUG                       }

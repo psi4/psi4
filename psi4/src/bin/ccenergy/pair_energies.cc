@@ -27,12 +27,12 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"
@@ -66,7 +66,7 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab)
     /* Compute alpha-alpha pair energies */
     if (naa) {
       double* eaa = init_array(naa);
-      
+
       global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
       global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
       global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
@@ -87,10 +87,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab)
 
         for(p=0; p<np; p++) {
           int i, j, ij;
-          
+
           i = Params->roworb[irrep][p][0];
           j = Params->roworb[irrep][p][1];
-          
+
           ij = (i > j) ? i*(i-1)/2 + j : j*(j-1)/2 + i;
           eaa[ij] = block[p][p];
         }
@@ -145,7 +145,7 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab)
       global_dpd_->buf4_close(&E);
     }
   }
-  
+
 }
 
 void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab)
@@ -164,8 +164,8 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
     if (!params_.spinadapt_energies) {
       double emp2_aa_tot = 0.0;
       double emp2_ab_tot = 0.0;
-      double ecc_aa_tot = 0.0;  
-      double ecc_ab_tot = 0.0;  
+      double ecc_aa_tot = 0.0;
+      double ecc_ab_tot = 0.0;
 
       outfile->Printf( "    Alpha-alpha pair energies\n");
       outfile->Printf( "        i       j         MP2             %s\n",params_.wfn.c_str());
@@ -215,7 +215,7 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
           int ij_ab = i*nocc_act + j;
           int ij_aa = i*(i-1)/2 + j;
           double eab, eaa;
-          
+
           /* MP2 */
           eab = emp2_ab[ij_ab];
           if (i != j)
@@ -231,7 +231,7 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
           else
             eaa = 0.0;
           ecc_s = (i != j ? 2.0 : 1.0) * eab - 0.5 * eaa;
-          
+
           outfile->Printf( "      %3d     %3d     %12.9lf   %12.9lf\n", i+1, j+1, emp2_s, ecc_s);
           emp2_s_tot += emp2_s;
           ecc_s_tot += ecc_s;
@@ -254,8 +254,8 @@ void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab,
       outfile->Printf( "      -------------   ------------   ------------\n");
       outfile->Printf( "          Total       %12.9lf   %12.9lf\n", emp2_t_tot, ecc_t_tot);
 
-    }      
-    
+    }
+
     outfile->Printf( "\n");
   }
 }

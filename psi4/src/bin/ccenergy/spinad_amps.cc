@@ -27,20 +27,20 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
-/* spinad_amps(): For RHF references, build the T2 AA and BB amplitudes from 
-** the existing T2 AB amplitudes and copy the existing T1 A amplitudes 
+/* spinad_amps(): For RHF references, build the T2 AA and BB amplitudes from
+** the existing T2 AB amplitudes and copy the existing T1 A amplitudes
 ** into B.  Also build the remaining W and F spin cases.
 **
 ** T2(IJ,AB) = T2(ij,ab) = T2(Ij,Ab) - T2(Ij,Ba)

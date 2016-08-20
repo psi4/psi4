@@ -23,7 +23,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * @END LICENSE
- */ 
+ */
 
 /*!
 ** \file
@@ -31,10 +31,10 @@
 ** \ingroup
 */
 #define MAIN
-#include "psi4/psi4.h" 
+#include "psi4/psi4.h"
 #undef MAIN
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -42,7 +42,7 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include <getopt.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "gitversion.h"
 #include "psi4/src/lib/libplugin/plugin.h"
 #include "psi4/src/lib/libparallel/parallel.h"

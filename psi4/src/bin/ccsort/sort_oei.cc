@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** sort_oei(): Sort the one-electron integrals from QT Standard to CC
@@ -38,7 +38,7 @@
 **
 ** TDC, 6/01
 **
-** Notes: 
+** Notes:
 **
 ** (1) The output of the one-electron integrals from transqt and
 ** the method by which we read them from disk is somewhat confusing
@@ -61,7 +61,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -91,7 +91,7 @@ void sort_oei_uhf(void)
   double *a_oei, *b_oei, *tmp_oei;
   dpdfile2 hIJ, hij, hAB, hab, hIA, hia;
 
-  nirreps = moinfo.nirreps; 
+  nirreps = moinfo.nirreps;
   nactive = moinfo.nactive;
   nmo = moinfo.nmo;
   aocc = moinfo.aocc;  bocc = moinfo.bocc;
@@ -214,16 +214,16 @@ void sort_oei_rhf(void)
   double *oei, *tmp_oei;
   dpdfile2 Hoo, Hov, Hvv;
 
-  nirreps = moinfo.nirreps; 
+  nirreps = moinfo.nirreps;
   nactive = moinfo.nactive;
   nmo = moinfo.nmo;
-  occ = moinfo.occ; 
+  occ = moinfo.occ;
   vir = moinfo.vir;
-  cc_occ = moinfo.cc_occ; 
+  cc_occ = moinfo.cc_occ;
   cc_vir = moinfo.cc_vir;
-  occ_sym = moinfo.occ_sym; 
+  occ_sym = moinfo.occ_sym;
   vir_sym = moinfo.vir_sym;
-  occ_off = moinfo.occ_off; 
+  occ_off = moinfo.occ_off;
   vir_off = moinfo.vir_off;
 
   /* Grab the frozen-core opertor */

@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -50,7 +50,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 #define IOFF_MAX 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))

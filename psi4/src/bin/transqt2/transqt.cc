@@ -65,8 +65,8 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "globals.h"
 
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -190,7 +190,7 @@ PsiReturnType transqt2(SharedWavefunction ref_wfn, Options & options)
     timer_on("presort");
     if(params.print_lvl) {
         outfile->Printf( "\n\tPresorting SO-basis two-electron integrals.\n");
-        
+
     }
     psio_open(PSIF_SO_PRESORT, 0);
     global_dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
@@ -255,7 +255,7 @@ PsiReturnType transqt2(SharedWavefunction ref_wfn, Options & options)
     }
     if(params.print_lvl) {
         outfile->Printf( "\tFrozen-core energy = %20.15f\n", efzc);
-        
+
     }
     // Add frozen-core energy to wfn
     Process::environment.legacy_wavefunction()->set_efzc(efzc);

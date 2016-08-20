@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
@@ -1088,10 +1088,10 @@ void DPD::cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     int Gm, m, Gmi, mi, im, mc, M;
     int Gmk, mk, ma, kj, Gim;
     int GS, GH, GU, GC, GX3;
-    
+
     GC = C2BB->file.my_irrep;
     GU = EBB->file.my_irrep;
-    
+
     if (do_singles)
         GH = DBB->file.my_irrep;
     else if (do_doubles)

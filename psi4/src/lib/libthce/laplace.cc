@@ -46,7 +46,7 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "thce.h"
 #include "laplace.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/vector.h"
 
@@ -268,12 +268,12 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
 
     for (int k = 0; k < npoints_; k++) {
         for (int i = 0; i < nocc; i++) {
-            dop[k * nocc + i] = pow(dop[k * nocc + i],power); 
+            dop[k * nocc + i] = pow(dop[k * nocc + i],power);
         }
         for (int a = 0; a < nvir; a++) {
-            dvp[k * nvir + a] = pow(dvp[k * nvir + a],power); 
+            dvp[k * nvir + a] = pow(dvp[k * nvir + a],power);
         }
-    } 
+    }
 
     delete[] alpha;
     delete[] omega;

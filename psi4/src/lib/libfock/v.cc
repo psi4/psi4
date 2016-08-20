@@ -28,7 +28,7 @@
 
 #include "psi4/src/lib/libfunctional/superfunctional.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "cubature.h"
 #include "points.h"
@@ -57,7 +57,7 @@ void VBase::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary, 
+boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary,
                                         Options& options, const std::string& type)
 {
 
@@ -75,10 +75,10 @@ boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary,
         v = boost::shared_ptr<VBase>(new UV(functional,primary,options));
     } else if (type == "RK") {
         v = boost::shared_ptr<VBase>(new RK(functional,primary,options));
-    } else if (type == "UK") { 
+    } else if (type == "UK") {
         v = boost::shared_ptr<VBase>(new UK(functional,primary,options));
     } else {
-        throw PSIEXCEPTION("V: V type is not recognized");    
+        throw PSIEXCEPTION("V: V type is not recognized");
     }
 
     return v;
@@ -94,10 +94,10 @@ void VBase::compute_D()
             D_.push_back(SharedMatrix(new Matrix(ss.str(), C_[A]->rowspi(), C_[A]->rowspi())));
         }
     }
-    
+
     for (size_t A = 0; A < C_.size(); A++) {
-        SharedMatrix C = C_[A];    
-        SharedMatrix D = D_[A];    
+        SharedMatrix C = C_[A];
+        SharedMatrix D = D_[A];
         D->zero();
         for (int h = 0; h < C->nirrep(); h++) {
             int nso = C->rowspi()[h];
@@ -113,7 +113,7 @@ void VBase::compute_D()
     if (P_.size()) {
         bool same = true;
         if (P_SO_.size() != P_.size()) {
-            same = false;   
+            same = false;
         } else {
             for (size_t A = 0; A < P_.size(); A++) {
                 if (P_[A]->symmetry() != P_SO_[A]->symmetry())
@@ -128,10 +128,10 @@ void VBase::compute_D()
                 ss << "P (SO) " << A;
                 P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),C_[0]->rowspi(),C_[0]->rowspi(),P_[A]->symmetry())));
             }
-        } 
+        }
 
         int maxi = Caocc_[0]->max_ncol();
-        if (Caocc_.size() > 1) 
+        if (Caocc_.size() > 1)
             maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
         double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
         for (size_t A = 0; A < P_.size(); A++) {
@@ -154,10 +154,10 @@ void VBase::compute_D()
                 C_DGEMM('N','T',ni,nr,na,1.0,Pp[0],na,Crp[0],na,0.0,temp,nr);
                 C_DGEMM('N','N',nl,nr,ni,1.0,Clp[0],ni,temp,nr,0.0,P_SOp[0],nr);
             }
-        }    
+        }
         delete[] temp;
-    }    
-}   
+    }
+}
 void VBase::USO2AO()
 {
     // Build AO2USO matrix, if needed
@@ -171,20 +171,20 @@ void VBase::USO2AO()
     if (P_.size()) {
         bool same = true;
         if (V_.size() != P_.size()) {
-            same = false;   
+            same = false;
         } else {
             for (size_t A = 0; A < P_.size(); A++) {
                 if (P_[A]->symmetry() != V_[A]->symmetry())
                     same = false;
             }
-        } 
+        }
         if (!same) {
             V_.clear();
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
                 V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
-            } 
+            }
         }
     } else {
         if (V_.size() != C_.size()) {
@@ -193,8 +193,8 @@ void VBase::USO2AO()
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
                 V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
-            } 
-            
+            }
+
         }
     }
 
@@ -211,7 +211,7 @@ void VBase::USO2AO()
         for (size_t A = 0; A < P_AO_.size(); A++) {
             P_AO_[A]->hermitivitize();
         }
-        return;    
+        return;
     }
 
     if (P_.size()) {
@@ -225,7 +225,7 @@ void VBase::USO2AO()
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
                 P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
-            } 
+            }
         }
     } else {
         if (V_AO_.size() != C_.size()) {
@@ -238,8 +238,8 @@ void VBase::USO2AO()
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
                 P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
-            } 
-            
+            }
+
         }
     }
 
@@ -268,7 +268,7 @@ void VBase::USO2AO()
             std::stringstream ss2;
             ss2 << "D (AO) " << A;
             D_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
-        }    
+        }
     }
 
     // C_AO (Order is not important, just KE Density)
@@ -289,7 +289,7 @@ void VBase::USO2AO()
             offset += nocc;
         }
     }
-    
+
     // D_AO
     double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
     for (size_t A = 0; A < D_AO_.size(); A++) {
@@ -309,7 +309,7 @@ void VBase::USO2AO()
             C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor);
             C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
         }
-    }    
+    }
 
     // P_AO
     for (size_t A = 0; A < P_SO_.size(); A++) {
@@ -337,7 +337,7 @@ void VBase::AO2USO()
 {
     if (C_[0]->nirrep() == 1) {
         // V_ is already assigned
-        return;    
+        return;
     }
 
     double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
@@ -357,7 +357,7 @@ void VBase::AO2USO()
             C_DGEMM('N','N',nao,nsor,nao,1.0,V_AOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
             C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,Vp[0],nsor);
         }
-    }    
+    }
     delete[] temp;
 }
 void VBase::initialize()
@@ -395,7 +395,7 @@ void VBase::finalize()
 void VBase::print_header() const
 {
     outfile->Printf( "  ==> DFT Potential <==\n\n");
-    functional_->print("outfile", print_);  
+    functional_->print("outfile", print_);
     grid_->print("outfile",print_);
 }
 
@@ -411,7 +411,7 @@ void RV::initialize()
 {
     VBase::initialize();
     int max_points = grid_->max_points();
-    int max_functions = grid_->max_functions(); 
+    int max_functions = grid_->max_functions();
     properties_ = boost::shared_ptr<PointFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
@@ -427,7 +427,7 @@ void RV::print_header() const
 void RV::compute_V()
 {
     if ((D_AO_.size() != 1) || (V_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix"); 
+        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
@@ -438,7 +438,7 @@ void RV::compute_V()
     int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions(); 
+    int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
     // Local/global V matrices
@@ -477,7 +477,7 @@ void RV::compute_V()
         properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints);
         timer_off("Functional");
 
         if (debug_ > 4) {
@@ -488,7 +488,7 @@ void RV::compute_V()
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
-        double *restrict zk = vals["V"]->pointer(); 
+        double *restrict zk = vals["V"]->pointer();
         double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
 
         // => Quadrature values <= //
@@ -505,11 +505,11 @@ void RV::compute_V()
         timer_on("LSDA");
         for (int P = 0; P < npoints; P++) {
             ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1); 
+            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
         }
         timer_off("LSDA");
-        
-        // => GGA contribution (symmetrized) <= // 
+
+        // => GGA contribution (symmetrized) <= //
         if (ansatz >= 1) {
             timer_on("GGA");
             double** phix = properties_->basis_value("PHI_X")->pointer();
@@ -518,14 +518,14 @@ void RV::compute_V()
             double *restrict rho_ax = properties_->point_value("RHO_AX")->pointer();
             double *restrict rho_ay = properties_->point_value("RHO_AY")->pointer();
             double *restrict rho_az = properties_->point_value("RHO_AZ")->pointer();
-            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
-            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer(); 
+            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
+            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tp[P], 1); 
-            }        
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
+            }
             timer_off("GGA");
         }
 
@@ -536,9 +536,9 @@ void RV::compute_V()
         // Symmetrization (V is Hermitian)
         for (int m = 0; m < nlocal; m++) {
             for (int n = 0; n <= m; n++) {
-                V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m]; 
+                V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
             }
-        } 
+        }
         timer_off("LSDA");
 
         // => Meta contribution <= //
@@ -547,8 +547,8 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
-            
+            double *restrict v_tau_a = vals["V_TAU_A"]->pointer();
+
             double** phi[3];
             phi[0] = phix;
             phi[1] = phiy;
@@ -558,13 +558,13 @@ void RV::compute_V()
                 double** phiw = phi[i];
                 for (int P = 0; P < npoints; P++) {
                     ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                    C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1); 
-                }        
+                    C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
+                }
                 C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
-            }            
+            }
             timer_off("Meta");
-        }       
- 
+        }
+
         // => Unpacking <= //
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
@@ -576,18 +576,18 @@ void RV::compute_V()
             Vp[mg][mg] += V2p[ml][ml];
         }
         timer_off("V_XC");
-    } 
-   
+    }
+
     quad_values_["FUNCTIONAL"] = functionalq;
-    quad_values_["RHO_A"]      = rhoaq; 
-    quad_values_["RHO_AX"]     = rhoaxq; 
-    quad_values_["RHO_AY"]     = rhoayq; 
-    quad_values_["RHO_AZ"]     = rhoazq; 
-    quad_values_["RHO_B"]      = rhoaq; 
-    quad_values_["RHO_BX"]     = rhoaxq; 
-    quad_values_["RHO_BY"]     = rhoayq; 
-    quad_values_["RHO_BZ"]     = rhoazq; 
- 
+    quad_values_["RHO_A"]      = rhoaq;
+    quad_values_["RHO_AX"]     = rhoaxq;
+    quad_values_["RHO_AY"]     = rhoayq;
+    quad_values_["RHO_AZ"]     = rhoazq;
+    quad_values_["RHO_B"]      = rhoaq;
+    quad_values_["RHO_BX"]     = rhoaxq;
+    quad_values_["RHO_BY"]     = rhoayq;
+    quad_values_["RHO_BZ"]     = rhoazq;
+
     if (debug_) {
         outfile->Printf( "   => Numerical Integrals <=\n\n");
         outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
@@ -603,7 +603,7 @@ SharedMatrix RV::compute_gradient()
     USO2AO();
 
     if ((D_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D Matrix"); 
+        throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -611,7 +611,7 @@ SharedMatrix RV::compute_gradient()
     double** Gp = G->pointer();
 
     // Set Hessian derivative level in properties
-    int old_deriv = properties_->deriv(); 
+    int old_deriv = properties_->deriv();
     properties_->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
 
     // Setup the pointers
@@ -622,7 +622,7 @@ SharedMatrix RV::compute_gradient()
 //    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions(); 
+    int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
     // Scratch
@@ -661,7 +661,7 @@ SharedMatrix RV::compute_gradient()
         properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints);
         timer_off("Functional");
 
         double** phi = properties_->basis_value("PHI")->pointer();
@@ -669,7 +669,7 @@ SharedMatrix RV::compute_gradient()
         double** phi_y = properties_->basis_value("PHI_Y")->pointer();
         double** phi_z = properties_->basis_value("PHI_Z")->pointer();
         double* rho_a = properties_->point_value("RHO_A")->pointer();
-        double* zk = vals["V"]->pointer(); 
+        double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
 
         // => Quadrature values <= //
@@ -687,7 +687,7 @@ SharedMatrix RV::compute_gradient()
             ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
         }
-    
+
         // => GGA Contribution (Term 1) <= //
         if (functional_->is_gga()) {
             double* rho_ax = properties_->point_value("RHO_AX")->pointer();
@@ -701,19 +701,19 @@ SharedMatrix RV::compute_gradient()
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_ay[P]), phi_y[P], 1, Tp[P], 1);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_az[P]), phi_z[P], 1, Tp[P], 1);
             }
-    
+
         }
 
         // => Synthesis <= //
         C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,Tp[0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
-    
+
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
             Gp[A][0] += C_DDOT(npoints,&Up[0][ml],max_functions,&phi_x[0][ml],max_functions);
             Gp[A][1] += C_DDOT(npoints,&Up[0][ml],max_functions,&phi_y[0][ml],max_functions);
             Gp[A][2] += C_DDOT(npoints,&Up[0][ml],max_functions,&phi_z[0][ml],max_functions);
-        }          
-        
+        }
+
         // => GGA Contribution (Term 2) <= //
         if (functional_->is_gga()) {
             double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
@@ -729,7 +729,7 @@ SharedMatrix RV::compute_gradient()
             double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
 
             C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
-            
+
             // x
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
@@ -740,8 +740,8 @@ SharedMatrix RV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_xx[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_xy[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_xz[0][ml],max_functions);
-            }          
-            
+            }
+
             // y
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
@@ -752,8 +752,8 @@ SharedMatrix RV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_xy[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_yy[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_yz[0][ml],max_functions);
-            }          
-            
+            }
+
             // z
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
@@ -764,10 +764,10 @@ SharedMatrix RV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_xz[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_yz[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_zz[0][ml],max_functions);
-            }          
-    
+            }
+
         }
-        
+
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
             double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
@@ -806,21 +806,21 @@ SharedMatrix RV::compute_gradient()
                     Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
                     Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
                     Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
-                }          
+                }
             }
         }
-    } 
-   
+    }
+
     quad_values_["FUNCTIONAL"] = functionalq;
-    quad_values_["RHO_A"]      = rhoaq; 
-    quad_values_["RHO_AX"]     = rhoaxq; 
-    quad_values_["RHO_AY"]     = rhoayq; 
-    quad_values_["RHO_AZ"]     = rhoazq; 
-    quad_values_["RHO_B"]      = rhoaq; 
-    quad_values_["RHO_BX"]     = rhoaxq; 
-    quad_values_["RHO_BY"]     = rhoayq; 
-    quad_values_["RHO_BZ"]     = rhoazq; 
- 
+    quad_values_["RHO_A"]      = rhoaq;
+    quad_values_["RHO_AX"]     = rhoaxq;
+    quad_values_["RHO_AY"]     = rhoayq;
+    quad_values_["RHO_AZ"]     = rhoazq;
+    quad_values_["RHO_B"]      = rhoaq;
+    quad_values_["RHO_BX"]     = rhoaxq;
+    quad_values_["RHO_BY"]     = rhoayq;
+    quad_values_["RHO_BZ"]     = rhoazq;
+
     if (debug_) {
         outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
         outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
@@ -850,7 +850,7 @@ void UV::initialize()
 {
     VBase::initialize();
     int max_points = grid_->max_points();
-    int max_functions = grid_->max_functions(); 
+    int max_functions = grid_->max_functions();
     properties_ = boost::shared_ptr<PointFunctions>(new UKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
@@ -866,7 +866,7 @@ void UV::print_header() const
 void UV::compute_V()
 {
     if ((D_AO_.size() != 2) || (V_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D/V Matrices"); 
+        throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
@@ -893,7 +893,7 @@ void UV::compute_V()
     // Scratch
     std::vector<SharedMatrix> scratch = properties_->scratch();
     SharedMatrix Ta_local = scratch[0];
-    SharedMatrix Tb_local = scratch[1]; 
+    SharedMatrix Tb_local = scratch[1];
     double** Tap = Ta_local->pointer();
     double** Tbp = Tb_local->pointer();
 
@@ -927,7 +927,7 @@ void UV::compute_V()
         properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints);
         timer_off("Functional");
 
         if (debug_ > 3) {
@@ -939,9 +939,9 @@ void UV::compute_V()
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
         double *restrict rho_b = properties_->point_value("RHO_B")->pointer();
-        double *restrict zk = vals["V"]->pointer(); 
-        double *restrict v_rho_a = vals["V_RHO_A"]->pointer(); 
-        double *restrict v_rho_b = vals["V_RHO_B"]->pointer(); 
+        double *restrict zk = vals["V"]->pointer();
+        double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
+        double *restrict v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
@@ -963,12 +963,12 @@ void UV::compute_V()
         for (int P = 0; P < npoints; P++) {
             ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
             ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1); 
-            C_DAXPY(nlocal,0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1); 
+            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1);
+            C_DAXPY(nlocal,0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1);
         }
         timer_off("LSDA");
-        
-        // => GGA contribution (symmetrized) <= // 
+
+        // => GGA contribution (symmetrized) <= //
         if (ansatz >= 1) {
             timer_on("GGA");
             double** phix = properties_->basis_value("PHI_X")->pointer();
@@ -980,18 +980,18 @@ void UV::compute_V()
             double *restrict rho_bx = properties_->point_value("RHO_BX")->pointer();
             double *restrict rho_by = properties_->point_value("RHO_BY")->pointer();
             double *restrict rho_bz = properties_->point_value("RHO_BZ")->pointer();
-            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
-            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer(); 
-            double *restrict v_sigma_bb = vals["V_GAMMA_BB"]->pointer(); 
+            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
+            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
+            double *restrict v_sigma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_by[P]), phiy[P], 1, Tap[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_bz[P]), phiz[P], 1, Tap[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bx[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tbp[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_by[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tbp[P], 1); 
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bz[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tbp[P], 1); 
-            }        
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_by[P]), phiy[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_bz[P]), phiz[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bx[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_by[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bz[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tbp[P], 1);
+            }
             timer_off("GGA");
         }
 
@@ -1000,23 +1000,23 @@ void UV::compute_V()
         C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tap[0],max_functions,0.0,Va2p[0],max_functions);
         C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tbp[0],max_functions,0.0,Vb2p[0],max_functions);
 
-        // Symmetrization (V is Hermitian) 
+        // Symmetrization (V is Hermitian)
         for (int m = 0; m < nlocal; m++) {
             for (int n = 0; n <= m; n++) {
-                Va2p[m][n] = Va2p[n][m] = Va2p[m][n] + Va2p[n][m]; 
-                Vb2p[m][n] = Vb2p[n][m] = Vb2p[m][n] + Vb2p[n][m]; 
+                Va2p[m][n] = Va2p[n][m] = Va2p[m][n] + Va2p[n][m];
+                Vb2p[m][n] = Vb2p[n][m] = Vb2p[m][n] + Vb2p[n][m];
             }
         }
         timer_off("LSDA");
-        
+
         // => Meta contribution <= //
         if (ansatz >= 2) {
             timer_on("Meta");
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
-            double *restrict v_tau_b = vals["V_TAU_B"]->pointer(); 
+            double *restrict v_tau_a = vals["V_TAU_A"]->pointer();
+            double *restrict v_tau_b = vals["V_TAU_B"]->pointer();
 
             double** phi[3];
             phi[0] = phix;
@@ -1028,9 +1028,9 @@ void UV::compute_V()
             v_tau[1] = v_tau_b;
 
             double** V_val[2];
-            V_val[0] = Va2p; 
+            V_val[0] = Va2p;
             V_val[1] = Vb2p;
-           
+
             for (int s = 0; s < 2; s++) {
                 double** V2p = V_val[s];
                 double*  v_taup = v_tau[s];
@@ -1038,15 +1038,15 @@ void UV::compute_V()
                     double** phiw = phi[i];
                     for (int P = 0; P < npoints; P++) {
                         ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                        C_DAXPY(nlocal,v_taup[P] * w[P], phiw[P], 1, Tap[P], 1); 
-                    }        
+                        C_DAXPY(nlocal,v_taup[P] * w[P], phiw[P], 1, Tap[P], 1);
+                    }
                     C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tap[0],max_functions,1.0,V2p[0],max_functions);
-                }            
+                }
             }
 
             timer_off("Meta");
-        }       
- 
+        }
+
         // => Unpacking <= //
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
@@ -1061,18 +1061,18 @@ void UV::compute_V()
             Vbp[mg][mg] += Vb2p[ml][ml];
         }
         timer_off("V_XC");
-    } 
-   
+    }
+
     quad_values_["FUNCTIONAL"] = functionalq;
-    quad_values_["RHO_A"]      = rhoaq; 
-    quad_values_["RHO_AX"]     = rhoaxq; 
-    quad_values_["RHO_AY"]     = rhoayq; 
-    quad_values_["RHO_AZ"]     = rhoazq; 
-    quad_values_["RHO_B"]      = rhobq; 
-    quad_values_["RHO_BX"]     = rhobxq; 
-    quad_values_["RHO_BY"]     = rhobyq; 
-    quad_values_["RHO_BZ"]     = rhobzq; 
- 
+    quad_values_["RHO_A"]      = rhoaq;
+    quad_values_["RHO_AX"]     = rhoaxq;
+    quad_values_["RHO_AY"]     = rhoayq;
+    quad_values_["RHO_AZ"]     = rhoazq;
+    quad_values_["RHO_B"]      = rhobq;
+    quad_values_["RHO_BX"]     = rhobxq;
+    quad_values_["RHO_BY"]     = rhobyq;
+    quad_values_["RHO_BZ"]     = rhobzq;
+
     if (debug_) {
         outfile->Printf( "   => Numerical Integrals <=\n\n");
         outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
@@ -1088,7 +1088,7 @@ SharedMatrix UV::compute_gradient()
     USO2AO();
 
     if ((D_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D Matrices"); 
+        throw PSIEXCEPTION("V: UKS should have two D Matrices");
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -1096,7 +1096,7 @@ SharedMatrix UV::compute_gradient()
     double** Gp = G->pointer();
 
     // Set Hessian derivative level in properties
-    int old_deriv = properties_->deriv(); 
+    int old_deriv = properties_->deriv();
     properties_->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
 
     // Setup the pointers
@@ -1108,7 +1108,7 @@ SharedMatrix UV::compute_gradient()
 //    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions(); 
+    int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
     // Scratch
@@ -1151,7 +1151,7 @@ SharedMatrix UV::compute_gradient()
         properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints);
         timer_off("Functional");
 
         double** phi = properties_->basis_value("PHI")->pointer();
@@ -1160,12 +1160,12 @@ SharedMatrix UV::compute_gradient()
         double** phi_z = properties_->basis_value("PHI_Z")->pointer();
         double* rho_a = properties_->point_value("RHO_A")->pointer();
         double* rho_b = properties_->point_value("RHO_B")->pointer();
-        double* zk = vals["V"]->pointer(); 
+        double* zk = vals["V"]->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
         double* v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
-        quad_values_["FUNCTIONAL"] += C_DDOT(npoints,w,1,zk,1); 
+        quad_values_["FUNCTIONAL"] += C_DDOT(npoints,w,1,zk,1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_a[P];
         }
@@ -1180,7 +1180,7 @@ SharedMatrix UV::compute_gradient()
         quad_values_["RHO_BX"] += C_DDOT(npoints,QTp,1,x,1);
         quad_values_["RHO_BY"] += C_DDOT(npoints,QTp,1,y,1);
         quad_values_["RHO_BZ"] += C_DDOT(npoints,QTp,1,z,1);
-    
+
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
             ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
@@ -1188,7 +1188,7 @@ SharedMatrix UV::compute_gradient()
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tap[P], 1);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_b[P], phi[P], 1, Tbp[P], 1);
         }
-    
+
         // => GGA Contribution (Term 1) <= //
         if (functional_->is_gga()) {
             double* rho_ax = properties_->point_value("RHO_AX")->pointer();
@@ -1209,13 +1209,13 @@ SharedMatrix UV::compute_gradient()
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_by[P] + v_gamma_ab[P] * rho_ay[P]), phi_y[P], 1, Tbp[P], 1);
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bz[P] + v_gamma_ab[P] * rho_az[P]), phi_z[P], 1, Tbp[P], 1);
             }
-    
+
         }
 
         // => Synthesis <= //
         C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,Tap[0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
         C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,Tbp[0],max_functions,Dbp[0],max_functions,0.0,Ubp[0],max_functions);
-    
+
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
             Gp[A][0] += C_DDOT(npoints,&Uap[0][ml],max_functions,&phi_x[0][ml],max_functions);
@@ -1224,8 +1224,8 @@ SharedMatrix UV::compute_gradient()
             Gp[A][0] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_x[0][ml],max_functions);
             Gp[A][1] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_y[0][ml],max_functions);
             Gp[A][2] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_z[0][ml],max_functions);
-        }          
-        
+        }
+
         // => GGA Contribution (Term 2) <= //
         if (functional_->is_gga()) {
             double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
@@ -1246,7 +1246,7 @@ SharedMatrix UV::compute_gradient()
 
             C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
             C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dbp[0],max_functions,0.0,Ubp[0],max_functions);
-            
+
             // x
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
@@ -1262,8 +1262,8 @@ SharedMatrix UV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xx[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xy[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xz[0][ml],max_functions);
-            }          
-            
+            }
+
             // y
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
@@ -1279,8 +1279,8 @@ SharedMatrix UV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xy[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_yy[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_yz[0][ml],max_functions);
-            }          
-            
+            }
+
             // z
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
@@ -1296,10 +1296,10 @@ SharedMatrix UV::compute_gradient()
                 Gp[A][0] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xz[0][ml],max_functions);
                 Gp[A][1] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_yz[0][ml],max_functions);
                 Gp[A][2] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_zz[0][ml],max_functions);
-            }          
-    
+            }
+
         }
-        
+
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
             double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
@@ -1336,7 +1336,7 @@ SharedMatrix UV::compute_gradient()
             v_tau_s[1] = v_tau_b;
 
             for (int s = 0; s < 2; s++) {
-//                double** Dp = Ds[s]; 
+//                double** Dp = Ds[s];
                 double* v_tau = v_tau_s[s];
                 for (int i = 0; i < 3; i++) {
                     double*** phi_j = phi_ij[i];
@@ -1350,13 +1350,13 @@ SharedMatrix UV::compute_gradient()
                         Gp[A][0] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
                         Gp[A][1] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
                         Gp[A][2] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
-                    }          
+                    }
                 }
             }
         }
 
-    } 
- 
+    }
+
     if (debug_) {
         outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
         outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);

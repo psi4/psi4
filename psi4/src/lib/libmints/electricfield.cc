@@ -30,7 +30,7 @@
 #include <stdexcept>
 #include <vector>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

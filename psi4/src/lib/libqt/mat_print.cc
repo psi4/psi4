@@ -27,7 +27,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 /*!
 ** \file
@@ -36,7 +36,7 @@
 */
 
 namespace psi {
-	
+
 /*!
 ** mat_print(): Prints a matrix to a file in a formatted style
 **
@@ -69,14 +69,14 @@ int mat_print(double **matrix, int rows, int cols, std::string out)
       first_col = page*cols_per_page;
 
       outfile->Printf("\n      ");
-      for(i=first_col; i < first_col+cols_per_page; i++) 
+      for(i=first_col; i < first_col+cols_per_page; i++)
           printer->Printf("         %5d        ",i);
 
       printer->Printf("\n");
       for(i=0; i < rows; i++) {
           printer->Printf("\n%5d ",i);
 
-          for(j=first_col; j < first_col+cols_per_page; j++)        
+          for(j=first_col; j < first_col+cols_per_page; j++)
               printer->Printf("%22.15f",matrix[i][j]);
         }
 
@@ -88,9 +88,9 @@ int mat_print(double **matrix, int rows, int cols, std::string out)
       first_col = page*cols_per_page;
 
       printer->Printf("\n      ");
-      for(i=first_col; i < first_col+last_page; i++) 
+      for(i=first_col; i < first_col+last_page; i++)
           printer->Printf("         %5d        ",i);
-      
+
       printer->Printf("\n");
       for(i=0; i < rows; i++) {
 	  printer->Printf("\n%5d ",i);

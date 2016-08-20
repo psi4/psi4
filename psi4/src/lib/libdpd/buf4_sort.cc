@@ -34,7 +34,7 @@
 #include <cmath>
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 using std::string;
 namespace psi {
 
@@ -91,7 +91,7 @@ namespace psi {
 ** Added fully out-of-core (multipass) sorting algorithm to qpsr
 ** sorting case. More cases will follow as I need them.
 **
-** -TDC, April 2005 
+** -TDC, April 2005
 **
 ** the enum-argument labelling is used in this list
 ** IC=in-core capable; OOC=out-of-core capable

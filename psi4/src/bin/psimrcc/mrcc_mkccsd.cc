@@ -31,7 +31,7 @@
 // *  A multireference coupled cluster code
 // ***************************************************************************/
 //
-//#include "psi4/include/psifiles.h"
+//#include "psi4/psifiles.h"
 //#include "psi4/src/lib/libmoinfo/libmoinfo.h"
 //#include "psi4/src/lib/liboptions/liboptions.h"
 //#include "psi4/src/lib/libpsio/psio.hpp"
@@ -86,7 +86,7 @@
 //  Timer timer;
 //  DEBUGGING(1,
 //    outfile->Printf("\n\tUpdating the t_ia,t_IA,t_ijab,t_iJaB,t_IJAB amps using the MkCCSD equations ...");
-//    
+//
 //  );
 //  blas->solve("d'1[o][v]{u}  = d1[o][v]{u}");
 //  blas->solve("d'1[O][V]{u}  = d1[O][V]{u}");

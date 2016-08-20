@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstring>
@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -65,7 +65,7 @@ void polar(void)
   cartcomp[2] = strdup("Z");
 
   tensor = (double ***) malloc(params.nomega * sizeof(double **));
-  for(i=0; i < params.nomega; i++) 
+  for(i=0; i < params.nomega; i++)
     tensor[i] = block_matrix(3,3);
 
   trace = init_array(params.nomega);
@@ -82,13 +82,13 @@ void polar(void)
 	if(params.omega[i] != 0.0) compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
       }
 
-      outfile->Printf( "\n\tComputing %s tensor.\n", lbl); 
+      outfile->Printf( "\n\tComputing %s tensor.\n", lbl);
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x,"Mu_%1s", cartcomp[alpha]);
           sprintf(pert_y,"Mu_%1s", cartcomp[beta]);
-          linresp(&tensor[i][alpha][beta], -1.0, 0.0, 
-                  pert_x, moinfo.mu_irreps[alpha], -params.omega[i], 
+          linresp(&tensor[i][alpha][beta], -1.0, 0.0,
+                  pert_x, moinfo.mu_irreps[alpha], -params.omega[i],
                   pert_y, moinfo.mu_irreps[beta], params.omega[i]);
         }
       }
@@ -117,15 +117,15 @@ void polar(void)
     else
       outfile->Printf( "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     outfile->Printf( "  -------------------------------------------------------------------------\n");
-    if(params.omega[i] != 0.0) 
+    if(params.omega[i] != 0.0)
       omega_nm = (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]);
     omega_ev = pc_hartree2ev*params.omega[i];
     omega_cm = pc_hartree2wavenumbers*params.omega[i];
     if(params.omega[i] != 0.0)
-      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", 
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n",
 	      params.omega[i], omega_nm, omega_ev, omega_cm);
     else
-      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (Inf nm, %5.3f eV, %8.2f cm-1)\n", 
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (Inf nm, %5.3f eV, %8.2f cm-1)\n",
 	      params.omega[i], omega_ev, omega_cm);
     outfile->Printf( "  -------------------------------------------------------------------------\n");
     mat_print(tensor[i], 3, 3, "outfile");

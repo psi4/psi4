@@ -40,7 +40,7 @@
 #include "opt_data.h"
 #include "psi4/src/bin/optking/physconst.h"
 #include "linear_algebra.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -201,7 +201,7 @@ int FRAG::add_hbonds(void) {
                       coords.simples.push_back(one_stre);
                       ++nadded;
                     }
-                    else { // X-H ... Y stretch already exists, 
+                    else { // X-H ... Y stretch already exists,
                       // if it is not a covalent bond, make it a H bond
                       double cov_Y = cov_radii[ (int) Z[y] ]/_bohr2angstroms;
                       if (dist > cov_scale * (cov_H + cov_Y)) {
@@ -246,7 +246,7 @@ int FRAG::add_auxiliary_bonds(void) {
         for (int c=0; c<natom; ++c)
           if (c != a && c != b)
             if (connectivity[a][c] && connectivity[b][c])
-              omit = true; 
+              omit = true;
 
         // Omit auxiliary bonds between a and b, if a-c-d-b
         for (int c=0; c<natom; ++c)
@@ -256,7 +256,7 @@ int FRAG::add_auxiliary_bonds(void) {
                 if (d != a && d != b && d !=c)
                   if (connectivity[d][c] && connectivity[d][b])
                     omit = true;
-        
+
         if (!omit) {
           STRE *one_stre = new STRE(a,b);
           if (!present(one_stre)) {
@@ -503,11 +503,11 @@ void FRAG::add_combination_coord(vector<int> ids, vector<double> coeffs) {
 
 void FRAG::add_trivial_coord_combination(int simple_id) {
   std::vector<int> i1;
-  i1.push_back(simple_id); 
+  i1.push_back(simple_id);
   coords.index.push_back(i1);
 
   std::vector<double> c1;
-  c1.push_back(1.0); 
+  c1.push_back(1.0);
   coords.coeff.push_back(c1);
 }
 
@@ -787,7 +787,7 @@ void FRAG::set_grad(double ** grad_in) {
     grad[i][1] = grad_in[i][1];
     grad[i][2] = grad_in[i][2];
   }
-} 
+}
 
 double ** FRAG::g_geom(void) const {
   double **g = matrix_return_copy(geom,natom,3);
@@ -800,7 +800,7 @@ double * FRAG::g_geom_array(void) {
   for (int i=0; i<natom; ++i)
     for (int xyz=0; xyz<3; ++xyz)
       geom_array[cnt++] = geom[i][xyz];
-  return geom_array; 
+  return geom_array;
 }
 
 double * FRAG::g_grad_array(void) {
@@ -809,7 +809,7 @@ double * FRAG::g_grad_array(void) {
   for (i=0; i<natom; ++i)
     for (xyz=0; xyz<3; ++xyz)
       grad_array[cnt++] = grad[i][xyz];
-  return grad_array; 
+  return grad_array;
 }
 
 double ** FRAG::g_grad(void) {
@@ -887,10 +887,10 @@ double * FRAG::com(GeomType in_geom) {
   double sum = 0.0;
   for (int i=0; i<g_natom(); ++i) {
     sum += mass[i];
-    for (int xyz=0; xyz<3; ++xyz) 
+    for (int xyz=0; xyz<3; ++xyz)
       center[xyz] += mass[i] * in_geom[i][xyz];
   }
-  for (int xyz=0; xyz<3; ++xyz) 
+  for (int xyz=0; xyz<3; ++xyz)
     center[xyz] /= sum;
   return center;
 }

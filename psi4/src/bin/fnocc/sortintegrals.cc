@@ -25,8 +25,8 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include"psi4/src/lib/libqt/qt.h"
@@ -71,7 +71,7 @@ namespace psi{namespace fnocc{
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
   struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
-  
+
   outfile->Printf("\n");
   outfile->Printf( "        **********************************************************\n");
   outfile->Printf( "        *                                                        *\n");
@@ -80,7 +80,7 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
   outfile->Printf( "        **********************************************************\n");
   outfile->Printf("\n");
   outfile->Printf("\n");
-  
+
   SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options);
 
   iwl_buf_close(&Buf,1);
@@ -172,7 +172,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   outfile->Printf("        Number of (ab|ci) temporary files:            %5li\n",3*ov3nfiles);
   outfile->Printf("        Starting temporary file number:               %5i\n",PSIF_DCC_SORT_START);
   outfile->Printf("\n");
-  
+
 
   // buckets:
   ULI bucketsize = nelem;

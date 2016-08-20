@@ -32,8 +32,8 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include "psi4/include/physconst.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/physconst.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 

@@ -55,7 +55,7 @@
 
 #include <cstdio>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/shellrotation.h"
 #include "psi4/src/lib/libmints/cartesianiter.h"

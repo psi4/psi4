@@ -27,14 +27,14 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #ifndef _psi_src_bin_detci_globals_h
 #define _psi_src_bin_detci_globals_h
 
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <string>
 
 /* nice stuff to extern or not to extern properly */

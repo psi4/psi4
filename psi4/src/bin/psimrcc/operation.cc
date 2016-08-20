@@ -31,9 +31,9 @@
 #include "blas.h"
 #include "debugging.h"
 #include "matrix.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi{
-    
+
     namespace psimrcc{
 
 double* CCOperation::local_work = NULL;

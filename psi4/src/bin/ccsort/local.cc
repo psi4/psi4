@@ -30,13 +30,13 @@
     \brief Enter brief description of file here
 */
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -48,7 +48,7 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/vector.h"
@@ -210,7 +210,7 @@ void local_init(Options & options)
   for(i=0,atom=-1,offset=0; i<nshell; i++) {
     am = wfn->basisset()->shell(i).am();
     shell_length = wfn->basisset()->shell(i).nfunction();
-    
+
 
     if(atom != wfn->basisset()->shell(i).ncenter()) {
       if(atom != -1) aostop[atom] = offset-1;
@@ -358,7 +358,7 @@ void local_init(Options & options)
   outfile->Printf( "\n");
   if(local.domain_polar) {
     outfile->Printf( "\tGenerating electric-field CPHF solutions for local-CC.\n");
-    
+
     transpert("Mu");
     sort_pert("Mu", moinfo.MUX, moinfo.MUY, moinfo.MUZ,
               moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
@@ -475,7 +475,7 @@ void local_init(Options & options)
   }
   if(local.domain_mag) {
     outfile->Printf( "\tGenerating magnetic-field CPHF solutions for local-CC.\n");
-    
+
     transpert("L");
     sort_pert("L", moinfo.LX, moinfo.LY, moinfo.LZ,
               moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
@@ -718,7 +718,7 @@ void local_init(Options & options)
           t1_length, nocc*nvir);
   outfile->Printf( "\tT2 Length = %d (local), %d (canonical)\n\n",
           t2_length, nocc*nocc*nvir*nvir);
-  
+
 
   local.domain = domain;
   local.domain_len = domain_len;
@@ -775,7 +775,7 @@ void local_init(Options & options)
     }
   }
   outfile->Printf( "\n");
-  
+
 
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
@@ -990,7 +990,7 @@ void local_init(Options & options)
 
   local.weak_pair_energy = 0.0;
 
-  
+
   timer_off("Local");
 }
 

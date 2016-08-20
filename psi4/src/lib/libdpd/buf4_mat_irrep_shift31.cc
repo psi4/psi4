@@ -34,7 +34,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 int DPD::buf4_mat_irrep_shift31(dpdbuf4 *Buf, int buf_block)

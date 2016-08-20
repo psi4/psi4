@@ -36,7 +36,7 @@
 #include <cmath>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

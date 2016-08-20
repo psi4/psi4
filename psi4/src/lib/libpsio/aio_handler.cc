@@ -32,7 +32,7 @@
 
 #include <cstdio>
 #include <unistd.h>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -65,7 +65,7 @@ boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 void AIOHandler::synchronize()
 {
     // This join may be problematic in a multithreaded env.: while we wait for the
-    // thread to finish, other threads may add work to the queue. We'd probably need 
+    // thread to finish, other threads may add work to the queue. We'd probably need
     // a way to identify write jobs and check if they completed from external threads.
     boost::unique_lock<boost::mutex> lock(*locked_);
     lock.unlock();
@@ -474,7 +474,7 @@ void AIOHandler::call_aio()
     lock.lock();
     // Only pop the job once the work is actually done and we are gonna leave the loop.
     // This way, job_.size() == 0 indicates there is no active thread.
-    job_.pop(); 
+    job_.pop();
     // We also pop the jobID so that external threads may check that the job completed
     jobID_.pop_front();
     // Once it is popped, notify waiting threads to check again for their jobid.

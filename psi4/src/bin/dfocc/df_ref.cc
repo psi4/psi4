@@ -33,8 +33,8 @@
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/sieve.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 
 #include "defines.h"
 #include "dfocc.h"
@@ -50,7 +50,7 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::trans_ref()
-{   
+{
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -72,20 +72,20 @@ void DFOCC::trans_ref()
     bQso.reset();
 
     /*
-    if (time4grad == 1) { 
+    if (time4grad == 1) {
         cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso2_));
         c_oo_ref();
         cQso.reset();
     }
     */
 }
-    
+
 //=======================================================
 //          DF SCF
-//=======================================================          
+//=======================================================
 void DFOCC::df_ref()
-{   
-    //outfile->Printf("\tComputing DF-BASIS-SCF integrals... \n"); 
+{
+    //outfile->Printf("\tComputing DF-BASIS-SCF integrals... \n");
 
   //if (read_scf_3index == "TRUE" && dertype == "NONE") {
   // 1.  read scf 3-index integrals from disk
@@ -127,9 +127,9 @@ void DFOCC::df_ref()
               timer_on("Form J");
               formJ_ref(auxiliary, zero);
               timer_off("Form J");
-          }// end if (dertype == "FIRST")       
+          }// end if (dertype == "FIRST")
 
-      }// end if ( options_.get_str("SCF_TYPE") == "DF" ) 
+      }// end if ( options_.get_str("SCF_TYPE") == "DF" )
 
       // read integrals from disk if they were generated in the SCF
       else if ( options_.get_str("SCF_TYPE") == "CD") {
@@ -156,10 +156,10 @@ void DFOCC::df_ref()
               }
           }
           bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
-      }// end else if ( options_.get_str("SCF_TYPE") == "CD" ) 
+      }// end else if ( options_.get_str("SCF_TYPE") == "CD" )
 
       //else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
-  //}// end if (read_scf_3index == "TRUE") 
+  //}// end if (read_scf_3index == "TRUE")
 
 
   //else if (read_scf_3index == "FALSE") {
@@ -183,15 +183,15 @@ void DFOCC::df_ref()
     timer_on("Form B(Q,munu)");
     b_so_ref(primary_, auxiliary_, zero);
     timer_off("Form B(Q,munu)");
-  }// end if (read_scf_3index == "FALSE") 
+  }// end if (read_scf_3index == "FALSE")
 
-  //outfile->Printf("\tDF-BASIS-SCF integrals were done. \n"); 
+  //outfile->Printf("\tDF-BASIS-SCF integrals were done. \n");
 } // end df_ref
 
 
 //=======================================================
 //          form J(P,Q)^-1/2
-//=======================================================          
+//=======================================================
 void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
     int nthreads = 1;
@@ -246,7 +246,7 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
         }
     }
 
-    
+
     /*
     // Create integral factories for the RI basis
     boost::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
@@ -316,12 +316,12 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
 
 //=======================================================
 //          form b(Q, mu nu)
-//=======================================================          
+//=======================================================
 void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
-    double** Ap = block_matrix(nQ_ref, nso2_); 
-    double** Bp = block_matrix(nQ_ref, nso2_); 
+    double** Ap = block_matrix(nQ_ref, nso2_);
+    double** Bp = block_matrix(nQ_ref, nso2_);
 
     int nthreads = 1;
     #ifdef _OPENMP
@@ -403,10 +403,10 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++, index++) {
-                         //Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n]; 
-                         //Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n]; 
-                         Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index]; 
-                         Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index]; 
+                         //Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n];
+                         //Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n];
+                         Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
+                         Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
                     }
                 }
             }
@@ -453,7 +453,7 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
 
     /*
     // Build C(Q, mu nu)
-    double** Cp = block_matrix(nQ_ref, nso2_); 
+    double** Cp = block_matrix(nQ_ref, nso2_);
     C_DGEMM('N','N', nQ_ref, nso2_, nQ_ref, 1.0, J_mhalf[0], nQ_ref, Ap[0], nso2_, 0.0, Cp[0], nso2_);
     free_block(J_mhalf);
     free_block(Ap);
@@ -468,7 +468,7 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
 
 //=======================================================
 //          form b(Q,ij) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_oo_ref()
 {
     bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mO)", nQ_ref, nso_ * noccA));
@@ -492,7 +492,7 @@ void DFOCC::b_oo_ref()
 
 //=======================================================
 //          form b(Q,ia) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_ov_ref()
 {
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mV)", nQ_ref, nso_ * nvirA));
@@ -518,7 +518,7 @@ void DFOCC::b_ov_ref()
 
 //=======================================================
 //          form b(Q,ab) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_vv_ref()
 {
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
@@ -542,7 +542,7 @@ void DFOCC::b_vv_ref()
 
 //=======================================================
 //          form c(Q,ij) : all
-//=======================================================          
+//=======================================================
 void DFOCC::c_oo_ref()
 {
     cQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mO)", nQ_ref, nso_ * noccA));
@@ -566,7 +566,7 @@ void DFOCC::c_oo_ref()
 
 //=======================================================
 //          form c(Q,ia) : all
-//=======================================================          
+//=======================================================
 void DFOCC::c_ov_ref()
 {
     cQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mV)", nQ_ref, nso_ * nvirA));
@@ -590,7 +590,7 @@ void DFOCC::c_ov_ref()
 
 //=======================================================
 //          form c(Q,ab) : all
-//=======================================================          
+//=======================================================
 void DFOCC::c_vv_ref()
 {
     cQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|VV)", nQ_ref, nvirA * nvirA));

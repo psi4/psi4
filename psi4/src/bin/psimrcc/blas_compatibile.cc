@@ -27,7 +27,7 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
@@ -36,7 +36,7 @@
 
 
 namespace psi{
-    
+
     namespace psimrcc{
 
 using namespace std;
@@ -65,7 +65,7 @@ bool CCOperation::compatible_dot()
   if(!same){
     outfile->Printf("\n\nSolve couldn't perform the operation ");
     print_operation();
-    
+
     exit(1);
   }
   return(same);
@@ -101,7 +101,7 @@ bool CCOperation::compatible_element_by_element()
     if((B_left!=C_left) || (B_right!=C_right)){
       outfile->Printf("\n\nSolve couldn't perform the operation ");
       print_operation();
-      
+
       exit(1);
     }
   }
@@ -147,7 +147,7 @@ bool CCOperation::compatible_contract()
   if(B_contracted!=C_contracted){
     outfile->Printf("\n\nSolve couldn't perform the operation ");
     print_operation();
-    
+
     exit(1);
   }
   return(same);

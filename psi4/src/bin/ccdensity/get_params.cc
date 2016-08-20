@@ -34,9 +34,9 @@
 #include <cstring>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -130,7 +130,7 @@ void get_params( Options& options)
     params.connect_xi = 0;
   else
     params.connect_xi = 1;
-  if(options["XI_CONNECT"].has_changed()) 
+  if(options["XI_CONNECT"].has_changed())
     params.connect_xi = options.get_bool("XI_CONNECT");
 
   params.write_nos = options.get_bool("WRITE_NOS");

@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "dfocc.h"
@@ -38,8 +38,8 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::fock_so()
-{      
-  //outfile->Printf("\tfock_so is starting... \n"); 
+{
+  //outfile->Printf("\tfock_so is starting... \n");
 /********************************************************************************************/
 /************************** Build the Fock matrix *******************************************/
 /********************************************************************************************/
@@ -65,7 +65,7 @@ void DFOCC::fock_so()
 
      // 1e-part
      FsoA->copy(Hso);
- 
+
      // Fmn += \sum_{Q} b_mn^Q D^Q
      FsoA->gemv(true, bQso, DQvecA, 1.0, 1.0);
 
@@ -73,7 +73,7 @@ void DFOCC::fock_so()
      FsoA->contract(true, false, nso_, nso_, nso_ * nQ_ref, bQso, DQmatA, -0.5, 1.0);
      //FsoA->print();
 
-//outfile->Printf("\tfock_so is done. \n"); 
+//outfile->Printf("\tfock_so is done. \n");
 }// end fock_so
 }} // End Namespaces
 

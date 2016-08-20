@@ -45,7 +45,7 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "thce.h"
 #include "lreri.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -690,9 +690,9 @@ void DFERI::fit()
         it != unique_pows.end(); ++it) {
 
         double power = (*it);
-    
+
         boost::shared_ptr<Matrix> J = Jpow(power);
-        double** Jp = J->pointer(); 
+        double** Jp = J->pointer();
 
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
             std::string name = pair_spaces_order_[i];
@@ -715,8 +715,8 @@ void DFERI::fit()
                 for (int Q = 0; Q < naux; Q++) {
                     fseek(fhT,Q*pairs*sizeof(double) + pair*sizeof(double),SEEK_SET);
                     fread(Ttp,sizeof(double),npairs,fhT);
-                    Ttp += npairs; 
-                }            
+                    Ttp += npairs;
+                }
 
                 //T1->print();
 
@@ -724,8 +724,8 @@ void DFERI::fit()
 
                 //T2->print();
 
-                fwrite(T2p[0],sizeof(double),npairs*(size_t)naux,fh); 
-            } 
+                fwrite(T2p[0],sizeof(double),npairs*(size_t)naux,fh);
+            }
 
             if (!keep_raw_integrals_) {
                 ints_.erase(name + "_temp");

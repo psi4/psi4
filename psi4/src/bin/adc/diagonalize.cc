@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsio/psio.h"
@@ -45,8 +45,8 @@ namespace psi{ namespace adc{
 //  F: The correction vectors for the basis of Ritz space.
 //  V: Converged eigenvectors.
 //
-    
-void 
+
+void
 ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, double *eps)
 {
     char lbl[32];
@@ -54,7 +54,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
     double **Alpha, **G, *lambda, *lambda_o, *residual_norm, cutoff;
     dpdfile2 B, S, Bp, Bn, F, L, V;
     dpdfile4 A;
-    
+
     maxdim = 10 * rpi_[irrep];
     iter = 0;
     converged = 0;
@@ -65,17 +65,17 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
     residual_ok   = init_int_array(rpi_[irrep]);
     residual_norm = init_array(rpi_[irrep]);
     conv          = init_int_array(rpi_[irrep]);
-    
+
     G        = block_matrix(maxdim, maxdim);
     Alpha    = block_matrix(maxdim, maxdim);
     lambda   = init_array(maxdim);
     lambda_o = init_array(maxdim);
-    
+
     for(int I = 0;I < rpi_[irrep];I++) lambda_o[I] = omega_guess_->get(irrep, I);
     shift_denom4(irrep, omega_in);
-    
+
     boost::shared_ptr<OutFile> printer(new OutFile("iter.dat",APPEND));
-    
+
     timer_on("SEM");
     while(converged < rpi_[irrep] && iter < sem_max_){
         skip_check = 0;
@@ -126,7 +126,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             global_dpd_->file2_init(&L, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
             global_dpd_->file2_dirprd(&L, &F);
             global_dpd_->file2_close(&L);
-        
+
             double norm = global_dpd_->file2_dot_self(&F);
             residual_norm[k] = sqrt(norm);
             if(residual_norm[k] > norm_tol_) global_dpd_->file2_scm(&F, 1/residual_norm[k]);
@@ -160,7 +160,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             global_dpd_->file2_init(&B, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
             double norm = global_dpd_->file2_dot_self(&B);
             norm = sqrt(norm);
-        
+
             if(norm > norm_tol_){
                 global_dpd_->file2_scm(&B, 1/norm);
                 sprintf(lbl, "B^(%d)_[%d]12", length, irrep);
@@ -169,7 +169,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             }
             global_dpd_->file2_close(&B);
         }
-    
+
         if(maxdim-length < rpi_[irrep] || (nxspi_[irrep]-length) < rpi_[irrep]){
             printer->Printf( "Subspace too large:maxdim = %d, L = %d\n", maxdim, length);
             printer->Printf( "Collapsing eigenvectors.\n");
@@ -197,12 +197,12 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             length = rpi_[irrep];
 	    prev_length = 0;
         }
-    
+
         if(!skip_check){
             zero_int_array(conv, rpi_[irrep]);
             printer->Printf("Root          Eigenvalue   Delta     Res_Norm     Conv?\n");
             printer->Printf("----     ---------------- -------    --------- ----------\n");
-        
+
             for(int k = 0;k < rpi_[irrep];k++){
                 double diff = fabs(lambda[k]-lambda_o[k]);
                 if(diff < cutoff && residual_ok[k]){
@@ -213,7 +213,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
                 printer->Printf("%3d  %20.14f %4.3e   %4.3e     %1s\n", k, lambda[k], diff, residual_norm[k], conv[k] == 1 ? "Y" : "N");
             }
         }
-        
+
         int all_conv = 0;
         for(int i = 0;i < num_root;i++) all_conv += conv[i];
 
@@ -237,7 +237,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
         iter++;
     }
     timer_off("SEM");
-    
+
     free(residual_ok);
     free(residual_norm);
     free(conv);
@@ -245,7 +245,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
     free_block(Alpha);
     free(lambda);
     free(lambda_o);
-    
+
 }
 
 }} // End Namespaces

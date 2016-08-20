@@ -31,7 +31,7 @@
 
 #include <vector>
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/pragma.h"
+#include "psi4/pragma.h"
 #include "psi4/src/lib/libmints/potentialint.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -45,7 +45,7 @@ class Matrix;
 class BasisSet;
 class Options;
 using SharedMatrix=boost::shared_ptr<Matrix>;
-     
+
 class PCM {
   public:
     enum CalcType {Total, NucAndEle, EleOnly};

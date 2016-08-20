@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <stdio.h>
 #include "psi4/src/lib/libdpd/dpd.h"
@@ -42,7 +42,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 /*
 ** sortone_rhf(): Place all the components of the 1pdm into a large
@@ -67,7 +67,7 @@ void sortone_RHF(struct RHO_Params rho_params)
 {
   int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
   int row, col, i, j, I, J, a, b, A, B, p, q;
-  int *occpi, *virtpi, *occ_off, *vir_off; 
+  int *occpi, *virtpi, *occ_off, *vir_off;
   int *occ_sym, *vir_sym, *openpi;
   int *qt_occ, *qt_vir;
   double **O, chksum, value;

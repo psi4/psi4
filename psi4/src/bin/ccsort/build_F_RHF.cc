@@ -27,10 +27,10 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"
@@ -46,7 +46,7 @@ namespace psi { namespace ccsort {
 ** RHF references and singlet eigenstates:
 **  A(AI,BJ) = delta_IJ f_AB - delta_AB f_IJ + 4 <IJ|AB> - <IJ|BA> - <IA|JB>
 **
-** This routine will build each spin component of the entire matrix 
+** This routine will build each spin component of the entire matrix
 ** for later in-core diagonalization.
 **
 ** TDC, March 2003

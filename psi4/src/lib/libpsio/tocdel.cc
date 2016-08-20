@@ -33,7 +33,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <cstdlib>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -46,12 +46,12 @@ namespace psi {
 
 bool PSIO::tocdel(unsigned int unit, const char *key) {
   psio_tocentry *this_entry = tocscan(unit, key);
-  
+
   if (this_entry == NULL) return false;
 
   psio_tocentry *last_entry = this_entry->last;
   psio_tocentry *next_entry = this_entry->next;
-  
+
   if(next_entry == NULL) last_entry->next = NULL;
   else {
     last_entry->next = next_entry;
@@ -61,7 +61,7 @@ bool PSIO::tocdel(unsigned int unit, const char *key) {
   free(this_entry);
   psio_ud *this_unit = &(psio_unit[unit]);
   this_unit->toclen--;
-  
+
   return true;
 }
 

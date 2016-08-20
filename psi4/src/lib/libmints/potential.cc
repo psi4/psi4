@@ -32,7 +32,7 @@
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/sobasis.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

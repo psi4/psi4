@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "dfocc.h"
@@ -274,103 +274,103 @@ void DFOCC::pair_index()
               vv_idxBB->set(a, b, b + (a * nvirB));
          }
     }
- }// end if (reference_ == "UNRESTRICTED") 
+ }// end if (reference_ == "UNRESTRICTED")
 }//
 
 
 //====================================
 //   so_pair_idx (unpacked)
-//====================================   
+//====================================
 int DFOCC::so_pair_idx(int i, int j)
-{      
+{
    int value = j + (i * nso_);
    return value;
 }
 
 //====================================
 //   mo_pair_idx (unpacked)
-//====================================   
+//====================================
 int DFOCC::mo_pair_idx(int i, int j)
-{      
+{
    int value = j + (i * nmo_);
    return value;
 }
 
 //====================================
 //   oo_pair_idxAA (all OO)
-//====================================   
+//====================================
 int DFOCC::oo_pair_idxAA(int i, int j)
-{      
+{
    int value = j + (i * noccA);
    return value;
 }
 
 //====================================
 //   ij_pair_idxAA (active OO)
-//====================================   
+//====================================
 int DFOCC::ij_pair_idxAA(int i, int j)
-{      
+{
    int value = j + (i * naoccA);
    return value;
 }
 
 //====================================
 //   vv_pair_idxAA (all VV)
-//====================================   
+//====================================
 int DFOCC::vv_pair_idxAA(int a, int b)
-{      
+{
    int value = b + (a * nvirA);
    return value;
 }
 
 //====================================
 //   ab_pair_idxAA (active VV)
-//====================================   
+//====================================
 int DFOCC::ab_pair_idxAA(int a, int b)
-{      
+{
    int value = b + (a * navirA);
    return value;
 }
 
 //====================================
 //   ov_pair_idxAA (all OV)
-//====================================   
+//====================================
 int DFOCC::ov_pair_idxAA(int i, int a)
-{      
+{
    int value = a + (i * nvirA);
    return value;
 }
 
 //====================================
 //   ia_pair_idxAA (active OV)
-//====================================   
+//====================================
 int DFOCC::ia_pair_idxAA(int i, int a)
-{      
+{
    int value = a + (i * navirA);
    return value;
 }
 
 //====================================
 //   vo_pair_idxAA (all VVO
-//====================================   
+//====================================
 int DFOCC::vo_pair_idxAA(int a, int i)
-{      
+{
    int value = i + (a * noccA);
    return value;
 }
 
 //====================================
 //   ai_pair_idxAA (active VVO
-//====================================   
+//====================================
 int DFOCC::ai_pair_idxAA(int a, int i)
-{      
+{
    int value = i + (a * naoccA);
    return value;
 }
 
 //====================================
 //   MO Rotation Block
-//====================================   
+//====================================
 int DFOCC::get_rotation_block(string rotblock)
 {
    int index;

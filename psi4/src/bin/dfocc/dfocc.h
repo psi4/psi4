@@ -25,26 +25,26 @@
  * @END LICENSE
  */
 
-#ifndef dfocc_h 
-#define dfocc_h 
+#ifndef dfocc_h
+#define dfocc_h
 
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libdiis/diismanager.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "arrays.h"
 #include "tensors.h"
 
 using namespace std;
 
-namespace psi{ 
+namespace psi{
 
 namespace dfoccwave {
 
 class DFOCC : public Wavefunction
 {
- 
+
     void common_init();
-    
+
 public:
     DFOCC(SharedWavefunction ref_wfn, Options &options);
 
@@ -154,7 +154,7 @@ protected:
     void t2AA_ump2_direct(SharedTensor2d& T);
     void t2BB_ump2_direct(SharedTensor2d& T);
     void t2AB_ump2_direct(SharedTensor2d& T);
- 
+
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
     void tei_ijka_chem();
@@ -328,7 +328,7 @@ protected:
     void tei_ovov_phys_ref_directAB(SharedTensor2d &K);
     void tei_vovo_phys_ref_directAB(SharedTensor2d &K);
 
-    // df 
+    // df
     void df();
     void df_corr();
     void df_ref();
@@ -373,7 +373,7 @@ protected:
     void b_ij_cd();
     void b_ia_cd();
     void b_ab_cd();
-    void b_so_non_zero_cd(); 
+    void b_so_non_zero_cd();
     void cd_aob_cints();
     void cd_aob_xints();
     void cd_abcd_cints();
@@ -401,16 +401,16 @@ protected:
     void t2_2nd_gen();
     void mp3_WmnijT2();
     void mp3_WmbejT2();
-    void mp3_WabefT2();     
+    void mp3_WabefT2();
     void mp3_WmnijT2AA();
     void mp3_WmnijT2BB();
     void mp3_WmnijT2AB();
     void mp3_WmbejT2AA();
     void mp3_WmbejT2BB();
     void mp3_WmbejT2AB();
-    void mp3_WabefT2AA();     
-    void mp3_WabefT2BB();     
-    void mp3_WabefT2AB();     
+    void mp3_WabefT2AA();
+    void mp3_WabefT2BB();
+    void mp3_WabefT2AB();
     void mp3_pdm_3index_intr();
     void mp3_t2_1st_sc();
     void mp3_t2_1st_gen();
@@ -433,16 +433,16 @@ protected:
     void lccd_t2_amps();
     void lccd_WmnijT2();
     void lccd_WmbejT2();
-    void lccd_WabefT2();     
+    void lccd_WabefT2();
     void lccd_WmnijT2AA();
     void lccd_WmnijT2BB();
     void lccd_WmnijT2AB();
     void lccd_WmbejT2AA();
     void lccd_WmbejT2BB();
     void lccd_WmbejT2AB();
-    void lccd_WabefT2AA();     
-    void lccd_WabefT2BB();     
-    void lccd_WabefT2AB();     
+    void lccd_WabefT2AA();
+    void lccd_WabefT2BB();
+    void lccd_WabefT2AB();
     void lccd_pdm_3index_intr();
     void lccdl_energy();
 
@@ -457,12 +457,12 @@ protected:
     void ccsd_WijamT2();
     void ccsd_WijamT2_high_mem();
     void ccsd_WmbejT2();
-    void ccsd_WabefT2();     
-    void ccsd_Wabef2T2();     
-    void ccsd_WabefT2_high_mem();     
-    void ccsd_WabefT2_ao_basis();     
-    void ccsd_WabefT2_ldl();     
-    void ccsd_WabefT2_cd();     
+    void ccsd_WabefT2();
+    void ccsd_Wabef2T2();
+    void ccsd_WabefT2_high_mem();
+    void ccsd_WabefT2_ao_basis();
+    void ccsd_WabefT2_ldl();
+    void ccsd_WabefT2_cd();
     void ccsd_t1_amps();
     void ccsd_t2_amps();
     void ccsd_energy();
@@ -479,8 +479,8 @@ protected:
     void ccsd_WmnijT2_low();
     void ccsd_WijamT2_low();
     void ccsd_WmbejT2_low();
-    void ccsd_WabefT2_low();     
-    void ccsd_Wabef2T2_low();     
+    void ccsd_WabefT2_low();
+    void ccsd_Wabef2T2_low();
     void ccsd_t1_amps_low();
     void ccsd_t2_amps_low();
 
@@ -497,8 +497,8 @@ protected:
     void ccsdl_WmbejL2();
     void ccsdl_VmnijL2();
     void ccsdl_WijmnL2();
-    void ccsdl_WabefL2();     
-    void ccsdl_WabefL2_high_mem();     
+    void ccsdl_WabefL2();
+    void ccsdl_WabefL2_high_mem();
     void ccsdl_Wmnie_direct(SharedTensor2d &W);
     void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsdl_LijmeL2_high_mem();
@@ -530,9 +530,9 @@ protected:
     void ccd_F_intr();
     void ccd_WmnijT2();
     void ccd_WmbejT2();
-    void ccd_WabefT2();     
-    void ccd_WabefT2_high_mem();     
-    void ccd_WabefT2_ldl();     
+    void ccd_WabefT2();
+    void ccd_WabefT2_high_mem();
+    void ccd_WabefT2_ldl();
     void ccd_t2_amps();
     void ccd_mp2_low();
     void ccd_iterations_low();
@@ -540,7 +540,7 @@ protected:
     void ccd_F_intr_low();
     void ccd_WmnijT2_low();
     void ccd_WmbejT2_low();
-    void ccd_WabefT2_low();     
+    void ccd_WabefT2_low();
     void ccd_t2_amps_low();
 
     // CCDL
@@ -553,7 +553,7 @@ protected:
     void ccdl_WmbejL2();
     void ccdl_VmnijL2();
     void ccdl_WijmnL2();
-    void ccdl_WabefL2();     
+    void ccdl_WabefL2();
 
     // CCD Density
     void ccd_pdm_3index_intr();
@@ -587,7 +587,7 @@ protected:
     // Gradients
     std::map<std::string, SharedMatrix> gradients;
     std::vector<std::string> gradient_terms;
-    
+
      int natom;
      int nmo;		// Number of MOs
      int nao;		// Number of AOs
@@ -608,7 +608,7 @@ protected:
      int nfrzc; 	// Number of frozen cores
      int nfrzv; 	// Number of frozen virtuals
      int npop; 		// Number of populated orbitals: npop=nmo-nfrzv
-     int dimtei;	// dimension of tei in pitzer order for all integrals 
+     int dimtei;	// dimension of tei in pitzer order for all integrals
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
      int ntri_ijAA;
@@ -623,30 +623,30 @@ protected:
      int nQ_ref;      // numer of aux-basis for DF_BASIS_SCF
      int nQ_cd;      // numer of aux-basis functions for LDL
      int nso2_;       // nso * nso
-     int naocc2AA;     // # of active OO pairs 
-     int naocc2AB;     // # of active OO pairs 
-     int naocc2BB;     // # of active OO pairs 
-     int navir2AA;     // # of active VV pairs 
-     int navir2AB;     // # of active VV pairs 
-     int navir2BB;     // # of active VV pairs 
-     int navoAA;       // # of active VO pairs 
-     int navoAB;       // # of active VO pairs 
-     int navoBA;       // # of active VO pairs 
-     int navoBB;       // # of active VO pairs 
-     int nvoAA;        // # of all VO pairs 
-     int nvoAB;        // # of all VO pairs 
-     int nvoBA;        // # of all VO pairs 
-     int nvoBB;        // # of all VO pairs 
-     int nocc2AA;     // # of all OO pairs 
-     int nocc2AB;     // # of all OO pairs 
-     int nocc2BB;     // # of all OO pairs 
-     int nvir2AA;     // # of all VV pairs 
-     int nvir2AB;     // # of all VV pairs 
-     int nvir2BB;     // # of all VV pairs 
+     int naocc2AA;     // # of active OO pairs
+     int naocc2AB;     // # of active OO pairs
+     int naocc2BB;     // # of active OO pairs
+     int navir2AA;     // # of active VV pairs
+     int navir2AB;     // # of active VV pairs
+     int navir2BB;     // # of active VV pairs
+     int navoAA;       // # of active VO pairs
+     int navoAB;       // # of active VO pairs
+     int navoBA;       // # of active VO pairs
+     int navoBB;       // # of active VO pairs
+     int nvoAA;        // # of all VO pairs
+     int nvoAB;        // # of all VO pairs
+     int nvoBA;        // # of all VO pairs
+     int nvoBB;        // # of all VO pairs
+     int nocc2AA;     // # of all OO pairs
+     int nocc2AB;     // # of all OO pairs
+     int nocc2BB;     // # of all OO pairs
+     int nvir2AA;     // # of all VV pairs
+     int nvir2AB;     // # of all VV pairs
+     int nvir2BB;     // # of all VV pairs
      int nidpA;       // # of alpha independent pairs
      int nidpB;       // # of beta independent pairs
-     int nidp;       
-     int nidp_tot;       
+     int nidp;
+     int nidp_tot;
      int idp_returnA;
      int idp_returnB;
      int nvar;
@@ -654,7 +654,7 @@ protected:
 
      int exp_cutoff;
      int exp_int_cutoff;
-     int multp; 
+     int multp;
      int charge;
      int print_;
      int conver;
@@ -682,11 +682,11 @@ protected:
      double cost_ampAB;          // Mem required for the amplitudes
      double cost_amp;            // Mem required for the amplitudes
      double cost_df;             // Mem required for the df integrals
-     double cost_3amp; 
-     double cost_4amp; 
-     double cost_5amp; 
-     double cost_ppl_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term  
-     double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T) 
+     double cost_3amp;
+     double cost_4amp;
+     double cost_5amp;
+     double cost_ppl_hm;        // Mem req. for high mem evaluation of 4-virtuals exchange term
+     double cost_triples_iabc;   // Mem req. for high mem evaluation of (ia|bc) used in (T)
 
      // Common
      double Enuc;
@@ -810,7 +810,7 @@ protected:
      double EccdLAA;
      double EccdLBB;
      double EccdLAB;
-     
+
      string wfn;
      string reference;
      string reference_;
@@ -821,14 +821,14 @@ protected:
      string lineq;
      string orth_type;
      string natorb;
-     string semicanonic; 
-     string opt_method; 
+     string semicanonic;
+     string opt_method;
      string hess_type;
      string occ_orb_energy;
      string do_scs;		// Spin-Component-Scaling
      string do_sos;		// Spin-Opposite-Scaling
-     string scs_type_;		
-     string sos_type_;		
+     string scs_type_;
+     string sos_type_;
      string wfn_type_;
      string orb_resp_solver_;
      string pcg_beta_type_;
@@ -836,27 +836,27 @@ protected:
      string orb_opt_;
      string rotation_blocks;
      string conv_tei_type;
-     string regularization; 
-     string do_cd; 
-     string read_scf_3index; 
-     string freeze_core_; 
-     string oeprop_; 
-     string comput_s2_; 
-     string mp2_amp_type_; 
-     string guess_type_; 
-     string qchf_; 
-     string cc_lambda_; 
-     string Wabef_type_; 
-     string triples_iabc_type_; 
+     string regularization;
+     string do_cd;
+     string read_scf_3index;
+     string freeze_core_;
+     string oeprop_;
+     string comput_s2_;
+     string mp2_amp_type_;
+     string guess_type_;
+     string qchf_;
+     string cc_lambda_;
+     string Wabef_type_;
+     string triples_iabc_type_;
 
      bool df_ints_incore;
      bool t2_incore;
      bool do_ppl_hm;
      bool do_triples_hm;
 
-     double **C_pitzerA;     
-     double **C_pitzerB;     
-     double **J_mhalf;     
+     double **C_pitzerA;
+     double **C_pitzerB;
+     double **J_mhalf;
 
      // Common
      SharedTensor2d CmoA;              // C(mu, p)
@@ -871,10 +871,10 @@ protected:
      SharedTensor2d CoccB;             // C(mu, i) all
      SharedTensor2d CvirA;             // C(mu, a) all
      SharedTensor2d CvirB;             // C(mu, a) all
-     SharedTensor2d HmoA;	 
-     SharedTensor2d HmoB;	 
-     SharedTensor2d FockA;	 
-     SharedTensor2d FockB;	 
+     SharedTensor2d HmoA;
+     SharedTensor2d HmoB;
+     SharedTensor2d FockA;
+     SharedTensor2d FockB;
      SharedTensor2d Hso;
      SharedTensor2d Sso;
      SharedTensor2d Dso;
@@ -883,28 +883,28 @@ protected:
      SharedTensor2d FsoB;
      SharedTensor2d Wso;
      SharedTensor2d DQmatA;
-     SharedTensor2d HooA;	 
-     SharedTensor2d HooB;	 
-     SharedTensor2d HovA;               
-     SharedTensor2d HovB;               
-     SharedTensor2d HvoA;	 
-     SharedTensor2d HvoB;	 
-     SharedTensor2d HvvA;	 
-     SharedTensor2d HvvB;	 
-     SharedTensor2d FooA;          // Fock OO block     
-     SharedTensor2d FooB;          // Fock oo block     
-     SharedTensor2d FovA;          // Fock OV block     
-     SharedTensor2d FovB;          // Fock ov block     
-     SharedTensor2d FvoA;          // Fock VO block     
-     SharedTensor2d FvoB;          // Fock vo block     
-     SharedTensor2d FvvA;          // Fock VV block     
-     SharedTensor2d FvvB;          // Fock vv block     
-     SharedTensor1d eigooA;	 
-     SharedTensor1d eigooB;	 
-     SharedTensor1d eigvvA;	 
-     SharedTensor1d eigvvB;	 
-     SharedTensor1d eps_orbA;	 
-     SharedTensor1d eps_orbB;	 
+     SharedTensor2d HooA;
+     SharedTensor2d HooB;
+     SharedTensor2d HovA;
+     SharedTensor2d HovB;
+     SharedTensor2d HvoA;
+     SharedTensor2d HvoB;
+     SharedTensor2d HvvA;
+     SharedTensor2d HvvB;
+     SharedTensor2d FooA;          // Fock OO block
+     SharedTensor2d FooB;          // Fock oo block
+     SharedTensor2d FovA;          // Fock OV block
+     SharedTensor2d FovB;          // Fock ov block
+     SharedTensor2d FvoA;          // Fock VO block
+     SharedTensor2d FvoB;          // Fock vo block
+     SharedTensor2d FvvA;          // Fock VV block
+     SharedTensor2d FvvB;          // Fock vv block
+     SharedTensor1d eigooA;
+     SharedTensor1d eigooB;
+     SharedTensor1d eigvvA;
+     SharedTensor1d eigvvB;
+     SharedTensor1d eps_orbA;
+     SharedTensor1d eps_orbB;
 
      // DF Integrals
      SharedTensor2d Jmhalf;             // J Metric DF_BASIS_CC (RI)
@@ -945,97 +945,97 @@ protected:
      SharedTensor2d cQabB;              // c(Q|a b) : active
 
      // DF OPDM
-     SharedTensor2d G1c_ij;             
-     SharedTensor2d G1c_ab;             
-     SharedTensor2d G1c_oo;             
-     SharedTensor2d G1c_ov;             
-     SharedTensor2d G1c_vo;             
-     SharedTensor2d G1c_vv;             
+     SharedTensor2d G1c_ij;
+     SharedTensor2d G1c_ab;
+     SharedTensor2d G1c_oo;
+     SharedTensor2d G1c_ov;
+     SharedTensor2d G1c_vo;
+     SharedTensor2d G1c_vv;
      SharedTensor2d G1c;               // Correlation part of OPDM
      SharedTensor2d G1;                // Full OPDM (MO)
      SharedTensor2d G1ao;              // Full OPDM (AO)
-     SharedTensor2d G1c_ijA;             
-     SharedTensor2d G1c_ijB;             
-     SharedTensor2d G1c_abA;             
-     SharedTensor2d G1c_abB;             
-     SharedTensor2d G1c_ooA;             
-     SharedTensor2d G1c_ooB;             
-     SharedTensor2d G1c_ovA;             
-     SharedTensor2d G1c_ovB;             
-     SharedTensor2d G1c_voA;             
-     SharedTensor2d G1c_voB;             
-     SharedTensor2d G1c_vvA;             
-     SharedTensor2d G1c_vvB;             
+     SharedTensor2d G1c_ijA;
+     SharedTensor2d G1c_ijB;
+     SharedTensor2d G1c_abA;
+     SharedTensor2d G1c_abB;
+     SharedTensor2d G1c_ooA;
+     SharedTensor2d G1c_ooB;
+     SharedTensor2d G1c_ovA;
+     SharedTensor2d G1c_ovB;
+     SharedTensor2d G1c_voA;
+     SharedTensor2d G1c_voB;
+     SharedTensor2d G1c_vvA;
+     SharedTensor2d G1c_vvB;
      SharedTensor2d G1cA;              // Correlation part of OPDM
      SharedTensor2d G1cB;              // Correlation part of OPDM
      SharedTensor2d G1A;                // Full OPDM
      SharedTensor2d G1B;                // Full OPDM
-     SharedTensor2d GijA;              
-     SharedTensor2d GijB;              
-     SharedTensor2d GabA;              
-     SharedTensor2d GabB;              
-     SharedTensor2d GiaA;              
-     SharedTensor2d GiaB;              
-     SharedTensor2d GaiA;              
-     SharedTensor2d GaiB;              
-     SharedTensor2d GtijA;              
-     SharedTensor2d GtijB;              
-     SharedTensor2d GtabA;              
-     SharedTensor2d GtabB;              
+     SharedTensor2d GijA;
+     SharedTensor2d GijB;
+     SharedTensor2d GabA;
+     SharedTensor2d GabB;
+     SharedTensor2d GiaA;
+     SharedTensor2d GiaB;
+     SharedTensor2d GaiA;
+     SharedTensor2d GaiB;
+     SharedTensor2d GtijA;
+     SharedTensor2d GtijB;
+     SharedTensor2d GtabA;
+     SharedTensor2d GtabB;
 
      // DF TPDM
-     SharedTensor2d G2c_ij;                                    
-     SharedTensor2d G2c_ia;                                    
+     SharedTensor2d G2c_ij;
+     SharedTensor2d G2c_ia;
      SharedTensor2d G2c_ab;
-     SharedTensor2d G2c_oo;                                    
-     SharedTensor2d G2c_ov;                                    
-     SharedTensor2d G2c_vo;                                    
+     SharedTensor2d G2c_oo;
+     SharedTensor2d G2c_ov;
+     SharedTensor2d G2c_vo;
      SharedTensor2d G2c_vv;
      SharedTensor2d G2c;               // Correlation part of TPDM
      SharedTensor2d G2c_ijA;
      SharedTensor2d G2c_ijB;
-     SharedTensor2d G2c_iaA;                                    
-     SharedTensor2d G2c_iaB;                                    
+     SharedTensor2d G2c_iaA;
+     SharedTensor2d G2c_iaB;
      SharedTensor2d G2c_abA;
      SharedTensor2d G2c_abB;
-     SharedTensor2d G2c_ooA;                                    
-     SharedTensor2d G2c_ooB;                                    
-     SharedTensor2d G2c_ovA;                                    
-     SharedTensor2d G2c_ovB;                                    
-     SharedTensor2d G2c_voA;                                    
-     SharedTensor2d G2c_voB;                                    
+     SharedTensor2d G2c_ooA;
+     SharedTensor2d G2c_ooB;
+     SharedTensor2d G2c_ovA;
+     SharedTensor2d G2c_ovB;
+     SharedTensor2d G2c_voA;
+     SharedTensor2d G2c_voB;
      SharedTensor2d G2c_vvA;
      SharedTensor2d G2c_vvB;
      SharedTensor2d G2cA;              // Correlation part of TPDM
      SharedTensor2d G2cB;              // Correlation part of TPDM
      SharedTensor1d Jc;                // Correlation Coulomb matrix
-     SharedTensor1d g1Q;              
-     SharedTensor1d g1Qc;              
-     SharedTensor1d g1Qp;              
-     SharedTensor1d g1Qt;              
-     SharedTensor1d g1Qt2;              
+     SharedTensor1d g1Q;
+     SharedTensor1d g1Qc;
+     SharedTensor1d g1Qp;
+     SharedTensor1d g1Qt;
+     SharedTensor1d g1Qt2;
 
      // DF GFM
      SharedTensor2d GF;                // Full GFM (MO)
      SharedTensor2d GFao;              // Full GFM (AO)
      SharedTensor2d GFA;               // Full GFM
      SharedTensor2d GFB;               // Full GFM
-     SharedTensor2d GFoo;             
-     SharedTensor2d GFov;             
-     SharedTensor2d GFvo;             
-     SharedTensor2d GFvv;             
+     SharedTensor2d GFoo;
+     SharedTensor2d GFov;
+     SharedTensor2d GFvo;
+     SharedTensor2d GFvv;
      SharedTensor2d GFooA;
      SharedTensor2d GFooB;
-     SharedTensor2d GFovA;             
-     SharedTensor2d GFovB;             
-     SharedTensor2d GFvoA;             
-     SharedTensor2d GFvoB;             
+     SharedTensor2d GFovA;
+     SharedTensor2d GFovB;
+     SharedTensor2d GFvoA;
+     SharedTensor2d GFvoB;
      SharedTensor2d GFvvA;
      SharedTensor2d GFvvB;
 
-     SharedTensor2d GFtvv;            // Complement of GFM 
-     SharedTensor2d GFtvvA;           // Complement of GFM 
-     SharedTensor2d GFtvvB;           // Complement of GFM 
+     SharedTensor2d GFtvv;            // Complement of GFM
+     SharedTensor2d GFtvvA;           // Complement of GFM
+     SharedTensor2d GFtvvB;           // Complement of GFM
 
      // MO gradient and Hessian
      SharedTensor2d Worb;              // MO gradient matrix
@@ -1068,16 +1068,16 @@ protected:
      // Orbital rotations
      SharedTensor2d UorbA;           // MO rotation matrix: wrt reference MOs
      SharedTensor2d UorbB;
-     SharedTensor2d KorbA;           // K matrix: wrt reference MOs 
+     SharedTensor2d KorbA;           // K matrix: wrt reference MOs
      SharedTensor2d KorbB;
      SharedTensor2d KsqrA;
      SharedTensor2d KsqrB;
- 
+
      // MO rotation vectors
      SharedTensor1d wog;             // MO gradient vector
      SharedTensor1d wogA;            // MO gradient vector
      SharedTensor1d wogB;
-     SharedTensor1d wog_intA;        // Interpolated MO gradient vector 
+     SharedTensor1d wog_intA;        // Interpolated MO gradient vector
      SharedTensor1d wog_intB;
      SharedTensor1d kappa;           // where kappa = kappaA + kappaB
      SharedTensor1d kappaA;          // vector of orb rot parameters: wrt previous MOS
@@ -1137,16 +1137,16 @@ protected:
      SharedTensor2d vecsB;
      SharedTensor2d errvecsA;
      SharedTensor2d errvecsB;
-  
+
      // SO basis
-     SharedTensor2d gQso;              // Gamma(Q|mu nu): 3-index TPDM 
-     SharedTensor2d gQso_ref;          // Gamma(Q|mu nu): 3-index TPDM 
-     SharedTensor2d gQoo;              // Gamma(Q|i i): 3-index TPDM 
-     SharedTensor2d gQoo_ref;          // Gamma(Q|i i): 3-index TPDM 
-     SharedTensor2d gQon_ref;          // Gamma(Q|i nu): 3-index TPDM 
-     SharedTensor2d Gaux;              // Gamma(P,Q): 2-index TPDM 
-     SharedTensor2d Gaux_ref;          // Gamma(P,Q): 2-index TPDM 
-     SharedTensor2d dQso;              // D(Q|mu nu): 3-index OPDM for REF WFN 
+     SharedTensor2d gQso;              // Gamma(Q|mu nu): 3-index TPDM
+     SharedTensor2d gQso_ref;          // Gamma(Q|mu nu): 3-index TPDM
+     SharedTensor2d gQoo;              // Gamma(Q|i i): 3-index TPDM
+     SharedTensor2d gQoo_ref;          // Gamma(Q|i i): 3-index TPDM
+     SharedTensor2d gQon_ref;          // Gamma(Q|i nu): 3-index TPDM
+     SharedTensor2d Gaux;              // Gamma(P,Q): 2-index TPDM
+     SharedTensor2d Gaux_ref;          // Gamma(P,Q): 2-index TPDM
+     SharedTensor2d dQso;              // D(Q|mu nu): 3-index OPDM for REF WFN
 
      // Amplitudes
      SharedTensor2d t2_1;              // T_ij^ab(1)
@@ -1180,19 +1180,19 @@ protected:
      SharedTensor1d gQp;               // G_Q'
      SharedTensor1d gQt;               // Gt_Q
 
-     SharedTensor2d FijA;               
-     SharedTensor2d FijB;               
-     SharedTensor2d FabA;               
-     SharedTensor2d FabB;               
-     SharedTensor2d FiaA;               
-     SharedTensor2d FiaB;               
-     SharedTensor2d FtijA;               
-     SharedTensor2d FtijB;               
-     SharedTensor2d FtabA;               
-     SharedTensor2d FtabB;               
+     SharedTensor2d FijA;
+     SharedTensor2d FijB;
+     SharedTensor2d FabA;
+     SharedTensor2d FabB;
+     SharedTensor2d FiaA;
+     SharedTensor2d FiaB;
+     SharedTensor2d FtijA;
+     SharedTensor2d FtijB;
+     SharedTensor2d FtabA;
+     SharedTensor2d FtabB;
 
      // Intermediates
-     SharedTensor2d uQia;              
+     SharedTensor2d uQia;
 
      // Conventional integrals for the DF_BASIS_CC
      SharedTensor2d JijklAA;             // (ij|kl) (active)
@@ -1278,36 +1278,36 @@ protected:
      SharedTensor1d dQ;
 
      // Pair indices
-     SharedTensor2i so_idx;             // Pair index for active SO 
-     SharedTensor2i ij_idxAA;           // Pair index for active OO 
-     SharedTensor2i ij_idxAB;           // Pair index for active OO 
-     SharedTensor2i ij_idxBA;           // Pair index for active OO 
-     SharedTensor2i ij_idxBB;           // Pair index for active OO 
-     SharedTensor2i ia_idxAA;           // Pair index for active OV 
-     SharedTensor2i ia_idxAB;           // Pair index for active OV 
-     SharedTensor2i ia_idxBA;           // Pair index for active OV 
-     SharedTensor2i ia_idxBB;           // Pair index for active OV 
-     SharedTensor2i ai_idxAA;           // Pair index for active VO 
-     SharedTensor2i ai_idxAB;           // Pair index for active VO 
-     SharedTensor2i ai_idxBA;           // Pair index for active VO 
-     SharedTensor2i ai_idxBB;           // Pair index for active VO 
-     SharedTensor2i ab_idxAA;           // Pair index for active VV 
-     SharedTensor2i ab_idxAB;           // Pair index for active VV 
-     SharedTensor2i ab_idxBA;           // Pair index for active VV 
-     SharedTensor2i ab_idxBB;           // Pair index for active VV 
+     SharedTensor2i so_idx;             // Pair index for active SO
+     SharedTensor2i ij_idxAA;           // Pair index for active OO
+     SharedTensor2i ij_idxAB;           // Pair index for active OO
+     SharedTensor2i ij_idxBA;           // Pair index for active OO
+     SharedTensor2i ij_idxBB;           // Pair index for active OO
+     SharedTensor2i ia_idxAA;           // Pair index for active OV
+     SharedTensor2i ia_idxAB;           // Pair index for active OV
+     SharedTensor2i ia_idxBA;           // Pair index for active OV
+     SharedTensor2i ia_idxBB;           // Pair index for active OV
+     SharedTensor2i ai_idxAA;           // Pair index for active VO
+     SharedTensor2i ai_idxAB;           // Pair index for active VO
+     SharedTensor2i ai_idxBA;           // Pair index for active VO
+     SharedTensor2i ai_idxBB;           // Pair index for active VO
+     SharedTensor2i ab_idxAA;           // Pair index for active VV
+     SharedTensor2i ab_idxAB;           // Pair index for active VV
+     SharedTensor2i ab_idxBA;           // Pair index for active VV
+     SharedTensor2i ab_idxBB;           // Pair index for active VV
 
-     SharedTensor2i oo_idxAA;           // Pair index for all OO 
-     SharedTensor2i oo_idxAB;           // Pair index for all OO 
-     SharedTensor2i oo_idxBB;           // Pair index for all OO 
-     SharedTensor2i ov_idxAA;           // Pair index for all OV 
-     SharedTensor2i ov_idxAB;           // Pair index for all OV 
-     SharedTensor2i ov_idxBB;           // Pair index for all OV 
-     SharedTensor2i vo_idxAA;           // Pair index for all VO 
-     SharedTensor2i vo_idxAB;           // Pair index for all VO 
-     SharedTensor2i vo_idxBB;           // Pair index for all VO 
-     SharedTensor2i vv_idxAA;           // Pair index for all VV 
-     SharedTensor2i vv_idxAB;           // Pair index for all VV 
-     SharedTensor2i vv_idxBB;           // Pair index for all VV 
+     SharedTensor2i oo_idxAA;           // Pair index for all OO
+     SharedTensor2i oo_idxAB;           // Pair index for all OO
+     SharedTensor2i oo_idxBB;           // Pair index for all OO
+     SharedTensor2i ov_idxAA;           // Pair index for all OV
+     SharedTensor2i ov_idxAB;           // Pair index for all OV
+     SharedTensor2i ov_idxBB;           // Pair index for all OV
+     SharedTensor2i vo_idxAA;           // Pair index for all VO
+     SharedTensor2i vo_idxAB;           // Pair index for all VO
+     SharedTensor2i vo_idxBB;           // Pair index for all VO
+     SharedTensor2i vv_idxAA;           // Pair index for all VV
+     SharedTensor2i vv_idxAB;           // Pair index for all VV
+     SharedTensor2i vv_idxBB;           // Pair index for all VV
 
      SharedMatrix Tso_;
      SharedMatrix Vso_;
@@ -1315,7 +1315,7 @@ protected:
      SharedMatrix Sso_;
      SharedMatrix bQnn;         // b(Q|mu nu)
      SharedVector e_orbA;
-    
+
 };
 
 } }

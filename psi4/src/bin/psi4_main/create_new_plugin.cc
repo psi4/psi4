@@ -38,7 +38,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 

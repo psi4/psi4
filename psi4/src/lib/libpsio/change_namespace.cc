@@ -33,32 +33,32 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
     char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);
-    //_default_psio_lib_->get_volpath(unit, 0, &path);  
+    //_default_psio_lib_->get_volpath(unit, 0, &path);
     const char* path = PSIOManager::shared_object()->get_file_path(unit).c_str();
 
     old_fullpath = (char*) malloc( (strlen(path)+strlen(old_name)+80)*sizeof(char));
     new_fullpath = (char*) malloc( (strlen(path)+strlen(new_name)+80)*sizeof(char));
-    
-    if (ns1 == "") {    
+
+    if (ns1 == "") {
         sprintf(old_fullpath, "%s%s.%u", path, old_name, unit);
     } else {
         sprintf(old_fullpath, "%s%s.%s.%u", path, old_name, ns1.c_str(), unit);
     }
-    if (ns2 == "") {    
+    if (ns2 == "") {
         sprintf(new_fullpath, "%s%s.%u", path, new_name, unit);
     } else {
         sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns2.c_str(), unit);
@@ -67,7 +67,7 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
     //printf("%s\n",old_fullpath);
     //printf("%s\n",new_fullpath);
 
-    PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath)); 
+    PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath));
         ::rename(old_fullpath,new_fullpath);
 }
 

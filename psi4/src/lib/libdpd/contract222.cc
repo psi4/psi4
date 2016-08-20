@@ -34,7 +34,7 @@
 #include <cmath>
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
@@ -87,7 +87,7 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
         outfile->Printf( "** Alignment error in contract222 **\n");
         dpd_error("dpd_contract222", "outfile");
     }
-#endif  
+#endif
 
     /* loop over row irreps of X */
     for(Hx=0; Hx < nirreps; Hx++) {

@@ -26,7 +26,7 @@
  */
 
 #include <vector>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "psi4/src/lib/libdpd/dpd.h"
 
@@ -71,7 +71,7 @@ double scf_check(int reference, Dimension &openpi)
     global_dpd_->file2_mat_init(&H);
     global_dpd_->file2_mat_rd(&H);
     for(int h=0; h < H.params->nirreps; h++)
-      for(int i=0; i < (H.params->ppi[h] - openpi[h]); i++) 
+      for(int i=0; i < (H.params->ppi[h] - openpi[h]); i++)
         E1B += H.matrix[h][i][i];
     global_dpd_->file2_mat_close(&H);
     global_dpd_->file2_close(&H);

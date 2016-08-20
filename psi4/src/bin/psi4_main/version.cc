@@ -30,7 +30,7 @@
 #include <cstring>
 #include <sstream>
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "gitversion.h"
 namespace psi {

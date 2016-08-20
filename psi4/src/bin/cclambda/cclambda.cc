@@ -41,7 +41,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -295,7 +295,7 @@ double CCLambdaWavefunction::compute_energy()
           Lamp_write(pL_params[i]); /* write out largest  Ls */
       /* sort_amps(); to be done by later functions */
           outfile->Printf( "\n\tIterations converged.\n");
-          
+
           moinfo.iter = 0;
           break;
         }
@@ -309,7 +309,7 @@ double CCLambdaWavefunction::compute_energy()
       if(!done) {
         outfile->Printf( "\t ** Lambda not converged to %2.1e ** \n",
             params.convergence);
-        
+
         dpd_close(0);
         cleanup();
         exit_io();

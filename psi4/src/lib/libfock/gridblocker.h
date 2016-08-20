@@ -28,7 +28,7 @@
 #ifndef libmints_gridblocker_H
 #define libmints_gridblocker_H
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libmints/vector3.h"
 
@@ -44,23 +44,23 @@ class BasisExtents;
 class BlockOPoints;
 
 /**
- * Class to determine groupings of DFT grid points for 
+ * Class to determine groupings of DFT grid points for
  * efficient sparse evaluation of density
  */
 class GridBlocker {
 
 protected:
-    
+
     int debug_;
     int print_;
     int bench_;
 
     // Reference to previous grid layout
     const int npoints_ref_;
-    double const* x_ref_;  
-    double const* y_ref_;  
-    double const* z_ref_;  
-    double const* w_ref_;  
+    double const* x_ref_;
+    double const* y_ref_;
+    double const* z_ref_;
+    double const* w_ref_;
     int const* index_ref_;
 
     const size_t tol_max_points_;
@@ -78,19 +78,19 @@ protected:
     double* w_;
     int* index_;
     std::vector<boost::shared_ptr<BlockOPoints> > blocks_;
-    
+
 public:
-    
+
     GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         boost::shared_ptr<BasisExtents> extents);
     virtual ~GridBlocker();
-    
+
     virtual void block() = 0;
 
     int npoints() const { return npoints_; }
     int max_points() const { return max_points_; }
-    int max_functions() const { return max_functions_; } 
+    int max_functions() const { return max_functions_; }
     double* x() const { return x_; }
     double* y() const { return y_; }
     double* z() const { return z_; }
@@ -105,32 +105,32 @@ public:
 };
 
 /**
- * Naive stride-based blocking 
+ * Naive stride-based blocking
  */
 class NaiveGridBlocker : public GridBlocker {
 
 public:
-    
+
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         boost::shared_ptr<BasisExtents> extents);
     virtual ~NaiveGridBlocker();
-    
+
     virtual void block();
 };
 
 /**
- * Octree-based blocking 
+ * Octree-based blocking
  */
 class OctreeGridBlocker : public GridBlocker {
 
 public:
-    
+
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         boost::shared_ptr<BasisExtents> extents);
     virtual ~OctreeGridBlocker();
-    
+
     virtual void block();
 };
 

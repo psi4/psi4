@@ -27,7 +27,7 @@
 
 /*!
 ** \file
-** \brief Header file for the Quantum Trio Library 
+** \brief Header file for the Quantum Trio Library
 ** \ingroup QT
 **
 ** David Sherrill 1994
@@ -40,7 +40,7 @@
 
 #include <cstdio>
 #include <string>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 // I think this is forward-declaring class Options -CDS
 namespace psi {
 class Options;
@@ -60,14 +60,14 @@ double invert_matrix(double **a, double **y, int N, std::string OutFileRMR);
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs);
 void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps);
-void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc, 
+void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
       int *frozen_uocc, int *order_alpha, int *order_beta,
       int *orbspi, int nirreps);
 void reorder_ras(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep,
       int *ras1, int *ras2, int *ras3, int *ras4, int do_ras4, int nirreps);
-void reorder_ras2(int *docc_in, int *socc_in, int *frozen_docc_in, 
-      int *frozen_uocc_in, int *order, int *orbs_per_irrep, 
+void reorder_ras2(int *docc_in, int *socc_in, int *frozen_docc_in,
+      int *frozen_uocc_in, int *order, int *orbs_per_irrep,
       int *ras1, int *ras2, int *ras3, int *ras4, int parsed_ras1,
       int parsed_ras2, int do_ras4, int nirreps);
 int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
@@ -95,7 +95,7 @@ void timer_done(void);
 void timer_on(const char *key);
 void timer_off(const char *key);
 
-void filter(double *input, double *output, int *ioff, int norbs, int nfzc, 
+void filter(double *input, double *output, int *ioff, int norbs, int nfzc,
       int nfzv);
 
 void print_block(double *, int, int, FILE *);
@@ -103,7 +103,7 @@ void print_block(double *, int, int, FILE *);
 void sort(double *A, double **B, int n);
 void sort_vector(double *A, int n);
 
-int david(double **A, int N, int M, double *eps, double **v, double cutoff, 
+int david(double **A, int N, int M, double *eps, double **v, double cutoff,
      int print);
 
 int* get_frzcpi();
@@ -130,7 +130,7 @@ void unit_vec(double *B, double *A, double *AB);
 /// Same as ::strncpy(), but make sure that dest ends in \0
 char* strncpy(char* dest, const char* source, size_t n);
 
-// BLAS 1 Double routines 
+// BLAS 1 Double routines
 void C_DROT(unsigned long int ntot, double *x, int incx, double *y, int incy,
              double costheta, double sintheta);
 void C_DSWAP(unsigned long int length, double *x, int incx, double *y, int inc_y);

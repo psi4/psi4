@@ -27,7 +27,7 @@
 
 /*! \file
 **  \ingroup DETCI
-**  \brief Enter brief description of file here 
+**  \brief Enter brief description of file here
 **
 ** contains code to import a vector from a previous calculation using
 ** StringSet, etc., functions in libqt
@@ -38,12 +38,12 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libqt/slaterdset.h"
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "structs.h"
 #include "ci_tol.h"
 #include "ciwave.h"
@@ -99,15 +99,15 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
   new_betastr_list  = init_int_array(betastrings->size);
   new_betastr_idx   = init_int_array(betastrings->size);
 
-  stringset_translate_addr(alphastrings, CalcInfo_->num_alp_expl, 
+  stringset_translate_addr(alphastrings, CalcInfo_->num_alp_expl,
     CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), AlphaG_, new_alphastr_list,
     new_alphastr_idx);
-  stringset_translate_addr(betastrings, CalcInfo_->num_bet_expl, 
+  stringset_translate_addr(betastrings, CalcInfo_->num_bet_expl,
     CalcInfo_->num_drc_orbs, CalcInfo_->reorder.data(), BetaG_, new_betastr_list,
     new_betastr_idx);
 
   /* loop over all the dets in the imported vector and translate
-     each of them to the new determinant number.  
+     each of them to the new determinant number.
   */
   for (i=0; i<sdset->size; i++) {
     alphastr = dets[i].alphastring;
@@ -122,7 +122,7 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
     if (j == -1) {
       outfile->Printf( "Import vector: can't find CI block!\n");
       outfile->Printf( "Determinant number %d\n", i);
-      outfile->Printf( "\nialplist=%d, ialpidx=%d, ibetlist=%d, ibetidx=%d\n", 
+      outfile->Printf( "\nialplist=%d, ialpidx=%d, ibetlist=%d, ibetidx=%d\n",
         ialplist[i], ialpidx[i], ibetlist[i], ibetidx[i]);
       abort();
     }
@@ -141,11 +141,11 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
 ** for each string, taking into account that some formerly frozen orbitals
 ** may now be unfrozen, and that the StringSet occupations are stored
 ** in Pitzer order and we need correlated order, and produces a new
-** occupation list which is used to generate a new graph list 
+** occupation list which is used to generate a new graph list
 ** (new_list[s]) and relative index (new_idx[s]).  The original StringSet
 ** is untouched because it does not carry enough storage space to hold
 ** both a list number and relative index (and the number of active electrons
-** in the occupations array may also have changed). 
+** in the occupations array may also have changed).
 **
 ** C. David Sherrill
 ** August 2003
@@ -172,10 +172,10 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
   if (num_former_drc + old_nel > new_nel) {
     outfile->Printf( "(stringset_translate_addr): num_former_drc + old_nel" \
       " > new_nel!\n");
-    
+
     abort();
   }
- 
+
   tmpocc = init_int_array(new_nel);
 
   /* Loop over all the strings in the imported stringset and translate
@@ -198,7 +198,7 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc,
     if (l != new_nel) {
       outfile->Printf( "(stringset_translate_addr): Imported string has wrong" \
         " number of electrons, %d vs. %d\n", l, new_nel);
-      
+
       abort();
     }
 

@@ -39,15 +39,15 @@
 
 
 #include "psi4/src/lib/libfunctional/superfunctional.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/liboptions/liboptions_python.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libfock/jk.h"
 #ifdef HAVE_PCMSOLVER
 #include "psi4/src/lib/libpsipcm/psipcm.h"
@@ -64,7 +64,7 @@
 #include "psi4/src/lib/libmints/oeprop.h"
 #include "hf.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libefp_solver/efp_solver.h"
 
 #ifdef _OPENMP

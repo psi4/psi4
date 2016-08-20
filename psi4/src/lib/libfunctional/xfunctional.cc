@@ -28,7 +28,7 @@
 #include "psi4/src/lib/libmints/vector.h"
 #include "xfunctional.h"
 #include "utility.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <cmath>
 
 using namespace psi;

@@ -28,12 +28,12 @@
 #include <limits>
 #include <cmath>
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
@@ -47,7 +47,7 @@
 
 
 namespace psi{
-    
+
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;

@@ -41,7 +41,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "slaterdset.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 #define PSIO_INIT if (!psio_state()) { \

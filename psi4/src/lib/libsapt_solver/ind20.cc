@@ -28,7 +28,7 @@
 #include "sapt0.h"
 #include "sapt2.h"
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -79,7 +79,7 @@ void SAPT0::ind20()
     outfile->Printf("    Ind20 (A<-B)        = %18.12lf [Eh]\n",indA_B);
     outfile->Printf("    Ind20 (B<-A)        = %18.12lf [Eh]\n",indB_A);
     outfile->Printf("    Ind20               = %18.12lf [Eh]\n",e_ind20_);
-    
+
   }
 }
 
@@ -105,7 +105,7 @@ void SAPT0::ind20r()
     outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",indA_B);
     outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",indB_A);
     outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",e_ind20_);
-    
+
   }
 }
 
@@ -254,8 +254,8 @@ void SAPT0::ind20rA_B()
         for (int r=0; r<nvirA_; r++, ar++) {
           z_new[ar] = R_new[ar]/(evalsA_[a] - evalsA_[r+noccA_]);
       }}
-      beta = C_DDOT(noccA_*nvirA_,R_new,1,z_new,1); 
-      beta /= C_DDOT(noccA_*nvirA_,R_old,1,z_old,1); 
+      beta = C_DDOT(noccA_*nvirA_,R_new,1,z_new,1);
+      beta /= C_DDOT(noccA_*nvirA_,R_old,1,z_old,1);
       C_DSCAL(noccA_*nvirA_,beta,tAR_old,1);
       C_DAXPY(noccA_*nvirA_,1.0,z_new,1,tAR_old,1);
       C_DCOPY(noccA_*nvirA_,z_new,1,z_old,1);
@@ -273,7 +273,7 @@ void SAPT0::ind20rA_B()
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      
+
     }
     E_old = E;
   }
@@ -449,8 +449,8 @@ void SAPT0::ind20rB_A()
         for (int s=0; s<nvirB_; s++, bs++) {
           z_new[bs] = R_new[bs]/(evalsB_[b] - evalsB_[s+noccB_]);
       }}
-      beta = C_DDOT(noccB_*nvirB_,R_new,1,z_new,1); 
-      beta /= C_DDOT(noccB_*nvirB_,R_old,1,z_old,1); 
+      beta = C_DDOT(noccB_*nvirB_,R_new,1,z_new,1);
+      beta /= C_DDOT(noccB_*nvirB_,R_old,1,z_old,1);
       C_DSCAL(noccB_*nvirB_,beta,tBS_old,1);
       C_DAXPY(noccB_*nvirB_,1.0,z_new,1,tBS_old,1);
       C_DCOPY(noccB_*nvirB_,z_new,1,z_old,1);
@@ -468,7 +468,7 @@ void SAPT0::ind20rB_A()
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      
+
     }
     E_old = E;
   }
@@ -688,8 +688,8 @@ void SAPT0::ind20rA_B_aio()
         for (int r=0; r<nvirA_; r++, ar++) {
           z_new[ar] = R_new[ar]/(evalsA_[a] - evalsA_[r+noccA_]);
       }}
-      beta = C_DDOT(noccA_*nvirA_,R_new,1,z_new,1); 
-      beta /= C_DDOT(noccA_*nvirA_,R_old,1,z_old,1); 
+      beta = C_DDOT(noccA_*nvirA_,R_new,1,z_new,1);
+      beta /= C_DDOT(noccA_*nvirA_,R_old,1,z_old,1);
       C_DSCAL(noccA_*nvirA_,beta,tAR_old,1);
       C_DAXPY(noccA_*nvirA_,1.0,z_new,1,tAR_old,1);
       C_DCOPY(noccA_*nvirA_,z_new,1,z_old,1);
@@ -707,7 +707,7 @@ void SAPT0::ind20rA_B_aio()
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      
+
     }
     E_old = E;
   }
@@ -927,8 +927,8 @@ void SAPT0::ind20rB_A_aio()
         for (int s=0; s<nvirB_; s++, bs++) {
           z_new[bs] = R_new[bs]/(evalsB_[b] - evalsB_[s+noccB_]);
       }}
-      beta = C_DDOT(noccB_*nvirB_,R_new,1,z_new,1); 
-      beta /= C_DDOT(noccB_*nvirB_,R_old,1,z_old,1); 
+      beta = C_DDOT(noccB_*nvirB_,R_new,1,z_new,1);
+      beta /= C_DDOT(noccB_*nvirB_,R_old,1,z_old,1);
       C_DSCAL(noccB_*nvirB_,beta,tBS_old,1);
       C_DAXPY(noccB_*nvirB_,1.0,z_new,1,tBS_old,1);
       C_DCOPY(noccB_*nvirB_,z_new,1,z_old,1);
@@ -946,7 +946,7 @@ void SAPT0::ind20rB_A_aio()
     if (print_) {
       outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      
+
     }
     E_old = E;
   }
@@ -1000,7 +1000,7 @@ void SAPT2::ind20r()
     outfile->Printf("    Ind20,r (A<-B)      = %18.12lf [Eh]\n",indA_B);
     outfile->Printf("    Ind20,r (B<-A)      = %18.12lf [Eh]\n",indB_A);
     outfile->Printf("    Ind20,r             = %18.12lf [Eh]\n",e_ind20_);
-    
+
   }
 }
 

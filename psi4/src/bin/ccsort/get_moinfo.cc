@@ -35,8 +35,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/dimension.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/basisset.h"
@@ -121,14 +121,14 @@ void get_moinfo(void)
         outfile->Printf( "\tCCSORT Error: Orbitals are frozen in input,\n");
         outfile->Printf( "\tbut frozen core energy is small!\n");
         outfile->Printf( "\tCalculation will be aborted...\n");
-        
+
         exit(PSI_RETURN_FAILURE);
     }
     else if(!moinfo.nfzc && fabs(moinfo.efzc)) {
         outfile->Printf( "\tCCSORT Warning: No orbitals are frozen,\n");
         outfile->Printf( "\tbut the frozen-core energy in wfn is non-zero.\n");
         outfile->Printf( "\tCalculation will continue with zero efzc...\n");
-        
+
         moinfo.efzc = 0.0;
     }
 

@@ -24,7 +24,7 @@
  *
  * @END LICENSE
  */
-#include "psi4/include/pragma.h"
+#include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <boost/python.hpp>
@@ -505,17 +505,17 @@ void export_mints()
             def("original_coef", &GaussianShell::original_coef, "docstring").
             def("erd_coef", &GaussianShell::erd_coef, "docstring").
             def("coef", &GaussianShell::coef, "docstring");
-    
+
     enum_<PrimitiveType>("PrimitiveType","docstring")
        .value("Normalized",Normalized)
        .value("Unnormalized",Unnormalized)
        ;
-    
+
     enum_ <GaussianType>("GaussianType","docstring")
        .value("Cartesian",Cartesian)
        .value("Pure",Pure)
        ;
-    
+
     class_<ShellInfo, boost::shared_ptr<ShellInfo>>("ShellInfo" , init<int,
                   const std::vector<double>&,
                   const std::vector<double>&,
@@ -527,7 +527,7 @@ void export_mints()
 
     class_<std::vector<ShellInfo>>("BSVec")
         .def(vector_indexing_suite<std::vector<ShellInfo>>());
-    
+
     class_<OneBodyAOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
             def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
             add_property("origin", &OneBodyAOInt::origin, &OneBodyAOInt::set_origin, "The origin about which the one body ints are being computed.").
@@ -859,15 +859,15 @@ void export_mints()
     class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
 
     using ShellInfoMap=std::map<std::string,std::vector<ShellInfo>>;
-    
+
     class_<ShellInfoMap>("ShellInfoMap")
        .def(map_indexing_suite<ShellInfoMap>());
-    
+
     using ShellInfoMapMap=std::map<std::string,ShellInfoMap>;
     class_<ShellInfoMapMap>("ShellInfoMapMap")
        .def(map_indexing_suite<ShellInfoMapMap>());
-    
-    
+
+
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
@@ -927,7 +927,7 @@ void export_mints()
 
     using SharedMol=boost::shared_ptr<Molecule>;
     using SharedBS=boost::shared_ptr<BasisSet>;
-    
+
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>
            ("Wavefunction", "docstring",init<Options&>()).

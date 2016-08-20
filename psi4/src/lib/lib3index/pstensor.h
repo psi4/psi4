@@ -28,7 +28,7 @@
 #ifndef three_index_ps_H
 #define three_index_ps_H
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace boost {
 template <class T>
@@ -50,7 +50,7 @@ class DealiasBasisSet {
 
 protected:
     /// The options object
-    Options& options_; 
+    Options& options_;
     /// The primary basis set
     boost::shared_ptr<BasisSet> primary_;
     /// The effective alphas of the primary set [center][am][index]
@@ -74,7 +74,7 @@ protected:
     /// Number of cap functions (~1)
     int ncap_;
     /// Number of higher cardinal numbers to cap with
-    int nl_; 
+    int nl_;
 
     /// Helper functions
     void form_primary_alpha();
@@ -96,8 +96,8 @@ public:
     void setNL(double n) { nl_ = n; }
     void setNIntercalater(double n) { nintercalater_ = n; }
     void setNDiffuse(double n) { ndiffuse_ = n; }
-   
-    /// Master build routine 
+
+    /// Master build routine
     void buildDealiasBasisSet();
 
     /// Convenience routine
@@ -142,19 +142,19 @@ protected:
     /// Renormalize or not? False implies do_dealias_ = false
     bool do_renormalize_;
 
-    /// Omega value to use. 
+    /// Omega value to use.
     double omega_;
     /// Minimum eigenvalue of a function to keep in the dealias basis
     double min_S_dealias_;
     /// Alpha value in rotated fitting. 1.0 is conventional
-    double alpha_; 
+    double alpha_;
 
     /// Build the PseudospectralGrid grid_
     void buildGrid();
     /// Build the BasisSet dealias_
     void buildDealiasSet();
 
-    /// Build using the naive, nondealiased quadrature algorithm 
+    /// Build using the naive, nondealiased quadrature algorithm
     void buildQuadrature();
     /// Build using the renormalized, nondealiased algorithm
     void buildRenormalized();
@@ -175,22 +175,22 @@ protected:
     /// Build the dealias MO collocation matrix
     void form_Rdmo();
 
-    /// Build the Primary AO x Dealias AO overlap matrix 
+    /// Build the Primary AO x Dealias AO overlap matrix
     void form_Spdao();
-    /// Build the Primary MO x Dealias AO overlap matrix 
+    /// Build the Primary MO x Dealias AO overlap matrix
     void form_Spdmo();
-    /// Build the Dealias AO x Dealias AO overlap matrix 
+    /// Build the Dealias AO x Dealias AO overlap matrix
     void form_Sddao();
-    /// Build the Dealias OO x Dealias OO overlap matrix 
+    /// Build the Dealias OO x Dealias OO overlap matrix
     void form_Sddoo();
     /// Build the Dealias orthonormalization matrix
     void form_Cdd();
 
     /// Build the Q R pair from quadrature
     void form_Q_quadrature();
-    /// Build the Q R pair from renormalization 
+    /// Build the Q R pair from renormalization
     void form_Q_renormalized();
-    /// Build the Q R pair from dealiased renormalization 
+    /// Build the Q R pair from dealiased renormalization
     void form_Q_dealiased();
 
     /// Primary AO functions
@@ -204,21 +204,21 @@ protected:
 
     /// Number of grid points
     int naux_;
-    
-    /// Number of frozen occupieds
-    int nfocc_; 
-    /// Total number of occupieds
-    int nocc_; 
-    /// Number of active occupieds
-    int naocc_; 
-    /// Number of frozen virtuals
-    int nfvir_; 
-    /// Total number of virtuals
-    int nvir_; 
-    /// Number of active virtuals
-    int navir_; 
 
-    /// Grid weights (hopefully SPD) 
+    /// Number of frozen occupieds
+    int nfocc_;
+    /// Total number of occupieds
+    int nocc_;
+    /// Number of active occupieds
+    int naocc_;
+    /// Number of frozen virtuals
+    int nfvir_;
+    /// Total number of virtuals
+    int nvir_;
+    /// Number of active virtuals
+    int navir_;
+
+    /// Grid weights (hopefully SPD)
     boost::shared_ptr<Vector> w_;
     /// Primary AO collocation matrix
     SharedMatrix Rpao_;
@@ -228,14 +228,14 @@ protected:
     SharedMatrix Rdao_;
     /// Dealias MO collocation matrix
     SharedMatrix Rdmo_;
-   
+
     /// Primary AO x Dealias MO overlap matrix
     SharedMatrix Spdao_;
     /// Dealias AO x Dealias AO overlap matrix
     SharedMatrix Sddao_;
     /// Dealias OO x Dealias OO overlap matrix
     SharedMatrix Sddoo_;
- 
+
     /// Primary MO x Dealias AO overlap matrix
     SharedMatrix Spdmo_;
     /// Dealias Orthogonalization matrix
@@ -250,7 +250,7 @@ protected:
     SharedMatrix O_;
 
 public:
-    PSTensorII(boost::shared_ptr<BasisSet> primary, 
+    PSTensorII(boost::shared_ptr<BasisSet> primary,
              SharedMatrix C,
              int nocc,
              int nvir,
@@ -274,7 +274,7 @@ public:
 
     SharedMatrix O();
 
-    // Begin naive routines for debugging    
+    // Begin naive routines for debugging
     SharedMatrix Aso();
     SharedMatrix Amo();
     SharedMatrix Aoo();
@@ -342,17 +342,17 @@ protected:
     int naux_;
 
     /// Number of frozen occupieds
-    int nfocc_; 
+    int nfocc_;
     /// Total number of occupieds
-    int nocc_; 
+    int nocc_;
     /// Number of active occupieds
-    int naocc_; 
+    int naocc_;
     /// Number of frozen virtuals
-    int nfvir_; 
+    int nfvir_;
     /// Total number of virtuals
-    int nvir_; 
+    int nvir_;
     /// Number of active virtuals
-    int navir_; 
+    int navir_;
 
     void common_init();
     void print_header();
@@ -360,7 +360,7 @@ protected:
     void buildGrid();
     void buildR();
 
-    void form_Spdao(); 
+    void form_Spdao();
     void form_Spdmo();
 
     void form_Rpao();
@@ -383,7 +383,7 @@ protected:
     void form_Q();
     void validate_X();
 
-    /// Grid weights (hopefully SPD) 
+    /// Grid weights (hopefully SPD)
     boost::shared_ptr<Vector> w_;
 
     /// Target Q tensor (nmo x naux)
@@ -418,7 +418,7 @@ protected:
 
 public:
 
-    PSTensor(boost::shared_ptr<BasisSet> primary, 
+    PSTensor(boost::shared_ptr<BasisSet> primary,
              SharedMatrix C,
              int nocc,
              int nvir,
@@ -439,7 +439,7 @@ public:
     SharedMatrix Rvir();
     SharedMatrix Raocc();
     SharedMatrix Ravir();
-    
+
     SharedMatrix Aso();
     SharedMatrix Amo();
     SharedMatrix Aoo();
@@ -461,19 +461,19 @@ class PseudoTrial {
 protected:
 
     // => Starter stuff <= //
-    
+
     // Debug flag
     int debug_;
     // Print flag
     int print_;
-    // options 
+    // options
     Options& options_;
     // Molecule
     boost::shared_ptr<Molecule> molecule_;
 
-    // => Bases/Grids <= // 
+    // => Bases/Grids <= //
 
-    // Dealias or not? 
+    // Dealias or not?
     bool do_dealias_;
     // Minimum eigenvalue for a primary basis function
     double min_S_primary_;
@@ -500,10 +500,10 @@ protected:
     // Number of grid points
     int naux_;
 
-    // => Temps <= // 
+    // => Temps <= //
 
     // Raw S matrices
-    
+
     // Overlap matrix (primary x primary)
     SharedMatrix Spp_;
     // Overlap matrix (primary x dealias)
@@ -514,7 +514,7 @@ protected:
     SharedMatrix Sa_;
 
     // Orthonormal primary
-    
+
     // Overlap matrix (primary x dealias)
     SharedMatrix Spd3_;
     // Augmented Overlap matrix (aug x aug)
@@ -528,9 +528,9 @@ protected:
     SharedMatrix Sa4_;
 
     // Orthonormal primary - dealias
-    
+
     // Augmented Overlap matrix (aug' x aug') (finished)
-    SharedMatrix Sa2_;    
+    SharedMatrix Sa2_;
 
     // X matrix, primary (primary x primary')
     SharedMatrix Xpp_;
@@ -550,7 +550,7 @@ protected:
     // Collocation matrix (augmented')
     SharedMatrix Ra_;
 
-    // Weight Vector 
+    // Weight Vector
     boost::shared_ptr<Vector> w_;
     // C matrix
     SharedMatrix C_;
@@ -560,7 +560,7 @@ protected:
     SharedMatrix Qfull_;
     // Full Q matrix
     SharedMatrix Qmo_;
-    // Projector matrix 
+    // Projector matrix
     SharedMatrix P_;
     // Transformer matrix
     SharedMatrix SX_;
@@ -573,19 +573,19 @@ protected:
     SharedMatrix R_;
     // A_ls^P
     SharedMatrix A_;
-    // QR_mn^P 
+    // QR_mn^P
     SharedMatrix T_;
 
-    // => Final Targets <= //  
+    // => Final Targets <= //
 
     // AO basis (mn|ls) tensor (exact)
-    SharedMatrix I_; 
+    SharedMatrix I_;
     // AO basis (mn|ls) tensor (PS)
-    SharedMatrix Ips_; 
+    SharedMatrix Ips_;
 
     // => Helpers <= //
-    
-    // Build everything 
+
+    // Build everything
     void common_init();
     void print_header();
 
@@ -613,21 +613,21 @@ protected:
     void form_Rp2();
     void form_Rd2();
     void form_Ra();
-    
+
     void form_Q();
     void form_P();
     void form_SX();
-    void form_A(); 
+    void form_A();
 
     void form_I();
     void form_Ips();
-    void verify(); 
+    void verify();
 
 public:
 
     PseudoTrial();
     ~PseudoTrial();
-    
+
     SharedMatrix getI() const;
     SharedMatrix getIPS() const;
 

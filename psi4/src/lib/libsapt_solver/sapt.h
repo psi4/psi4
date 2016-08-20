@@ -29,7 +29,7 @@
 #define SAPT_H
 
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #ifdef _OPENMP
   #include <omp.h>

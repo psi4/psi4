@@ -38,14 +38,14 @@
  *  @brief Contains main() and global variables
 */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 // Standard libraries
 #include <iostream>
 #include <complex>
 #include <cstdlib>
 
 // PSI libraries
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
@@ -71,7 +71,7 @@ using namespace std;
 using namespace psi;
 
 namespace psi{
-    
+
     namespace psimrcc{
     // Global variables
     Timer               *global_timer;
@@ -143,7 +143,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
   outfile->Printf("\n\n  PSIMRCC job completed.");
   outfile->Printf("\n  Wall Time = %20.6f s",global_timer->get());
   outfile->Printf("\n  GEMM Time = %20.6f s",moinfo->get_dgemm_timing());
-  
+
 
   memory_manager->MemCheck("outfile");
 
@@ -154,7 +154,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
   delete global_timer;
 
   _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS,1);
-  
+
   return Success;
 }
 

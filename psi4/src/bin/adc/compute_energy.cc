@@ -25,44 +25,44 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/bin/adc/adc.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libmints/molecule.h"
 
 namespace psi{ namespace adc {
-    
+
 struct lambda{
     double value;
     int dpdstate;
 };
 
-double 
+double
 ADCWfn::compute_energy()
-{   
+{
     int nprint;
     char lbl[32];
     struct lambda lmax;
     double corr_energy, trace, *tracepi, **D, *pop, **C, **Dso;
     double *omega, omega_o, omega_diff, theta;
-    dpdfile2 B, V; 
-    
+    dpdfile2 B, V;
+
     omega_guess_ = SharedVector(new Vector(nirrep_, rpi_));
 
     if(options_.get_str("REFERENCE") == "RHF"){
         corr_energy = rhf_init_tensors();
         rhf_prepare_tensors();
     }
- 
+
     // Now we got all ingredients to set up Newton-Raphson and block-Davidson procedures.
     // The secular equation to solve is written as A^{eff}_{SS}(\omega)V_S = V_S\Omega,
     // where subscript S stands for the singly excited manifold.
-    
+
     if(!options_.get_bool("PR"))
         outfile->Printf( "\t==> ADC(2) Computation <==\n\n");
     else
@@ -73,7 +73,7 @@ ADCWfn::compute_energy()
     double denom;
     std::string state_top = "ADC ROOT ";
     char **irrep_      = molecule_->irrep_labels();
-    
+
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_ADC_SEM,      PSIO_OPEN_OLD);
     psio_->open(PSIF_ADC,          PSIO_OPEN_OLD);
@@ -85,7 +85,7 @@ ADCWfn::compute_energy()
                 omega_o = omega_guess_->get(irrep, root);
                 first = true;
                 std::ostringstream oss;
-                
+
                 for(int iter = 1;iter <= pole_max_;iter++){
                     rhf_diagonalize(irrep, root+1, first, omega_o, omega);
                     first = false;
@@ -98,11 +98,11 @@ ADCWfn::compute_energy()
                             printf("\tpole(%d)[%d] in %d iteration: %10.7lf\n", root, irrep, iter, omega[root]);
                             printf("\tpseudo-perturbative value: %10.7lf\n", poles_[irrep][root].ps_value);
                         }
-                        
-                        poles_[irrep][root].iter          = iter; 
+
+                        poles_[irrep][root].iter          = iter;
                         poles_[irrep][root].iter_value    = omega[root];
                         poles_[irrep][root].renorm_factor = 1/denom;
-                        
+
                         sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
                         global_dpd_->file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         outfile->Printf( "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*pc_hartree2ev);
@@ -116,11 +116,11 @@ ADCWfn::compute_energy()
                         outfile->Printf( "\n");
                         outfile->Printf( "\tConverged in %3d iteration.\n", iter);
                         outfile->Printf( "\tSquared norm of the S component: %10.7f\n", poles_[irrep][root].renorm_factor);
-                        
+
                         sprintf(lbl, "B^(%d)_[%d]12", root, irrep);
                         global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         theta = acos(global_dpd_->file2_dot(&B, &V)) * 180.0 / pc_pi;
-                        if((180.0-fabs(theta)) < theta) theta = 180.0 - fabs(theta); 
+                        if((180.0-fabs(theta)) < theta) theta = 180.0 - fabs(theta);
                         global_dpd_->file2_close(&B);
                         outfile->Printf( "\tThe S vector is rotated up to %6.3f (deg.)\n", theta);
                         if(theta > ANGL_TOL_)
@@ -131,7 +131,7 @@ ADCWfn::compute_energy()
                         // Extistence of D vector is not considered here, just akin to CIS(D_inf) manner.
                         global_dpd_->file2_mat_init(&V);
                         global_dpd_->file2_mat_rd(&V);
-/*                        
+/*
                         trace = 0;
                         tracepi = init_array(nirrep_);
                         outfile->Printf( "\t==> Detachment Density Analysis <==\n");
@@ -169,7 +169,7 @@ ADCWfn::compute_energy()
                                 free(pop);
                                 free(work);
                             }
-                            trace += tracepi[sub_irrep];                               
+                            trace += tracepi[sub_irrep];
                         }
                         outfile->Printf( "\n");
                         outfile->Printf( "\tContribution from each irrep... \n");
@@ -235,9 +235,9 @@ ADCWfn::compute_energy()
                         outfile->Printf( "\tTrace of zeroth-order attachment density-matrix: %7.5e\n", trace);
                         outfile->Printf( "\n");
                         free(tracepi);
-*/                                                
-                        
-                        
+*/
+
+
                         /*- Process::environment.globals["ADC ROOT n s EXCITATION ENERGY"] -*/
                         oss << state_top << root + 1 << " " << irrep_[irrep] << " EXCITATION ENERGY";
                         Process::environment.globals[oss.str()] = omega[root];
@@ -249,30 +249,30 @@ ADCWfn::compute_energy()
                         oss.str(std::string());
                         oss << state_top << root + 1 << " " << irrep_[irrep] << " TOTAL ENERGY";
                         Process::environment.globals[oss.str()] = omega[root] + energy_ + corr_energy;
-                
+
                         global_dpd_->file2_close(&V);
-                        
+
                         break;
                     }
                     else
                         omega_o -= omega_diff;
                 }
-            
+
             }
             free(omega);
         }
     }
-    
+
     psio_->close(PSIF_ADC, 1);
     psio_->close(PSIF_ADC_SEM, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
-/*    
+/*
     outfile->Printf( "\t------------------------------------------------------------------------------\n");
     outfile->Printf( "\tD/A diagnosic is based on the reference:\n");
     outfile->Printf( "\tM. Head-Gordon, A. M. Grana, D. Maurice and C. A. White, JPC 99 (1995) 14261.\n");
     outfile->Printf( "\tN.B. Existence of D component is *NOT* considered.\n");
     outfile->Printf( "\t------------------------------------------------------------------------------\n\n");
-*/    
+*/
     energy_ += corr_energy;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = corr_energy;
     Process::environment.globals["MP2 TOTAL ENERGY"] = energy_;
@@ -281,8 +281,8 @@ ADCWfn::compute_energy()
     outfile->Printf( "->\tCorresponding GS total energy (a.u.) = %20.14f\n", energy_);
 
     release_mem();
-    
+
     return energy_;
 }
-    
+
 }} // End Namespaces

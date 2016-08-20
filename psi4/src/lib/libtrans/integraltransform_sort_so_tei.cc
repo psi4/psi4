@@ -31,7 +31,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libmints/matrix.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "integraltransform_functors.h"
 #include "mospace.h"
 #define EXTERN
@@ -246,7 +246,7 @@ IntegralTransform::presort_so_tei()
 
     if(print_){
         outfile->Printf( "\tPresorting SO-basis two-electron integrals.\n");
-        
+
     }
 
     dpdfile4 I;
@@ -308,7 +308,7 @@ IntegralTransform::presort_so_tei()
 
     if(print_) {
         outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        
+
     }
 
     next = PSIO_ZERO;

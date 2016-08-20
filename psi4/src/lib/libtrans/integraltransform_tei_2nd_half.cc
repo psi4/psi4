@@ -34,7 +34,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"
@@ -95,7 +95,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
         }else{
             outfile->Printf( "\tStarting AA second half-transformation.\n");
         }
-        
+
     }
 
     if(useIWL_) iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
@@ -147,7 +147,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
             outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
             outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
             outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-            
+
         }
 
         global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -221,7 +221,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
     if(transformationType_ != Restricted){
         if(print_) {
             outfile->Printf( "\tStarting AB second half-transformation.\n");
-            
+
         }
         if(useIWL_) iwl = new IWL(psio_.get(), iwlABIntFile_, tolerance_, 0, 0);
 
@@ -268,7 +268,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
                 outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
                 outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
                 outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-                
+
             }
 
             global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -340,7 +340,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
 
         if(print_) {
             outfile->Printf( "\tStarting BB second half-transformation.\n");
-            
+
         }
         if(useIWL_) iwl = new IWL(psio_.get(), iwlBBIntFile_, tolerance_, 0, 0);
 
@@ -391,7 +391,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
                 outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
                 outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
                 outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-                
+
             }
 
             global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -473,7 +473,7 @@ IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1
 
     if(print_){
         outfile->Printf( "\tTwo-electron integral transformation complete.\n");
-        
+
     }
 
     // Reset the integral file names, before the next transformation is called

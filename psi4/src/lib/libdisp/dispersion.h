@@ -34,7 +34,7 @@
 * 09/01/2010
 *
 ***********************************************************/
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <string>
 
 namespace psi {
@@ -79,7 +79,7 @@ public:
     Dispersion();
     virtual ~Dispersion();
 
-    static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0, 
+    static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0,
         double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
 
     std::string name() const { return name_; }

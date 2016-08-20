@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/matrix.h"
 //#include "mints.h"
-//#include "psi4/include/compiler.h"
+//#include "psi4/compiler.h"
 
 using namespace boost;
 using namespace psi;

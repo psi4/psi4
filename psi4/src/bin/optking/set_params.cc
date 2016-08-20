@@ -35,7 +35,7 @@
 #include "globals.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include "psi4/include/psi4-dec.h"
+ #include "psi4/psi4-dec.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h>
 #endif
@@ -184,7 +184,7 @@ void set_params(void)
     else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
     else if (s == "LINDH_SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::LINDH_SIMPLE;
 
-// Re-estimate the hessian every step.  Usually default is false. 
+// Re-estimate the hessian every step.  Usually default is false.
     Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
 
 // Original Lindh specification was to redo at every step.
@@ -370,7 +370,7 @@ void set_params(void)
       Opt_params.i_rms_disp = true;
       Opt_params.conv_rms_disp = fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
     }
- 
+
     // even if a specific threshold were given, allow for Molpro/Qchem/G03 flex criteria
     if (options.get_bool("FLEXIBLE_G_CONVERGENCE"))
       Opt_params.i_untampered = true;
@@ -393,7 +393,7 @@ void set_params(void)
     else
       Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
 
-// default 
+// default
 
 
 // Read cartesian Hessian.  Make reading the default for IRC.
@@ -463,7 +463,7 @@ void set_params(void)
   int i;
 
 // MIN = 0 ; TS = 1 ; IRC = 2      (default 0)
-  i = rem_read(REM_GEOM_OPT2_OPT_TYPE); 
+  i = rem_read(REM_GEOM_OPT2_OPT_TYPE);
   if (i == 0)      Opt_params.opt_type = OPT_PARAMS::MIN;
   else if (i == 1) Opt_params.opt_type = OPT_PARAMS::TS;
   else if (i == 2) Opt_params.opt_type = OPT_PARAMS::IRC;
@@ -666,8 +666,8 @@ void set_params(void)
     std::stringstream atoms;
     for (int i=0; i<2*n_frozen; ++i)
       atoms << (int) fd[i] << ' ';
-    Opt_params.frozen_distance_str = atoms.str(); 
-    
+    Opt_params.frozen_distance_str = atoms.str();
+
     free_array(fd);
   }
   // Read QChem input and write all the frozen bends into a string
@@ -679,8 +679,8 @@ void set_params(void)
     std::stringstream atoms;
     for (int i=0; i<3*n_frozen; ++i)
       atoms << (int) fd[i] << ' ';
-    Opt_params.frozen_bend_str = atoms.str(); 
-    
+    Opt_params.frozen_bend_str = atoms.str();
+
     free_array(fd);
   }
   // Read QChem input and write all the frozen dihedrals into a string
@@ -692,8 +692,8 @@ void set_params(void)
     std::stringstream atoms;
     for (int i=0; i<4*n_frozen; ++i)
       atoms << (int) fd[i] << ' ';
-    Opt_params.frozen_dihedral_str = atoms.str(); 
-    
+    Opt_params.frozen_dihedral_str = atoms.str();
+
     free_array(fd);
   }
   // Read QChem input and write all the frozen dihedrals into a string
@@ -702,7 +702,7 @@ void set_params(void)
     double* fd = init_array(2*n_frozen);
     FileMan(FM_READ,FILE_FROZEN_CARTESIANS,FM_DP,2*n_frozen,0,FM_BEG,fd);
 
-    // TODO: will have to add code for "xyz" format to integer format for 
+    // TODO: will have to add code for "xyz" format to integer format for
     // subsequent reads of frozen cartesians from file.
     std::stringstream atoms;
     for (int i=0; i<2*n_frozen; ++i)
@@ -735,7 +735,7 @@ void set_params(void)
   Opt_params.linear_bend_threshold = 3.05; // about 175 degrees
 
 // If bend is smaller than this value, then never fix its associated vectors
-// this allows iterative steps through and near zero degrees. 
+// this allows iterative steps through and near zero degrees.
   Opt_params.small_bend_fix_threshold = 0.35;
 
 // threshold for which entries in diagonalized redundant matrix are kept and inverted
@@ -772,7 +772,7 @@ void set_params(void)
 *  1      RFO    RI      dynamic(D)      no           1 bad step
 *
 *  2      RFO    RI      small initial   yes (1)      1 bad step
-*                        dynamic(D)    
+*                        dynamic(D)
 *
 *  3      SD     RI      large(D)        yes (1)      1 bad step
 *
@@ -937,7 +937,7 @@ void print_params_out(void) {
   //oprintf_out( "print_params           = %18s\n", "true");
   //else
   //oprintf_out( "print_params           = %18s\n", "false");
-  
+
   oprintf_out( "print_params           = %18s\n", Opt_params.print_params ? "true" : "false");
 
   oprintf_out( "print_lvl              = %d\n", Opt_params.print_lvl);

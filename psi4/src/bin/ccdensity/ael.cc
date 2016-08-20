@@ -27,13 +27,13 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -46,7 +46,7 @@
  ** the ground-state CCSD density.
  ** I was never able to get these results to agree with those of JFS or
  ** the current ACES2 so I'm not going to use this right now.
- ** --RAK */ 
+ ** --RAK */
 
 namespace psi { namespace ccdensity {
 

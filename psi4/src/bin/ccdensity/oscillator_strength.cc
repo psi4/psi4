@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
 #include "MOInfo.h"
@@ -48,7 +48,7 @@
 using namespace std;
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S)
 {
@@ -293,7 +293,7 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S)
   outfile->Printf("\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
   outfile->Printf("\tEinstein A Coefficient   %11.8e \n",einstein_a);
   outfile->Printf("\tEinstein B Coefficient   %11.8e \n",einstein_b);
-  
+
 
   if((params.ref == 0) || (params.ref == 1)) {
     free_block(MUX_MO);

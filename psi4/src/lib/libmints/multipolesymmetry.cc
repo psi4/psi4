@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/multipolesymmetry.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/integral.h"
@@ -161,10 +161,10 @@ vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basen
 {
     vector<SharedMatrix > matrices;
     string name;
-    
+
     for (int i=0; i<INT_NCART(order_); ++i) {
         name = basename + " " + name_of_component(i);
-    
+
         matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[i]));
     }
 

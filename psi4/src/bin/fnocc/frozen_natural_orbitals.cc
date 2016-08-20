@@ -32,8 +32,8 @@
   *
   */
 
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -104,7 +104,7 @@ double FrozenNO::compute_energy(){
 void FrozenNO::ComputeNaturalOrbitals(){
     tstart();
 
-    
+
     outfile->Printf("\n\n");
     outfile->Printf( "        *******************************************************\n");
     outfile->Printf( "        *                                                     *\n");
@@ -112,7 +112,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
     outfile->Printf( "        *                                                     *\n");
     outfile->Printf( "        *******************************************************\n");
     outfile->Printf("\n\n");
-    
+
 
     outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
     outfile->Printf("\n");
@@ -517,7 +517,7 @@ DFFrozenNO::~DFFrozenNO()
 {
 }
 
-// use this function to return the mp2 energy in the full basis.  
+// use this function to return the mp2 energy in the full basis.
 // this isn't used anymore ... i'm reluctant to remove it, though
 double DFFrozenNO::compute_energy(){
   return emp2;
@@ -661,8 +661,8 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   outfile->Printf("\n");
 }
 
-/* 
-    build 4-index eri's from 3-index integrals 
+/*
+    build 4-index eri's from 3-index integrals
 */
 void DFFrozenNO::FourIndexIntegrals() {
 
@@ -734,10 +734,10 @@ void DFFrozenNO::FourIndexIntegrals() {
  */
 void DFFrozenNO::ComputeNaturalOrbitals(){
 
-  
+
   outfile->Printf( "  ==> Frozen Natural Orbitals <==\n");
   outfile->Printf("\n");
-  
+
 
   long int o      = ndoccact;
   long int v      = nvirt;

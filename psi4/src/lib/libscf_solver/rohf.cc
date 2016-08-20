@@ -32,7 +32,7 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.hpp"
@@ -43,7 +43,7 @@
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libmints/view.h"
 #include "rohf.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/factory.h"
 #define _DEBUG

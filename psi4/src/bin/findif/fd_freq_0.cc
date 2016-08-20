@@ -43,7 +43,7 @@
 
 using namespace boost::python;
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 extern "C" {
 
@@ -315,7 +315,7 @@ SharedMatrix fd_freq_0(boost::shared_ptr<Molecule> mol, Options &options,
 
 //  double **Hx = block_matrix(3*Natom, 3*Natom);
   SharedMatrix mat_Hx = SharedMatrix(new Matrix("Hessian", 3*Natom, 3*Natom));
-  double** Hx = mat_Hx->pointer(); 
+  double** Hx = mat_Hx->pointer();
 
   // Hx = Bt H B
   for (int i=0; i<dim; ++i)

@@ -46,7 +46,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -131,7 +131,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201\n";
         disp->bibtex_ = "Pernal:2009:263201";
-        disp->s6_ = s6;  
+        disp->s6_ = s6;
         disp->C6_ = C6_Das2009_;
         disp->C8_ = C8_Das2009_;
         disp->A_ = A_Das2009_;
@@ -147,7 +147,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550\n";
         disp->bibtex_ = "Podeszwa:2010:550";
-        disp->s6_ = s6;  
+        disp->s6_ = s6;
         disp->C6_ = C6_Das2010_;
         disp->C8_ = C8_Das2010_;
         disp->Beta_ = Beta_Das2010_;
@@ -347,7 +347,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
 
                 // Extract the Dispersion Energy
                 E = boost::python::extract<double>(ret);
-    
+
                 // Decref Python env pointers
                 Py_DECREF(ret);
                 Py_DECREF(pargs);
@@ -384,7 +384,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
         // list of atoms in monomer B
         std::vector<int> realsB;
         realsB.push_back(1);
-        std::vector<int> ghostsB;  
+        std::vector<int> ghostsB;
         ghostsB.push_back(0);
         boost::shared_ptr<Molecule> monoB = m->extract_subsets(realsB, ghostsB);
         boost::shared_ptr<Vector> blist = set_atom_list(monoB);
@@ -394,13 +394,13 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
             if ( (int)monoA->Z(i) == 0 ) continue;
             for (int j = 0; j < monoB->natom(); j++) {
                 if ( (int)monoB->Z(j) == 0 ) continue;
-    
+
                 double C6, C8, Rm6, Rm8, f_6, f_8, g, beta;
-    
+
                 double dx = monoB->x(j) - monoA->x(i);
                 double dy = monoB->y(j) - monoA->y(i);
                 double dz = monoB->z(j) - monoA->z(i);
-        
+
                 double R2 = dx * dx + dy * dy + dz * dz;
 
                 double R = sqrt(R2);
@@ -408,27 +408,27 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
                 double R8 = R2 * R2 * R2 * R2;
                 Rm6 = 1.0 / R6;
                 Rm8 = 1.0 / R8;
-    
+
                 // Compute geometric mean of atomic C6 coefficients
                 C6 = sqrt(C6_[(int)alist_p[i]] * C6_[(int)blist_p[j]]);
-               
+
                 // Compute geometric mean of atomic C8 coefficients
                 C8 = sqrt(C8_[(int)alist_p[i]] * C8_[(int)blist_p[j]]);
 
-                // Tang-Toennies Damping function    
+                // Tang-Toennies Damping function
                 double f_6_sum = 1.0;
                 double f_8_sum = 1.0;
                 beta = sqrt(Beta_[(int)alist_p[i]] * Beta_[(int)blist_p[j]]);
                 for (int n = 1; n <= 6; n++) {
-                    f_6_sum += pow(R * beta,n) / math::factorial<double>(n); 
-                } 
+                    f_6_sum += pow(R * beta,n) / math::factorial<double>(n);
+                }
                 for (int n = 1; n <= 8; n++) {
-                    f_8_sum += pow(R * beta,n) / math::factorial<double>(n); 
+                    f_8_sum += pow(R * beta,n) / math::factorial<double>(n);
                 }
 
                 f_6 = 1.0 - exp(-R * beta) * f_6_sum;
                 f_8 = 1.0 - exp(-R * beta) * f_8_sum;
-               
+
 
                 if (Spherical_type_ == Spherical_Das) {
                     g = sqrt(A_[(int)alist_p[i]] * A_[(int)blist_p[j]]) * exp(-R * beta);
@@ -437,7 +437,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
                 } else {
                     throw PSIEXCEPTION("Unrecognized Spherical Type");
                 }
-    
+
                 E += C6 * Rm6 * f_6;
                 E += C8 * Rm8 * f_8;
                 E += g;
@@ -449,45 +449,45 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
         double * atom_list_p = atom_list->pointer();
         for (int i = 0; i < m->natom(); i++) {
             for (int j = 0; j < i; j++) {
-    
+
                 double C6, Rm6, f;
-    
-    
+
+
                 double dx = m->x(j) - m->x(i);
                 double dy = m->y(j) - m->y(i);
                 double dz = m->z(j) - m->z(i);
-        
+
                 double R2 = dx * dx + dy * dy + dz * dz;
                 double R = sqrt(R2);
                 double R6 = R2 * R2 * R2;
                 Rm6 = 1.0 / R6;
-    
-            
+
+
                 if (C6_type_ == C6_arit) {
                     C6 = 2.0 * C6_[(int)atom_list_p[i]] * C6_[(int)atom_list_p[j]] / (C6_[(int)atom_list_p[i]] + C6_[(int)atom_list_p[j]]);
                 } else if (C6_type_ == C6_geom) {
                     C6 = sqrt(C6_[(int)atom_list_p[i]] * C6_[(int)atom_list_p[j]]);
                 } else {
                     throw PSIEXCEPTION("Unrecognized C6 Type");
-                } 
-               
+                }
+
                 if (Damping_type_ == Damping_D1) {
                     double RvdW = RvdW_[(int)atom_list_p[i]] + RvdW_[(int)atom_list_p[j]];
-                    f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1)));} 
+                    f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1)));}
                 else if (Damping_type_ == Damping_CHG) {
                     double RvdW = RvdW_[(int)atom_list_p[i]] + RvdW_[(int)atom_list_p[j]];
-                    f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));} 
+                    f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));}
                 else {
                     throw PSIEXCEPTION("Unrecognized Damping Function");
                 }
-               
-    
+
+
                 E += C6 * Rm6 * f;
             }
-        } 
+        }
     }
     E *= - s6_;
-    
+
     return E;
 }
 SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
@@ -552,15 +552,15 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
 
                 double C6, Rm6, f;
                 double C6_R, Rm6_R, f_R;
-        
-                double R; 
+
+                double R;
                 double R_xi, R_yi, R_zi;
                 double R_xj, R_yj, R_zj;
 
                 double dx = m->x(j) - m->x(i);
                 double dy = m->y(j) - m->y(i);
                 double dz = m->z(j) - m->z(i);
-        
+
                 double R2 = dx * dx + dy * dy + dz * dz;
                 R = sqrt(R2);
 
@@ -585,10 +585,10 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
                     C6_R = 0.0;
                 } else {
                     throw PSIEXCEPTION("Unrecognized C6 Type");
-                } 
+                }
                 if (Damping_type_ == Damping_D1) {
                     f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1.0)));
-                    f_R = - f * f * exp(-d_ * (R / RvdW - 1.0)) * (-d_ / RvdW); 
+                    f_R = - f * f * exp(-d_ * (R / RvdW - 1.0)) * (-d_ / RvdW);
                 } else if (Damping_type_ == Damping_CHG) {
                     f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));
                     f_R = - f * f * d_ * (-12.0) * pow((R / RvdW), -13.0) * (1.0 / RvdW);
@@ -600,17 +600,17 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
 
                 double E_R = C6_R * Rm6 * f + C6 * Rm6_R * f + C6 * Rm6 * f_R;
 
-                Gp[i][0] += E_R * R_xi; 
-                Gp[i][1] += E_R * R_yi; 
-                Gp[i][2] += E_R * R_zi; 
-                Gp[j][0] += E_R * R_xj; 
-                Gp[j][1] += E_R * R_yj; 
-                Gp[j][2] += E_R * R_zj; 
+                Gp[i][0] += E_R * R_xi;
+                Gp[i][1] += E_R * R_yi;
+                Gp[i][2] += E_R * R_zi;
+                Gp[j][0] += E_R * R_xj;
+                Gp[j][1] += E_R * R_yj;
+                Gp[j][2] += E_R * R_zj;
             }
-        } 
+        }
 
         G->scale(-s6_);
-    } 
+    }
     return G;
 }
 SharedMatrix Dispersion::compute_hessian(boost::shared_ptr<Molecule> m)

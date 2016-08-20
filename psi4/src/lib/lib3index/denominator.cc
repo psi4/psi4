@@ -43,7 +43,7 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
@@ -1227,7 +1227,7 @@ void TLaplaceDenominator::debug()
     for (int b = 0; b < nvir; b++)
     for (int c = 0; c < nvir; c++)
         ap[i*nocc*nocc + j*nocc + k][a*nvir*nvir + b*nvir + c] += d_o[alpha][i] * d_o[alpha][j] * d_o[alpha][k] *
-                                                                  d_v[alpha][a] * d_v[alpha][b] * d_v[alpha][c]; 
+                                                                  d_v[alpha][a] * d_v[alpha][b] * d_v[alpha][c];
 
     err_denom->copy(app_denom);
     err_denom->subtract(true_denom);

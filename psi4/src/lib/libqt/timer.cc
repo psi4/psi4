@@ -73,8 +73,8 @@
 #include <sys/param.h>
 #include <sys/times.h>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 /* guess for HZ, if missing */
 #ifndef HZ
@@ -298,11 +298,11 @@ double timer_nsdiff(struct timeval& endt, struct timeval& begint) {
   if(endt.tv_usec - begint.tv_usec > million) {
     nsec = (endt.tv_usec - begint.tv_usec) / million;
     begint.tv_usec += million * nsec;
-    begint.tv_sec -= nsec; 
+    begint.tv_sec -= nsec;
   }
 
   return ( (double)(endt.tv_sec - begint.tv_sec) + ((endt.tv_usec - begint.tv_usec) / ((double)million)) );
-} 
+}
 
 /*!
 ** timer_off(): Turn off the timer with the name given as an argument.  Can

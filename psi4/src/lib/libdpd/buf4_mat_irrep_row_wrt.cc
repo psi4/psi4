@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
