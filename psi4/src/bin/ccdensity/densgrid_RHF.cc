@@ -27,11 +27,11 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <stdio.h>
 #include <math.h>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -44,8 +44,8 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -55,7 +55,7 @@
 namespace psi { namespace ccdensity {
 
 /*
-** densgrid_RHF(): Compute the values of the ground-state one-particle 
+** densgrid_RHF(): Compute the values of the ground-state one-particle
 ** density at a set of grid points.
 **
 ** TDC, 7/2012
@@ -86,7 +86,7 @@ void densgrid_RHF(boost::shared_ptr<Wavefunction> wfn, Options& options)
   scf_pitzer = wfn->Ca()->to_block_matrix();
 
   D = moinfo.opdm; // A block matrix
-  delta = block_matrix(nmo, nmo); // Dirac delta function 
+  delta = block_matrix(nmo, nmo); // Dirac delta function
 
   // Set up AO->SO transformation matrix (u)
   MintsHelper helper(wfn->basisset(), options, 0);
@@ -111,7 +111,7 @@ void densgrid_RHF(boost::shared_ptr<Wavefunction> wfn, Options& options)
       for(int j=0; j < nso; j++) scf[j][I] = scf_pitzer[j][i];
     }
 
-  // Scan along Cartesian axes to determine dimensions of box 
+  // Scan along Cartesian axes to determine dimensions of box
   molecule->print();
   outfile->Printf( "  Grid domain:\n");
   xmin = xmax = molecule->xyz(0, 0);

@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libmints/sointegral_onebody.h"
 #include "psi4/src/lib/libmints/sointegral_twobody.h"
@@ -37,7 +37,7 @@
 #include "matrix.h"
 #include "molecule.h"
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>

@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "ccwave.h"

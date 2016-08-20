@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -47,8 +47,8 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::tei_grad_corr()
-{      
-  //outfile->Printf("\ttei_grad_corr is starting... \n"); 
+{
+  //outfile->Printf("\ttei_grad_corr is starting... \n");
 
 //===========================================================================================
 //========================= Two-electron Gradient:Corr ======================================
@@ -60,25 +60,25 @@ void DFOCC::tei_grad_corr()
     #endif
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(), 
+    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
         "BASIS", Process::environment.options.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(), 
+    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
         "DF_BASIS_CC", Process::environment.options.get_str("DF_BASIS_CC"),
         "RIFIT", Process::environment.options.get_str("BASIS"));
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
     int nbasis = primary_->nbf();
     int nQ_corr = auxiliary_->nbf();
-    
+
 
 //===========================================================================================
 //========================= Metric Gradient:Corr ============================================
 //===========================================================================================
-    // Read Gaux 
+    // Read Gaux
     Gaux = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr));
     //Gaux->read(psio_, PSIF_DFOCC_DENS);
     Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
- 
+
     // JPQ_X
     timer_on("Grad: Metric:Corr");
     gradients["Metric:Corr"] = SharedMatrix(gradients["Nuclear"]->clone());
@@ -186,7 +186,7 @@ void DFOCC::tei_grad_corr()
     gQso->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
-    timer_on("Grad: 3-Index:Corr");    
+    timer_on("Grad: 3-Index:Corr");
 
     //int naux = nQ;
     gradients["3-Index:Corr"] = SharedMatrix(gradients["Nuclear"]->clone());
@@ -338,10 +338,10 @@ void DFOCC::tei_grad_corr()
     }
 
     //gradients["3-Index:Corr"]->print_atom_vector();
-    timer_off("Grad: 3-Index:Corr");    
+    timer_off("Grad: 3-Index:Corr");
 
-//outfile->Printf("\tref_grad is done. \n"); 
-}// end 
+//outfile->Printf("\tref_grad is done. \n");
+}// end
 
 
 }} // End Namespaces

@@ -27,14 +27,14 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi { namespace ccsort {
 
 void domain_print(int nocc, int natom, int *domain_len, int **domain,
@@ -45,7 +45,7 @@ void domain_print(int nocc, int natom, int *domain_len, int **domain,
   double domain_tot, domain_ave;
 
   max = 0;
-  for(i=0; i < nocc; i++) 
+  for(i=0; i < nocc; i++)
     if(domain_len[i] > max) max = domain_len[i];
 
   outfile->Printf( "   Orbital  Domain");
@@ -65,7 +65,7 @@ void domain_print(int nocc, int natom, int *domain_len, int **domain,
     domain_tot += domain_len[i];
   domain_ave = domain_tot/nocc;
   outfile->Printf( "\n   The average domain length is %4.2lf\n", domain_ave);
-  
+
 }
 
 }} // namespace psi::ccsort

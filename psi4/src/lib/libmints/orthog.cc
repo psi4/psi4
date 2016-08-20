@@ -29,7 +29,7 @@
 #include <cmath>
 #include <iterator>
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "matrix.h"
 #include "vector.h"
@@ -148,7 +148,7 @@ void OverlapOrthog::compute_overlap_eig(Matrix& overlap_eigvec,
         overlap_eigvec.print();
         isqrt_eigval.print();
         sqrt_eigval.print();
-        
+
     }
 }
 

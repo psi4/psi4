@@ -28,7 +28,7 @@
 #include <cmath>
 #include <algorithm>
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -46,7 +46,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "algebra_interface.h"
 #include "blas.h"
@@ -88,7 +88,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep)
 {
   if(first_irrep>moinfo->get_nirreps()){
     outfile->Printf("\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
-    
+
     exit(EXIT_FAILURE);
   }
 
@@ -122,7 +122,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep)
   outfile->Printf("\n    Integrals from irreps %d -> %d will be read in core",first_irrep,last_irrep-1);
   if(first_irrep == last_irrep){
     outfile->Printf("\n    CCTransform: allocate_tei_mo_block() has not enough memory!");
-    
+
     exit(EXIT_FAILURE);
   }
   first_irrep_in_core = first_irrep;

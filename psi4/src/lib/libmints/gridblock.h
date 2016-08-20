@@ -29,34 +29,34 @@
 #define libmints_gridblock_H
 /*
 * gridblock.h
-* Definition of class GridBlock for use with numerical integrators 
+* Definition of class GridBlock for use with numerical integrators
 * (as in KS-DFT) and the various point property calculators
 *
 * Created by Robert Parrish on 04/15/2010
 */
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
 
-namespace psi { 
+namespace psi {
 /*! \ingroup LIBMINTS */
-//! Integration Point/Weight container class (blocks, not individual) 
+//! Integration Point/Weight container class (blocks, not individual)
 class GridBlock {
 public:
-    /// Weight vector 
+    /// Weight vector
     double* w_;
-    /// x vector 
+    /// x vector
     double* x_;
-    /// y vector 
+    /// y vector
     double* y_;
-    /// z vector 
+    /// z vector
     double* z_;
     /// Maximum number of points in block at the moment
     int max_points_;
     /// Actual number of valid points
-    int true_points_; 
+    int true_points_;
     GridBlock() {}
     ~GridBlock() {}
 

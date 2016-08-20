@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string>
 #include <boost/foreach.hpp>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -255,7 +255,7 @@ public:
         throw PSIEXCEPTION("ScfAndDfCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
 
-    ~ScfAndDfCorrelationRestrictedFunctor() 
+    ~ScfAndDfCorrelationRestrictedFunctor()
     { }
 
     void load_tpdm(size_t /*id*/) {}
@@ -383,7 +383,7 @@ public:
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
     }
-    ~ScfUnrestrictedFunctor() 
+    ~ScfUnrestrictedFunctor()
     { }
 
     void load_tpdm(size_t /*id*/) {}
@@ -391,7 +391,7 @@ public:
 
     void finalize() {
         // Do summation over threads
-        for (int i=1; i<nthread; ++i) 
+        for (int i=1; i<nthread; ++i)
             result[0]->add(result[i]);
         // Do MPI global summation
         result[0]->sum();
@@ -548,8 +548,8 @@ SharedMatrix Deriv::compute()
         }
         for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
             TPDMcont[cd] = TPDMcont_vector->get(cd);
-        
-    } 
+
+    }
     else {
         /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
            Lagrangian to disk and density matrices to disk, and these both include the reference
@@ -640,7 +640,7 @@ SharedMatrix Deriv::compute()
 
             for (size_t cd=0; cd < cdsalcs_.ncd(); ++cd)
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
-            
+
         }
 
         outfile->Printf( "\n");

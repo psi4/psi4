@@ -36,20 +36,20 @@
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 unsigned int PSIO::toclen(unsigned int unit) {
   unsigned int len=0;
   psio_tocentry *this_entry;
-  
+
   this_entry = psio_unit[unit].toc;
-  
+
   while (this_entry != NULL) {
     ++len;
     this_entry = this_entry->next;
   }
-  
+
   return (len);
 }
 
@@ -57,9 +57,9 @@ ULI PSIO::rd_toclen(unsigned int unit) {
   int errcod, stream;
   psio_ud *this_unit;
   ULI len;
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* Seek vol[0] to its beginning */
   stream = this_unit->vol[0].stream;
 
@@ -67,7 +67,7 @@ ULI PSIO::rd_toclen(unsigned int unit) {
 
   if (errcod == -1)
     psio_error(unit, PSIO_ERROR_LSEEK);
-  
+
   /* Read the value */
 
     errcod = ::read(stream, (char *) &len, sizeof(ULI));
@@ -81,9 +81,9 @@ ULI PSIO::rd_toclen(unsigned int unit) {
 void PSIO::wt_toclen(unsigned int unit, ULI len) {
   int errcod, stream;
   psio_ud *this_unit;
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* Seek vol[0] to its beginning */
   stream = this_unit->vol[0].stream;
 
@@ -93,7 +93,7 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
     ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
     exit(_error_exit_code_);
   }
-  
+
   /* Write the value */
 
     errcod = ::write(stream, (char *) &len, sizeof(ULI));

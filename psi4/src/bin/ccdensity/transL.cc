@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "MOInfo.h"
@@ -94,8 +94,8 @@ void transL(MintsHelper &mints, double sign)
   moinfo.L[1] = LY_MO;
   moinfo.L[2] = LZ_MO;
 
-  free_block(LX_SO); 
-  free_block(LY_SO); 
+  free_block(LX_SO);
+  free_block(LY_SO);
   free_block(LZ_SO);
 
   return;

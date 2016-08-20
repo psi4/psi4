@@ -27,10 +27,10 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"
@@ -46,7 +46,7 @@ namespace psi { namespace ccsort {
 ** RHF references and singlet eigenstates:
 **  B(AI,BJ) = delta_IJ f_AB - delta_AB f_IJ + <IJ|BA> - <IA|JB>
 **
-** This routine will build each spin component of the entire matrix 
+** This routine will build each spin component of the entire matrix
 ** for later in-core diagonalization.
 **
 ** TDC, March 2003
@@ -62,19 +62,19 @@ void build_B_RHF(double omega)
   int a, b, i, j, ai, bj, A, B, I, J, Asym, Bsym, Isym, Jsym;
   dpdbuf4 C, D, Bmat;
   dpdfile2 fIJ, fij, fAB, fab;
-	
+
   nirreps = moinfo.nirreps;
-	
+
   psio_open(PSIF_MO_HESS, 0);
-	
+
   global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
   global_dpd_->buf4_sort(&D, PSIF_MO_HESS, sprq, 11, 11, "B(AI,BJ)");
   global_dpd_->buf4_close(&D);
-	
+
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
   global_dpd_->buf4_sort_axpy(&C, PSIF_MO_HESS, qpsr, 11, 11, "B(AI,BJ)", -1);
   global_dpd_->buf4_close(&C);
-	
+
   global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   global_dpd_->file2_mat_init(&fIJ);
   global_dpd_->file2_mat_rd(&fIJ);
@@ -87,7 +87,7 @@ void build_B_RHF(double omega)
   global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
   global_dpd_->file2_mat_init(&fab);
   global_dpd_->file2_mat_rd(&fab);
-	
+
   global_dpd_->buf4_init(&Bmat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "B(AI,BJ)");
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_init(&Bmat, h);
@@ -115,7 +115,7 @@ void build_B_RHF(double omega)
     global_dpd_->buf4_mat_irrep_close(&Bmat, h);
   }
   global_dpd_->buf4_close(&Bmat);
-	
+
   global_dpd_->file2_mat_close(&fab);
   global_dpd_->file2_close(&fab);
   global_dpd_->file2_mat_close(&fAB);
@@ -124,7 +124,7 @@ void build_B_RHF(double omega)
   global_dpd_->file2_close(&fij);
   global_dpd_->file2_mat_close(&fIJ);
   global_dpd_->file2_close(&fIJ);
-	
+
   psio_close(PSIF_MO_HESS, 1);
 }
 

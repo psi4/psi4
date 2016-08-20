@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include"psi4/src/lib/libqt/qt.h"
 #include<sys/times.h>
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #ifdef _OPENMP
     #include<omp.h>
 #else
@@ -65,7 +65,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
- 
+
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
@@ -172,8 +172,8 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
 
   // build I1'(i,j)
   F_DGEMM('t','n',o,o,ov2,2.0,tempt,ov2,integrals,ov2,0.0,I1p,o);
- 
-  // no singles 
+
+  // no singles
   // only n^4
   //psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
   //psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempt[0],o*o*o*v*sizeof(double));
@@ -301,7 +301,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
-  
+
   for (i=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){

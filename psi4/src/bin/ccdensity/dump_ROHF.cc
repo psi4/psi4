@@ -27,13 +27,13 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -99,7 +99,7 @@ if (!params.onepdm) {
   global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 10, "G(IK,JA)");
   global_dpd_->buf4_close(&G);
   global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "G(IK,JA)");
-  
+
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_init(&G, h);
     global_dpd_->buf4_mat_irrep_rd(&G, h);
@@ -156,7 +156,7 @@ if (!params.onepdm) {
     global_dpd_->buf4_mat_irrep_wrt(&G, h);
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
-  
+
   global_dpd_->buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_vir, qt_vir, 0, 0);
   global_dpd_->buf4_close(&G);
 

@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -50,7 +50,7 @@ void cachedone_rhf(int **cachelist);
 
 void memcheck(int reference);
 
-vector<int> pitzer2qt(vector<Dimension> &spaces); 
+vector<int> pitzer2qt(vector<Dimension> &spaces);
 
 void sort_tei_rhf(boost::shared_ptr<PSIO> psio, int print);
 void sort_tei_uhf(boost::shared_ptr<PSIO> psio, int print);
@@ -133,7 +133,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   Dimension virpi = uoccpi + openpi;
 
   // Build Pitzer->QT and QT->Pitzer reordering arrays
-  vector<int> p2qt, p2qt_a, p2qt_b; 
+  vector<int> p2qt, p2qt_a, p2qt_b;
   vector<int> qt2p(nmo), qt2p_a(nmo), qt2p_b(nmo);
   vector<Dimension> subspaces;
   if(reference == 2) {
@@ -190,9 +190,9 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     avir_off.push_back(0);
     bocc_off.push_back(0);
     bvir_off.push_back(0);
-    int aocount = aoccpi[0]; 
+    int aocount = aoccpi[0];
     int avcount = avirpi[0];
-    int bocount = boccpi[0]; 
+    int bocount = boccpi[0];
     int bvcount = bvirpi[0];
     for(int h=1; h < nirreps; h++) {
       aocc_off.push_back(aocount); aocount += aoccpi[h];
@@ -264,7 +264,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   else { // RHF/ROHF
     occ_off.push_back(0);
     vir_off.push_back(0);
-    int ocount = occpi[0]; 
+    int ocount = occpi[0];
     int vcount = virpi[0];
     for(int h=1; h < nirreps; h++) {
       occ_off.push_back(ocount); ocount += occpi[h];
@@ -325,7 +325,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   outfile->Printf("\tNumber of active MOs = %d\n", nactive);
   outfile->Printf("\tAO-Basis             = %s\n", options.get_str("AO_BASIS").c_str());
   outfile->Printf("\tSemicanonical        = %s\n", semicanonical ? "true" : "false");
-  if(semicanonical) 
+  if(semicanonical)
     outfile->Printf("\tReference            = ROHF changed to UHF for semicanonical orbitals\n");
   else
     outfile->Printf("\tReference            = %s\n", reference == 2 ? "UHF" : (reference == 1 ? "ROHF" : "RHF"));
@@ -618,7 +618,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     global_dpd_->file2_mat_wrt(&H);
     global_dpd_->file2_mat_close(&H);
     global_dpd_->file2_close(&H);
-  
+
     global_dpd_->file2_init(&H, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
     global_dpd_->file2_mat_init(&H);
     for(int h=0; h < nirreps; h++) {

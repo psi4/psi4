@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <string>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
@@ -42,7 +42,7 @@
 
 #include "psi4/src/lib/libmints/writer.h"
 #include "psi4/src/lib/libmints/writer_file_prefix.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libscf_solver/rhf.h"
 #include "psi4/src/lib/libscf_solver/rohf.h"

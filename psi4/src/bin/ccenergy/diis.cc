@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -37,7 +37,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "ccwave.h"
 
@@ -55,7 +55,7 @@ namespace psi { namespace ccenergy {
 ** -TDC  12/22/01
 ** -Modifications for ROHF and UHF, TDC, 6/03
 **
-** Condition Improvements: applying balanced, conditioned 
+** Condition Improvements: applying balanced, conditioned
 ** pseudoinversion to prevent convergence errors
 **
 ** -RMP 04/02/13
@@ -87,7 +87,7 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
 
     if (is_zero) {
         for (int i = 0; i < dimension; i++) {
-            Sp[i] = 1.0;   
+            Sp[i] = 1.0;
         }
     } else {
         for (int i = 0; i < dimension - 1; i++) {
@@ -98,20 +98,20 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
 
     for (int i = 0; i < dimension; i++) {
         for (int j = 0; j < dimension; j++) {
-            Bp[i][j] *= Sp[i] * Sp[j]; 
+            Bp[i][j] *= Sp[i] * Sp[j];
         }
     }
 
     B2->power(-1.0, tolerance);
-    
+
     C_DGEMV('N',dimension,dimension,1.0,Bp[0],dimension,C,1,0.0,Tp,1);
-    
+
     for (int i = 0; i < dimension; i++) {
         C[i] = Sp[i] * Tp[i];
-    } 
-   
+    }
+
     delete[] Sp;
-    delete[] Tp; 
+    delete[] Tp;
 }
 
 }} // namespace psi::ccenergy

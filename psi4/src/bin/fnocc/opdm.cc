@@ -26,7 +26,7 @@
  */
 
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "blas.h"
 #include "ccsd.h"
@@ -52,7 +52,7 @@ void CoupledPair::OPDM(){
      tb = tempv;
   }
 
-  // Normalize wave function and return leading coefficient 
+  // Normalize wave function and return leading coefficient
   double c0 = Normalize(o,v,t1,tb,cepa_level);
 
   // Build 1-RDM
@@ -178,7 +178,7 @@ void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*
           D1[(a+o+nfzc)*nmo+(b+o+nfzc)] = tempd[a*v+b];
       }
   }
- 
+
   // D(i,j)
   F_DGEMM('n','t',o,o,o*v*v,-1.0,tb,o,tb,o,0.0,tempd,o);
   F_DGEMM('n','t',o,o,o*v*v,-0.5,ta,o,ta,o,1.0,tempd,o);

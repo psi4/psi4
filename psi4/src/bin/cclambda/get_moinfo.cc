@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/molecule.h"
@@ -231,7 +231,7 @@ void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
     outfile->Printf(  "\tSCF energy          (wfn)     = %20.15f\n",moinfo.escf);
     outfile->Printf(  "\tReference energy    (CC_INFO) = %20.15f\n",moinfo.eref);
 
-    
+
 }
 
 /* Frees memory allocated in get_moinfo() and dumps some info. */

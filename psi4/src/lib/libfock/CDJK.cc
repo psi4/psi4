@@ -29,8 +29,8 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/aiohandler.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "jk.h"
@@ -74,7 +74,7 @@ void CDJK::initialize_JK_core()
     timer_on("CD: cholesky decomposition");
     boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
     int ntri = sieve_->function_pairs().size();
-    /// If user asks to read integrals from disk, just read them from disk.  
+    /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
     /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
     if(df_ints_io_ == "LOAD")
@@ -97,8 +97,8 @@ void CDJK::initialize_JK_core()
     ULI three_memory = ncholesky_ * ntri;
     ULI nbf = primary_->nbf();
 
-    ///Kinda silly to check for memory after you perform CD.  
-    ///Most likely redundant as cholesky also checks for memory.  
+    ///Kinda silly to check for memory after you perform CD.
+    ///Most likely redundant as cholesky also checks for memory.
     if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
         throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
@@ -128,7 +128,7 @@ void CDJK::initialize_JK_core()
         psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
         psio_->close(unit_,1);
         // stick ncholesky in process environment for other codes that may use the integrals
-        // Not sure if this should really be here.  It is here because Ugur uses this option to get the number of cholesky vectors.  
+        // Not sure if this should really be here.  It is here because Ugur uses this option to get the number of cholesky vectors.
         Process::environment.globals["NAUX (SCF)"] = ncholesky_;
     }
 }

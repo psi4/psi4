@@ -30,7 +30,7 @@
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/pointgrp.h"
 #include "occwave.h"
 
@@ -39,11 +39,11 @@ using namespace std;
 
 
 namespace psi{ namespace occwave{
-  
-void OCCWave::ekt_ip()
-{   
 
-//outfile->Printf("\n ekt_ip is starting... \n"); 
+void OCCWave::ekt_ip()
+{
+
+//outfile->Printf("\n ekt_ip is starting... \n");
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -62,10 +62,10 @@ void OCCWave::ekt_ip()
      SharedVector eorbA = boost::shared_ptr<Vector>(new Vector("eorbA", nirrep_, nmopi_));
 
      // For Non-OO methods
-     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);  
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);
      else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED") {
-              GFockA->scale(0.5);  
-              GFockB->scale(0.5);  
+              GFockA->scale(0.5);
+              GFockB->scale(0.5);
      }
 
      // Make sure GFM is symmetric
@@ -84,7 +84,7 @@ void OCCWave::ekt_ip()
          g1symm_copyA->scale(0.5);
          g1symm->copy(g1symm_copyA);
          if (print_ >=2 ) g1symm->print();
-     } 
+     }
 
 
      // Diagonalize OPDM
@@ -98,7 +98,7 @@ void OCCWave::ekt_ip()
      for (int h = 0; h < nirrep_; ++h) {
           for (int i = 0; i < nmopi_[h]; ++i) {
                outfile->Printf("\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
-               
+
           }
      }
      */
@@ -115,7 +115,7 @@ void OCCWave::ekt_ip()
      for (int h = 0; h < nirrep_; ++h) {
           for (int i = 0; i < nmopi_[h]; ++i) {
                outfile->Printf("\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
-               
+
           }
      }
      */
@@ -135,7 +135,7 @@ void OCCWave::ekt_ip()
      }
 
      tempA->zero();
-     tempA->gemm(false, true, 1.0, g1HalfA, UvecA, 0.0); 
+     tempA->gemm(false, true, 1.0, g1HalfA, UvecA, 0.0);
      g1HalfA->gemm(false, false, 1.0, UvecA, tempA, 0.0);
 
      // Build GFock prime matrix
@@ -149,12 +149,12 @@ void OCCWave::ekt_ip()
      Uvec_primeA->zero();
      GFock_primeA->diagonalize(Uvec_primeA, eorbA);
      UvecA->gemm(false, false, 1.0, g1HalfA, Uvec_primeA, 0.0);
-     
+
      // Pole strength
      PSA->zero();
      gc_transA->zero();
-     if (reference_ == "RESTRICTED") tempA->gemm(false, false, 1.0, g1symm, UvecA, 0.0); 
-     else if (reference_ == "UNRESTRICTED") tempA->gemm(false, false, 1.0, g1symmA, UvecA, 0.0); 
+     if (reference_ == "RESTRICTED") tempA->gemm(false, false, 1.0, g1symm, UvecA, 0.0);
+     else if (reference_ == "UNRESTRICTED") tempA->gemm(false, false, 1.0, g1symmA, UvecA, 0.0);
      gc_transA = tempA->transpose();
      PSA->gemm(false, false, 1.0, gc_transA, tempA, 0.0);
      ps_vecA->zero();
@@ -172,7 +172,7 @@ void OCCWave::ekt_ip()
     evals_A->zero();
     ps_vec2A->zero();
     irrep_A->zero();
- 
+
 
     // Copy ps vec
     int count = 0;
@@ -211,9 +211,9 @@ void OCCWave::ekt_ip()
     eoccA->zero();
     ps_occA->zero();
     irrep_occA->zero();
- 
 
-    // Copy 
+
+    // Copy
     for (int i = 0; i < nooA; ++i) {
          eoccA->set(i, evals_A->get(i));
          ps_occA->set(i, ps_vec2A->get(i));
@@ -238,12 +238,12 @@ void OCCWave::ekt_ip()
              }
          }
     }
- 
+
     // Print IPs
-    outfile->Printf("\n\tEKT-OCC Ionization Potentials (Alpha Spin Case) \n"); 
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-    
-	  
+    outfile->Printf("\n\tEKT-OCC Ionization Potentials (Alpha Spin Case) \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
+
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
@@ -251,30 +251,30 @@ void OCCWave::ekt_ip()
  // print alpha IPs
  if (print_ < 2) {
     outfile->Printf( "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
     for (int i = 0; i < nooA; ++i){
          int h = irrep_occA->get(i);
-	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(),
                           eoccA->get(i), -eoccA->get(i)*pc_hartree2ev, ps_occA->get(i));
-	    
+
     }
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
  }// end if
 
  else if (print_ >= 2) {
     outfile->Printf( "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_A->get(i);
-	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(),
                           evals_A->get(i), -evals_A->get(i)*pc_hartree2ev, ps_vec2A->get(i));
-	    
+
     }
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
  }// end else if
 
 //===========================================================================================
@@ -326,7 +326,7 @@ if (reference_ == "UNRESTRICTED") {
          g1symm_copyB->scale(0.5);
          g1symmB->copy(g1symm_copyB);
          if (print_ >=2 ) g1symmB->print();
-     } 
+     }
 
      // Diagonalize OPDM
      UvecB->zero();
@@ -355,7 +355,7 @@ if (reference_ == "UNRESTRICTED") {
      }
 
      tempB->zero();
-     tempB->gemm(false, true, 1.0, g1HalfB, UvecB, 0.0); 
+     tempB->gemm(false, true, 1.0, g1HalfB, UvecB, 0.0);
      g1HalfB->gemm(false, false, 1.0, UvecB, tempB, 0.0);
 
      // Build GFock prime matrix
@@ -368,11 +368,11 @@ if (reference_ == "UNRESTRICTED") {
      Uvec_primeB->zero();
      GFock_primeB->diagonalize(Uvec_primeB, eorbB);
      UvecB->gemm(false, false, 1.0, g1HalfB, Uvec_primeB, 0.0);
-     
+
      // Pole strength
      PSB->zero();
      gc_transB->zero();
-     tempB->gemm(false, false, 1.0, g1symmB, UvecB, 0.0); 
+     tempB->gemm(false, false, 1.0, g1symmB, UvecB, 0.0);
      gc_transB = tempB->transpose();
      PSB->gemm(false, false, 1.0, gc_transB, tempB, 0.0);
      ps_vecB->zero();
@@ -427,9 +427,9 @@ if (reference_ == "UNRESTRICTED") {
     eoccB->zero();
     ps_occB->zero();
     irrep_occB->zero();
- 
 
-    // Copy 
+
+    // Copy
     for (int i = 0; i < nooB; ++i) {
          eoccB->set(i, evals_B->get(i));
          ps_occB->set(i, ps_vec2B->get(i));
@@ -454,39 +454,39 @@ if (reference_ == "UNRESTRICTED") {
              }
          }
     }
- 
+
     // Print IPs
-    outfile->Printf("\n\tEKT-OCC Ionization Potentials (Beta Spin Case) \n"); 
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-    
-	  
+    outfile->Printf("\n\tEKT-OCC Ionization Potentials (Beta Spin Case) \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
+
  // print alpha IPs
  if (print_ < 2) {
     outfile->Printf( "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
     for (int i = 0; i < nooB; ++i){
          int h = irrep_occB->get(i);
-	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(),
                           eoccB->get(i), -eoccB->get(i)*pc_hartree2ev, ps_occB->get(i));
-	    
+
     }
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
  }// end if
 
  else if (print_ >= 2) {
     outfile->Printf( "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_B->get(i);
-	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(),
                           evals_B->get(i), -evals_B->get(i)*pc_hartree2ev, ps_vec2B->get(i));
-	    
+
     }
-    outfile->Printf("\t------------------------------------------------------------------- \n"); 
-       
+    outfile->Printf("\t------------------------------------------------------------------- \n");
+
  }// end else if
 
        GFock_primeB.reset();
@@ -507,13 +507,13 @@ if (reference_ == "UNRESTRICTED") {
        delete ps_occB;
        delete eoccB;
 
-}// if (reference_ == "UNRESTRICTED") 
+}// if (reference_ == "UNRESTRICTED")
 
      // For Non-OO methods
-     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(2.0);  
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(2.0);
      else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED") {
-              GFockA->scale(2.0);  
-              GFockB->scale(2.0);  
+              GFockA->scale(2.0);
+              GFockB->scale(2.0);
      }
 
        GFock_primeA.reset();
@@ -526,7 +526,7 @@ if (reference_ == "UNRESTRICTED") {
        Diag_g1A.reset();
        ps_vecA.reset();
        eorbA.reset();
-	
+
        delete irrep_A;
        delete ps_vec2A;
        delete evals_A;
@@ -534,7 +534,7 @@ if (reference_ == "UNRESTRICTED") {
        delete ps_occA;
        delete eoccA;
 
-//outfile->Printf("\n ekt_ip is done. \n"); 
+//outfile->Printf("\n ekt_ip is done. \n");
 
 } // end ekt_ip
 }} // End Namespaces

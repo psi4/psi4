@@ -37,7 +37,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <unistd.h>
 
 namespace psi {
@@ -49,9 +49,9 @@ std::string PSIO::getpid(void) {
     pid_t pid = ::getpid();
     ss << pid;
   }
-  else 
+  else
     ss << psi::restart_id;
-  
+
   return ss.str();
 }
 
@@ -62,9 +62,9 @@ std::string psio_getpid(void) {
     pid_t pid = ::getpid();
     ss << pid;
   }
-  else 
+  else
     ss << psi::restart_id;
-  
+
   return ss.str();
 }
 

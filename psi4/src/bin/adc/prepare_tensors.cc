@@ -31,12 +31,12 @@
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/bin/adc/adc.h"
 #include "psi4/src/lib/libmints/molecule.h"
 //
 //  A3h3p: The frequency independent terms in the response matrix, composed of the CIS part and 3hole-3particle
-//         diagrams which give so-called the diffenential correlation effect in terms of CIS(D) sense, so with  
+//         diagrams which give so-called the diffenential correlation effect in terms of CIS(D) sense, so with
 //         OVOV indices.
 //  AOO  : Tensor with OO indices that represents symmetrized contribution from a 3h3p diagram that can be
 //         evaluated.
@@ -46,19 +46,19 @@
 //
 
 namespace psi{ namespace adc{
-    
-void 
+
+void
 ADCWfn::rhf_prepare_tensors()
-{    
+{
     bool do_pr = options_.get_bool("PR");
     char lbl[32], ampname[32];
     double *omega, **lambda;
     dpdbuf4 Aovov, K, V;
     dpdfile2 Xoo, Xvv, Aoo, Avv, Dov, Cocc, Cvir, B;
-    
+
     outfile->Printf( "\t==> CIS/ADC(1) Level <==\n\n");
     psio_->open(PSIF_ADC_SEM, PSIO_OPEN_NEW);
-    
+
     // CIS calculation for obtaining the guess energy and vector
     // for the second order calculation. For this purpose, the external
     // exchange operator (EEO) method a.k.a Fock-like contraction
@@ -96,7 +96,7 @@ ADCWfn::rhf_prepare_tensors()
             for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
                 int i = Aovov.params->roworb[h][ia][0];
                 int a = Aovov.params->roworb[h][ia][1];
-                
+
                 int I = B.params->rowidx[i];
                 int A = B.params->colidx[a];
                 int Isym = B.params->psym[i];
@@ -113,14 +113,14 @@ ADCWfn::rhf_prepare_tensors()
             outfile->Printf( "\n");
             global_dpd_->file2_close(&B);
         }
-        
+
         free(omega);
         free_block(lambda);
         global_dpd_->buf4_mat_irrep_wrt(&Aovov, h);
         global_dpd_->buf4_mat_irrep_close(&Aovov, h);
     }
     global_dpd_->buf4_close(&Aovov);
-    
+
 
     // Initialize 4-index tensors for this step of calculation.
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
@@ -129,12 +129,12 @@ ADCWfn::rhf_prepare_tensors()
 
     if(do_pr) strcpy(ampname, "tilde 2 K1234 - K1243");
     else      strcpy(ampname, "2 K1234 - K1243");
-    
+
     global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
     //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "tilde 2 K1234 - K1243");
     global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
-    
+
     global_dpd_->file2_init(&Xoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "XOO12");
     // XOO_{ij} <-- - \sum_{kab} (2K_{ikab} - K_{ikba}) <jk|ab>
     global_dpd_->contract442(&K, &V, &Xoo, 0, 0, -1, 0);
@@ -145,7 +145,7 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->file2_mat_init(&Aoo);
     global_dpd_->file2_mat_rd(&Aoo);
     global_dpd_->file2_close(&Xoo);
-    
+
     global_dpd_->file2_init(&Xvv, PSIF_ADC_SEM, 0, ID('V'), ID('V'), "XVV12");
     // XVV_{ab} <-- - \sum_{ijc} (2K_{ijac} - K_{ijca}) <ij|bc>
     global_dpd_->contract442(&K, &V, &Xvv, 2, 2, -1, 0);
@@ -162,7 +162,7 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->buf4_print(&K, outfile, 1);
     //abort();
 #endif
-    
+
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);
 
@@ -197,7 +197,7 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->file2_close(&Aoo);
     global_dpd_->file2_mat_close(&Avv);
     global_dpd_->file2_close(&Avv);
-    
+
     // Preparing D tensor for each irrep
     global_dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
     for(int h = 0;h < nirrep_;h++){
@@ -209,7 +209,7 @@ ADCWfn::rhf_prepare_tensors()
         for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->roworb[h][ia][1];
-            
+
             int I = Dov.params->rowidx[i];
             int A = Dov.params->colidx[a];
             int Isym = Dov.params->psym[i];

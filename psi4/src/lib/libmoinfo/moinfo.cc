@@ -39,13 +39,13 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/corrtab.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "moinfo.h"
 
@@ -309,7 +309,7 @@ void MOInfo::read_mo_spaces()
         //    read_mo_space(nirreps_ref,nactv_docc,actv_docc_ref,"ACTIVE_DOCC");
     }else{
         // For a single-point only
-        outfile->Printf("\n  For a single-point only"); 
+        outfile->Printf("\n  For a single-point only");
 
         focc = convert_int_array_to_vector(nirreps, ref_wfn.frzcpi());
         docc = convert_int_array_to_vector(nirreps, ref_wfn.doccpi());
@@ -443,7 +443,7 @@ void MOInfo::print_mo()
     }
     print_mo_space(nextr,extr,"External                        ");
     print_mo_space(nfvir,fvir,"Frozen Virtual                  ");
-    
+
 }
 
 /**

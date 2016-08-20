@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -37,8 +37,8 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -149,7 +149,7 @@ void rotational_strength(MintsHelper &mints, struct TD_Params *S)
   outfile->Printf("\n");
   outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
   outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  
+
 
   outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep]);
@@ -241,7 +241,7 @@ void rotational_strength(MintsHelper &mints, struct TD_Params *S)
   outfile->Printf("\n");
   outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
   outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  
+
 
   return;
 }

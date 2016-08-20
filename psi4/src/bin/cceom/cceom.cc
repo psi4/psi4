@@ -38,8 +38,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
@@ -77,7 +77,7 @@ PsiReturnType cceom(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
   outfile->Printf("\t**********************************************************\n");
 
   get_moinfo(ref_wfn);
-  
+
   get_params(options);
   get_eom_params(ref_wfn, options);
 #ifdef TIME_CCEOM

@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 
 // PSI libraries
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
@@ -111,7 +111,7 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
 
   close_psi(options);
   psio->close(PSIF_MCSCF, 1);
-  
+
   tstop();
 
   return wfn;

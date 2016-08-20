@@ -25,15 +25,15 @@
  * @END LICENSE
  */
 
-/*! \file 
+/*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <stdio.h>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

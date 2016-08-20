@@ -29,7 +29,7 @@
 
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include"psi4/src/lib/libqt/qt.h"
 #ifdef _OPENMP
     #include<omp.h>
@@ -55,7 +55,7 @@ void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params){
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
   C_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
-  
+
   for (i=0; i<o; i++){
       C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }

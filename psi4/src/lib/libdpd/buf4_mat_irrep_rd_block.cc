@@ -33,7 +33,7 @@
 #include <cstdlib>
 #include "psi4/src/lib/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq,

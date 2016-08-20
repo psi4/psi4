@@ -28,7 +28,7 @@
 /*! \file
 **  \ingroup DETCI
 **  \brief Arbitrary-order coupled-cluster code
-** 
+**
 ** C. David Sherrill
 ** Center for Computational Molecular Science and Technology
 ** Georgia Institute of Technology
@@ -41,7 +41,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "structs.h"
 #include "ciwave.h"
 

@@ -28,7 +28,7 @@
 #ifndef _jk_independent_h
 #define _jk_independent_h
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 
@@ -40,7 +40,7 @@
 #include <cmath>
 #include <sstream>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libiwl/iwl.h"
@@ -53,20 +53,20 @@
 #include "psi4/src/lib/libmints/sieve.h"
 
 namespace psi {
-  
+
   template <class JDriver, class KDriver>
   class JKIndependent : public JK
   {
-    
+
   protected:
-    
+
     JDriver j_driver_;
     KDriver k_driver_;
-    
+
     // true if we need to call j_driver_ for J computation and k_driver_ for K.
     // if false, then we assume j_driver does everything we need it to
     bool do_separately_;
-    
+
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return allow_desymmetrization_; }
     /// Setup integrals, files, etc
@@ -75,27 +75,27 @@ namespace psi {
     virtual void compute_JK();
     /// Delete integrals, files, etc
     virtual void postiterations();
-    
+
     /// Common initialization
     void common_init();
-    
+
   public:
     // => Constructors < = //
-    
+
     JKIndependent(boost::shared_ptr<BasisSet> primary, bool do_separately);
     /// Destructor
     virtual ~JKIndependent();
-    
+
     // => Accessors <= //
-    
+
     /**
      * Print header information regarding JK
      * type on output file
      */
     virtual void print_header() const;
-    
+
   }; // class
-  
+
 } // namespace
 
 // definitions

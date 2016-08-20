@@ -27,12 +27,12 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "slaterd.h"
 #include "ciwave.h"
@@ -40,14 +40,14 @@
 
 namespace psi { namespace detci {
 
-extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J, 
-   int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, 
+extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
+   int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same,
    int extended);
 extern void common_orbs(int *same_alpha_, int *same_beta_, int cnt_alpha,
-   int cnt_beta, int *common_docc_, int *common_alpha_socc, 
-   int *common_beta_socc, int *cnt_docc, int *cnt_alpha_socc, 
+   int cnt_beta, int *common_docc_, int *common_alpha_socc,
+   int *common_beta_socc, int *cnt_docc, int *cnt_alpha_socc,
    int *cnt_beta_socc);
-   
+
 
 double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
 {
@@ -59,13 +59,13 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
    int diffspin, samespin, common1, common2;
    int i, j, k, l, a, b, m;
    double val = 0.0;
-  
+
    if (I->nalp_ != J->nalp_ || I->nbet_ != J->nbet_) {
       outfile->Printf("(matrix_element): unequal length alp/bet strings!\n");
       return(0.0);
     }
 
-   nalp = I->nalp_; 
+   nalp = I->nalp_;
    nbet = I->nbet_;
 
    if (sme_first_call_) {
@@ -73,7 +73,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       same_beta_ = (int *) malloc(sizeof(int) * nbet);
       common_alp_socc_ = (int *) malloc(sizeof(int) * nalp);
       common_bet_socc_ = (int *) malloc(sizeof(int) * nbet);
-      common_docc_ = (int *) malloc(sizeof(int) * nalp); 
+      common_docc_ = (int *) malloc(sizeof(int) * nalp);
       I_diff_ = (int **) malloc(sizeof(int *) * 2);
       I_diff_[0] = (int *) malloc(sizeof(int) * nalp);
       I_diff_[1] = (int *) malloc(sizeof(int) * nalp);
@@ -132,14 +132,14 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
    if ((alpha_diff == -2) || (beta_diff == -2)) {
       outfile->Printf( "(matrix_element): Problem with calc_orb_diff.\n");
       outfile->Printf( "  Returns -2 value. \n");
-      } 
+      }
 
    else if ((alpha_diff == -1) || (beta_diff == -1) || total_diff > 2) {
       return(0.0);
       }
 
    else if (total_diff == 2) {
-      
+
       if (alpha_diff == 1) {     /* Case 1: 1 in alpha and 1 in beta */
 
          /* assign i,j,k,l for <ij||kl> */
@@ -147,91 +147,91 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
          j = I_diff_[1][0];
          k = J_diff_[0][0];
          l = J_diff_[1][0];
-         
+
          #ifdef PRINT_INTS
-         if (sign % 2) printf("-"); 
+         if (sign % 2) printf("-");
          #endif
 
          val = get_twoel(i,k,j,l);
          if (sign % 2) val = -val;
 
-         return(val); 
-         } /* end Case 1 */ 
+         return(val);
+         } /* end Case 1 */
 
       else if ((alpha_diff == 2) || (beta_diff == 2)) { /* Case 2: 2 in alpha */
 
          if (alpha_diff == 2)
-            diffspin = 0; 
+            diffspin = 0;
          else diffspin = 1;
 
          /* assign <ij||kl> */
          i = I_diff_[diffspin][0];
          j = I_diff_[diffspin][1];
          k = J_diff_[diffspin][0];
-         l = J_diff_[diffspin][1]; 
+         l = J_diff_[diffspin][1];
 
          #ifdef PRINT_INTS
-         if (sign % 2) printf("- [ "); 
+         if (sign % 2) printf("- [ ");
          #endif
 
          val = get_twoel(i,k,j,l);
          val -= get_twoel(i,l,j,k);
 
          #ifdef PRINT_INTS
-         if (sign % 2) printf(" ] "); 
+         if (sign % 2) printf(" ] ");
          #endif
-         
+
          if (sign % 2) val = -val;
- 
+
          return(val);
          } /* end else if for differ by 2 in alpha or beta */
 
       else {
          throw PsiException("Error (matrix_element): total_diff != alpha_diff + beta_diff",__FILE__,__LINE__);
          }
- 
+
       } /* end else if for differ by 2 spin orbitals */
 
 
    /* Differ by 1 spin orbital */
    else if (total_diff == 1) {
-   
+
       common_orbs(same_alpha_, same_beta_, nalp_same, nbet_same, common_docc_,
-         common_alp_socc_, common_bet_socc_, &cnt_docc, &cnt_alp_socc, 
-         &cnt_bet_socc); 
- 
+         common_alp_socc_, common_bet_socc_, &cnt_docc, &cnt_alp_socc,
+         &cnt_bet_socc);
+
       /*
-      printf("cnt_docc = %d\n", cnt_docc); 
-      printf("cnt_alp_socc = %d\n", cnt_alp_socc); 
-      printf("cnt_bet_socc = %d\n", cnt_bet_socc); 
+      printf("cnt_docc = %d\n", cnt_docc);
+      printf("cnt_alp_socc = %d\n", cnt_alp_socc);
+      printf("cnt_bet_socc = %d\n", cnt_bet_socc);
 
       for (i=0; i<cnt_docc; i++)
-         printf("common_docc_[%d] = %d\n", i, common_docc_[i]+1) ; 
-         printf("\n") ; 
+         printf("common_docc_[%d] = %d\n", i, common_docc_[i]+1) ;
+         printf("\n") ;
       for (i=0; i<cnt_alp_socc; i++)
-         printf("common_alp_socc_[%d] = %d\n", i, common_alp_socc_[i]+1) ; 
-         printf("\n") ; 
+         printf("common_alp_socc_[%d] = %d\n", i, common_alp_socc_[i]+1) ;
+         printf("\n") ;
       for (i=0; i<cnt_bet_socc; i++)
          printf("common_bet_socc_[%d] = %d\n", i, common_bet_socc_[i]+1) ;
-         printf("\n") ; 
+         printf("\n") ;
       */
 
-      if (alpha_diff == 1) { /* Case 1: 1 in alpha */   
-         diffspin = 0; 
-         samespin = 1; 
-         common1 = cnt_alp_socc; 
-         common2 = cnt_bet_socc; 
-         common_socc1 = common_alp_socc_; 
-         common_socc2 = common_bet_socc_; 
+      if (alpha_diff == 1) { /* Case 1: 1 in alpha */
+         diffspin = 0;
+         samespin = 1;
+         common1 = cnt_alp_socc;
+         common2 = cnt_bet_socc;
+         common_socc1 = common_alp_socc_;
+         common_socc2 = common_bet_socc_;
          } /* end Case 1: 1 in alpha */
 
       else if (beta_diff == 1) { /* Case 1: 1 in beta */
          diffspin = 1;
          samespin = 0;
-         common1 = cnt_bet_socc; 
-         common2 = cnt_alp_socc; 
-         common_socc1 = common_bet_socc_; 
-         common_socc2 = common_alp_socc_; 
+         common1 = cnt_bet_socc;
+         common2 = cnt_alp_socc;
+         common_socc1 = common_bet_socc_;
+         common_socc2 = common_alp_socc_;
          } /* end Case 1: 1 in beta */
 
       else {
@@ -244,7 +244,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       val = get_onel(i,j);
 
       #ifdef PRINT_INTS
-      if (sign % 2) 
+      if (sign % 2)
          printf(" - [ \n");
       #endif
 
@@ -256,10 +256,10 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
          #endif
 
          val += 2.0 * get_twoel(i,j,m,m);
-        
+
          #ifdef PRINT_INTS
          printf("-");
-         #endif 
+         #endif
 
          val -= get_twoel(i,m,m,j);
          } /* end loop over all common docc electrons */
@@ -268,14 +268,14 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
                                     beta if differs in one by alpha */
          m = common_socc2[b];
          val += get_twoel(i,j,m,m);
-         }          
+         }
 
       for (b=0; b<common1; b++) { /* looping over all alpha or beta elec.;
                                     alpha if differs in one by alpha */
          m = common_socc1[b];
 
          val += get_twoel(i,j,m,m);
-        
+
          #ifdef PRINT_INTS
          printf("-");
          #endif
@@ -286,7 +286,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       if (sign % 2) val = -val;
 
       #ifdef PRINT_INTS
-      if (sign % 2) 
+      if (sign % 2)
          printf(" ] \n");
       #endif
 
@@ -295,12 +295,12 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       } /* end if (total_diff == 1) for Case 1: Differ by 1 spin orbital */
 
 
-   else if (total_diff == 0) { 
+   else if (total_diff == 0) {
 
       common_orbs(same_alpha_, same_beta_, nalp_same, nbet_same, common_docc_,
          common_alp_socc_, common_bet_socc_, &cnt_docc, &cnt_alp_socc,
-         &cnt_bet_socc); 
-     
+         &cnt_bet_socc);
+
       val = 0.0;
 
       #ifdef PRINT_INTS
@@ -310,7 +310,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
 
       /* get one-electron integrals */
 
-      for (b=0; b<cnt_docc; b++) {    
+      for (b=0; b<cnt_docc; b++) {
          m = common_docc_[b];
          val += 2.0 * get_onel(m,m);
          }
@@ -319,12 +319,12 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       printf(" ] ");
       #endif
 
-      for (b=0; b<cnt_alp_socc; b++) { 
+      for (b=0; b<cnt_alp_socc; b++) {
          m = common_alp_socc_[b];
          val += get_onel(m,m);
          }
 
-      for (b=0; b<cnt_bet_socc; b++) { 
+      for (b=0; b<cnt_bet_socc; b++) {
          m = common_bet_socc_[b];
          val += get_onel(m,m);
          }
@@ -335,23 +335,23 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
 
       /* get two-electron integrals */
 
-      for (a=0; a<cnt_docc; a++) { 
+      for (a=0; a<cnt_docc; a++) {
          i = common_docc_[a];
 
-         for (b=0; b<cnt_alp_socc; b++) { 
+         for (b=0; b<cnt_alp_socc; b++) {
             j = common_alp_socc_[b];
-            
+
             #ifdef PRINT_INTS
             printf("2 * ");
             #endif
 
-            val += 2.0 * get_twoel(i,i,j,j);      
+            val += 2.0 * get_twoel(i,i,j,j);
 
             #ifdef PRINT_INTS
             printf("- ");
             #endif
 
-            val -= get_twoel(i,j,i,j); 
+            val -= get_twoel(i,j,i,j);
             }
 
          for (b=0; b<cnt_bet_socc; b++) {
@@ -361,7 +361,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
             printf("2 * ");
             #endif
 
-            val += 2.0 * get_twoel(i,i,j,j);      
+            val += 2.0 * get_twoel(i,i,j,j);
 
             #ifdef PRINT_INTS
             printf("- ");
@@ -400,7 +400,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
          for (b=a+1; b<cnt_alp_socc; b++) {
 
             j = common_alp_socc_[b];
-            
+
             val += get_twoel(i,i,j,j);
 
             #ifdef PRINT_INTS
@@ -423,7 +423,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
 
             i = common_bet_socc_[a];
             j = common_bet_socc_[b];
-            
+
             val += get_twoel(i,i,j,j);
 
             #ifdef PRINT_INTS
@@ -437,7 +437,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
       if (sign % 2) val = -val;
 
       #ifdef PRINT_INTS
-      if (sign % 2) 
+      if (sign % 2)
          printf(" ] \n");
       #endif
 
@@ -470,7 +470,7 @@ double CIWavefunction::matrix_element(SlaterDeterminant* I, SlaterDeterminant* J
 //
 //   A.set(2, string1, 2, string1);
 //   B.set(2, string1, 2, string3);
-// 
+//
 //   printf("Slater determinant A \n");
 //   A.print() ;
 //   printf("Slater determinant B \n");

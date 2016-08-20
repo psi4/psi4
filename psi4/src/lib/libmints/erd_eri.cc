@@ -28,7 +28,7 @@
 
 #ifdef ENABLE_LIBERD
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "erd_eri.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/integral.h"
@@ -314,7 +314,7 @@ void ERDTwoElectronInt::compute_scratch_size()
     // Compute the amount of memory needed for the largest quartet
     C_ERD__MEMORY_ERI_BATCH(npgto, npgto, ncgto1, ncgto2, ncgto3, ncgto4,
                             npgto1, npgto2, npgto3, npgto4, am1, am2, am3, am4,
-                            x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 
+                            x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4,
                             alpha_, cc_, spheric_, imin, iopt, zmin, zopt);
 #if DEBUG
     outfile->Printf( "\timin %d iopt %d zmin %d zopt %d\n", imin, iopt, zmin, zopt);
@@ -360,7 +360,7 @@ void ERDTwoElectronInt::normalize_basis()
         }
         double prefac = 1.0;
         if(L > 1)
-            prefac =pow(2.0, 2*L) / df[2*L]; 
+            prefac =pow(2.0, 2*L) / df[2*L];
         double norm = sqrt(prefac / sum);
         for(int j = 0; j < gs.nprimitive(); j++){
             alpha_1_[count] = gs.exp(j);
@@ -398,7 +398,7 @@ void ERDTwoElectronInt::normalize_basis()
         }
         double prefac = 1.0;
         if(L > 1)
-            prefac =pow(2.0, 2*L) / df[2*L]; 
+            prefac =pow(2.0, 2*L) / df[2*L];
         double norm = sqrt(prefac / sum);
         for(int j = 0; j < gs.nprimitive(); j++){
             alpha_2_[count] = gs.exp(j);
@@ -434,7 +434,7 @@ void ERDTwoElectronInt::normalize_basis()
         }
         double prefac = 1.0;
         if(L > 1)
-            prefac =pow(2.0, 2*L) / df[2*L]; 
+            prefac =pow(2.0, 2*L) / df[2*L];
         double norm = sqrt(prefac / sum);
         for(int j = 0; j < gs.nprimitive(); j++){
             alpha_3_[count] = gs.exp(j);
@@ -470,7 +470,7 @@ void ERDTwoElectronInt::normalize_basis()
         }
         double prefac = 1.0;
         if(L > 1)
-            prefac =pow(2.0, 2*L) / df[2*L]; 
+            prefac =pow(2.0, 2*L) / df[2*L];
         double norm = sqrt(prefac / sum);
         for(int j = 0; j < gs.nprimitive(); j++){
             alpha_4_[count] = gs.exp(j);
@@ -596,7 +596,7 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
 #if DEBUG
     outfile->Printf( "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%d %d | %d %d)\n",
                     shell_i, shell_j, shell_k, shell_l,
-                    bs1_->shell(shell_i).ncenter(), bs2_->shell(shell_j).ncenter(), bs3_->shell(shell_k).ncenter(), bs4_->shell(shell_l).ncenter(), 
+                    bs1_->shell(shell_i).ncenter(), bs2_->shell(shell_j).ncenter(), bs3_->shell(shell_k).ncenter(), bs4_->shell(shell_l).ncenter(),
                     am1, am2, am3, am4);
     outfile->Printf( "XYZ1: %16.10f %16.10f %16.10f\n", x1, y1, z1);
     outfile->Printf( "XYZ2: %16.10f %16.10f %16.10f\n", x2, y2, z2);

@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 
@@ -44,7 +44,7 @@
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/mintshelper.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include <fstream>
 #include <algorithm>
@@ -945,7 +945,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options& options, 
     printer->Printf("\n");
 
     outfile->Printf( "done.\n");
-    
+
 
     tstop();
 

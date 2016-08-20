@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /* T3_UHF_AAB(): Computes all T3(IJK,ABC) amplitudes for a given I, J,
@@ -35,7 +35,7 @@
 ** will work for AAB or BBA spin cases with either RHF/ROHF or UHF
 ** orbitals.
 **
-** Arguments: 
+** Arguments:
 **
 **   double ***W: The target triples amplitudes in an nirreps x AB x C
 **   array.  The memory for this must be allocated externally.
@@ -80,10 +80,10 @@
 **
 **   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   int *occpi: Number of occupied orbitals per irrep lookup array.
 **
 **   int *occ_off: Offset lookup for translating between absolute and
@@ -106,16 +106,16 @@
 #include <math.h>
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi { namespace cctriples {
 
-    void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, 
+    void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps,
 		    int I, int Gi, int J, int Gj, int K, int Gk,
 		    dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
-		    dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, 
-		    dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, 
-		    dpdfile2 *fIJ, dpdfile2 *fij,dpdfile2 *fAB, dpdfile2 *fab, 
+		    dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B,
+		    dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia,
+		    dpdfile2 *fIJ, dpdfile2 *fij,dpdfile2 *fAB, dpdfile2 *fab,
 		    int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
 		    int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega)
     {
@@ -222,7 +222,7 @@ namespace psi { namespace cctriples {
 
       W2 = (double ***) malloc(nirreps * sizeof(double **)); /* alpha-beta-alpha */
 
-      /* clear out the old W */ 
+      /* clear out the old W */
       for(Gab=0; Gab < nirreps; Gab++) {
 	Gc = Gab ^ Gijk ^ GX3; /* assumes totally symmetric! */
 
@@ -234,8 +234,8 @@ namespace psi { namespace cctriples {
 
       for(Gd=0; Gd < nirreps; Gd++) {
 	/* +C_JkDc * F_IDAB */
-	Gid = Gi ^ Gd; 
-	Gab = Gid ^ GF; 
+	Gid = Gi ^ Gd;
+	Gab = Gid ^ GF;
 	Gc = Gjk ^ Gd ^ GC;
 
 	dc = T2AB->col_offset[Gjk][Gd];
@@ -257,7 +257,7 @@ namespace psi { namespace cctriples {
 	/* -C_IkDc * F_JDAB */
 	Gjd = Gj ^ Gd;
 	Gab = Gjd ^ GF;
-	Gc = Gik ^ Gd ^ GC;     
+	Gc = Gik ^ Gd ^ GC;
 
 	dc = T2AB->col_offset[Gik][Gd];
 	jd = FAA->row_offset[Gjd][J];
@@ -280,7 +280,7 @@ namespace psi { namespace cctriples {
 	/* -C_ILAB * E_JkLc */
 	Gil = Gi ^ Gl;
 	Gab = Gil ^ GC;
-	Gc = Gjk ^ Gl ^ GE;     
+	Gc = Gjk ^ Gl ^ GE;
 
 	lc = EAB->col_offset[Gjk][Gl];
 	il = T2AA->row_offset[Gil][I];
@@ -290,13 +290,13 @@ namespace psi { namespace cctriples {
 	nlinks = aoccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AA->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AA->matrix[Gil][il], nrows,
 		  &(EAB->matrix[Gjk][jk][lc]), ncols, 1.0, W[Gab][0], ncols);
 
 	/* +t_JLAB * E_IkLc */
-	Gjl = Gj ^ Gl; 
-	Gab = Gjl ^ GC; 
-	Gc = Gik ^ Gl ^ GE;      
+	Gjl = Gj ^ Gl;
+	Gab = Gjl ^ GC;
+	Gc = Gik ^ Gl ^ GE;
 
 	lc = EAB->col_offset[Gik][Gl];
 	jl = T2AA->row_offset[Gjl][J];
@@ -306,7 +306,7 @@ namespace psi { namespace cctriples {
 	nlinks = aoccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AA->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AA->matrix[Gjl][jl], nrows,
 		  &(EAB->matrix[Gik][ik][lc]), ncols, 1.0, W[Gab][0], ncols);
       }
 
@@ -319,9 +319,9 @@ namespace psi { namespace cctriples {
 
       for(Gd=0; Gd < nirreps; Gd++) {
 	/* +t_JkBd * F_IdAc */
-	Gid = Gi ^ Gd; 
-	Gac = Gid ^ GF; 
-	Gb = Gjk ^ Gd ^ GC;      
+	Gid = Gi ^ Gd;
+	Gac = Gid ^ GF;
+	Gb = Gjk ^ Gd ^ GC;
 
 	bd = T2AB->col_offset[Gjk][Gb];
 	id = FAB->row_offset[Gid][I];
@@ -340,9 +340,9 @@ namespace psi { namespace cctriples {
 	global_dpd_->free_dpd_block(FAB->matrix[Gid], bvirtpi[Gd], FAB->params->coltot[Gid^GF]);
 
 	/* -t_IkBd * F_JdAc */
-	Gjd = Gj ^ Gd; 
-	Gac = Gjd ^ GF; 
-	Gb = Gik ^ Gd ^ GC;      
+	Gjd = Gj ^ Gd;
+	Gac = Gjd ^ GF;
+	Gb = Gik ^ Gd ^ GC;
 
 	bd = T2AB->col_offset[Gik][Gb];
 	jd = FAB->row_offset[Gjd][J];
@@ -364,9 +364,9 @@ namespace psi { namespace cctriples {
 
       for(Gl=0; Gl < nirreps; Gl++) {
 	/* -t_IlAc * E_kJlB */
-	Gil = Gi ^ Gl; 
-	Gac = Gil ^ GC; 
-	Gb = Gkj ^ Gl ^ GE;      
+	Gil = Gi ^ Gl;
+	Gac = Gil ^ GC;
+	Gb = Gkj ^ Gl ^ GE;
 
 	lb = EBA->col_offset[Gkj][Gl];
 	il = T2AB->row_offset[Gil][I];
@@ -376,13 +376,13 @@ namespace psi { namespace cctriples {
 	nlinks = boccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AB->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AB->matrix[Gil][il], nrows,
 		  &(EBA->matrix[Gkj][kj][lb]), ncols, 1.0, W2[Gac][0], ncols);
 
 	/* +t_JlAc * E_kIlB */
 	Gjl = Gj ^ Gl;
 	Gac = Gjl ^ GC;
-	Gb = Gki ^ Gl ^ GE;     
+	Gb = Gki ^ Gl ^ GE;
 
 	lb = EBA->col_offset[Gki][Gl];
 	jl = T2AB->row_offset[Gjl][J];
@@ -392,18 +392,18 @@ namespace psi { namespace cctriples {
 	nlinks = boccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AB->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AB->matrix[Gjl][jl], nrows,
 		  &(EBA->matrix[Gki][ki][lb]), ncols, 1.0, W2[Gac][0], ncols);
       }
 
       /* W(Ac,B) --> W(AB,c) */
       global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, FAB->params->coltot, FAB->params->colidx,
-		  FAB->params->colorb, FAB->params->rsym, FAB->params->ssym, avir_off, 
+		  FAB->params->colorb, FAB->params->rsym, FAB->params->ssym, avir_off,
 		  bvir_off, avirtpi, avir_off, FAA->params->colidx, acb, 1);
 
       /* clean out the alpha-beta-alpha intermediate for next set of terms */
       for(Gab=0; Gab < nirreps; Gab++) {
-	Gc = Gab ^ Gijk ^ GX3; 
+	Gc = Gab ^ Gijk ^ GX3;
 	if(FAB->params->coltot[Gab] && avirtpi[Gc]) {
 	  memset(W2[Gab][0], 0, FAB->params->coltot[Gab]*avirtpi[Gc]*sizeof(double));
 	}
@@ -413,7 +413,7 @@ namespace psi { namespace cctriples {
 	/* -C_JkAd * F_IdBc */
 	Gid = Gi ^ Gd;
 	Gbc = Gid ^ GF;
-	Ga = Gjk ^ Gd ^ GC;     
+	Ga = Gjk ^ Gd ^ GC;
 
 	ad = T2AB->col_offset[Gjk][Ga];
 	id = FAB->row_offset[Gid][I];
@@ -434,7 +434,7 @@ namespace psi { namespace cctriples {
 	/* +t_IkAd * F_JdBc */
 	Gjd = Gj ^ Gd;
 	Gbc = Gjd ^ GF;
-	Ga = Gik ^ Gd ^ GC;     
+	Ga = Gik ^ Gd ^ GC;
 
 	ad = T2AB->col_offset[Gik][Ga];
 	jd = FAB->row_offset[Gjd][J];
@@ -458,7 +458,7 @@ namespace psi { namespace cctriples {
 	/* +C_IlBc * E_kJlA */
 	Gil = Gi ^ Gl;
 	Gbc  = Gil ^ GC;
-	Ga = Gkj ^ Gl ^ GE;     
+	Ga = Gkj ^ Gl ^ GE;
 
 	la = EBA->col_offset[Gkj][Gl];
 	il = T2AB->row_offset[Gil][I];
@@ -468,14 +468,14 @@ namespace psi { namespace cctriples {
 	nlinks = boccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AB->matrix[Gil][il], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2AB->matrix[Gil][il], nrows,
 		  &(EBA->matrix[Gkj][kj][la]), ncols, 1.0, W2[Gbc][0], ncols);
 
 	/* -C_JlBc * E_kIlA */
 	Gjl = Gj ^ Gl;
 	Gbc = Gjl ^ GC;
-	Ga = Gki ^ Gl ^ GE;     
- 
+	Ga = Gki ^ Gl ^ GE;
+
 	la = EBA->col_offset[Gki][Gl];
 	jl = T2AB->row_offset[Gjl][J];
 
@@ -484,12 +484,12 @@ namespace psi { namespace cctriples {
 	nlinks = boccpi[Gl];
 
 	if(nrows && ncols && nlinks)
-	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AB->matrix[Gjl][jl], nrows, 
+	  C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2AB->matrix[Gjl][jl], nrows,
 		  &(EBA->matrix[Gki][ki][la]), ncols, 1.0, W2[Gbc][0], ncols);
       }
 
       global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, FAB->params->coltot, FAB->params->colidx,
-		  FAB->params->colorb, FAB->params->rsym, FAB->params->ssym, avir_off, 
+		  FAB->params->colorb, FAB->params->rsym, FAB->params->ssym, avir_off,
 		  bvir_off, avirtpi, avir_off, FAA->params->colidx, cab, 1);
       /* Close the alpha-beta-alpha array and open a beta-alpha-alpha array */
       for(Gab=0; Gab < nirreps; Gab++) {
@@ -502,9 +502,9 @@ namespace psi { namespace cctriples {
       /* Insert cBA terms */
       for(Gd=0; Gd < nirreps; Gd++) {
 	/* -C_JIAD * F_kDcB */
-	Gkd = Gk ^ Gd; 
-	Gcb = Gkd ^ GF; 
-	Ga = Gji ^ Gd ^ GC;      
+	Gkd = Gk ^ Gd;
+	Gcb = Gkd ^ GF;
+	Ga = Gji ^ Gd ^ GC;
 
 	ad = T2AA->col_offset[Gji][Ga];
 	kd = FBA->row_offset[Gkd][K];
@@ -528,7 +528,7 @@ namespace psi { namespace cctriples {
 	/* -C_kLcB * E_JILA */
 	Gkl = Gk ^ Gl;
 	Gcb = Gkl ^ GC;
-	Ga = Gji ^ Gl ^ GE;     
+	Ga = Gji ^ Gl ^ GE;
 
 	la = EAA->col_offset[Gji][Gl];
 	kl = T2BA->row_offset[Gkl][K];
@@ -543,7 +543,7 @@ namespace psi { namespace cctriples {
       }
 
       global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, FBA->params->coltot, FBA->params->colidx,
-		  FBA->params->colorb, FBA->params->rsym, FBA->params->ssym, bvir_off, 
+		  FBA->params->colorb, FBA->params->rsym, FBA->params->ssym, bvir_off,
 		  avir_off, avirtpi, avir_off, FAA->params->colidx, cba, 1);
 
       /* clean out the beta-alpha-alpha intermediate for next set of terms */
@@ -559,7 +559,7 @@ namespace psi { namespace cctriples {
 	/* +t_JIBD * F_kDcA */
 	Gkd = Gk ^ Gd;
 	Gca = Gkd ^ GF;
-	Gb = Gji ^ Gd ^ GC;     
+	Gb = Gji ^ Gd ^ GC;
 
 	bd = T2AA->col_offset[Gji][Gb];
 	kd = FBA->row_offset[Gkd][K];
@@ -583,7 +583,7 @@ namespace psi { namespace cctriples {
 	/* +C_kLcA * E_JILB */
 	Gkl = Gk ^ Gl;
 	Gca = Gkl ^ GC;
-	Gb = Gji ^ Gl ^ GE;     
+	Gb = Gji ^ Gl ^ GE;
 
 	lb = EAA->col_offset[Gji][Gl];
 	kl = T2BA->row_offset[Gkl][K];
@@ -741,7 +741,7 @@ namespace psi { namespace cctriples {
       } /* Gab */
 
       for(Gab=0; Gab < nirreps; Gab++) {
-	Gc = Gab ^ Gijk ^ GX3; 
+	Gc = Gab ^ Gijk ^ GX3;
 	global_dpd_->free_dpd_block(W2[Gab], FBA->params->coltot[Gab], avirtpi[Gc]);
       }
 

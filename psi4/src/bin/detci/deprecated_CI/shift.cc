@@ -27,10 +27,10 @@
 
 /*! \file
 **  \ingroup DETCI
-**  \brief Shifts SCF eigenvalues corresponding to SOCC orbitals for ZAPTn 
+**  \brief Shifts SCF eigenvalues corresponding to SOCC orbitals for ZAPTn
 **
 ** Shifts SCF eigenvalues corresponding to SOCC orbitals for ZAPTn
-** Alpha eigenvalues used for occupied SOCC (sigma+), 
+** Alpha eigenvalues used for occupied SOCC (sigma+),
 ** beta for unoccupied (sigma-)
 **
 ** Done so that existing HD_AVG = ORB_ENER MPn machinery can be used unaltered.
@@ -45,7 +45,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "structs.h"
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define EXTERN
@@ -53,7 +53,7 @@
 
 namespace psi { namespace detci {
 
-void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi, int *soccpi, 
+void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi, int *soccpi,
    int *orbspi, int *frzdoccpi, int *reorder)
 {
     int h1, h2;

@@ -29,7 +29,7 @@
 #include "matrix.h"
 #include "integral.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include <cmath>
 

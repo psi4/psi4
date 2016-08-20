@@ -80,7 +80,7 @@
 #define _math_symmetry_pointgrp_h
 
 #include "psi4/src/lib/libmints/vector3.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include <string>
 #include <cstdio>
@@ -88,7 +88,7 @@
 #include <vector>
 #include <map>
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>

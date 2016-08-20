@@ -34,7 +34,7 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"

@@ -26,7 +26,7 @@
  */
 
 #include "sapt2p.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 namespace psi { namespace sapt {
 
@@ -74,9 +74,9 @@ double SAPT2p::compute_energy()
   timer_on("Omega Integrals    ");
     w_integrals();
   timer_off("Omega Integrals    ");
-  timer_on("Amplitudes         "); 
+  timer_on("Amplitudes         ");
     amplitudes();
-  timer_off("Amplitudes         "); 
+  timer_off("Amplitudes         ");
   timer_on("Elst10             ");
     elst10();
   timer_off("Elst10             ");
@@ -126,7 +126,7 @@ double SAPT2p::compute_energy()
   }
 
   if (ccd_disp_) {
- 
+
   timer_on("Disp2(CCD)         ");
     disp2ccd();
   timer_off("Disp2(CCD)         ");
@@ -144,7 +144,7 @@ double SAPT2p::compute_energy()
 void SAPT2p::print_header()
 {
   outfile->Printf("        SAPT2+  \n");
-  if (ccd_disp_) 
+  if (ccd_disp_)
     outfile->Printf("    CCD+(ST) Disp   \n");
   outfile->Printf("    Ed Hohenstein\n") ;
   outfile->Printf("     6 June 2009\n") ;
@@ -189,7 +189,7 @@ void SAPT2p::print_header()
 
   if (print_) {
     outfile->Printf("    Estimated memory usage: %.1lf MB\n\n",memory);
-    
+
   }
   if (options_.get_bool("SAPT_MEM_CHECK"))
     if (mem < vvnri + ovov*3L)
@@ -201,7 +201,7 @@ void SAPT2p::print_header()
   outfile->Printf("    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
   outfile->Printf("\n");
 
-  
+
 }
 
 void SAPT2p::print_results()
@@ -260,8 +260,8 @@ void SAPT2p::print_results()
         e_disp_ccd += e_disp22t_ccd_;
       }
     }
-    
-    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
+
+    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ +
                *scal_it * (e_exch_ind20_ + e_exch_disp20_);
     double e_sSAPT0 = 0.0;
     double elst_sSAPT0 = 0.0;
@@ -276,18 +276,18 @@ void SAPT2p::print_results()
       disp_sSAPT0 = e_disp20_ + sSAPT_Xscal * e_exch_disp20_;
       e_sSAPT0 = elst_sSAPT0 + exch_sSAPT0 + ind_sSAPT0 + disp_sSAPT0;
     }
-    e_sapt2_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
-               *scal_it * (e_exch_ind20_ + e_exch_disp20_) + 
-               e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + e_ind22_; 
+    e_sapt2_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ +
+               *scal_it * (e_exch_ind20_ + e_exch_disp20_) +
+               e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + e_ind22_;
 
-    e_sapt2p_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + *scal_it * (e_exch_ind20_ ) + 
-                e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + 
+    e_sapt2p_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + *scal_it * (e_exch_ind20_ ) +
+                e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) +
                 e_ind22_ + e_disp_mp4;
 
     double e_sapt2p_ccd_dmp2 = 0.0;
     if(ccd_disp_) {
       e_sapt2p_ccd_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + *scal_it * (e_exch_ind20_ ) +
-                  e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + 
+                  e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) +
                   e_ind22_ + e_disp_ccd;
       if(e_MP2 != 0.0) {
         e_sapt2p_ccd_dmp2 = e_sapt2p_ccd_ + dMP2_2;
@@ -301,7 +301,7 @@ void SAPT2p::print_results()
 
     double tot_elst = e_elst10_ + e_elst12_;
     double tot_exch = e_exch10_ + *scal_it * (e_exch11_ + e_exch12_);
-    double tot_ind = e_ind20_ + dHF2 + e_ind22_ 
+    double tot_ind = e_ind20_ + dHF2 + e_ind22_
             + *scal_it * (e_exch_ind20_ + e_exch_ind22_);
     if(e_MP2 != 0.0) {
       tot_ind += dMP2_2;
@@ -315,7 +315,7 @@ void SAPT2p::print_results()
     else
       tot_disp = e_disp20_ + e_disp21_ + e_disp22sdq_ + e_disp22t_ +
               *scal_it * e_exch_disp20_;
-  
+
     if (ccd_disp_) {
       tot_disp = 0.0;
       if (nat_orbs_t3_)
@@ -323,7 +323,7 @@ void SAPT2p::print_results()
       else
         tot_disp = e_disp2d_ccd_ + e_disp22s_ccd_ + e_disp22t_ccd_ + *scal_it * e_exch_disp20_;
     }
-  
+
     if(scal_it == Xscal.begin()) {
         outfile->Printf("\n    SAPT Results \n");
     } else {

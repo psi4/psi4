@@ -26,7 +26,7 @@
  */
 
 #include "dcft.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libtrans/integraltransform.h"
 #include "defines.h"

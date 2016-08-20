@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libdiis/diismanager.h"
 #include "psi4/src/lib/libdiis/diisentry.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libqt/qt.h"
 
 

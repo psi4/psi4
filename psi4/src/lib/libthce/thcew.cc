@@ -44,7 +44,7 @@
 #include "thcew.h"
 #include "laplace.h"
 #include "lreri.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 
@@ -69,7 +69,7 @@ void THCEW::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    
+
     //reference_wavefunction_ = Process::environment.legacy_wavefunction();
     throw PSIEXCEPTION("Rob: I broke your code. Check your email.");
     if (!reference_wavefunction_) {
@@ -84,7 +84,7 @@ void THCEW::common_init()
 
     thce_ = boost::shared_ptr<THCE>(new THCE());
 }
-RTHCEW::RTHCEW() : 
+RTHCEW::RTHCEW() :
     THCEW()
 {
     common_init();
@@ -124,7 +124,7 @@ void RTHCEW::common_init()
             *(Cap + n * nso + m) = *(C1p + m * nmo + n);
         }
     }
-    
+
     thce_->add_tensor("Cmo", Ca);
     thce_->add_tensor("Cocc", CoreTensor::build("Cocc" ,"nocc" ,nocc ,"nso",nso,Cap + 0              * nso,true));
     thce_->add_tensor("Cfocc",CoreTensor::build("Cfocc","nfocc",nfocc,"nso",nso,Cap + 0              * nso,true));
@@ -144,14 +144,14 @@ void RTHCEW::common_init()
     thce_->add_tensor("eps_avir",CoreTensor::build("eps_avir","navir",navir,eps_ap + nocc          ,true));
     thce_->add_tensor("eps_fvir",CoreTensor::build("eps_fvir","nfvir",nfvir,eps_ap + (nocc + navir),true));
     thce_->add_tensor("eps_vir", CoreTensor::build("eps_vir" ,"nvir" ,nvir ,eps_ap + nocc          ,true));
-    
+
 }
 void RTHCEW::build_laplace(double delta, double omega)
 {
     boost::shared_ptr<Vector> eps_aocc = epsilon_a_subset("AO","ACTIVE_OCC");
     boost::shared_ptr<Vector> eps_avir = epsilon_a_subset("AO","ACTIVE_VIR");
     boost::shared_ptr<LaplaceDenom> laplace(new LaplaceDenom(eps_aocc,eps_avir,delta,omega,2));
-    laplace->compute("pi_i","pi_a"); 
+    laplace->compute("pi_i","pi_a");
     thce_->add_tensor("pi_i",laplace->tau_occ());
     thce_->add_tensor("pi_a",laplace->tau_vir());
     (*thce_)["pi_i"]->dimensions()[0] = "nw";
@@ -168,9 +168,9 @@ void RTHCEW::build_df_ia(boost::shared_ptr<BasisSet> auxiliary)
     boost::shared_ptr<Tensor> Bia = dferi->ints()["Bia"];
     dferi.reset();
 
-    Bia->dimensions()[0] = "naocc";  
-    Bia->dimensions()[1] = "navir";  
-    Bia->dimensions()[2] = "naux";  
+    Bia->dimensions()[0] = "naocc";
+    Bia->dimensions()[1] = "navir";
+    Bia->dimensions()[2] = "naux";
     thce_->new_dimension("naux", Bia->sizes()[2]);
     thce_->add_tensor("Bia",Bia);
 }
@@ -188,18 +188,18 @@ void RTHCEW::build_df_act(boost::shared_ptr<BasisSet> auxiliary)
     boost::shared_ptr<Tensor> Baa = dferi->ints()["Baa"];
     dferi.reset();
 
-    Bii->dimensions()[0] = "naocc";  
-    Bii->dimensions()[1] = "naocc";  
-    Bii->dimensions()[2] = "naux";  
-    Bia->dimensions()[0] = "naocc";  
-    Bia->dimensions()[1] = "navir";  
-    Bia->dimensions()[2] = "naux";  
-    Bai->dimensions()[0] = "navir";  
-    Bai->dimensions()[1] = "naocc";  
-    Bai->dimensions()[2] = "naux";  
-    Baa->dimensions()[0] = "navir";  
-    Baa->dimensions()[1] = "navir";  
-    Baa->dimensions()[2] = "naux";  
+    Bii->dimensions()[0] = "naocc";
+    Bii->dimensions()[1] = "naocc";
+    Bii->dimensions()[2] = "naux";
+    Bia->dimensions()[0] = "naocc";
+    Bia->dimensions()[1] = "navir";
+    Bia->dimensions()[2] = "naux";
+    Bai->dimensions()[0] = "navir";
+    Bai->dimensions()[1] = "naocc";
+    Bai->dimensions()[2] = "naux";
+    Baa->dimensions()[0] = "navir";
+    Baa->dimensions()[1] = "navir";
+    Baa->dimensions()[2] = "naux";
     thce_->new_dimension("naux", Bia->sizes()[2]);
     thce_->add_tensor("Bii",Bii);
     thce_->add_tensor("Bia",Bia);
@@ -214,9 +214,9 @@ void RTHCEW::build_df_pp(boost::shared_ptr<BasisSet> auxiliary)
     boost::shared_ptr<Tensor> Bpp = dferi->ints()["Bpp"];
     dferi.reset();
 
-    Bpp->dimensions()[0] = "nact";  
-    Bpp->dimensions()[1] = "nact";  
-    Bpp->dimensions()[2] = "naux";  
+    Bpp->dimensions()[0] = "nact";
+    Bpp->dimensions()[1] = "nact";
+    Bpp->dimensions()[2] = "naux";
     thce_->new_dimension("naux", Bpp->sizes()[2]);
     thce_->add_tensor("Bpp",Bpp);
 }

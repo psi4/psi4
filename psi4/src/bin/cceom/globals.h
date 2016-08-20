@@ -27,12 +27,12 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 
-namespace psi { 
+namespace psi {
 
 
 

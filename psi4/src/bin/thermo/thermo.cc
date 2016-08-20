@@ -30,12 +30,12 @@
     \brief Compute thermodynamic quantities.
 */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 /* thermo: Computes thermodynamic quantities.
  *  by Rollin King, 2012
@@ -88,7 +88,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
     throw PsiException("thermo(): Could not interpret molecular point group.", __FILE__, __LINE__);
 
   if (options["ROTATIONAL_SYMMETRY_NUMBER"].has_changed())
-    rot_symm_num = options.get_int("ROTATIONAL_SYMMETRY_NUMBER"); 
+    rot_symm_num = options.get_int("ROTATIONAL_SYMMETRY_NUMBER");
 
   // Set number of vibrational frequencies.
   int nvib_freqs;
@@ -239,7 +239,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
     if (vib_temp[i] < 0) {
       outfile->Printf("    Warning: vibration with imaginary frequency neglected in vibrational contributions.\n");
       continue;
-    } 
+    }
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));  // first term zpve
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);

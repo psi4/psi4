@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -39,7 +39,7 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 #define _hartree2nm 0.02194746313710
 

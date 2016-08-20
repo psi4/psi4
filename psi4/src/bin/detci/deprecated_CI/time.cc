@@ -34,7 +34,7 @@
 #include <sys/time.h>
 #include <cstdlib>
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "structs.h"
 
 namespace psi { namespace detci {
@@ -47,7 +47,7 @@ wall_time_new(void)
   return (double) (tod.tv_sec + 0.000001 * tod.tv_usec);
 }
 
-void 
+void
 init_time_new(struct detci_timings time)
 {
  time.s1_total_time = time.s1_before_time = time.s1_after_time = 0.0;

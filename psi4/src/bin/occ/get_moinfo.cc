@@ -30,7 +30,7 @@
 
 #include <fstream>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -44,8 +44,8 @@ using namespace std;
 namespace psi{ namespace occwave{
 
 void OCCWave::get_moinfo()
-{      
-  //outfile->Printf("\n get_moinfo is starting... \n"); 
+{
+  //outfile->Printf("\n get_moinfo is starting... \n");
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -75,7 +75,7 @@ if (reference_ == "RESTRICTED") {
 	  nfrzc += frzcpi_[h];
 	  nfrzv += frzvpi_[h];
 	}
-	
+
 	// form occpi and virtpi
 	occpiA = init_int_array(nirrep_);
 	virtpiA = init_int_array(nirrep_);
@@ -85,7 +85,7 @@ if (reference_ == "RESTRICTED") {
 	  virtpiA[h] = nmopi_[h] - doccpi_[h];
 	  occpiA[h] = doccpi_[h];
 	}
-	
+
 	//active occ and virt
 	adoccpi = init_int_array(nirrep_);
 	aoccpiA = init_int_array(nirrep_);
@@ -98,10 +98,10 @@ if (reference_ == "RESTRICTED") {
 	  avirtpiA[h] = virtpiA[h] - frzvpi_[h];
 	  aoccpiA[h] = doccpi_[h] - frzcpi_[h];
 	}
-	
+
 	// Read in nuclear repulsion energy
 	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
-	
+
 	// Read SCF energy
     Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
@@ -110,7 +110,7 @@ if (reference_ == "RESTRICTED") {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         //epsilon_a_ = SharedVector(reference_wavefunction_->epsilon_a());
-	
+
 	/* Build mosym arrays */
 	mosym = new int [nmo_];
 	memset(mosym,0,sizeof(int)*nmo_);
@@ -119,7 +119,7 @@ if (reference_ == "RESTRICTED") {
 	    mosym[q++] = h;
 	  }
 	}
-	
+
 	/* Build sosym arrays */
 	sosym = new int [nso_];
 	memset(sosym,0,sizeof(int)*nmo_);
@@ -137,13 +137,13 @@ if (reference_ == "RESTRICTED") {
 	  }
 	}
 
-	// PitzerOffset 
+	// PitzerOffset
 	PitzerOffset = new int[nirrep_];
 	memset(PitzerOffset,0,sizeof(int)*nirrep_);
 	for(int h=1; h < nirrep_; h++){
 	  PitzerOffset[h] = PitzerOffset[h-1] + nmopi_[h-1];
 	}
-	
+
 	nvoA=nmo_-nooA;   	// Number of virtual orbitals
 	nacooA=nooA-nfrzc; 	// Number of active occupied orbitals
 	nacso=nmo_-nfrzc-nfrzv; 	// Number of active  orbitals
@@ -178,7 +178,7 @@ if (reference_ == "RESTRICTED") {
         }
         myoffset += nmopi_[h];
       }
-      
+
       // occ2symblkA
       ij = 0;
       myoffset = 0;
@@ -189,8 +189,8 @@ if (reference_ == "RESTRICTED") {
         }
         myoffset += occpiA[h];
       }
-      
-      
+
+
       // vir2symblkA
       ij = 0;
       myoffset = 0;
@@ -206,12 +206,12 @@ if (reference_ == "RESTRICTED") {
       if (print_ > 1) {
           for(int p = 0; p < nmo_; p++) {
               outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
-              
+
           }
           outfile->Printf("\n");
-          
+
       }
- 
+
 /********************************************************************************************/
 /************************** qt2pitzer *******************************************************/
 /********************************************************************************************/
@@ -219,7 +219,7 @@ if (reference_ == "RESTRICTED") {
       pitzer2qtA = new int[nmo_];
       memset(qt2pitzerA,0,sizeof(int)*nmo_);
       memset(pitzer2qtA,0,sizeof(int)*nmo_);
- 
+
       reorder_qt(doccpi_, soccpi_, frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
       for(int p = 0; p < nmo_; p++) {
 	  int pa = pitzer2qtA[p];
@@ -230,26 +230,26 @@ if (reference_ == "RESTRICTED") {
       if (print_ > 1) {
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
-          
+
       }
          outfile->Printf("\n");
-         
+
 
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
-          
+
       }
          outfile->Printf("\n");
-         
+
       }
-    
+
 /********************************************************************************************/
 /************************** occ_off & vir_off ***********************************************/
-/********************************************************************************************/ 
-/********************************************************************************************/ 
+/********************************************************************************************/
+/********************************************************************************************/
     // occ_qt = occ_sym_block + occ_off => convert occ sym block index to occ qt index
-    // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index 
-    // vir_qt = vir_sym_block + vir_off 
+    // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index
+    // vir_qt = vir_sym_block + vir_off
     // general_qt = vir_sym_block + vir_off + nocc
     // gen_qt = occ_qt => for occupieds
     // gen_qt = vir_qt + nocc => for virtuals
@@ -257,7 +257,7 @@ if (reference_ == "RESTRICTED") {
     vir_offA = new int[nirrep_];
     memset(occ_offA, 0, sizeof(int)*nirrep_);
     memset(vir_offA, 0, sizeof(int)*nirrep_);
-    int ocountA = occpiA[0]; 
+    int ocountA = occpiA[0];
     int vcountA = virtpiA[0];
     for(int h=1; h < nirrep_; h++) {
       occ_offA[h] = ocountA;
@@ -270,19 +270,19 @@ if (reference_ == "RESTRICTED") {
       if (print_ > 1) {
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
 
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
       }
-      
+
 /********************************************************************************************/
 /************************** pairs per irrep *************************************************/
 /********************************************************************************************/
@@ -304,24 +304,24 @@ if (reference_ == "RESTRICTED") {
         if (print_ > 1) {
          for(int h=0; h < nirrep_; h++) {
             outfile->Printf(" h, oo_pairpiAA[h]: %2d %2d \n", h, oo_pairpiAA[h]);
-            
+
          }
          outfile->Printf("\n");
-         
+
 
          for(int h=0; h < nirrep_; h++) {
             outfile->Printf(" h, ov_pairpiAA[h]: %2d %2d \n", h, ov_pairpiAA[h]);
-            
+
          }
          outfile->Printf("\n");
-         
+
 
          for(int h=0; h < nirrep_; h++) {
             outfile->Printf(" h, vv_pairpiAA[h]: %2d %2d \n", h, vv_pairpiAA[h]);
-            
+
          }
          outfile->Printf("\n");
-         
+
         }
 
 /********************************************************************************************/
@@ -369,39 +369,39 @@ if (reference_ == "RESTRICTED") {
         if (print_ > 1) vv_pairidxAA->print();
         delete [] itemppi;
 
-      
+
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
         // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
-	
+
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
-	  outfile->Printf("\n\tReading MO coefficients in pitzer order from the external file CmoA.psi...\n");  
-	  
+	  outfile->Printf("\n\tReading MO coefficients in pitzer order from the external file CmoA.psi...\n");
+
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
-	
+
 	  // read binary data
 	  ifstream InFile1;
 	  InFile1.open("CmoA.psi", ios::in | ios::binary);
 	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  InFile1.close();
-	  
+
 	  //set C_scf
 	  Ca_->set(C_pitzerA);
 	  free_block(C_pitzerA);
         }
-        
+
         // Build Reference MOs
         Ca_ref->copy(Ca_);
 	if(print_ > 2) Ca_->print();
 
-}// end if (reference_ == "RESTRICTED") 
+}// end if (reference_ == "RESTRICTED")
 
-  
+
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
@@ -431,7 +431,7 @@ else if (reference_ == "UNRESTRICTED") {
 	  nfrzc += frzcpi_[h];
 	  nfrzv += frzvpi_[h];
 	}
-	
+
 	// form occpi and virtpi
 	occpiA = init_int_array(nirrep_);
 	occpiB = init_int_array(nirrep_);
@@ -447,7 +447,7 @@ else if (reference_ == "UNRESTRICTED") {
 	  occpiB[h] = doccpi_[h];
 	  occpiA[h] = doccpi_[h] + soccpi_[h];
 	}
-	
+
 	//active occ and virt
 	adoccpi = init_int_array(nirrep_);
 	aoccpiA = init_int_array(nirrep_);
@@ -470,7 +470,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 	// Read in nuclear repulsion energy
 	Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy();
-	
+
 	// Read SCF energy
     Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
@@ -479,7 +479,7 @@ else if (reference_ == "UNRESTRICTED") {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
-	
+
 	/* Build mosym arrays */
 	mosym = new int [nmo_];
 	memset(mosym,0,sizeof(int)*nmo_);
@@ -488,7 +488,7 @@ else if (reference_ == "UNRESTRICTED") {
 	    mosym[q++] = h;
 	  }
 	}
-	
+
 	/* Build sosym arrays */
 	sosym = new int [nso_];
 	memset(sosym,0,sizeof(int)*nmo_);
@@ -505,23 +505,23 @@ else if (reference_ == "UNRESTRICTED") {
 	    nooB++;
 	  }
 	}
-	
-	// find nooA 
+
+	// find nooA
 	nooA=nooB;
 	for(int h=0; h < nirrep_; h++){
 	  for(int p=0; p < soccpi_[h]; p++){
 	    nooA++;
 	  }
 	}
-	
-	
-	// PitzerOffset 
+
+
+	// PitzerOffset
 	PitzerOffset = new int[nirrep_];
 	memset(PitzerOffset,0,sizeof(int)*nirrep_);
 	for(int h=1; h < nirrep_; h++){
 	  PitzerOffset[h] = PitzerOffset[h-1] + nmopi_[h-1];
 	}
-	
+
 	nvoA=nmo_-nooA;   	// Number of virtual orbitals
 	nvoB=nmo_-nooB;   	// Number of virtual orbitals
 	nacooA=nooA-nfrzc; 	// Number of active occupied orbitals
@@ -563,7 +563,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
         myoffset += nmopi_[h];
       }
-      
+
       // occ2symblkA
       ij = 0;
       myoffset = 0;
@@ -574,7 +574,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
         myoffset += occpiA[h];
       }
-      
+
       // occ2symblkB
       ij = 0;
       myoffset = 0;
@@ -585,7 +585,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
         myoffset += occpiB[h];
       }
-      
+
       // vir2symblkA
       ij = 0;
       myoffset = 0;
@@ -596,7 +596,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
         myoffset += virtpiA[h];
       }
-      
+
       // vir2symblkB
       ij = 0;
       myoffset = 0;
@@ -612,10 +612,10 @@ else if (reference_ == "UNRESTRICTED") {
       if (print_ > 1) {
           for(int p = 0; p < nmo_; p++) {
               outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
-              
+
           }
           outfile->Printf("\n");
-          
+
       }
 
 /********************************************************************************************/
@@ -641,40 +641,40 @@ else if (reference_ == "UNRESTRICTED") {
       if (print_ > 1) {
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
-          
+
       }
          outfile->Printf("\n");
-         
+
 
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, pitzer2qtB[p]: %2d %2d \n", p, pitzer2qtB[p]);
-          
+
       }
          outfile->Printf("\n");
-         
+
 
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
-          
+
       }
          outfile->Printf("\n");
-         
+
 
       for(int p = 0; p < nmo_; p++) {
           outfile->Printf(" p, qt2pitzerB[p]: %2d %2d \n", p, qt2pitzerB[p]);
-          
+
       }
          outfile->Printf("\n");
-         
-      }// end if   
+
+      }// end if
 
 
 /********************************************************************************************/
 /************************** occ_off & vir_off ***********************************************/
-/********************************************************************************************/ 
+/********************************************************************************************/
     // occ_qt = occ_sym_block + occ_off =>convert occ sym block index to occ qt index
-    // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index 
-    // vir_qt = vir_sym_block + vir_off 
+    // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index
+    // vir_qt = vir_sym_block + vir_off
     // general_qt = vir_sym_block + vir_off + nocc
     // gen_qt = occ_qt => for occupieds
     // gen_qt = vir_qt + nocc => for virtuals
@@ -686,8 +686,8 @@ else if (reference_ == "UNRESTRICTED") {
     memset(occ_offB, 0, sizeof(int)*nirrep_);
     memset(vir_offA, 0, sizeof(int)*nirrep_);
     memset(vir_offB, 0, sizeof(int)*nirrep_);
-    int ocountA = occpiA[0]; 
-    int ocountB = occpiB[0]; 
+    int ocountA = occpiA[0];
+    int ocountB = occpiB[0];
     int vcountA = virtpiA[0];
     int vcountB = virtpiB[0];
     for(int h=1; h < nirrep_; h++) {
@@ -695,7 +695,7 @@ else if (reference_ == "UNRESTRICTED") {
       occ_offB[h] = ocountB;
       ocountA += occpiA[h];
       ocountB += occpiB[h];
-      
+
       vir_offA[h] = vcountA;
       vir_offB[h] = vcountB;
       vcountA += virtpiA[h];
@@ -706,34 +706,34 @@ else if (reference_ == "UNRESTRICTED") {
       if (print_ > 1) {
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
 
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
 
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, occ_offB[h]: %2d %2d \n", h, occ_offB[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
 
           for(int h = 0; h < nirrep_; h++) {
               outfile->Printf(" h, vir_offB[h]: %2d %2d \n", h, vir_offB[h]);
-              
+
           }
           outfile->Printf("\n");
-          
+
       }
- 
-      
+
+
 /********************************************************************************************/
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
@@ -742,46 +742,46 @@ else if (reference_ == "UNRESTRICTED") {
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_));
-	
+
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
-	  outfile->Printf("\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");  
-	  
+	  outfile->Printf("\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");
+
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
 	  double **C_pitzerB = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
 	  memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
-	
+
 	  // read binary data
 	  ifstream InFile1;
 	  InFile1.open("CmoA.psi", ios::in | ios::binary);
 	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  InFile1.close();
-	  
+
 	  // read binary data
 	  ifstream InFile2;
 	  InFile2.open("CmoB.psi", ios::in | ios::binary);
 	  InFile2.read( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
 	  InFile2.close();
-	
+
 	  //set C_scf
 	  Ca_->set(C_pitzerA);
 	  Cb_->set(C_pitzerB);
-	  
+
 	  free_block(C_pitzerA);
 	  free_block(C_pitzerB);
         }
-        
+
         // Build Reference MOs
         Ca_ref->copy(Ca_);
 	Cb_ref->copy(Cb_);
-	
+
 	if(print_ > 2) {
 	  Ca_->print();
 	  Cb_->print();
 	}
-	
-}// end if (reference_ == "UNRESTRICTED") 
+
+}// end if (reference_ == "UNRESTRICTED")
 
 /********************************************************************************************/
 /************************** Create all required matrice *************************************/
@@ -793,7 +793,7 @@ else if (reference_ == "UNRESTRICTED") {
 	Hso->zero();
 	Tso->zero();
 	Vso->zero();
-	
+
 	// Read SO-basis one-electron integrals
 	double *so_ints = init_array(ntri_so);
         IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
@@ -801,8 +801,8 @@ else if (reference_ == "UNRESTRICTED") {
         IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
         Vso->set(so_ints);
         free(so_ints);
-	Hso->copy(Tso); 
+	Hso->copy(Tso);
 	Hso->add(Vso);
-//outfile->Printf("\n get_moinfo is done. \n"); 
+//outfile->Printf("\n get_moinfo is done. \n");
 }
 }} // End Namespaces

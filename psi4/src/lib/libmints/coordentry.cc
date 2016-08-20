@@ -32,7 +32,7 @@
 #include <iomanip>
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libmints/coordentry.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 using namespace psi;
 
 namespace {

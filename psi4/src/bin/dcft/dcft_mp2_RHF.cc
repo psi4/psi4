@@ -27,7 +27,7 @@
 
 #include "dcft.h"
 #include "defines.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <vector>
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libpsio/psio.hpp"

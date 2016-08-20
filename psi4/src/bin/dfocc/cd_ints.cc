@@ -32,8 +32,8 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/lib3index/cholesky.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/integral.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "defines.h"
@@ -50,7 +50,7 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::trans_cd()
-{   
+{
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -99,9 +99,9 @@ void DFOCC::trans_cd()
 
 //=======================================================
 //          trans for mp2 energy
-//=======================================================          
+//=======================================================
 void DFOCC::trans_cd_mp2()
-{   
+{
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -113,13 +113,13 @@ void DFOCC::trans_cd_mp2()
     timer_off("Form B(Q,ia)");
     bQso.reset();
 }
-    
+
 //=======================================================
 //          DF CC
-//=======================================================          
+//=======================================================
 void DFOCC::cd_ints()
-{   
-    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
+{
+    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n");
 
   // 1.  read scf 3-index integrals from disk
 
@@ -159,7 +159,7 @@ void DFOCC::cd_ints()
               }
           }
           bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
-      }// end if ( options_.get_str("SCF_TYPE") == "CD" ) 
+      }// end if ( options_.get_str("SCF_TYPE") == "CD" )
 
       else {
           // generate Cholesky 3-index integrals
@@ -178,14 +178,14 @@ void DFOCC::cd_ints()
           bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
           outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
           outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ);
-          
+
       }
 
 } // end df_corr
 
 //=======================================================
 //          form b(Q,ij) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ij_cd()
 {
     bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mI)", nQ, nso_ * naoccA));
@@ -209,8 +209,8 @@ void DFOCC::b_ij_cd()
 } // end b_ij
 
 //=======================================================
-//          form b(Q,oo) 
-//=======================================================          
+//          form b(Q,oo)
+//=======================================================
 void DFOCC::b_oo_cd()
 {
     bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mO)", nQ, nso_ * noccA));
@@ -249,7 +249,7 @@ void DFOCC::b_oo_cd()
 
 //=======================================================
 //          form b(Q,ia) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ia_cd()
 {
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
@@ -276,7 +276,7 @@ void DFOCC::b_ia_cd()
 
 //=======================================================
 //          form b(Q,ov) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_ov_cd()
 {
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA));
@@ -317,7 +317,7 @@ void DFOCC::b_ov_cd()
 
 //=======================================================
 //          form b(Q,ab) : active
-//=======================================================          
+//=======================================================
 void DFOCC::b_ab_cd()
 {
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
@@ -342,7 +342,7 @@ void DFOCC::b_ab_cd()
 
 //=======================================================
 //          form b(Q,vv) : all
-//=======================================================          
+//=======================================================
 void DFOCC::b_vv_cd()
 {
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));

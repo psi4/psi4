@@ -36,8 +36,8 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "globals.h"
@@ -141,7 +141,7 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
   }
 
   count_ijk();
-  
+
 
   if(params.ref == 0) { /** RHF **/
 
@@ -201,40 +201,40 @@ PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, 
     if(params.dertype == 0) {
       ETAAA = ET_UHF_AAA();
       outfile->Printf( "    AAA (T) energy                             = %20.15f\n", ETAAA);
-      
+
 
       ETBBB = ET_UHF_BBB();
       outfile->Printf( "    BBB (T) energy                             = %20.15f\n", ETBBB);
-      
+
 
       ETAAB = ET_UHF_AAB();
       outfile->Printf( "    AAB (T) energy                             = %20.15f\n", ETAAB);
-      
+
 
       ETABB = ET_UHF_ABB();
       outfile->Printf( "    ABB (T) energy                             = %20.15f\n", ETABB);
-      
+
     }
     else if(params.dertype==1) {
       transpose_integrals();
       outfile->Printf( "\n    Computing (T) contributions to CC density...\n");
-      
+
 
       ETAAA = T3_grad_UHF_AAA();
       outfile->Printf( "    AAA (T) energy                             = %20.15f\n", ETAAA);
-      
+
 
       ETBBB = T3_grad_UHF_BBB();
       outfile->Printf( "    BBB (T) energy                             = %20.15f\n", ETBBB);
-      
+
 
       ETAAB = T3_grad_UHF_AAB();
       outfile->Printf( "    AAB (T) energy                             = %20.15f\n", ETAAB);
-      
+
 
       ETABB = T3_grad_UHF_BBA();
       outfile->Printf( "    ABB (T) energy                             = %20.15f\n", ETABB);
-      
+
     }
 
     ET = ETAAA + ETAAB + ETABB + ETBBB;

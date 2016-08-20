@@ -27,12 +27,12 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libiwl/iwl.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #define EXTERN
@@ -43,7 +43,7 @@ namespace psi { namespace ccsort {
 void classify(int p, int q, int r, int s, double value,
 	      struct iwlbuf *ABuf, struct iwlbuf *BBuf,
 	      struct iwlbuf *CBuf, struct iwlbuf *DBuf,
-	      struct iwlbuf *EBuf, struct iwlbuf *F1Buf, 
+	      struct iwlbuf *EBuf, struct iwlbuf *F1Buf,
 	      struct iwlbuf *F2Buf);
 
 void distribute_rhf(int filenum, int first_tmp, double tolerance, int keep_input)
@@ -123,14 +123,14 @@ void distribute_rhf(int filenum, int first_tmp, double tolerance, int keep_input
   iwl_buf_close(&F1Buf, 1);
   if(params.make_aibc) iwl_buf_close(&F2Buf, 1);
 
-  
+
 }
 
 void classify_uhf(int p, int q, int r, int s, double value, const char *spin,
 		  struct iwlbuf *ABuf1, struct iwlbuf *BBuf1,
-		  struct iwlbuf *CBuf1, struct iwlbuf *CBuf2, 
-		  struct iwlbuf *DBuf1, struct iwlbuf *EBuf1, 
-		  struct iwlbuf *EBuf2, struct iwlbuf *FBuf1, 
+		  struct iwlbuf *CBuf1, struct iwlbuf *CBuf2,
+		  struct iwlbuf *DBuf1, struct iwlbuf *EBuf1,
+		  struct iwlbuf *EBuf2, struct iwlbuf *FBuf1,
 		  struct iwlbuf *FBuf2, struct iwlbuf *FBuf3,
 		  struct iwlbuf *FBuf4);
 
@@ -226,7 +226,7 @@ void distribute_uhf(const char *spin, int filenum, int first_tmp, double toleran
   iwl_buf_close(&FBuf3, 1);
   iwl_buf_close(&FBuf4, 1);
 
-  
+
 }
 
 }} // namespace psi::ccsort

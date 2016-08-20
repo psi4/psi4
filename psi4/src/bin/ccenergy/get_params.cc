@@ -34,8 +34,8 @@
 #include <string>
 #include <cmath>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"

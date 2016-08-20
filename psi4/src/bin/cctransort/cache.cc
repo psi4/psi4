@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi { namespace cctransort {
 

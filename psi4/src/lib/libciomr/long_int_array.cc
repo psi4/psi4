@@ -28,22 +28,22 @@
 /*!
 ** \file
 ** \brief This file includes the long integer versions of several psi routines
-** for handling arrays and matrices of doubles 
+** for handling arrays and matrices of doubles
 **
 ** David Sherrill, 1996
 **
 ** \ingroup CIOMR
 */
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
 #include <strings.h>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 /*!
-** init_long_int_array(): Allocates memory for one-D array of long ints of 
+** init_long_int_array(): Allocates memory for one-D array of long ints of
 ** dimension  'size' and returns pointer to 1st element.  Zeroes all elements.
 **
 ** Just modified the init_int_array() routine to do long int's instead.

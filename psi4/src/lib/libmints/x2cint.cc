@@ -25,9 +25,9 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"

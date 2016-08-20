@@ -27,7 +27,7 @@
 
 /*! \file    H_guess.cc
     \ingroup optking
-    \brief   generates diagonal empirical Hessians in a.u. such as 
+    \brief   generates diagonal empirical Hessians in a.u. such as
       Schlegel, Theor. Chim. Acta, 66, 333 (1984) and
       Fischer and Almlof, J. Phys. Chem., 96, 9770 (1992).
 */
@@ -36,7 +36,7 @@
 #include "cov_radii.h"
 #include "psi4/src/bin/optking/physconst.h"
 #include "v3d.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -52,7 +52,7 @@ namespace opt {
 using namespace v3d;
 
 // return period from atomic number
-static inline int period(int Z) { 
+static inline int period(int Z) {
   if      (Z <=  2) return 1;
   else if (Z <= 10) return 2;
   else if (Z <= 18) return 3;
@@ -144,14 +144,14 @@ double ** FRAG::H_guess(void) {
             b = q->g_atom(1);
             int perA = period((int) Z[a]);
             int perB = period((int) Z[b]);
-  
+
             if ( perA==1 && perB==1) B = -0.244;
             else if ((perA==1 && perB==2) || (perB==1 && perA==2)) B = 0.352;
             else if (perA==2 && perB==2)                           B = 1.085;
             else if ((perA==1 && perB==3) || (perB==1 && perA==3)) B = 0.660;
             else if ((perA==2 && perB==3) || (perB==2 && perA==3)) B = 1.522;
             else B = 2.068;
-    
+
             A = 1.734;
             // force constants in au / bohr^2
             f[cnt++] = A/((R[a][b]-B)*(R[a][b]-B)*(R[a][b]-B));
@@ -205,12 +205,12 @@ double ** FRAG::H_guess(void) {
           else {
             a = q->g_atom(0);
             b = q->g_atom(1);
-  
+
             rABcov = Rcov(Z[a], Z[b]);
-  
-            A = 0.3601; 
+
+            A = 0.3601;
             B = 1.944;
-            f[cnt++] = A * exp(-B*(R[a][b] - rABcov)); 
+            f[cnt++] = A * exp(-B*(R[a][b] - rABcov));
           }
         break;
 
@@ -316,7 +316,7 @@ double ** FRAG::H_guess(void) {
 
       int a,b,c,d;
 
-      switch (q->g_type()) { 
+      switch (q->g_type()) {
 
         case (stre_type) :
           a = q->g_atom(0);

@@ -34,7 +34,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "mospace.h"
 #define EXTERN
 #include "psi4/src/lib/libdpd/dpd.gbl"
@@ -83,7 +83,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
         }else{
             outfile->Printf( "\tStarting AA/AB first half-transformation.\n");
         }
-        
+
     }
 
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_OLD);
@@ -122,7 +122,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
             outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
             outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
             outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-            
+
         }
 
         global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -174,7 +174,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
         }else{
             outfile->Printf( "\tSorting AA/AB half-transformed integrals.\n");
         }
-        
+
     }
 
     psio_->open(aHtIntFile_, PSIO_OPEN_NEW);
@@ -197,7 +197,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
         /*** BB two-electron integral transformation ***/
         if(print_) {
             outfile->Printf( "\tStarting BB first half-transformation.\n");
-            
+
         }
 
         psio_->open(PSIF_HALFT0, PSIO_OPEN_NEW);
@@ -235,7 +235,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
                 outfile->Printf( "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
                 outfile->Printf( "\th = %d; rows_left       = %lu\n", h, rowsLeft);
                 outfile->Printf( "\th = %d; nbuckets        = %d\n", h, nBuckets);
-                
+
             }
 
             global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
@@ -283,7 +283,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
 
         if(print_) {
             outfile->Printf( "\tSorting BB half-transformed integrals.\n");
-            
+
         }
 
         psio_->open(bHtIntFile_, PSIO_OPEN_NEW);
@@ -313,7 +313,7 @@ IntegralTransform::transform_tei_first_half(const boost::shared_ptr<MOSpace> s1,
 
     if(print_){
         outfile->Printf( "\tFirst half integral transformation complete.\n");
-        
+
     }
 
     // Hand DPD control back to the user

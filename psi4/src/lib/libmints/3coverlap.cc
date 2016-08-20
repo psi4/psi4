@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 #include "psi4/src/lib/libmints/3coverlap.h"
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -290,7 +290,7 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
 
     // ABC -> ABc
     if (is_pure3) {
-        
+
         ::memset(temp_, '\0', sizeof(double) * nao1 * nao2 * nso3);
 
         for (trans3.first(); !trans3.is_done(); trans3.next()) {
@@ -300,12 +300,12 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
             C_DAXPY(nao1 * nao2, coef, sptr, nao3, tptr, nso3);
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nao2 * nso3); 
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nao2 * nso3);
     }
 
     // ABc -> Abc
     if (is_pure2) {
-        
+
         ::memset(temp_, '\0', sizeof(double) * nao1 * nso2 * nso3);
 
         for (trans2.first(); !trans2.is_done(); trans2.next()) {
@@ -313,18 +313,18 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
             double *sptr = buffer_ + trans2.cartindex() * nso3;
             double *tptr = temp_   + trans2.pureindex() * nso3;
             for (int a=0; a<nao1; ++a) {
-                C_DAXPY(nso3,coef,sptr,1,tptr,1); 
-                sptr += nao2 * nso3; 
-                tptr += nso2 * nso3; 
-            } 
+                C_DAXPY(nso3,coef,sptr,1,tptr,1);
+                sptr += nao2 * nso3;
+                tptr += nso2 * nso3;
+            }
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nso2 * nso3); 
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nso2 * nso3);
     }
 
     // Abc -> abc
     if (is_pure1) {
-        
+
         ::memset(temp_, '\0', sizeof(double) * nso1 * nso2 * nso3);
 
         for (trans1.first(); !trans1.is_done(); trans1.next()) {
@@ -334,7 +334,7 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
             C_DAXPY(nso2 * nso3, coef, sptr, 1, tptr, 1);
         }
 
-        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nso1 * nso2 * nso3); 
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nso1 * nso2 * nso3);
     }
 
     if(enable_pybuffer_) {

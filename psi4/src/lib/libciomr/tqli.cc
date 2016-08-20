@@ -31,10 +31,10 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <cstdio>
 #include <cmath>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #define DSIGN(a,b) (((b) >= 0.0) ? (fabs(a)) : (-fabs(a)))
 
 namespace psi {

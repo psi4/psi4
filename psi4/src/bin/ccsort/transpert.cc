@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "MOInfo.h"
 #define EXTERN
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "globals.h"
 
 namespace psi { namespace ccsort {

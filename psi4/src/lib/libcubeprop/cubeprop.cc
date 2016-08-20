@@ -27,7 +27,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/libmints/basisset.h"

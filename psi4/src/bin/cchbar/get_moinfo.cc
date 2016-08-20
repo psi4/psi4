@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "MOInfo.h"

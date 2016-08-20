@@ -28,7 +28,7 @@
 #ifndef THREE_INDEX_FITTER
 #define THREE_INDEX_FITTER
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 
 namespace psi {
@@ -37,7 +37,7 @@ class BasisSet;
 class Matrix;
 class Vector;
 
-/*! 
+/*!
  * Small utility class to compute d_A = J_AB^{-1} (Q|mn) D_mn coefficients for QM/MM
  */
 class DFChargeFitter {
@@ -52,14 +52,14 @@ protected:
     SharedVector d_;
     /// Driving density
     SharedMatrix D_;
-    
+
     /// Primary Basis Set
     boost::shared_ptr<BasisSet> primary_;
     /// Auxiliary Basis Set
     boost::shared_ptr<BasisSet> auxiliary_;
 
 public:
-    
+
     DFChargeFitter();
     ~DFChargeFitter();
 

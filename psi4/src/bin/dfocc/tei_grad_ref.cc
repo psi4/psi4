@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -48,8 +48,8 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::tei_grad_ref()
-{      
-  //outfile->Printf("\tref_grad is starting... \n"); 
+{
+  //outfile->Printf("\tref_grad is starting... \n");
 
 //===========================================================================================
 //========================= Two-electron Gradient:RefSep ====================================
@@ -61,9 +61,9 @@ void DFOCC::tei_grad_ref()
     #endif
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(), 
+    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
         "BASIS", Process::environment.options.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(), 
+    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
         "DF_BASIS_SCF", Process::environment.options.get_str("DF_BASIS_SCF"),
         "JKFIT", Process::environment.options.get_str("BASIS"));
     boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
@@ -73,7 +73,7 @@ void DFOCC::tei_grad_ref()
 //===========================================================================================
 //========================= Metric Gradient:RefSep ==========================================
 //===========================================================================================
-    // Read Gaux_ref 
+    // Read Gaux_ref
     Gaux_ref = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
     //Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
     Gaux_ref->read_symm(psio_, PSIF_DFOCC_DENS);
@@ -339,8 +339,8 @@ void DFOCC::tei_grad_ref()
     //gradients["3-Index:RefSep"]->print_atom_vector();
     timer_off("Grad: 3-Index:RefSep");
 
-//outfile->Printf("\tref_grad is done. \n"); 
-}// end 
+//outfile->Printf("\tref_grad is done. \n");
+}// end
 
 
 }} // End Namespaces

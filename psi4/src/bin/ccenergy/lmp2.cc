@@ -34,7 +34,7 @@
 #include <cmath>
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "Local.h"
 #include "MOInfo.h"
@@ -249,7 +249,7 @@ void CCEnergyWavefunction::lmp2(void)
   outfile->Printf( "\n    LMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
   outfile->Printf( "    LMP2 Correlation Energy = %20.14f\n", energy);
   outfile->Printf( "    LMP2 Total Energy       = %20.14f\n\n", energy+moinfo_.eref);
-  
+
 
   local_.weak_pair_energy = weak_pair_energy;
 

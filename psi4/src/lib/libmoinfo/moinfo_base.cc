@@ -29,7 +29,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
@@ -129,7 +129,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
         n = 0;
         if(read){
             outfile->Printf("\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
-            
+
             exit(1);
         }else{
             read = true;
@@ -141,7 +141,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
             }
         }else{
             outfile->Printf("\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
-            
+
             exit(1);
         }
     }

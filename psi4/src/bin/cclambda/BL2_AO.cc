@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*! \defgroup CCLAMBDA cclambda: Coupled-Cluster Lambda Equations */
@@ -40,7 +40,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -48,10 +48,10 @@
 
 namespace psi { namespace cclambda {
 
-void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps, 
+void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps,
 	       int **mo_row, int **so_row, int *mospi, int *sospi, int type, double alpha, double beta);
 
-void AO_contribute(int p, int q, int r, int s, double value, 
+void AO_contribute(int p, int q, int r, int s, double value,
 		   dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int anti);
 
 void BL2_AO(int L_irr)
@@ -101,7 +101,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
 
-  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
   global_dpd_->buf4_close(&tau);
@@ -172,7 +172,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New LIJAB");
 
-  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 1, 0.5, 1.0);
 
   global_dpd_->buf4_close(&t2);
@@ -187,7 +187,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "Lijab");
 
-  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
   global_dpd_->buf4_close(&tau);
@@ -258,7 +258,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New Lijab");
 
-  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 1, 0.5, 1.0);
 
   global_dpd_->buf4_close(&t2);
@@ -273,7 +273,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
 
-  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
   global_dpd_->buf4_close(&tau);
@@ -344,7 +344,7 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
   global_dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
 
-  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
+  halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start,
 	    virtpi, orbspi, 1, 1.0, 1.0);
 
   global_dpd_->buf4_close(&t2);
@@ -357,16 +357,16 @@ void BL2_AO(int L_irr)
   dpd_set_default(0);
 }
 
-void AO_contribute(int p, int q, int r, int s, double value, dpdbuf4 
+void AO_contribute(int p, int q, int r, int s, double value, dpdbuf4
 		   *tau1_AO, dpdbuf4 *tau2_AO, int anti)
 {
   int Gp, Gq, Gr, Gs, Gpr, Gps, Gqr, Gqs, Grp, Gsp, Grq, Gsq;
   int pr, ps, qr, qs, rp, rq, sp, sq, pq, rs;
   int row;
 
-  Gp = tau1_AO->params->rsym[p]; 
-  Gq = tau1_AO->params->rsym[q]; 
-  Gr = tau1_AO->params->rsym[r]; 
+  Gp = tau1_AO->params->rsym[p];
+  Gq = tau1_AO->params->rsym[q];
+  Gr = tau1_AO->params->rsym[r];
   Gs = tau1_AO->params->rsym[s];
 
   pq = tau1_AO->params->colidx[p][q];  rs = tau1_AO->params->colidx[r][s];

@@ -26,7 +26,7 @@
  */
 
 #include "stability.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 
@@ -37,12 +37,12 @@
 #include "psi4/src/lib/libfock/solver.h"
 #include "psi4/src/lib/libfock/hamiltonian.h"
 #include "psi4/src/lib/libmints/matrix.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 using namespace boost;
 using namespace std;
 
-namespace psi{ 
+namespace psi{
 
 namespace scf {
 

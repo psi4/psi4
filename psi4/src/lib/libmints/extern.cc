@@ -33,7 +33,7 @@
 #include "psi4/src/lib/libmints/potential.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>

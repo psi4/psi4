@@ -27,19 +27,19 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*
-** OG_ADDR.C: Code to calculate lexical addresses of strings for 
+** OG_ADDR.C: Code to calculate lexical addresses of strings for
 **    olsen graph structures.
 **
 ** C. David Sherrill, June 1995
 **
 */
- 
+
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "structs.h"
 
 namespace psi { namespace detci {
@@ -49,7 +49,7 @@ int subgr_lex_addr(struct level *head, int *occs, int nel, int norb);
 
 /*
 ** subgr_lex_addr():  Function takes a pointer to the head of a subgraph
-**    and a list of occupied orbitals, and returns the lexical 
+**    and a list of occupied orbitals, and returns the lexical
 **    address (within the given subgraph) of the walk.
 **
 ** Parameters:
@@ -73,7 +73,7 @@ int subgr_lex_addr(struct level *head, int *occs, int nel, int norb)
          addr += curr->y[j-1];
          j = curr->k[1][j-1];
          c++;
-         } 
+         }
       else {
          j = curr->k[0][j-1];
          }
@@ -98,7 +98,7 @@ int subgr_lex_addr(struct level *head, int *occs, int nel, int norb)
 **    Graph    =  pointer to olsen graph
 **    occs     =  array holding orbital numbers for occupied orbitals
 **    nel      =  number of explicit electrons (i.e. length of occs array)
-**    listnum  =  ptr to hold id of the list containing the given string 
+**    listnum  =  ptr to hold id of the list containing the given string
 **
 ** Returns: the relative index within the given list, OR -1 if not found
 **
@@ -124,7 +124,7 @@ int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
       else inras2++;
       }
    // inras1 += Graph->num_drc_orbs; // CDS 4/15
-   inras1 -= Graph->ras1_min; 
+   inras1 -= Graph->ras1_min;
    if (inras1 < 0) return(-1);
    if (inras3 > Graph->ras3_max) return(-1);
    if (inras4 > Graph->ras4_max) return(-1);
@@ -152,8 +152,8 @@ int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
 **    relidx  = ptr to hold the relative index
 **    listnum = ptr to hold the code for the list holding this string
 **    Graph   = olsen graph
-*/ 
-void str_abs2rel(int absidx, int *relidx, int *listnum, 
+*/
+void str_abs2rel(int absidx, int *relidx, int *listnum,
       struct olsen_graph *Graph)
 {
    int tot=0;
@@ -183,7 +183,7 @@ void str_abs2rel(int absidx, int *relidx, int *listnum,
 **    Graph   = olsen graph
 **
 ** Returns: the absolute index
-*/ 
+*/
 int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph)
 {
    int tot=0;

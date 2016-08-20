@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
@@ -64,7 +64,7 @@ int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
     for(i=0; i < Params->nirreps; i++)
         outfile->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
                 Params->rowtot[i], Params->coltot[i^all_buf_irrep]);
-    
+
 
     if(print_data) {
         for(h=0; h < Buf->params->nirreps; h++) {

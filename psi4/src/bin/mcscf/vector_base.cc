@@ -33,7 +33,7 @@
 
 #include "vector_base.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 extern FILE* outfile;
 

@@ -27,12 +27,12 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -130,7 +130,7 @@ void deanti_ROHF(struct RHO_Params rho_params)
     global_dpd_->file2_close(&D);
 
     outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
-    
+
   }
 
   /* G(Ij,Kl) <-- 1/2 G(IJ,KL) + 1/2 G(ij,kl) + 1/2 G(Ij,Kl) + 1/2 G(iJ,kL) */
@@ -149,7 +149,7 @@ void deanti_ROHF(struct RHO_Params rho_params)
   global_dpd_->buf4_axpy(&G2, &G1, 1.0);
   global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_scm(&G1, 0.5);
-  
+
   if(!params.aobasis) {
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     two_energy = global_dpd_->buf4_dot(&A, &G1);
@@ -191,7 +191,7 @@ void deanti_ROHF(struct RHO_Params rho_params)
   global_dpd_->buf4_axpy(&G2, &G1, -1.0);
   global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_close(&G1);
-  
+
   /* G(IJ,AB) <-- G(IJ,AB) - G(IB,JA) */
   global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 0, 5, 2, 7, 0, "GIJAB");
   global_dpd_->buf4_copy(&G1, PSIF_CC_TMP0, "G(IJ,AB)");
@@ -201,7 +201,7 @@ void deanti_ROHF(struct RHO_Params rho_params)
   global_dpd_->buf4_sort(&G2, PSIF_CC_TMP0, prsq, 0, 5, "GIBJA (IJ,AB)");
   global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GIBJA (IJ,AB)");
-  global_dpd_->buf4_axpy(&G2, &G1, -1.0); 
+  global_dpd_->buf4_axpy(&G2, &G1, -1.0);
   global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_close(&G1);
 
@@ -240,17 +240,17 @@ void deanti_ROHF(struct RHO_Params rho_params)
   }
 
   global_dpd_->buf4_close(&G1);
-  
+
   /* G(IB,JA) <-- G(IB,JA) + G(ib,ja) + G(Ib,Ja) + G(iB,jA) */
   global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
   global_dpd_->buf4_axpy(&G2, &G1, 1.0);
-  global_dpd_->buf4_close(&G2); 
+  global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
-  global_dpd_->buf4_axpy(&G2, &G1, 1.0); 
-  global_dpd_->buf4_close(&G2); 
+  global_dpd_->buf4_axpy(&G2, &G1, 1.0);
+  global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
-  global_dpd_->buf4_axpy(&G2, &G1, 1.0); 
+  global_dpd_->buf4_axpy(&G2, &G1, 1.0);
   global_dpd_->buf4_close(&G2);
 
   if(!params.aobasis) {
@@ -267,10 +267,10 @@ void deanti_ROHF(struct RHO_Params rho_params)
   global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
   global_dpd_->buf4_axpy(&G2, &G1, 1.0);
-  global_dpd_->buf4_close(&G2); 
+  global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 11, 5, 11, 7, 0, "GCIAB");
-  global_dpd_->buf4_axpy(&G2, &G1, 1.0);  
-  global_dpd_->buf4_close(&G2); 
+  global_dpd_->buf4_axpy(&G2, &G1, 1.0);
+  global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 11, 5, 11, 7, 0, "Gciab");
   global_dpd_->buf4_axpy(&G2, &G1, 1.0);
   global_dpd_->buf4_close(&G2);
@@ -308,7 +308,7 @@ void deanti_ROHF(struct RHO_Params rho_params)
   global_dpd_->buf4_close(&G2);
   global_dpd_->buf4_scm(&G1, 0.5);
 
-  if(!params.aobasis) {  
+  if(!params.aobasis) {
     global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
     two_energy = global_dpd_->buf4_dot(&B, &G1);
     global_dpd_->buf4_close(&B);

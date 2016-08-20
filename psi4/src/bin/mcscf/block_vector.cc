@@ -32,7 +32,7 @@
 #include "block_vector.h"
 #include "vector_base.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 
@@ -139,7 +139,7 @@ void BlockVector::print()
   for(int h = 0; h < nirreps_; ++h){
     vector_base_[h]->print();
   }
-  
+
 }
 
 

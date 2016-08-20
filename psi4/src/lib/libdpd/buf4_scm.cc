@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #define EXTERN
 #include "dpd.gbl"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_scm(): Multiplies every element of a four-index dpdbuf by a scalar.
@@ -46,11 +46,11 @@ namespace psi {
 **
 ** NB: This function is sometimes called automatically by the contractXXX
 ** functions to zero-out data that does not yet exist on disk.  In such a
-** case, since each symmetry block is handled separately, it is possible 
+** case, since each symmetry block is handled separately, it is possible
 ** for only the first (totally symmetric) block to exist on disk while the
 ** others have yet to be created.  In such cases, the buf4_mat_irrep_rd()
 ** request will fail in libpsio, because the correct TOC entry exists
-** (created when the first symmetry block was written), but the length of 
+** (created when the first symmetry block was written), but the length of
 ** the TOC entry will be too short for the next symmetry block to be added.
 ** So, to avoid this problem, here we manually check in the beginning to
 ** see if the TOC entry exists and should be read before the multiplication.

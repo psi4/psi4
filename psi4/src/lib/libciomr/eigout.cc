@@ -32,16 +32,16 @@
 */
 
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!
-** eigout(): Print out eigenvectors and eigenvalues.  
+** eigout(): Print out eigenvectors and eigenvalues.
 **
-** Prints an n x m matrix of eigenvectors.  Under each eigenvector, 
-** the corresponding elements of two arrays, b and c, will also be printed.  
-** This is useful for printing, for example, the SCF eigenvectors with 
+** Prints an n x m matrix of eigenvectors.  Under each eigenvector,
+** the corresponding elements of two arrays, b and c, will also be printed.
+** This is useful for printing, for example, the SCF eigenvectors with
 ** their associated eigenvalues (orbital energies) and also the population.
 **
 ** \param a    = matrix of eigenvectors (eigenvectors are columns)

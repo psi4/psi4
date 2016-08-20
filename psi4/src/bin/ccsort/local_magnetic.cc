@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -39,7 +39,7 @@
 #include "psi4/src/lib/libmints/mintshelper.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -128,7 +128,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	while(boolean[max]) max++; /* find an unused max */
 	for(k=0; k < natom; k++)
 	  if((fabs(mag_atom[i][k]) >= fabs(mag_atom[i][max])) && !boolean[k]) max = k;
-	rank[j] = max; 
+	rank[j] = max;
 	boolean[max] = 1;
       }
 
@@ -212,7 +212,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	while(boolean[max]) max++; /* find an unused max */
 	for(k=0; k < natom; k++)
 	  if((fabs(mag_atom[i][k]) >= fabs(mag_atom[i][max])) && !boolean[k]) max = k;
-	rank[j] = max; 
+	rank[j] = max;
 	boolean[max] = 1;
       }
 
@@ -296,7 +296,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
 	while(boolean[max]) max++; /* find an unused max */
 	for(k=0; k < natom; k++)
 	  if((fabs(mag_atom[i][k]) >= fabs(mag_atom[i][max])) && !boolean[k]) max = k;
-	rank[j] = max; 
+	rank[j] = max;
 	boolean[max] = 1;
       }
 

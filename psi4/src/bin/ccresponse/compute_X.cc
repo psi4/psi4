@@ -37,7 +37,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -78,7 +78,7 @@ void compute_X(const char *pert, int irrep, double omega)
   init_X(pert, irrep, omega);
   outfile->Printf( "\tIter   Pseudopolarizability       RMS \n");
   outfile->Printf( "\t----   --------------------   -----------\n");
-  
+
 
   if (params.wfn == "CC2")
     cc2_sort_X(pert, irrep, omega);
@@ -86,7 +86,7 @@ void compute_X(const char *pert, int irrep, double omega)
     sort_X(pert, irrep, omega);
   polar = -2.0*pseudopolar(pert, irrep, omega);
   outfile->Printf( "\t%4d   %20.12f\n", iter, polar);
-  
+
 
   for(iter=1; iter <= params.maxiter; iter++) {
 
@@ -120,7 +120,7 @@ void compute_X(const char *pert, int irrep, double omega)
         outfile->Printf( "\tNorm of the converged X2 amplitudes %20.15f\n", X2_norm);
         amp_write(pert, irrep, omega);
       }
-      
+
       break;
     }
     if(params.diis) diis(iter, pert, irrep, omega);
@@ -132,11 +132,11 @@ void compute_X(const char *pert, int irrep, double omega)
 
     polar = -2.0*pseudopolar(pert, irrep, omega);
     outfile->Printf( "\t%4d   %20.12f    %4.3e\n", iter, polar, rms);
-    
+
 
   }
   if(!done) {
-    
+
     dpd_close(0);
     cleanup();
     exit_io();

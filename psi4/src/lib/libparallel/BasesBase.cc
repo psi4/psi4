@@ -22,11 +22,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * @END LICENSE 
+ * @END LICENSE
  */
 
 #include "BasesBase.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 //#include "../libparallel2/Communicator.h"
 //#include "../libparallel2/ParallelEnvironment.h"
 

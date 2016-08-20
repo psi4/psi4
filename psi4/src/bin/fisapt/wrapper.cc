@@ -28,11 +28,11 @@
 
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/bin/fisapt/fisapt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 using namespace boost;
 
-namespace psi{ 
+namespace psi{
 
 namespace fisapt {
 

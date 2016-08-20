@@ -31,7 +31,7 @@
 
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libparallel/parallel.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libiwl/iwl.h"
@@ -49,7 +49,7 @@
 #include "psi4/src/lib/libmints/factory.h"
 #include "psi4/src/lib/libmints/sointegral_onebody.h"
 #include "psi4/src/lib/libmints/corrtab.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include <boost/python.hpp>
 #include <boost/python/call.hpp>
@@ -69,12 +69,12 @@ double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule,
                            boost::shared_ptr<BasisSet> basis,
-                           Options& options) : 
+                           Options& options) :
                        options_(options),basisset_(basis),molecule_(molecule)
 {
     common_init();
 }
-                           
+
 
 Wavefunction::Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
                            Options & options) :
@@ -229,7 +229,7 @@ void Wavefunction::common_init()
     if(!basisset_)
         throw PSIEXCEPTION("You can't initialize a Wavefunction that doesn't "
                            "have a basis set");
-    
+
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
         molecule_->set_point_group(molecule_->find_point_group());

@@ -26,7 +26,7 @@
  */
 
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/sieve.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/twobody.h"
@@ -223,7 +223,7 @@ void ERISieve::integrals()
         double max_val = 0.0;
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++) {
-                max_val = std::max(max_val,fabs(buffer[p*(nQ*nP*nQ + nQ) + q*(nP*nQ + 1)]));  
+                max_val = std::max(max_val,fabs(buffer[p*(nQ*nP*nQ + nQ) + q*(nP*nQ + 1)]));
             }
         }
         max_ = std::max(max_,max_val);
@@ -237,7 +237,7 @@ void ERISieve::integrals()
     }}
 
     // All this is broken (only built one shell-pair's info)
-    #if 0 
+    #if 0
     if (do_qqr_) {
 
             //std::cout << "Doing QQR precomputations.\n";

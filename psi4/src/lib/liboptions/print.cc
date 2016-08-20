@@ -36,7 +36,7 @@
 #include <sstream>
 #include <algorithm>
 #include <assert.h>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -47,7 +47,7 @@
 
 
 #include "liboptions.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
 

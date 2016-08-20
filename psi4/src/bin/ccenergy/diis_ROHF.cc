@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
@@ -124,7 +124,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
   global_dpd_->file2_close(&T1a);
   global_dpd_->file2_mat_close(&T1b);
   global_dpd_->file2_close(&T1b);
-  
+
   global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
   global_dpd_->buf4_init(&T2b, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
@@ -174,7 +174,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
   global_dpd_->buf4_close(&T2b);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-  psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0], 
+  psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0],
 	     vector_length*sizeof(double), start, &end);
 
   /* Store the current amplitude vector on disk */
@@ -198,7 +198,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
 	error[0][word++] = T1a.matrix[h][row][col];
   global_dpd_->file2_mat_close(&T1a);
   global_dpd_->file2_close(&T1a);
-  
+
   global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_init(&T2a, h);
@@ -233,7 +233,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
   global_dpd_->buf4_close(&T2a);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-  psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0], 
+  psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
 	     vector_length*sizeof(double), start, &end);
 
   /* If we haven't run through enough iterations, set the correct dimensions
@@ -241,7 +241,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
   if(!(iter >= (nvector))) {
     if(iter < 2) { /* Leave if we can't extrapolate at all */
       global_dpd_->free_dpd_block(error, 1, vector_length);
-      return; 
+      return;
     }
     nvector = iter;
   }
@@ -289,7 +289,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
 
   for(p=0; p < nvector; p++)
     for(q=0; q < nvector; q++)
-      B[p][q] /= maximum; 
+      B[p][q] /= maximum;
 
   /* Build the constant vector */
   C = init_array(nvector+1);
@@ -305,10 +305,10 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
 
     start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
-    psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0], 
+    psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0],
 	      vector_length*sizeof(double), start, &end);
 
-    for(q=0; q < vector_length; q++) 
+    for(q=0; q < vector_length; q++)
       error[0][q] += C[p] * vector[0][q];
 
   }
@@ -335,7 +335,7 @@ void CCEnergyWavefunction::diis_ROHF(int iter)
   global_dpd_->file2_mat_wrt(&T1a);
   global_dpd_->file2_mat_close(&T1a);
   global_dpd_->file2_close(&T1a);
-  
+
   global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_init(&T2a, h);

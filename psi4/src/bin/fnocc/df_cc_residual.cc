@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -59,8 +59,8 @@ void DFCoupledCluster::CCResidual(){
 
     boost::shared_ptr<PSIO> psio (new PSIO());
 
-    // C2 = -1/2 t(bc,kj) [ (ki|ac) - 1/2 t(ad,li) (kd|lc) ] 
-    //      +    t(bc,ki) [ (kj|ac) - 1/2 t(ad,lj) (kd|lc) ] 
+    // C2 = -1/2 t(bc,kj) [ (ki|ac) - 1/2 t(ad,li) (kd|lc) ]
+    //      +    t(bc,ki) [ (kj|ac) - 1/2 t(ad,lj) (kd|lc) ]
     if (timer) start = omp_get_wtime();
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
     if (t2_on_disk){
@@ -129,7 +129,7 @@ void DFCoupledCluster::CCResidual(){
         }
     }
 
-    // first contribution to residual 
+    // first contribution to residual
     psio->open(PSIF_DCC_R2,PSIO_OPEN_NEW);
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
@@ -140,7 +140,7 @@ void DFCoupledCluster::CCResidual(){
         start = omp_get_wtime();
     }
 
-    // D2: 1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ] 
+    // D2: 1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ]
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
     C_DCOPY(o*o*v*v,integrals,1,tempv,1);
     #pragma omp parallel for schedule (static)

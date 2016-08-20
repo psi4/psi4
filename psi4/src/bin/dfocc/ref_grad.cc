@@ -27,7 +27,7 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"
@@ -47,8 +47,8 @@ using namespace std;
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::ref_grad()
-{      
-  //outfile->Printf("\tref_grad is starting... \n"); 
+{
+  //outfile->Printf("\tref_grad is starting... \n");
 /********************************************************************************************/
 /************************** Build Intermediates and TPDM ************************************/
 /********************************************************************************************/
@@ -90,7 +90,7 @@ void DFOCC::ref_grad()
      // Build G(P,Q) : 2-Index TPDM
      Gaux_ref = SharedTensor2d(new Tensor2d("2-Index TPDM", nQ_ref, nQ_ref));
      //Gaux_ref->gemm(false, true, cQso, gQso_ref, 0.5, 0.0); // SO basis
-     Gaux_ref->gemm(false, true, cQooA, gQoo_ref, 0.5, 0.0);// MO basis 
+     Gaux_ref->gemm(false, true, cQooA, gQoo_ref, 0.5, 0.0);// MO basis
      //Gaux_ref->print();
 
      // Build Wmn = 2*\sum_{i} e_i * Cmi Cni
@@ -106,7 +106,7 @@ void DFOCC::ref_grad()
                Wso->set(mu, nu, summ);
           }
      }
- 
+
 
 /********************************************************************************************/
 /************************** Gradient ********************************************************/
@@ -147,17 +147,17 @@ void DFOCC::ref_grad()
 
         // Kinetic derivatives
         boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();   
+        const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Tint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -165,50 +165,50 @@ void DFOCC::ref_grad()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aP][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Tp[aQ][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     gradients["Kinetic"]->print_atom_vector();
     timer_off("Grad: T");
@@ -232,11 +232,11 @@ void DFOCC::ref_grad()
         // Potential derivatives
         std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
-        for (int t = 0; t < threads; t++) { 
+        for (int t = 0; t < threads; t++) {
             Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
             Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
         }
-       
+
         // Lower Triangle
         std::vector<std::pair<int,int> > PQ_pairs;
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -258,19 +258,19 @@ void DFOCC::ref_grad()
 
             Vint[thread]->compute_shell_deriv1(P,Q);
             const double* buffer = Vint[thread]->buffer();
-                            
+
             int nP = basisset_->shell(P).nfunction();
             int oP = basisset_->shell(P).function_index();
             int aP = basisset_->shell(P).ncenter();
- 
+
             int nQ = basisset_->shell(Q).nfunction();
             int oQ = basisset_->shell(Q).function_index();
             int aQ = basisset_->shell(Q).ncenter();
 
             double perm = (P == Q ? 1.0 : 2.0);
-                
+
             double** Vp = Vtemps[thread]->pointer();
-            
+
             for (int A = 0; A < natom; A++) {
                 const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
                 const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
@@ -284,9 +284,9 @@ void DFOCC::ref_grad()
                     }
                 }
             }
-        } 
-    
-        for (int t = 0; t < threads; t++) { 
+        }
+
+        for (int t = 0; t < threads; t++) {
             gradients["Potential"]->add(Vtemps[t]);
         }
     }
@@ -306,17 +306,17 @@ void DFOCC::ref_grad()
 
         // Overlap derivatives
         boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();   
+        const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv1(P,Q);
-                                
+
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
                 int aP = basisset_->shell(P).ncenter();
- 
+
                 int nQ = basisset_->shell(Q).nfunction();
                 int oQ = basisset_->shell(Q).function_index();
                 int aQ = basisset_->shell(Q).ncenter();
@@ -324,50 +324,50 @@ void DFOCC::ref_grad()
                 int offset = nP * nQ;
                 const double* ref = buffer;
                 double perm = (P == Q ? 1.0 : 2.0);
-               
-                // Px 
+
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Py 
+
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Pz 
+
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aP][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
-                // Qx 
+                // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qy 
+
+                // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
-               
-                // Qz 
+
+                // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Sp[aQ][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
-        } 
+        }
     }
     gradients["Overlap"]->print_atom_vector();
     timer_off("Grad: S");
@@ -661,18 +661,18 @@ void DFOCC::ref_grad()
 
     for (int i = 0; i < gradient_terms.size(); i++) {
         if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]); 
+            total->add(gradients[gradient_terms[i]]);
         }
     }
 
-    gradients["Total"] = total; 
+    gradients["Total"] = total;
     gradients["Total"]->set_name("Total Gradient");
 
     // => Final Printing <= //
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
             if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector(); 
+                gradients[gradient_terms[i]]->print_atom_vector();
             }
         }
     } else {
@@ -680,8 +680,8 @@ void DFOCC::ref_grad()
     }
 
 
-//outfile->Printf("\tref_grad is done. \n"); 
-}// end 
+//outfile->Printf("\tref_grad is done. \n");
+}// end
 
 
 }} // End Namespaces

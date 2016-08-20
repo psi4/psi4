@@ -35,7 +35,7 @@
 
 //#include "mem.h"
 #include "v3d.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -276,7 +276,7 @@ int FRAG::form_natural_coord_combinations(void) {
         cc_index.push_back(A); cc_coeff.push_back(1.0);
         coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
         cc_index.clear(); cc_coeff.clear();
-  
+
         if (val > Opt_params.linear_bend_threshold) { // ~175 degrees
           BEND *pB = new BEND(bond_to_T[i][0], i, bond_to_T[i][1]);
           pB->make_lb_complement();
@@ -394,14 +394,14 @@ int FRAG::form_natural_coord_combinations(void) {
       cc_index.push_back(X3); cc_coeff.push_back(-1.0);
       coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
       cc_index.clear(); cc_coeff.clear();
-      
+
       cc_index.push_back(X2); cc_coeff.push_back( 1.0);
       cc_index.push_back(X3); cc_coeff.push_back(-1.0);
       coords.index.push_back(cc_index); coords.coeff.push_back(cc_coeff);
       cc_index.clear(); cc_coeff.clear();
-    }   
+    }
 
-      
+
     else if (num_T == 3 && num_nonT > 0) { // like - CH3
       // There are 6 simple bends; 3 external T-C-T and 3 internal.
       BEND *pX1 = new BEND( bond_to_T[i][0], i, bond_to_T[i][1]); // H-C-H, external ones
@@ -453,14 +453,14 @@ int FRAG::form_natural_coord_combinations(void) {
 
       // choose one other atom to 'anchor' -CH3 group
       if (num_nonT > 0) {
-    
+
 
 
       }
     }
 
-   
-    
+
+
 
     // X(t0)(t1)(c0)(c1)
     if (num_T == 2 && num_nonT == 2) {                         // CH2

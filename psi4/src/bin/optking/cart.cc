@@ -36,7 +36,7 @@
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "v3d.h"
 #include "psi4/src/bin/optking/physconst.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "print.h"
 namespace opt {
 
@@ -91,7 +91,7 @@ std::string CART::get_definition_string(int off) const {
   if (xyz == 0)      iss << "X";
   else if (xyz == 1) iss << "Y";
   else if (xyz == 2) iss << "Z";
-  
+
   iss << ")" << std::flush ;
   return iss.str();
 }
@@ -99,7 +99,7 @@ std::string CART::get_definition_string(int off) const {
 void CART::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off) const {
   oprintf(psi_fp, qc_fp, "X");
 
-  if (s_frozen) 
+  if (s_frozen)
     oprintf(psi_fp, qc_fp, "*");
   else
     oprintf(psi_fp, qc_fp, " ");

@@ -33,9 +33,9 @@
   dipole/magnetic-dipole polarizability, Im<<mu;m>>, where mu is the
   electric-dipole vector operator and m is the magnetic-dipole vector
   operator.  We may choose between two representations of mu: length where mu
-  = -r, and velocity, where mu = -p = i Del.  The trace of the velocity representation 
+  = -r, and velocity, where mu = -p = i Del.  The trace of the velocity representation
   tensor is origin independent, but the length representation tensor is not.  The
-  "modified" velocity gauge involves subtraction of the zero-frequency 
+  "modified" velocity gauge involves subtraction of the zero-frequency
   <<mu(p);m>> tensor from the non-zero-frequency tensor.  Furthermore, if one
   chooses both representations (gauge = both), then the code also computes the
   origin-depenedence vector of the length-representation optical rotation,
@@ -73,13 +73,13 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/molecule.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 namespace psi { namespace ccresponse {
 
@@ -154,7 +154,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
         compute_X(pert, moinfo.l_irreps[alpha], 0);
       }
 
-      outfile->Printf( "\n\tComputing %s tensor.\n", lbl1); 
+      outfile->Printf( "\n\tComputing %s tensor.\n", lbl1);
       for(alpha=0; alpha < 3; alpha ++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -240,7 +240,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
 
       outfile->Printf( "\n");
       if(compute_rl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl1);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -253,7 +253,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
         psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl2);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -280,11 +280,11 @@ void optrot(boost::shared_ptr<Molecule> molecule)
     else {
       outfile->Printf( "\n");
       if(compute_rl) {
-        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
+        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1);
         psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
+        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2);
         psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
@@ -332,7 +332,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
 
       outfile->Printf( "\n");
       if(compute_rl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl1);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -345,7 +345,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
         psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl2);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
@@ -359,7 +359,7 @@ void optrot(boost::shared_ptr<Molecule> molecule)
       }
 
       if(params.gauge == "BOTH") {
-        outfile->Printf( "\tComputing %s tensor.\n", lbl3); 
+        outfile->Printf( "\tComputing %s tensor.\n", lbl3);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -394,15 +394,15 @@ void optrot(boost::shared_ptr<Molecule> molecule)
     else {
       outfile->Printf( "\n");
       if(compute_rl) {
-        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
+        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1);
         psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
+        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2);
         psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
       if(params.gauge == "BOTH") {
-        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3); 
+        outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3);
         psio_read_entry(PSIF_CC_INFO, lbl3, (char *) tensor_rp[i][0], 9*sizeof(double));
       }
     }

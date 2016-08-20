@@ -46,8 +46,8 @@
 #include "psi4/src/lib/libdisp/dispersion.h"
 #include "psi4/src/lib/lib3index/3index.h"
 
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/factory.h"
 

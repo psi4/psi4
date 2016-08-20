@@ -42,37 +42,37 @@
 #include <sstream>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::open(unsigned int unit, int status) {
   unsigned int i;
   char *name, *path;
   psio_ud *this_unit;
-  
+
   /* check for too large unit */
   if (unit > PSIO_MAXUNIT)
     psio_error(unit, PSIO_ERROR_MAXUNIT);
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* Get number of volumes to stripe across */
   this_unit->numvols = get_numvols(unit);
   if (this_unit->numvols > PSIO_MAXVOL)
     psio_error(unit, PSIO_ERROR_MAXVOL);
   if (!(this_unit->numvols))
     this_unit->numvols = 1;
-  
+
   /* Check to see if this unit is already open */
   for (i=0; i < this_unit->numvols; i++) {
     if (this_unit->vol[i].stream != -1)
       psio_error(unit, PSIO_ERROR_REOPEN);
   }
-  
+
   /* Get the file name prefix */
   get_filename(unit, &name);
   //printf("%s\n",name);
-  
+
   // Check if any files will have the same name
   {
     using std::string;
@@ -91,20 +91,20 @@ void PSIO::open(unsigned int unit, int status) {
       free(path);
     }
   }
-  
+
   /* Build the name for each volume and open the file */
   for (i=0; i < this_unit->numvols; i++) {
     char* fullpath;
     get_volpath(unit, i, &path);
 
     #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
-    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str(); 
-    
+    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str();
+
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
     sprintf(fullpath, "%s%s.%u", path2, name, unit);
     this_unit->vol[i].path = strdup(fullpath);
     free(fullpath);
-    
+
     /* Register the file */
     PSIOManager::shared_object()->open_file(std::string(this_unit->vol[i].path), unit);
 
@@ -141,19 +141,19 @@ bool PSIO::exists(unsigned int unit) {
   unsigned int i;
   char *name, *path;
   psio_ud *this_unit;
-  
+
   if (unit > PSIO_MAXUNIT)
     psio_error(unit, PSIO_ERROR_MAXUNIT);
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* Get number of volumes to stripe across */
   this_unit->numvols = get_numvols(unit);
   if (this_unit->numvols > PSIO_MAXVOL)
     psio_error(unit, PSIO_ERROR_MAXVOL);
   if (!(this_unit->numvols))
     this_unit->numvols = 1;
-  
+
   /* Check to see if this unit is already open, if so, should be good.
      If every volume has a sream value other than -1, it's open */
   bool already_open = true;
@@ -162,11 +162,11 @@ bool PSIO::exists(unsigned int unit) {
       already_open = false;
   }
   if (already_open) return(true);
-  
+
   /* Get the file name prefix */
   get_filename(unit, &name);
   //printf("%s\n",name);
-  
+
   // Check if any files will have the same name
   {
     using std::string;
@@ -185,7 +185,7 @@ bool PSIO::exists(unsigned int unit) {
       free(path);
     }
   }
-  
+
   /* Build the name for each volume and open the file */
   bool file_exists = true;
   for (i=0; i < this_unit->numvols; i++) {
@@ -194,11 +194,11 @@ bool PSIO::exists(unsigned int unit) {
     get_volpath(unit, i, &path);
 
     #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
-    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str(); 
-    
+    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str();
+
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
     sprintf(fullpath, "%s%s.%u", path2, name, unit);
-    
+
     /* Now open the volume */
       stream = ::open(fullpath,O_RDWR);
       /* and close it again, if opening worked */
@@ -232,6 +232,6 @@ PSIO::rehash(unsigned int unit)
   int psio_open(unsigned int unit, int status) {
     _default_psio_lib_->open(unit, status);
     return 1;
-  }   
+  }
 
 }

@@ -32,7 +32,7 @@
 #include "block_matrix.h"
 #include "matrix_base.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 
@@ -191,7 +191,7 @@ void BlockMatrix::print()
     outfile->Printf("\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
     matrix_base_[h]->print();
   }
-  
+
 }
 
 void BlockMatrix::scale(double factor)

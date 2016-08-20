@@ -34,7 +34,7 @@
 ** K combination for input T2, F, and E intermediates.  This function
 ** is specifically for AAB spin cases with RHF orbitals.
 **
-** Arguments: 
+** Arguments:
 **
 **   double ***W1: The target triples amplitudes in an nirreps x AB x
 **   C array.  The memory for this must be allocated externally.
@@ -64,10 +64,10 @@
 **
 **   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   int *occpi: Number of occupied orbitals per irrep lookup array.
 **
 **   int *occ_off: Offset lookup for translating between absolute and
@@ -91,7 +91,7 @@
 #include <cmath>
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 

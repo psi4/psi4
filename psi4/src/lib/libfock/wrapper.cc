@@ -31,20 +31,20 @@
 #include <cmath>
 #include <sstream>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #include "apps.h"
 
 using namespace boost;
 
-namespace psi { 
+namespace psi {
 namespace libfock {
 
 SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)

@@ -34,7 +34,7 @@
 #include <unistd.h>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi {
 
@@ -49,12 +49,12 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   unsigned int first_vol, this_vol, numvols;
   ULI bytes_left, num_full_pages;
   psio_ud *this_unit;
-  
+
   this_unit = &(psio_unit[unit]);
   numvols = this_unit->numvols;
   page = address.page;
   offset = address.offset;
-  
+
   /* Seek all volumes to correct starting positions */
   first_vol = page % numvols;
   errcod = psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols);
@@ -67,10 +67,10 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
     if (errcod == -1)
       psio_error(unit, PSIO_ERROR_LSEEK);
   }
-  
+
   /* Number of bytes left on the first page */
   this_page_max = PSIO_PAGELEN - offset;
-  
+
   /* If we have enough room on this page, use it */
   if (size <= this_page_max)
     this_page_total = size;

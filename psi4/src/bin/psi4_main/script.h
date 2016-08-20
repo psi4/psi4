@@ -28,15 +28,15 @@
 #ifndef _psi_src_lib_libscript_script_h_
 #define _psi_src_lib_libscript_script_h_
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
 
 namespace psi {
-    
-    /* 
+
+    /*
      * Hopefully I can keep this abstract enough to handle multiple
      * scripting languages.
      */
@@ -44,12 +44,12 @@ namespace psi {
     public:
         Script();
         virtual ~Script();
-        
+
         /** Starts up the scripting language environment and adds
          * PSI4 specific functionality to the environment.
          */
         virtual void initialize() = 0;
-        
+
         /** Shuts down the scripting language and frees any memory
          * that may have been allocated by the scripting language.
          */
@@ -57,7 +57,7 @@ namespace psi {
 
         /** Run the input file script */
         virtual void run(FILE *input) = 0;
-        
+
         static boost::shared_ptr<Script> language;
     };
 
@@ -65,7 +65,7 @@ namespace psi {
     public:
         Python();
         virtual ~Python();
-        
+
         virtual void initialize();
         virtual void finalize();
         virtual void run(FILE *input);

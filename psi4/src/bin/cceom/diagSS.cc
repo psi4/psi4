@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdlib>
 #include <cstdio>
@@ -43,7 +43,7 @@
 #include "globals.h"
 
 namespace psi { namespace cceom {
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 
 void sigmaSS(int index, int C_irr);
 void cc2_sigmaSS(int index, int C_irr);
@@ -247,7 +247,7 @@ void diagSS(int C_irr) {
 	      moinfo.irr_labs[moinfo.sym^C_irr]);
       exit(1);
     }
-  }   
+  }
   else {
     C_index = eom_params.cs_per_irrep[0];
   } /* end if(!params.local) */
@@ -261,7 +261,7 @@ void diagSS(int C_irr) {
     dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
     dpd_file2_print(&CME, outfile);
     dpd_file2_close(&CME);
-    if (params.eom_ref > 0) { 
+    if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Cme", i);
       if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
       else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
@@ -275,7 +275,7 @@ void diagSS(int C_irr) {
     return;
   }
 
-  
+
 
   /* Setup residual vector file */
   global_dpd_->file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
@@ -383,7 +383,7 @@ void diagSS(int C_irr) {
 
     if (pf) outfile->Printf(
 		    "  Root    EOM Energy    Delta E     Res. Norm    Conv?\n");
-    
+
 
     global_dpd_->file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
     if (params.eom_ref == 1) global_dpd_->file2_init(&Ria, PSIF_EOM_R, C_irr, 0, 1, "Ria");
@@ -393,7 +393,7 @@ void diagSS(int C_irr) {
       global_dpd_->file2_scm(&RIA, 0.0);
       if (params.eom_ref > 0) global_dpd_->file2_scm(&Ria, 0.0);
       converged[k] = 0;
-      for (i=0;i<L;++i) { 
+      for (i=0;i<L;++i) {
         sprintf(lbl, "%s %d", "SIA", i);
         global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "CME", i);
@@ -419,11 +419,11 @@ void diagSS(int C_irr) {
 
       if (params.eom_ref == 0)
         norm = norm_C1_rhf(&RIA);
-      else 
+      else
         norm = norm_C1(&RIA, &Ria);
 
       if (pf) outfile->Printf("%6d%15.10lf%11.2e%12.2e",k+1,lambda[k],
-		      lambda[k]-lambda_old[k], norm); 
+		      lambda[k]-lambda_old[k], norm);
 
       if ( (norm > eom_params.residual_tol_SS) ||
 	   (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol_SS) ) {
@@ -453,7 +453,7 @@ void diagSS(int C_irr) {
         converged[k] = 1;
       }
 
-      
+
     }
 
     global_dpd_->file2_close(&RIA);
@@ -492,7 +492,7 @@ void diagSS(int C_irr) {
   restart_SS(alpha, L, eom_params.cs_per_irrep[C_irr], C_irr);
   free_block(alpha);
   if (pf) outfile->Printf("\n");
-  
+
 
   return;
 }
@@ -607,11 +607,11 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
       T1bar = init_array(local.pairdom_nrlen[ii]);
 
       /* Transform the virtuals to the redundant projected virtual basis */
-      C_DGEMV('t', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+      C_DGEMV('t', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii],
 	      &(RIA->matrix[0][i][0]), 1, 0.0, &(T1tilde[0]), 1);
 
       /* Transform the virtuals to the non-redundant virtual basis */
-      C_DGEMV('t', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii], 
+      C_DGEMV('t', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii],
 	      &(T1tilde[0]), 1, 0.0, &(T1bar[0]), 1);
 
       for(a=0; a < local.pairdom_nrlen[ii]; a++) {
@@ -625,7 +625,7 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
 	      &(T1bar[0]), 1, 0.0, &(T1tilde[0]), 1);
 
       /* Transform the new T1's to the MO basis */
-      C_DGEMV('n', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+      C_DGEMV('n', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii],
 	      &(T1tilde[0]), 1, 0.0, &(RIA->matrix[0][i][0]), 1);
 
       free(T1bar);

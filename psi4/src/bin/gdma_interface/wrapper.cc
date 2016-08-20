@@ -24,14 +24,14 @@
  *
  * @END LICENSE
  */
-#ifdef USING_gdma 
+#ifdef USING_gdma
 #include <boost/python.hpp>
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libparallel/parallel.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include <iostream>
-  
+
 using namespace boost;
 using namespace std;
 

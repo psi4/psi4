@@ -30,7 +30,7 @@
 
 #include <stddef.h>
 #include <vector>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -242,7 +242,7 @@ public:
     Wavefunction(boost::shared_ptr<Molecule> molecule,
                  boost::shared_ptr<BasisSet> basis,
                  Options& options);
-    
+
     /// Constructor for an entirely new wavefunction
     Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
                  Options & options);

@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmints/vector.h"
@@ -529,7 +529,7 @@ void CIWavefunction::diag_h() {
 
     // Check convergence
     if (!Parameters_->diag_h_converged){
-       convergence_death(); 
+       convergence_death();
        if (Parameters_->print_lvl){
            outfile->Printf("\nWarning! CI diagonalization did not fully converge!\n\n");
        }

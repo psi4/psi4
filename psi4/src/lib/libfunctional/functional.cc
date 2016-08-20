@@ -26,7 +26,7 @@
  */
 
 #include "functional.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 
@@ -47,11 +47,11 @@ void Functional::common_init()
     citation_ = "";
     alpha_ = 1.0;
     omega_ = 0.0;
-    
+
     lsda_cutoff_ = 1.0E-20;
     meta_cutoff_ = 1.0E-20;
 }
-void Functional::set_parameter(const std::string& key, double val) 
+void Functional::set_parameter(const std::string& key, double val)
 {
     parameters_[key] = val;
 }
@@ -64,26 +64,26 @@ void Functional::print(std::string out, int level) const
 
     printer->Printf( "%s", description_.c_str());
     printer->Printf( "\n");
-    
+
     printer->Printf( "%s", citation_.c_str());
     printer->Printf( "\n");
-    
+
     printer->Printf( "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
     printer->Printf( "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
     printer->Printf( "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
     printer->Printf( "    Alpha = %14.6E\n", alpha_);
     printer->Printf( "    Omega = %14.6E\n", omega_);
     printer->Printf( "\n");
-    
+
     if (level > 2) {
         printer->Printf( "    > Parameters <\n\n");
-        for (std::map<std::string, double>::const_iterator it = parameters_.begin();  
+        for (std::map<std::string, double>::const_iterator it = parameters_.begin();
             it != parameters_.end(); ++it) {
             printer->Printf("    %11s = %24.16E\n", (*it).first.c_str(), (*it).second);
-        }    
+        }
         printer->Printf( "\n");
     }
-} 
+}
 void Functional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
 {
     throw PSIEXCEPTION("Functional: pseudo-abstract class.");

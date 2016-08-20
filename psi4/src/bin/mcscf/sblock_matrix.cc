@@ -28,11 +28,11 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "sblock_matrix.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace psi{ namespace mcscf{
 
@@ -150,7 +150,7 @@ void SBlockMatrix::check(const char* cstr)
 {
   if(!is_allocated()){
     outfile->Printf("\n\n  Error: SBlockMatrix operation '%s' is using an uninitialized matrix",cstr);
-    
+
     exit(PSI_RETURN_FAILURE);
   }
 }

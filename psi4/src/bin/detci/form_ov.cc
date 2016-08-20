@@ -38,7 +38,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "structs.h"
 #include "ciwave.h"
 
@@ -84,7 +84,7 @@ void CIWavefunction::form_ov()
       strnum = AlphaG_->sg[irrep][0].num_strings;
       cnt=0;
       strlist = alplist_[irrep];
-      while (cnt != strnum) { 
+      while (cnt != strnum) {
          for (strsym=0; strsym < nirreps; strsym++) {
             for (i=0; i<strlist->cnt[strsym]; i++) {
                fullij = strlist->oij[strsym][i];
@@ -95,7 +95,7 @@ void CIWavefunction::form_ov()
                ovcnt++;
                OV_[irrep][fullij][ovcnt] = idx;
                OV_[irrep][fullij][0] = ovcnt;
-               }  
+               }
             }
          strlist++;
          cnt++;

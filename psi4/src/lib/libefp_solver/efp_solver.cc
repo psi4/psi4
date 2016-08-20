@@ -28,8 +28,8 @@
 #include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
-#include "psi4/include/physconst.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/physconst.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/wavefunction.h"

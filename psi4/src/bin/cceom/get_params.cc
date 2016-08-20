@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -36,7 +36,7 @@
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -122,10 +122,10 @@ void get_params(Options &options)
 
   if(params.semicanonical)
     outfile->Printf( "\tReference wfn   = ROHF changed to UHF for Semicanonical Orbitals\n");
-  else 
-    outfile->Printf( "\tReference wfn   =    %4s\n", 
+  else
+    outfile->Printf( "\tReference wfn   =    %4s\n",
              (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  outfile->Printf( "\tReference EOM wfn=    %4s\n", 
+  outfile->Printf( "\tReference EOM wfn=    %4s\n",
              (params.eom_ref == 0) ? "RHF" : ((params.eom_ref == 1) ? "ROHF" : "UHF"));
   outfile->Printf( "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
   outfile->Printf( "\tABCD            =     %s\n", params.abcd.c_str());
@@ -140,7 +140,7 @@ void get_params(Options &options)
     outfile->Printf( "\tWeak pairs      =    %s\n", local.weakp.c_str());
     outfile->Printf( "\tLocal precon.   =    %s\n", local.precon.c_str());
     outfile->Printf( "\tGhost atom      =    %d\n", local.ghost);
-    outfile->Printf( "\tLocal guess     =    %s\n", 
+    outfile->Printf( "\tLocal guess     =    %s\n",
 	    local.do_singles ? "HBAR_SS" : "UNIT VECTORS" );
     outfile->Printf( "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
   }

@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
@@ -40,7 +40,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -49,7 +49,7 @@
 
 namespace psi { namespace cceom {
 
-/*! 
+/*!
 ** local_init(): Set up parameters of local excitation domains.
 **
 ** The orbital domains constructed here are based on those described
@@ -59,7 +59,7 @@ namespace psi { namespace cceom {
 ** of single occupied orbital domains.  "Weak pairs", which are
 ** defined as pair domains whose individual occupied orbital domains
 ** have no atoms in common, are identified (cf. int *weak_pairs).
-** 
+**
 ** TDC, Jan-June 2002
 */
 
@@ -174,7 +174,7 @@ void local_init(void)
   }
 
   outfile->Printf( "\tLocalization parameters ready.\n\n");
-  
+
 }
 
 void local_done(void)
@@ -239,11 +239,11 @@ void local_filter_T1(dpdfile2 *T1)
     T1bar = init_array(local.pairdom_nrlen[ii]);
 
     /* Transform the virtuals to the redundant projected virtual basis */
-    C_DGEMV('t', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+    C_DGEMV('t', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii],
 	    &(T1->matrix[0][i][0]), 1, 0.0, &(T1tilde[0]), 1);
 
     /* Transform the virtuals to the non-redundant virtual basis */
-    C_DGEMV('t', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii], 
+    C_DGEMV('t', local.pairdom_len[ii], local.pairdom_nrlen[ii], 1.0, &(local.W[ii][0][0]), local.pairdom_nrlen[ii],
 	    &(T1tilde[0]), 1, 0.0, &(T1bar[0]), 1);
 
     /* Apply the denominators */
@@ -256,7 +256,7 @@ void local_filter_T1(dpdfile2 *T1)
 
 
     /* Transform the new T1's to the MO basis */
-    C_DGEMV('n', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii], 
+    C_DGEMV('n', nvir, local.pairdom_len[ii], 1.0, &(local.V[ii][0][0]), local.pairdom_len[ii],
 	    &(T1tilde[0]), 1, 0.0, &(T1->matrix[0][i][0]), 1);
 
     free(T1bar);
@@ -348,9 +348,9 @@ void local_filter_T2(dpdbuf4 *T2)
 		&(local.V[ij][0][0]), local.pairdom_len[ij], 0.0, &(T2tilde[0][0]), nso);
 
 	/* Transform the virtuals to the non-redundant virtual basis */
-	C_DGEMM('t', 'n', local.pairdom_nrlen[ij], local.pairdom_len[ij], local.pairdom_len[ij], 1.0, 
+	C_DGEMM('t', 'n', local.pairdom_nrlen[ij], local.pairdom_len[ij], local.pairdom_len[ij], 1.0,
 		&(local.W[ij][0][0]), local.pairdom_nrlen[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
-	C_DGEMM('n', 'n', local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], local.pairdom_len[ij], 1.0, 
+	C_DGEMM('n', 'n', local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], local.pairdom_len[ij], 1.0,
 		&(X2[0][0]), nso, &(local.W[ij][0][0]), local.pairdom_nrlen[ij], 0.0, &(T2bar[0][0]), nvir);
 
 	/* Divide the new amplitudes by the denominators */
@@ -362,13 +362,13 @@ void local_filter_T2(dpdbuf4 *T2)
 	}
 
 	/* Transform the new T2's to the redundant virtual basis */
-	C_DGEMM('n', 'n', local.pairdom_len[ij], local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], 1.0, 
+	C_DGEMM('n', 'n', local.pairdom_len[ij], local.pairdom_nrlen[ij], local.pairdom_nrlen[ij], 1.0,
 		&(local.W[ij][0][0]), local.pairdom_nrlen[ij], &(T2bar[0][0]), nvir, 0.0, &(X1[0][0]), nvir);
-	C_DGEMM('n','t', local.pairdom_len[ij], local.pairdom_len[ij], local.pairdom_nrlen[ij], 1.0, 
+	C_DGEMM('n','t', local.pairdom_len[ij], local.pairdom_len[ij], local.pairdom_nrlen[ij], 1.0,
 		&(X1[0][0]), nvir, &(local.W[ij][0][0]), local.pairdom_nrlen[ij], 0.0, &(T2tilde[0][0]), nso);
 
 	/* Transform the new T2's to the MO basis */
-	C_DGEMM('n', 'n', nvir, local.pairdom_len[ij], local.pairdom_len[ij], 1.0, 
+	C_DGEMM('n', 'n', nvir, local.pairdom_len[ij], local.pairdom_len[ij], 1.0,
 		&(local.V[ij][0][0]), local.pairdom_len[ij], &(T2tilde[0][0]), nso, 0.0, &(X2[0][0]), nso);
 	C_DGEMM('n', 't', nvir, nvir, local.pairdom_len[ij], 1.0, &(X2[0][0]), nso,
 		&(local.V[ij][0][0]), local.pairdom_len[ij], 0.0, &(T2->matrix[0][ij][0]), nvir);

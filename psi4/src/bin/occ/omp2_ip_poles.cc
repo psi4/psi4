@@ -36,8 +36,8 @@
 #include <iomanip>
 #include <vector>
 
-/** Required PSI3 includes */ 
-#include "psi4/include/psifiles.h"
+/** Required PSI3 includes */
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
@@ -59,11 +59,11 @@ using namespace std;
 
 
 namespace psi{ namespace occwave{
-  
-void OCCWave::omp2_ip_poles()
-{   
 
-//outfile->Printf("\n omp2_ip_poles is starting... \n"); 
+void OCCWave::omp2_ip_poles()
+{
+
+//outfile->Printf("\n omp2_ip_poles is starting... \n");
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -73,7 +73,7 @@ if (reference_ == "RESTRICTED") {
      eOccOrbA->zero();
 
      dpdbuf4 K, T, D;
-     
+
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
@@ -81,18 +81,18 @@ if (reference_ == "RESTRICTED") {
     // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
     double *aOccEvals = new double [nacooA];
     double *aVirEvals = new double [nacvoA];
-    
+
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
-    
+
     int aOccCount = 0, aVirCount = 0;
-    
+
     //Diagonal elements of the Fock matrix
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi_[h], i + frzcpi_[h]);
-        for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a); 
+        for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a);
     }
-    
+
     // Build denominators
     // The alpha-alpha spin case: D_IA^JK
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
@@ -116,8 +116,8 @@ if (reference_ == "RESTRICTED") {
     delete [] aOccEvals;
     delete [] aVirEvals;
 
-     
-    // Build T_IA^JK 
+
+    // Build T_IA^JK
     // T_IA^JK = <IA||JK> / D_IA^JK
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
@@ -135,11 +135,11 @@ if (reference_ == "RESTRICTED") {
     // e_I = F_II : reference contribution
      for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < occpiA[h]; ++i){
-	    eOccOrbA->set(h, i, FockA->get(h, i, i));                
+	    eOccOrbA->set(h, i, FockA->get(h, i, i));
          }
      }
-	
-    // e_I =  \sum{J,A,B} (2*T_IJ^AB - T_JI^AB)  <IJ|AB> 
+
+    // e_I =  \sum{J,A,B} (2*T_IJ^AB - T_JI^AB)  <IJ|AB>
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                  ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -157,7 +157,7 @@ if (reference_ == "RESTRICTED") {
             int ii = i - occ_offA[hi];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
                 double value = ( (2.0 * T.matrix[h][ij][ab]) - T.matrix[h][ji][ab]) * K.matrix[h][ij][ab];
-		eOccOrbA->add(hi, ii, value);                
+		eOccOrbA->add(hi, ii, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -167,7 +167,7 @@ if (reference_ == "RESTRICTED") {
     global_dpd_->buf4_close(&T);
 
 
-    // e_I = \sum{J,K,A} (2*T_IA^JK - T_IA^KJ)  <JK|IA> 
+    // e_I = \sum{J,K,A} (2*T_IA^JK - T_IA^KJ)  <JK|IA>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,O]"),
@@ -186,7 +186,7 @@ if (reference_ == "RESTRICTED") {
                 int hi = K.params->rsym[i];
                 int ii = i - occ_offA[hi];
                 double value = ( (2.0 * T.matrix[h][ia][jk]) - T.matrix[h][ia][kj]) * K.matrix[h][jk][ia];
-		eOccOrbA->add(hi, ii, value);                
+		eOccOrbA->add(hi, ii, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -204,7 +204,7 @@ if (reference_ == "RESTRICTED") {
     Array1i *irrep_A = new Array1i("IrrepA", nooA);
     evals_A->zero();
     irrep_A->zero();
- 
+
 
     // Sort Alpha spin-case
     int count = 0;
@@ -216,7 +216,7 @@ if (reference_ == "RESTRICTED") {
           }
     }
 
-    //outfile->Printf("\tI am here. \n"); 
+    //outfile->Printf("\tI am here. \n");
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -233,11 +233,11 @@ if (reference_ == "RESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) outfile->Printf("\n\tOMP2 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) outfile->Printf("\n\tMP2 Occupied Orbital Energies (a.u.) \n"); 
-    outfile->Printf("\t----------------------------------------------- \n"); 
-    
-	  
+    if (mo_optimized == 1) outfile->Printf("\n\tOMP2 Occupied Orbital Energies (a.u.) \n");
+    else if (mo_optimized == 0) outfile->Printf("\n\tMP2 Occupied Orbital Energies (a.u.) \n");
+    outfile->Printf("\t----------------------------------------------- \n");
+
+
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
@@ -248,7 +248,7 @@ if (reference_ == "RESTRICTED") {
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
 	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	    
+
 	 count++;
     }
 
@@ -256,7 +256,7 @@ if (reference_ == "RESTRICTED") {
        delete evals_A;
        delete irrep_A;
 
-}// end if (reference_ == "RESTRICTED") 
+}// end if (reference_ == "RESTRICTED")
 
 
 //===========================================================================================
@@ -271,7 +271,7 @@ else if (reference_ == "UNRESTRICTED") {
      eOccOrbB->zero();
 
      dpdbuf4 K, T, D;
-     
+
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
@@ -281,20 +281,20 @@ else if (reference_ == "UNRESTRICTED") {
     double *bOccEvals = new double [nacooB];
     double *aVirEvals = new double [nacvoA];
     double *bVirEvals = new double [nacvoB];
-    
+
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
-    
+
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
-    
+
     //Diagonal elements of the Fock matrix
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi_[h], i + frzcpi_[h]);
 	for(int i = 0; i < aoccpiB[h]; ++i) bOccEvals[bOccCount++] = FockB->get(h, i + frzcpi_[h], i + frzcpi_[h]);
-        for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a); 
-	for(int a = 0; a < avirtpiB[h]; ++a) bVirEvals[bVirCount++] = FockB->get(h, occpiB[h] + a, occpiB[h] + a); 
+        for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a);
+	for(int a = 0; a < avirtpiB[h]; ++a) bVirEvals[bVirCount++] = FockB->get(h, occpiB[h] + a, occpiB[h] + a);
     }
-    
+
     // Build denominators
     // The alpha-alpha spin case: D_IA^JK
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
@@ -314,8 +314,8 @@ else if (reference_ == "UNRESTRICTED") {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
-    
-    // The beta-beta spin case: D_ia^jk 
+
+    // The beta-beta spin case: D_ia^jk
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,o]"),
                   ID("[o,v]"), ID("[o,o]"), 0, "D <ov|oo>");
     for(int h = 0; h < nirrep_; ++h){
@@ -333,8 +333,8 @@ else if (reference_ == "UNRESTRICTED") {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
-    
-    // The alpha-beta spin case: D_Ia^Jk 
+
+    // The alpha-beta spin case: D_Ia^Jk
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,o]"),
                   ID("[O,v]"), ID("[O,o]"), 0, "D <Ov|Oo>");
     for(int h = 0; h < nirrep_; ++h){
@@ -352,9 +352,9 @@ else if (reference_ == "UNRESTRICTED") {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
- 
 
-    // The beta-alpha spin case: D_Ai^Jk 
+
+    // The beta-alpha spin case: D_Ai^Jk
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[O,o]"),
                   ID("[V,o]"), ID("[O,o]"), 0, "D <Vo|Oo>");
     for(int h = 0; h < nirrep_; ++h){
@@ -372,15 +372,15 @@ else if (reference_ == "UNRESTRICTED") {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
- 
+
 
     delete [] aOccEvals;
     delete [] bOccEvals;
     delete [] aVirEvals;
     delete [] bVirEvals;
 
-     
-    // Build T_IA^JK 
+
+    // Build T_IA^JK
     // T_IA^JK = <IA||JK> / D_IA^JK
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
@@ -393,8 +393,8 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&T);
-    
-    
+
+
     // T_ia^jk = <ia||jk> / D_ia^jk
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo||ov>");
@@ -407,8 +407,8 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&T);
-    
-    
+
+
     // T_Ia^Jk = <Ia|Jk> / D_Ia^Jk
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "MO Ints <Oo|Ov>");
@@ -421,7 +421,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_close(&T);
-     
+
 
     // T_Ai^Jk = <Ai|Jk> /D_Ai^Jk
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
@@ -441,11 +441,11 @@ else if (reference_ == "UNRESTRICTED") {
     // e_I = F_II : reference contribution
      for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < occpiA[h]; ++i){
-	    eOccOrbA->set(h, i, FockA->get(h, i, i));                
+	    eOccOrbA->set(h, i, FockA->get(h, i, i));
          }
      }
-	
-    // e_I = 1/2 * \sum{J,A,B} T_IJ^AB  <IJ||AB> 
+
+    // e_I = 1/2 * \sum{J,A,B} T_IJ^AB  <IJ||AB>
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -460,7 +460,7 @@ else if (reference_ == "UNRESTRICTED") {
             int hi = K.params->psym[i];
             int ii = i - occ_offA[hi];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
-		eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);                
+		eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -469,7 +469,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_I = \sum{j,A,b} T_Ij^Ab  <Ij|Ab>  
+    // e_I = \sum{j,A,b} T_Ij^Ab  <Ij|Ab>
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                 ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -484,7 +484,7 @@ else if (reference_ == "UNRESTRICTED") {
             int hi = K.params->psym[i];
             int ii = i - occ_offA[hi];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
-		eOccOrbA->add(hi, ii, K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);                
+		eOccOrbA->add(hi, ii, K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -493,7 +493,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_I = 1/2 * \sum{J,K,A} T_IA^JK  <JK||IA> 
+    // e_I = 1/2 * \sum{J,K,A} T_IA^JK  <JK||IA>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,O]"),
@@ -508,7 +508,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int i = K.params->colorb[h][ia][0];
                 int hi = K.params->rsym[i];
                 int ii = i - occ_offA[hi];
-		eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);                
+		eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -517,7 +517,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_I = \sum{J,k,a} T_Ia^Jk  <Jk|Ia> 
+    // e_I = \sum{J,k,a} T_Ia^Jk  <Jk|Ia>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "MO Ints <Oo|Ov>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,o]"),
@@ -532,7 +532,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int i = K.params->colorb[h][ia][0];
                 int hi = K.params->rsym[i];
                 int ii = i - occ_offA[hi];
-		eOccOrbA->add(hi, ii, K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);                
+		eOccOrbA->add(hi, ii, K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -546,11 +546,11 @@ else if (reference_ == "UNRESTRICTED") {
     // e_i = F_ii : reference contribution
      for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < occpiB[h]; ++i){
-	    eOccOrbB->set(h, i, FockB->get(h, i , i));                
+	    eOccOrbB->set(h, i, FockB->get(h, i , i));
          }
      }
 
-    // e_i = 1/2 * \sum{j,a,b} T_ij^ab  <ij||ab> 
+    // e_i = 1/2 * \sum{j,a,b} T_ij^ab  <ij||ab>
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                  ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -565,7 +565,7 @@ else if (reference_ == "UNRESTRICTED") {
             int hi = K.params->psym[i];
             int ii = i - occ_offB[hi];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
-		eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);                
+		eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -574,7 +574,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_i = \sum{J,A,b} T_Ji^Ab  <Ji|Ab>  
+    // e_i = \sum{J,A,b} T_Ji^Ab  <Ji|Ab>
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                 ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -589,7 +589,7 @@ else if (reference_ == "UNRESTRICTED") {
             int hi = K.params->qsym[i];
             int ii = i - occ_offB[hi];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
-		eOccOrbB->add(hi, ii, K.matrix[h][ji][ab] * T.matrix[h][ji][ab]);                
+		eOccOrbB->add(hi, ii, K.matrix[h][ji][ab] * T.matrix[h][ji][ab]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -598,7 +598,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_i = 1/2 * \sum{j,k,a} T_ia^jk  <jk||ia> 
+    // e_i = 1/2 * \sum{j,k,a} T_ia^jk  <jk||ia>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo||ov>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,o]"),
@@ -613,7 +613,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int i = K.params->colorb[h][ia][0];
                 int hi = K.params->rsym[i];
                 int ii = i - occ_offB[hi];
-		eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);                
+		eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -622,7 +622,7 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&T);
 
-    // e_i = \sum{J,k,A} T_Ai^Jk  <Jk|Ai> 
+    // e_i = \sum{J,k,A} T_Ai^Jk  <Jk|Ai>
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "MO Ints <Oo|Vo>");
     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[V,o]"), ID("[O,o]"),
@@ -637,7 +637,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int i = K.params->colorb[h][ai][1];
                 int hi = K.params->ssym[i];
                 int ii = i - occ_offB[hi];
-		eOccOrbB->add(hi, ii, K.matrix[h][jk][ai] * T.matrix[h][ai][jk]);                
+		eOccOrbB->add(hi, ii, K.matrix[h][jk][ai] * T.matrix[h][ai][jk]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -659,7 +659,7 @@ else if (reference_ == "UNRESTRICTED") {
     evals_B->zero();
     irrep_A->zero();
     irrep_B->zero();
- 
+
 
     // Sort Alpha spin-case
     int count = 0;
@@ -671,7 +671,7 @@ else if (reference_ == "UNRESTRICTED") {
           }
     }
 
-    //outfile->Printf("\tI am here. \n"); 
+    //outfile->Printf("\tI am here. \n");
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -710,11 +710,11 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) outfile->Printf("\n\tOMP2 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) outfile->Printf("\n\tMP2 Occupied Orbital Energies (a.u.) \n"); 
-    outfile->Printf("\t----------------------------------------------- \n"); 
-    
-	  
+    if (mo_optimized == 1) outfile->Printf("\n\tOMP2 Occupied Orbital Energies (a.u.) \n");
+    else if (mo_optimized == 0) outfile->Printf("\n\tMP2 Occupied Orbital Energies (a.u.) \n");
+    outfile->Printf("\t----------------------------------------------- \n");
+
+
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
@@ -725,7 +725,7 @@ else if (reference_ == "UNRESTRICTED") {
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
 	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	    
+
 	 count++;
     }
 
@@ -735,7 +735,7 @@ else if (reference_ == "UNRESTRICTED") {
     for (int i = 0; i < nooB; ++i) {
          int h = irrep_B->get(i);
 	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
-	    
+
 	 count++;
     }
 
@@ -746,7 +746,7 @@ else if (reference_ == "UNRESTRICTED") {
        delete irrep_A;
        delete irrep_B;
 
-}// end if (reference_ == "UNRESTRICTED") 
-//outfile->Printf("\n omp2_ip_poles is done. \n"); 
+}// end if (reference_ == "UNRESTRICTED")
+//outfile->Printf("\n omp2_ip_poles is done. \n");
 } // end omp2_ip_poles
 }} // End Namespaces

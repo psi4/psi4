@@ -27,10 +27,10 @@
 
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi { namespace cclambda {
 

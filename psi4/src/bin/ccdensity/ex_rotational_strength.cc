@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -37,8 +37,8 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -153,7 +153,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
   outfile->Printf("\n");
   outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
   outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  
+
 
   outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
@@ -237,7 +237,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
 
   /* Use (w2 - w1) for rotational strengths */
      // Sign matters.  We view excitation energies as positive,
-     // so we want to substract the lower state's energy from the 
+     // so we want to substract the lower state's energy from the
      // higher state's.
      // U should be the higher-energy excited state.
   delta_ee = U->cceom_energy - S->cceom_energy;
@@ -254,7 +254,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
   outfile->Printf("\n");
   outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
   outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  
+
 
   return;
 }

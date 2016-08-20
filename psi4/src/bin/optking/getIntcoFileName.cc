@@ -30,7 +30,7 @@
 #include "package.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-  #include "psi4/include/psi4-dec.h"
+  #include "psi4/psi4-dec.h"
   #include "psi4/src/lib/libmints/writer_file_prefix.h"
   #include "psi4/src/lib/libmints/molecule.h"
 

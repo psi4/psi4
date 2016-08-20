@@ -43,7 +43,7 @@
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #include "algebra_interface.h"
 #include "blas.h"
@@ -183,7 +183,7 @@ void CCTransform::transform_tei_so_integrals()
 
   // First-half transform
   outfile->Printf("\n\tCCTransform: beginning first-half integral trasform");
-  
+
   for(int h_rs=0;h_rs<nirreps;h_rs++){
     for(int h_p=0;h_p<nirreps;h_p++){
       int h_q = h_rs^h_p;
@@ -262,7 +262,7 @@ void CCTransform::transform_tei_so_integrals()
 
   // Second-half transform
   outfile->Printf("\n\tCCTransform: beginning second-half integral trasform");
-  
+
   for(int h_ij=0;h_ij<nirreps;h_ij++){
     for(int h_r=0;h_r<nirreps;h_r++){
       int h_s = h_ij^h_r;
@@ -349,7 +349,7 @@ void CCTransform::transform_tei_so_integrals()
 //     }
 //   }
   outfile->Printf("\n\tCCTransform: end of integral transform");
-  
+
 }
 
 /**
@@ -392,7 +392,7 @@ void CCTransform::read_tei_mo_integrals()
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
   outfile->Printf("\n    CCTransform: read %lu non-zero integrals", elements);
-  
+
   iwl_buf_close(&ERIIN,1);
 }
 
@@ -517,7 +517,7 @@ void CCTransform::allocate_tei_mo()
     }
     if(failed){
       outfile->Printf("\n\tCCTransform: not enough memory! %lu bytes extra required",required_size);
-      
+
       exit(EXIT_FAILURE);
     }
   }
@@ -552,7 +552,7 @@ void CCTransform::allocate_tei_so()
     }
     if(failed){
       outfile->Printf("\n\tCCTransform: not enough memory!");
-      
+
       exit(EXIT_FAILURE);
     }
   }
@@ -657,7 +657,7 @@ double CCTransform::tei(int p, int q, int r, int s)
 void CCTransform::transform_oei_so_integrals()
 {
   outfile->Printf("\n  CCTransform: transforming one-electron integrals");
-  
+
 
   allocate_oei_mo();
 

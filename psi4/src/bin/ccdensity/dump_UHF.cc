@@ -27,14 +27,14 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libdpd/dpd.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -79,21 +79,21 @@ void dump_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB, struct RH
   nmo = moinfo.nmo;
 
   psio_open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-	/* psio_write_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *) moinfo.opdm_a[0], 
+	/* psio_write_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *) moinfo.opdm_a[0],
 		   sizeof(double)*nmo*nmo);
-  psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0], 
+  psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 		   sizeof(double)*nmo*nmo); */
-  psio_write_entry(PSIF_MO_OPDM, rho_params.opdm_a_lbl, (char *) moinfo.opdm_a[0], 
+  psio_write_entry(PSIF_MO_OPDM, rho_params.opdm_a_lbl, (char *) moinfo.opdm_a[0],
 		   sizeof(double)*nmo*nmo);
-  psio_write_entry(PSIF_MO_OPDM, rho_params.opdm_b_lbl, (char *) moinfo.opdm_b[0], 
+  psio_write_entry(PSIF_MO_OPDM, rho_params.opdm_b_lbl, (char *) moinfo.opdm_b[0],
 		   sizeof(double)*nmo*nmo);
   psio_close(PSIF_MO_OPDM, 1);
 
 if (!params.onepdm) {
   psio_open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-  psio_write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *) moinfo.I_a[0], 
+  psio_write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *) moinfo.I_a[0],
 		   sizeof(double)*nmo*nmo);
-  psio_write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *) moinfo.I_b[0], 
+  psio_write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *) moinfo.I_b[0],
 		   sizeof(double)*nmo*nmo);
   psio_close(PSIF_MO_LAG, 1);
 

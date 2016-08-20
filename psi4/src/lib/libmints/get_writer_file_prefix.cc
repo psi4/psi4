@@ -34,12 +34,12 @@
 #include <unistd.h>
 #include <cstring>
 #include <boost/regex.hpp>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/molecule.h"
 
 using namespace boost;
@@ -54,9 +54,9 @@ namespace psi {
 ** to write a file in the current working directory with a name like
 ** benzene.molden, benzene.hess, etc.  This function returns the basename
 ** of such files.  The basename is determined as follows: If the option
-** "WRITER_FILE_LABEL" exists, we will use that.  It could be user-specified, 
-** or created by a python driver doing a complex task (e.g., 
-** S22-1-dimer-mp2-ccpvdz).  If the label option is blank (default), 
+** "WRITER_FILE_LABEL" exists, we will use that.  It could be user-specified,
+** or created by a python driver doing a complex task (e.g.,
+** S22-1-dimer-mp2-ccpvdz).  If the label option is blank (default),
 ** then we will just make up a prefix using the basename of the output
 ** file along with the active molecule name (e.g., test.h2o).
 **
@@ -74,7 +74,7 @@ std::string get_writer_file_prefix(std::string molecule_name)
   if (label != "") {
     return(label);
   }
- 
+
   // If no available options WRITER_FILE_LABEL, then we build a defult:
   // Get the basename of the output filename, append any active molecule name
   // to it, and return the resulting string

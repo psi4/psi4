@@ -35,7 +35,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "dpd.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #ifdef _OPENMP
 #include <omp.h>

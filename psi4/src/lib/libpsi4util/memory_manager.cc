@@ -33,7 +33,7 @@
 
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "memory_manager.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi{
@@ -69,7 +69,7 @@ void MemoryManager::RegisterMemory(void *mem, AllocationEntry& entry, size_t siz
 //    outfile->Printf( "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
 //                 double(CurrentAllocated)/1048576.0);
 //    outfile->Printf( "\n  ==============================================================================");
-//    
+//
 //  }
 }
 
@@ -85,7 +85,7 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
 //    outfile->Printf( "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
 //                 double(CurrentAllocated)/1048576.0);
 //    outfile->Printf( "\n  ==============================================================================");
-//    
+//
 //  }
   AllocationTable.erase(mem);
 }

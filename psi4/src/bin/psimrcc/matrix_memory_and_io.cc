@@ -36,8 +36,8 @@
 #include <cmath>
 #include <algorithm>
 
-#include "psi4/include/psifiles.h"
- #include "psi4/include/pragma.h"
+#include "psi4/psifiles.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -50,7 +50,7 @@
 #include "matrix.h"
 
 namespace psi{
-    
+
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
@@ -109,16 +109,16 @@ void CCMatrix::allocate_block(int h)
         allocate2(double,matrix[h],left_pairpi[h],right_pairpi[h]);
         DEBUGGING(2,
           outfile->Printf("\n  %s[%s] <- allocated",label.c_str(),moinfo->get_irr_labs(h));
-          
+
         )
       }else{
         outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n",h,label.c_str());
-        
+
         exit(1);
       }
     }else{
       outfile->Printf("\n\nCCMatrix::allocate_block(): You are trying to allocate irrep %d of %s when is already allocated!!!\n",h,label.c_str());
-      
+
       exit(EXIT_FAILURE);
     }
   }
@@ -141,7 +141,7 @@ void CCMatrix::free_block(int h)
       release2(matrix[h]);
       DEBUGGING(2,
         outfile->Printf("\n  %s[%s] <- deallocated",label.c_str(),moinfo->get_irr_labs(h));
-        
+
       )
     }
   }
@@ -330,7 +330,7 @@ size_t CCMatrix::read_strip_from_disk(int h, int strip, double* buffer)
     // for generic matrices read the entire symmetry block on disk
     if(!is_integral()){
       outfile->Printf("\nMatrix %s is not stored in strips!!!",label.c_str());
-      
+
       exit(EXIT_FAILURE);
     }else{
       // Read the number of strips

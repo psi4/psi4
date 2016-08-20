@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libmints/kinetic.h"
 #include "psi4/src/lib/libmints/3coverlap.h"
 #include "psi4/src/lib/libmints/overlap.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
 #include "psi4/src/lib/libmints/potentialint.h"
 #include "psi4/src/lib/libmints/basisset.h"

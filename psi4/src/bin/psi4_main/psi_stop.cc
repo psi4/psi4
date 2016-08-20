@@ -24,18 +24,18 @@
  *
  * @END LICENSE
  */
- 
+
 /*!
 ** \file
 ** \brief Close input and output, stop input parser
-** \ingroup 
-*/ 
+** \ingroup
+*/
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libplugin/plugin.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
@@ -54,12 +54,12 @@ namespace psi {
 int psi_stop(FILE* infile, std::string OutFileRMR, char* psi_file_prefix)
 {
   free(psi_file_prefix);
- 
+
   // Success Flag, so a user can tell via grep that the outfile worked (or at least didn't segfault)
-  // With a little Psi4 flavor to it. 
+  // With a little Psi4 flavor to it.
   outfile->Printf( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n");
 
-  
+
   //if (outfile)
   //    fclose(outfile);
   if (infile)

@@ -40,7 +40,7 @@
 #include <cstdio>
 #include "psi4/src/lib/libpsio/psio.h"
 #include "config.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 struct iwlbuf {
@@ -67,11 +67,11 @@ void iwl_wrtone(int itap, const char *label, int ntri, double *onel_ints);
 
 void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs,
                       int nfzc, int nfzv, int printflg, std::string out);
-void iwl_wrttwo(int itap, int nbfso, double *ints, int *ioff, 
+void iwl_wrttwo(int itap, int nbfso, double *ints, int *ioff,
       double toler, int printflg, std::string out);
 void sortbuf(struct iwlbuf *inbuf, struct iwlbuf *outbuf,
-      double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
-      int nbfso, int elbert, int intermediate, int no_pq_perm, 
+      double *ints, int fpq, int lpq, int *ioff, int *ioff2,
+      int nbfso, int elbert, int intermediate, int no_pq_perm,
       int qdim, int add, int printflg, std::string out);
 void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
       double *ints, unsigned int fpq, unsigned int lpq, int *so2ind, int *so2sym, int *pksymoff,
@@ -92,25 +92,25 @@ int iwl_buf_rd_all_act(struct iwlbuf *Buf, double *ints,
 int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
       int *ioff_lt, int *ioff_rt, int bra_ket_symm, int *ioff,
       int printflg, std::string out);
-void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, 
+void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints,
       int *ioff, int printflg, std::string out);
 void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
-      double *arr, int rmax, int *ioff, int *orbsym, int *firsti, 
+      double *arr, int rmax, int *ioff, int *orbsym, int *firsti,
       int *lasti, int printflag, std::string out);
 void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq,
-      int pqsym, double **arr, int rsym, int *firstr, int *lastr, 
-      int *firsts, int *lasts, int *occ, int *vir, int *ioff, 
+      int pqsym, double **arr, int rsym, int *firstr, int *lastr,
+      int *firsts, int *lasts, int *occ, int *vir, int *ioff,
       int printflag, std::string out);
 void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq,
-      int pqsym, double **arr, int rsym, int *firstr, int *lastr, 
-      int *firsts, int *lasts, int *occ, int bra_ket_symm, int *ioff, 
+      int pqsym, double **arr, int rsym, int *firstr, int *lastr,
+      int *firsts, int *lasts, int *occ, int bra_ket_symm, int *ioff,
       int printflag, std::string out);
 void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf);
 void iwl_buf_close(struct iwlbuf *Buf, int keep);
 void iwl_buf_toend(struct iwlbuf *Buf);
 void iwl_buf_wrt_arr(struct iwlbuf *Buf, double *arr, int *p, int *q,
       int *r, int *s, long int size);
-void iwl_buf_wrt_arr_SI(struct iwlbuf *Buf, double *arr, 
+void iwl_buf_wrt_arr_SI(struct iwlbuf *Buf, double *arr,
       short int *p, short int *q, short int *r, short int *s, int size);
 void iwl_buf_wrt_arr_SI_nocut(struct iwlbuf *Buf, double *arr,
       short int *p, short int *q, short int *r, short int *s, int size);
@@ -120,7 +120,7 @@ int iwl_buf_rd_arr(struct iwlbuf *Buf, int target_pq, double *ints,
 int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
       int *qlist, int *rlist, int *slist, int *size, int *ioff,
       int printflg, std::string out);
-void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q, 
+void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q,
       int *rlist, int *slist, int size, int printflag, std::string out);
 void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
       double **mat, int rfirst, int rlast, int sfirst, int slast,

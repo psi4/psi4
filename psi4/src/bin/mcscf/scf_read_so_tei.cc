@@ -28,7 +28,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libiwl/iwl.hpp"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
@@ -104,14 +104,14 @@ void SCF::read_so_tei()
         batch_pq_min[batch],batch_pq_max[batch],
         batch_index_min[batch],batch_index_max[batch]);
   }
-  
+
 
   // Allocate the PK matrix
   allocate1(double,PK,nin_core);
   for(size_t i=0; i < nin_core; i++)
     PK[i]    =0.0;
   outfile->Printf("\n\n  Allocated the PK matrix (%ld elements) ",(long int)nin_core);
-  
+
 
   if(reference != rhf){
     // Allocate the K matrix
@@ -119,7 +119,7 @@ void SCF::read_so_tei()
     for(size_t i=0; i < nin_core; i++)
       K[i]    =0.0;
     outfile->Printf("\n  Allocated the  K matrix (%ld elements) ",(long int)nin_core);
-    
+
   }
 
   if(reference == rhf)
@@ -131,11 +131,11 @@ void SCF::read_so_tei()
 void SCF::read_so_tei_form_PK()
 {
   outfile->Printf("\n  Reading the two-electron integrals to form PK ... ");
-  
+
 
   for(int batch = 0; batch < nbatch; ++batch){
     outfile->Printf("\n  batch %3d ... ",batch);
-    
+
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
     size_t max_index   = batch_index_max[batch];
@@ -205,20 +205,20 @@ void SCF::read_so_tei_form_PK()
     write_Raffanetti("PK",PK,batch);
 
     outfile->Printf("done.");
-    
+
   }
   outfile->Printf("\n");
-  
+
 }
 
 void SCF::read_so_tei_form_PK_and_K()
 {
   outfile->Printf("\n  Reading the two-electron integrals to form PK and K ... ");
-  
+
 
   for(int batch = 0; batch < nbatch; ++batch){
     outfile->Printf("\n  batch %3d ... ",batch);
-    
+
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
     size_t max_index   = batch_index_max[batch];
@@ -298,10 +298,10 @@ void SCF::read_so_tei_form_PK_and_K()
     write_Raffanetti("K",K,batch);
 
     outfile->Printf("done.");
-    
+
   }
   outfile->Printf("\n");
-  
+
 }
 
 }} /* End Namespaces */

@@ -36,7 +36,7 @@
 #include <cstdlib>
 #include <cmath>
 /* may no longer need #include <libc.h> */
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libmints/matrix.h"

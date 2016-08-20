@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-#include "psi4/include/psi4-dec.h" //Gives us psi::outfile
+#include "psi4/psi4-dec.h" //Gives us psi::outfile
 
 extern "C" void host_writer(const char * message, int /* message_length */)
 {

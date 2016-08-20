@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /* L3_RHF_AAA(): Computes all T3(IJK,ABC) amplitudes for a given I, J,
@@ -35,7 +35,7 @@
 ** will work for AAA or BBB spin cases, with either RHF/ROHF or UHF
 ** orbitals.
 **
-** Arguments: 
+** Arguments:
 **
 **   double ***W1: The target triples amplitudes in an nirreps x AB x
 **   C array.  The memory for this must be allocated externally.
@@ -65,10 +65,10 @@
 **
 **   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of
 **   the Fock matrix (or other appropriate one-electron operator).
-**   
+**
 **   int *occpi: Number of occupied orbitals per irrep lookup array.
 **
 **   int *occ_off: Offset lookup for translating between absolute and
@@ -88,12 +88,12 @@
 #include <cmath>
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 namespace psi { namespace cclambda {
 
-void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, 
-	    dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, 
+void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
+	    dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB,
 	    dpdbuf4 *D, dpdbuf4 *LIJAB, dpdfile2 *LIA, dpdfile2 *FME,
 	    int *occpi, int *occ_off, int *virtpi, int *vir_off)
 {
@@ -231,7 +231,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     ncols = virtpi[Gc];
     nlinks = virtpi[Gd];
 
-    if(nrows && ncols && nlinks) 
+    if(nrows && ncols && nlinks)
       C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 	      &(T2->matrix[Gij][ij][cd]), nlinks, 1.0, W1[Gab][0], ncols);
 
@@ -247,13 +247,13 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 
     lc = E->col_offset[Gjk][Gl];
     il = T2->row_offset[Gil][I];
- 
+
     nrows = T2->params->coltot[Gil];
     ncols = virtpi[Gc];
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows,
 	      &(E->matrix[Gjk][jk][lc]), ncols, 1.0, W1[Gab][0], ncols);
 
     /* +t_jlab * E_iklc */
@@ -268,7 +268,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gjl][jl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gjl][jl], nrows,
 	      &(E->matrix[Gik][ik][lc]), ncols, 1.0, W1[Gab][0], ncols);
 
     /* +t_klab * E_jilc */
@@ -283,7 +283,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gkl][kl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gkl][kl], nrows,
 	      &(E->matrix[Gji][ji][lc]), ncols, 1.0, W1[Gab][0], ncols);
 
   }
@@ -363,7 +363,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gil][il], nrows,
 	      &(E->matrix[Gjk][jk][lb]), ncols, 1.0, W2[Gca][0], ncols);
 
     /* +t_jlca * E_iklb */
@@ -378,7 +378,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gjl][jl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gjl][jl], nrows,
 	      &(E->matrix[Gik][ik][lb]), ncols, 1.0, W2[Gca][0], ncols);
 
     /* +t_klca * E_jilb */
@@ -393,12 +393,12 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gkl][kl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gkl][kl], nrows,
 	      &(E->matrix[Gji][ji][lb]), ncols, 1.0, W2[Gca][0], ncols);
   }
 
   global_dpd_->sort_3d(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
-	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
+	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
 	      vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
 
   for(Gab=0; Gab < nirreps; Gab++) {
@@ -484,7 +484,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gil][il], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, T2->matrix[Gil][il], nrows,
 	      &(E->matrix[Gjk][jk][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
     /* -t_jlcb * E_ikla */
@@ -499,7 +499,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gjl][jl], nrows,
 	      &(E->matrix[Gik][ik][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
     /* -t_klcb * E_jila */
@@ -514,13 +514,13 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     nlinks = occpi[Gl];
 
     if(nrows && ncols && nlinks)
-      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows, 
+      C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0, T2->matrix[Gkl][kl], nrows,
 	      &(E->matrix[Gji][ji][la]), ncols, 1.0, W2[Gcb][0], ncols);
 
   }
 
   global_dpd_->sort_3d(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
-	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
+	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off,
 	      vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
 
   /* Add disconnected terms */
@@ -550,7 +550,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 
 	/* +L_ia * D_jkbc + F_ia * L_jkbc */
 	if(Gi == Ga && Gjk == Gbc) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gi] && LIA->params->coltot[Gi]) {
 	    L1 = LIA->matrix[Gi][i][a];
 	    F1 = FME->matrix[Gi][i][a];
@@ -563,7 +563,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* -L_ib * D_jkac - F_ib * L_jkac */
 	if(Gi == Gb && Gjk == Gac) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gi] && LIA->params->coltot[Gi]) {
 	    L1 = LIA->matrix[Gi][i][b];
 	    F1 = FME->matrix[Gi][i][b];
@@ -576,7 +576,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* -L_ic * D_jkba - F_ic * L_jkba */
 	if(Gi == Gc && Gjk == Gba) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gi] && LIA->params->coltot[Gi]) {
 	    L1 = LIA->matrix[Gi][i][c];
 	    F1 = FME->matrix[Gi][i][c];
@@ -589,7 +589,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* -L_ja * D_ikbc - F_ja * L_ikbc */
 	if(Gj == Ga && Gik == Gbc) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gj] && LIA->params->coltot[Gj]) {
 	    L1 = LIA->matrix[Gj][j][a];
 	    F1 = FME->matrix[Gj][j][a];
@@ -602,7 +602,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* +L_jb * D_ikac + F_jb * L_ikac */
 	if(Gj == Gb && Gik == Gac) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gj] && LIA->params->coltot[Gj]) {
 	    L1 = LIA->matrix[Gj][j][b];
 	    F1 = FME->matrix[Gj][j][b];
@@ -615,7 +615,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* +L_jc * D_ikba + F_jc * L_ikba */
 	if(Gj == Gc && Gik == Gba) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gj] && LIA->params->coltot[Gj]) {
 	    L1 = LIA->matrix[Gj][j][c];
 	    F1 = FME->matrix[Gj][j][c];
@@ -628,7 +628,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* -L_ka * D_jibc - F_ka * L_jibc */
 	if(Gk == Ga && Gji == Gbc) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gk] && LIA->params->coltot[Gk]) {
 	    L1 = LIA->matrix[Gk][k][a];
 	    F1 = FME->matrix[Gk][k][a];
@@ -641,7 +641,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* +L_kb * D_jiac + F_kb * L_jiac */
 	if(Gk == Gb && Gji == Gac) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gk] && LIA->params->coltot[Gk]) {
 	    L1 = LIA->matrix[Gk][k][b];
 	    F1 = FME->matrix[Gk][k][b];
@@ -654,7 +654,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	}
 	/* +L_kc * D_jiba + F_kc * L_jiba */
 	if(Gk == Gc && Gji == Gba) {
-	  L1 = D2 = F1 = L2 = 0.0;		      
+	  L1 = D2 = F1 = L2 = 0.0;
 	  if(LIA->params->rowtot[Gk] && LIA->params->coltot[Gk]) {
 	    L1 = LIA->matrix[Gk][k][c];
 	    F1 = FME->matrix[Gk][k][c];

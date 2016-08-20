@@ -43,7 +43,7 @@
 #include "psi4/src/lib/libpsi4util/exception.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
 #include "psi4/src/lib/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -51,7 +51,7 @@
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <boost/algorithm/string/join.hpp>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
 // DataType base

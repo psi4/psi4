@@ -26,7 +26,7 @@
  */
 
 #include "sapt2.h"
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/basisset.h"
 #include "psi4/src/lib/libmints/twobody.h"
 #include "psi4/src/lib/libmints/integral.h"
@@ -216,7 +216,7 @@ void SAPT2::print_header()
   double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
   if (print_) {
     outfile->Printf("    Estimated memory usage: %.1lf MB\n\n",memory);
-    
+
   }
   if (options_.get_bool("SAPT_MEM_CHECK"))
     if (mem < vvnri + ovov*3L)
@@ -228,7 +228,7 @@ void SAPT2::print_header()
   outfile->Printf("    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
   outfile->Printf("\n");
 
-  
+
 }
 
 void SAPT2::print_results()
@@ -261,7 +261,7 @@ void SAPT2::print_results()
 
     double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_);
 
-    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
+    e_sapt0_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ +
                *scal_it * (e_exch_ind20_ + e_exch_disp20_);
     double e_sSAPT0 = 0.0;
     double elst_sSAPT0 = 0.0;
@@ -276,18 +276,18 @@ void SAPT2::print_results()
       disp_sSAPT0 = e_disp20_ + sSAPT_Xscal * e_exch_disp20_;
       e_sSAPT0 = elst_sSAPT0 + exch_sSAPT0 + ind_sSAPT0 + disp_sSAPT0;
     }
-    e_sapt2_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ + 
-               *scal_it * (e_exch_ind20_ + e_exch_disp20_) + 
-               e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + e_ind22_; 
+    e_sapt2_ = e_elst10_ + e_exch10_ + dHF2 + e_ind20_ + e_disp20_ +
+               *scal_it * (e_exch_ind20_ + e_exch_disp20_) +
+               e_elst12_ + *scal_it * (e_exch11_ + e_exch12_ + e_exch_ind22_) + e_ind22_;
 
     double tot_elst = e_elst10_ + e_elst12_;
     double tot_exch = e_exch10_ + *scal_it * (e_exch11_ + e_exch12_);
-    double tot_ind = e_ind20_ + dHF2 + e_ind22_ 
+    double tot_ind = e_ind20_ + dHF2 + e_ind22_
             + *scal_it * (e_exch_ind20_ + e_exch_ind22_);
     double tot_ct = e_ind20_ + e_ind22_ +
             *scal_it * (e_exch_ind20_ + e_exch_ind22_);
     double tot_disp = e_disp20_ + *scal_it * e_exch_disp20_;
-  
+
     if(scal_it == Xscal.begin()) {
         outfile->Printf("\n    SAPT Results \n");
     } else {
@@ -893,7 +893,7 @@ void SAPT2::df_integrals()
   free(Schwartz);
   free(DFSchwartz);
 
-  
+
 }
 
 void SAPT2::w_integrals()
@@ -1021,7 +1021,7 @@ void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm,
   if (print_) {
     outfile->Printf("    Monomer %c: %d virtual orbitals dropped\n",monomer,
           nvirA-num_no_vir);
-    
+
   }
 
   double **Fock_MO = block_matrix(nvirA,nvirA);

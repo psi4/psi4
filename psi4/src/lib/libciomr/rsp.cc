@@ -31,28 +31,28 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include <cstdlib>
 #include "libciomr.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
-  
+
 extern void tred2(int n,double** a,double* d,double* e,int matz);
-extern void tqli(int n, double *d, double **z, double *e, int matz, 
+extern void tqli(int n, double *d, double **z, double *e, int matz,
   double toler);
 
 /* translation into c of a translation into FORTRAN77 of the EISPACK */
 /* matrix diagonalization routines */
 
 /*!
-** rsp(): diagonalize a symmetric matrix in packed (lower triangular) form 
+** rsp(): diagonalize a symmetric matrix in packed (lower triangular) form
 ** in 'array'. For square symmetric matrices, see sq_rsp().
 **
 ** \param nm     = rows of matrix
 ** \param n      = columns of matrix
 ** \param nv     = number of elements in lower triangle (n*(n+1)/2)
 ** \param array  = matrix to diagonalize (packed as linear array)
-** \param e_vals = array to hold eigenvalues 
+** \param e_vals = array to hold eigenvalues
 ** \param matz   = 0 (no eigenvectors, eigenvals in ascending order)
 **               = 1 (eigenvectors and eigenvalues in ascending order)
 **               = 2 (no eigenvectors, eigenvalues in descending order)
@@ -118,7 +118,7 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
             e_vecs[j][i] = sw;
             /*temp[i][j]=e_vecs[j][i];*/
             }
-            
+
       tqli(n,e_vals,e_vecs,fv1,matz,toler);
       /*tqli(n,e_vals,temp,fv1,matz,toler);*/
 
@@ -138,5 +138,5 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
       free(fv1);
       /*free_matrix(temp,n);*/
 }
-            
+
 }

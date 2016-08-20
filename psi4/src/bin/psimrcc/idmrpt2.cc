@@ -27,7 +27,7 @@
 
 #include <cstdlib>
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
 #include "psi4/src/lib/liboptions/liboptions.h"
@@ -98,7 +98,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
   outfile->Printf("\n    @PT  Cycle         Energy           Delta E   ");
   outfile->Printf("\n    @PT                 [Eh]             [Eh]  ");
   outfile->Printf("\n  ------------------------------------------------------------------------------");
-  
+
 
   // Start MRPT cycle
   bool converged = false;
@@ -127,11 +127,11 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
 
     if(cycle>options_.get_int("MAXITER")){
       outfile->Printf("\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
-      
+
       exit(1);
     }
     cycle++;
-    
+
   }
   outfile->Printf("\n  ------------------------------------------------------------------------------");
 
@@ -185,7 +185,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
   }
 
 //   print_eigensystem(moinfo->get_nrefs(),Heff_mrpt2,right_eigenvector);
-  
+
 }
 
 void IDMRPT2::build_Heff_mrpt2_diagonal()

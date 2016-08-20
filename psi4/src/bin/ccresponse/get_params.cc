@@ -35,9 +35,9 @@
 #include <cmath>
 #include <cstdlib>
 #include "psi4/src/lib/libciomr/libciomr.h"
-#include "psi4/include/psi4-dec.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/physconst.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/factory.h"

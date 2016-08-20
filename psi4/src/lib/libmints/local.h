@@ -29,7 +29,7 @@
 #define _psi_src_lib_libmints_local_h_
 
 #include <vector>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -63,12 +63,12 @@ protected:
     boost::shared_ptr<BasisSet> primary_;
     /// Delocalized Orbitals
     boost::shared_ptr<Matrix> C_;
-    
+
     // => Targets <= //
-    
-    /// Localized Orbitals 
+
+    /// Localized Orbitals
     boost::shared_ptr<Matrix> L_;
-    /// MO -> LO transformation 
+    /// MO -> LO transformation
     boost::shared_ptr<Matrix> U_;
     /// Did the algorithm converge?
     bool converged_;
@@ -81,13 +81,13 @@ public:
     // => Constructors <= //
 
     Localizer(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Matrix> C);
-    
+
     virtual ~Localizer();
 
     static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
     static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
     static boost::shared_ptr<Localizer> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
-    
+
     // => Computers <= //
 
     /// Print out the localization algorithm and parameters
@@ -116,7 +116,7 @@ public:
 class BoysLocalizer : public Localizer {
 
 protected:
-    
+
     /// Set defaults
     void common_init();
 
@@ -133,7 +133,7 @@ public:
 class PMLocalizer : public Localizer {
 
 protected:
-    
+
     /// Set defaults
     void common_init();
 

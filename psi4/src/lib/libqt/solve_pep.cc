@@ -34,14 +34,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
-	
+
 #define A_MIN 1.0E-10
 
 /*!
 ** solve_2x2_pep(): Solve a 2x2 pseudo-eigenvalue problem of the form
-**    [ H11 - E    H12 - E*S ]  [c1]  
+**    [ H11 - E    H12 - E*S ]  [c1]
 **    [ H12 - E*S  H22 - E   ]  [c2]  = 0
 **
 **  \param H     =  matrix to get eigenvalues of
@@ -56,13 +56,13 @@ void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
 {
    int i ;
    double a, b, c, p, q, x ;
-   double norm, tval, tval2; 
+   double norm, tval, tval2;
 
    /* put in quadratic form */
    a = 1.0 - S * S ;
    b = 2.0 * S * H[0][1] - H[0][0] - H[1][1] ;
-   c = H[0][0] * H[1][1] - H[0][1] * H[0][1] ; 
-  
+   c = H[0][0] * H[1][1] - H[0][1] * H[0][1] ;
+
    /* solve the quadratic equation for E0 and E1 */
 
    tval = b*b ;
@@ -76,19 +76,19 @@ void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
       printf("min a reached\n") ;
       evals[0] = evals[1] = H[1][1] ;
       }
-   else { 
+   else {
       evals[0] = -b / (2.0 * a) ;
-      evals[0] -= tval2 / (2.0 * a) ; 
+      evals[0] -= tval2 / (2.0 * a) ;
       evals[1] = -b / (2.0 * a) ;
       evals[1] += tval2 / (2.0 * a) ;
       }
- 
+
    /* Make sure evals[0] < evals[1] */
-   if (evals[1] < evals[0]) { 
-      tval = evals[0] ;  
+   if (evals[1] < evals[0]) {
+      tval = evals[0] ;
       evals[0] = evals[1] ;
       evals[1] = tval ;
-      } 
+      }
 
    /* Make sure evals[0] < H[1][1] */
    if (evals[0] > H[1][1]) {
@@ -101,14 +101,14 @@ void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
    for (i=0; i<2; i++) {
       p = H[0][0] - evals[i] ;
       q = H[0][1] - S * evals[i] ;
-      x = -p/q ; 
+      x = -p/q ;
       norm = 1.0 + x * x ;
       norm = sqrt(norm) ;
       evecs[i][0] = 1.0 / norm ;
       evecs[i][1] = x / norm ;
       }
 
-   /* test 
+   /* test
    for (i=0; i<2; i++) {
       p = H[i][0] * evecs[0][0] + H[i][1] * evecs[0][1] ;
       if (i==0) q = evecs[0][0] + S * evecs[0][1] ;

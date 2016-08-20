@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -122,7 +122,7 @@ double DFCoupledCluster::compute_energy() {
                   for (long int b=0; b<v; b++){
                       tempq[q*v+b] = Qov[q*o*v+i*v+b];
                   }
-              }      
+              }
               F_DGEMM('n','t',v,v*v,nQ,1.0,tempq,v,Qvv,v*v,0.0,&Z[0],v);
               #pragma omp parallel for schedule (static)
               for (long int a=0; a<v; a++){
@@ -248,7 +248,7 @@ double DFCoupledCluster::compute_energy() {
 }
 
 void DFCoupledCluster::WriteBanner(){
-  
+
   outfile->Printf("\n\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf( "        *                                                     *\n");
@@ -259,7 +259,7 @@ void DFCoupledCluster::WriteBanner(){
   outfile->Printf( "        *                                                     *\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf("\n\n");
-  
+
 }
 
 /*===================================================================
@@ -311,7 +311,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   outfile->Printf("\n");
   outfile->Printf("  Begin singles and doubles coupled cluster iterations\n\n");
   outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  
+
 
   memset((void*)diisvec,'\0',(maxdiis+1)*sizeof(double));
   while(iter < maxiter) {
@@ -372,7 +372,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       time_t iter_stop = time(NULL);
       outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
-      
+
       iter++;
       if (iter==1){
           emp2 = eccsd;
@@ -470,7 +470,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   outfile->Printf("  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
   outfile->Printf("                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
   outfile->Printf("                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  
+
 
   if (options_.get_bool("COMPUTE_TRIPLES")){
       // need to generate non-t1-transformed 3-index integrals
@@ -488,7 +488,7 @@ double DFCoupledCluster::CheckEnergy(){
 
     long int v  = nvirt;
     long int o  = ndoccact;
-  
+
     // df (ia|bj) formerly E2klcd
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
 
@@ -550,7 +550,7 @@ void DFCoupledCluster::AllocateMemory() {
 
   /*========================================================
      ccsd memory requirements:
-    
+
      tb:     o^2v^2
      tempt:  o^2v^2+ov ( actually o(o+1)v(v+1) + ov )
      tempv:  max (o^2v^2+ov , o*v*nQ)
@@ -558,15 +558,15 @@ void DFCoupledCluster::AllocateMemory() {
      Abij (SJS v^4 result): o(o+1)v/2
      Sbij (SJS v^4 result): o(o+1)v/2
      other stuff: 2ov+2v^2+(o+v)
-    
-     total: 3o^2v^2 + 2v^3  + o(o+1)v + 4ov  + 2v^2 + (o+v)  or 
+
+     total: 3o^2v^2 + 2v^3  + o(o+1)v + 4ov  + 2v^2 + (o+v)  or
             4o^2v^2         + o(o+1)v + 4ov  + 2v^2 + (o+v)  or
             3o^2v^2 + 2ovnQ + o(o+1)v + 4ov  + 2v^2 + (o+v)
 
      compare to the requirements for the (T) part:
 
             2o^2v^2 + 3v^3*nthreads + o^3v + ov
-    
+
   ========================================================*/
 
 
@@ -600,14 +600,14 @@ void DFCoupledCluster::AllocateMemory() {
           outfile->Printf("\n");
           outfile->Printf("        Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
           outfile->Printf("\n");
-          
+
           t2_on_disk = true;
       } else {
           outfile->Printf("\n");
           outfile->Printf("        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",
                           total_memory + df_memory - size_of_t2 - available_memory);
           outfile->Printf("\n");
-          
+
           throw PsiException("not enough memory (ccsd).",__FILE__,__LINE__);
       }
 
@@ -748,7 +748,7 @@ void DFCoupledCluster::UpdateT2(){
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_R2,1);
- 
+
   #pragma omp parallel for schedule (static)
   for (long int a = 0; a < v; a++){
       double da = eps[a+o];
@@ -819,32 +819,32 @@ void DFCoupledCluster::Vabcd1(){
             }
         }
     }
-  
+
     psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  
+
     int nthreads = omp_get_max_threads();
-  
+
     double * Vcdb = integrals;
     double * Vm   = integrals+v*v*v;
     double * Vp   = Vm;
-  
+
     // qvv transpose
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
         C_DCOPY(v*v,Qvv+q*v*v,1,integrals+q,nQ);
     }
     C_DCOPY(nQ*v*v,integrals,1,Qvv,1);
-  
+
     double time1 = 0.0;
     double time2 = 0.0;
     double time3 = 0.0;
     for (long int a = 0; a < v; a++) {
-  
+
         double start1 = omp_get_wtime();
         int nb = v-a;
         F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+a*v*nQ,nQ,0.0,Vcdb,v);
-  
+
         #pragma omp parallel for schedule (static)
         for (long int b = a; b < v; b++){
             long int cd = 0;
@@ -859,7 +859,7 @@ void DFCoupledCluster::Vabcd1(){
             }
         }
         double end1 = omp_get_wtime();
-  
+
         double start2 = omp_get_wtime();
         F_DGEMM('n','n',otri,nb,vtri,0.5,tempt,otri,Vp,vtri,0.0,Abij,otri);
         #pragma omp parallel for schedule (static)
@@ -877,7 +877,7 @@ void DFCoupledCluster::Vabcd1(){
         }
         F_DGEMM('n','n',otri,nb,vtri,0.5,tempt+otri*vtri,otri,Vm,vtri,0.0,Sbij,otri);
         double end2 = omp_get_wtime();
-  
+
         // contribute to residual
         double start3 = omp_get_wtime();
         #pragma omp parallel for schedule (static)
@@ -895,16 +895,16 @@ void DFCoupledCluster::Vabcd1(){
             }
         }
         double end3 = omp_get_wtime();
-  
+
         time1 += end1 - start1;
         time2 += end2 - start2;
         time3 += end3 - start3;
     }
-  
+
     // contribute to residual
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
-  
+
     // qvv un-transpose
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {

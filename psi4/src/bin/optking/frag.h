@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 #include "print.h"
 #include "coordinates.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 namespace opt {
 
@@ -61,7 +61,7 @@ class FRAG {
   bool   **connectivity; ///< connectivity matrix
   bool frozen;           ///< whether to optimize
   COMBO_COORDINATES coords; ///< simple or linear combinations of simple coordinates
-  
+
  public:
   friend class INTERFRAG;
 

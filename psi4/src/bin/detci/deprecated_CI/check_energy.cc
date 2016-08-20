@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-/*! 
+/*!
   \file
   \ingroup DETCI
   \brief Check the SCF energy
 */
 #include <cstdio>
 #include <cmath>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi { namespace detci {
 
@@ -40,23 +40,23 @@ namespace psi { namespace detci {
 
 extern int *ioff ;
 
-void scf_energy(double *H, double *TE, double *energy_1, double *energy_2, 
-      double *energy_e, int *docc, int *dropped_docc, int drc_flag, 
+void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
+      double *energy_e, int *docc, int *dropped_docc, int drc_flag,
       int nirreps, int *reorder, int *opi);
 
 /*!
 ** check_energy(): check the SCF energy by calculating it from the two-electr.
 **    integrals in the MO basis
-** 
+**
 ** \param H            =  lwr tri of one-electron integrals matrix (MO basis)
 ** \param twoel_ints   =  two electron integrals (lexically indexed, MO basis)
 ** \param docc         =  doubly occupied orbitals per irrep
-** \param dropped_docc =  dropped occupied orbitals per irrep 
+** \param dropped_docc =  dropped occupied orbitals per irrep
 ** \param drc_flag     =  1 if we drop core orbitals, 0 otherwise
 ** \param escf         =  scf energy to compare to
 ** \param enuc         =  nuclear repulsion energy
 ** \param edrc         =  energy of dropped core orbitals
-** \param nirreps      =  number of irreps 
+** \param nirreps      =  number of irreps
 ** \param eorder       =  reordering array for Pitzer->CI ordering
 ** \param opi          =  orbs per irrep in Pitzer ordering
 ** \param print_lvl    =  integer describing how much to print
@@ -65,8 +65,8 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 ** Returns: the computed SCF energy
 ** \ingroup DETCI
 */
-double check_energy(double *H, double *twoel_ints, int *docc, 
-  int *dropped_docc, int drc_flag, double escf, double enuc, double edrc, 
+double check_energy(double *H, double *twoel_ints, int *docc,
+  int *dropped_docc, int drc_flag, double escf, double enuc, double edrc,
       int nirreps, int *reorder, int *opi, int print_lvl, std::string out)
 {
    double energy_1 ;     /* one-electron energy */
@@ -87,15 +87,15 @@ double check_energy(double *H, double *twoel_ints, int *docc,
      printer->Printf("Total electronic energy:   %16.10lf\n", energy_e+edrc) ;
      printer->Printf("Total SCF energy:          %16.10lf\n", enuc +
         energy_e + edrc) ;
-    
+
      if (fabs(enuc + edrc + energy_e - escf) > 0.00000001) {
         printer->Printf(
            "\n*** Calculated Energy Differs from SCF Energy in CHKPT ! ***\n") ;
         }
    }
 
-   return(enuc+edrc+energy_e); 
-}   
+   return(enuc+edrc+energy_e);
+}
 
 
 /*!
@@ -104,18 +104,18 @@ double check_energy(double *H, double *twoel_ints, int *docc,
 **
 ** David Sherrill, Sept 1993
 **
-** \param H            = Matrix of one-electron integrals in MO basis 
+** \param H            = Matrix of one-electron integrals in MO basis
 **                       (lower triangle)
-** \param TE           = Two-electron integrals in MO basis, stored in 
+** \param TE           = Two-electron integrals in MO basis, stored in
 **                       ijkl-indexed array
 ** \param energy_1     = pointer to hold one-electron energy
 ** \param energy_2     = pointer to hold two-electron energy
-** \param energy_e     = pointer to hold total electronic energy (sum of two 
+** \param energy_e     = pointer to hold total electronic energy (sum of two
 **                       terms above)
 ** \param docc         = array of doubly-occupied orbitals per irrep
-** \param dropped_docc = dropped occupied orbitals per irrep 
+** \param dropped_docc = dropped occupied orbitals per irrep
 ** \param drc_flag     = 1 if we drop core orbitals, 0 otherwise
-** \param nirreps      = number of irreps 
+** \param nirreps      = number of irreps
 ** \param reorder      = reordering array Pitzer->CI order
 ** \param opi          = orbitals per irrep
 **
@@ -124,8 +124,8 @@ double check_energy(double *H, double *twoel_ints, int *docc,
 ** \ingroup DETCI
 */
 
-void scf_energy(double *H, double *TE, double *energy_1, double *energy_2, 
-      double *energy_e, int *docc, int *dropped_docc, int drc_flag, 
+void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
+      double *energy_e, int *docc, int *dropped_docc, int drc_flag,
       int nirreps, int *reorder, int *opi)
 {
    int irrep, irrep2, d, d2, offset, offset2, ndoc, ndoc2, ndrc, ndrc2, totdrc;
@@ -155,7 +155,7 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
        iiii = ioff[ii] + ii;
        *energy_1 += 2.0 * H[ii];
        *energy_2 += TE[iiii];
-       
+
        for (irrep2=0,offset2=0; irrep2<=irrep; irrep2++) {
 	 if (irrep2>0) offset2 += opi[irrep2-1];
 	 ndoc2 = docc[irrep2];
@@ -164,7 +164,7 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 	   ndoc2 -= ndrc2;
 	 }
 	 else ndrc2=0;
-	 
+
 	 for (d2=offset2+ndrc2; d2<ndoc2+offset2+ndrc2 && d2<d; d2++) {
 	   j = reorder[d2]-totdrc;
 	   jj = ioff[j] + j;
@@ -176,7 +176,7 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
        }
      }
    }
-   
+
    *energy_e = *energy_1 + *energy_2;
 }
 

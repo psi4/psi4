@@ -34,7 +34,7 @@
 #include "psi4/src/lib/libmints/cdsalclist.h"
 #include "psi4/src/lib/libmints/deriv.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 using namespace boost;
 

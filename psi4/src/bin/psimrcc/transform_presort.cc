@@ -33,7 +33,7 @@
 #include <cmath>
 #include <cstdlib>
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -42,7 +42,7 @@
 #include "psi4/src/lib/libiwl/iwl.h"
 #include "psi4/src/lib/libmoinfo/libmoinfo.h"
 #include "psi4/src/lib/libpsi4util/libpsi4util.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 #define MAX(i,j) ((i>j) ? i : j)
 #define MIN(i,j) ((i>j) ? j : i)
@@ -119,13 +119,13 @@ void CCTransform::presort_integrals()
     if(last_irrep >= moinfo->get_nirreps())  done = true;
     first_irrep = last_irrep;
   }
-  
+
 }
 
 void CCTransform::presort_blocks(int first_irrep, int last_irrep)
 {
   outfile->Printf("\n    Reading irreps %d -> %d",first_irrep,last_irrep - 1);
-  
+
 
   CCIndex* pair_index = blas->get_index("[n>=n]");
   std::vector<size_t> pairpi = pair_index->get_pairpi();
@@ -171,7 +171,7 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep)
   iwl_buf_close(&ERIIN,1);
 
   outfile->Printf(" (%lu non-zero integrals)", (unsigned long)elements);
-  
+
 
   // Write integrals to disk
   for(int h = first_irrep; h < last_irrep; ++h){

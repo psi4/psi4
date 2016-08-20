@@ -40,7 +40,7 @@
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -70,7 +70,7 @@ void local_init(void)
   local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */
 
   outfile->Printf( "\tLocalization parameters ready.\n\n");
-  
+
 }
 
 void local_done(void)

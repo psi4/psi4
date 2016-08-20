@@ -46,7 +46,7 @@
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
 #include <sys/types.h>
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"

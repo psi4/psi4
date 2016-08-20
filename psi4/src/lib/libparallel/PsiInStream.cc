@@ -26,7 +26,7 @@
  */
 
 #include "PsiInStream.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 //#include "../libparallel2/Communicator.h"
 //#include "../libparallel2/ParallelEnvironment.h"
 

@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -38,7 +38,7 @@
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libqt/qt.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 
 using namespace psi;
 using namespace boost;
@@ -426,10 +426,10 @@ DIISManager::extrapolate(int numQuantities, ...)
             Bp[i][j] *= Sp[i] * Sp[j];
         }
     }
-    
+
     // => S [S^-1 B S^-1] S \ f <= //
 
-    B->power(-1.0, 1.0E-12); 
+    B->power(-1.0, 1.0E-12);
     C_DGEMV('N',dimension,dimension,1.0,Bp[0],dimension,force,1,0.0,coefficients,1);
     for (int i = 0; i < dimension; i++) {
         coefficients[i] *= Sp[i];

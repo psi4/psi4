@@ -36,8 +36,8 @@
  *     O'Reilly & Associates, Inc.
  *
  ********************************************************
- * tpool.c -- 
- * 
+ * tpool.c --
+ *
  * Example thread pooling library
  */
 
@@ -48,7 +48,7 @@
 #include <cstring>
 #include <boost/lexical_cast.hpp>
 #include <pthread.h>
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "tpool.h"
 #include "structs.h"
 
@@ -57,15 +57,15 @@ namespace psi { namespace detci {
 void *tpool_thread(void *);
 
 void tpool_init(tpool_t   *tpoolp,
-		int       num_worker_threads, 
+		int       num_worker_threads,
 		int       max_queue_size,
 		int       do_not_block_when_full)
 {
   int i, rtn;
   tpool_t tpool;
   std::string str;
-   
-  /* allocate a pool data structure */ 
+
+  /* allocate a pool data structure */
   if ((tpool = (tpool_t )malloc(sizeof(struct tpool))) == NULL)
     throw PsiException("malloc error",__FILE__,__LINE__);
 
@@ -73,15 +73,15 @@ void tpool_init(tpool_t   *tpoolp,
   tpool->num_threads = num_worker_threads;
   tpool->max_queue_size = max_queue_size;
   tpool->do_not_block_when_full = do_not_block_when_full;
-  if ((tpool->threads = 
-       (pthread_t *)malloc(sizeof(pthread_t)*num_worker_threads)) 
+  if ((tpool->threads =
+       (pthread_t *)malloc(sizeof(pthread_t)*num_worker_threads))
       == NULL)
     throw PsiException("malloc error",__FILE__,__LINE__);
   tpool->cur_queue_size = 0;
-  tpool->queue_head = NULL; 
+  tpool->queue_head = NULL;
   tpool->queue_tail = NULL;
-  tpool->queue_closed = 0;  
-  tpool->shutdown = 0; 
+  tpool->queue_closed = 0;
+  tpool->shutdown = 0;
   tpool->threads_awake = num_worker_threads;
   if ((rtn = pthread_mutex_init(&(tpool->queue_lock), NULL)) != 0){
     str = "pthread_mutex_init ";
@@ -170,7 +170,7 @@ int tpool_add_work(
       str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
- 
+
     return -1;
   }
 
@@ -197,7 +197,7 @@ int tpool_add_work(
     tpool->queue_tail = workp;
   }
 
-  tpool->cur_queue_size++; 
+  tpool->cur_queue_size++;
   if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_unlock ";
     str += boost::lexical_cast<std::string>( rtn) ;
@@ -212,7 +212,7 @@ int tpool_destroy(tpool_t          tpool,
   std::string str;
   int          i,rtn;
   tpool_work_t *cur_nodep;
-  
+
 
   if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_lock ";
@@ -232,8 +232,8 @@ int tpool_destroy(tpool_t          tpool,
 
   tpool->queue_closed = 1;
 
-  /* If the finish flag is set, wait for workers to 
-     drain queue */ 
+  /* If the finish flag is set, wait for workers to
+     drain queue */
   if (finish == 1) {
     while (tpool->cur_queue_size != 0) {
       if ((rtn = pthread_cond_wait(&(tpool->queue_empty),
@@ -279,11 +279,11 @@ int tpool_destroy(tpool_t          tpool,
   /* Now free pool structures */
   free(tpool->threads);
   while(tpool->queue_head != NULL) {
-    cur_nodep = tpool->queue_head->next; 
+    cur_nodep = tpool->queue_head->next;
     tpool->queue_head = tpool->queue_head->next;
     free(cur_nodep);
   }
-  free(tpool); 
+  free(tpool);
   return(1);
 }
 void tpool_queue_open(tpool_t tpool)
@@ -305,12 +305,12 @@ void tpool_queue_open(tpool_t tpool)
       throw PsiException(str,__FILE__,__LINE__);
   }
 }
-  
+
 void tpool_queue_close(tpool_t tpool, int finish)
 {
   std::string str;
   int rtn;
-  
+
   if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_lock ";
       str += boost::lexical_cast<std::string>( rtn) ;
@@ -318,7 +318,7 @@ void tpool_queue_close(tpool_t tpool, int finish)
   }
 
   tpool->queue_closed = 1;
-  
+
   if (finish) {
       if (tpool->cur_queue_size !=0 || tpool->threads_awake != 0) {
           if ((rtn = pthread_cond_wait(&(tpool->all_work_done), &(tpool->queue_lock))) !=0){
@@ -327,27 +327,27 @@ void tpool_queue_close(tpool_t tpool, int finish)
               throw PsiException(str,__FILE__,__LINE__);
           }
         }
-    
+
     }
-  
+
   if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_unlock ";
       str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
   }
-  
+
 }
-  
+
 void *tpool_thread(void *arg)
 {
   std::string str;
-  tpool_t tpool = (tpool_t)arg; 
+  tpool_t tpool = (tpool_t)arg;
   int rtn;
   tpool_work_t	*my_workp;
-	
+
   for(;;) {
 
-    /* Check queue for work */ 
+    /* Check queue for work */
     if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_lock ";
       str += boost::lexical_cast<std::string>( rtn) ;
@@ -357,7 +357,7 @@ void *tpool_thread(void *arg)
     while ((tpool->cur_queue_size == 0) && (!tpool->shutdown)) {
 
         tpool->threads_awake--;
-                 
+
         if (tpool->threads_awake == 0 && tpool->queue_closed) {
             if ((rtn = pthread_cond_signal(&(tpool->all_work_done))) != 0){
                 str = "pthread_cond_signal ";
@@ -365,18 +365,18 @@ void *tpool_thread(void *arg)
                 throw PsiException(str,__FILE__,__LINE__);
             }
           }
-      
+
         if ((rtn = pthread_cond_wait(&(tpool->queue_not_empty),
                                      &(tpool->queue_lock))) != 0){
             str = "pthread_cond_wait ";
             str += boost::lexical_cast<std::string>( rtn) ;
             throw PsiException(str,__FILE__,__LINE__);
         }
-        
+
         tpool->threads_awake++;
       }
- 
- 
+
+
     /* Has a shutdown started while i was sleeping? */
     if (tpool->shutdown == 1) {
         tpool->threads_awake--;
@@ -389,17 +389,17 @@ void *tpool_thread(void *arg)
       }
 
 
-    /* Get to work, dequeue the next item */ 
+    /* Get to work, dequeue the next item */
     my_workp = tpool->queue_head;
     tpool->cur_queue_size--;
     if (tpool->cur_queue_size == 0)
       tpool->queue_head = tpool->queue_tail = NULL;
     else
       tpool->queue_head = my_workp->next;
- 
+
     /* Handle waiting add_work threads */
     if ((!tpool->do_not_block_when_full) &&
-	(tpool->cur_queue_size ==  (tpool->max_queue_size - 1))) 
+	(tpool->cur_queue_size ==  (tpool->max_queue_size - 1)))
 
       if ((rtn = pthread_cond_broadcast(&(tpool->queue_not_full))) != 0){
         str = "pthread_cond_broadcast ";
@@ -420,13 +420,13 @@ void *tpool_thread(void *arg)
       str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
-      
+
     /* Do this work item */
     (*(my_workp->routine))(my_workp->arg);
     free(my_workp);
 
-  } 
-  return(NULL);            
+  }
+  return(NULL);
 }
 
 }} // namespace psi::detci

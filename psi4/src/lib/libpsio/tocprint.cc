@@ -31,17 +31,17 @@
  */
 
 #include <cstdio>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
  PRAGMA_WARNING_POP
 #include "psi4/src/lib/libpsio/psio.h"
 #include "psi4/src/lib/libpsio/psio.hpp"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 namespace psi {
 
-    
+
 
 void PSIO::tocprint(unsigned int unit) {
   psio_tocentry *this_entry;
@@ -66,7 +66,7 @@ void PSIO::tocprint(unsigned int unit) {
     this_entry = this_entry->next;
   }
   outfile->Printf("\n");
-  
+
 
   if(!already_open) close(unit, 1); // keep
 }

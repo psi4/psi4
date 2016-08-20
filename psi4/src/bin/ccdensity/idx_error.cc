@@ -32,8 +32,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/src/lib/libpsi4util/exception.h"
-#include "psi4/include/psifiles.h"
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libparallel/ParallelPrinter.h"
 namespace psi {
 namespace ccdensity {

@@ -31,7 +31,7 @@
  */
 
 #include <cstring>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -50,7 +50,7 @@ psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
 
-  bool already_open = open_check(unit); 
+  bool already_open = open_check(unit);
   if(!already_open) open(unit, PSIO_OPEN_OLD);
 
   this_entry = psio_unit[unit].toc;
@@ -87,7 +87,7 @@ bool PSIO::tocentry_exists(unsigned int unit, const char *key) {
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
 
-  bool already_open = open_check(unit); 
+  bool already_open = open_check(unit);
   if(!already_open) open(unit, PSIO_OPEN_OLD);
 
   this_entry = psio_unit[unit].toc;

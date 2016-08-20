@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/src/lib/libmints/vector.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/wavefunction.h"
@@ -93,7 +93,7 @@ CoupledPair::~CoupledPair()
 }
 
 void CoupledPair::WriteBanner(){
-  
+
   outfile->Printf("\n\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf( "        *                                                     *\n");
@@ -132,7 +132,7 @@ void CoupledPair::WriteBanner(){
   outfile->Printf( "        *                                                     *\n");
   outfile->Printf( "        *******************************************************\n");
   outfile->Printf("\n\n");
-  
+
   WriteOptions();
 }
 
@@ -215,7 +215,7 @@ double CoupledPair::compute_energy() {
   Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd;
 
-  // build opdm in case we want properties.  
+  // build opdm in case we want properties.
   if ( cepa_level<=0 ) {
       if (options_.get_bool("NAT_ORBS")) {
           //outfile->Printf("\n");
@@ -256,7 +256,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
     "  Begin %s iterations\n\n",cepa_type);
   outfile->Printf(
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  
+
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
@@ -352,7 +352,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
       if ( iter==0 ) dume = eccsd; // use mp2 energy on first iteration
       outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,dume,dume-Eold,nrm,(int)iter_stop-(int)iter_start);
-      
+
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
@@ -445,7 +445,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
   outfile->Printf("  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
   outfile->Printf("                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
   outfile->Printf("                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  
+
 
   free(pair_energy);
   return Success;

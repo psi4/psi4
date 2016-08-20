@@ -32,7 +32,7 @@
 
 #include "psi4/src/bin/findif/findif.h"
 
-#include "psi4/include/physconst.h"
+#include "psi4/physconst.h"
 #include "psi4/src/lib/libmints/molecule.h"
 #include "psi4/src/lib/libmints/matrix.h"
 #include "psi4/src/lib/libmints/cdsalclist.h"
@@ -42,7 +42,7 @@
 
 
 
-namespace psi { 
+namespace psi {
 using SharedMatrix=boost::shared_ptr<Matrix>;
 namespace findif {
 
@@ -88,7 +88,7 @@ void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> 
   }
 
   outfile->Printf(   "\t-----------------------------------------------\n");
-  
+
 
   // Return list of frequencies to wavefunction object.
   boost::shared_ptr<Vector> freq_vector(new Vector(modes.size()));

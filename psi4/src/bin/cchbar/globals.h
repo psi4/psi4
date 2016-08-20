@@ -29,7 +29,7 @@
     \ingroup CCHBAR
     \brief Enter brief description of file here
 */
-#include "psi4/include/psifiles.h"
+#include "psi4/psifiles.h"
 #include "psi4/src/lib/libdpd/dpd.h"
 #include "psi4/src/lib/libciomr/libciomr.h"
 #include "psi4/src/lib/libpsio/psio.h"

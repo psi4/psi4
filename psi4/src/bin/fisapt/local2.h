@@ -29,7 +29,7 @@
 #define FISAPT_LOCAL2_H
 
 #include <vector>
- #include "psi4/include/pragma.h"
+ #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <boost/shared_ptr.hpp>
@@ -66,10 +66,10 @@ protected:
     /// Use ghost IAOs?
     bool use_ghosts_;
     /// IAO localization power (4 or 2)
-    int power_; 
+    int power_;
     /// Metric condition for IAO
     double condition_;
-    
+
     /// Occupied orbitals, in primary basis
     boost::shared_ptr<Matrix> C_;
     /// Primary orbital basis set
@@ -78,7 +78,7 @@ protected:
     boost::shared_ptr<BasisSet> minao_;
 
     // => Stars Parameters <= //
-    
+
     /// Do stars treatment?
     bool use_stars_;
     /// Charge completeness for two-center orbitals
@@ -89,21 +89,21 @@ protected:
     // => IAO Data <= //
 
     /// Map from non-ghosted to full atoms: true_atoms[ind_true] = ind_full
-    std::vector<int> true_atoms_; 
+    std::vector<int> true_atoms_;
     /// Map from non-ghosted IAOs to full IAOs: true_iaos[ind_true] = ind_full
     std::vector<int> true_iaos_;
-    /// Map from non-ghosted IAOs to non-ghosted atoms 
+    /// Map from non-ghosted IAOs to non-ghosted atoms
     std::vector<int> iaos_to_atoms_;
 
     /// Overlap matrix in full basis
     boost::shared_ptr<Matrix> S_;
     /// Non-ghosted IAOs in full basis
     boost::shared_ptr<Matrix> A_;
-    
-    
+
+
     /// Set defaults
     void common_init();
-    
+
     /// Build the IAOs
     void build_iaos();
     /// Localization task (returns U and L)
@@ -114,7 +114,7 @@ protected:
         double convergence,                                 // Convergence criterion
         int maxiter,                                        // Maximum number of iterations
         int power                                           // Localization metric power
-        ); 
+        );
     /// Energy-ordered local orbital permutation [nmo(local) x nmo(ordered)]
     static boost::shared_ptr<Matrix> reorder_orbitals(
         boost::shared_ptr<Matrix> F,
@@ -123,22 +123,22 @@ protected:
     boost::shared_ptr<Matrix> orbital_charges(
         boost::shared_ptr<Matrix> L
         );
-    
+
 
 public:
 
     // => Constructors <= //
 
     IBOLocalizer2(
-        boost::shared_ptr<BasisSet> primary, 
-        boost::shared_ptr<BasisSet> minao, 
+        boost::shared_ptr<BasisSet> primary,
+        boost::shared_ptr<BasisSet> minao,
         boost::shared_ptr<Matrix> C);
-    
+
     virtual ~IBOLocalizer2();
 
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
     static boost::shared_ptr<IBOLocalizer2> build(
-        boost::shared_ptr<BasisSet> primary, 
+        boost::shared_ptr<BasisSet> primary,
         boost::shared_ptr<Matrix> C,
         Options& options);
 
@@ -147,7 +147,7 @@ public:
     /// Print out the localization algorithm and parameters
     virtual void print_header() const;
 
-    /// Localize the orbitals, returns the matrices L [nbf x nmo], U [nmo(dlocal) x nmo(local)], and F [nmo x nmo] 
+    /// Localize the orbitals, returns the matrices L [nbf x nmo], U [nmo(dlocal) x nmo(local)], and F [nmo x nmo]
     std::map<std::string, boost::shared_ptr<Matrix> > localize(
         boost::shared_ptr<Matrix> Cocc,              // Orbitals to localize [nbf x nmo], must live in C above
         boost::shared_ptr<Matrix> Focc,              // Fock matrix of orbitals to localize [nmo x nmo]
