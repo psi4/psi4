@@ -89,16 +89,7 @@ foreach(math_comp ${LAPACK_LIBRARIES};${BLAS_LIBRARIES})
     set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
 endforeach()
 
-set_target_properties(psi4 PROPERTIES
-        INSTALL_RPATH "${PSI4_RPATH}"
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-        BUILD_WITH_INSTALL_RPATH TRUE
-        PREFIX ""
-        )
-
 add_executable(psi4-bin psi4.cc)
-set_target_properties(psi4-bin
-        PROPERTIES OUTPUT_NAME psi4)
 install(TARGETS psi4-bin RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
