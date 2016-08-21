@@ -68,54 +68,16 @@ message("libefp found w/i ${CMAKE_PREFIX_PATH}")
 print_target_vars(libefp)
 print_target(libefp::efp)
 
-include_directories(include)
-include_directories(${PSI4_ROOT})
-add_subdirectory(src)
-
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-add_executable(psi4_exe psi4.cc)
+include_directories(include)
+include_directories(src)
+include_directories(${PSI4_ROOT})
 
-get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(psi4_install_lib ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-set(PSI4_RPATH ${psi4_install_lib}
-        ${DESTDIR}/${psi4_install_lib}
-        ${PYTHON_LIB_DIR}
-        )
-set_target_properties(psi4_exe PROPERTIES OUTPUT_NAME psi4
-        INSTALL_RPATH "${PSI4_RPATH}"
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-        BUILD_WITH_INSTALL_RPATH TRUE
-        )
-get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
-message("LIBS: PYTHON   ${PYTHON_LIBRARIES}")
-message("LIBS: PSI4     ${psi4_libraries}")
-message("LIBS: CHEMPS2  ${CHEMPS2_LIBRARIES}")
-message("LIBS: GDMA")
-message("LIBS: DERIV    ${LIBDERIV_LIBRARIES}")
-message("LIBS: THREAD   ${CMAKE_THREAD_LIBS_INIT}")
-message("LIBS: LAPACK   ${LAPACK_LIBRARIES}")
-message("LIBS: BLAS     ${BLAS_LIBRARIES}")
-message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
-
-target_link_libraries(psi4_exe PRIVATE ${PYTHON_LIBRARIES})
-target_link_libraries(psi4_exe PRIVATE psi4_main)
-target_link_libraries(psi4_exe PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(psi4_exe PRIVATE ${LAPACK_LIBRARIES})
-target_link_libraries(psi4_exe PRIVATE ${BLAS_LIBRARIES})
-
-#get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
-#why twicetarget_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)
-#add_dependencies(psi4_exe psi4_main)
-#set(psi4_lib_list ${PYTHON_LIBRARIES}
-#                  psi4_main
-#                  ${psi4_modules}
-#                  ${LIBDERIV_LIBRARIES}
-#                  ${CMAKE_THREAD_LIBS_INIT}
-#                  ${LAPACK_LIBRARIES}
-#                  ${BLAS_LIBRARIES}
-#)
-#target_link_libraries(psi4_exe PRIVATE ${psi4_lib_list} psi4_main)
+add_subdirectory(include)
+add_subdirectory(src)
 
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
@@ -124,9 +86,7 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX})
-add_subdirectory(include)
 install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX}
         MESSAGE_NEVER
         PATTERN fsapt EXCLUDE
         )
-install(TARGETS psi4_exe RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})

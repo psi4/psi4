@@ -50,8 +50,10 @@ macro(general_add_library libname sources dir)
     if (${dir} MATCHES lib)
         set(prefix lib)
     endif ()
+    set(current_sources ${${sources}})
+    list(SORT current_sources)
 
-    add_library(${libname} STATIC ${${sources}})
+    add_library(${libname} STATIC ${current_sources})
     set_target_properties(${libname} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC})
 
     if (${dir} MATCHES lib)

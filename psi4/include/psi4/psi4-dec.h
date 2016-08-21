@@ -35,8 +35,8 @@
  PRAGMA_WARNING_POP
 #include <string>
 
-#include "psi4/src/lib/libparallel/PsiOutStream.h"
-#include "psi4/src/lib/libparallel/process.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 ///This is all defined in psi4_main/psi_start.cc
 namespace psi {
