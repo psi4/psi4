@@ -9,9 +9,9 @@
 #
 macro(print_option variable default)
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
-    message(STATUS "Setting (unspecified) option ${variable}: ${default}")
+message(STATUS "Setting (unspecified) option ${variable}: ${default}")
 else()
-    message(STATUS "Setting option ${variable}: ${${variable}}")
+message(STATUS "Setting option ${variable}: ${${variable}}")
 endif()
 endmacro()
 
@@ -20,8 +20,8 @@ endmacro()
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
 macro(option_with_print variable msge default)
-   print_option(${variable} ${default})
-   option(${variable} ${msge} ${default})
+print_option(${variable} ${default})
+option(${variable} ${msge} ${default})
 endmacro(option_with_print)
 
 #Wraps an option with a default other than ON/OFF and prints it
@@ -35,7 +35,7 @@ endmacro(option_with_print)
 macro(option_with_default variable msge default)
 print_option(${variable} ${default})
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
-   set(${variable} ${default} CACHE STRING ${msge} FORCE)
+set(${variable} ${default} CACHE STRING ${msge} FORCE)
 endif()
 endmacro(option_with_default)
 
@@ -65,9 +65,9 @@ macro(general_add_library libname sources dir)
     set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
     set(depend_name "${ARGN}")
     foreach (name_i IN LISTS depend_name)
-        target_link_libraries(${libname} PUBLIC ${name_i})
+        target_link_libraries(${libname} PRIVATE ${name_i})
     endforeach ()
-    target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} ${LIBDERIV_INCLUDE_DIRS})
+    target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS})
 endmacro(general_add_library libname sources prefix dir)
 
 #Adds a psi4 library that lives in lib

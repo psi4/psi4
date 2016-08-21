@@ -32,15 +32,23 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 include(GNUInstallDirs)
 include(ExternalProject)
 
-################################### Options ####################################
+############################# Options: Build What? #############################
 include(Psi4Macros)
-option(ENABLE_PCMSOLVER "Enables the PCMSolver module" OFF)
-option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
-option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
-option(ENABLE_DKH "Enables DKH integrals" OFF)
-option(ENABLE_LIBERD "Enables ERD instead of libint" OFF)
-option(ENABLE_gdma "Enables Stone's GDMA multipole code" OFF)
-option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
+option_with_print(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
+option_with_print(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
+option_with_print(ENABLE_DKH "Enables DKH integrals (requires Fortran)" OFF)
+option_with_print(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
+option_with_print(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
+option_with_print(ENABLE_LIBERD "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
+option_with_print(ENABLE_PCMSOLVER "Enables PCMSolver library (requires Fortran)" OFF)
+
+if(ENABLE_gdma)  # OR ENABLE_DKH OR ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY
+    enable_language(Fortran)
+    set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
+    message(STATUS "Enabling Fortran")
+endif()
+
+############################# Options: Build How? ##############################
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
@@ -120,6 +128,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_DKH=${ENABLE_DKH}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
+              -DFortran_ENABLED=${Fortran_ENABLED}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
