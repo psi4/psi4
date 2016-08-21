@@ -22,7 +22,7 @@ if len(sys.argv) == 8:
     psi = sys.argv[7]
 else:
     psi = '../../bin/psi4'
-psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share'
+psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share/psi4'
 
 # open logfile and print test case header
 try:
