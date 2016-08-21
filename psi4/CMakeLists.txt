@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(Psi4Macros)
 include(TestRestrict)
+include(GNUInstallDirs)
 test_restrict(restrict)
 
 ### >> Locate Python Interpreter and Library << ###
@@ -77,6 +78,7 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(include)
+add_subdirectory(share)
 add_subdirectory(src)
 
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
@@ -86,7 +88,3 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX}
-        MESSAGE_NEVER
-        PATTERN fsapt EXCLUDE
-        )
