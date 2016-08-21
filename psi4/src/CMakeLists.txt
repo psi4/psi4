@@ -63,6 +63,12 @@ target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
         mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
         thermo mrcc scf sapt gdma_interface dmrg
         )
+target_link_libraries(psi4 PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(psi4 PRIVATE ${PYTHON_LIBRARIES})
+target_link_libraries(psi4 PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(psi4 PRIVATE ${LAPACK_LIBRARIES})
+target_link_libraries(psi4 PRIVATE ${BLAS_LIBRARIES})
+
 target_include_directories(psi4 PUBLIC ${Boost_INCLUDE_DIRS}
         ${LIBDERIV_INCLUDE_DIRS}
         )
@@ -116,11 +122,7 @@ message("LIBS: LAPACK   ${LAPACK_LIBRARIES}")
 message("LIBS: BLAS     ${BLAS_LIBRARIES}")
 message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
 
-target_link_libraries(psi4-bin PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(psi4-bin PRIVATE psi4)
-target_link_libraries(psi4-bin PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(psi4-bin PRIVATE ${LAPACK_LIBRARIES})
-target_link_libraries(psi4-bin PRIVATE ${BLAS_LIBRARIES})
 
 #get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
 #why twicetarget_link_libraries(psi4-bin PRIVATE ${psi4_lib_list} psi4_main)

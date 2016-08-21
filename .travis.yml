@@ -137,7 +137,6 @@ before_script:
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
-- .scripts/build_boost.sh ${NAME} ${VERSION} ${CXX_COMPILER}
 - > 
     cmake -Bbuild -H. 
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER} 
@@ -147,7 +146,6 @@ before_script:
     -DMAX_AM_ERI=4 
     -DENABLE_CHEMPS2=off 
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
-    -DBOOST_ROOT=${TRAVIS_BUILD_DIR}/boost_install
 - cd build
 - ../.scripts/travis_build.sh
 script:
