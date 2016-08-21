@@ -1,7 +1,7 @@
 # Run the git version script, and update gitversion.h, if it's changed
 add_custom_target(update_version
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
     COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp
     COMMENT "Generating Git info")
 
@@ -9,22 +9,22 @@ add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
 add_dependencies(versioned_code update_version)
 set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
 target_include_directories(versioned_code PUBLIC ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
- 
-set(sources_list export_psio.cc 
-                 export_mints.cc 
-                 psi_stop.cc 
-                 export_functional.cc 
-                 export_oeprop.cc 
-                 export_plugins.cc 
-                 export_blas_lapack.cc 
-                 export_benchmarks.cc 
-                 export_efp.cc 
-                 export_cubeprop.cc 
-                 clean.cc 
-                 create_new_plugin.cc 
-                 script.cc 
-                 set_memory.cc 
-                 read_options.cc 
+
+set(sources_list export_psio.cc
+                 export_mints.cc
+                 psi_stop.cc
+                 export_functional.cc
+                 export_oeprop.cc
+                 export_plugins.cc
+                 export_blas_lapack.cc
+                 export_benchmarks.cc
+                 export_efp.cc
+                 export_cubeprop.cc
+                 clean.cc
+                 create_new_plugin.cc
+                 script.cc
+                 set_memory.cc
+                 read_options.cc
 )
 
 set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${Boost_INCLUDE_DIR} -I${PYTHON_INCLUDE_DIR} ")
@@ -47,7 +47,7 @@ endif()
 
 install(TARGETS psi4_main ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DESTINATION psi4/src/bin/psi4_main
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
@@ -59,7 +59,7 @@ target_link_libraries(psi4_main PRIVATE  mints cubeprop plugin parallel detci
     mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
     thermo mrcc scf sapt gdma_interface dmrg
 )
-target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS} 
+target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS}
                                             ${LIBDERIV_INCLUDE_DIRS}
 )
 target_include_directories(psi4_main PUBLIC ${Boost_INCLUDE_DIRS})
@@ -76,7 +76,7 @@ target_include_directories(psi4_main PRIVATE $<TARGET_PROPERTY:libint::libint,IN
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
 set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage/${PSI4_EXTERNAL})
 foreach(ex_proj boost libderiv libint libefp)
-   set(PSI4_RPATH 
+   set(PSI4_RPATH
       "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
 endforeach()
 
@@ -91,6 +91,6 @@ set_target_properties(psi4_main PROPERTIES INSTALL_RPATH "${PSI4_RPATH}"
                                            INSTALL_RPATH_USE_LINK_PATH TRUE
                                            BUILD_WITH_INSTALL_RPATH TRUE
                                            PREFIX ""
-)                              
+)
 
 
