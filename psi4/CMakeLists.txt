@@ -77,8 +77,6 @@ include_directories(${PSI4_ROOT})
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-add_subdirectory(include)
-add_subdirectory(share)
 add_subdirectory(src)
 
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
@@ -88,3 +86,9 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+install(DIRECTORY share/psi4/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
+        MESSAGE_NEVER
+        PATTERN fsapt EXCLUDE)
+
+install(DIRECTORY include/psi4/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
