@@ -30,7 +30,7 @@
 
 #include <string>
 #include <vector>
-#include "psi4/src/lib/libmints/molecule.h"
+#include "psi4/libmints/molecule.h"
 
 namespace psi {
 
