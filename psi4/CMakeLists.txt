@@ -124,7 +124,7 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+add_subdirectory(include)
 install(DIRECTORY share DESTINATION ${CMAKE_INSTALL_PREFIX}
         MESSAGE_NEVER
         PATTERN fsapt EXCLUDE
