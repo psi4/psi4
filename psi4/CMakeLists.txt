@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+#project(psi4-core LANGUAGES C CXX Fortran VERSION 1.0)
+project(psi4-core LANGUAGES C CXX VERSION 1.0)
 # no Fortran in psi4-core proper, but language needs to be declared
 #   for CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES to be populated so
-#   Fortran add-ons can be linked
-project(psi4-core LANGUAGES C CXX Fortran VERSION 1.0)
+#   static Fortran add-ons can be linked
+if(${Fortran_ENABLED})
+    enable_language(Fortran)
+endif()
 
 #set(CMAKE_CXX_STANDARD 11) enable if they fix this for Intel
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
@@ -34,16 +38,13 @@ find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
         HINTS ${CMAKE_PREFIX_PATH}/libint)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
-set_property(GLOBAL PROPERTY LIBLIST "")
+#set_property(GLOBAL PROPERTY LIBLIST "")
 
 #optional_plugin(Ambit)
 #optional_plugin(PCMSolver)
 #optional_plugin(CHEMPS2)
 #optional_plugin(liberd)
 #optional_plugin(dkh)
-#optional_plugin(gdma)
-#include(get_gdma)
-
 
 if (${ENABLE_CHEMPS2})
     find_package(CHEMPS2 REQUIRED)
@@ -53,21 +54,10 @@ endif ()
 
 if (${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
-            HINTS ${CMAKE_PREFIX_PATH}/gdma)
-    message("gdma found w/i ${CMAKE_PREFIX_PATH}")
-else ()
-    message("gdma not enabled ${CMAKE_PREFIX_PATH}")
-endif ()
-include(echo_target)
-if (TARGET gdma::gdma)
-    print_target_vars(gdma)
-    print_target(gdma::gdma)
-endif ()
+                 HINTS ${CMAKE_PREFIX_PATH}/gdma)
+endif()
 find_package(libefp CONFIG REQUIRED
-        HINTS ${CMAKE_PREFIX_PATH}/libefp)
-message("libefp found w/i ${CMAKE_PREFIX_PATH}")
-print_target_vars(libefp)
-print_target(libefp::efp)
+             HINTS ${CMAKE_PREFIX_PATH}/libefp)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(include)
