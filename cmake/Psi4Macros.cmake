@@ -46,25 +46,26 @@ endmacro(option_with_default)
 #                           <dependencies>)
 #
 macro(general_add_library libname sources dir)
-   #TODO: Switch to OBJECT library?  Simplifies this macro...
-   if(${dir} MATCHES lib)
-      set(prefix lib)
-   endif()
-   add_library(${libname} ${${sources}})
-   set_target_properties(${libname} PROPERTIES 
-       POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
-   )
-   install(TARGETS ${libname} DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4/src/${dir}/${prefix}${libname}
-      FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-   set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
-   set(depend_name "${ARGN}")
-   foreach(name_i IN LISTS depend_name)
-      target_link_libraries(${libname} PUBLIC ${name_i})
-   endforeach()
-   target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} 
-                                                ${LIBDERIV_INCLUDE_DIRS})
+    #TODO: Switch to OBJECT library?  Simplifies this macro...
+    if (${dir} MATCHES lib)
+        set(prefix lib)
+    endif ()
+
+    add_library(${libname} STATIC ${${sources}})
+    set_target_properties(${libname} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC})
+
+    if (${dir} MATCHES lib)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4
+                FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    endif ()
+
+    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+    set(depend_name "${ARGN}")
+    foreach (name_i IN LISTS depend_name)
+        target_link_libraries(${libname} PUBLIC ${name_i})
+    endforeach ()
+    target_include_directories(${libname} PUBLIC ${Boost_INCLUDE_DIRS} ${LIBDERIV_INCLUDE_DIRS})
 endmacro(general_add_library libname sources prefix dir)
 
 #Adds a psi4 library that lives in lib
@@ -72,7 +73,7 @@ endmacro(general_add_library libname sources prefix dir)
 #Syntax: psi4_add_library(<library name> <list of sources> <dependencies>)
 #
 macro(psi4_add_library libname sources)
-   general_add_library(${libname} ${sources} lib ${ARGN}) 
+   general_add_library(${libname} ${sources} lib ${ARGN})
 endmacro(psi4_add_library libname sources)
 
 #Adds a psi4 library that lives in bin
@@ -130,7 +131,7 @@ set(CMAKE_REQUIRED_QUIET_SAVE ${CMAKE_REQUIRED_QUIET})
         endif()
       endif()
    endforeach()
-   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})  
+   set(CMAKE_REQUIRED_QUIET ${CMAKE_REQUIRED_QUIET_SAVE})
 endmacro()
 
 

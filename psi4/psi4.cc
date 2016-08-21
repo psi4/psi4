@@ -21,8 +21,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * 
- * @END LICENSE     
+ *
+ * @END LICENSE
  */
 
 /*! \file psi4.cc
@@ -44,10 +44,10 @@
 #include "psi4/src/lib/libmints/wavefunction.h"
 #include "psi4/src/lib/libqt/qt.h"
 #include "psi4/src/bin/psi4_main/script.h"
-#include "psi4/include/physconst.h"
-#include "psi4/include/psifiles.h"
+#include "psi4/physconst.h"
+#include "psi4/psifiles.h"
 
-#include "psi4/include/psi4-dec.h"
+#include "psi4/psi4-dec.h"
 
 #ifdef ENABLE_AMBIT
 #include <ambit/tensor.h>
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
     // Set the default memory limit for Psi4
     set_memory("outfile");
- 
+
     // Initialize the I/O library
     psio_init();
 
