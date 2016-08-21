@@ -8,10 +8,10 @@ import subprocess
 import collections
 
 # [LAB, 6 Mar 2015]
-# This script can be run with *prefix* variable set to install directory 
-#   (a /bin/psi4 should be present) and used to assess the runtime 
-#   environment, particularly the following. Designed to be run after 
-#   download of binary distribution where conda will adjust *prefix* 
+# This script can be run with *prefix* variable set to install directory
+#   (a /bin/psi4 should be present) and used to assess the runtime
+#   environment, particularly the following. Designed to be run after
+#   download of binary distribution where conda will adjust *prefix*
 #   variable properly.
 #   * set PSI_SCRATCH
 #   * set PSIPATH
@@ -200,7 +200,7 @@ if platform.system() == 'Linux':
             envarray['PATH'] = prefix + '/bin:' + os.getenv('PATH', '')
         else:
             print('  Psi4 executable in PATH .... GOOD')
-    envarray['PSIDATADIR'] = prefix + '/share/psi'
+    envarray['PSIDATADIR'] = prefix + '/share/psi4'
 
     # <<<  write out environment files  >>>
     print("""
