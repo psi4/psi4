@@ -28,21 +28,29 @@ if(NOT Boost_FOUND)
    elseif(CMAKE_CXX_COMPILER_ID MATCHES Darwin)
       set(BOOST_COMPILER_TYPE "darwin")
    endif()
+
    set(BOOST_PREFIX ${CMAKE_BINARY_DIR}/external/boost/boost-src/boost_${Boost_INTERNAL_VERSION_UNDERSCORED})
    set(BOOST_INSTALL_PREFIX 
        ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external/boost)
-   #Can't change the fact that boost has warnings....   
    set(BOOST_FLAGS "${CMAKE_CXX_FLAGS} -w")
+
    if(BUILD_FPIC)
       set(BOOST_FLAGS "${BOOST_FLAGS} -fPIC")
    endif()
+
    set(BOOST_LINK "static")
    if(BUILD_SHARED_LIBS)
       set(BOOST_LINK "shared")
    endif()
 
-   set(Boost_USER_CONFIG_JAMFILE "${CMAKE_CURRENT_BINARY_DIR}/user-config.jam")
-   file(WRITE "${Boost_USER_CONFIG_JAMFILE}" "using ${BOOST_COMPILER_TYPE} : : ${CMAKE_CXX_COMPILER} ;")
+   set(B2_ARGS threading=multi link=${BOOST_LINK} cxxflags=${BOOST_FLAGS})
+
+   if(NOT CMAKE_CXX_COMPILER_ID MATCHES Intel)
+      set(Boost_USER_CONFIG_JAMFILE "${CMAKE_CURRENT_BINARY_DIR}/user-config.jam")
+      file(WRITE "${Boost_USER_CONFIG_JAMFILE}" "using ${BOOST_COMPILER_TYPE} : ${CMAKE_CXX_COMPILER_VERSION} : ${CMAKE_CXX_COMPILER} ;")
+      set(B2_ARGS ${B2_ARGS} --user-config=${Boost_USER_CONFIG_JAMFILE})
+   endif()
+
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
       URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_${Boost_INTERNAL_VERSION_UNDERSCORED}.tar.bz2
@@ -55,15 +63,9 @@ if(NOT Boost_FOUND)
                                   #--with-python-root=${PYTHON_INCLUDE_DIR}
                                   --prefix=${BOOST_INSTALL_PREFIX}
 
-      BUILD_COMMAND ./b2 threading=multi 
-                         link=${BOOST_LINK}   
-                         cxxflags=${BOOST_FLAGS}
-                         --user-config=${Boost_USER_CONFIG_JAMFILE}
+      BUILD_COMMAND ./b2 ${B2_ARGS}
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
-      INSTALL_COMMAND ./b2 install threading=multi 
-                                   link=${BOOST_LINK} 
-                                   cxxflags=${BOOST_FLAGS}
-                                   --user-config=${Boost_USER_CONFIG_JAMFILE}
+      INSTALL_COMMAND ./b2 install ${B2_ARGS}
    )
 else()
     add_library(boost_external INTERFACE)
