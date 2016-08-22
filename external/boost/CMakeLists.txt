@@ -32,7 +32,9 @@ if(NOT Boost_FOUND)
    if(BUILD_SHARED_LIBS)
       set(BOOST_LINK "shared")
    endif()
-   set(USER_CONFIG_JAM "using ${BOOST_COMPILER_TYPE} : : ${CMAKE_CXX_COMPILER} \\;")
+
+   set(Boost_USER_CONFIG_JAMFILE "${CMAKE_CURRENT_BINARY_DIR}/user-config.jam")
+   file(WRITE "${Boost_USER_CONFIG_JAMFILE}" "using ${BOOST_COMPILER_TYPE} : : ${CMAKE_CXX_COMPILER} ;")
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
       URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_1_57_0.tar.bz2
@@ -51,9 +53,9 @@ if(NOT Boost_FOUND)
                          cxxflags=${BOOST_FLAGS}
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
       INSTALL_COMMAND ./b2 install threading=multi 
-                                   #toolset=${BOOST_TOOLSET} 
                                    link=${BOOST_LINK} 
                                    cxxflags=${BOOST_FLAGS}
+                                   --user-config=${Boost_USER_CONFIG_JAMFILE}
    )
 else()
     add_library(boost_external INTERFACE)
