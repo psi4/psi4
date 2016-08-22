@@ -1,9 +1,17 @@
 include(ExternalProject)
+
+### >> Boost version to use internally <<
+set(Boost_INTERNAL_VERSION 1.57.0)
+
+# Replace . with _ in version.
+string(REPLACE "." "_" Boost_INTERNAL_VERSION_UNDERSCORED "${Boost_INTERNAL_VERSION}")
+
+### >> Boost components currently required <<
 set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
                      thread
 )
 
-find_package(Boost 1.57.0 QUIET COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost ${Boost_INTERNAL_VERSION} QUIET COMPONENTS ${BOOST_COMPONENTS})
 
 if(NOT Boost_FOUND)
    message(STATUS "A suitable version of Boost could not be located.  One will"
@@ -20,7 +28,7 @@ if(NOT Boost_FOUND)
    elseif(CMAKE_CXX_COMPILER_ID MATCHES Darwin)
       set(BOOST_COMPILER_TYPE "darwin")
    endif()
-   set(BOOST_PREFIX ${CMAKE_BINARY_DIR}/external/boost/boost-src/boost_1_57_0)
+   set(BOOST_PREFIX ${CMAKE_BINARY_DIR}/external/boost/boost-src/boost_${Boost_INTERNAL_VERSION_UNDERSCORED})
    set(BOOST_INSTALL_PREFIX 
        ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/external/boost)
    #Can't change the fact that boost has warnings....   
@@ -37,20 +45,20 @@ if(NOT Boost_FOUND)
    file(WRITE "${Boost_USER_CONFIG_JAMFILE}" "using ${BOOST_COMPILER_TYPE} : : ${CMAKE_CXX_COMPILER} ;")
    ExternalProject_Add(boost_external
       PREFIX ${BOOST_PREFIX}
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_1_57_0.tar.bz2
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-src/boost_${Boost_INTERNAL_VERSION_UNDERSCORED}.tar.bz2
       URL_HASH MD5=1BE49BEFBDD9A5CE9DEF2983BA3E7B76
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND
          ./bootstrap.sh --with-toolset=${BOOST_COMPILER_TYPE}
                                   --with-libraries=${B2_BOOST_COMPONENTS}
                                   --with-python=${PYTHON_EXECUTABLE}
-                                  --with-python-root=${PYTHON_INLCUDE_DIR}
+                                  #--with-python-root=${PYTHON_INCLUDE_DIR}
                                   --prefix=${BOOST_INSTALL_PREFIX}
 
       BUILD_COMMAND ./b2 threading=multi 
-                         #toolset=${BOOST_TOOLSET} 
                          link=${BOOST_LINK}   
                          cxxflags=${BOOST_FLAGS}
+                         --user-config=${Boost_USER_CONFIG_JAMFILE}
       INSTALL_DIR ${BOOST_INSTALL_PREFIX}
       INSTALL_COMMAND ./b2 install threading=multi 
                                    link=${BOOST_LINK} 
