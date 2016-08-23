@@ -650,4 +650,67 @@ void CIWavefunction::print_vector(SharedCIVector vec, int root){
   free(mi_coeff);
 }
 
+void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
+                                                SharedMatrix prop, SharedCIVector ret){
+
+    if (!CalcInfo_->sigma_initialized){
+        sigma_init(*(ref.get()), *(ret.get()));
+    }
+
+    // Figure out phase
+    if (!Parameters_->Ms0) {
+        int phase = 1;
+    } else {
+        int phase = ((int)Parameters_->S % 2) ? -1 : 1;
+    }
+
+    ref->read(ref_vec, 0);
+    ret->zero();
+
+    double** propp = prop->pointer();
+
+    /* loop over unique I subblocks */
+    // for (int Iblock = 0; Iblock < ref->num_blocks_; Iblock++) {
+    //     // if (Parameters_->cc && !cc_reqd_Iblocks[Iblock]) continue;
+    //     int Iacode = ref->Ia_code_[Iblock];
+    //     int Ibcode = ref->Ib_code_[Iblock];
+    //     int Inas = ref->Ia_size_[Iblock];
+    //     int Inbs = ref->Ib_size_[Iblock];
+    //     if (Inas == 0 || Inbs == 0) continue;
+    //     double** coefs = ref->blocks_[Iblock];
+
+    //     // Alpha components
+    //     for (int Ia_idx = 0; Ia_idx < Inas; Ia_idx++){
+    //         for (struct stringwr* Ib = betlist_[Ibcode], int Ib_idx = 0; Ib_idx < Inbs; Ib_idx++, Ib++){
+
+    //         /* loop over excitations E^b_{ij} from |B(J_b)> */
+    //         int Ibcnt = Ib->cnt[Iacode];
+    //         unsigned int* Ibridx = Ib->ridx[Iacode];
+    //         signed char* Ibsgn = Ib->sgn[Iacode];
+    //         int* Iboij = Ib->oij[Iacode];
+    //         for (Ib_ex = 0; Ib_ex < Ibcnt; Ib_ex++) {
+    //           int oij = *Iboij++;
+    //           int Ib_idx = *Ibridx++;
+    //           int Ib_sgn = (double)*Ibsgn++;
+    //           double c = ceoffs[Ia_idx][Ib_idx];
+    //           int i = oij / CalcInfo_->num_ci_orbs;
+    //           int j = oij % CalcInfo_->num_ci_orbs;
+    //           propp[i][j] += c * c * Ib_sgn;
+    //         }
+    //     }
+
+
+    //     } /* end loop over J blocks */
+    // } /* end loop over J blocks */
+
+
+    // if (ref->Ms0_) {
+    //     if ((int)Parameters_->ref->% 2)
+    //         ref->symmetrize(-1.0, 0);
+    //     else
+    //         ret->symmetrize(1.0, 0);
+    // }
+
+    // ret->write(ivec, 0);
+}
 }} // End Psi and CIWavefunction spaces

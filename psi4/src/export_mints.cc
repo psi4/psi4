@@ -1012,6 +1012,7 @@ void export_mints(py::module& m)
         .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
         .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")
+        .def("compute_state_transfer", &detci::CIWavefunction::compute_state_transfer, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring")
         .def("cleanup", &detci::CIWavefunction::cleanup, "docstring");

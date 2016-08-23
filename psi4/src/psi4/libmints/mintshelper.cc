@@ -600,11 +600,15 @@ SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_
         for (int n = 0; n < nfxn; n++) {
             for (int p = 0; p < pfxn; p++) {
                 for (int q = 0; q < qfxn; q++, index++) {
-                    Ip[m * mfxn + n][p * mfxn + q] = buffer[index];
+                    Ip[m * nfxn + n][p * qfxn + q] = buffer[index];
                 }
             }
         }
     }
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{mfxn, nfxn, pfxn, qfxn};
+    I->set_numpy_shape(nshape);
 
     return I;
 }
