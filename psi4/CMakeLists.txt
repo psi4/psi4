@@ -43,15 +43,20 @@ set_property(GLOBAL PROPERTY PSI4_MODULES "")
 #optional_plugin(Ambit)
 #optional_plugin(PCMSolver)
 #optional_plugin(CHEMPS2)
-#optional_plugin(liberd)
-#optional_plugin(dkh)
 
 if (${ENABLE_CHEMPS2})
     find_package(CHEMPS2 REQUIRED)
     #   set_property(GLOBAL APPEND PROPERTY PSI4_MODULES ${${PLUGIN_NAME}_LIBRARIES})
     add_definitions(-DENABLE_CHEMPS2)
 endif ()
-
+if(${ENABLE_dkh})
+    find_package(dkh CONFIG REQUIRED
+                     HINTS ${CMAKE_PREFIX_PATH}/dkh)
+endif()
+if(${ENABLE_liberd})
+    find_package(liberd CONFIG REQUIRED
+                        HINTS ${CMAKE_PREFIX_PATH}/liberd)
+endif()
 if (${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
                  HINTS ${CMAKE_PREFIX_PATH}/gdma)
