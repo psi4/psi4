@@ -240,6 +240,9 @@ public:
      */
     void print_vector(SharedCIVector vec, int root);
 
+    void compute_state_transfer(SharedCIVector ref, int ref_vec,
+                                SharedMatrix prop, SharedCIVector ret);
+
     // Compute functions
     void compute_cc();
     int diag_h(double econv = -1.0, double rconv = -1.0);
