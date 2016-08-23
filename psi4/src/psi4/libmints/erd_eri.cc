@@ -26,7 +26,7 @@
  */
 
 
-#ifdef ENABLE_LIBERD
+#ifdef USING_liberd
 
 #include "psi4/psi4-dec.h"
 #include "erd_eri.h"

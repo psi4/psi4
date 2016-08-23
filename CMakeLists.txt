@@ -35,13 +35,13 @@ include(ExternalProject)
 ############################# Options: Build What? #############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
-option(ENABLE_DKH "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
-option(ENABLE_LIBERD "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_PCMSOLVER "Enables PCMSolver library (requires Fortran)" OFF)
 
-if(ENABLE_gdma)  # OR ENABLE_DKH OR ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd) # OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
@@ -123,13 +123,13 @@ ExternalProject_Add(psi4_core
               -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DCHEMPS2_ROOT=${CHEMPS2_ROOT}
-              -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
-              -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
-              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
-              -DENABLE_gdma=${ENABLE_gdma}
-              -DENABLE_DKH=${ENABLE_DKH}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
+              -DENABLE_dkh=${ENABLE_dkh}
+              -DENABLE_liberd=${ENABLE_liberd}
+              -DENABLE_gdma=${ENABLE_gdma}
+              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
+              -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
@@ -143,15 +143,15 @@ ExternalProject_Add(psi4_core
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-add_dependencies(psi4_core boost_external 
-                           libint_external
-                           libefp_external
-                           pcmsolver_external
-                           liberd_external
-                           ambit_external
-                           dkh_external
-                           gdma_external
+add_dependencies(psi4_core ambit_external
+                           boost_external 
                            chemps2_external
+                           dkh_external
+                           libefp_external
+                           liberd_external
+                           gdma_external
+                           libint_external
+                           pcmsolver_external
 )
 add_subdirectory(doc)
 enable_testing()

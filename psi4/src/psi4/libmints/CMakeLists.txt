@@ -69,8 +69,11 @@ set(sources_list local.cc
 )
 add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
 psi4_add_library(mints sources_list iwl options psi4util trans)
-target_include_directories(mints PRIVATE ${LIBERD_INCLUDE_DIRS} 
-                                         ${DKH_INCLUDE_DIRS}
-)
-#target_link_libraries(mints PUBLIC libint::libint)
 target_link_libraries(mints PRIVATE libint::libint)
+if(TARGET dkh::dkh)
+    target_link_libraries(mints PRIVATE dkh::dkh)
+endif()
+if(TARGET liberd::erd)
+    target_link_libraries(mints PRIVATE liberd::erd)
+endif()
+
