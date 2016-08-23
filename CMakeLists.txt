@@ -33,14 +33,13 @@ include(GNUInstallDirs)
 include(ExternalProject)
 
 ############################# Options: Build What? #############################
-include(Psi4Macros)
-option_with_print(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
-option_with_print(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
-option_with_print(ENABLE_DKH "Enables DKH integrals (requires Fortran)" OFF)
-option_with_print(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
-option_with_print(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
-option_with_print(ENABLE_LIBERD "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
-option_with_print(ENABLE_PCMSOLVER "Enables PCMSolver library (requires Fortran)" OFF)
+option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
+option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
+option(ENABLE_DKH "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
+option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
+option(ENABLE_LIBERD "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
+option(ENABLE_PCMSOLVER "Enables PCMSolver library (requires Fortran)" OFF)
 
 if(ENABLE_gdma)  # OR ENABLE_DKH OR ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY
     enable_language(Fortran)
@@ -49,6 +48,7 @@ if(ENABLE_gdma)  # OR ENABLE_DKH OR ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_
 endif()
 
 ############################# Options: Build How? ##############################
+include(Psi4Macros)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
@@ -68,6 +68,7 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
 option_with_print(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external)
@@ -112,6 +113,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR} 
+              -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
