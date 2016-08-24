@@ -1,8 +1,8 @@
-find_package(libefp CONFIG QUIET)
+find_package(libefp CONFIG QUIET COMPONENTS shallow)
 
 if(${libefp_FOUND})
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-    message(STATUS "Suitable libefp located at ${_loc}")
+    message(STATUS "Found libefp: ${_loc}")
     add_library(libefp_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
@@ -23,6 +23,7 @@ else()
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -DFRAGLIB_UNDERSCORE_L=OFF
+                   -DFRAGLIB_DEEP=OFF
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} 
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
