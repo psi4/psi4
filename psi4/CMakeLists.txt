@@ -61,7 +61,7 @@ if (${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
                  HINTS ${CMAKE_PREFIX_PATH}/gdma)
 endif()
-find_package(libefp CONFIG REQUIRED
+find_package(libefp CONFIG REQUIRED COMPONENTS shallow
              HINTS ${CMAKE_PREFIX_PATH}/libefp)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -102,6 +102,6 @@ foreach(_dotefp ${_dotefps})
     get_filename_component(_efpfile ${_dotefp} NAME)
     add_custom_command(TARGET consolidate_psidatadir
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile}
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile})
 endforeach()
 
