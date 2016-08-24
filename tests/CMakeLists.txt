@@ -53,7 +53,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
                   fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
-                  min-input mints1 mints2 mints3 mints4 mints5 mints6 mints8 
+                  mints1 mints2 mints3 mints4 mints5 mints6 mints8 
                   mints9 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
                   mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
                   mp2-property mpn-bh nbody-he-cluster numpy-array-interface 
@@ -72,7 +72,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap 
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
-                  scf-bz2 scf-guess-read scf-bs scf1 scf11-freq-from-energies 
+                  scf-bz2 scf-guess-read scf-bs scf1
                   scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
