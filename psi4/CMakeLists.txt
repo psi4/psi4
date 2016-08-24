@@ -82,7 +82,26 @@ configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/cmake/psi4)
 
-install(DIRECTORY share/psi4/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
+install(DIRECTORY share/psi4/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
         PATTERN fsapt EXCLUDE)
 
-install(DIRECTORY include/psi4/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+install(DIRECTORY include/psi4/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
+    # bring libefp's fraglib to PSIDATADIR's attention
+set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)
+
+add_custom_target(consolidate_psidatadir ALL
+                  VERBATIM
+                  COMMAND ${CMAKE_COMMAND} -E make_directory ${_fraglib_in_psi4_dir}
+                  COMMENT "Symlink external resources into PSIDATADIR")
+
+file(GLOB _dotefps "${libefp_FRAGLIB_DIRS}/*.efp")
+foreach(_dotefp ${_dotefps})
+    get_filename_component(_efpfile ${_dotefp} NAME)
+    add_custom_command(TARGET consolidate_psidatadir
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile}
+endforeach()
+
