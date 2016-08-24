@@ -47,6 +47,10 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd) # OR ENABLE_PCMSOLVER OR ENABLE_J
     message(STATUS "Enabling Fortran")
 endif()
 
+if(ENABLE_liberd)
+    message(FATAL_ERROR "LibERD will build, link, and run in Psi4 just fine, but it will give *wrong* answers for density-fitting (default) calculations. To continue with ERD, accept that you have been warned, and comment out this line in the main CMakeLists.txt")
+endif()
+
 ############################# Options: Build How? ##############################
 include(Psi4Macros)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
