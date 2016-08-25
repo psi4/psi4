@@ -9,6 +9,7 @@ else()
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
+        GIT_TAG fraglibextras
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
