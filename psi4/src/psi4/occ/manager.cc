@@ -28,7 +28,7 @@
 #include "psi4/libqt/qt.h"
 #include "occwave.h"
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 

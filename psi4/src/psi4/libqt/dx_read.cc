@@ -48,7 +48,7 @@
 #include "psi4/psi4-dec.h"
 
 
-using namespace boost;
+
 using namespace std;
 using namespace psi;
 
@@ -68,7 +68,7 @@ namespace psi {
          void dx_read(double **V_eff, double *phi_ao,double *phi_so,int nao,int nso,double **u){
 
           int delta_count = 0;
-          boost::shared_ptr<BasisSet> basis;
+          std::shared_ptr<BasisSet> basis;
           bool data_ready = false;
           int data_read = 0;
           double xstep, ystep, zstep;

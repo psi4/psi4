@@ -37,8 +37,8 @@ namespace psi {
 
 int DPD::file2_mat_print(dpdfile2 *File, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
     div_t fraction;
     int i,j;
     int rows, cols, cols_per_page, num_pages, last_page, page, first_col;

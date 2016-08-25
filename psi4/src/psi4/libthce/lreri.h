@@ -33,7 +33,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 
@@ -62,12 +62,12 @@ protected:
     // => Basis Set <= //
 
     /// Primary orbital basis (nso)
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
 
     // => Orbital Spaces <= //
 
     /// Occupation matrix coefficients (nso x nmo)
-    boost::shared_ptr<Matrix> C_;
+    std::shared_ptr<Matrix> C_;
     /// Orbital spaces, each defined by a keyword and the index range in <start, end+1>.
     std::map<std::string, std::pair<int, int> > spaces_;
     /// Orbital spaces order buffer, to keep the printing nice.
@@ -79,25 +79,25 @@ protected:
     void common_init();
 
     /// Inverse fitting metric
-    boost::shared_ptr<Matrix> Jm12(boost::shared_ptr<BasisSet> auxiliary, double condition);
+    std::shared_ptr<Matrix> Jm12(std::shared_ptr<BasisSet> auxiliary, double condition);
 
 public:
     // => Constructors <= //
 
-    LRERI(boost::shared_ptr<BasisSet> primary);
+    LRERI(std::shared_ptr<BasisSet> primary);
     virtual ~LRERI();
 
     // => Defaults <= //
 
     /// O: Load the usual orbital spaces for an RHF or UHF wavefunction
-    virtual void load_wavefunction(boost::shared_ptr<Wavefunction> ref);
+    virtual void load_wavefunction(std::shared_ptr<Wavefunction> ref);
     /// O: Load the usual options objects
     virtual void load_options(Options& options);
 
     // => Orbital Space Control <= //
 
     /// R: Set the overall C matrix (calls clear before starting)
-    void set_C(boost::shared_ptr<Matrix> C);
+    void set_C(std::shared_ptr<Matrix> C);
     /// R: Add an orbital subspace to the queue. The subspace will be referred to by key, and ranges from start to end-1.
     void add_space(const std::string& key, int start, int end);
     /// Clear the C matrix and orbital spaces list
@@ -133,7 +133,7 @@ protected:
     // => DF Tech <= //
 
     /// Auxiliary orbital-pair basis
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// Relative condition number in J^-1/2
     double J_cutoff_;
     /// Schwarz sieve tolerance
@@ -146,7 +146,7 @@ protected:
     // => Targets <= //
 
     /// Three-center integrals, by name, sorted e.g. (ov|Q), DiskTensor
-    std::map<std::string, boost::shared_ptr<Tensor> > ints_;
+    std::map<std::string, std::shared_ptr<Tensor> > ints_;
     /// Requested pair spaces
     std::map<std::string, std::pair<std::string, std::string> > pair_spaces_;
     /// Requested pair space powers
@@ -171,12 +171,12 @@ protected:
 public:
     // => Constructors <= //
 
-    DFERI(boost::shared_ptr<BasisSet> primary,
-          boost::shared_ptr<BasisSet> auxiliary);
+    DFERI(std::shared_ptr<BasisSet> primary,
+          std::shared_ptr<BasisSet> auxiliary);
     virtual ~DFERI();
 
-    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options);
-    static boost::shared_ptr<DFERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options, boost::shared_ptr<Wavefunction> ref);
+    static std::shared_ptr<DFERI> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    static std::shared_ptr<DFERI> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options, std::shared_ptr<Wavefunction> ref);
 
     // => Defaults <= //
 
@@ -201,9 +201,9 @@ public:
     /// R: Compute the requested DF 3-index integrals
     virtual void compute();
     /// Handle to computed disk tensors, by name in add_pair above
-    std::map<std::string, boost::shared_ptr<Tensor> >& ints() { return ints_; }
+    std::map<std::string, std::shared_ptr<Tensor> >& ints() { return ints_; }
     /// Return the J matrix raised to the desired power
-    boost::shared_ptr<Matrix> Jpow(double power = -1.0/2.0);
+    std::shared_ptr<Matrix> Jpow(double power = -1.0/2.0);
 
     // => Setters <= //
 
@@ -230,9 +230,9 @@ protected:
     // => LS-LSTHC Tech <= //
 
     /// Raw AO-basis X matrix (nso x nP, for now)
-    boost::shared_ptr<Matrix> X_;
+    std::shared_ptr<Matrix> X_;
     /// Auxiliary orbital-pair basis
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// Relative condition number in J^-1/2
     double J_cutoff_;
     /// Relative condition number in S^-1
@@ -245,9 +245,9 @@ protected:
     // => Targets <= //
 
     /// ERI factors, CoreTensor, swapped out
-    std::map<std::string, std::vector<boost::shared_ptr<Tensor> > > ints_;
+    std::map<std::string, std::vector<std::shared_ptr<Tensor> > > ints_;
     /// METH factors, CoreTensor, swapped out
-    std::map<std::string, std::vector<boost::shared_ptr<Tensor> > > meths_;
+    std::map<std::string, std::vector<std::shared_ptr<Tensor> > > meths_;
     /// Requested ERI spaces
     std::map<std::string, std::vector<std::string> > eri_spaces_;
     /// Order of ERI spaces, to keep printing nice
@@ -259,35 +259,35 @@ protected:
     void common_init();
 
     /// Build all requred X matrices (np x nP, core)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_X(bool meth = false);
+    std::map<std::string, std::shared_ptr<Tensor> > build_X(bool meth = false);
     /// Build all required E matrices (nA x nP, disk) [deleted]
-    std::map<std::string, boost::shared_ptr<Tensor> > build_E(std::map<std::string, boost::shared_ptr<Tensor> >& Xs);
+    std::map<std::string, std::shared_ptr<Tensor> > build_E(std::map<std::string, std::shared_ptr<Tensor> >& Xs);
     /// Build all required inverse S matrices (nP x nP, core, swapped)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_S(std::map<std::string, boost::shared_ptr<Tensor> >& Xs, bool meth = false);
+    std::map<std::string, std::shared_ptr<Tensor> > build_S(std::map<std::string, std::shared_ptr<Tensor> >& Xs, bool meth = false);
     /// Build all requred L matrices (nP x nA, core, swapped)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_L(std::map<std::string, boost::shared_ptr<Tensor> >& Es,
-                                                              std::map<std::string, boost::shared_ptr<Tensor> >& Ss);
+    std::map<std::string, std::shared_ptr<Tensor> > build_L(std::map<std::string, std::shared_ptr<Tensor> >& Es,
+                                                              std::map<std::string, std::shared_ptr<Tensor> >& Ss);
     /// Build all required Z matrices (nP x nP, core, swapped)
-    std::map<std::string, boost::shared_ptr<Tensor> > build_Z(std::map<std::string, boost::shared_ptr<Tensor> >& Ls);
+    std::map<std::string, std::shared_ptr<Tensor> > build_Z(std::map<std::string, std::shared_ptr<Tensor> >& Ls);
     /// Pack up the integrals
-    void pack(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
-              std::map<std::string, boost::shared_ptr<Tensor> >& Zs,
-              std::map<std::string, boost::shared_ptr<Tensor> >& Ls,
-              std::map<std::string, boost::shared_ptr<Tensor> >& Ss);
+    void pack(std::map<std::string, std::shared_ptr<Tensor> >& Xs,
+              std::map<std::string, std::shared_ptr<Tensor> >& Zs,
+              std::map<std::string, std::shared_ptr<Tensor> >& Ls,
+              std::map<std::string, std::shared_ptr<Tensor> >& Ss);
     /// Pack up the meth intermediates
-    void pack_meth(std::map<std::string, boost::shared_ptr<Tensor> >& Xs,
-                   std::map<std::string, boost::shared_ptr<Tensor> >& Ss);
+    void pack_meth(std::map<std::string, std::shared_ptr<Tensor> >& Xs,
+                   std::map<std::string, std::shared_ptr<Tensor> >& Ss);
 
 public:
     // => Constructors <= //
 
-    LSTHCERI(boost::shared_ptr<BasisSet> primary,
-           boost::shared_ptr<BasisSet> auxiliary,
-           boost::shared_ptr<Matrix> X);
+    LSTHCERI(std::shared_ptr<BasisSet> primary,
+           std::shared_ptr<BasisSet> auxiliary,
+           std::shared_ptr<Matrix> X);
     virtual ~LSTHCERI();
 
-    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options);
-    static boost::shared_ptr<LSTHCERI> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X, Options& options, boost::shared_ptr<Wavefunction> ref);
+    static std::shared_ptr<LSTHCERI> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> X, Options& options);
+    static std::shared_ptr<LSTHCERI> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> X, Options& options, std::shared_ptr<Wavefunction> ref);
 
     // => Defaults <= //
 
@@ -308,12 +308,12 @@ public:
     /// R: Compute the requested LS-LSTHC factors
     virtual void compute();
     /// LS-LSTHC factors [X1,X2,Z,X3,X4,L12,L34,Sinv12,Sinv34]
-    std::map<std::string, std::vector<boost::shared_ptr<Tensor> > >& ints() { return ints_; };
+    std::map<std::string, std::vector<std::shared_ptr<Tensor> > >& ints() { return ints_; };
 
     /// O: Compute the METH X and Sinv matrices
     virtual void compute_meth();
     /// METH helper factors [X1,X2,Sinv]
-    std::map<std::string, std::vector<boost::shared_ptr<Tensor> > >& meths() { return meths_; }
+    std::map<std::string, std::vector<std::shared_ptr<Tensor> > >& meths() { return meths_; }
 
     // => Setters <= //
 

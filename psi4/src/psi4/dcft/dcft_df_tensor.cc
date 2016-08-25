@@ -63,7 +63,7 @@
 #include <omp.h>
 #endif
 
-using namespace boost;
+
 
 namespace psi { namespace dcft{
 
@@ -91,7 +91,7 @@ void DCFTSolver::df_build_b_ao()
                                                      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
                                                      "JKFIT", options_.get_str("BASIS"));
 
-    boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     nn_ = primary_->nbf();
     nQ_ = auxiliary_->nbf();
@@ -127,7 +127,7 @@ void DCFTSolver::df_build_b_ao()
 /**
   * Form J(P,Q)^-1/2
   */
-void DCFTSolver::formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero)
 {
 //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
@@ -139,11 +139,11 @@ void DCFTSolver::formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_p
     Jm12_ = block_matrix(nQ_, nQ_);
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, auxiliary, zero));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, auxiliary, zero));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++){
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
         buffer.push_back(Jint[t]->buffer());
     }
 
@@ -214,7 +214,7 @@ void DCFTSolver::formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_p
 /**
   * Form b(Q|mn)
   */
-void DCFTSolver::formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero)
 {
     bQmn_ao_ = SharedMatrix(new Matrix(nQ_, nso_ * nso_));
     double **Ap = bQmn_ao_->pointer();
@@ -225,7 +225,7 @@ void DCFTSolver::formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr
         nthreads = omp_get_max_threads();
     #endif
 
-    boost::shared_ptr<ERISieve> sieve = boost::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
+    std::shared_ptr<ERISieve> sieve = std::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -248,11 +248,11 @@ void DCFTSolver::formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr
     Pstarts.push_back(auxiliary->nshell());
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary, zero, primary, primary));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary, zero, primary, primary));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
         buffer.push_back(eri[t]->buffer());
     }
 
@@ -2490,7 +2490,7 @@ void DCFTSolver::build_gbarKappa_UHF()
 /**
   * Form J(P,Q)^-1/2 for SCF terms
   */
-void DCFTSolver::formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero)
 {
 //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
@@ -2502,11 +2502,11 @@ void DCFTSolver::formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shar
     Jm12_scf_ = block_matrix(nQ_scf_, nQ_scf_);
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, auxiliary, zero));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, auxiliary, zero));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++){
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
         buffer.push_back(Jint[t]->buffer());
     }
 
@@ -2577,7 +2577,7 @@ void DCFTSolver::formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shar
 /**
   * Form b(Q|mn) for SCF terms
   */
-void DCFTSolver::formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero)
+void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero)
 {
     bQmn_ao_scf_ = SharedMatrix(new Matrix(nQ_scf_, nso_ * nso_));
     double **Ap = bQmn_ao_scf_->pointer();
@@ -2588,7 +2588,7 @@ void DCFTSolver::formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared
         nthreads = omp_get_max_threads();
     #endif
 
-    boost::shared_ptr<ERISieve> sieve = boost::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
+    std::shared_ptr<ERISieve> sieve = std::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -2611,11 +2611,11 @@ void DCFTSolver::formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared
     Pstarts.push_back(auxiliary->nshell());
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary, zero, primary, primary));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary, zero, primary, primary));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
         buffer.push_back(eri[t]->buffer());
     }
 

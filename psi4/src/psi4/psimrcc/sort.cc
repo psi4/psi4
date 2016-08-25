@@ -61,13 +61,13 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
 
     IntegralTransform *ints;
     // Use libtrans to generate MO basis integrals in Pitzer order
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     if(algorithm == mrpt2_sort){
         // For MRPT2 calculations we need integrals of the form (OO|VV) and (OA|OA), where
         // O represents occ+act, V represents act+vir and A is all orbitals.
-        boost::shared_ptr<MOSpace> aocc;
-        boost::shared_ptr<MOSpace> avir;
+        std::shared_ptr<MOSpace> aocc;
+        std::shared_ptr<MOSpace> avir;
         int nirrep = ref_wfn->nirrep();
         std::vector<int> aocc_orbs;
         std::vector<int> avir_orbs;
@@ -82,8 +82,8 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm):
                 avir_orbs.push_back(a + offset);
             offset += mopi[h];
         }
-        aocc = boost::shared_ptr<MOSpace>(new MOSpace('M', aocc_orbs, aocc_orbs));
-        avir = boost::shared_ptr<MOSpace>(new MOSpace('E', avir_orbs, avir_orbs));
+        aocc = std::shared_ptr<MOSpace>(new MOSpace('M', aocc_orbs, aocc_orbs));
+        avir = std::shared_ptr<MOSpace>(new MOSpace('E', avir_orbs, avir_orbs));
         spaces.push_back(aocc);
         spaces.push_back(avir);
         ints = new IntegralTransform(ref_wfn, spaces,

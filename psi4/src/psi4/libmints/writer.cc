@@ -44,16 +44,16 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
+;
 
-GradientWriter::GradientWriter(boost::shared_ptr<Molecule> mol, const Matrix& grad)
+GradientWriter::GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad)
     : molecule_(mol), gradient_(grad)
 {
 }
 
 void GradientWriter::write(const std::string &filename)
 {
-   boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+   std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
    int i;
 
 
@@ -75,15 +75,15 @@ void GradientWriter::write(const std::string &filename)
     }
 }
 
-MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
+MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {
 
 }
-void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob)
+void MoldenWriter::writeNO(const std::string &filename, std::shared_ptr<Matrix> Na, std::shared_ptr<Matrix> Nb, std::shared_ptr<Vector> Oa, std::shared_ptr<Vector> Ob)
 {
     //Same as MO Writer below
-    boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
     int atom;
 
@@ -131,7 +131,7 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
      */
     //setup
     // get the "S" transformation matrix, ao by so
-    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
+    std::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     SharedMatrix aotoso = pl->aotoso();
     //get C's
     SharedMatrix Ca = wavefunction_->Ca();
@@ -271,9 +271,9 @@ void MoldenWriter::writeNO(const std::string &filename, boost::shared_ptr<Matrix
 }
 
 
-void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB)
+void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB)
 {
-    boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
     int atom;
 
@@ -318,7 +318,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     }
 
     // Convert Ca & Cb
-    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
+    std::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     // get the "aotoso" transformation matrix, ao by so
     SharedMatrix aotoso = pl->aotoso();
     // need dimensions
@@ -453,7 +453,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
 }
 
-FCHKWriter::FCHKWriter(boost::shared_ptr<Wavefunction> wavefunction)
+FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {
 }
@@ -559,11 +559,11 @@ void FCHKWriter::write_matrix(const char *label, const std::vector<int> &mat)
 void FCHKWriter::write(const std::string &filename)
 {
     chk_ = fopen(filename.c_str(), "w");
-    boost::shared_ptr<BasisSet> basis = wavefunction_->basisset();
+    std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
     int maxam = basis->max_am();
     if(maxam > 4)
         throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G functions");
-    boost::shared_ptr<Molecule> mol = wavefunction_->molecule();
+    std::shared_ptr<Molecule> mol = wavefunction_->molecule();
     SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
     SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
     SharedMatrix Da_ao = wavefunction_->Da_subset("AO");
@@ -835,7 +835,7 @@ void FCHKWriter::write(const std::string &filename)
 }
 
 
-NBOWriter::NBOWriter(boost::shared_ptr<Wavefunction> wavefunction)
+NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {
 
@@ -855,7 +855,7 @@ void NBOWriter::write(const std::string &filename)
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
-    boost::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
 
     //Get the basis set and molecule from the wavefuntion
@@ -1239,7 +1239,7 @@ void NBOWriter::write(const std::string &filename)
 }
 
 
-MOWriter::MOWriter(boost::shared_ptr<Wavefunction> wavefunction,Options&options)
+MOWriter::MOWriter(std::shared_ptr<Wavefunction> wavefunction,Options&options)
     : wavefunction_(wavefunction), options_(options)
 {
 }
@@ -1263,7 +1263,7 @@ void MOWriter::write()
     Vector& Ea = *wavefunction_->epsilon_a().get();
     Vector& Eb = *wavefunction_->epsilon_b().get();
 
-    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
+    std::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
 
     // get the "aotoso" transformation matrix, ao by so
     SharedMatrix aotoso = pl->aotoso();
@@ -1402,7 +1402,7 @@ void MOWriter::write()
         write_mos(mol);
     }
 
-    delete skip;
+    delete[] skip;
     delete occ;
     delete sym;
     delete eps;

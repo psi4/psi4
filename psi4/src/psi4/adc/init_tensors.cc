@@ -42,7 +42,7 @@ ADCWfn::rhf_init_tensors()
     dpdbuf4 K, V;
     dpdfile2 A;
     // Setting up and initialize the integraltransform object
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);//printf("madeok\n");
     _ints = new IntegralTransform(reference_wavefunction_, spaces, IntegralTransform::Restricted);//printf("madeok\n");

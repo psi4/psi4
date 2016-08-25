@@ -45,8 +45,8 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
     int sfirst, int slast, int *reorder, int reorder_offset,
     int printflag, int *ioff, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;
@@ -98,8 +98,8 @@ void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast,
     int sfirst, int slast, int *reorder, int reorder_offset,
     int printflag, int *ioff, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;
@@ -216,8 +216,8 @@ void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
 	   iwl_buf_put(Buf);
 	   Buf->idx = 0;
 	 }
-	 boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-	          boost::shared_ptr<OutFile>(new OutFile(out)));
+	 std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+	          std::shared_ptr<OutFile>(new OutFile(out)));
 	 if (printflag)
 	   printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);
@@ -279,8 +279,8 @@ void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr,
 	   iwl_buf_put(Buf);
 	   Buf->idx = 0;
 	 }
-	 boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-	          boost::shared_ptr<OutFile>(new OutFile(out)));
+	 std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+	          std::shared_ptr<OutFile>(new OutFile(out)));
 	 if (printflag)
 	   printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);

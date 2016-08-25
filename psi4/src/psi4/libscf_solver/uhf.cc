@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <tuple>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
@@ -47,16 +48,9 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-
-using namespace std;
-using namespace psi;
-using namespace boost;
-
 namespace psi { namespace scf {
 
-UHF::UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
     common_init();
@@ -586,7 +580,7 @@ void UHF::compute_orbital_gradient(bool save_fock)
 
     if(save_fock){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
             diis_manager_->set_error_vector_size(2,
                                                  DIISEntry::Matrix, gradient_a.get(),
                                                  DIISEntry::Matrix, gradient_b.get());
@@ -607,14 +601,14 @@ bool UHF::diis()
 
 bool UHF::stability_analysis()
 {
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(shared_from_this(), options_));
+    std::shared_ptr<UStab> stab = std::shared_ptr<UStab>(new UStab(shared_from_this(), options_));
     stab->compute_energy();
     SharedMatrix eval_sym = stab->analyze();
     outfile->Printf( "    Lowest UHF->UHF stability eigenvalues: \n");
     std::vector < std::pair < double,int > >  eval_print;
     for (int h = 0; h < eval_sym->nirrep(); ++h) {
         for (int i = 0; i < eval_sym->rowdim(h); ++i) {
-            eval_print.push_back(make_pair(eval_sym->get(h,i,0),h));
+            eval_print.push_back(std::make_pair(eval_sym->get(h,i,0),h));
         }
     }
     print_stability_analysis(eval_print);
@@ -673,12 +667,12 @@ void UHF::compute_nos()
     if(options_.get_str("PRINT_NOONS") == "ALL") max_num = nmo_;
     else max_num = to_integer(options_.get_str("PRINT_NOONS"));
 
-    std::vector<boost::tuple<double, int, int> > metric;
+    std::vector<std::tuple<double, int, int> > metric;
     for (int h = 0; h < UHF_NOONs->nirrep(); h++)
       for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++)
-        metric.push_back(boost::tuple<double,int,int>(UHF_NOONs->get(h,i), h ,i));
+        metric.push_back(std::tuple<double,int,int>(UHF_NOONs->get(h,i), h ,i));
 
-    std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
+    std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
     int offset = nalpha_;
     int start_occ = offset - max_num;
     start_occ = (start_occ < 0 ? 0 : start_occ);
@@ -689,13 +683,13 @@ void UHF::compute_nos()
     for (int index = start_occ; index < stop_vir; index++) {
       if (index < offset) {
         outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
-        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
-        boost::get<0>(metric[index]));
+        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])],
+        std::get<0>(metric[index]));
       }
       else {
         outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
-        boost::get<2>(metric[index])+1,labels[boost::get<1>(metric[index])],
-        boost::get<0>(metric[index]));
+        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])],
+        std::get<0>(metric[index]));
       }
     }
     outfile->Printf( "\n");
@@ -718,7 +712,7 @@ void UHF::compute_nos()
         F_UHF_NOs->transform(Ca_);
 
         // Sort orbitals according to type (core,active,virtual) and energy
-        std::vector<boost::tuple<int, double, int, int> > sorted_nos;
+        std::vector<std::tuple<int, double, int, int> > sorted_nos;
         for (int h = 0; h < UHF_NOONs->nirrep(); h++){
             for (int i = 0; i < UHF_NOONs->dimpi()[h]; i++){
                 double noon = UHF_NOONs->get(h,i);
@@ -729,7 +723,7 @@ void UHF::compute_nos()
                     type = 1; // active    0.02 <= NO < 1.98
                 }
                 double epsilon = F_UHF_NOs->get(h,i,i);
-                sorted_nos.push_back(boost::tuple<int,double,int,int>(type,epsilon,h,i));
+                sorted_nos.push_back(std::tuple<int,double,int,int>(type,epsilon,h,i));
             }
         }
         std::sort(sorted_nos.begin(), sorted_nos.end());
@@ -738,8 +732,8 @@ void UHF::compute_nos()
         std::vector<int> irrep_count(nirrep_,0);
 
         for (size_t i = 0; i < sorted_nos.size(); i++){
-            int h = boost::get<2>(sorted_nos[i]);
-            int Ca_p = boost::get<3>(sorted_nos[i]);
+            int h = std::get<2>(sorted_nos[i]);
+            int Ca_p = std::get<3>(sorted_nos[i]);
             int Cb_p = irrep_count[h];
             for (int mu = 0; mu < Ca_->colspi(h); mu++){
                 double value = Ca_->get(h,mu,Ca_p);
@@ -755,8 +749,8 @@ void UHF::compute_nos()
         Dimension corepi(nirrep_);
         Dimension actvpi(nirrep_);
         for (size_t i = 0; i < sorted_nos.size(); i++){
-            int type = boost::get<0>(sorted_nos[i]);
-            int h = boost::get<2>(sorted_nos[i]);
+            int type = std::get<0>(sorted_nos[i]);
+            int h = std::get<2>(sorted_nos[i]);
             if (type == 0) corepi[h] += 1;
             if (type == 1) actvpi[h] += 1;
         }

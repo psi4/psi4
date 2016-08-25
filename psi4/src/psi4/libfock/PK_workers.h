@@ -62,7 +62,7 @@ typedef std::shared_ptr<ERISieve> SharedSieve;
 class AOShellSieveIterator {
    private:
     // Basis set
-    boost::shared_ptr<BasisSet> bs_;
+    std::shared_ptr<BasisSet> bs_;
     // Sieve object
     SharedSieve sieve_;
     // Vector of significant shell pairs
@@ -80,7 +80,7 @@ class AOShellSieveIterator {
     void populate_indices();
 public:
     /// Constructor
-    AOShellSieveIterator(boost::shared_ptr< BasisSet > prim, SharedSieve sieve_input);
+    AOShellSieveIterator(std::shared_ptr< BasisSet > prim, SharedSieve sieve_input);
 
     /// Iterator functions
     void first();
@@ -215,7 +215,7 @@ class PKWorker {
 private:
 
     /// Current basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Current sieve
     SharedSieve sieve_;
     /// Are we doing wK?
@@ -261,7 +261,7 @@ protected:
 
 public:
     /// Constructor for PKWorker
-    PKWorker(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+    PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
              std::shared_ptr<AIOHandler> AIO, int target_file,
              size_t buf_size);
     /// Destructor for PKWorker, does nothing
@@ -304,7 +304,7 @@ public:
         throw PSIEXCEPTION("Function allocate_wK not implemented for this PK algorithm.\n");
     }
     /// For IWL, we need different arguments
-    virtual void allocate_wK(boost::shared_ptr< size_t [] > pos, int wKfile) {
+    virtual void allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile) {
         throw PSIEXCEPTION("Invoked function allocate_wK not implemented for this PK algorithm.\n");
     }
 
@@ -398,7 +398,7 @@ private:
 
 public:
     /// Constructor
-    PKWrkrReord(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
                 std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, unsigned int nbuffer);
     /// Destructor
@@ -449,7 +449,7 @@ private:
     virtual void initialize_task();
 
 public:
-    PKWrkrInCore(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
                  size_t buf_size, size_t lastbuf, double* Jbuf,
                  double* Kbuf, double* wKbuf, int nworkers);
 
@@ -489,20 +489,20 @@ private:
     std::vector< IWLAsync_PK* > IWL_wK_;
     /// Pointer to array with addresses in bytes where the next write
     /// should go for each bucket on file.
-    boost::shared_ptr< size_t [] > addresses_;
-    boost::shared_ptr< size_t [] > addresses_wK_;
+    std::shared_ptr<std::vector<size_t>> addresses_;
+    std::shared_ptr<std::vector<size_t>> addresses_wK_;
 
 public:
     /// Constructor
-    PKWrkrIWL(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
               std::shared_ptr<AIOHandler> AIOp, int targetfile, int K_file,
               size_t buf_size, std::vector< int > &bufforpq,
-              boost::shared_ptr<size_t []> pos);
+              std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
     ~PKWrkrIWL();
 
     /// Preparing for wK pre-sorting to file
-    virtual void allocate_wK(boost::shared_ptr<size_t[]> pos, int wKfile);
+    virtual void allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile);
 
     /// Filling integrals in the appropriate buffers
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
@@ -529,8 +529,6 @@ public:
                        size_t pk_pairs) {
         throw PSIEXCEPTION("write not implemented for this class\n");
     }
-
-
 };
 
 } // End namespace pk

@@ -77,7 +77,7 @@ void get_moinfo(void)
     int *pitz2qt_A, *qt2pitz_A, *pitz2qt_B, *qt2pitz_B;
     psio_address next;
 
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+    std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();

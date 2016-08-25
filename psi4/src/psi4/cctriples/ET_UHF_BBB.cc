@@ -121,7 +121,7 @@ double ET_UHF_BBB(void)
 	    }
 	  }
 	}
-  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf("Spin Case: BBB\n");
   printer->Printf("Number of IJK combintions: %d\n", nijk);

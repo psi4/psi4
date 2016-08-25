@@ -32,7 +32,7 @@
 #include "psi4/libmints/integral.h"
 using namespace psi;
 
-LinK::LinK(boost::shared_ptr<BasisSet> basis_in,
+LinK::LinK(std::shared_ptr<BasisSet> basis_in,
            std::vector<SharedMatrix>& density_in)
 :
 basis_(basis_in),
@@ -48,14 +48,14 @@ num_integrals_(0),
 total_num_integrals_(0)
 {
 
-  factory_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basis_,
+  factory_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basis_,
                                                                     basis_,
                                                                     basis_,
                                                                     basis_));
 
   Options& options = Process::environment.options;
   double cutoff = options.get_double("SCHWARZ_CUTOFF");
-  sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(basis_, cutoff));
+  sieve_ = std::shared_ptr<ERISieve>(new ERISieve(basis_, cutoff));
   //std::cout << "cutoff: " << cutoff << "\n";
 
   shell_pair_threshold_sqr_ = cutoff * cutoff;
@@ -63,7 +63,7 @@ total_num_integrals_(0)
 
   eri_.clear();
   //for (int thread = 0; thread < omp_nthread_; thread++) {
-  eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
+  eri_.push_back(std::shared_ptr<TwoBodyAOInt>(factory_->eri()));
   //}
 
   // start K_

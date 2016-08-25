@@ -42,7 +42,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <boost/lexical_cast.hpp>
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
@@ -237,9 +236,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       }
       if (L < nroots) {
         str = "Restart failed...  ";
-        str += boost::lexical_cast<std::string>( L) ;
+        str += std::to_string( L) ;
         str += " vectors for ";
-        str += boost::lexical_cast<std::string>( nroots) ;
+        str += std::to_string( nroots) ;
         str += " roots";
         throw PsiException(str,__FILE__,__LINE__);
       }
@@ -378,9 +377,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
      Dvec.buf_lock(buffer2);
      if ((i = Dvec.read_num_vecs()) < nroots) {
        str = "Only ";
-       str += boost::lexical_cast<std::string>( i) ;
+       str += std::to_string( i) ;
        str += " vectors available in D file for ";
-       str += boost::lexical_cast<std::string>( nroots) ;
+       str += std::to_string( nroots) ;
        str += " roots!";
        throw PsiException(str,__FILE__,__LINE__);
      }
@@ -505,9 +504,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
    if (k < nroots) {
       str = "(sem_iter): Failure to get required number of guess vects.\n";
       str += "  Got ";
-      str += boost::lexical_cast<std::string>( k) ;
+      str += std::to_string( k) ;
       str += ", need nroots=";
-      str += boost::lexical_cast<std::string>( nroots) ;
+      str += std::to_string( nroots) ;
       str += " to proceed.  Aborting";
       throw PsiException(str,__FILE__,__LINE__);
    }
@@ -1146,9 +1145,9 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          Cvec.buf_unlock();
          if (L > maxnvect) {
             str = "(sem_iter): L(";
-            str += boost::lexical_cast<std::string>( L) ;
+            str += std::to_string( L) ;
             str += ") > maxnvect(";
-            str += boost::lexical_cast<std::string>( maxnvect) ;
+            str += std::to_string( maxnvect) ;
             str += "!  Aborting!";
             throw PsiException(str,__FILE__,__LINE__);
             }

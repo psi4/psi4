@@ -71,8 +71,8 @@ CorrelationTable::CorrelationTable():
 {
 }
 
-CorrelationTable::CorrelationTable(const boost::shared_ptr<PointGroup>& group,
-    const boost::shared_ptr<PointGroup>& subgroup):
+CorrelationTable::CorrelationTable(const std::shared_ptr<PointGroup>& group,
+    const std::shared_ptr<PointGroup>& subgroup):
     n_(0),
     ngamma_(0),
     gamma_(0)
@@ -94,8 +94,8 @@ CorrelationTable::~CorrelationTable()
 }
 
 int
-    CorrelationTable::initialize_table(const boost::shared_ptr<PointGroup>& group,
-    const boost::shared_ptr<PointGroup>& subgroup)
+    CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
+    const std::shared_ptr<PointGroup>& subgroup)
 {
     clear();
 

@@ -115,10 +115,10 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
 
       // DIIS
       if (do_diis_ == 1) {
-          boost::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
-          boost::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
+          std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
+          std::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
           if (reference_ == "RESTRICTED") {
-              ccsdlDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
+              ccsdlDiisManager = std::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
               ccsdlDiisManager->set_error_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
               ccsdlDiisManager->set_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
           }

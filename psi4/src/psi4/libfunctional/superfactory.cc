@@ -24,23 +24,14 @@
  *
  * @END LICENSE
  */
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-#include <boost/python.hpp>
-#include <boost/python/object.hpp>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/psi4-dec.h"
 #include "superfunctional.h"
+
+#include <pybind11/pybind11.h>
+
+#include <memory>
 
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \
@@ -48,20 +39,18 @@
          exit(1);             \
      }
 
-using namespace boost::python;
-
 namespace psi {
 
-boost::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int npoints, int deriv)
+std::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int npoints, int deriv)
 {
     if (npoints == -1) {
         npoints = options.get_int("DFT_BLOCK_MAX_POINTS");
     }
 
-    boost::shared_ptr<SuperFunctional> super;
+    std::shared_ptr<SuperFunctional> super;
     if (options.get_str("DFT_FUNCTIONAL") == "GEN" || options.get_str("DFT_FUNCTIONAL") == "") {
-        boost::python::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
-        super = boost::python::extract<boost::shared_ptr<SuperFunctional> >(pySuper);
+        pybind11::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
+        super = pySuper.cast<std::shared_ptr<SuperFunctional>>();
         if (!super) {
             throw PSIEXCEPTION("Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL");
         }
@@ -89,9 +78,9 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, in
     return super;
 }
 
-boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
+std::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
 {
-    boost::shared_ptr<SuperFunctional> super;
+    std::shared_ptr<SuperFunctional> super;
 
     if (Py_IsInitialized()) {
         try {
@@ -106,7 +95,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& ali
             PY_TRY(ret, PyEval_CallObject(function, pargs));
 
             // Extract the SuperFunctional
-            super = boost::python::extract<boost::shared_ptr<SuperFunctional> >(ret);
+            super =  pybind11::object(ret, true).cast<std::shared_ptr<SuperFunctional>>();
 
             // Decref Python env pointers
             Py_DECREF(ret);
@@ -114,7 +103,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& ali
             Py_DECREF(function);
             Py_DECREF(functional);
         }
-        catch (error_already_set const& e)
+        catch (pybind11::error_already_set const& e)
         {
             PyErr_Print();
             exit(1);

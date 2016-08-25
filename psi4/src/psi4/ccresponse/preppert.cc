@@ -57,7 +57,7 @@ void sort_pert(const char *pert, double **pertints, int irrep);
 ** -TDC, 6/11
 */
 
-void preppert(boost::shared_ptr<BasisSet> primary)
+void preppert(std::shared_ptr<BasisSet> primary)
 {
   int i, j, ij;
 

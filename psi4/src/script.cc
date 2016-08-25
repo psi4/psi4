@@ -30,14 +30,14 @@
 using namespace psi;
 using namespace boost;
 
-boost::shared_ptr<Script> Script::language;
+std::shared_ptr<Script> Script::language;
 
 Script::Script()
 {
-    
+
 }
 
 Script::~Script()
 {
-    
+
 }

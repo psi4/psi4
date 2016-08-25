@@ -57,7 +57,7 @@ using namespace psi;
 namespace psi {
 
 
-CDJK::CDJK(boost::shared_ptr<BasisSet> primary, double cholesky_tolerance):
+CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance):
     DFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
 {
 }
@@ -72,7 +72,7 @@ void CDJK::initialize_JK_disk()
 void CDJK::initialize_JK_core()
 {
     timer_on("CD: cholesky decomposition");
-    boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
     int ntri = sieve_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
@@ -91,7 +91,7 @@ void CDJK::initialize_JK_core()
     }
 
     ///If user does not want to read from disk, recompute the cholesky integrals
-    boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
+    std::shared_ptr<CholeskyERI> Ch (new CholeskyERI(std::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
     Ch->choleskify();
     ncholesky_  = Ch->Q();
     ULI three_memory = ncholesky_ * ntri;
@@ -102,7 +102,7 @@ void CDJK::initialize_JK_core()
     if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
         throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
-    boost::shared_ptr<Matrix> L = Ch->L();
+    std::shared_ptr<Matrix> L = Ch->L();
     double ** Lp = L->pointer();
     timer_off("CD: cholesky decomposition");
 

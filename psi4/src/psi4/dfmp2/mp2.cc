@@ -48,7 +48,7 @@
 #endif
 
 using namespace psi;
-using namespace boost;
+
 using namespace std;
 
 namespace psi {
@@ -151,7 +151,7 @@ void DFMP2::block_status(std::vector<unsigned long int> inds, const char* file, 
     printf("%s:%d %zu %s %zu %zu\n", file, line, inds.size(), (gimp ? "GIMP" : "NOT GIMP"), inds[1] - inds[0], inds[inds.size() - 1] - inds[inds.size()-2]);
 }
 
-DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+DFMP2::DFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio) :
     Wavefunction(options)
 {
     shallow_copy(ref_wfn);
@@ -398,7 +398,7 @@ SharedMatrix DFMP2::form_inverse_metric()
     } else {
 
         // Form the inverse metric manually
-        boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true));
+        std::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true));
         metric->form_eig_inverse(1.0E-10);
         SharedMatrix Jm12 = metric->get_metric();
 
@@ -785,7 +785,7 @@ void DFMP2::print_gradients()
 
 }
 
-RDFMP2::RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+RDFMP2::RDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio) :
     DFMP2(ref_wfn, options,psio)
 {
     common_init();
@@ -844,7 +844,7 @@ void RDFMP2::print_header()
 void RDFMP2::form_Aia()
 {
     // Schwarz Sieve
-    boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
+    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
@@ -858,12 +858,12 @@ void RDFMP2::form_Aia()
         }
     #endif
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),
         basisset_,basisset_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
         buffer.push_back(eri[thread]->buffer());
     }
 
@@ -1520,10 +1520,10 @@ void RDFMP2::form_AB_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),ribasis_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),ribasis_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < num_threads; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1616,7 +1616,7 @@ void RDFMP2::form_Amn_x_terms()
 
     // => ERI Sieve <= //
 
-    boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
+    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -1676,10 +1676,10 @@ void RDFMP2::form_Amn_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1817,7 +1817,7 @@ void RDFMP2::form_L()
 
     // => ERI Sieve <= //
 
-    boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
+    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -1888,10 +1888,10 @@ void RDFMP2::form_L()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),basisset_,basisset_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
     }
 
     // => PSIO <= //
@@ -2229,7 +2229,7 @@ void RDFMP2::form_Z()
 
     // => CPHF/JK Object <= //
 
-    boost::shared_ptr<RCPHF> cphf(new RCPHF(reference_wavefunction_, options_));
+    std::shared_ptr<RCPHF> cphf(new RCPHF(reference_wavefunction_, options_));
     cphf->set_C(C);
     cphf->set_Caocc(Cocc);
     cphf->set_Cavir(Cvir);
@@ -2237,7 +2237,7 @@ void RDFMP2::form_Z()
     cphf->set_eps_avir(eps_vir);
     cphf->preiterations();
 
-    boost::shared_ptr<JK> jk = cphf->jk();
+    std::shared_ptr<JK> jk = cphf->jk();
     std::vector<SharedMatrix> & Cl = jk->C_left();
     std::vector<SharedMatrix> & Cr = jk->C_right();
     const std::vector<SharedMatrix> &J = jk->J();
@@ -2621,7 +2621,7 @@ void RDFMP2::form_gradient()
         double** Tp = gradients_["Kinetic"]->pointer();
 
         // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -2701,10 +2701,10 @@ void RDFMP2::form_gradient()
         #endif
 
         // Potential derivatives
-        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+        std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
         for (int t = 0; t < threads; t++) {
-            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+            Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
             Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
         }
 
@@ -2779,7 +2779,7 @@ void RDFMP2::form_gradient()
         double** Sp = gradients_["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -2849,7 +2849,7 @@ void RDFMP2::form_gradient()
 
     timer_on("Grad: JK");
 
-    boost::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_);
+    std::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Cocc);
@@ -2909,7 +2909,7 @@ void RDFMP2::form_gradient()
     psio_->close(PSIF_DFMP2_AIA,1);
 }
 
-UDFMP2::UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+UDFMP2::UDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio) :
     DFMP2(ref_wfn, options,psio)
 {
     common_init();
@@ -2971,7 +2971,7 @@ void UDFMP2::print_header()
 void UDFMP2::form_Aia()
 {
     // Schwarz Sieve
-    boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
+    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_,options_.get_double("INTS_TOLERANCE")));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
@@ -2985,12 +2985,12 @@ void UDFMP2::form_Aia()
         }
     #endif
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(ribasis_,BasisSet::zero_ao_basis_set(),
         basisset_,basisset_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
         buffer.push_back(eri[thread]->buffer());
     }
 
@@ -3592,7 +3592,7 @@ void UDFMP2::form_gradient()
     throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
 }
 
-RODFMP2::RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio) :
+RODFMP2::RODFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio) :
     UDFMP2(ref_wfn, options,psio)
 {
     common_init();

@@ -59,8 +59,8 @@ namespace psi {
 int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
           std::string out, int print_lvl)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    double det, tval;
    double **Bmat; /* Matrix of expansion vectors */
    double **Ab;   /* Matrix of A x expansion vectors */

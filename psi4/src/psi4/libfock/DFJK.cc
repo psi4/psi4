@@ -58,8 +58,8 @@ using namespace psi;
 
 namespace psi {
 
-DFJK::DFJK(boost::shared_ptr<BasisSet> primary,
-   boost::shared_ptr<BasisSet> auxiliary) :
+DFJK::DFJK(std::shared_ptr<BasisSet> primary,
+   std::shared_ptr<BasisSet> auxiliary) :
    JK(primary), auxiliary_(auxiliary)
 {
     common_init();
@@ -342,9 +342,9 @@ int DFJK::max_nocc() const
 }
 void DFJK::initialize_temps()
 {
-    J_temp_ = boost::shared_ptr<Vector>(new Vector("Jtemp", sieve_->function_pairs().size()));
-    D_temp_ = boost::shared_ptr<Vector>(new Vector("Dtemp", sieve_->function_pairs().size()));
-    d_temp_ = boost::shared_ptr<Vector>(new Vector("dtemp", max_rows_));
+    J_temp_ = std::shared_ptr<Vector>(new Vector("Jtemp", sieve_->function_pairs().size()));
+    D_temp_ = std::shared_ptr<Vector>(new Vector("Dtemp", sieve_->function_pairs().size()));
+    d_temp_ = std::shared_ptr<Vector>(new Vector("dtemp", max_rows_));
 
 
     #ifdef _OPENMP
@@ -369,7 +369,7 @@ void DFJK::initialize_temps()
     if (lr_symmetric_)
         E_right_ = E_left_;
     else
-        E_right_ = boost::shared_ptr<Matrix>(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
+        E_right_ = std::shared_ptr<Matrix>(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
 
 }
 void DFJK::initialize_w_temps()
@@ -421,7 +421,7 @@ void DFJK::preiterations()
 
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
-        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+        sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
 
     // Core or disk?
@@ -501,12 +501,12 @@ void DFJK::initialize_JK_core()
     }
 
     //Get a TEI for each thread
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -554,7 +554,7 @@ void DFJK::initialize_JK_core()
 
     timer_on("JK: (A|Q)^-1/2");
 
-    boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -647,7 +647,7 @@ void DFJK::initialize_JK_disk()
     //}
 
     // Find out exactly how much memory per MN shell
-    boost::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
+    std::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
     int *MN_memp = MN_mem->pointer();
 
     for (int mn = 0; mn < ntri; mn++) {
@@ -698,7 +698,7 @@ void DFJK::initialize_JK_disk()
     // ==> Reduced indexing by M <== //
 
     // Figure out the MN start index per M row
-    boost::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
+    std::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
     int* MN_startp = MN_start->pointer();
 
     MN_startp[0] = schwarz_shell_pairs_r[0];
@@ -711,7 +711,7 @@ void DFJK::initialize_JK_disk()
     }
 
     // Figure out the mn start index per M row
-    boost::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
+    std::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
     int* mn_startp = mn_start->pointer();
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
@@ -724,7 +724,7 @@ void DFJK::initialize_JK_disk()
     }
 
     // Figure out the MN columns per M row
-    boost::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
+    std::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
     int* MN_colp = MN_col->pointer();
 
     for (int M = 1; M < nshell; M++) {
@@ -733,7 +733,7 @@ void DFJK::initialize_JK_disk()
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
 
     // Figure out the mn columns per M row
-    boost::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
+    std::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
     int* mn_colp = mn_col->pointer();
 
     for (int M = 1; M < nshell; M++) {
@@ -808,13 +808,13 @@ void DFJK::initialize_JK_disk()
     timer_on("JK: (A|Q)^-1");
 
     psio_->open(unit_,PSIO_OPEN_NEW);
-    boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+    std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
     aio->zero_disk(unit_,"(Q|mn) Integrals",naux,ntri);
 
     // Form the J symmetric inverse
-    boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -830,12 +830,12 @@ void DFJK::initialize_JK_disk()
     #endif
 
     // ==> ERI initialization <== //
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -964,12 +964,12 @@ void DFJK::initialize_wK_core()
     // => Left Integrals <= //
 
     //Get a TEI for each thread
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -1020,7 +1020,7 @@ void DFJK::initialize_wK_core()
     timer_on("JK: (A|Q)^-1");
 
     // Fitting metric
-    boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
     Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -1036,9 +1036,9 @@ void DFJK::initialize_wK_core()
     // => Right Integrals <= //
 
     const double **buffer2 = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri2 = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri2[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
     }
 
@@ -1140,7 +1140,7 @@ void DFJK::initialize_wK_disk()
     //}
 
     // Find out exactly how much memory per MN shell
-    boost::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
+    std::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
     int *MN_memp = MN_mem->pointer();
 
     for (int mn = 0; mn < ntri; mn++) {
@@ -1191,7 +1191,7 @@ void DFJK::initialize_wK_disk()
     // ==> Reduced indexing by M <== //
 
     // Figure out the MN start index per M row
-    boost::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
+    std::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
     int* MN_startp = MN_start->pointer();
 
     MN_startp[0] = schwarz_shell_pairs_r[0];
@@ -1204,7 +1204,7 @@ void DFJK::initialize_wK_disk()
     }
 
     // Figure out the mn start index per M row
-    boost::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
+    std::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
     int* mn_startp = mn_start->pointer();
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
@@ -1217,7 +1217,7 @@ void DFJK::initialize_wK_disk()
     }
 
     // Figure out the MN columns per M row
-    boost::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
+    std::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
     int* MN_colp = MN_col->pointer();
 
     for (size_t M = 1; M < nshell; M++) {
@@ -1226,7 +1226,7 @@ void DFJK::initialize_wK_disk()
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
 
     // Figure out the mn columns per M row
-    boost::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
+    std::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
     int* mn_colp = mn_col->pointer();
 
     for (size_t M = 1; M < nshell; M++) {
@@ -1298,13 +1298,13 @@ void DFJK::initialize_wK_disk()
 
     // ==> Prestripe/Jinv <== //
     psio_->open(unit_,PSIO_OPEN_OLD);
-    boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+    std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
     aio->zero_disk(unit_,"Left (Q|w|mn) Integrals",naux,ntri);
 
     // Form the J full inverse
-    boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true));
     Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
@@ -1318,12 +1318,12 @@ void DFJK::initialize_wK_disk()
     #endif
 
     // ==> ERI initialization <== //
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -1411,9 +1411,9 @@ void DFJK::initialize_wK_disk()
     // => Right Integrals <= //
 
     const double **buffer2 = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri2 = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri2[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
     }
 
@@ -1534,12 +1534,12 @@ void DFJK::rebuild_wK_disk()
         nthread = df_ints_num_threads_;
     #endif
 
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer2 = new const double*[nthread];
-    boost::shared_ptr<TwoBodyAOInt> *eri2 = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    std::shared_ptr<TwoBodyAOInt> *eri2 = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri2[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
         buffer2[Q] = eri2[Q]->buffer();
     }
 

@@ -131,7 +131,7 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
     std::vector<int> numpy_shape = mat->numpy_shape();
     if (numpy_shape.size()){
         if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
-        boost::python::list shape;
+        pybind11::list shape;
         for (int i=0; i<numpy_shape.size(); i++){
            shape.append(numpy_shape[i]);
         }
@@ -164,8 +164,8 @@ dict matrix_array_interface_c1(SharedMatrix mat){
     return matrix_array_interface(mat, 0);
 }
 
-boost::python::list make_matix_array_interfaces(SharedMatrix mat){
-    boost::python::list interfaces;
+pybind11::list make_matix_array_interfaces(SharedMatrix mat){
+    pybind11::list interfaces;
     Numpy_Interface tmp_interface = Numpy_Interface();
     for(int h=0; h < mat->nirrep(); h++){
         dict array_interface = matrix_array_interface(mat, h);
@@ -182,7 +182,7 @@ dict vector_array_interface(SharedVector vec, int irrep){
     std::vector<int> numpy_shape = vec->numpy_shape();
     if (numpy_shape.size()){
         if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
-        boost::python::list shape;
+        pybind11::list shape;
         for (int i=0; i<numpy_shape.size(); i++){
            shape.append(numpy_shape[i]);
         }
@@ -213,8 +213,8 @@ dict vector_array_interface_c1(SharedVector vec){
     return vector_array_interface(vec, 0);
 }
 
-boost::python::list make_vector_array_interfaces(SharedVector vec){
-    boost::python::list interfaces;
+pybind11::list make_vector_array_interfaces(SharedVector vec){
+    pybind11::list interfaces;
     Numpy_Interface tmp_interface = Numpy_Interface();
     for(int h=0; h < vec->nirrep(); h++){
         dict array_interface = vector_array_interface(vec, h);
@@ -226,16 +226,16 @@ boost::python::list make_vector_array_interfaces(SharedVector vec){
 
 /* End numpy __array_interface__ */
 
-boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
+std::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
-boost::shared_ptr<MatrixFactory> get_matrix_factory()
+std::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
     outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
+    std::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
         outfile->Printf( "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -246,20 +246,20 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     }
 
     // Read in the basis set
-    boost::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
+    std::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
         "BASIS", Process::environment.options.get_str("BASIS"));
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    boost::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    std::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
 
-    boost::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
+    std::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
     matfac->init_with(dim, dim);
 
     return matfac;
 }
 
 // Just a little patch until we can figure out options python-side.
-boost::shared_ptr<JK> py_build_JK(boost::shared_ptr<BasisSet> basis){
+std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
     return JK::build_JK(basis, Process::environment.options);
 }
 
@@ -296,7 +296,7 @@ void export_mints()
     def("nuclear_dipole", py_nuclear_dipole, "docstring");
 
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
-    // is going to contain boost::shared_ptr's we MUST set the no_proxy flag to true
+    // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
     class_<std::vector<SharedMatrix > >("matrix_vector", "docstring").
@@ -341,7 +341,7 @@ void export_mints()
             def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
-    class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
+    class_<Vector, std::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
             def(init<const Dimension&>()).
             def(init<const std::string&, int>()).
@@ -362,7 +362,7 @@ void export_mints()
             add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
-    class_<IntVector, boost::shared_ptr<IntVector> >( "IntVector", "docstring").
+    class_<IntVector, std::shared_ptr<IntVector> >( "IntVector", "docstring").
             def(init<int>()).
             def("get", &IntVector::get, "docstring").
             def("set", int_vector_set(&IntVector::set), "docstring").
@@ -385,7 +385,7 @@ void export_mints()
             add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
-    typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
+    typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
     typedef void   (Matrix::*matrix_one)(const SharedMatrix&);
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void   (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
@@ -465,9 +465,9 @@ void export_mints()
             def(init<SharedMatrix, const Dimension&, const Dimension&, const Dimension&, const Dimension&>()).
             def("__call__", &View::operator(), "docstring");
 
-    class_<Deriv, boost::shared_ptr<Deriv> >("Deriv", "docstring", no_init).
-            def(init<boost::shared_ptr<Wavefunction> >()).
-            def(init<boost::shared_ptr<Wavefunction>, char, bool, bool>()).
+    class_<Deriv, std::shared_ptr<Deriv> >("Deriv", "docstring", no_init).
+            def(init<std::shared_ptr<Wavefunction> >()).
+            def(init<std::shared_ptr<Wavefunction>, char, bool, bool>()).
             def("set_tpdm_presorted", &Deriv::set_tpdm_presorted, "docstring").
             def("set_ignore_reference", &Deriv::set_ignore_reference, "docstring").
             def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed, "docstring").
@@ -476,17 +476,17 @@ void export_mints()
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
-    class_<MatrixFactory, boost::shared_ptr<MatrixFactory> >("MatrixFactory", "docstring").
+    class_<MatrixFactory, std::shared_ptr<MatrixFactory> >("MatrixFactory", "docstring").
             def("shared_object", &get_matrix_factory, "docstring").
             staticmethod("shared_object").
             def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix), "docstring").
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix), "docstring");
 
-    class_<CdSalcList, boost::shared_ptr<CdSalcList>, boost::noncopyable>("CdSalcList", "docstring", no_init).
+    class_<CdSalcList, std::shared_ptr<CdSalcList>, boost::noncopyable>("CdSalcList", "docstring", no_init).
             def("print_out", &CdSalcList::print, "docstring").
             def("matrix", &CdSalcList::matrix, "docstring");
 
-    class_<GaussianShell, boost::shared_ptr<GaussianShell> >("GaussianShell", "docstring", no_init).
+    class_<GaussianShell, std::shared_ptr<GaussianShell> >("GaussianShell", "docstring", no_init).
             add_property("nprimitive", &GaussianShell::nprimitive, "docstring").
             add_property("nfunction", &GaussianShell::nfunction, "docstring").
             add_property("ncartesian", &GaussianShell::ncartesian, "docstring").
@@ -516,7 +516,7 @@ void export_mints()
        .value("Pure",Pure)
        ;
 
-    class_<ShellInfo, boost::shared_ptr<ShellInfo>>("ShellInfo" , init<int,
+    class_<ShellInfo, std::shared_ptr<ShellInfo>>("ShellInfo" , init<int,
                   const std::vector<double>&,
                   const std::vector<double>&,
                   GaussianType,
@@ -528,7 +528,7 @@ void export_mints()
     class_<std::vector<ShellInfo>>("BSVec")
         .def(vector_indexing_suite<std::vector<ShellInfo>>());
 
-    class_<OneBodyAOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
+    class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
             def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
             add_property("origin", &OneBodyAOInt::origin, &OneBodyAOInt::set_origin, "The origin about which the one body ints are being computed.").
             add_property("basis", &OneBodyAOInt::basis, "The basis set on center one").
@@ -540,45 +540,45 @@ void export_mints()
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
     //typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
-    //class_<OneBodySOInt, boost::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt", "docstring", no_init).
+    //class_<OneBodySOInt, std::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt", "docstring", no_init).
     //        def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
     //        def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
     //        add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
     //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
     //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
 
-    class_<OverlapInt, boost::shared_ptr<OverlapInt>, bases<OneBodyAOInt>, boost::noncopyable>("OverlapInt", "docstring", no_init);
-    class_<DipoleInt, boost::shared_ptr<DipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("DipoleInt", "docstring", no_init);
-    class_<QuadrupoleInt, boost::shared_ptr<QuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("QuadrupoleInt", "docstring", no_init);
-    class_<MultipoleInt, boost::shared_ptr<MultipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("MultipoleInt", "docstring", no_init);
-    class_<TracelessQuadrupoleInt, boost::shared_ptr<TracelessQuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("TracelessQuadrupoleInt", "docstring", no_init);
-    class_<ElectricFieldInt, boost::shared_ptr<ElectricFieldInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectricFieldInt", "docstring", no_init);
-    class_<KineticInt, boost::shared_ptr<KineticInt>, bases<OneBodyAOInt>, boost::noncopyable>("KineticInt", "docstring", no_init);
-    class_<PotentialInt, boost::shared_ptr<PotentialInt>, bases<OneBodyAOInt>, boost::noncopyable>("PotentialInt", "docstring", no_init);
-    class_<PseudospectralInt, boost::shared_ptr<PseudospectralInt>, bases<OneBodyAOInt>, boost::noncopyable>("PseudospectralInt", "docstring", no_init);
-    class_<ElectrostaticInt, boost::shared_ptr<ElectrostaticInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectrostaticInt", "docstring", no_init);
-    class_<NablaInt, boost::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
-    class_<AngularMomentumInt, boost::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
+    class_<OverlapInt, std::shared_ptr<OverlapInt>, bases<OneBodyAOInt>, boost::noncopyable>("OverlapInt", "docstring", no_init);
+    class_<DipoleInt, std::shared_ptr<DipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("DipoleInt", "docstring", no_init);
+    class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("QuadrupoleInt", "docstring", no_init);
+    class_<MultipoleInt, std::shared_ptr<MultipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("MultipoleInt", "docstring", no_init);
+    class_<TracelessQuadrupoleInt, std::shared_ptr<TracelessQuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("TracelessQuadrupoleInt", "docstring", no_init);
+    class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectricFieldInt", "docstring", no_init);
+    class_<KineticInt, std::shared_ptr<KineticInt>, bases<OneBodyAOInt>, boost::noncopyable>("KineticInt", "docstring", no_init);
+    class_<PotentialInt, std::shared_ptr<PotentialInt>, bases<OneBodyAOInt>, boost::noncopyable>("PotentialInt", "docstring", no_init);
+    class_<PseudospectralInt, std::shared_ptr<PseudospectralInt>, bases<OneBodyAOInt>, boost::noncopyable>("PseudospectralInt", "docstring", no_init);
+    class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectrostaticInt", "docstring", no_init);
+    class_<NablaInt, std::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
+    class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
 
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
-    class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
+    class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
             add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
             add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring").
             def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring");
 
-    class_<TwoElectronInt, boost::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);
+    class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
 
-    class_<ERI, boost::shared_ptr<ERI>, bases<TwoElectronInt>, boost::noncopyable>("ERI", "docstring", no_init);
-    class_<F12, boost::shared_ptr<F12>, bases<TwoElectronInt>, boost::noncopyable>("F12", "docstring", no_init);
-    class_<F12G12, boost::shared_ptr<F12G12>, bases<TwoElectronInt>, boost::noncopyable>("F12G12", "docstring", no_init);
-    class_<F12Squared, boost::shared_ptr<F12Squared>, bases<TwoElectronInt>, boost::noncopyable>("F12Squared", "docstring", no_init);
-    class_<F12DoubleCommutator, boost::shared_ptr<F12DoubleCommutator>, bases<TwoElectronInt>, boost::noncopyable>("F12DoubleCommutator", "docstring", no_init);
-    class_<ErfERI, boost::shared_ptr<ErfERI>, bases<TwoElectronInt>, boost::noncopyable>("ErfERI", "docstring", no_init);
-    class_<ErfComplementERI, boost::shared_ptr<ErfComplementERI>, bases<TwoElectronInt>,        boost::noncopyable>("ErfComplementERI", "docstring", no_init);
+    class_<ERI, std::shared_ptr<ERI>, bases<TwoElectronInt>, boost::noncopyable>("ERI", "docstring", no_init);
+    class_<F12, std::shared_ptr<F12>, bases<TwoElectronInt>, boost::noncopyable>("F12", "docstring", no_init);
+    class_<F12G12, std::shared_ptr<F12G12>, bases<TwoElectronInt>, boost::noncopyable>("F12G12", "docstring", no_init);
+    class_<F12Squared, std::shared_ptr<F12Squared>, bases<TwoElectronInt>, boost::noncopyable>("F12Squared", "docstring", no_init);
+    class_<F12DoubleCommutator, std::shared_ptr<F12DoubleCommutator>, bases<TwoElectronInt>, boost::noncopyable>("F12DoubleCommutator", "docstring", no_init);
+    class_<ErfERI, std::shared_ptr<ErfERI>, bases<TwoElectronInt>, boost::noncopyable>("ErfERI", "docstring", no_init);
+    class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>, bases<TwoElectronInt>,        boost::noncopyable>("ErfComplementERI", "docstring", no_init);
 
-    class_<AOShellCombinationsIterator, boost::shared_ptr<AOShellCombinationsIterator>, boost::noncopyable>("AOShellCombinationsIterator", no_init).
+    class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>, boost::noncopyable>("AOShellCombinationsIterator", no_init).
             add_property("p", &AOShellCombinationsIterator::p, "docstring").
             add_property("q", &AOShellCombinationsIterator::q, "docstring").
             add_property("r", &AOShellCombinationsIterator::r, "docstring").
@@ -587,15 +587,15 @@ void export_mints()
             def("next", &AOShellCombinationsIterator::next, "docstring").
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
-    class_<ThreeCenterOverlapInt, boost::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
+    class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
             def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
             add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
             def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
-    class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
-            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
-            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
-            def(init<boost::shared_ptr<BasisSet> >()).
+    class_<IntegralFactory, std::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
+            def(init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
+            def(init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
+            def(init<std::shared_ptr<BasisSet> >()).
             def("shells_iterator", &IntegralFactory::shells_iterator_ptr, return_value_policy<manage_new_object>(), "docstring").
             def("eri", &IntegralFactory::eri, eri_overloads("docstring")[return_value_policy<manage_new_object>()]).
             def("f12", &IntegralFactory::f12, f12_overloads("docstring")[return_value_policy<manage_new_object>()]).
@@ -620,22 +620,22 @@ void export_mints()
             def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring").
             def("overlap_3c", &IntegralFactory::overlap_3c, return_value_policy<manage_new_object>(), "docstring");
 
-    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
-    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
+    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
+    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
 
     typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*normal_eri)();
-    typedef SharedMatrix (MintsHelper::*normal_eri2)(boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
 
-    typedef SharedMatrix (MintsHelper::*normal_f12)(boost::shared_ptr<CorrelationFactor>);
-    typedef SharedMatrix (MintsHelper::*normal_f122)(boost::shared_ptr<CorrelationFactor>, boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>,boost::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
 
     typedef SharedMatrix (MintsHelper::*oneelectron)();
-    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
-    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring", no_init).
-            def(init<boost::shared_ptr<BasisSet> >()).
+    class_<MintsHelper, std::shared_ptr<MintsHelper> >("MintsHelper", "docstring", no_init).
+            def(init<std::shared_ptr<BasisSet> >()).
             def("integral", &MintsHelper::integral, "docstring").
             def("integrals", &MintsHelper::integrals, "docstring").
             def("integrals_erf", &MintsHelper::integrals_erf, "docstring").
@@ -688,8 +688,8 @@ void export_mints()
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
 
-    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring", no_init).
-            def(init<boost::shared_ptr<BasisSet>, bool>()).
+    class_<FittingMetric, std::shared_ptr<FittingMetric> >("FittingMetric", "docstring", no_init).
+            def(init<std::shared_ptr<BasisSet>, bool>()).
             def("get_algorithm", &FittingMetric::get_algorithm, "docstring").
             def("is_poisson", &FittingMetric::is_poisson, "docstring").
             def("is_inverted", &FittingMetric::is_inverted, "docstring").
@@ -702,7 +702,7 @@ void export_mints()
             def("form_eig_inverse", &FittingMetric::form_eig_inverse, "docstring").
             def("form_full_inverse", &FittingMetric::form_full_inverse, "docstring");
 
-    class_<PseudoTrial, boost::shared_ptr<PseudoTrial> >("PseudoTrial", "docstring").
+    class_<PseudoTrial, std::shared_ptr<PseudoTrial> >("PseudoTrial", "docstring").
             def("getI", &PseudoTrial::getI, "docstring").
             def("getIPS", &PseudoTrial::getIPS, "docstring").
             def("getQ", &PseudoTrial::getQ, "docstring").
@@ -752,9 +752,9 @@ void export_mints()
             def("transpose", &SymmetryOperation::transpose, "Performs transposition of matrix operation");
 
     class_<OrbitalSpace>("OrbitalSpace", "docstring", no_init).
-            def(init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
-            def(init<const std::string&, const std::string&, const SharedMatrix&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
-            def(init<const std::string&, const std::string&, const boost::shared_ptr<Wavefunction>& >()).
+            def(init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&, const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>& >()).
+            def(init<const std::string&, const std::string&, const SharedMatrix&, const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>& >()).
+            def(init<const std::string&, const std::string&, const std::shared_ptr<Wavefunction>& >()).
             def("nirrep", &OrbitalSpace::nirrep, "docstring").
             def("id", &OrbitalSpace::id, return_value_policy<copy_const_reference>(), "docstring").
             def("name", &OrbitalSpace::name, return_value_policy<copy_const_reference>(), "docstring").
@@ -769,7 +769,7 @@ void export_mints()
             def("build_ri_space", &OrbitalSpace::build_ri_space, "docstring").
             staticmethod("build_ri_space");
 
-    class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup", "docstring").
+    class_<PointGroup, std::shared_ptr<PointGroup> >("PointGroup", "docstring").
             def(init<const std::string&>()).
             def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group");
             //def("origin", &PointGroup::origin).
@@ -777,7 +777,7 @@ void export_mints()
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
 
-    class_<Molecule, boost::shared_ptr<Molecule> >("Molecule", "Class to store the elements, coordinates, fragmentation pattern, basis sets, charge, multiplicity, etc. of a molecule.").
+    class_<Molecule, std::shared_ptr<Molecule> >("Molecule", "Class to store the elements, coordinates, fragmentation pattern, basis sets, charge, multiplicity, etc. of a molecule.").
             def("set_geometry", matrix_set_geometry(&Molecule::set_geometry), "Sets the geometry, given a (Natom X 3) matrix arg2 of coordinates (in Bohr)").
             def("set_name", &Molecule::set_name, "Sets molecule name").
             def("name", &Molecule::name, "Gets molecule name").
@@ -850,13 +850,13 @@ void export_mints()
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
-    class_<PetiteList, boost::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", "docstring", no_init).
+    class_<PetiteList, std::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", "docstring", no_init).
             def("aotoso", &PetiteList::aotoso, "docstring").
             def("sotoao", &PetiteList::sotoao, "docstring").
             def("print", &PetiteList::print, "docstring");
 
-    class_<BasisSetParser, boost::shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", "docstring", no_init);
-    class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
+    class_<BasisSetParser, std::shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", "docstring", no_init);
+    class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
 
     using ShellInfoMap=std::map<std::string,std::vector<ShellInfo>>;
 
@@ -871,10 +871,10 @@ void export_mints()
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
-    typedef boost::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const boost::shared_ptr<BasisSet>&) const;
-    class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>
+    typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
+    class_<BasisSet, std::shared_ptr<BasisSet>, boost::noncopyable>
             ("BasisSet", "docstring",init<>()).
-            def(init<const std::string&,boost::shared_ptr<Molecule>,ShellInfoMapMap&>()).
+            def(init<const std::string&,std::shared_ptr<Molecule>,ShellInfoMapMap&>()).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
             def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
@@ -907,10 +907,10 @@ void export_mints()
             def("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, pyconstruct_aux_overloads("Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.")).
             staticmethod("pyconstruct_auxiliary");
 
-    class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
+    class_<SOBasisSet, std::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
 
-    class_<ExternalPotential, boost::shared_ptr<ExternalPotential>, boost::noncopyable>("ExternalPotential", "docstring").
+    class_<ExternalPotential, std::shared_ptr<ExternalPotential>, boost::noncopyable>("ExternalPotential", "docstring").
             def("setName", &ExternalPotential::setName, "docstring").
             def("addCharge", &ExternalPotential::addCharge, "docstring").
             def("addBasis", &ExternalPotential::addBasis, "docstring").
@@ -918,18 +918,18 @@ void export_mints()
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix, "docstring").
             def("print_out", &ExternalPotential::py_print, "docstring");
 
-    class_<DFChargeFitter, boost::shared_ptr<DFChargeFitter>, boost::noncopyable>("DFChargeFitter", "docstring").
+    class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>, boost::noncopyable>("DFChargeFitter", "docstring").
             def("setPrimary", &DFChargeFitter::setPrimary, "docstring").
             def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring").
             def("setD", &DFChargeFitter::setD, "docstring").
             def("d", &DFChargeFitter::d, "docstring").
             def("fit", &DFChargeFitter::fit, "docstring");
 
-    using SharedMol=boost::shared_ptr<Molecule>;
-    using SharedBS=boost::shared_ptr<BasisSet>;
+    using SharedMol=std::shared_ptr<Molecule>;
+    using SharedBS=std::shared_ptr<BasisSet>;
 
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>
+    class_<Wavefunction, std::shared_ptr<Wavefunction>, boost::noncopyable>
            ("Wavefunction", "docstring",init<Options&>()).
             def(init<SharedMol, const std::string&, Options&>()).
             def(init<SharedMol,SharedBS,Options&>()).
@@ -989,23 +989,23 @@ void export_mints()
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
-    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
+    class_<scf::HF, std::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init).
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
-    class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
+    class_<scf::RHF, std::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
 
-    class_<scf::ROHF, boost::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init).
+    class_<scf::ROHF, std::shared_ptr<scf::ROHF>, bases<scf::HF, Wavefunction> >("ROHF", "docstring", no_init).
             def("moFeff", &scf::ROHF::moFeff, "docstring").
             def("moFa", &scf::ROHF::moFa, "docstring").
             def("moFb", &scf::ROHF::moFb, "docstring");
 
-    class_<scf::CUHF, boost::shared_ptr<scf::CUHF>, bases<scf::HF, Wavefunction> >("CUHF", "docstring", no_init);
+    class_<scf::CUHF, std::shared_ptr<scf::CUHF>, bases<scf::HF, Wavefunction> >("CUHF", "docstring", no_init);
 
-    typedef boost::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>);
+    typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 
-    class_<Localizer, boost::shared_ptr<Localizer>, boost::noncopyable>("Localizer", "docstring", no_init).
+    class_<Localizer, std::shared_ptr<Localizer>, boost::noncopyable>("Localizer", "docstring", no_init).
             def("build", localizer_with_type(&Localizer::build), "docstring").
             staticmethod("build").
             def("localize", &Localizer::localize, "Perform the localization procedure").
@@ -1013,39 +1013,39 @@ void export_mints()
             add_property("U", &Localizer::U, "Orbital rotation matrix").
             add_property("converged", &Localizer::converged, "Did the localization procedure converge?");
 
-    class_<BoysLocalizer, boost::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
-    class_<PMLocalizer, boost::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
+    class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
+    class_<PMLocalizer, std::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
 
-    class_<FCHKWriter, boost::shared_ptr<FCHKWriter> >("FCHKWriter", "docstring", no_init).
-            def(init<boost::shared_ptr<Wavefunction> >()).
+    class_<FCHKWriter, std::shared_ptr<FCHKWriter> >("FCHKWriter", "docstring", no_init).
+            def(init<std::shared_ptr<Wavefunction> >()).
             def("write", &FCHKWriter::write, "docstring");
 
-    class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
-            def(init<boost::shared_ptr<Wavefunction> >()).
+    class_<MoldenWriter, std::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
+            def(init<std::shared_ptr<Wavefunction> >()).
             def("writeNO", &MoldenWriter::writeNO, "docstring").
             def("write", &MoldenWriter::write, "docstring");
 
-    class_<NBOWriter, boost::shared_ptr<NBOWriter> >("NBOWriter", "docstring", no_init).
-            def(init<boost::shared_ptr<Wavefunction> >()).
+    class_<NBOWriter, std::shared_ptr<NBOWriter> >("NBOWriter", "docstring", no_init).
+            def(init<std::shared_ptr<Wavefunction> >()).
             def("write", &NBOWriter::write, "docstring");
 
-    class_<OperatorSymmetry, boost::shared_ptr<OperatorSymmetry> >("MultipoleSymmetry", "docstring", no_init).
-            def(init<int, const boost::shared_ptr<Molecule>&,
-                const boost::shared_ptr<IntegralFactory>&,
-                const boost::shared_ptr<MatrixFactory>&>()).
+    class_<OperatorSymmetry, std::shared_ptr<OperatorSymmetry> >("MultipoleSymmetry", "docstring", no_init).
+            def(init<int, const std::shared_ptr<Molecule>&,
+                const std::shared_ptr<IntegralFactory>&,
+                const std::shared_ptr<MatrixFactory>&>()).
             def("create_matrices", &OperatorSymmetry::create_matrices, "docstring");
 
-    class_<CorrelationFactor, boost::shared_ptr<CorrelationFactor>, boost::noncopyable>("CorrelationFactor", "docstring", no_init).
+    class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>, boost::noncopyable>("CorrelationFactor", "docstring", no_init).
             def(init<unsigned int>()).
-            def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >()).
+            def(init<std::shared_ptr<Vector>, std::shared_ptr<Vector> >()).
             def("set_params", &CorrelationFactor::set_params, "docstring");
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
     // LIBFOCK wrappers
-    class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
-//            .def(init<boost::shared_ptr<BasisSet> >())
+    class_<JK, std::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
+//            .def(init<std::shared_ptr<BasisSet> >())
             // .def("build_JK", &JK::build_JK, "docstring")
             .def("build_JK", py_build_JK, "docstring")
             .staticmethod("build_JK")
@@ -1060,15 +1060,15 @@ void export_mints()
             .def("D", &JK::D, return_internal_reference<>())
             .def("print_header", &JK::print_header, "docstring");
 
-    class_<LaplaceDenominator, boost::shared_ptr<LaplaceDenominator> >("LaplaceDenominator", "docstring", no_init)
-            .def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double>())
+    class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator> >("LaplaceDenominator", "docstring", no_init)
+            .def(init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
             .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
             .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
 
 
-    class_<DFTensor, boost::shared_ptr<DFTensor> >("DFTensor", "docstring", no_init)
-            .def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>, int, int>())
-            .def(init<boost::shared_ptr<Wavefunction>, const std::string&>())
+    class_<DFTensor, std::shared_ptr<DFTensor> >("DFTensor", "docstring", no_init)
+            .def(init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
+            .def(init<std::shared_ptr<Wavefunction>, const std::string&>())
             .def("Qso", &DFTensor::Qso, "doctsring")
             .def("Qmo", &DFTensor::Qmo, "doctsring")
             .def("Qoo", &DFTensor::Qoo, "doctsring")
@@ -1079,21 +1079,21 @@ void export_mints()
 
 
     /// CIWavefunction data
-    void (detci::CIWavefunction::*py_ci_sigma)(boost::shared_ptr<psi::detci::CIvect>,
-                                    boost::shared_ptr<psi::detci::CIvect>, int, int) =
+    void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
+                                    std::shared_ptr<psi::detci::CIvect>, int, int) =
                                     &detci::CIWavefunction::sigma;
-    void (detci::CIWavefunction::*py_ci_int_sigma)(boost::shared_ptr<psi::detci::CIvect>,
-                                    boost::shared_ptr<psi::detci::CIvect>, int, int,
+    void (detci::CIWavefunction::*py_ci_int_sigma)(std::shared_ptr<psi::detci::CIvect>,
+                                    std::shared_ptr<psi::detci::CIvect>, int, int,
                                     SharedVector, SharedVector) =
                                     &detci::CIWavefunction::sigma;
 
     typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
-                                          boost::shared_ptr<psi::detci::CIvect>,
-                                          boost::shared_ptr<psi::detci::CIvect>,
+                                          std::shared_ptr<psi::detci::CIvect>,
+                                          std::shared_ptr<psi::detci::CIvect>,
                                           int, int);
 
-    class_<detci::CIWavefunction, boost::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
-        .def(init<boost::shared_ptr<Wavefunction> >())
+    class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, bases<Wavefunction> >("CIWavefunction", "docstring", no_init)
+        .def(init<std::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
         .def("ndet", &detci::CIWavefunction::ndet, "docstring")
@@ -1117,11 +1117,11 @@ void export_mints()
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring");
 
-    void (detci::CIvect::*py_civ_copy)(boost::shared_ptr<psi::detci::CIvect>, int, int) =
+    void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;
     void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
 
-    class_<detci::CIvect, boost::shared_ptr<detci::CIvect> >("CIVector", "docstring", no_init)
+    class_<detci::CIvect, std::shared_ptr<detci::CIvect> >("CIVector", "docstring", no_init)
         .def("vdot", &detci::CIvect::vdot, "docstring")
         .def("axpy", &detci::CIvect::axpy, "docstring")
         .def("copy", py_civ_copy, "docstring")

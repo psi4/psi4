@@ -25,22 +25,18 @@
  * @END LICENSE
  */
 #include "psi4/libmints/3coverlap.h"
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
+#include <memory>
 #include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
-#include <boost/python/tuple.hpp>
+#include <pybind11/pybind11.h>
 
 using namespace psi;
 
 ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st,
-                                             boost::shared_ptr<BasisSet> bs1,
-                                             boost::shared_ptr<BasisSet> bs2,
-                                             boost::shared_ptr<BasisSet> bs3)
+                                             std::shared_ptr<BasisSet> bs1,
+                                             std::shared_ptr<BasisSet> bs2,
+                                             std::shared_ptr<BasisSet> bs3)
     : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()),
       bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st), enable_pybuffer_(false),
       pybuffer_(&buffer_, true)
@@ -73,22 +69,22 @@ ThreeCenterOverlapInt::~ThreeCenterOverlapInt()
     delete[] temp_;
 }
 
-boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis()
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis()
 {
     return bs1_;
 }
 
-boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis1()
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis1()
 {
     return bs1_;
 }
 
-boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis2()
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis2()
 {
     return bs2_;
 }
 
-boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis3()
+std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis3()
 {
     return bs3_;
 }
@@ -338,7 +334,7 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
     }
 
     if(enable_pybuffer_) {
-        pybuffer_.set_shape(boost::python::make_tuple(
+        pybuffer_.set_shape(pybind11::make_tuple(
             is_pure1 ? nso1 : nao1,
             is_pure2 ? nso2 : nao2,
             is_pure3 ? nso3 : nao3

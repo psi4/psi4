@@ -29,7 +29,6 @@
 #include "mospace.h"
 #include "psi4/libpsi4util/exception.h"
 
-using namespace boost;
 using namespace psi;
 
 /**
@@ -48,7 +47,7 @@ using namespace psi;
  * @return the DPD number to use for disk storage
  */
 int
-IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
+IntegralTransform::DPD_ID(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                             SpinType spin, bool pack)
 {
 

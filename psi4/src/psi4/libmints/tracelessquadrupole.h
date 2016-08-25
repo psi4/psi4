@@ -32,7 +32,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
@@ -56,7 +56,7 @@ class TracelessQuadrupoleInt : public OneBodyAOInt
     // This the work horse function.
     void compute_pair(const GaussianShell&, const GaussianShell&);
 public:
-    TracelessQuadrupoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    TracelessQuadrupoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     virtual ~TracelessQuadrupoleInt();
 };
 

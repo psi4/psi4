@@ -28,9 +28,8 @@
 #ifndef _psi_src_lib_libmints_pybuffer_h
 #define _psi_src_lib_libmints_pybuffer_h
 
-#include <boost/python/dict.hpp>
-#include <boost/python/tuple.hpp>
-#include <boost/python/list.hpp>
+#include <pybind11/pybind11.h>
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -51,12 +50,12 @@ inline int is_big_endian(void)
 }
 
 template <typename vectType>
-inline boost::python::tuple vector_to_tuple(std::vector<vectType> v){
-	boost::python::list tmp;
+inline pybind11::tuple vector_to_tuple(std::vector<vectType> v){
+	pybind11::list tmp;
 	for(int i = 0; i < v.size(); ++i) {
 		tmp.append(v[i]);
 	}
-	return boost::python::tuple(tmp);
+	return pybind11::tuple(tmp);
 }
 
 /*! \ingroup MINTS
@@ -70,7 +69,7 @@ inline boost::python::tuple vector_to_tuple(std::vector<vectType> v){
 template <class T>
 class PyBuffer {
 
-	boost::python::dict interface_dict_;
+	pybind11::dict interface_dict_;
 
 	void init_data_type_()
 	{
@@ -87,7 +86,7 @@ class PyBuffer {
             tmpstr = sstr.str();
         }
 		data_str += data_typestr() + tmpstr;
-		interface_dict_["typestr"] = data_str;
+		interface_dict_["typestr"] = pybind11::str(data_str);
 	}
 
 	void init_(T* data, std::vector<long> shape, bool read_only)
@@ -99,7 +98,7 @@ class PyBuffer {
 		init_data_type_();
 	}
 
-	void init_(T* data, boost::python::tuple shape, bool read_only)
+	void init_(T* data, pybind11::tuple shape, bool read_only)
 	{
 		set_shape(shape);
 		read_only_ = read_only;
@@ -111,7 +110,7 @@ class PyBuffer {
 
 	void set_data_ptr(T* dataptr){
 		data_ptr_ = dataptr;
-		interface_dict_["data"] = boost::python::make_tuple((long)dataptr, read_only_);
+		interface_dict_["data"] = pybind11::make_tuple((long)dataptr, read_only_);
 	}
 
 	T** data_tracker_;
@@ -126,10 +125,10 @@ public:
 		interface_dict_()
 	{
 		data_tracker_ = &data;
-		init_(data, boost::python::make_tuple(0), read_only);
+		init_(data, pybind11::make_tuple(0), read_only);
 	}
 
-	PyBuffer(T* data, boost::python::tuple shape, bool read_only = true) :
+	PyBuffer(T* data, pybind11::tuple shape, bool read_only = true) :
 		interface_dict_()
 	{
 		data_tracker_ = &data;
@@ -148,12 +147,12 @@ public:
 		interface_dict_()
 	{
 		data_tracker_ = data_tracker;
-		init_(*data_tracker_, boost::python::make_tuple(0), read_only);
+		init_(*data_tracker_, pybind11::make_tuple(0), read_only);
 	}
 
 	~PyBuffer() {};
 
-	boost::python::dict array_interface() {
+	pybind11::dict array_interface() {
 		// First make sure our tracking pointer is up to date
 		set_data_ptr(*data_tracker_);
 		// Now return the array interface dict
@@ -162,7 +161,7 @@ public:
 	void set_shape(std::vector<long> shape) {
 		set_shape(vector_to_tuple(shape));
 	}
-	void set_shape(boost::python::tuple shape) {
+	void set_shape(pybind11::tuple shape) {
 		interface_dict_["shape"] = shape;
 	}
 

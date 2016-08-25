@@ -43,7 +43,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
@@ -417,7 +416,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
        if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,cvec_coeff[k-1],
            (&cvec_norm[k-1]),&max_overlap)) did_vec = 1;
        else {
-           std::string str = boost::lexical_cast<std::string>( 13);
+           std::string str = std::to_string(13);
            str += " vector norm = ";
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
@@ -425,7 +424,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
            str += " < ";
            sprintf(str2,"%20.15lf",MPn_NORM_TOL);
            str += str2;
-           delete str2;
+           delete[] str2;
            throw PsiException(str,__FILE__,__LINE__);
            }
        while (max_overlap > MPn_ZERO) {
@@ -443,7 +442,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
          if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,tmp_coeff,
             &tmp_norm,&max_overlap)) did_vec = 1;
          else {
-           std::string str = boost::lexical_cast<std::string>(13);
+           std::string str = std::to_string(13);
            str += " vector norm = ";
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
@@ -451,7 +450,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
            str += " < ";
            sprintf(str2,"%20.15lf",MPn_NORM_TOL);
            str += str2;
-           delete str2;
+           delete[] str2;
            throw PsiException(str,__FILE__,__LINE__);
            }
          for (i=0; i<k-1; i++) {

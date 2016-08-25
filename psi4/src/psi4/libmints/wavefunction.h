@@ -28,20 +28,14 @@
 #ifndef _psi_src_lib_libmints_wavefunction_h
 #define _psi_src_lib_libmints_wavefunction_h
 
-#include <stddef.h>
-#include <vector>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/enable_shared_from_this.hpp>
-
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 
+#include <stddef.h>
+#include <vector>
+#include <memory>
 
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
@@ -67,11 +61,6 @@ extern double fac[MAX_FAC];
 #   define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 #endif
 
-#if !defined( PyObject_HEAD )
-    struct _object;
-    typedef _object PyObject;
-#endif
-
 namespace psi {
 
 class Molecule;
@@ -90,37 +79,37 @@ class OrbitalSpace;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction : public boost::enable_shared_from_this<Wavefunction>
+class Wavefunction : public std::enable_shared_from_this<Wavefunction>
 {
 protected:
     /// Name of the wavefunction
     std::string name_;
 
     /// Primary basis set for AO integrals
-    boost::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<BasisSet> basisset_;
 
     /// Primary basis set for SO integrals
-    boost::shared_ptr<SOBasisSet> sobasisset_;
+    std::shared_ptr<SOBasisSet> sobasisset_;
 
     /// AO2SO conversion matrix (AO in rows, SO in cols)
     SharedMatrix AO2SO_;
 
     /// Molecule that this wavefunction is run on
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
 
     /// Options object
     Options & options_;
 
     // PSI file access variables
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 
     /// Integral factory
-    boost::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<IntegralFactory> integral_;
 
     /// Matrix factory for creating standard sized matrices
-    boost::shared_ptr<MatrixFactory> factory_;
+    std::shared_ptr<MatrixFactory> factory_;
 
-    boost::shared_ptr<Wavefunction> reference_wavefunction_;
+    std::shared_ptr<Wavefunction> reference_wavefunction_;
 
     /// How much memory you have access to.
     long int memory_;
@@ -196,9 +185,9 @@ protected:
     SharedMatrix Fb_;
 
     /// Alpha orbital eneriges
-    boost::shared_ptr<Vector> epsilon_a_;
+    std::shared_ptr<Vector> epsilon_a_;
     /// Beta orbital energies
-    boost::shared_ptr<Vector> epsilon_b_;
+    std::shared_ptr<Vector> epsilon_b_;
 
     // Callback routines to Python
     std::vector<void*> precallbacks_;
@@ -211,7 +200,7 @@ protected:
     SharedMatrix hessian_;
 
     /// The TPDM contribution to the gradient
-    boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
+    std::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
@@ -220,13 +209,13 @@ protected:
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
 
     /// If atomic point charges are available they will be here
-    boost::shared_ptr<double[]> atomic_point_charges_;
+    std::shared_ptr<std::vector<double>> atomic_point_charges_;
 
     /// If frequencies are available, they will be here:
-    boost::shared_ptr<Vector> frequencies_;
+    std::shared_ptr<Vector> frequencies_;
 
     /// If normal modes are available, they will be here:
-    boost::shared_ptr<Vector> normalmodes_;
+    std::shared_ptr<Vector> normalmodes_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
@@ -239,12 +228,12 @@ private:
 public:
 
     /// Constructor for an entirely new wavefunction with an existing basis
-    Wavefunction(boost::shared_ptr<Molecule> molecule,
-                 boost::shared_ptr<BasisSet> basis,
+    Wavefunction(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> basis,
                  Options& options);
 
     /// Constructor for an entirely new wavefunction
-    Wavefunction(boost::shared_ptr<Molecule> molecule, const std::string& basis,
+    Wavefunction(std::shared_ptr<Molecule> molecule, const std::string& basis,
                  Options & options);
 
     /// Blank constructor for derived classes
@@ -294,22 +283,22 @@ public:
     void map_irreps(Dimension &array);
 
     /// Returns the molecule object that pertains to this wavefunction.
-    boost::shared_ptr<Molecule> molecule() const;
-    boost::shared_ptr<PSIO> psio() const;
+    std::shared_ptr<Molecule> molecule() const;
+    std::shared_ptr<PSIO> psio() const;
     Options& options() const;
 
     /// An integral factory with basisset() on each center.
-    boost::shared_ptr<IntegralFactory> integral() const;
+    std::shared_ptr<IntegralFactory> integral() const;
     /// Returns the basis set object that pertains to this wavefunction.
-    boost::shared_ptr<BasisSet> basisset() const;
+    std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
-    boost::shared_ptr<SOBasisSet> sobasisset() const;
+    std::shared_ptr<SOBasisSet> sobasisset() const;
     /// Returns the MatrixFactory object that pertains to this wavefunction
-    boost::shared_ptr<MatrixFactory> matrix_factory() const;
+    std::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
-    boost::shared_ptr<Wavefunction> reference_wavefunction() const;
+    std::shared_ptr<Wavefunction> reference_wavefunction() const;
     /// Sets the reference wavefunction
-    void set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn);
+    void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
 
     /// Returns whether this wavefunction was obtained using density fitting or not
     bool density_fitted() const { return density_fitted_; }
@@ -368,13 +357,13 @@ public:
     /// Returns the (SO basis) beta Fock matrix
     SharedMatrix Fb() const;
     /// Returns the alpha orbital energies
-    boost::shared_ptr<Vector> epsilon_a() const;
+    std::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
-    boost::shared_ptr<Vector> epsilon_b() const;
+    std::shared_ptr<Vector> epsilon_b() const;
     /// Returns the SO basis Lagrangian
-    boost::shared_ptr<Matrix> Lagrangian() const;
+    std::shared_ptr<Matrix> Lagrangian() const;
     /// The two particle density matrix contribution to the gradient
-    virtual boost::shared_ptr<Matrix> tpdm_gradient_contribution() const;
+    virtual std::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
 
@@ -471,16 +460,6 @@ public:
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
 
-    /// Adds a pre iteration Python callback function
-    void add_preiteration_callback(PyObject*);
-    /// Adds a post iteration Python callback function
-    void add_postiteration_callback(PyObject*);
-
-    /// Call pre iteration callbacks
-    void call_preiteration_callbacks();
-    /// Call post iteration callbacks
-    void call_postiteration_callbacks();
-
     /// Returns the gradient
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
@@ -492,26 +471,26 @@ public:
     void set_hessian(SharedMatrix& hess);
 
     /// Returns the atomic point charges
-    boost::shared_ptr<double[]> atomic_point_charges()const{
+    std::shared_ptr<std::vector<double>> atomic_point_charges()const{
        return atomic_point_charges_;
     }
     /// Returns the atomic point charges in Vector form for python output.
-    boost::shared_ptr<Vector> get_atomic_point_charges() const;
+    std::shared_ptr<Vector> get_atomic_point_charges() const;
 
     /// Sets the atomic point charges
-    void set_atomic_point_charges(const boost::shared_ptr<double[]>& apcs){
+    void set_atomic_point_charges(const std::shared_ptr<std::vector<double>>& apcs){
        atomic_point_charges_=apcs;
     }
 
     /// Returns the frequencies
-    boost::shared_ptr<Vector> frequencies() const;
+    std::shared_ptr<Vector> frequencies() const;
     /// Set the frequencies for the wavefunction
-    void set_frequencies(boost::shared_ptr<Vector>& freqs);
+    void set_frequencies(std::shared_ptr<Vector>& freqs);
 
     /// Returns the normalmodes
-    boost::shared_ptr<Vector> normalmodes() const;
+    std::shared_ptr<Vector> normalmodes() const;
     /// Set the normalmodes for the wavefunction
-    void set_normalmodes(boost::shared_ptr<Vector>& norms);
+    void set_normalmodes(std::shared_ptr<Vector>& norms);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

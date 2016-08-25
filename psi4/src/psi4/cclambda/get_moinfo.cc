@@ -53,7 +53,7 @@ namespace psi { namespace cclambda {
 ** Modified for UHF references by TDC, June 2002.
 */
 
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
+void get_moinfo(std::shared_ptr<Wavefunction> wfn)
 {
     int i,j, h, p, q, errcod, nactive, nirreps, sym;
     double ***C, ***Ca, ***Cb;

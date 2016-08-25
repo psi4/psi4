@@ -27,7 +27,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 #include "diisentry.h"
@@ -37,13 +37,13 @@
 #include <sstream>
 
 using namespace std;
-using namespace boost;
+
 
 namespace psi{
 
 DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
                      int errorVectorSize, double *errorVector,
-                     int vectorSize, double *vector, boost::shared_ptr<PSIO> psio):
+                     int vectorSize, double *vector, std::shared_ptr<PSIO> psio):
         _vectorSize(vectorSize),
         _errorVectorSize(errorVectorSize),
         _vector(vector),

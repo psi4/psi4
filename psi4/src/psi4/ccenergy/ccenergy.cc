@@ -60,12 +60,12 @@ namespace psi { namespace ccenergy {
 
 // Forward declaration to call cctriples
 namespace psi { namespace cctriples {
-PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
 }}
 
 namespace psi { namespace ccenergy {
 
-CCEnergyWavefunction::CCEnergyWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
     : Wavefunction(options)
 {
     set_reference_wavefunction(reference_wavefunction);

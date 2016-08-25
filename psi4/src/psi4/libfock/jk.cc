@@ -57,7 +57,7 @@ using namespace psi;
 
 namespace psi {
 
-JK::JK( boost::shared_ptr<BasisSet> primary) :
+JK::JK( std::shared_ptr<BasisSet> primary) :
     primary_(primary)
 {
     common_init();
@@ -65,7 +65,7 @@ JK::JK( boost::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options,
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& options,
                                    std::string jk_type)
 {
     if (jk_type == "CD") {
@@ -87,11 +87,11 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
             "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
             options.get_str("BASIS"), primary->has_puream());
 
@@ -112,11 +112,11 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "FAST_DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
             "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
             options.get_str("BASIS"), primary->has_puream());
 
@@ -147,7 +147,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["DF_BUMP_R1"].has_changed())
             jk->set_df_bump_R1(options.get_double("DF_BUMP_R1"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "PK") {
 
@@ -160,7 +160,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["DEBUG"].has_changed())
             jk->set_debug(options.get_int("DEBUG"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "OUT_OF_CORE") {
 
@@ -175,7 +175,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["BENCH"].has_changed())
             jk->set_bench(options.get_int("BENCH"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
     }
     else if (jk_type == "DIRECT") {
@@ -192,7 +192,7 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
       } else if (jk_type == "INDEPENDENT") {
 
@@ -222,13 +222,13 @@ boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options&
       if (options["BENCH"].has_changed())
         jk->set_bench(options.get_int("BENCH"));
 
-      return boost::shared_ptr<JK>(jk);
+      return std::shared_ptr<JK>(jk);
 
     }else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }
-boost::shared_ptr<JK> JK::build_JK(boost::shared_ptr<BasisSet> primary, Options& options)
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& options)
 {
     return build_JK(primary, options, options.get_str("SCF_TYPE"));
 }
@@ -257,8 +257,8 @@ void JK::common_init()
     lr_symmetric_ = false;
     omega_ = 0.0;
 
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = SharedMatrix(pet->aotoso());
 }
 unsigned long int JK::memory_overhead() const

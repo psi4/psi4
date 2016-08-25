@@ -55,15 +55,15 @@ void SuperFunctional::common_init()
     c_ss_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
 }
-boost::shared_ptr<SuperFunctional> SuperFunctional::blank()
+std::shared_ptr<SuperFunctional> SuperFunctional::blank()
 {
-    return boost::shared_ptr<SuperFunctional>(new SuperFunctional());
+    return std::shared_ptr<SuperFunctional>(new SuperFunctional());
 }
 void SuperFunctional::print(std::string out, int level) const
 {
     if (level < 1) return;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf( "   => %s Composite Functional <= \n\n", name_.c_str());
 
     printer->Printf( "%s", description_.c_str());
@@ -146,15 +146,15 @@ void SuperFunctional::print(std::string out, int level) const
         dispersion_->print();
     }
 }
-void SuperFunctional::add_x_functional(boost::shared_ptr<Functional> fun)
+void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun)
 {
     x_functionals_.push_back(fun);
 }
-void SuperFunctional::add_c_functional(boost::shared_ptr<Functional> fun)
+void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun)
 {
     c_functionals_.push_back(fun);
 }
-boost::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name)
+std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name)
 {
     for (int Q = 0; Q < c_functionals_.size(); Q++) {
         if (name == c_functionals_[Q]->name())
@@ -162,7 +162,7 @@ boost::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& n
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
-boost::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name)
+std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name)
 {
     for (int Q = 0; Q < x_functionals_.size(); Q++) {
         if (name == x_functionals_[Q]->name())

@@ -42,7 +42,7 @@ namespace psi{ namespace fnocc{
 class CoupledCluster: public Wavefunction{
   public:
 
-    CoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction,Options &options);
+    CoupledCluster(std::shared_ptr<Wavefunction> reference_wavefunction,Options &options);
     ~CoupledCluster();
 
     double compute_energy();
@@ -279,7 +279,7 @@ class DFCoupledCluster : public CoupledCluster{
 class CoupledPair : public CoupledCluster{
 
   public:
-    CoupledPair(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    CoupledPair(std::shared_ptr<psi::Wavefunction>wfn,Options&options);
     ~CoupledPair();
 
     double compute_energy();

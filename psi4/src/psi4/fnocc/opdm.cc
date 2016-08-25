@@ -45,7 +45,7 @@ void CoupledPair::OPDM(){
 
   // if t2 was stored on disk, grab it.
   if (t2_on_disk){
-     boost::shared_ptr<PSIO> psio(new PSIO());
+     std::shared_ptr<PSIO> psio(new PSIO());
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
@@ -60,7 +60,7 @@ void CoupledPair::OPDM(){
   double*D1 = (double*)malloc(nmo*nmo*sizeof(double));
   BuildD1(nfzc,o,v,nfzv,t1,integrals,tb,c0,D1);
 
-  boost::shared_ptr<Matrix> Ca = reference_wavefunction_->Ca();
+  std::shared_ptr<Matrix> Ca = reference_wavefunction_->Ca();
 
   std::stringstream ss;
   ss << cepa_type;

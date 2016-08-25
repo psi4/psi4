@@ -30,7 +30,7 @@
 #include "occwave.h"
 #include "psi4/libmints/matrix.h"
 
-using namespace boost;
+
 using namespace std;
 
 

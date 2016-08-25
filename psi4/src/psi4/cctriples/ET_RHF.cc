@@ -143,7 +143,7 @@ double ET_RHF(void)
     global_dpd_->buf4_mat_irrep_init(&Dints, h);
     global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
-  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
   //ffile(&ijkfile,"ijk.dat", 0);
 
   /* each thread gets its own F buffer to assign memory and read blocks

@@ -40,20 +40,20 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 namespace psi {
 
-OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
-                           const boost::shared_ptr<IntegralFactory>& integral)
+OneBodySOInt::OneBodySOInt(const std::shared_ptr<OneBodyAOInt> & ob,
+                           const std::shared_ptr<IntegralFactory>& integral)
     : ob_(ob), integral_(integral.get()), deriv_(ob->deriv())
 {
     common_init();
 
 }
 
-OneBodySOInt::OneBodySOInt(const boost::shared_ptr<OneBodyAOInt> & ob,
+OneBodySOInt::OneBodySOInt(const std::shared_ptr<OneBodyAOInt> & ob,
                            const IntegralFactory* integral)
     : ob_(ob), integral_(integral), deriv_(ob->deriv())
 {
@@ -66,32 +66,32 @@ OneBodySOInt::~OneBodySOInt()
 
 void OneBodySOInt::common_init()
 {
-    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis1(), integral_));
+    b1_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis1(), integral_));
 
     if (ob_->basis2() == ob_->basis1())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis2(), integral_));
+        b2_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis2(), integral_));
 
     ob_->set_force_cartesian(b1_->petite_list()->include_pure_transform());
 }
 
-boost::shared_ptr<SOBasisSet> OneBodySOInt::basis() const
+std::shared_ptr<SOBasisSet> OneBodySOInt::basis() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasisSet> OneBodySOInt::basis1() const
+std::shared_ptr<SOBasisSet> OneBodySOInt::basis1() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
+std::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
 {
     return b2_;
 }
 
-boost::shared_ptr<OneBodyAOInt> OneBodySOInt::ob() const
+std::shared_ptr<OneBodyAOInt> OneBodySOInt::ob() const
 {
     return ob_;
 }
@@ -345,8 +345,8 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
-                           const boost::shared_ptr<IntegralFactory>& integral) :
+TwoBodySOInt::TwoBodySOInt(const std::shared_ptr<TwoBodyAOInt> &tb,
+                           const std::shared_ptr<IntegralFactory>& integral) :
 
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
@@ -355,8 +355,8 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
 
 }
 
-TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
-                           const boost::shared_ptr<IntegralFactory>& integral) :
+TwoBodySOInt::TwoBodySOInt(const std::vector<std::shared_ptr<TwoBodyAOInt> > &tb,
+                           const std::shared_ptr<IntegralFactory>& integral) :
 
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
@@ -364,8 +364,8 @@ TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &
 
 }
 
-TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& tb,
-                           const boost::shared_ptr<IntegralFactory>& integral,
+TwoBodySOInt::TwoBodySOInt(const std::shared_ptr<TwoBodyAOInt>& tb,
+                           const std::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
 
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
@@ -375,8 +375,8 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& tb,
 
 }
 
-TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& tb,
-                           const boost::shared_ptr<IntegralFactory>& integral,
+TwoBodySOInt::TwoBodySOInt(const std::vector<std::shared_ptr<TwoBodyAOInt> >& tb,
+                           const std::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
 
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
@@ -394,22 +394,22 @@ void TwoBodySOInt::common_init()
     me_      = 0;
 
     // Try to reduce some work:
-    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));
+    b1_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));
 
     if (tb_[0]->basis1() == tb_[0]->basis2())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis2(), integral_));
+        b2_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis2(), integral_));
 
     if (tb_[0]->basis1() == tb_[0]->basis3())
         b3_ = b1_;
     else
-        b3_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis3(), integral_));
+        b3_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis3(), integral_));
 
     if (tb_[0]->basis3() == tb_[0]->basis4())
         b4_ = b3_;
     else
-        b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis4(), integral_));
+        b4_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis4(), integral_));
 
     for (int i=0; i<nthread_; ++i)
         tb_[i]->set_force_cartesian(b1_->petite_list()->include_pure_transform());
@@ -458,7 +458,7 @@ void TwoBodySOInt::common_init()
 
     pg_ = tb_[0]->basis()->molecule()->point_group();
 
-    dcd_ = boost::shared_ptr<DCD>(new DCD(petite1_->group()));
+    dcd_ = std::shared_ptr<DCD>(new DCD(petite1_->group()));
 
     if (cdsalcs_) {
         int ncd = cdsalcs_->ncd();
@@ -485,27 +485,27 @@ TwoBodySOInt::~TwoBodySOInt()
     }
 }
 
-boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis() const
+std::shared_ptr<SOBasisSet> TwoBodySOInt::basis() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis1() const
+std::shared_ptr<SOBasisSet> TwoBodySOInt::basis1() const
 {
     return b1_;
 }
 
-boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis2() const
+std::shared_ptr<SOBasisSet> TwoBodySOInt::basis2() const
 {
     return b2_;
 }
 
-boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis3() const
+std::shared_ptr<SOBasisSet> TwoBodySOInt::basis3() const
 {
     return b3_;
 }
 
-boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis4() const
+std::shared_ptr<SOBasisSet> TwoBodySOInt::basis4() const
 {
     return b4_;
 }

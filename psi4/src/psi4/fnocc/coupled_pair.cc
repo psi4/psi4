@@ -46,7 +46,7 @@
 #include "psi4/lib3index/3index.h"
 
 using namespace psi;
-using namespace boost;
+
 
 namespace psi{ namespace fnocc{
 
@@ -57,7 +57,7 @@ void DefineQuadraticTasks();
 // sort
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 
-CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
+CoupledPair::CoupledPair(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
         CoupledCluster(reference_wavefunction, options)
 {
     common_init();
@@ -258,7 +258,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
 
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
   // zero residual
@@ -459,7 +459,7 @@ void CoupledPair::PairEnergy(){
   long int o = ndoccact;
   long int rs = nmo;
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
@@ -492,7 +492,7 @@ void CoupledPair::UpdateT2() {
   long int o = ndoccact;
   long int rs = nmo;
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
@@ -605,7 +605,7 @@ void CoupledPair::SCS_CEPA(){
   long int o = ndoccact;
   long int rs = nmo;
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
@@ -646,7 +646,7 @@ double CoupledPair::VariationalEnergy(){
     long int rs = nmo;
 
     // (ai|bj)
-    boost::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_IAJB,1);
@@ -721,7 +721,7 @@ double CoupledPair::CheckEnergy(){
   long int o = ndoccact;
   long int rs = nmo;
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);

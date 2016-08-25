@@ -32,7 +32,7 @@
 #include "defines.h"
 #include "dpd.h"
 
-using namespace boost;
+
 using namespace std;
 
 namespace psi{ namespace occwave{

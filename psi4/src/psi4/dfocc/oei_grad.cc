@@ -80,7 +80,7 @@ void DFOCC::oei_grad()
         double** Tp = gradients["Kinetic"]->pointer();
 
         // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -164,10 +164,10 @@ void DFOCC::oei_grad()
         #endif
 
         // Potential derivatives
-        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+        std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
         for (int t = 0; t < threads; t++) {
-            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+            Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
             Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
         }
 
@@ -239,7 +239,7 @@ void DFOCC::oei_grad()
         double** Sp = gradients["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {

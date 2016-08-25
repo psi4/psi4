@@ -33,7 +33,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/typedefs.h"
@@ -59,42 +59,42 @@ public:
         unsigned long int memory_;
         int nthread_;
 
-        boost::shared_ptr<Molecule> molecule_;
+        std::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
-        boost::shared_ptr<efp::EFP> efp_;
+        std::shared_ptr<efp::EFP> efp_;
         SharedMatrix efp_torque_;
-        boost::shared_ptr<Vector> frequencies_;
-        boost::shared_ptr<PointGroup> parent_symmetry_;
+        std::shared_ptr<Vector> frequencies_;
+        std::shared_ptr<PointGroup> parent_symmetry_;
 
-        boost::shared_ptr<Molecule> legacy_molecule_;
-        boost::shared_ptr<Wavefunction> legacy_wavefunction_;
+        std::shared_ptr<Molecule> legacy_molecule_;
+        std::shared_ptr<Wavefunction> legacy_wavefunction_;
     public:
         void initialize();
 
         /// The symmetry of the molecule, before any displacements have been made
-        boost::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
+        std::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
         /// Set the "parent" symmetry
-        void set_parent_symmetry(boost::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
+        void set_parent_symmetry(std::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
         const std::string& operator()(const std::string& key) const;
         std::string operator()(const std::string& key);
         const std::string& set(const std::string& key, const std::string& value);
 
         /// Set active molecule
-        void set_molecule(const boost::shared_ptr<Molecule>& molecule);
+        void set_molecule(const std::shared_ptr<Molecule>& molecule);
         /// Return active molecule
-        boost::shared_ptr<Molecule> molecule() const;
+        std::shared_ptr<Molecule> molecule() const;
 
 
         /// Temporary slots for legacy as a stop-gap
         /// Set active molecule
-        void set_legacy_molecule(const boost::shared_ptr<Molecule>& molecule);
+        void set_legacy_molecule(const std::shared_ptr<Molecule>& molecule);
         /// Return active molecule
-        boost::shared_ptr<Molecule> legacy_molecule() const;
+        std::shared_ptr<Molecule> legacy_molecule() const;
 
         /// Set wavefunction
-        void set_legacy_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction);
+        void set_legacy_wavefunction(const std::shared_ptr<Wavefunction>& wavefunction);
         /// Get wavefunction
-        boost::shared_ptr<Wavefunction> legacy_wavefunction() const;
+        std::shared_ptr<Wavefunction> legacy_wavefunction() const;
 
 
         /// Set gradient manually
@@ -103,14 +103,14 @@ public:
         SharedMatrix gradient() const { return gradient_; }
 
         /// Set frequencies manually
-        void set_frequencies(const boost::shared_ptr<Vector> f) { frequencies_ = f; }
+        void set_frequencies(const std::shared_ptr<Vector> f) { frequencies_ = f; }
         /// Get frequencies manually
-        boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
+        std::shared_ptr<Vector> frequencies() const { return frequencies_; }
 
         /// Set EFP
-        void set_efp(const boost::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
+        void set_efp(const std::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
         /// Get EFP
-        boost::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
+        std::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
 
         /// Set EFP gradient manually
         void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
@@ -121,7 +121,7 @@ public:
         std::map<std::string, double> globals;
 
         /// Map containing current arrays
-        std::map<std::string, boost::shared_ptr<Matrix> > arrays;
+        std::map<std::string, std::shared_ptr<Matrix> > arrays;
 
         /// Number of threads per process
         int get_n_threads() const;

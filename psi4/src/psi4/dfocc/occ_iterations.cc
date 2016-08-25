@@ -322,7 +322,7 @@ void DFOCC::save_mo_to_wfn()
 	aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
+	std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
 	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
@@ -373,7 +373,7 @@ void DFOCC::save_mo_to_wfn()
 	bAONO->gemm(false, false, 1.0, Cb, bevecs, 0.0);
 
 	// Write to MOLDEN file
-	boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
+	std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
 	std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
         // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers

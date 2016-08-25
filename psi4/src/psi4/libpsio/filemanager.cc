@@ -25,16 +25,17 @@
  * @END LICENSE
  */
 
-#include <boost/thread.hpp>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+
 #include "psio.hpp"
 #include "psio.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/ParallelPrinter.h"
+
 namespace psi{
 
 PSIOManager::PSIOManager()
@@ -57,7 +58,7 @@ PSIOManager::~PSIOManager()
 {
 }
 
-boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
+std::shared_ptr<PSIOManager> PSIOManager::shared_object()
 {
     return _default_psio_manager_;
 }
@@ -135,8 +136,8 @@ void PSIOManager::move_file(const std::string& old_full_path, const std::string&
 }
 void PSIOManager::print(std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("                    --------------------------------\n");
     printer->Printf("                    ==> Psi4 Current File Status <==\n");
     printer->Printf( "                    --------------------------------\n");

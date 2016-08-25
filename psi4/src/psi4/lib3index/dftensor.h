@@ -28,13 +28,6 @@
 #ifndef three_index_df_H
 #define three_index_df_H
 
-
-
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi {
 
 class PSIO;
@@ -48,9 +41,9 @@ class FittingMetric {
 
 protected:
     /// Pointer to the auxiliary basis set
-    boost::shared_ptr<BasisSet> aux_;
+    std::shared_ptr<BasisSet> aux_;
     /// Pointer to the poisson basis set
-    boost::shared_ptr<BasisSet> pois_;
+    std::shared_ptr<BasisSet> pois_;
     /// Is the metric poisson?
     bool is_poisson_;
     /// Should we force C1?
@@ -61,9 +54,9 @@ protected:
     /// The fitting metric or symmetric inverse
     SharedMatrix metric_;
     /// The indices (per irrep) of pivots
-    boost::shared_ptr<IntVector> pivots_;
+    std::shared_ptr<IntVector> pivots_;
     /// The indices (per irrep) of reverse pivots
-    boost::shared_ptr<IntVector> rev_pivots_;
+    std::shared_ptr<IntVector> rev_pivots_;
 
     /// The fitting algorithm selected
     std::string algorithm_;
@@ -76,11 +69,11 @@ protected:
 public:
 
     /// DF Fitting Metric
-    FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1 = false);
+    FittingMetric(std::shared_ptr<BasisSet> aux, bool force_C1 = false);
     /// DF Fitting Metric
-    FittingMetric(boost::shared_ptr<BasisSet> aux, double omega, bool force_C1 = false);
+    FittingMetric(std::shared_ptr<BasisSet> aux, double omega, bool force_C1 = false);
     /// Poisson Fitting Metric
-    FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois, bool force_C1 = false);
+    FittingMetric(std::shared_ptr<BasisSet> aux, std::shared_ptr<BasisSet> pois, bool force_C1 = false);
 
     /// Destructor
     ~FittingMetric();
@@ -95,14 +88,14 @@ public:
     /// The fitting metric or symmetric inverse
     SharedMatrix get_metric() const {return metric_; }
     /// The vector of pivots (for stability) (pivoted->global)
-    boost::shared_ptr<IntVector> get_pivots() const {return pivots_; }
+    std::shared_ptr<IntVector> get_pivots() const {return pivots_; }
     /// The vector of back pivots (for stability) (global->pivoted)
-    boost::shared_ptr<IntVector> get_reverse_pivots() const {return rev_pivots_; }
+    std::shared_ptr<IntVector> get_reverse_pivots() const {return rev_pivots_; }
 
     /// The gaussian fitting basis
-    boost::shared_ptr<BasisSet> get_auxiliary_basis() const {return aux_; }
+    std::shared_ptr<BasisSet> get_auxiliary_basis() const {return aux_; }
     /// The poisson fitting basis
-    boost::shared_ptr<BasisSet> get_poisson_basis() const {return pois_; }
+    std::shared_ptr<BasisSet> get_poisson_basis() const {return pois_; }
 
     /// Build the raw fitting metric (sets up indices to canonical)
     void form_fitting_metric();
@@ -130,11 +123,11 @@ protected:
     int print_;
 
     /// Molecule (fo convenience)
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
     /// Primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Dealias basis set
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// options reference
     Options& options_;
 
@@ -175,8 +168,8 @@ protected:
 
 public:
 
-    DFTensor(boost::shared_ptr<BasisSet> primary,
-             boost::shared_ptr<BasisSet> auxiliary,
+    DFTensor(std::shared_ptr<BasisSet> primary,
+             std::shared_ptr<BasisSet> auxiliary,
              SharedMatrix C,
              int nocc,
              int nvir,
@@ -187,8 +180,8 @@ public:
     /**
     * Assumes all orbitals are active and pull options from enviroment
     **/
-    DFTensor(boost::shared_ptr<BasisSet> primary,
-             boost::shared_ptr<BasisSet> auxiliary,
+    DFTensor(std::shared_ptr<BasisSet> primary,
+             std::shared_ptr<BasisSet> auxiliary,
              SharedMatrix C,
              int nocc,
              int nvir);
@@ -199,7 +192,7 @@ public:
     * set {dfbas aug-cc-pVDZ-jkfit}
     * DFTensor("dfbas")
     */
-    DFTensor(boost::shared_ptr<Wavefunction> wfn, const std::string& type);
+    DFTensor(std::shared_ptr<Wavefunction> wfn, const std::string& type);
     ~DFTensor();
 
     SharedMatrix Qso();

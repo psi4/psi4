@@ -25,8 +25,6 @@
  * @END LICENSE
  */
 
-#include <boost/filesystem.hpp>
-
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -34,19 +32,15 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 
 #include "cubeprop.h"
 #include "csg.h"
 
+#include <tuple>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using namespace psi;
-using namespace boost;
-using namespace std;
 
 namespace psi {
 
@@ -75,16 +69,16 @@ CubeProperties::CubeProperties(SharedWavefunction wfn) :
     // Gather orbital information
     for (int h = 0; h < nirrep; h++) {
         for (int i = 0; i < (int)nmopi[h]; i++) {
-            info_a_.push_back(boost::tuple<double,int,int>(wfn->epsilon_a()->get(h,i),i,h));
+            info_a_.push_back(std::tuple<double,int,int>(wfn->epsilon_a()->get(h,i),i,h));
         }
     }
-    std::sort(info_a_.begin(), info_a_.end(), std::less<boost::tuple<double,int,int> >()); // Sort as in wfn
+    std::sort(info_a_.begin(), info_a_.end(), std::less<std::tuple<double,int,int> >()); // Sort as in wfn
     for (int h = 0; h < nirrep; h++) {
         for (int i = 0; i < (int)nmopi[h]; i++) {
-            info_b_.push_back(boost::tuple<double,int,int>(wfn->epsilon_b()->get(h,i),i,h));
+            info_b_.push_back(std::tuple<double,int,int>(wfn->epsilon_b()->get(h,i),i,h));
         }
     }
-    std::sort(info_b_.begin(), info_b_.end(), std::less<boost::tuple<double,int,int> >()); // Sort as in wfn
+    std::sort(info_b_.begin(), info_b_.end(), std::less<std::tuple<double,int,int> >()); // Sort as in wfn
 
     common_init();
 }
@@ -93,7 +87,7 @@ CubeProperties::~CubeProperties()
 }
 void CubeProperties::common_init()
 {
-    grid_ = boost::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_, options_));
+    grid_ = std::shared_ptr<CubicScalarGrid>(new CubicScalarGrid(basisset_, options_));
     grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
 }
 void CubeProperties::print_header()
@@ -111,8 +105,13 @@ void CubeProperties::compute_properties()
     ss << filepath << "/" << "geom.xyz";
 
     // Is filepath a valid directory?
-    boost::filesystem::path data_dir(filepath);
-    if(not boost::filesystem::is_directory(data_dir)){
+//    std::filesystem::path data_dir(filepath);
+//    if(not std::filesystem::is_directory(data_dir)){
+    char data_dir[PATH_MAX + 1];
+    realpath(filepath.c_str(), data_dir);
+    struct stat sb;
+
+    if (stat(data_dir, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Flush();
@@ -125,8 +124,8 @@ void CubeProperties::compute_properties()
         std::string task = options_["CUBEPROP_TASKS"][ind].to_string();
 
         if (task == "DENSITY") {
-            boost::shared_ptr<Matrix> Dt(Da_->clone());
-            boost::shared_ptr<Matrix> Ds(Da_->clone());
+            std::shared_ptr<Matrix> Dt(Da_->clone());
+            std::shared_ptr<Matrix> Ds(Da_->clone());
             Dt->copy(Da_);
             Ds->copy(Da_);
             Dt->add(Db_);
@@ -136,7 +135,7 @@ void CubeProperties::compute_properties()
             compute_density(Da_, "Da");
             compute_density(Db_, "Db");
         } else if (task == "ESP") {
-            boost::shared_ptr<Matrix> Dt(Da_->clone());
+            std::shared_ptr<Matrix> Dt(Da_->clone());
             Dt->copy(Da_);
             Dt->add(Db_);
             compute_esp(Dt);
@@ -161,17 +160,17 @@ void CubeProperties::compute_properties()
                     }
                 }
             }
-            std::vector<string> labelsa;
-            std::vector<string> labelsb;
+            std::vector<std::string> labelsa;
+            std::vector<std::string> labelsb;
             CharacterTable ct = basisset_->molecule()->point_group()->char_table();
             for (size_t ind = 0; ind < indsa0.size(); ++ind){
-                int i = get<1>(info_a_[indsa0[ind]]);
-                int h = get<2>(info_a_[indsa0[ind]]);
+                int i = std::get<1>(info_a_[indsa0[ind]]);
+                int h = std::get<2>(info_a_[indsa0[ind]]);
                 labelsa.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             for (size_t ind = 0; ind < indsb0.size(); ++ind){
-                int i = get<1>(info_b_[indsb0[ind]]);
-                int h = get<2>(info_b_[indsb0[ind]]);
+                int i = std::get<1>(info_b_[indsb0[ind]]);
+                int h = std::get<2>(info_b_[indsb0[ind]]);
                 labelsb.push_back(to_string(i + 1) + "-" + ct.gamma(h).symbol());
             }
             if (indsa0.size()) compute_orbitals(Ca_, indsa0,labelsa, "Psi_a");
@@ -199,16 +198,16 @@ void CubeProperties::compute_properties()
         }
     }
 }
-void CubeProperties::compute_density(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_density(std::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_density(D, key);
 }
-void CubeProperties::compute_esp(boost::shared_ptr<Matrix> Dt, const std::vector<double>& w)
+void CubeProperties::compute_esp(std::shared_ptr<Matrix> Dt, const std::vector<double>& w)
 {
     grid_->compute_density(Dt, "Dt");
     grid_->compute_esp(Dt, w, "ESP");
 }
-void CubeProperties::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key)
+void CubeProperties::compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key)
 {
     grid_->compute_orbitals(C, indices, labels, key);
 }
@@ -216,11 +215,11 @@ void CubeProperties::compute_basis_functions(const std::vector<int>& indices, co
 {
     grid_->compute_basis_functions(indices, key);
 }
-void CubeProperties::compute_LOL(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_LOL(std::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_LOL(D, key);
 }
-void CubeProperties::compute_ELF(boost::shared_ptr<Matrix> D, const std::string& key)
+void CubeProperties::compute_ELF(std::shared_ptr<Matrix> D, const std::string& key)
 {
     grid_->compute_ELF(D, key);
 }

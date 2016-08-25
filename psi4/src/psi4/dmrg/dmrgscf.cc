@@ -40,7 +40,7 @@
 #include "psi4/libmints/wavefunction.h"
 
 #include "psi4/libmints/typedefs.h"
-//Header above this comment contains typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
+//Header above this comment contains typedef std::shared_ptr<psi::Matrix> SharedMatrix;
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libfock/jk.h"
@@ -91,7 +91,7 @@ int chemps2_groupnumber(const string SymmLabel){
 }
 
 
-void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, boost::shared_ptr<JK> myJK, boost::shared_ptr<Wavefunction> wfn){
+void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK, std::shared_ptr<Wavefunction> wfn){
 
     const int nso    = wfn->nso();
     int * nsopi      = wfn->nsopi();
@@ -157,7 +157,7 @@ void copyPSIMXtoCHEMPS2MX( SharedMatrix source, CheMPS2::DMRGSCFindices * iHandl
 }*/
 
 
-void buildQmatOCC( CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, boost::shared_ptr<JK> myJK, boost::shared_ptr<Wavefunction> wfn ){
+void buildQmatOCC( CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK, std::shared_ptr<Wavefunction> wfn ){
 
     MO_RDM->zero();
     for (int irrep = 0; irrep < iHandler->getNirreps(); irrep++){
@@ -171,7 +171,7 @@ void buildQmatOCC( CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices 
 }
 
 
-void buildQmatACT( CheMPS2::DMRGSCFmatrix * theQmatACT, CheMPS2::DMRGSCFindices * iHandler, double * DMRG1DM, SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, boost::shared_ptr<JK> myJK, boost::shared_ptr<Wavefunction> wfn ){
+void buildQmatACT( CheMPS2::DMRGSCFmatrix * theQmatACT, CheMPS2::DMRGSCFindices * iHandler, double * DMRG1DM, SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK, std::shared_ptr<Wavefunction> wfn ){
 
     MO_RDM->zero();
     const int nOrbDMRG = iHandler->getDMRGcumulative(iHandler->getNirreps());
@@ -192,7 +192,7 @@ void buildQmatACT( CheMPS2::DMRGSCFmatrix * theQmatACT, CheMPS2::DMRGSCFindices 
 }
 
 
-SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, SharedMatrix MO_RDM, SharedMatrix Cmat, boost::shared_ptr<Wavefunction> wfn ){
+SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, SharedMatrix MO_RDM, SharedMatrix Cmat, std::shared_ptr<Wavefunction> wfn ){
 
     const int num_irreps = idx->getNirreps();
     const int tot_dmrg   = idx->getDMRGcumulative( num_irreps );
@@ -245,7 +245,7 @@ SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, Shar
 }
 
 
-void buildHamDMRG( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<MOSpace> Aorbs_ptr, CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::Hamiltonian * HamDMRG, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Wavefunction> wfn ){
+void buildHamDMRG( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSpace> Aorbs_ptr, CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::Hamiltonian * HamDMRG, std::shared_ptr<PSIO> psio, std::shared_ptr<Wavefunction> wfn ){
 
     ints->update_orbitals();
     // Since we don't regenerate the SO ints, we don't call sort_so_tei, and the OEI are not updated !!!!!
@@ -293,7 +293,7 @@ void buildHamDMRG( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<
 
 }
 
-void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices * iHandler, boost::shared_ptr<PSIO> psio, SharedMatrix Cmat, boost::shared_ptr<Wavefunction> wfn ){
+void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices * iHandler, std::shared_ptr<PSIO> psio, SharedMatrix Cmat, std::shared_ptr<Wavefunction> wfn ){
 
     const int nirrep = wfn->nirrep();
     const int nmo    = wfn->nmo();
@@ -323,7 +323,7 @@ void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices 
 }
 
 
-void fillRotatedTEI_coulomb( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<MOSpace> OAorbs_ptr, CheMPS2::DMRGSCFintegrals * theRotatedTEI, CheMPS2::DMRGSCFindices * iHandler, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Wavefunction> wfn ){
+void fillRotatedTEI_coulomb( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSpace> OAorbs_ptr, CheMPS2::DMRGSCFintegrals * theRotatedTEI, CheMPS2::DMRGSCFindices * iHandler, std::shared_ptr<PSIO> psio, std::shared_ptr<Wavefunction> wfn ){
 
     ints->update_orbitals();
     // Since we don't regenerate the SO ints, we don't call sort_so_tei, and the OEI are not updated !!!!!
@@ -366,7 +366,7 @@ void fillRotatedTEI_coulomb( boost::shared_ptr<IntegralTransform> ints, boost::s
 }
 
 
-void fillRotatedTEI_exchange( boost::shared_ptr<IntegralTransform> ints, boost::shared_ptr<MOSpace> OAorbs_ptr, boost::shared_ptr<MOSpace> Vorbs_ptr, CheMPS2::DMRGSCFintegrals * theRotatedTEI, CheMPS2::DMRGSCFindices * iHandler, boost::shared_ptr<PSIO> psio ){
+void fillRotatedTEI_exchange( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSpace> OAorbs_ptr, std::shared_ptr<MOSpace> Vorbs_ptr, CheMPS2::DMRGSCFintegrals * theRotatedTEI, CheMPS2::DMRGSCFindices * iHandler, std::shared_ptr<PSIO> psio ){
 
     ints->update_orbitals();
     ints->transform_tei( Vorbs_ptr, OAorbs_ptr, Vorbs_ptr, OAorbs_ptr );
@@ -420,7 +420,7 @@ void copyUNITARYtoPSIMX( CheMPS2::DMRGSCFunitary * unitary, CheMPS2::DMRGSCFindi
 }
 
 
-void update_WFNco( SharedMatrix orig_coeff, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::DMRGSCFunitary * unitary, boost::shared_ptr<Wavefunction> wfn, SharedMatrix work1, SharedMatrix work2 ){
+void update_WFNco( SharedMatrix orig_coeff, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::DMRGSCFunitary * unitary, std::shared_ptr<Wavefunction> wfn, SharedMatrix work1, SharedMatrix work2 ){
 
     copyUNITARYtoPSIMX( unitary, iHandler, work2 );
     wfn->Ca()->gemm(false, true, 1.0, orig_coeff, work2, 0.0);
@@ -437,7 +437,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     /*******************************
      *   Environment information   *
      *******************************/
-    boost::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
+    std::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
     if (!wfn){ throw PSIEXCEPTION("SCF has not been run yet!"); }
 
     /*************************
@@ -618,7 +618,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     SharedMatrix work1; work1 = SharedMatrix( new Matrix("work1", nirrep, orbspi, orbspi) );
     SharedMatrix work2; work2 = SharedMatrix( new Matrix("work2", nirrep, orbspi, orbspi) );
-    boost::shared_ptr<JK> myJK; myJK = boost::shared_ptr<JK>(new DiskJK(wfn->basisset(), options));
+    std::shared_ptr<JK> myJK; myJK = std::shared_ptr<JK>(new DiskJK(wfn->basisset(), options));
     myJK->set_cutoff(0.0);
     myJK->initialize();
     SharedMatrix orig_coeff; orig_coeff = SharedMatrix( new Matrix( wfn->Ca() ) );
@@ -638,17 +638,17 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
           Vorbs.push_back( iHandler->getOrigNVIRTstart(h) + orb );
        }
     }
-    boost::shared_ptr<MOSpace> OAorbs_ptr; OAorbs_ptr = boost::shared_ptr<MOSpace>( new MOSpace( 'Q', OAorbs, empty ) );
-    boost::shared_ptr<MOSpace>  Aorbs_ptr;  Aorbs_ptr = boost::shared_ptr<MOSpace>( new MOSpace( 'S',  Aorbs, empty ) );
-    boost::shared_ptr<MOSpace>  Vorbs_ptr;  Vorbs_ptr = boost::shared_ptr<MOSpace>( new MOSpace( 'T',  Vorbs, empty ) );
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::shared_ptr<MOSpace> OAorbs_ptr; OAorbs_ptr = std::shared_ptr<MOSpace>( new MOSpace( 'Q', OAorbs, empty ) );
+    std::shared_ptr<MOSpace>  Aorbs_ptr;  Aorbs_ptr = std::shared_ptr<MOSpace>( new MOSpace( 'S',  Aorbs, empty ) );
+    std::shared_ptr<MOSpace>  Vorbs_ptr;  Vorbs_ptr = std::shared_ptr<MOSpace>( new MOSpace( 'T',  Vorbs, empty ) );
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back( OAorbs_ptr   );
     spaces.push_back(  Aorbs_ptr   );
     spaces.push_back(  Vorbs_ptr   );
     spaces.push_back( MOSpace::all );
     // CheMPS2 requires RHF or ROHF orbitals.
-    boost::shared_ptr<IntegralTransform> ints;
-    ints = boost::shared_ptr<IntegralTransform>( new IntegralTransform( wfn, spaces, IntegralTransform::Restricted ) );
+    std::shared_ptr<IntegralTransform> ints;
+    ints = std::shared_ptr<IntegralTransform>( new IntegralTransform( wfn, spaces, IntegralTransform::Restricted ) );
     ints->set_keep_iwl_so_ints( true );
     ints->set_keep_dpd_so_ints( true );
     //ints->set_print(6);
@@ -947,7 +947,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             }
         }
 
-        boost::shared_ptr<MoldenWriter> molden( new MoldenWriter( wfn ) );
+        std::shared_ptr<MoldenWriter> molden( new MoldenWriter( wfn ) );
         std::string filename = get_writer_file_prefix( wfn->molecule()->name() ) + ".pseudocanonical.molden";
         outfile->Printf( "Write molden file to %s. \n", filename.c_str() );
         molden->write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation );

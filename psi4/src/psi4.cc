@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
-    Script::language = boost::shared_ptr<Script>(new Python);
+    Script::language = std::shared_ptr<Script>(new Python);
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
     interactive_python  = false;

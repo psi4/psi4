@@ -37,24 +37,19 @@
 #include "solver.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
-
-#include <algorithm>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/multipolesymmetry.h"
+
+#include <algorithm>
+#include <tuple>
 #include <sstream>
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using namespace std;
-using namespace psi;
-using namespace boost;
 
 namespace psi {
 
@@ -205,7 +200,7 @@ void RCPHF::add_polarizability()
 {
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
-    boost::shared_ptr<OneBodySOInt> ints(integral_->so_dipole());
+    std::shared_ptr<OneBodySOInt> ints(integral_->so_dipole());
     ints->compute(dipole);
 
     for (size_t i = 0; i < dipole.size(); i++) {
@@ -275,8 +270,8 @@ double RCPHF::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
+    std::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
@@ -371,10 +366,10 @@ void RCIS::print_header()
 void RCIS::sort_states()
 {
     for (size_t n = 0; n < E_singlets_.size(); ++n) {
-        states_.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
+        states_.push_back(std::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
     }
     for (size_t n = 0; n < E_triplets_.size(); ++n) {
-        states_.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
+        states_.push_back(std::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
     }
 
     std::sort(states_.begin(), states_.end());
@@ -389,10 +384,10 @@ void RCIS::print_wavefunctions()
     outfile->Printf("  -----------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
-        double E = get<0>(states_[i]);
-        int    j = get<1>(states_[i]);
-        int    m = get<2>(states_[i]);
-        int    h = get<3>(states_[i]);
+        double E = std::get<0>(states_[i]);
+        int    j = std::get<1>(states_[i]);
+        int    m = std::get<2>(states_[i]);
+        int    h = std::get<3>(states_[i]);
         outfile->Printf("  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
             i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, pc_hartree2ev * E);
     }
@@ -436,15 +431,15 @@ void RCIS::print_amplitudes()
     outfile->Printf("  --------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
-//        double E = get<0>(states_[i]);
-        int    j = get<1>(states_[i]);
-        int    m = get<2>(states_[i]);
-        int    h = get<3>(states_[i]);
+//        double E = std::get<0>(states_[i]);
+        int    j = std::get<1>(states_[i]);
+        int    m = std::get<2>(states_[i]);
+        int    h = std::get<3>(states_[i]);
 
         SharedMatrix T = ((m == 1 ? singlets_[j] : triplets_[j]));
         int symm = T->symmetry();
 
-        std::vector<boost::tuple<double,int,int,int,int> > amps;
+        std::vector<std::tuple<double,int,int,int,int> > amps;
         for (int h2 = 0; h2 < T->nirrep(); h2++) {
 
             int naocc = T->rowspi()[h2];
@@ -459,7 +454,7 @@ void RCIS::print_amplitudes()
                     if (fabs(Tp[i2][a2]) > cutoff) {
                         int ival = i2 + Cfocc_->colspi()[h2];
                         int aval = a2 + Cfocc_->colspi()[h2^symm] + Caocc_->colspi()[h2^symm];
-                        amps.push_back(boost::tuple<double,int,int,int,int>(Tp[i2][a2],ival,h2,aval,h2^symm));
+                        amps.push_back(std::tuple<double,int,int,int,int>(Tp[i2][a2],ival,h2,aval,h2^symm));
                     }
                 }
             }
@@ -470,14 +465,14 @@ void RCIS::print_amplitudes()
             std::reverse(amps.begin(), amps.end());
             outfile->Printf("  %-5d %1s%-5d(%3s) %5d%-3s -> %5d%-3s %11.3E\n",
                 i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h],
-                get<1>(amps[0]) + 1, labels[get<2>(amps[0])],
-                get<3>(amps[0]) + 1, labels[get<4>(amps[0])],
-                get<0>(amps[0]));
+                std::get<1>(amps[0]) + 1, labels[std::get<2>(amps[0])],
+                std::get<3>(amps[0]) + 1, labels[std::get<4>(amps[0])],
+                std::get<0>(amps[0]));
             for (size_t index = 1; index < amps.size(); index++) {
                 outfile->Printf("                    %5d%-3s -> %5d%-3s %11.3E\n",
-                    get<1>(amps[index]) + 1, labels[get<2>(amps[index])],
-                    get<3>(amps[index]) + 1, labels[get<4>(amps[index])],
-                    get<0>(amps[index]));
+                    std::get<1>(amps[index]) + 1, labels[std::get<2>(amps[index])],
+                    std::get<3>(amps[index]) + 1, labels[std::get<4>(amps[index])],
+                    std::get<0>(amps[index]));
             }
         } else {
             outfile->Printf("  %-5d %1s%-5d(%3s) %s\n",
@@ -493,8 +488,8 @@ void RCIS::print_transitions()
 {
     if (!print_) return;
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
-    boost::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+    std::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
 
     // Get dipole integrals
     std::vector<SharedMatrix > dipole_ints;
@@ -513,10 +508,10 @@ void RCIS::print_transitions()
     char** labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
 
-        double E = get<0>(states_[i]);
-        int    j = get<1>(states_[i]);
-        int    m = get<2>(states_[i]);
-        int    h = get<3>(states_[i]);
+        double E = std::get<0>(states_[i]);
+        int    j = std::get<1>(states_[i]);
+        int    m = std::get<2>(states_[i]);
+        int    h = std::get<3>(states_[i]);
 
         double mu[3];
         ::memset((void*) mu, '\0', 3*sizeof(double));
@@ -550,7 +545,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), false);
+        std::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), false);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_D.dat";
 
@@ -563,7 +558,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), true);
+        std::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), true);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_dD.dat";
 
@@ -576,7 +571,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state-1] : triplets_[state-1]), singlet);
+        std::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state-1] : triplets_[state-1]), singlet);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_TD.dat";
 
@@ -589,7 +584,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > stuff = Nao((singlet ? singlets_[state-1] : triplets_[state-1]),false);
+        std::pair<std::shared_ptr<Matrix>, std::shared_ptr<Vector> > stuff = Nao((singlet ? singlets_[state-1] : triplets_[state-1]),false);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_N.dat";
 
@@ -603,7 +598,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > stuff = ADao((singlet ? singlets_[state-1] : triplets_[state-1]));
+        std::pair<std::shared_ptr<Matrix>, std::shared_ptr<Matrix> > stuff = ADao((singlet ? singlets_[state-1] : triplets_[state-1]));
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_AD.dat";
 
@@ -786,21 +781,21 @@ SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 
     return D2;
 }
-std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, bool diff)
+std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, bool diff)
 {
     SharedMatrix D = Dmo(T1, diff);
     SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
-    boost::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
 
     D->diagonalize(C,O,descending);
 
-    return make_pair(C,O);
+    return std::make_pair(C,O);
 }
-std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, bool diff)
+std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, bool diff)
 {
-    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nmo(T1,diff);
+    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nmo(T1,diff);
     SharedMatrix N = pair.first;
-    boost::shared_ptr<Vector> O = pair.second;
+    std::shared_ptr<Vector> O = pair.second;
 
     SharedMatrix N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
 
@@ -817,17 +812,17 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, b
 
         C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
     }
-    return make_pair(N2,O);
+    return std::make_pair(N2,O);
 }
-std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, bool diff)
+std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, bool diff)
 {
-    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nso(T1,diff);
+    std::pair<SharedMatrix, std::shared_ptr<Vector> > pair = Nso(T1,diff);
     SharedMatrix N = pair.first;
-    boost::shared_ptr<Vector> O = pair.second;
+    std::shared_ptr<Vector> O = pair.second;
 
     SharedMatrix N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
     SharedMatrix N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
-    boost::shared_ptr<Vector> O2(new Vector("Occupation", C_->ncol()));
+    std::shared_ptr<Vector> O2(new Vector("Occupation", C_->ncol()));
 
     int offset = 0;
     std::vector<std::pair<double,int> > index;
@@ -841,7 +836,7 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, b
         if (!nmo || !nso || !nao) continue;
 
         for (int i = 0; i < nmo; i++) {
-            index.push_back(make_pair(O->get(h,i),i+offset));
+            index.push_back(std::make_pair(O->get(h,i),i+offset));
         }
 
         double** Np = N->pointer(h);
@@ -866,7 +861,7 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, b
         C_DCOPY(nao, &(N2->pointer()[0][ind]), nmo, &(N3->pointer()[0][i]), nmo);
     }
 
-    return make_pair(N3,O2);
+    return std::make_pair(N3,O2);
 }
 std::pair<SharedMatrix, SharedMatrix> RCIS::ADmo(SharedMatrix T1)
 {
@@ -909,7 +904,7 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADmo(SharedMatrix T1)
 
     }
 
-    return make_pair(A,D);
+    return std::make_pair(A,D);
 }
 std::pair<SharedMatrix, SharedMatrix> RCIS::ADso(SharedMatrix T1)
 {
@@ -952,7 +947,7 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADso(SharedMatrix T1)
 
     }
 
-    return make_pair(A,D);
+    return std::make_pair(A,D);
 }
 std::pair<SharedMatrix, SharedMatrix> RCIS::ADao(SharedMatrix T1)
 {
@@ -995,7 +990,7 @@ std::pair<SharedMatrix, SharedMatrix> RCIS::ADao(SharedMatrix T1)
 
     }
 
-    return make_pair(A,D);
+    return std::make_pair(A,D);
 }
 
 double RCIS::compute_energy()
@@ -1007,8 +1002,8 @@ double RCIS::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<DLRSolver> solver;
+    std::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<DLRSolver> solver;
     if (options_.get_str("SOLVER_TYPE") == "DL")
         solver = DLRSolver::build_solver(options_,H);
     else if (options_.get_str("SOLVER_TYPE") == "RAYLEIGH")
@@ -1050,10 +1045,10 @@ double RCIS::compute_energy()
         solver->solve();
 
         // Unpack
-        const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();
+        const std::vector<std::shared_ptr<Vector> > singlets = solver->eigenvectors();
         const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();
 
-        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
         for (size_t N = 0, index = 0; N < singlets.size(); ++N) {
@@ -1062,7 +1057,7 @@ double RCIS::compute_energy()
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= (size_t)singlets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
-                eval_temp.push_back(make_pair(E_singlets[N][h], index));
+                eval_temp.push_back(std::make_pair(E_singlets[N][h], index));
                 index++;
             }
         }
@@ -1090,10 +1085,10 @@ double RCIS::compute_energy()
 
         solver->solve();
 
-        const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();
+        const std::vector<std::shared_ptr<Vector> > triplets = solver->eigenvectors();
         const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();
 
-        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
         for (size_t N = 0, index = 0; N < triplets.size(); ++N) {
@@ -1102,7 +1097,7 @@ double RCIS::compute_energy()
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= (size_t)triplets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
-                eval_temp.push_back(make_pair(E_triplets[N][h], index));
+                eval_temp.push_back(std::make_pair(E_triplets[N][h], index));
                 index++;
             }
         }
@@ -1170,8 +1165,8 @@ double RTDHF::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
+    std::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
@@ -1198,7 +1193,7 @@ double RTDHF::compute_energy()
         solver->solve();
 
         // TODO Unpack
-        //const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();
+        //const std::vector<std::shared_ptr<Vector> > singlets = solver->eigenvectors();
         //const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();
         //singlets_.clear();
         //E_singlets_.clear();
@@ -1226,7 +1221,7 @@ double RTDHF::compute_energy()
         solver->solve();
 
         // TODO Unpack
-        //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();
+        //const std::vector<std::shared_ptr<Vector> > triplets = solver->eigenvectors();
         //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();
         //triplets_.clear();
         //E_triplets_.clear();
@@ -1289,8 +1284,8 @@ double RCPKS::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<CPKSRHamiltonian> H(new CPKSRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
+    std::shared_ptr<CPKSRHamiltonian> H(new CPKSRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
@@ -1384,8 +1379,8 @@ double RTDA::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<TDARHamiltonian> H(new TDARHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
+    std::shared_ptr<TDARHamiltonian> H(new TDARHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
@@ -1421,10 +1416,10 @@ double RTDA::compute_energy()
         solver->solve();
 
         // Unpack
-        const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();
+        const std::vector<std::shared_ptr<Vector> > singlets = solver->eigenvectors();
         const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();
 
-        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
         for (size_t N = 0, index = 0; N < singlets.size(); ++N) {
@@ -1433,7 +1428,7 @@ double RTDA::compute_energy()
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= (size_t)singlets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
-                eval_temp.push_back(make_pair(E_singlets[N][h], index));
+                eval_temp.push_back(std::make_pair(E_singlets[N][h], index));
                 index++;
             }
         }
@@ -1461,10 +1456,10 @@ double RTDA::compute_energy()
 
         solver->solve();
 
-        const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();
+        const std::vector<std::shared_ptr<Vector> > triplets = solver->eigenvectors();
         const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();
 
-        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::shared_ptr<Matrix> > evec_temp;
         std::vector<std::pair<double, int> > eval_temp;
 
         for (size_t N = 0, index = 0; N < triplets.size(); ++N) {
@@ -1473,7 +1468,7 @@ double RTDA::compute_energy()
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= (size_t)triplets[N]->dimpi()[h]) continue;
                 evec_temp.push_back(t[h]);
-                eval_temp.push_back(make_pair(E_triplets[N][h], index));
+                eval_temp.push_back(std::make_pair(E_triplets[N][h], index));
                 index++;
             }
         }
@@ -1535,8 +1530,8 @@ double RTDDFT::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<TDDFTRHamiltonian> H(new TDDFTRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
+    std::shared_ptr<TDDFTRHamiltonian> H(new TDDFTRHamiltonian(jk_,v_,Cocc_,Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    std::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
@@ -1563,7 +1558,7 @@ double RTDDFT::compute_energy()
         solver->solve();
 
         // TODO Unpack
-        //const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();
+        //const std::vector<std::shared_ptr<Vector> > singlets = solver->eigenvectors();
         //const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();
         //singlets_.clear();
         //E_singlets_.clear();
@@ -1591,7 +1586,7 @@ double RTDDFT::compute_energy()
         solver->solve();
 
         // TODO Unpack
-        //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();
+        //const std::vector<std::shared_ptr<Vector> > triplets = solver->eigenvectors();
         //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();
         //triplets_.clear();
         //E_triplets_.clear();

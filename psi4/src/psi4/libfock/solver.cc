@@ -34,8 +34,7 @@
 #include "jk.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
+
 #include <cmath>
 #include <sstream>
 
@@ -43,7 +42,6 @@
 #include <omp.h>
 #endif
 
-using namespace boost;
 using namespace std;
 
 namespace psi {
@@ -71,7 +69,7 @@ void Solver::common_init()
     name_ = "Solver";
 }
 
-RSolver::RSolver(boost::shared_ptr<RHamiltonian> H) :
+RSolver::RSolver(std::shared_ptr<RHamiltonian> H) :
     Solver(), H_(H)
 {
     name_ = "RSolver";
@@ -80,7 +78,7 @@ RSolver::~RSolver()
 {
 }
 
-USolver::USolver(boost::shared_ptr<UHamiltonian> H) :
+USolver::USolver(std::shared_ptr<UHamiltonian> H) :
     Solver(), H_(H)
 {
     name_ = "USolver";
@@ -89,7 +87,7 @@ USolver::~USolver()
 {
 }
 
-CGRSolver::CGRSolver(boost::shared_ptr<RHamiltonian> H) :
+CGRSolver::CGRSolver(std::shared_ptr<RHamiltonian> H) :
     RSolver(H)
 {
     nguess_ = 0;
@@ -98,10 +96,10 @@ CGRSolver::CGRSolver(boost::shared_ptr<RHamiltonian> H) :
 CGRSolver::~CGRSolver()
 {
 }
-boost::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
-    boost::shared_ptr<RHamiltonian> H)
+std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
+    std::shared_ptr<RHamiltonian> H)
 {
-    boost::shared_ptr<CGRSolver> solver(new CGRSolver(H));
+    std::shared_ptr<CGRSolver> solver(new CGRSolver(H));
 
     if (options["PRINT"].has_changed()) {
         solver->set_print(options.get_int("PRINT") + 1);
@@ -153,19 +151,19 @@ void CGRSolver::initialize()
     for (int N = 0; N < nvec; ++N) {
         std::stringstream xs;
         xs << "Solution Vector " << N+1;
-        x_.push_back(boost::shared_ptr<Vector>(new Vector(xs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        x_.push_back(std::shared_ptr<Vector>(new Vector(xs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
         std::stringstream Aps;
         Aps << "Product Vector " << N+1;
-        Ap_.push_back(boost::shared_ptr<Vector>(new Vector(Aps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        Ap_.push_back(std::shared_ptr<Vector>(new Vector(Aps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
         std::stringstream zs;
         zs << "Z Vector " << N+1;
-        z_.push_back(boost::shared_ptr<Vector>(new Vector(zs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        z_.push_back(std::shared_ptr<Vector>(new Vector(zs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
         std::stringstream rs;
         rs << "Residual Vector " << N+1;
-        r_.push_back(boost::shared_ptr<Vector>(new Vector(rs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        r_.push_back(std::shared_ptr<Vector>(new Vector(rs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
         std::stringstream ps;
         ps << "Conjugate Vector " << N+1;
-        p_.push_back(boost::shared_ptr<Vector>(new Vector(ps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        p_.push_back(std::shared_ptr<Vector>(new Vector(ps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
         alpha_.push_back(0.0);
         beta_.push_back(0.0);
         r_nrm2_.push_back(0.0);
@@ -281,8 +279,8 @@ void CGRSolver::setup()
             size_t n = (b_.size() > (nguess_ - i) ? (nguess_ - i) : b_.size());
             for (size_t j = 0; j < n; j++) {
                 size_t k = i + j;
-                x_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
-                b_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Sigma", diag_->nirrep(), diag_->dimpi())));
+                x_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+                b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Sigma", diag_->nirrep(), diag_->dimpi())));
                 for (int h = 0; h < diag_->nirrep(); h++) {
                     if (k >= A_inds_[h].size()) continue;
                     b_[j]->set(h,A_inds_[h][k],1.0);
@@ -407,8 +405,8 @@ void CGRSolver::products_x()
 }
 void CGRSolver::products_p()
 {
-    std::vector<boost::shared_ptr<Vector> > p;
-    std::vector<boost::shared_ptr<Vector> > Ap;
+    std::vector<std::shared_ptr<Vector> > p;
+    std::vector<std::shared_ptr<Vector> > Ap;
 
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
@@ -627,7 +625,7 @@ void CGRSolver::update_p()
     }
 }
 
-DLRSolver::DLRSolver(boost::shared_ptr<RHamiltonian> H) :
+DLRSolver::DLRSolver(std::shared_ptr<RHamiltonian> H) :
     RSolver(H),
     nroot_(1),
     norm_(1.E-6),
@@ -642,10 +640,10 @@ DLRSolver::DLRSolver(boost::shared_ptr<RHamiltonian> H) :
 DLRSolver::~DLRSolver()
 {
 }
-boost::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
-    boost::shared_ptr<RHamiltonian> H)
+std::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
+    std::shared_ptr<RHamiltonian> H)
 {
-    boost::shared_ptr<DLRSolver> solver(new DLRSolver(H));
+    std::shared_ptr<DLRSolver> solver(new DLRSolver(H));
 
     if (options["PRINT"].has_changed()) {
         solver->set_print(options.get_int("PRINT") + 1);
@@ -820,7 +818,7 @@ void DLRSolver::guess()
         int n = (max_subspace_ > (nguess_ - i) ? (nguess_ - i) : max_subspace_);
         for (int j = 0; j < n; j++) {
             size_t k = i + j;
-            b_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 b_[j]->set(h,A_inds_[h][k],1.0);
@@ -855,7 +853,7 @@ void DLRSolver::guess()
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
         ss << "Guess " << i;
-        b_.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
             double*  bp = b_[i]->pointer(h);
@@ -884,11 +882,11 @@ void DLRSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(boost::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
-    std::vector<boost::shared_ptr<Vector> > x;
-    std::vector<boost::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector> > x;
+    std::vector<std::shared_ptr<Vector> > b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
@@ -948,7 +946,7 @@ void DLRSolver::subspaceDiagonalization()
 
     SharedMatrix G2(G_->clone());
     a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
-    l_ = boost::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
     delete[] npi;
 
     G2->diagonalize(a_,l_);
@@ -991,7 +989,7 @@ void DLRSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            boost::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -1054,7 +1052,7 @@ void DLRSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(boost::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
         }
     }
 
@@ -1129,7 +1127,7 @@ void DLRSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        boost::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -1274,16 +1272,16 @@ void DLRSolver::subspaceCollapse()
 {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<boost::shared_ptr<Vector> > s2;
-    std::vector<boost::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector> > s2;
+    std::vector<std::shared_ptr<Vector> > b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(boost::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0];
@@ -1320,7 +1318,7 @@ void DLRSolver::subspaceCollapse()
     }
 }
 
-RayleighRSolver::RayleighRSolver(boost::shared_ptr<RHamiltonian> H) :
+RayleighRSolver::RayleighRSolver(std::shared_ptr<RHamiltonian> H) :
     DLRSolver(H)
 {
     name_ = "RayleighR";
@@ -1331,10 +1329,10 @@ RayleighRSolver::RayleighRSolver(boost::shared_ptr<RHamiltonian> H) :
 RayleighRSolver::~RayleighRSolver()
 {
 }
-boost::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options,
-    boost::shared_ptr<RHamiltonian> H)
+std::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options,
+    std::shared_ptr<RHamiltonian> H)
 {
-    boost::shared_ptr<RayleighRSolver> solver(new RayleighRSolver(H));
+    std::shared_ptr<RayleighRSolver> solver(new RayleighRSolver(H));
 
     if (options["PRINT"].has_changed()) {
         solver->set_print(options.get_int("PRINT") + 1);
@@ -1490,7 +1488,7 @@ void RayleighRSolver::correctors()
     cg_->finalize();
 }
 
-DLRXSolver::DLRXSolver(boost::shared_ptr<RHamiltonian> H) :
+DLRXSolver::DLRXSolver(std::shared_ptr<RHamiltonian> H) :
     RSolver(H),
     nroot_(1),
     norm_(1.E-6),
@@ -1504,10 +1502,10 @@ DLRXSolver::DLRXSolver(boost::shared_ptr<RHamiltonian> H) :
 DLRXSolver::~DLRXSolver()
 {
 }
-boost::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
-    boost::shared_ptr<RHamiltonian> H)
+std::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
+    std::shared_ptr<RHamiltonian> H)
 {
-    boost::shared_ptr<DLRXSolver> solver(new DLRXSolver(H));
+    std::shared_ptr<DLRXSolver> solver(new DLRXSolver(H));
 
     if (options["PRINT"].has_changed()) {
         solver->set_print(options.get_int("PRINT") + 1);
@@ -1648,7 +1646,7 @@ void DLRXSolver::guess()
     for (int i = 0; i < nguess_; ++i) {
         std::stringstream ss;
         ss << "Subspace Vector " << i;
-        b_.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
@@ -1684,11 +1682,11 @@ void DLRXSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(boost::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
-    std::vector<boost::shared_ptr<Vector> > x;
-    std::vector<boost::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector> > x;
+    std::vector<std::shared_ptr<Vector> > b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
@@ -1761,7 +1759,7 @@ void DLRXSolver::subspaceDiagonalization()
 
     // Reals
     a_ = SharedMatrix (new Matrix("Subspace Right Eigenvectors",nirrep,npi,npi));
-    l_ = boost::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",nirrep,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",nirrep,npi));
     delete[] npi;
 
     // Temps
@@ -1869,7 +1867,7 @@ void DLRXSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            boost::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -1937,7 +1935,7 @@ void DLRXSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(boost::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
         }
     }
 
@@ -2013,7 +2011,7 @@ void DLRXSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        boost::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -2154,16 +2152,16 @@ void DLRXSolver::subspaceCollapse()
 {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<boost::shared_ptr<Vector> > s2;
-    std::vector<boost::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector> > s2;
+    std::vector<std::shared_ptr<Vector> > b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(boost::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0]/2;
@@ -2209,7 +2207,7 @@ void DLRXSolver::subspaceCollapse()
     }
 }
 
-DLUSolver::DLUSolver(boost::shared_ptr<UHamiltonian> H) :
+DLUSolver::DLUSolver(std::shared_ptr<UHamiltonian> H) :
     USolver(H),
     nroot_(1),
     norm_(1.E-6),
@@ -2226,10 +2224,10 @@ DLUSolver::~DLUSolver()
 {
 };
 
-boost::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
-    boost::shared_ptr<UHamiltonian> H)
+std::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
+    std::shared_ptr<UHamiltonian> H)
 {
-    boost::shared_ptr<DLUSolver> solver(new DLUSolver(H));
+    std::shared_ptr<DLUSolver> solver(new DLUSolver(H));
 
     if (options["PRINT"].has_changed()) {
         solver->set_print(options.get_int("PRINT") + 1);
@@ -2340,8 +2338,8 @@ void DLUSolver::initialize()
 }
 
 // Contract an alpha/beta pair into a new vector. Each irrep is separately contracted.
-boost::shared_ptr<Vector> DLUSolver::contract_pair(
-        std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > components)
+std::shared_ptr<Vector> DLUSolver::contract_pair(
+        std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components)
 {
     int nirrepa = components.first->nirrep();
     int nirrepb = components.second->nirrep();
@@ -2356,7 +2354,7 @@ boost::shared_ptr<Vector> DLUSolver::contract_pair(
         dims[symm] = dima[symm] + dimb[symm];
     }
 
-    boost::shared_ptr<Vector> vec(new Vector("UStab Alpha + Beta", nirrepa, dims));
+    std::shared_ptr<Vector> vec(new Vector("UStab Alpha + Beta", nirrepa, dims));
 
     double val = 0;
     for (int symm = 0; symm < nirrepa; ++symm) {
@@ -2378,8 +2376,8 @@ boost::shared_ptr<Vector> DLUSolver::contract_pair(
 // Contract an alpha/beta pair into a result vector. It must have the dimension of
 // alpah + beta in each irrep.
 void DLUSolver::contract_pair(
-        std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > components,
-        boost::shared_ptr<Vector> result)
+        std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components,
+        std::shared_ptr<Vector> result)
 {
     int nirrepa = components.first->nirrep();
     int nirrepb = components.second->nirrep();
@@ -2412,8 +2410,8 @@ void DLUSolver::contract_pair(
 }
 
 // Expand a vector into a pair of alpha/beta, created in the routine.
-std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > DLUSolver::expand_pair(
-        boost::shared_ptr<Vector> vec)
+std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_pair(
+        std::shared_ptr<Vector> vec)
 {
     int nirrepa = diag_components.first->nirrep();
     int nirrepb = diag_components.second->nirrep();
@@ -2434,8 +2432,8 @@ std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > DLUSolver::expa
         }
     }
 
-    boost::shared_ptr<Vector> pairalpha(new Vector("UStab Alpha", nirrepa, dima));
-    boost::shared_ptr<Vector> pairbeta(new Vector("UStab Beta", nirrepb, dimb));
+    std::shared_ptr<Vector> pairalpha(new Vector("UStab Alpha", nirrepa, dima));
+    std::shared_ptr<Vector> pairbeta(new Vector("UStab Beta", nirrepb, dimb));
 
     double val = 0;
     for (int symm = 0; symm < nirrep; ++symm) {
@@ -2455,8 +2453,8 @@ std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > DLUSolver::expa
 
 // Expand a vector into an alpha/beta pair result, whose dimensions must match the sum
 // of alpha and beta in the input vector for each irrep.
-void DLUSolver::expand_pair(boost::shared_ptr<Vector> vec,
-                 std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > result)
+void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
+                 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > result)
 {
     int nirrepa = result.first->nirrep();
     int nirrepb = result.second->nirrep();
@@ -2599,7 +2597,7 @@ void DLUSolver::guess()
         int n = (max_subspace_ > (nguess_ - i) ? (nguess_ - i) : max_subspace_);
         for (int j = 0; j < n; j++) {
             size_t k = i + j;
-            b_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 b_[j]->set(h,A_inds_[h][k],1.0);
@@ -2634,7 +2632,7 @@ void DLUSolver::guess()
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
         ss << "Guess " << i;
-        b_.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
             double*  bp = b_[i]->pointer(h);
@@ -2663,19 +2661,19 @@ void DLUSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(boost::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
-    std::vector<boost::shared_ptr<Vector> > x;
-    std::vector<boost::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector> > x;
+    std::vector<std::shared_ptr<Vector> > b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
         b.push_back(s_[i]);
     }
 
-    std::vector< std::pair < boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > > xpair;
-    std::vector< std::pair < boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > > bpair;
+    std::vector< std::pair < std::shared_ptr<Vector>, std::shared_ptr<Vector> > > xpair;
+    std::vector< std::pair < std::shared_ptr<Vector>, std::shared_ptr<Vector> > > bpair;
 
 // Get the big concatenated alpha/beta vectors into individual pair components.
 
@@ -2745,7 +2743,7 @@ void DLUSolver::subspaceDiagonalization()
 
     SharedMatrix G2(G_->clone());
     a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
-    l_ = boost::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
     delete[] npi;
 
     G2->diagonalize(a_,l_);
@@ -2789,7 +2787,7 @@ void DLUSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            boost::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -2854,7 +2852,7 @@ void DLUSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(boost::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
         }
     }
 
@@ -2930,7 +2928,7 @@ void DLUSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        boost::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -3077,16 +3075,16 @@ void DLUSolver::subspaceCollapse()
 {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<boost::shared_ptr<Vector> > s2;
-    std::vector<boost::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector> > s2;
+    std::vector<std::shared_ptr<Vector> > b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(boost::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0];

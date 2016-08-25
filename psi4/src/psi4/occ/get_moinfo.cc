@@ -37,7 +37,7 @@
 #include "psi4/libmints/molecule.h"
 #include "occwave.h"
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 
@@ -375,7 +375,7 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
         // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
-	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
+	Ca_ref = std::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
@@ -740,8 +740,8 @@ else if (reference_ == "UNRESTRICTED") {
         // read orbital coefficients from reference
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
-	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
-	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_));
+	Ca_ref = std::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
+	Cb_ref = std::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_));
 
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
@@ -787,9 +787,9 @@ else if (reference_ == "UNRESTRICTED") {
 /************************** Create all required matrice *************************************/
 /********************************************************************************************/
         // Build Hso
-	Hso = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_));
-	Tso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirrep_, nsopi_, nsopi_));
-	Vso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirrep_, nsopi_, nsopi_));
+	Hso = std::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_));
+	Tso = std::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirrep_, nsopi_, nsopi_));
+	Vso = std::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirrep_, nsopi_, nsopi_));
 	Hso->zero();
 	Tso->zero();
 	Vso->zero();

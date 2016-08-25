@@ -42,8 +42,8 @@
 using ULI=unsigned long int;
 namespace psi {
 
-VBase::VBase(boost::shared_ptr<SuperFunctional> functional,
-    boost::shared_ptr<BasisSet> primary,
+VBase::VBase(std::shared_ptr<SuperFunctional> functional,
+    std::shared_ptr<BasisSet> primary,
     Options& options):
     options_(options), primary_(primary), functional_(functional)
 {
@@ -57,7 +57,7 @@ void VBase::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary,
+std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
                                         Options& options, const std::string& type)
 {
 
@@ -66,17 +66,17 @@ boost::shared_ptr<VBase> VBase::build_V(boost::shared_ptr<BasisSet> primary,
         depth = 2;
 
     int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
-    boost::shared_ptr<SuperFunctional> functional = SuperFunctional::current(options,block_size,depth);
+    std::shared_ptr<SuperFunctional> functional = SuperFunctional::current(options,block_size,depth);
 
-    boost::shared_ptr<VBase> v;
+    std::shared_ptr<VBase> v;
     if (type == "RV") {
-        v = boost::shared_ptr<VBase>(new RV(functional,primary,options));
+        v = std::shared_ptr<VBase>(new RV(functional,primary,options));
     } else if (type == "UV") {
-        v = boost::shared_ptr<VBase>(new UV(functional,primary,options));
+        v = std::shared_ptr<VBase>(new UV(functional,primary,options));
     } else if (type == "RK") {
-        v = boost::shared_ptr<VBase>(new RK(functional,primary,options));
+        v = std::shared_ptr<VBase>(new RK(functional,primary,options));
     } else if (type == "UK") {
-        v = boost::shared_ptr<VBase>(new UK(functional,primary,options));
+        v = std::shared_ptr<VBase>(new UK(functional,primary,options));
     } else {
         throw PSIEXCEPTION("V: V type is not recognized");
     }
@@ -162,8 +162,8 @@ void VBase::USO2AO()
 {
     // Build AO2USO matrix, if needed
     if (!AO2USO_ && (C_[0]->nirrep() != 1)) {
-        boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
-        boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
+        std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
+        std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
         AO2USO_ = SharedMatrix(pet->aotoso());
     }
 
@@ -183,7 +183,7 @@ void VBase::USO2AO()
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
-                V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
+                V_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
             }
         }
     } else {
@@ -192,7 +192,7 @@ void VBase::USO2AO()
             for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
-                V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
+                V_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
             }
 
         }
@@ -221,10 +221,10 @@ void VBase::USO2AO()
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
-                V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                V_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
-                P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+                P_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
             }
         }
     } else {
@@ -234,10 +234,10 @@ void VBase::USO2AO()
             for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
-                V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                V_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
-                P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+                P_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
             }
 
         }
@@ -264,10 +264,10 @@ void VBase::USO2AO()
         for (size_t A = 0; A < C_.size(); A++) {
             std::stringstream ss1;
             ss1 << "C (AO) " << A;
-            C_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
+            C_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
             std::stringstream ss2;
             ss2 << "D (AO) " << A;
-            D_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+            D_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
         }
     }
 
@@ -363,7 +363,7 @@ void VBase::AO2USO()
 void VBase::initialize()
 {
     timer_on("V: Grid");
-    grid_ = boost::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(),primary_,options_));
+    grid_ = std::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(),primary_,options_));
     timer_off("V: Grid");
 }
 void VBase::compute()
@@ -399,8 +399,8 @@ void VBase::print_header() const
     grid_->print("outfile",print_);
 }
 
-RV::RV(boost::shared_ptr<SuperFunctional> functional,
-    boost::shared_ptr<BasisSet> primary,
+RV::RV(std::shared_ptr<SuperFunctional> functional,
+    std::shared_ptr<BasisSet> primary,
     Options& options) : VBase(functional,primary,options)
 {
 }
@@ -412,7 +412,7 @@ void RV::initialize()
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
-    properties_ = boost::shared_ptr<PointFunctions>(new RKSFunctions(primary_,max_points,max_functions));
+    properties_ = std::shared_ptr<PointFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
 void RV::finalize()
@@ -458,13 +458,13 @@ void RV::compute_V()
     double rhoayq      = 0.0;
     double rhoazq      = 0.0;
 
-    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
+    std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double *restrict QTp = QT->pointer();
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
-        boost::shared_ptr<BlockOPoints> block = blocks[Q];
+        std::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
         double *restrict x = block->x();
         double *restrict y = block->y();
@@ -642,13 +642,13 @@ SharedMatrix RV::compute_gradient()
     double rhoayq      = 0.0;
     double rhoazq      = 0.0;
 
-    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
+    std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double* QTp = QT->pointer();
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
-        boost::shared_ptr<BlockOPoints> block = blocks[Q];
+        std::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
         double* x = block->x();
         double* y = block->y();
@@ -838,8 +838,8 @@ SharedMatrix RV::compute_gradient()
     return G;
 }
 
-UV::UV(boost::shared_ptr<SuperFunctional> functional,
-    boost::shared_ptr<BasisSet> primary,
+UV::UV(std::shared_ptr<SuperFunctional> functional,
+    std::shared_ptr<BasisSet> primary,
     Options& options) : VBase(functional,primary,options)
 {
 }
@@ -851,7 +851,7 @@ void UV::initialize()
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
-    properties_ = boost::shared_ptr<PointFunctions>(new UKSFunctions(primary_,max_points,max_functions));
+    properties_ = std::shared_ptr<PointFunctions>(new UKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
 void UV::finalize()
@@ -907,14 +907,14 @@ void UV::compute_V()
     double rhobxq      = 0.0;
     double rhobyq      = 0.0;
     double rhobzq      = 0.0;
-    boost::shared_ptr<Vector> QTa(new Vector("Quadrature Temp", max_points));
+    std::shared_ptr<Vector> QTa(new Vector("Quadrature Temp", max_points));
     double* QTap = QTa->pointer();
-    boost::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", max_points));
+    std::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", max_points));
     double* QTbp = QTb->pointer();
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
-        boost::shared_ptr<BlockOPoints> block = blocks[Q];
+        std::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
         double* x = block->x();
         double* y = block->y();
@@ -1128,9 +1128,9 @@ SharedMatrix UV::compute_gradient()
     double** Dbp = Db_local->pointer();
 
     // Traverse the blocks of points
-    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
+    std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double* QTp = QT->pointer();
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
     for (std::map<std::string, double>::const_iterator it = quad_values_.begin(); it != quad_values_.end(); ++it) {
         quad_values_[(*it).first] = 0.0;
@@ -1138,7 +1138,7 @@ SharedMatrix UV::compute_gradient()
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
-        boost::shared_ptr<BlockOPoints> block = blocks[Q];
+        std::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
         double* x = block->x();
         double* y = block->y();
@@ -1371,8 +1371,8 @@ SharedMatrix UV::compute_gradient()
     return G;
 }
 
-RK::RK(boost::shared_ptr<SuperFunctional> functional,
-    boost::shared_ptr<BasisSet> primary,
+RK::RK(std::shared_ptr<SuperFunctional> functional,
+    std::shared_ptr<BasisSet> primary,
     Options& options) : RV(functional,primary,options)
 {
 }
@@ -1388,8 +1388,8 @@ void RK::compute_V()
     // TODO
 }
 
-UK::UK(boost::shared_ptr<SuperFunctional> functional,
-    boost::shared_ptr<BasisSet> primary,
+UK::UK(std::shared_ptr<SuperFunctional> functional,
+    std::shared_ptr<BasisSet> primary,
     Options& options) : UV(functional,primary,options)
 {
 }

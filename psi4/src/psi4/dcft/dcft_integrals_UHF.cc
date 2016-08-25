@@ -31,7 +31,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "defines.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 

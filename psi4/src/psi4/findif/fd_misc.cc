@@ -43,7 +43,7 @@
 
 
 namespace psi {
-using SharedMatrix=boost::shared_ptr<Matrix>;
+using SharedMatrix=std::shared_ptr<Matrix>;
 namespace findif {
 
 bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
@@ -54,7 +54,7 @@ bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
 }
 
 // function to print out (frequencies and normal modes) vector of vibrations
-void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes) {
+void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes) {
 
   char **irrep_lbls = mol->irrep_labels();
   int Natom = mol->natom();
@@ -91,12 +91,12 @@ void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> 
 
 
   // Return list of frequencies to wavefunction object.
-  boost::shared_ptr<Vector> freq_vector(new Vector(modes.size()));
+  std::shared_ptr<Vector> freq_vector(new Vector(modes.size()));
   for (int i=0; i<modes.size(); ++i)
     freq_vector->set(i, modes[i]->cm);
 
   // Reture list of normal modes to wavefunction object.
-  boost::shared_ptr<Vector> nm_vector(new Vector(3*Natom*modes.size()));
+  std::shared_ptr<Vector> nm_vector(new Vector(3*Natom*modes.size()));
   int count = 0;
   for (int i=0; i<modes.size(); ++i) {
     freq_vector->set(i, modes[i]->cm);
@@ -154,7 +154,7 @@ void print_vibrations(boost::shared_ptr<Molecule> mol, std::vector<VIBRATION *> 
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
+void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size) {
 
   geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor));
@@ -175,7 +175,7 @@ void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdS
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
-void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
+void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
 
   geom->set_name("Coord: " + to_string(salc_i) + ", Disp: " + to_string(disp_factor_i)
@@ -204,7 +204,7 @@ void displace_cart(boost::shared_ptr<Molecule> mol, SharedMatrix geom, const CdS
 }
 
 // it's assumed columns are cartesian dimensions
-void mass_weight_columns_plus_one_half(boost::shared_ptr<Molecule> mol, SharedMatrix B) {
+void mass_weight_columns_plus_one_half(std::shared_ptr<Molecule> mol, SharedMatrix B) {
   double u;
 
   for (int col=0; col<B->ncol(); ++col) {
@@ -221,7 +221,7 @@ void displace_atom(SharedMatrix geom, const int atom, const int coord, const int
   return;
 }
 
-std::vector< SharedMatrix > atomic_displacements(boost::shared_ptr<Molecule> mol, Options &options) {
+std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options) {
 
   // This is the size in bohr because geometry is in bohr at this point
   // This equals 0.1 angstrom displacement

@@ -28,22 +28,15 @@
 #ifndef _psi_src_lib_libmints_vector_h
 #define _psi_src_lib_libmints_vector_h
 
+#include "psi4/libmints/dimension.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
 #include <iterator>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include "psi4/libmints/dimension.h"
+#include <memory>
 
-namespace boost {
-namespace python {
-class tuple;
-}
-}
+#include <pybind11/pybind11.h>
 
 namespace psi {
 
@@ -68,11 +61,12 @@ protected:
 
     /// Allocates vector_
     void alloc();
+
     /// Releases vector_
     void release();
 
     /// Copies data to vector_
-    void copy_from(const Vector& other);
+    void copy_from(const Vector &other);
 
     /// Assign pointer offsets in vector_ from v_.
     void assign_pointer_offsets();
@@ -83,20 +77,27 @@ protected:
 public:
     /// Default constructor, zeros everything out
     Vector();
+
     /// Copy constructor
-    Vector(const Vector& copy);
+    Vector(const Vector &copy);
+
     /// Constructor, allocates memory
     Vector(int nirrep, int *dimpi);
+
     /// Constructor, convenience for 1 irrep
     Vector(int dim);
+
     /// Constructor, allocates memory
-    Vector(const std::string& name, int nirrep, int *dimpi);
+    Vector(const std::string &name, int nirrep, int *dimpi);
+
     /// Constructor, convenience for 1 irrep
-    Vector(const std::string& name, int dim);
+    Vector(const std::string &name, int dim);
+
     /// Constructor, takes Dimension object
-    Vector(const Dimension& dimpi);
+    Vector(const Dimension &dimpi);
+
     /// Constructor, takes Dimension object
-    Vector(const std::string& name, const Dimension& dimpi);
+    Vector(const std::string &name, const Dimension &dimpi);
 
     /// Destructor, frees memory
     virtual ~Vector();
@@ -104,12 +105,14 @@ public:
     /**
      * Convenient creation function return SharedMatrix
      */
-    static boost::shared_ptr<Vector> create(const std::string& name,
-                                            const Dimension& dim);
+    static std::shared_ptr <Vector> create(const std::string &name,
+                                           const Dimension &dim);
 
     void init(int nirrep, int *dimpi);
-    void init(int nirrep, const int *dimpi, const std::string& name = "");
-    void init(const Dimension& v);
+
+    void init(int nirrep, const int *dimpi, const std::string &name = "");
+
+    void init(const Dimension &v);
 
     Vector *clone();
 
@@ -122,7 +125,7 @@ public:
         return vector_[h];
     }
 
-    const double* pointer(int h = 0) const
+    const double *pointer(int h = 0) const
     {
         return vector_[h];
     }
@@ -132,6 +135,7 @@ public:
     {
         return vector_[h][m];
     }
+
     /// Sets a single element value
     void set(int h, int m, double val)
     {
@@ -143,6 +147,7 @@ public:
     {
         return vector_[0][m];
     }
+
     /// Sets a single element value
     void set(int m, double val)
     {
@@ -159,10 +164,10 @@ public:
         vector_[h][m] += val;
     }
 
-    void add(const std::vector<double>& rhs);
+    void add(const std::vector<double> &rhs);
 
     /// Adds other vector to this
-    void add(const boost::shared_ptr<Vector>& other)
+    void add(const std::shared_ptr <Vector> &other)
     {
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < dimpi_[h]; ++m) {
@@ -172,7 +177,7 @@ public:
     }
 
     /// Subtracts other vector from this
-    void subtract(const boost::shared_ptr<Vector>& other)
+    void subtract(const std::shared_ptr <Vector> &other)
     {
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < dimpi_[h]; ++m) {
@@ -185,7 +190,7 @@ public:
     void zero();
 
     /// Adds other vector to this
-    void add(const Vector& other)
+    void add(const Vector &other)
     {
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < dimpi_[h]; ++m) {
@@ -195,7 +200,7 @@ public:
     }
 
     /// Subtracts other vector from this
-    void subtract(const Vector& other)
+    void subtract(const Vector &other)
     {
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < dimpi_[h]; ++m) {
@@ -204,18 +209,24 @@ public:
         }
     }
 
-    double& operator()(int i)
-    { return vector_[0][i]; }
-    const double& operator()(int i) const
-    { return vector_[0][i]; }
-    double& operator[](int i)
-    { return vector_[0][i]; }
-    const double& operator[](int i) const
+    double &operator()(int i)
     { return vector_[0][i]; }
 
-    double pyget(const boost::python::tuple& key);
-    void pyset(const boost::python::tuple& key, double value);
+    const double &operator()(int i) const
+    { return vector_[0][i]; }
+
+    double &operator[](int i)
+    { return vector_[0][i]; }
+
+    const double &operator[](int i) const
+    { return vector_[0][i]; }
+
+    double pyget(const pybind11::tuple &key);
+
+    void pyset(const pybind11::tuple &key, double value);
+
     double pyget(int key);
+
     void pyset(int key, double value);
 
     /// Returns a copy of the vector_
@@ -232,6 +243,7 @@ public:
     {
         return dimpi_;
     }
+
     /// Returns the number of irreps
     int nirrep() const
     {
@@ -243,7 +255,7 @@ public:
      *
      * @param name New name to use.
      */
-    void set_name(const std::string& name)
+    void set_name(const std::string &name)
     {
         name_ = name;
     }
@@ -259,6 +271,7 @@ public:
     /// Python compatible printer
     void print_out()
     { print("outfile"); }
+
     /**
      * Print the matrix using print_mat
      *
@@ -269,8 +282,9 @@ public:
 
     /// Copies rhs to this
     void copy(const Vector *rhs);
+
     /// Copies rhs to this
-    void copy(const Vector& rhs);
+    void copy(const Vector &rhs);
 
     /// General matrix vector multiplication
     void gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta);
@@ -282,12 +296,15 @@ public:
     double norm();
 
     /// Scale the elements of the vector
-    void scale(const double& sc);
+    void scale(const double &sc);
 
     // Serializable pure virtual functions:
     void send();
+
     void recv();
+
     void bcast(int broadcaster);
+
     /**
      * Performs element-by-element sum of all data from all nodes.
      */
@@ -300,6 +317,7 @@ public:
     /** Returns the starting iterator for the entire v_. */
     iterator begin()
     { return v_.begin(); }
+
     const_iterator begin() const
     { return v_.begin(); }
     /// @}
@@ -308,6 +326,7 @@ public:
     /** Returns the ending iterator for the entire v_. */
     iterator end()
     { return v_.end(); }
+
     const_iterator end() const
     { return v_.end(); }
     /// @}
@@ -341,8 +360,11 @@ public:
     /**
     * Adds accessability to the matrix shape for numpy
     */
-    void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
-    std::vector<int> numpy_shape() { return numpy_shape_; }
+    void set_numpy_shape(std::vector<int> shape)
+    { numpy_shape_ = shape; }
+
+    std::vector<int> numpy_shape()
+    { return numpy_shape_; }
 
 
     friend class Matrix;
@@ -363,6 +385,7 @@ protected:
 
     /// Allocates vector_
     void alloc();
+
     /// Releases vector_
     void release();
 
@@ -372,16 +395,21 @@ protected:
 public:
     /// Default constructor, zeros everything out
     IntVector();
+
     /// Copy constructor
-    IntVector(const IntVector& copy);
+    IntVector(const IntVector &copy);
+
     /// Constructor, allocates memory
     IntVector(int nirrep, int *dimpi);
+
     /// Constructor, convenience for 1 irrep
     IntVector(int dim);
+
     /// Constructor, allocates memory
-    IntVector(const std::string& name, int nirrep, int *dimpi);
+    IntVector(const std::string &name, int nirrep, int *dimpi);
+
     /// Constructor, convenience for 1 irrep
-    IntVector(const std::string& name, int dim);
+    IntVector(const std::string &name, int dim);
 
     /// Destructor, frees memory
     virtual ~IntVector();
@@ -402,6 +430,7 @@ public:
     {
         return vector_[h][m];
     }
+
     /// Sets a single element value
     void set(int h, int m, int val)
     {
@@ -422,6 +451,7 @@ public:
     {
         return dimpi_;
     }
+
     /// Returns the number of irreps
     int nirrep() const
     {
@@ -433,7 +463,7 @@ public:
      *
      * @param name New name to use.
      */
-    void set_name(const std::string& name)
+    void set_name(const std::string &name)
     {
         name_ = name;
     }
@@ -445,6 +475,7 @@ public:
     {
         return name_;
     }
+
     /// Python compatible printer
     void print_out()
     { print("outfile"); }
@@ -456,10 +487,12 @@ public:
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
     void print(std::string outfile = "outfile", const char *extra = NULL) const;
+
     /// Copies rhs to this
     void copy(const IntVector *rhs);
+
     /// Copies rhs to this
-    void copy(const IntVector& rhs);
+    void copy(const IntVector &rhs);
 
     friend class VectorIterator;
 };
@@ -482,8 +515,8 @@ public:
 //    reference operator*() { return *v_; }
 //};
 
-typedef boost::shared_ptr<Vector> SharedVector;
-typedef boost::shared_ptr<IntVector> SharedIntVector;
+typedef std::shared_ptr <Vector> SharedVector;
+typedef std::shared_ptr <IntVector> SharedIntVector;
 
 }
 

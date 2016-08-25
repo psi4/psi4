@@ -37,7 +37,7 @@
 
 #include <algorithm>
 
-using namespace boost;
+;
 
 namespace {
 
@@ -101,8 +101,8 @@ void CdSalcWRTAtom::print() const
     }
 }
 
-CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
-                       boost::shared_ptr<MatrixFactory> fact,
+CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol,
+                       std::shared_ptr<MatrixFactory> fact,
                        int needed_irreps,
                        bool project_out_translations,
                        bool project_out_rotations)

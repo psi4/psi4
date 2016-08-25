@@ -49,7 +49,7 @@ namespace psi { namespace cchbar {
 
 void init_io();
 void title(void);
-void get_moinfo(boost::shared_ptr<Wavefunction> ref_wfn, Options&);
+void get_moinfo(std::shared_ptr<Wavefunction> ref_wfn, Options&);
 void get_params(Options&);
 void exit_io(void);
 void F_build(void);
@@ -80,7 +80,7 @@ void norm_HET1(void);
 
 using namespace psi;
 
-PsiReturnType cchbar(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
+PsiReturnType cchbar(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int **cachelist, *cachefiles;
 

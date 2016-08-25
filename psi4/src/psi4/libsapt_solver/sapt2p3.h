@@ -30,12 +30,6 @@
 
 #include "sapt2p.h"
 
-namespace boost {
-
-template<class T> class shared_ptr;
-
-}
-
 namespace psi { namespace sapt {
 
 class SAPT2p3 : public SAPT2p {
@@ -60,36 +54,36 @@ protected:
   double e_sapt2pp3_ccd_;
   double e_sapt2p3_ccd_;
 
-  void Y3(int, const char *, const char *, const char *, int, const char *, 
-    const char *, const char *, const char *, const char *, const char *, 
+  void Y3(int, const char *, const char *, const char *, int, const char *,
+    const char *, const char *, const char *, const char *, const char *,
     int, int, int, double *, int, const char *);
-  void Y3_1(double **, int, const char *, const char *, int, const char *, 
+  void Y3_1(double **, int, const char *, const char *, int, const char *,
     int, int, int);
-  void Y3_2(double **, int, const char *, const char *, int, const char *, 
+  void Y3_2(double **, int, const char *, const char *, int, const char *,
     int, int, int);
-  void Y3_3(double **, int, const char *, const char *, const char *, int, 
+  void Y3_3(double **, int, const char *, const char *, const char *, int,
     const char *, int, int, int);
-  void Y3_4(double **, int, const char *, const char *, const char *, int, 
+  void Y3_4(double **, int, const char *, const char *, const char *, int,
     const char *, int, int, int);
 
   double elst130(double **, double **, double **, int, const char *,
     const char *, const char *, int, int, int);
 
-  void ind30_amps(int, const char *, int, const char *, double **, double **, 
-    double **, double **, int, int, double *, int, int, double *, int, 
+  void ind30_amps(int, const char *, int, const char *, double **, double **,
+    double **, double **, int, int, double *, int, int, double *, int,
     const char *);
 
   void inddisp30_amps();
-  void inddisp30_ov(int, const char *, const char *, int, const char *, 
+  void inddisp30_ov(int, const char *, const char *, int, const char *,
     int, int, int, double *, int, const char *);
   void inddisp30_ovov();
 
-  double disp30_1(int, const char *, int, const char *, int, const char *, 
+  double disp30_1(int, const char *, int, const char *, int, const char *,
     int, int, int, int, int, int);
-  double disp30_2(int, const char *, int, const char *, const char *, int, 
+  double disp30_2(int, const char *, int, const char *, const char *, int,
     const char *, const char *, int, int, int, int, int, int);
 
-  void disp30_amps(int, const char *, int, const char *, const char *, 
+  void disp30_amps(int, const char *, int, const char *, const char *,
     int, const char *, const char *, int, int, int, double *,
     int, int, int, double *, int, const char *);
 
@@ -104,14 +98,14 @@ protected:
   double exch_disp30_02();
   double exch_disp30_22();
 
-  double ind30r_1(double **, double **, double **, double **, int, 
+  double ind30r_1(double **, double **, double **, double **, int,
     const char *, const char *, const char *, int, const char *, int,
     int, int, int);
 
 public:
   SAPT2p3(SharedWavefunction Dimer, SharedWavefunction MonomerA,
           SharedWavefunction MonomerB, Options& options,
-          boost::shared_ptr<PSIO>psio);
+          std::shared_ptr<PSIO>psio);
   virtual ~SAPT2p3();
 
   virtual double compute_energy();

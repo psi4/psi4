@@ -28,30 +28,27 @@
 
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
-#include <boost/tuple/tuple_comparison.hpp>
 #include "points.h"
 #include "hamiltonian.h"
 #include "jk.h"
 #include "v.h"
-
-#include <sstream>
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+
+#include <sstream>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-using namespace std;
-using namespace psi;
-
 namespace psi {
 
-Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk) :
+Hamiltonian::Hamiltonian(std::shared_ptr<JK> jk) :
     jk_(jk)
 {
     common_init();
 }
-Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v) :
+Hamiltonian::Hamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v) :
     jk_(jk), v_(v)
 {
     common_init();
@@ -67,11 +64,11 @@ void Hamiltonian::common_init()
     exact_diagonal_ = false;
 }
 
-RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
+RHamiltonian::RHamiltonian(std::shared_ptr<JK> jk) :
     Hamiltonian(jk)
 {
 }
-RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v) :
+RHamiltonian::RHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v) :
     Hamiltonian(jk, v)
 {
 }
@@ -80,14 +77,14 @@ RHamiltonian::~RHamiltonian()
 }
 SharedMatrix RHamiltonian::explicit_hamiltonian()
 {
-    boost::shared_ptr<Vector> diag = diagonal();
+    std::shared_ptr<Vector> diag = diagonal();
 
     SharedMatrix H(new Matrix("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi()));
 
-    boost::shared_ptr<Vector> b(diag->clone());
-    boost::shared_ptr<Vector> s(diag->clone());
-    std::vector<boost::shared_ptr<Vector> > bb;
-    std::vector<boost::shared_ptr<Vector> > ss;
+    std::shared_ptr<Vector> b(diag->clone());
+    std::shared_ptr<Vector> s(diag->clone());
+    std::vector<std::shared_ptr<Vector> > bb;
+    std::vector<std::shared_ptr<Vector> > ss;
     bb.push_back(b);
     ss.push_back(s);
     for (int h = 0; h < diag->nirrep(); h++) {
@@ -103,11 +100,11 @@ SharedMatrix RHamiltonian::explicit_hamiltonian()
     return H;
 }
 
-UHamiltonian::UHamiltonian(boost::shared_ptr<JK> jk) :
+UHamiltonian::UHamiltonian(std::shared_ptr<JK> jk) :
     Hamiltonian(jk)
 {
 }
-UHamiltonian::UHamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v) :
+UHamiltonian::UHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v) :
     Hamiltonian(jk,v)
 {
 }
@@ -116,7 +113,7 @@ UHamiltonian::~UHamiltonian()
 }
 
 MatrixRHamiltonian::MatrixRHamiltonian(SharedMatrix M) :
-    RHamiltonian(boost::shared_ptr<JK>()), M_(M)
+    RHamiltonian(std::shared_ptr<JK>()), M_(M)
 {
 }
 MatrixRHamiltonian::~MatrixRHamiltonian()
@@ -128,9 +125,9 @@ void MatrixRHamiltonian::print_header() const
         outfile->Printf( "  ==> MatrixRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-boost::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
+std::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
 {
-    boost::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->nirrep(), M_->rowspi()));
+    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->nirrep(), M_->rowspi()));
     for (int h = 0; h < M_->nirrep(); ++h) {
         int n = M_->rowspi()[h];
         if (!n) continue;
@@ -142,8 +139,8 @@ boost::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
     }
     return diag;
 }
-void MatrixRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                              std::vector<boost::shared_ptr<Vector> >& b)
+void MatrixRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                              std::vector<std::shared_ptr<Vector> >& b)
 {
     for (size_t N = 0; N < x.size(); ++N) {
         for (int h = 0; h < M_->nirrep(); ++h) {
@@ -158,7 +155,7 @@ void MatrixRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& 
 }
 
 MatrixUHamiltonian::MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix > M) :
-    UHamiltonian(boost::shared_ptr<JK>()), M_(M)
+    UHamiltonian(std::shared_ptr<JK>()), M_(M)
 {
 }
 MatrixUHamiltonian::~MatrixUHamiltonian()
@@ -170,10 +167,10 @@ void MatrixUHamiltonian::print_header() const
         outfile->Printf( "  ==> MatrixUHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
+std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
 {
-    boost::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
-    boost::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
+    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
+    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
     for (int h = 0; h < M_.first->nirrep(); ++h) {
         int n = M_.first->rowspi()[h];
         if (!n) continue;
@@ -188,8 +185,8 @@ std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > MatrixUHamilton
     }
     return make_pair(diaga,diagb);
 }
-void MatrixUHamiltonian::product(const std::vector<std::pair<boost::shared_ptr<Vector>,boost::shared_ptr<Vector> > >& x,
-                              std::vector<std::pair<boost::shared_ptr<Vector>,boost::shared_ptr<Vector> > >& b)
+void MatrixUHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vector>,std::shared_ptr<Vector> > >& x,
+                              std::vector<std::pair<std::shared_ptr<Vector>,std::shared_ptr<Vector> > >& b)
 {
     for (size_t N = 0; N < x.size(); ++N) {
         for (int h = 0; h < M_.first->nirrep(); ++h) {
@@ -207,12 +204,12 @@ void MatrixUHamiltonian::product(const std::vector<std::pair<boost::shared_ptr<V
     }
 }
 
-CISRHamiltonian::CISRHamiltonian(boost::shared_ptr<JK> jk,
+CISRHamiltonian::CISRHamiltonian(std::shared_ptr<JK> jk,
                                  SharedMatrix Caocc,
                                  SharedMatrix Cavir,
-                                 boost::shared_ptr<Vector> eps_aocc,
-                                 boost::shared_ptr<Vector> eps_avir,
-                                 boost::shared_ptr<VBase> v) :
+                                 std::shared_ptr<Vector> eps_aocc,
+                                 std::shared_ptr<Vector> eps_avir,
+                                 std::shared_ptr<VBase> v) :
     RHamiltonian(jk,v), singlet_(true), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir)
 {
 }
@@ -225,7 +222,7 @@ void CISRHamiltonian::print_header() const
         outfile->Printf( "  ==> CISRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
+std::shared_ptr<Vector> CISRHamiltonian::diagonal()
 {
 
     int nirrep = eps_aocc_->nirrep();
@@ -237,7 +234,7 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
         }
     }
 
-    boost::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nirrep, nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -278,8 +275,8 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
     delete[] nov;
     return diag;
 }
-void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                    std::vector<boost::shared_ptr<Vector> >& b)
+void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                    std::vector<std::shared_ptr<Vector> >& b)
 {
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
@@ -438,7 +435,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
     }
 
 }
-std::vector<SharedMatrix > CISRHamiltonian::unpack(const boost::shared_ptr<Vector>& eig)
+std::vector<SharedMatrix > CISRHamiltonian::unpack(const std::shared_ptr<Vector>& eig)
 {
     int nirrep = eig->nirrep();
     std::vector<SharedMatrix > t1;
@@ -461,12 +458,12 @@ std::vector<SharedMatrix > CISRHamiltonian::unpack(const boost::shared_ptr<Vecto
 
     return t1;
 }
-TDHFRHamiltonian::TDHFRHamiltonian(boost::shared_ptr<JK> jk,
+TDHFRHamiltonian::TDHFRHamiltonian(std::shared_ptr<JK> jk,
                                  SharedMatrix Caocc,
                                  SharedMatrix Cavir,
-                                 boost::shared_ptr<Vector> eps_aocc,
-                                 boost::shared_ptr<Vector> eps_avir,
-                                 boost::shared_ptr<VBase> v) :
+                                 std::shared_ptr<Vector> eps_aocc,
+                                 std::shared_ptr<Vector> eps_avir,
+                                 std::shared_ptr<VBase> v) :
     RHamiltonian(jk,v), singlet_(true), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir)
 {
 }
@@ -479,7 +476,7 @@ void TDHFRHamiltonian::print_header() const
         outfile->Printf( "  ==> TDHFRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-boost::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
+std::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
 {
     int nirrep = eps_aocc_->nirrep();
     int* nov = new int[nirrep];
@@ -490,7 +487,7 @@ boost::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
         }
     }
 
-    boost::shared_ptr<Vector> diag(new Vector("TDHF Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("TDHF Diagonal", nirrep, nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -518,8 +515,8 @@ boost::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
     delete[] nov;
     return diag;
 }
-void TDHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                     std::vector<boost::shared_ptr<Vector> >& b)
+void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                     std::vector<std::shared_ptr<Vector> >& b)
 {
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
@@ -687,12 +684,12 @@ void TDHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
         }
     }
 }
-CPHFRHamiltonian::CPHFRHamiltonian(boost::shared_ptr<JK> jk,
+CPHFRHamiltonian::CPHFRHamiltonian(std::shared_ptr<JK> jk,
                                    SharedMatrix Caocc,
                                    SharedMatrix Cavir,
-                                   boost::shared_ptr<Vector> eps_aocc,
-                                   boost::shared_ptr<Vector> eps_avir,
-                                   boost::shared_ptr<VBase> v) :
+                                   std::shared_ptr<Vector> eps_aocc,
+                                   std::shared_ptr<Vector> eps_avir,
+                                   std::shared_ptr<VBase> v) :
     RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir)
 {
 }
@@ -705,7 +702,7 @@ void CPHFRHamiltonian::print_header() const
         outfile->Printf( "  ==> CPHFRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
+std::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
 {
     int nirrep = eps_aocc_->nirrep();
     int* nov = new int[nirrep];
@@ -716,7 +713,7 @@ boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
         }
     }
 
-    boost::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nirrep, nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -757,7 +754,7 @@ std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::s
     for (std::map<std::string, SharedMatrix>::const_iterator it = x.begin();
         it != x.end(); ++it) {
 
-        boost::shared_ptr<Vector> v(new Vector("X", nirrep, nov));
+        std::shared_ptr<Vector> v(new Vector("X", nirrep, nov));
         SharedMatrix x2 = (*it).second;
         int symm = x2->symmetry();
         int offset = 0;
@@ -775,8 +772,8 @@ std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::s
     }
     return X;
 }
-void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                     std::vector<boost::shared_ptr<Vector> >& b)
+void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                     std::vector<std::shared_ptr<Vector> >& b)
 {
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
@@ -879,7 +876,7 @@ void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
         }
     }
 }
-std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const std::vector<boost::shared_ptr<Vector> >& x)
+std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const std::vector<std::shared_ptr<Vector> >& x)
 {
     std::vector<SharedMatrix > t1;
     int nirrep = x[0]->nirrep();
@@ -905,13 +902,13 @@ std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const std::vector<boost::sha
     return t1;
 }
 
-TDARHamiltonian::TDARHamiltonian(boost::shared_ptr<JK> jk,
-                    boost::shared_ptr<VBase> v,
+TDARHamiltonian::TDARHamiltonian(std::shared_ptr<JK> jk,
+                    std::shared_ptr<VBase> v,
                     SharedMatrix Cocc,
                     SharedMatrix Caocc,
                     SharedMatrix Cavir,
-                    boost::shared_ptr<Vector> eps_aocc,
-                    boost::shared_ptr<Vector> eps_avir) :
+                    std::shared_ptr<Vector> eps_aocc,
+                    std::shared_ptr<Vector> eps_avir) :
     CISRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
     std::vector<SharedMatrix>& C = v->C();
@@ -935,8 +932,8 @@ void TDARHamiltonian::print_header() const
         outfile->Printf( "  ==> TDARHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                     std::vector<boost::shared_ptr<Vector> >& b)
+void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                     std::vector<std::shared_ptr<Vector> >& b)
 {
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
@@ -1065,13 +1062,13 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
     }
 }
 
-TDDFTRHamiltonian::TDDFTRHamiltonian(boost::shared_ptr<JK> jk,
-                    boost::shared_ptr<VBase> v,
+TDDFTRHamiltonian::TDDFTRHamiltonian(std::shared_ptr<JK> jk,
+                    std::shared_ptr<VBase> v,
                     SharedMatrix Cocc,
                     SharedMatrix Caocc,
                     SharedMatrix Cavir,
-                    boost::shared_ptr<Vector> eps_aocc,
-                    boost::shared_ptr<Vector> eps_avir) :
+                    std::shared_ptr<Vector> eps_aocc,
+                    std::shared_ptr<Vector> eps_avir) :
     TDHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
     std::vector<SharedMatrix>& C = v->C();
@@ -1095,8 +1092,8 @@ void TDDFTRHamiltonian::print_header() const
         outfile->Printf( "  ==> TDDFTHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-void TDDFTRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                     std::vector<boost::shared_ptr<Vector> >& b)
+void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                     std::vector<std::shared_ptr<Vector> >& b)
 {
     // TODO V
 
@@ -1267,13 +1264,13 @@ void TDDFTRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x
     }
 }
 
-CPKSRHamiltonian::CPKSRHamiltonian(boost::shared_ptr<JK> jk,
-                    boost::shared_ptr<VBase> v,
+CPKSRHamiltonian::CPKSRHamiltonian(std::shared_ptr<JK> jk,
+                    std::shared_ptr<VBase> v,
                     SharedMatrix Cocc,
                     SharedMatrix Caocc,
                     SharedMatrix Cavir,
-                    boost::shared_ptr<Vector> eps_aocc,
-                    boost::shared_ptr<Vector> eps_avir) :
+                    std::shared_ptr<Vector> eps_aocc,
+                    std::shared_ptr<Vector> eps_avir) :
     CPHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
     std::vector<SharedMatrix>& C = v->C();
@@ -1297,8 +1294,8 @@ void CPKSRHamiltonian::print_header() const
         outfile->Printf( "  ==> CPKSRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
-void CPKSRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
-                                     std::vector<boost::shared_ptr<Vector> >& b)
+void CPKSRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
+                                     std::vector<std::shared_ptr<Vector> >& b)
 {
     // TODO V
 
@@ -1405,16 +1402,16 @@ void CPKSRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 }
 
 //Hamiltonian for UHF stability analysis
-USTABHamiltonian::USTABHamiltonian(boost::shared_ptr<JK> jk,
+USTABHamiltonian::USTABHamiltonian(std::shared_ptr<JK> jk,
                                  SharedMatrix Cocca,
                                  SharedMatrix Cvira,
                                  SharedMatrix Coccb,
                                  SharedMatrix Cvirb,
-                                 boost::shared_ptr<Vector> eps_occa,
-                                 boost::shared_ptr<Vector> eps_vira,
-                                 boost::shared_ptr<Vector> eps_occb,
-                                 boost::shared_ptr<Vector> eps_virb,
-                                 boost::shared_ptr<VBase> v) :
+                                 std::shared_ptr<Vector> eps_occa,
+                                 std::shared_ptr<Vector> eps_vira,
+                                 std::shared_ptr<Vector> eps_occb,
+                                 std::shared_ptr<Vector> eps_virb,
+                                 std::shared_ptr<VBase> v) :
     UHamiltonian(jk,v), Cocca_(Cocca), Cvira_(Cvira), Coccb_(Coccb), Cvirb_(Cvirb),
     eps_occa_(eps_occa), eps_vira_(eps_vira), eps_occb_(eps_occb), eps_virb_(eps_virb)
 {
@@ -1429,7 +1426,7 @@ void USTABHamiltonian::print_header() const
         outfile->Printf( "  ==> Inspired by R.Parrish CISRHamiltonian <== \n\n");
     }
 }
-std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > USTABHamiltonian::diagonal()
+std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::diagonal()
 {
 
     int nirrepa = eps_occa_->nirrep();
@@ -1449,8 +1446,8 @@ std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > USTABHamiltonia
         }
     }
 
-    boost::shared_ptr<Vector> diaga(new Vector("UStab Alpha Diagonal", nirrepa, nova));
-    boost::shared_ptr<Vector> diagb(new Vector("UStab Beta Diagonal", nirrepb, novb));
+    std::shared_ptr<Vector> diaga(new Vector("UStab Alpha Diagonal", nirrepa, nova));
+    std::shared_ptr<Vector> diagb(new Vector("UStab Beta Diagonal", nirrepb, novb));
 
     for (int symm = 0; symm < nirrepa; ++symm) {
         long int offset = 0L;
@@ -1503,8 +1500,8 @@ std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > USTABHamiltonia
     return make_pair(diaga,diagb);
 }
 
-void USTABHamiltonian::product(const std::vector<std::pair <boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > >& x,
-                                    std::vector<std::pair<boost::shared_ptr<Vector>,boost::shared_ptr<Vector> > >& b)
+void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
+                                    std::vector<std::pair<std::shared_ptr<Vector>,std::shared_ptr<Vector> > >& b)
 {
 
     std::vector<SharedMatrix >& C_left = jk_->C_left();
@@ -1835,12 +1832,12 @@ void USTABHamiltonian::product(const std::vector<std::pair <boost::shared_ptr<Ve
 
 // No implementation here, working with pairs is annoying.
 //std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack(
-//        const std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >& eig)
+//        const std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> >& eig)
 //{
 //}
 // New, better function for our purpose.
 std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_paired(
-        const boost::shared_ptr<Vector>& eig)
+        const std::shared_ptr<Vector>& eig)
 {
     int nirrep = eig->nirrep();
     std::vector<std::pair<SharedMatrix, SharedMatrix> > t1;

@@ -34,7 +34,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
-using namespace boost;
+
 using namespace std;
 
 namespace psi{ namespace dfoccwave{
@@ -94,7 +94,7 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
-	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+	eps_orbA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
         for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
 
         // Build Initial fock matrix
@@ -229,8 +229,8 @@ else if (reference_ == "UNRESTRICTED") {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
-	eps_orbA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
-	eps_orbB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <p|q>", nmo_));
+	eps_orbA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+	eps_orbB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <p|q>", nmo_));
         for(int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
         for(int p = 0; p < nmo_; ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
 
@@ -327,10 +327,10 @@ else if (reference_ == "UNRESTRICTED") {
 /************************** Create all required matrice *************************************/
 /********************************************************************************************/
         // Build Hso
-	Hso_ = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nso_, nso_));
-	Tso_ = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nso_, nso_));
-	Vso_ = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nso_, nso_));
-	Sso_ = boost::shared_ptr<Matrix>(new Matrix("SO-basis Overlap Ints", nso_, nso_));
+	Hso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nso_, nso_));
+	Tso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nso_, nso_));
+	Vso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nso_, nso_));
+	Sso_ = std::shared_ptr<Matrix>(new Matrix("SO-basis Overlap Ints", nso_, nso_));
 	Hso_->zero();
 	Tso_->zero();
 	Vso_->zero();

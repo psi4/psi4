@@ -38,11 +38,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libqt/qt.h"
 
-
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 class Matrix;
 class Vector;
@@ -145,7 +140,7 @@ protected:
     double integral_threshold_;
 
     /// The soon to be ubiquitous JK object
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;
@@ -164,7 +159,7 @@ protected:
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
     /// DIIS manager for all SCF wavefunctions
-    boost::shared_ptr<DIISManager> diis_manager_;
+    std::shared_ptr<DIISManager> diis_manager_;
 
     /// How many min vectors for DIIS
     int min_diis_vectors_;
@@ -213,18 +208,18 @@ public:
     int iterations_needed() {return iterations_needed_;}
 
     /// The JK object (or null if it has been deleted)
-    boost::shared_ptr<JK> jk() const { return jk_; }
+    std::shared_ptr<JK> jk() const { return jk_; }
 
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
 
     /// Returns the occupation vectors
-    boost::shared_ptr<Vector> occupation_a() const;
-    boost::shared_ptr<Vector> occupation_b() const;
+    std::shared_ptr<Vector> occupation_a() const;
+    std::shared_ptr<Vector> occupation_b() const;
 
     // PCM interface
     bool pcm_enabled_;
-    boost::shared_ptr<PCM> hf_pcm_;
+    std::shared_ptr<PCM> hf_pcm_;
 
 protected:
 
@@ -244,7 +239,7 @@ protected:
 
 
     /// Perform casting of C from old basis to new basis if desired.
-    SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
+    SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis);
 
     /// Common initializer
     void common_init();
@@ -342,7 +337,7 @@ protected:
     virtual void form_C() =0;
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
-    virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, boost::shared_ptr<Vector>& eps);
+    virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
 
     /** Computes the Fock matrix */
     virtual void form_F() =0;
@@ -390,7 +385,7 @@ protected:
     virtual void load_orbitals();
 
 public:
-    HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 

@@ -38,7 +38,7 @@
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 
-using namespace boost;
+;
 using namespace psi;
 
 /**
@@ -50,8 +50,8 @@ using namespace psi;
  * @param s4 - the MO space for the fourth index
  */
 void
-IntegralTransform::transform_tei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
-                                 const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4,
+IntegralTransform::transform_tei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
+                                 const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4,
                                  HalfTrans ht)
 {
     check_initialized();

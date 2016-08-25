@@ -30,16 +30,16 @@
 #include "psi4/libpsio/psio.hpp"
 #include "thce.h"
 #include "psi4/psi4-dec.h"
-#include <boost/tuple/tuple_comparison.hpp>
-#include <boost/algorithm/string.hpp>
-#include <unistd.h>
 #include "psi4/libparallel/ParallelPrinter.h"
+
+#include <unistd.h>
+#include <tuple>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 using namespace psi;
-using namespace boost;
 using namespace std;
 
 namespace psi {
@@ -52,8 +52,8 @@ THCE::~THCE()
 }
 void THCE::print(std::string out, int level) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    if (level >= 0) {
         printer->Printf("  ==> THCE <==\n\n");
 
@@ -73,10 +73,10 @@ void THCE::print(std::string out, int level) const
 
         printer->Printf("  Tensors:\n\n");
         printer->Printf("  %11s %11s %11s %11s %11s\n", "Alias", "Name", "Order", "Storage", "Trust");
-        for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
+        for(std::map<std::string, std::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
             it != tensors_.end(); ++it) {
             std::string key = (*it).first;
-            boost::shared_ptr<Tensor> T = (*it).second;
+            std::shared_ptr<Tensor> T = (*it).second;
             printer->Printf("  %11s %11s %11d %11s %11s\n", key.c_str(), T->name().c_str(), T->order(),
                 (T->disk() ? "Disk" : "Core"), (T->trust() ? "Yes" : "No"));
         }
@@ -84,7 +84,7 @@ void THCE::print(std::string out, int level) const
     }
     if (level >= 1) {
         printer->Printf("  Tensor Details:\n\n");
-        for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
+        for(std::map<std::string, std::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
             it != tensors_.end(); ++it) {
             (*it).second->print(out,level);
         }
@@ -101,9 +101,9 @@ size_t THCE::core_doubles() const
     std::set<std::string> names;
 
     size_t val = 0L;
-    for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
+    for(std::map<std::string, std::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
         it != tensors_.end(); ++it) {
-        boost::shared_ptr<Tensor> T = (*it).second;
+        std::shared_ptr<Tensor> T = (*it).second;
         if (!names.count(T->name())) {
             val += T->core_doubles();
             names.insert(T->name());
@@ -117,9 +117,9 @@ size_t THCE::disk_doubles() const
     std::set<std::string> names;
 
     size_t val = 0L;
-    for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
+    for(std::map<std::string, std::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
         it != tensors_.end(); ++it) {
-        boost::shared_ptr<Tensor> T = (*it).second;
+        std::shared_ptr<Tensor> T = (*it).second;
         if (!names.count(T->name())) {
             val += T->disk_doubles();
             names.insert(T->name());
@@ -153,14 +153,14 @@ void THCE::new_core_tensor(const std::string& name, const std::string& dimension
     std::vector<int> sizes;
 
     if (dimensions.length() != 0) {
-        boost::split(dims,dimensions,boost::is_any_of(","));
+        dims = split(dimensions, ",");
         for (int i = 0; i < dims.size(); i++) {
             dimension_check(dims[i]);
             sizes.push_back(dimensions_[dims[i]]);
         }
     }
 
-    boost::shared_ptr<Tensor> T(new CoreTensor(name,dims,sizes,data,trust));
+    std::shared_ptr<Tensor> T(new CoreTensor(name,dims,sizes,data,trust));
 
     tensors_[name] = T;
 }
@@ -170,18 +170,18 @@ void THCE::new_disk_tensor(const std::string& name, const std::string& dimension
     std::vector<int> sizes;
 
     if (dimensions.length() != 0) {
-        boost::split(dims,dimensions,boost::is_any_of(","));
+        dims = split(dimensions, ",");
         for (int i = 0; i < dims.size(); i++) {
             dimension_check(dims[i]);
             sizes.push_back(dimensions_[dims[i]]);
         }
     }
 
-    boost::shared_ptr<Tensor> T(new DiskTensor(name,dims,sizes,save,load));
+    std::shared_ptr<Tensor> T(new DiskTensor(name,dims,sizes,save,load));
 
     tensors_[name] = T;
 }
-void THCE::add_tensor(const std::string& name, boost::shared_ptr<Tensor> tensor)
+void THCE::add_tensor(const std::string& name, std::shared_ptr<Tensor> tensor)
 {
     tensors_[name] = tensor;
 }
@@ -231,7 +231,7 @@ void Tensor::set_filename()
 
     Tensor::unique_id++;
 }
-void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,int,int,bool,int,int> >& topology)
+void Tensor::slice(std::shared_ptr<Tensor> A, std::vector<std::tuple<bool,int,int,bool,int,int> >& topology)
 {
     // => Topology Metadata/Validity <= //
 
@@ -317,12 +317,12 @@ void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,in
     int rA = A->order() - 1;
     int rC = order_ - 1;
     for (int ind = nindex-1; ind >= 0; ind--) {
-        bool isC = boost::get<0>(topology[ind]);
-        bool isA = boost::get<3>(topology[ind]);
-        int sC = boost::get<1>(topology[ind]);
-        int sA = boost::get<4>(topology[ind]);
-        int eC = boost::get<2>(topology[ind]);
-        int eA = boost::get<5>(topology[ind]);
+        bool isC = std::get<0>(topology[ind]);
+        bool isA = std::get<3>(topology[ind]);
+        int sC = std::get<1>(topology[ind]);
+        int sA = std::get<4>(topology[ind]);
+        int eC = std::get<2>(topology[ind]);
+        int eA = std::get<5>(topology[ind]);
 
         if (!isC && !isA) {
             throw PSIEXCEPTION("What exactly is F/F?");
@@ -614,7 +614,7 @@ void CoreTensor::swap_check() const
     if (!core() | swapped())
         throw PSIEXCEPTION("Tensor is swapped out, cannot operate on it.");
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
+std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
@@ -633,9 +633,9 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension4);
     sizes.push_back(size4);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return std::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
+std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
@@ -651,9 +651,9 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension3);
     sizes.push_back(size3);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return std::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
+std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     double* data, bool trust)
@@ -666,9 +666,9 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension2);
     sizes.push_back(size2);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return std::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
+std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     double* data, bool trust)
 {
@@ -678,20 +678,20 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     dimensions.push_back(dimension1);
     sizes.push_back(size1);
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return std::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
-boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
+std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
     double* data, bool trust)
 {
     std::vector<std::string> dimensions;
     std::vector<int> sizes;
 
-    return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
+    return std::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
 void CoreTensor::print(std::string out, int level) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     if (level >= 0) {
         printer->Printf( "  => CoreTensor %s <=\n\n", name_.c_str());
@@ -857,7 +857,7 @@ void CoreTensor::scale(double val)
 
     C_DSCAL(numel_, val, data_, 1);
 }
-void CoreTensor::add(boost::shared_ptr<Tensor> A, double alpha, double beta)
+void CoreTensor::add(std::shared_ptr<Tensor> A, double alpha, double beta)
 {
     swap_check();
     A->swap_check();
@@ -871,7 +871,7 @@ void CoreTensor::add(boost::shared_ptr<Tensor> A, double alpha, double beta)
 
     C_DAXPY(numel_,alpha,Ap,1,data_,1);
 }
-void CoreTensor::permute(boost::shared_ptr<Tensor> A, std::vector<int>& orderC)
+void CoreTensor::permute(std::shared_ptr<Tensor> A, std::vector<int>& orderC)
 {
     // => Swap Check <= //
 
@@ -1001,7 +1001,7 @@ void CoreTensor::permute(boost::shared_ptr<Tensor> A, std::vector<int>& orderC)
         A2p += fast_size;
     }
 }
-void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor> B, std::vector<boost::tuple<std::string,int,int,int> >& topology, double alpha, double beta)
+void CoreTensor::contract(std::shared_ptr<Tensor> A, std::shared_ptr<Tensor> B, std::vector<std::tuple<std::string,int,int,int> >& topology, double alpha, double beta)
 {
     // => Swap Check <= //
 
@@ -1069,10 +1069,10 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
 
     // Figure everything out
     for (int ind = 0; ind < nindex; ind++) {
-        name[ind] = boost::get<0>(topology[ind]);
-        int rC = boost::get<1>(topology[ind]);
-        int rA = boost::get<2>(topology[ind]);
-        int rB = boost::get<3>(topology[ind]);
+        name[ind] = std::get<0>(topology[ind]);
+        int rC = std::get<1>(topology[ind]);
+        int rA = std::get<2>(topology[ind]);
+        int rB = std::get<3>(topology[ind]);
         rankA[ind] = rA;
         rankB[ind] = rB;
         rankC[ind] = rC;
@@ -1087,13 +1087,13 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
             actC[rC] = actA[rA];
             // Topology Errors
             if (indC[rC] != indA[rA] || indC[rC] != indB[rB]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + std::get<0>(topology[ind]));
             }
             if (sizeC[rC] != sizeA[rA] || sizeC[rC] != sizeB[rB]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + std::get<0>(topology[ind]));
             }
             if (actB[rB] != actA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (active) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (active) Index " + std::get<0>(topology[ind]));
             }
         } else if (rA >= 0 && rC >= 0) {
             // Type Spec
@@ -1106,10 +1106,10 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
             actC[rC] = actA[rA];
             // Topology Errors
             if (indC[rC] != indA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + std::get<0>(topology[ind]));
             }
             if (sizeC[rC] != sizeA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + std::get<0>(topology[ind]));
             }
         } else if (rB >= 0 && rC >= 0) {
             // Type Spec
@@ -1122,10 +1122,10 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
             actC[rC] = actB[rB];
             // Topology Errors
             if (indC[rC] != indB[rB]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + std::get<0>(topology[ind]));
             }
             if (sizeC[rC] != sizeB[rB]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + std::get<0>(topology[ind]));
             }
         } else if (rA >= 0 && rB >= 0) {
             // Type Spec
@@ -1136,16 +1136,16 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
             gimp[ind] = (act[ind] != size[ind]);
             // Topology Errors
             if (indB[rB] != indA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (name) Index " + std::get<0>(topology[ind]));
             }
             if (sizeB[rB] != sizeA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (size) Index " + std::get<0>(topology[ind]));
             }
             if (actB[rB] != actA[rA]) {
-                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (active) Index " + boost::get<0>(topology[ind]));
+                throw PSIEXCEPTION("Contraction Topology Error: Non-matching (active) Index " + std::get<0>(topology[ind]));
             }
         } else {
-            throw PSIEXCEPTION("Contraction Topology Error: Disconnected Index " + boost::get<0>(topology[ind]));
+            throw PSIEXCEPTION("Contraction Topology Error: Disconnected Index " + std::get<0>(topology[ind]));
         }
     }
 
@@ -1162,16 +1162,16 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
     // => Classiness Check <= //
 
     // Type, rank, rank, rank (if Hadamard), original index
-    std::vector<boost::tuple<int,int,int,int,int> > canon;
+    std::vector<std::tuple<int,int,int,int,int> > canon;
     for (int ind = 0; ind < nindex; ind++) {
         if (type[ind] == 0) {
-            canon.push_back(boost::tuple<int,int,int,int,int>(0,rankC[ind],rankA[ind],rankB[ind],ind));
+            canon.push_back(std::tuple<int,int,int,int,int>(0,rankC[ind],rankA[ind],rankB[ind],ind));
         } else if (type[ind] == 1) {
-            canon.push_back(boost::tuple<int,int,int,int,int>(1,rankC[ind],rankA[ind],rankB[ind],ind));
+            canon.push_back(std::tuple<int,int,int,int,int>(1,rankC[ind],rankA[ind],rankB[ind],ind));
         } else if (type[ind] == 2) {
-            canon.push_back(boost::tuple<int,int,int,int,int>(2,rankC[ind],rankB[ind],rankA[ind],ind));
+            canon.push_back(std::tuple<int,int,int,int,int>(2,rankC[ind],rankB[ind],rankA[ind],ind));
         } else {
-            canon.push_back(boost::tuple<int,int,int,int,int>(3,rankA[ind],rankB[ind],rankC[ind],ind));
+            canon.push_back(std::tuple<int,int,int,int,int>(3,rankA[ind],rankB[ind],rankC[ind],ind));
         }
     }
     std::sort(canon.begin(),canon.end());
@@ -1189,8 +1189,8 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
     int offset = 0;
     for (int ind = 1; ind < nH; ind++) {
         int index = ind + offset;
-        int orig1 = boost::get<4>(canon[index-1]);
-        int orig2 = boost::get<4>(canon[index]);
+        int orig1 = std::get<4>(canon[index-1]);
+        int orig2 = std::get<4>(canon[index]);
         if (rankA[orig2] - rankA[orig1] != 1 || rankB[orig2] - rankB[orig1] != 1 || rankC[orig2] - rankC[orig1] != 1) {
             classy = false;
         }
@@ -1201,8 +1201,8 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
     offset += nH;
     for (int ind = 1; ind < nL; ind++) {
         int index = ind + offset;
-        int orig1 = boost::get<4>(canon[index-1]);
-        int orig2 = boost::get<4>(canon[index]);
+        int orig1 = std::get<4>(canon[index-1]);
+        int orig2 = std::get<4>(canon[index]);
         if (rankA[orig2] - rankA[orig1] != 1 || rankC[orig2] - rankC[orig1] != 1) {
             classy = false;
         }
@@ -1213,8 +1213,8 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
     offset += nL;
     for (int ind = 1; ind < nR; ind++) {
         int index = ind + offset;
-        int orig1 = boost::get<4>(canon[index-1]);
-        int orig2 = boost::get<4>(canon[index]);
+        int orig1 = std::get<4>(canon[index-1]);
+        int orig2 = std::get<4>(canon[index]);
         if (rankB[orig2] - rankB[orig1] != 1 || rankC[orig2] - rankC[orig1] != 1) {
             classy = false;
         }
@@ -1225,8 +1225,8 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
     offset += nR;
     for (int ind = 1; ind < nI; ind++) {
         int index = ind + offset;
-        int orig1 = boost::get<4>(canon[index-1]);
-        int orig2 = boost::get<4>(canon[index]);
+        int orig1 = std::get<4>(canon[index-1]);
+        int orig2 = std::get<4>(canon[index]);
         if (rankA[orig2] - rankA[orig1] != 1 || rankB[orig2] - rankB[orig1] != 1) {
             classy = false;
         }
@@ -1259,28 +1259,28 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
         offset = 0;
         for (int ind = 0; ind < nH; ind++) {
             int index = ind + offset;
-            int orig = boost::get<4>(canon[index]);
+            int orig = std::get<4>(canon[index]);
             actH *= act[orig];
             sizeH *= size[orig];
         }
         offset += nH;
         for (int ind = 0; ind < nL; ind++) {
             int index = ind + offset;
-            int orig = boost::get<4>(canon[index]);
+            int orig = std::get<4>(canon[index]);
             actL *= act[orig];
             sizeL *= size[orig];
         }
         offset += nL;
         for (int ind = 0; ind < nR; ind++) {
             int index = ind + offset;
-            int orig = boost::get<4>(canon[index]);
+            int orig = std::get<4>(canon[index]);
             actR *= act[orig];
             sizeR *= size[orig];
         }
         offset += nR;
         for (int ind = 0; ind < nI; ind++) {
             int index = ind + offset;
-            int orig = boost::get<4>(canon[index]);
+            int orig = std::get<4>(canon[index]);
             actI *= act[orig];
             sizeI *= size[orig];
         }
@@ -1293,13 +1293,13 @@ void CoreTensor::contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor>
         bool RI = false;
 
         if (nL > 0 && nR > 0) {
-            LR = (rankC[boost::get<4>(canon[nH])] < rankC[boost::get<4>(canon[nH+nL])]);
+            LR = (rankC[std::get<4>(canon[nH])] < rankC[std::get<4>(canon[nH+nL])]);
         }
         if (nL > 0 && nI > 0) {
-            LI = (rankA[boost::get<4>(canon[nH])] < rankA[boost::get<4>(canon[nH+nL+nR])]);
+            LI = (rankA[std::get<4>(canon[nH])] < rankA[std::get<4>(canon[nH+nL+nR])]);
         }
         if (nI > 0 && nR > 0) {
-            RI = (rankB[boost::get<4>(canon[nH+nL])] < rankB[boost::get<4>(canon[nH+nL+nR])]);
+            RI = (rankB[std::get<4>(canon[nH+nL])] < rankB[std::get<4>(canon[nH+nL+nR])]);
         }
 
         // => Contraction Operations <= //
@@ -1387,7 +1387,7 @@ void DiskTensor::swap_check() const
 {
     throw PSIEXCEPTION("Tensor is DiskTensor, cannot operate on it.");
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
+std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
@@ -1406,9 +1406,9 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension4);
     sizes.push_back(size4);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return std::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
+std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     const std::string& dimension3, int size3,
@@ -1424,9 +1424,9 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension3);
     sizes.push_back(size3);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return std::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
+std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     const std::string& dimension2, int size2,
     bool save, bool load)
@@ -1439,9 +1439,9 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension2);
     sizes.push_back(size2);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return std::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
+std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     const std::string& dimension1, int size1,
     bool save, bool load)
 {
@@ -1451,20 +1451,20 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     dimensions.push_back(dimension1);
     sizes.push_back(size1);
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return std::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
-boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
+std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
     bool save, bool load)
 {
     std::vector<std::string> dimensions;
     std::vector<int> sizes;
 
-    return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
+    return std::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
 void DiskTensor::print(std::string out, int level) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    if (level >= 0) {
         printer->Printf( "  => DiskTensor %s <=\n\n", name_.c_str());
         printer->Printf( "    File    = %s\n", filename().c_str());

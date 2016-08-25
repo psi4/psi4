@@ -47,8 +47,8 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
   va_end(args);
 
 #if defined(OPTKING_PACKAGE_PSI)
-  boost::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
-     boost::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::APPEND)));
+  std::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
+     std::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::APPEND)));
 
   printer->Printf("%s", line);
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -58,7 +58,7 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 
 void offlush_out(void) {
 #if defined(OPTKING_PACKAGE_PSI)
-  boost::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
+  std::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
   printer->Flush();
 #elif defined(OPTKING_PACKAGE_QCHEM)
   fflush(qc_outfile);

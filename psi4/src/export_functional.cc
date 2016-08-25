@@ -39,7 +39,7 @@ using namespace psi;
 
 void export_functional()
 {
-    class_<SuperFunctional, boost::shared_ptr<SuperFunctional>, boost::noncopyable >("SuperFunctional", "docstring", no_init).
+    class_<SuperFunctional, std::shared_ptr<SuperFunctional>, boost::noncopyable >("SuperFunctional", "docstring", no_init).
         def("build", &SuperFunctional::build, "docstring").
         staticmethod("build").
         def("blank", &SuperFunctional::blank, "docstring").
@@ -86,7 +86,7 @@ void export_functional()
         def("print_out",&SuperFunctional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
-    class_<Functional, boost::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
+    class_<Functional, std::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
         def("build_base", &Functional::build_base, "docstring").
         staticmethod("build_base").
         def("name", &Functional::name, "docstring").
@@ -112,7 +112,7 @@ void export_functional()
         def("print_out", &Functional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
-    class_<Dispersion, boost::shared_ptr<Dispersion>, boost::noncopyable >("Dispersion", "docstring", no_init).
+    class_<Dispersion, std::shared_ptr<Dispersion>, boost::noncopyable >("Dispersion", "docstring", no_init).
         def("build", &Dispersion::build, "docstring").
         staticmethod("build").
         def("name", &Dispersion::name, "docstring").

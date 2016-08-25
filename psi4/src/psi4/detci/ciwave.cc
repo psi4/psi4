@@ -28,7 +28,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
@@ -44,7 +44,7 @@
 
 namespace psi { namespace detci {
 
-CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(Process::environment.options) {
     // Copy the wavefuntion then update
     shallow_copy(ref_wfn);
@@ -52,7 +52,7 @@ CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn)
     common_init();
 }
 
-CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> ref_wfn,
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn,
                                Options& options) : Wavefunction(options) {
 
     // Copy the wavefuntion then update

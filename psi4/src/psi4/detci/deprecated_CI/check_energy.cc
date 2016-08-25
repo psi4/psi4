@@ -72,8 +72,8 @@ double check_energy(double *H, double *twoel_ints, int *docc,
    double energy_1 ;     /* one-electron energy */
    double energy_2 ;     /* two-electron energy */
    double energy_e ;     /* total electronic energy */
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
    scf_energy(H, twoel_ints, &energy_1, &energy_2, &energy_e, docc,
       dropped_docc, drc_flag, nirreps, reorder, opi);
 

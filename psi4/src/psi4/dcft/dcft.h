@@ -504,11 +504,11 @@ protected:
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
     /// Form J(P|Q)^-1/2
-    void formJm12(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
-    void formJm12_scf(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    void formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
+    void formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
     /// Form AO basis b(Q|mu,nu)
-    void formb_ao(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
-    void formb_ao_scf(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<BasisSet> zero);
+    void formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
+    void formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
@@ -549,11 +549,11 @@ protected:
 
     // Density-Fitting DCFT
     /// Auxiliary basis
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// Auxiliary basis for SCF terms in DCT
-    boost::shared_ptr<BasisSet> auxiliary_scf_;
+    std::shared_ptr<BasisSet> auxiliary_scf_;
     /// Primary basis
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Number of total primary basis functions
     int nn_;
     /// Number of total auxilliary basis functions

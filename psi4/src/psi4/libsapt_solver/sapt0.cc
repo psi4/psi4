@@ -37,7 +37,7 @@ namespace psi { namespace sapt {
 
 SAPT0::SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA,
             SharedWavefunction MonomerB, Options& options,
-            boost::shared_ptr<PSIO>psio)
+            std::shared_ptr<PSIO>psio)
              : SAPT(Dimer, MonomerA, MonomerB, options, psio),
   e_elst10_(0.0),
   e_exch10_(0.0),
@@ -434,7 +434,7 @@ void SAPT0::df_integrals()
   psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
 
   // Get fitting metric
-  boost::shared_ptr<FittingMetric> metric = boost::shared_ptr<FittingMetric>(
+  std::shared_ptr<FittingMetric> metric = std::shared_ptr<FittingMetric>(
     new FittingMetric(ribasis_));
   metric->form_eig_inverse();
   double **J_temp = metric->get_metric()->pointer();
@@ -446,10 +446,10 @@ void SAPT0::df_integrals()
   double maxSchwartz = 0.0;
   double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
 
-  boost::shared_ptr<IntegralFactory> ao_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
+  std::shared_ptr<IntegralFactory> ao_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
     basisset_, basisset_, basisset_));
-  boost::shared_ptr<TwoBodyAOInt> ao_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> ao_eri = std::shared_ptr<TwoBodyAOInt>(
     ao_eri_factory->eri());
   const double *ao_buffer = ao_eri->buffer();
 
@@ -478,10 +478,10 @@ void SAPT0::df_integrals()
 
   double *DFSchwartz = init_array(ribasis_->nshell());
 
-  boost::shared_ptr<IntegralFactory> df_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
+  std::shared_ptr<IntegralFactory> df_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
     ribasis_, zero_));
-  boost::shared_ptr<TwoBodyAOInt> df_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> df_eri = std::shared_ptr<TwoBodyAOInt>(
     df_eri_factory->eri());
   const double *df_buffer = df_eri->buffer();
 
@@ -595,8 +595,8 @@ void SAPT0::df_integrals()
 
   }
 
-  boost::shared_ptr<IntegralFactory> rifactory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
+  std::shared_ptr<IntegralFactory> rifactory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
     basisset_, basisset_));
 
   int nthreads = 1;
@@ -605,11 +605,11 @@ void SAPT0::df_integrals()
   #endif
   int rank = 0;
 
-  boost::shared_ptr<TwoBodyAOInt> *eri =
-   new boost::shared_ptr<TwoBodyAOInt>[nthreads];
+  std::shared_ptr<TwoBodyAOInt> *eri =
+   new std::shared_ptr<TwoBodyAOInt>[nthreads];
   const double **buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
-    eri[i] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[i] = eri[i]->buffer();
   }
 
@@ -944,12 +944,12 @@ void SAPT0::df_integrals()
 
 void SAPT0::df_integrals_aio()
 {
-  boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+  std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
 
   // Get fitting metric
-  boost::shared_ptr<FittingMetric> metric = boost::shared_ptr<FittingMetric>(
+  std::shared_ptr<FittingMetric> metric = std::shared_ptr<FittingMetric>(
     new FittingMetric(ribasis_));
   metric->form_eig_inverse();
   double **J_temp = metric->get_metric()->pointer();
@@ -961,10 +961,10 @@ void SAPT0::df_integrals_aio()
   double maxSchwartz = 0.0;
   double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
 
-  boost::shared_ptr<IntegralFactory> ao_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
+  std::shared_ptr<IntegralFactory> ao_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
     basisset_, basisset_, basisset_));
-  boost::shared_ptr<TwoBodyAOInt> ao_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> ao_eri = std::shared_ptr<TwoBodyAOInt>(
     ao_eri_factory->eri());
   const double *ao_buffer = ao_eri->buffer();
 
@@ -993,10 +993,10 @@ void SAPT0::df_integrals_aio()
 
   double *DFSchwartz = init_array(ribasis_->nshell());
 
-  boost::shared_ptr<IntegralFactory> df_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
+  std::shared_ptr<IntegralFactory> df_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
     ribasis_, zero_));
-  boost::shared_ptr<TwoBodyAOInt> df_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> df_eri = std::shared_ptr<TwoBodyAOInt>(
     df_eri_factory->eri());
   const double *df_buffer = df_eri->buffer();
 
@@ -1110,8 +1110,8 @@ void SAPT0::df_integrals_aio()
 
   }
 
-  boost::shared_ptr<IntegralFactory> rifactory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
+  std::shared_ptr<IntegralFactory> rifactory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_,
     basisset_, basisset_));
 
   int nthreads = 1;
@@ -1120,11 +1120,11 @@ void SAPT0::df_integrals_aio()
   #endif
   int rank = 0;
 
-  boost::shared_ptr<TwoBodyAOInt> *eri =
-    new boost::shared_ptr<TwoBodyAOInt>[nthreads];
+  std::shared_ptr<TwoBodyAOInt> *eri =
+    new std::shared_ptr<TwoBodyAOInt>[nthreads];
   const double **buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
-    eri[i] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[i] = eri[i]->buffer();
   }
 
@@ -1607,10 +1607,10 @@ void SAPT0::oo_df_integrals()
   int nshelltri = basisset_->nshell()*(basisset_->nshell()+1)/2;
   double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
 
-  boost::shared_ptr<IntegralFactory> ao_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
+  std::shared_ptr<IntegralFactory> ao_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
     basisset_, basisset_, basisset_));
-  boost::shared_ptr<TwoBodyAOInt> ao_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> ao_eri = std::shared_ptr<TwoBodyAOInt>(
     ao_eri_factory->eri());
   const double *ao_buffer = ao_eri->buffer();
 
@@ -1639,10 +1639,10 @@ void SAPT0::oo_df_integrals()
 
   double *DFSchwartz = init_array(elstbasis_->nshell());
 
-  boost::shared_ptr<IntegralFactory> df_eri_factory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(elstbasis_, zero_,
+  std::shared_ptr<IntegralFactory> df_eri_factory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(elstbasis_, zero_,
     elstbasis_, zero_));
-  boost::shared_ptr<TwoBodyAOInt> df_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> df_eri = std::shared_ptr<TwoBodyAOInt>(
     df_eri_factory->eri());
   const double *df_buffer = df_eri->buffer();
 
@@ -1664,8 +1664,8 @@ void SAPT0::oo_df_integrals()
 
   int maxPshell = elstbasis_->max_function_per_shell();
 
-  boost::shared_ptr<IntegralFactory> rifactory =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(elstbasis_, zero_,
+  std::shared_ptr<IntegralFactory> rifactory =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(elstbasis_, zero_,
     basisset_, basisset_));
 
   int nthreads = 1;
@@ -1674,11 +1674,11 @@ void SAPT0::oo_df_integrals()
   #endif
   int rank = 0;
 
-  boost::shared_ptr<TwoBodyAOInt> *eri =
-    new boost::shared_ptr<TwoBodyAOInt>[nthreads];
+  std::shared_ptr<TwoBodyAOInt> *eri =
+    new std::shared_ptr<TwoBodyAOInt>[nthreads];
   const double **buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
-    eri[i] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[i] = eri[i]->buffer();
   }
 
@@ -1781,7 +1781,7 @@ void SAPT0::oo_df_integrals()
   free_block(B_p_BB);
 
   // Get fitting metric
-  boost::shared_ptr<FittingMetric> metric = boost::shared_ptr<FittingMetric>(
+  std::shared_ptr<FittingMetric> metric = std::shared_ptr<FittingMetric>(
     new FittingMetric(elstbasis_));
   metric->form_eig_inverse();
   double **J_temp = metric->get_metric()->pointer();

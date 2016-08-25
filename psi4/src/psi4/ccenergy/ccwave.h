@@ -33,11 +33,6 @@
 #include "Params.h"
 #include "Local.h"
 
-// Forward declarations
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 class Wavefunction;
 class Options;
@@ -51,7 +46,7 @@ namespace psi { namespace ccenergy {
 class CCEnergyWavefunction : public Wavefunction
 {
 public:
-    CCEnergyWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCEnergyWavefunction();
 
     double compute_energy();

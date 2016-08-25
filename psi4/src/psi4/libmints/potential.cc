@@ -38,11 +38,11 @@
 
 #define VDEBUG 1
 
-using namespace boost;
+;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
+PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv) :
     OneBodyAOInt(st, bs1, bs2, deriv)
 {
     if (deriv == 0)
@@ -916,13 +916,13 @@ void PotentialInt::compute_deriv2(std::vector<SharedMatrix > &result)
     }
 }
 
-PotentialSOInt::PotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const boost::shared_ptr<IntegralFactory> &fact)
+PotentialSOInt::PotentialSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
     : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-PotentialSOInt::PotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const IntegralFactory *fact)
+PotentialSOInt::PotentialSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const IntegralFactory *fact)
     : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();

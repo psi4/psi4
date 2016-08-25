@@ -32,7 +32,7 @@
 #include "psi4/psi4-dec.h"
 #include <iostream>
 
-using namespace boost;
+
 using namespace std;
 
 extern "C" {
@@ -51,10 +51,10 @@ SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options,
     run_gdma(outfile_name.c_str(), datfilename.c_str());
     // Reopen the outfile
     if(outfile_name == "stdout"){
-        outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+        outfile=std::shared_ptr<PsiOutStream>(new PsiOutStream());
     }
     else{
-       outfile=boost::shared_ptr<PsiOutStream>
+       outfile=std::shared_ptr<PsiOutStream>
           (new OutFile(outfile_name,(APPEND)));
     }
     int nsites = get_nsites();

@@ -28,27 +28,26 @@
 #ifndef _psi_src_lib_liboptions_python_h
 #define _psi_src_lib_liboptions_python_h
 
-#include <boost/python.hpp>
-#include <boost/python/object.hpp>
+#include <pybind11/pybind11.h>
 
 namespace psi {
 
 class PythonDataType : public DataType
 {
-    boost::python::object python_object_;
+    pybind11::object python_object_;
 public:
     PythonDataType();
-    PythonDataType(const boost::python::object& p);
+    PythonDataType(const pybind11::object& p);
     virtual ~PythonDataType();
 
     virtual std::string type() const;
 
-    const boost::python::object& to_python() const;
+    const pybind11::object& to_python() const;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
 #endif
-    void assign(const boost::python::object& p);
+    void assign(const pybind11::object& p);
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

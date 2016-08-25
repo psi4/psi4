@@ -55,10 +55,10 @@ protected:
     /// Maximum derivative level
     int deriv_;
 
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
 
     /// Sieve, must be static throughout the life of the object
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
     SharedMatrix Ca_;
     SharedMatrix Cb_;
@@ -79,7 +79,7 @@ protected:
     void common_init();
 
 public:
-    JKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
+    JKGrad(int deriv, std::shared_ptr<BasisSet> primary);
     virtual ~JKGrad();
 
     /**
@@ -88,7 +88,7 @@ public:
     * @param options Options reference, with preset parameters
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JKGrad> build_JKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
+    static std::shared_ptr<JKGrad> build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }
@@ -162,9 +162,9 @@ public:
 class DFJKGrad : public JKGrad {
 
 protected:
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
 
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 
     /// Number of threads for DF integrals
     int df_ints_num_threads_;
@@ -189,7 +189,7 @@ protected:
     unsigned int unit_c_;
 
 public:
-    DFJKGrad(int deriv, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary);
+    DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
     virtual ~DFJKGrad();
 
     void compute_gradient();
@@ -236,10 +236,10 @@ protected:
 
     void common_init();
 
-    std::map<std::string, boost::shared_ptr<Matrix> > compute1(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints);
-    std::map<std::string, boost::shared_ptr<Matrix> > compute2(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints);
+    std::map<std::string, std::shared_ptr<Matrix> > compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints);
+    std::map<std::string, std::shared_ptr<Matrix> > compute2(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints);
 public:
-    DirectJKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
+    DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary);
     virtual ~DirectJKGrad();
 
     void compute_gradient();

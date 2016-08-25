@@ -25,11 +25,6 @@
  * @END LICENSE
  */
 
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
-
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -40,7 +35,7 @@
 #include <vector>
 #include <utility>
 #include <iomanip>
-
+#include <regex>
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -49,9 +44,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-
-using namespace std;
-using namespace boost;
 
 namespace psi {
 
@@ -66,8 +58,8 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-LaplaceDenom::LaplaceDenom(boost::shared_ptr<Vector> eps_occ,
-                           boost::shared_ptr<Vector> eps_vir,
+LaplaceDenom::LaplaceDenom(std::shared_ptr<Vector> eps_occ,
+                           std::shared_ptr<Vector> eps_vir,
                            double delta,
                            double omega,
                            int rank) :
@@ -125,8 +117,8 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
     std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 
-    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);
-    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);
+    std::ifstream err_table_file(err_table_filename.c_str(), std::ios::in | std::ios::binary);
+    std::ifstream R_avail_file(R_filename.c_str(), std::ios::in | std::ios::binary);
 
     if (!err_table_file)
         throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate error property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/error.bin)");
@@ -193,8 +185,8 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
     }
 
     std::stringstream st;
-    st << setfill('0');
-    st << "1_xk" <<  setw(2) << npoints_;
+    st << std::setfill('0');
+    st << "1_xk" <<  std::setw(2) << npoints_;
     st << "_" << mantissa;
     st << "E" << exponent;
 
@@ -212,7 +204,7 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
 
     std::vector<std::string> lines;
     std::string text;
-    ifstream infile(quadfile.c_str());
+    std::ifstream infile(quadfile.c_str());
     if (!infile)
         throw PSIEXCEPTION("LaplaceDenom: Unable to open quadrature rule file: " + quadfile);
     while (infile.good()) {
@@ -220,21 +212,21 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
         lines.push_back(text);
     }
 
-    regex numberline("^\\s*(" NUMBER ").*");
-    smatch what;
+    std::regex numberline("^\\s*(" NUMBER ").*");
+    std::smatch what;
 
     // We'll be rigorous, the files are extremely well defined
     int lineno = 0;
     for (int index = 0; index < npoints_; index++) {
         std::string line  = lines[lineno++];
-        if (!regex_match(line, what, numberline))
+        if (!std::regex_match(line, what, numberline))
             throw PSIEXCEPTION("LaplaceDenom: Unable to read grid file line: \n" + line);
         if (!from_string<double>(omega[index], what[1], std::dec))
             throw PSIEXCEPTION("LaplaceDenom: Unable to convert grid file line: \n" + line);
     }
     for (int index = 0; index < npoints_; index++) {
         std::string line  = lines[lineno++];
-        if (!regex_match(line, what, numberline))
+        if (!std::regex_match(line, what, numberline))
             throw PSIEXCEPTION("LaplaceDenom: Unable to read grid file line: \n" + line);
         if (!from_string<double>(alpha[index], what[1], std::dec))
             throw PSIEXCEPTION("LaplaceDenom: Unable to convert grid file line: \n" + line);

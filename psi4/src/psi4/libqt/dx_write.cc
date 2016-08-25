@@ -54,11 +54,11 @@ namespace psi  {
 void compute_delta(double **delta, double x, double y, double z);
 int nmo, nso, nao; // global
 double **scf, **u; // global
-boost::shared_ptr<Molecule> molecule;
-boost::shared_ptr<BasisSet> basis;
-boost::shared_ptr<Wavefunction> wfn;
+std::shared_ptr<Molecule> molecule;
+std::shared_ptr<BasisSet> basis;
+std::shared_ptr<Wavefunction> wfn;
 
-void dx_write(boost::shared_ptr<Wavefunction> wfn, Options& options,double **D)
+void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options,double **D)
 {
   double dens;
   double **delta;
@@ -197,7 +197,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   int zsteps = (int) ((zmax - zmin)/step_size + 1);
 
   // Prep .dx file
-  boost::shared_ptr<OutFile> printer(new OutFile("density.dx",APPEND));
+  std::shared_ptr<OutFile> printer(new OutFile("density.dx",APPEND));
   printer->Printf( "#  Output from Psi4 calculation\n");
   printer->Printf( "#  Electronic density (in e/ang^3) for: \n");
   printer->Printf( "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
@@ -245,7 +245,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   printer->Printf( "component \"data\" value 3\n");
   printer->Printf( "\n");
   printer->Printf( "end");
-  boost::shared_ptr<OutFile> printer2(new OutFile("molecule.xyz"));
+  std::shared_ptr<OutFile> printer2(new OutFile("molecule.xyz"));
 
   printer2->Printf( "%d\n", molecule->natom());
   printer2->Printf( "Initial atomic coordinates\n");

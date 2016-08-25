@@ -30,12 +30,6 @@
 
 #include "sapt.h"
 
-namespace boost {
-
-template<class T> class shared_ptr;
-
-}
-
 namespace psi { namespace sapt {
 
 class SAPT2 : public SAPT {
@@ -110,44 +104,44 @@ protected:
   void antisym(double *, int, int);
   void antisym(double **, int, int);
 
-  void cphf_solver(double**, double **, double *, int, const char *, 
+  void cphf_solver(double**, double **, double *, int, const char *,
     const char *, const char *, int, int);
 
   void exch_ind20rA_B();
   void exch_ind20rB_A();
 
-  void tOVOV(int, const char *, int, int, int, double *, int, const char *, 
+  void tOVOV(int, const char *, int, int, int, double *, int, const char *,
     int, int, int, double *, int, const char *);
-  void pOOpVV(int, const char *, const char *, int, int, int, const char *, 
+  void pOOpVV(int, const char *, const char *, int, int, int, const char *,
     const char *);
-  void theta(int, const char *, const char, bool, int, int, int, int, 
+  void theta(int, const char *, const char, bool, int, int, int, int,
     const char *, int, const char *);
 
-  void Y2(int, const char *, const char *, const char *, int, const char *, 
+  void Y2(int, const char *, const char *, const char *, int, const char *,
     const char *, const char *, int, int, int, double *, int, const char *,
     const char *);
-  void Y2_1(double **, int, const char *, const char *, int, const char *, 
+  void Y2_1(double **, int, const char *, const char *, int, const char *,
     int, int, int);
-  void Y2_2(double **, int, const char *, const char *, int, const char *, 
+  void Y2_2(double **, int, const char *, const char *, int, const char *,
     int, int, int);
-  void Y2_3(double **, int, const char *, const char *, int, const char *, 
+  void Y2_3(double **, int, const char *, const char *, int, const char *,
     int, int, int);
 
-  void t2OVOV(int, const char *, const char *, int, const char *, 
+  void t2OVOV(int, const char *, const char *, int, const char *,
     const char *, const char *, int, int, int, double *, int, const char *);
-  void t2OVOV(int, const char *, const char *, const char *, int, 
-    const char *, const char *, const char *, const char *, int, int, int, 
+  void t2OVOV(int, const char *, const char *, const char *, int,
+    const char *, const char *, const char *, const char *, int, int, int,
     int, double *, double **, int, const char *);
 
   void OVOpVp_to_OVpOpV(double *, int, int);
   void ijkl_to_ikjl(double *, int, int, int, int);
   void symmetrize(double *, int, int);
 
-  void natural_orbitalify(int, const char *, double *evals, int, int, int, 
+  void natural_orbitalify(int, const char *, double *evals, int, int, int,
     const char);
   void natural_orbitalify_df_ints();
 
-  double elst120(double **, double **, double **, int, const char *, 
+  double elst120(double **, double **, double **, int, const char *,
     const char *, const char *, int, int, int);
 
   double exch110(int, const char *);
@@ -170,25 +164,25 @@ protected:
 
   double ind220();
   double ind202();
-  double ind220_1(int, const char *, const char *, const char *, int, 
+  double ind220_1(int, const char *, const char *, const char *, int,
     const char *, double **, double **, double **, int, int, int, double *);
-  double ind220_2(int, const char *, double **, double **, double **, int, 
+  double ind220_2(int, const char *, double **, double **, double **, int,
     int, int);
-  double ind220_3(int, const char *, const char *, double **, double **, 
+  double ind220_3(int, const char *, const char *, double **, double **,
     int, int, int);
-  double ind220_4(int, const char *, int, const char *, double **, int, 
+  double ind220_4(int, const char *, int, const char *, double **, int,
     int, int);
   double ind220_5(int, const char *, double **, int, int, int, double *);
-  double ind220_6(int, const char *, const char *, const char *, int, 
+  double ind220_6(int, const char *, const char *, const char *, int,
     const char *, double **, int, int, int);
-  double ind220_7(int, const char *, const char *, const char *, int, 
-    const char *, int, const char *, const char *, const char *, double **, 
+  double ind220_7(int, const char *, const char *, const char *, int,
+    const char *, int, const char *, const char *, const char *, double **,
     int, int, int, int, int, int);
 
 public:
   SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA,
         SharedWavefunction MonomerB, Options& options,
-        boost::shared_ptr<PSIO>psio);
+        std::shared_ptr<PSIO>psio);
   virtual ~SAPT2();
 
   virtual double compute_energy();

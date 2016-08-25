@@ -46,7 +46,7 @@
 #include "psi4/lib3index/3index.h"
 
 using namespace psi;
-using namespace boost;
+
 
 namespace psi{ namespace fnocc{
 
@@ -86,7 +86,7 @@ void DFCoupledCluster::T1Fock(){
     free(Catemp);
 
     // (Q|rs)
-    boost::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio_address addr1  = PSIO_ZERO;
     psio_address addr2  = PSIO_ZERO;
@@ -258,7 +258,7 @@ void DFCoupledCluster::T1Integrals(){
     free(Catemp);
 
     // (Q|rs)
-    boost::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio_address addr1  = PSIO_ZERO;
     psio_address addrvo = PSIO_ZERO;

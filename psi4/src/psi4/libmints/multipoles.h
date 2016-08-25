@@ -57,8 +57,8 @@ class MultipoleInt : public OneBodyAOInt
     int order_;
 public:
     //! Constructor. Do not call directly. Use an IntegralFactory.
-    MultipoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>,
-                 boost::shared_ptr<BasisSet>, int order, int deriv=0);
+    MultipoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>,
+                 std::shared_ptr<BasisSet>, int order, int deriv=0);
     //! Virtual destructor
     virtual ~MultipoleInt();
 
@@ -66,7 +66,7 @@ public:
     bool has_deriv1() { return false; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
 };
 
 }

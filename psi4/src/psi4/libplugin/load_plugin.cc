@@ -25,19 +25,12 @@
  * @END LICENSE
  */
 
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/filesystem.hpp>
-
 #include "plugin.h"
-
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/libpsi4util.h"
 
-using namespace boost;
+#include <regex>
 
 namespace psi {
 #ifdef HAVE_DLFCN_H
@@ -64,16 +57,16 @@ plugin_info plugin_load(std::string& plugin_pathname)
         throw PSIEXCEPTION(msg);
     }
 
-    boost::filesystem::path pluginPath(plugin_pathname);
-    boost::filesystem::path pluginStem = pluginPath.stem();
-    info.name = pluginStem.string();
+//    boost::filesystem::path pluginPath(plugin_pathname);
+//    boost::filesystem::path pluginStem = pluginPath.stem();
+//    info.name = pluginStem.string();
+    info.name = filesystem::basename(plugin_pathname);
 
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.
     std::string format_underscore("_");
     // Replace all '-' with '_'
-    xpressive::sregex match_format = xpressive::as_xpr("-");
-    info.name = regex_replace(info.name, match_format, format_underscore);
+    info.name = std::regex_replace(info.name, std::regex("\\-"), format_underscore);
 
     info.plugin = (plugin_t) dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
@@ -86,7 +79,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     }
 
     // Store the name of the plugin for read_options
-    boost::to_upper(info.name);
+    to_upper(info.name);
 
     // Get the plugin's options into the global space
     Process::environment.options.set_read_globals(true);

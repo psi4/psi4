@@ -155,7 +155,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   double **Z3 = (double**)malloc(nthreads*sizeof(double*));
   double **Z4 = (double**)malloc(nthreads*sizeof(double*));
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   double*tempE2=(double*)malloc(vooo*sizeof(double));
   psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&tempE2[0],vooo*sizeof(double));
@@ -241,9 +241,9 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     *  if there is enough memory to explicitly thread, do so
     */
 
-  std::vector< boost::shared_ptr<PSIO> > mypsio;
+  std::vector< std::shared_ptr<PSIO> > mypsio;
   for (int i = 0; i < nthreads; i++) {
-      mypsio.push_back( (boost::shared_ptr<PSIO>)(new PSIO()) );
+      mypsio.push_back( (std::shared_ptr<PSIO>)(new PSIO()) );
       mypsio[i]->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
   }
 
@@ -259,7 +259,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              thread = omp_get_thread_num();
          #endif
 
-         //boost::shared_ptr<PSIO> mypsio(new PSIO());
+         //std::shared_ptr<PSIO> mypsio(new PSIO());
          //mypsio->open(PSIF_DCC_ABCI4,PSIO_OPEN_OLD);
          psio_address addr = psio_get_address(PSIO_ZERO,(b*vvo+c*vo)*sizeof(double));
          mypsio[thread]->read(PSIF_DCC_ABCI4,"E2abci4",(char*)&E2abci[thread][0],vo*sizeof(double),addr,&addr);

@@ -32,7 +32,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/osrecur.h"
@@ -73,7 +73,7 @@ protected:
 
 public:
     /// Constructor
-    PseudospectralInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    PseudospectralInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     ~PseudospectralInt();
 
     /// Computes integrals between two shells.

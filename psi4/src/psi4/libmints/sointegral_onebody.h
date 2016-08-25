@@ -39,30 +39,30 @@ class IntegralFactory;
 class OneBodySOInt
 {
 protected:
-    boost::shared_ptr<OneBodyAOInt> ob_;
+    std::shared_ptr<OneBodyAOInt> ob_;
     const IntegralFactory* integral_;
     int deriv_;
 
-    boost::shared_ptr<SOBasisSet> b1_;
-    boost::shared_ptr<SOBasisSet> b2_;
+    std::shared_ptr<SOBasisSet> b1_;
+    std::shared_ptr<SOBasisSet> b2_;
 
     void common_init();
 
 public:
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>&,
-                 const boost::shared_ptr<IntegralFactory> &);
-    OneBodySOInt(const boost::shared_ptr<OneBodyAOInt>&,
+    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&,
+                 const std::shared_ptr<IntegralFactory> &);
+    OneBodySOInt(const std::shared_ptr<OneBodyAOInt>&,
                  const IntegralFactory*);
     virtual ~OneBodySOInt();
 
-    boost::shared_ptr<SOBasisSet> basis() const;
-    boost::shared_ptr<SOBasisSet> basis1() const;
-    boost::shared_ptr<SOBasisSet> basis2() const;
+    std::shared_ptr<SOBasisSet> basis() const;
+    std::shared_ptr<SOBasisSet> basis1() const;
+    std::shared_ptr<SOBasisSet> basis2() const;
 
     /**
       * Returns the underlying AO integral engine being used.
       */
-    boost::shared_ptr<OneBodyAOInt> ob() const;
+    std::shared_ptr<OneBodyAOInt> ob() const;
 
     /**
      * Computes a one-electron integral matrix. Only works for symmetric

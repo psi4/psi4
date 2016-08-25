@@ -146,16 +146,16 @@ namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
 
 // Finite difference functions
 namespace findif {
-std::vector<SharedMatrix> fd_geoms_1_0(boost::shared_ptr<Molecule>, Options&);
-std::vector<SharedMatrix> fd_geoms_freq_0(boost::shared_ptr<Molecule>, Options&,
+std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
+std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&,
                                           int irrep = -1);
-std::vector<SharedMatrix> fd_geoms_freq_1(boost::shared_ptr<Molecule>, Options&,
+std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&,
                                           int irrep = -1);
-std::vector<SharedMatrix> atomic_displacements(boost::shared_ptr<Molecule>, Options&);
+std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule>, Options&);
 
-SharedMatrix fd_1_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&);
-SharedMatrix fd_freq_0(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
-SharedMatrix fd_freq_1(boost::shared_ptr<Molecule>, Options&, const boost::python::list&, int irrep = -1);
+SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const pybind11::list&);
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const pybind11::list&, int irrep = -1);
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const pybind11::list&, int irrep = -1);
 SharedMatrix displace_atom(SharedMatrix geom, const int atom,
                            const int coord, const int sign,
                            const double disp_size);
@@ -170,7 +170,7 @@ namespace cclambda { PsiReturnType cclambda(SharedWavefunction, Options&); }
 namespace ccdensity { PsiReturnType ccdensity(SharedWavefunction, Options&); }
 namespace ccresponse {
 PsiReturnType ccresponse(SharedWavefunction, Options&);
-void scatter(boost::shared_ptr<Molecule> molecule, Options&, double step, std::vector<SharedMatrix> dip,
+void scatter(std::shared_ptr<Molecule> molecule, Options&, double step, std::vector<SharedMatrix> dip,
              std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
 }
 namespace cceom { PsiReturnType cceom(SharedWavefunction, Options&); }
@@ -193,7 +193,7 @@ void py_flush_outfile()
 void py_close_outfile()
 {
     if (outfile) {
-        outfile = boost::shared_ptr<OutFile>();
+        outfile = std::shared_ptr<OutFile>();
     }
 }
 
@@ -203,7 +203,7 @@ void py_reopen_outfile()
         //outfile = stdout;
     }
     else {
-        outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
+        outfile = std::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
         if (!outfile)
             throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
@@ -212,7 +212,7 @@ void py_reopen_outfile()
 void py_be_quiet()
 {
     py_close_outfile();
-    outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+    outfile = std::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
     if (!outfile)
         throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
@@ -314,43 +314,43 @@ PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const boost
     return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_1_0(boost::shared_ptr<Molecule> mol)
+std::vector<SharedMatrix> py_psi_fd_geoms_1_0(std::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_1_0(mol, Process::environment.options);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(boost::shared_ptr<Molecule> mol, int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_0(std::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_0(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, int irrep)
+std::vector<SharedMatrix> py_psi_fd_geoms_freq_1(std::shared_ptr<Molecule> mol, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_1(mol, Process::environment.options, irrep);
 }
 
-std::vector<SharedMatrix> py_psi_atomic_displacements(boost::shared_ptr<Molecule> mol)
+std::vector<SharedMatrix> py_psi_atomic_displacements(std::shared_ptr<Molecule> mol)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::atomic_displacements(mol, Process::environment.options);
 }
 
-SharedMatrix py_psi_fd_1_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies)
+SharedMatrix py_psi_fd_1_0(std::shared_ptr<Molecule> mol, const pybind11::list& energies)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_1_0(mol, Process::environment.options, energies);
 }
 
-SharedMatrix py_psi_fd_freq_0(boost::shared_ptr<Molecule> mol, const boost::python::list& energies, int irrep)
+SharedMatrix py_psi_fd_freq_0(std::shared_ptr<Molecule> mol, const pybind11::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_0(mol, Process::environment.options, energies, irrep);
 }
 
-SharedMatrix py_psi_fd_freq_1(boost::shared_ptr<Molecule> mol, const boost::python::list& grads, int irrep)
+SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, const pybind11::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
@@ -462,7 +462,7 @@ double py_psi_cctriples(SharedWavefunction ref_wfn)
         return 0.0;
 }
 
-boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+std::shared_ptr<psi::efp::EFP> py_psi_efp_init()
 {
     py_psi_prepare_options_for_module("EFP");
     if (psi::efp::efp_init(Process::environment.options) == Success) {
@@ -526,7 +526,7 @@ void py_psi_cchbar(SharedWavefunction ref_wfn)
 SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
-    boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
+    std::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
             ref_wfn,
             Process::environment.options)
     );
@@ -555,7 +555,7 @@ void py_psi_print_list(python::list py_list)
     return;
 }
 
-void py_psi_scatter(boost::shared_ptr<Molecule> molecule, double step, python::list dip_polar_list, python::list opt_rot_list,
+void py_psi_scatter(std::shared_ptr<Molecule> molecule, double step, python::list dip_polar_list, python::list opt_rot_list,
                     python::list dip_quad_polar_list)
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
@@ -664,11 +664,11 @@ void py_psi_print_global_options()
     Process::environment.options.print_globals();
 }
 
-boost::python::list py_psi_get_global_option_list()
+pybind11::list py_psi_get_global_option_list()
 {
     std::vector<std::string> options_list = Process::environment.options.list_globals();
 
-    boost::python::list options_list_py;
+    pybind11::list options_list_py;
     BOOST_FOREACH(const string& s, options_list) options_list_py.append(s);
 
     return options_list_py;
@@ -793,7 +793,7 @@ bool py_psi_set_global_option_double(std::string const& key, double value)
     return true;
 }
 
-bool py_psi_set_global_option_python(std::string const& key, boost::python::object& obj)
+bool py_psi_set_global_option_python(std::string const& key, pybind11::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_global_python(nonconst_key, obj);
@@ -874,7 +874,7 @@ bool py_psi_set_global_option_array(std::string const& key, python::list values,
     return true;
 }
 
-void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, pybind11::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -985,35 +985,35 @@ object py_psi_get_option(std::string const& module, std::string const& key)
     return object();
 }
 
-void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
+void py_psi_set_active_molecule(std::shared_ptr<Molecule> molecule)
 {
     Process::environment.set_molecule(molecule);
 }
-void py_psi_set_legacy_molecule(boost::shared_ptr<Molecule> legacy_molecule)
+void py_psi_set_legacy_molecule(std::shared_ptr<Molecule> legacy_molecule)
 {
     Process::environment.set_legacy_molecule(legacy_molecule);
 }
 
 void py_psi_set_parent_symmetry(std::string pg)
 {
-    boost::shared_ptr<PointGroup> group = boost::shared_ptr<PointGroup>();
+    std::shared_ptr<PointGroup> group = std::shared_ptr<PointGroup>();
     if (pg != "") {
-        group = boost::shared_ptr<PointGroup>(new PointGroup(pg));
+        group = std::shared_ptr<PointGroup>(new PointGroup(pg));
     }
 
     Process::environment.set_parent_symmetry(group);
 }
 
-boost::shared_ptr<Molecule> py_psi_get_active_molecule()
+std::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
 }
-boost::shared_ptr<Molecule> py_psi_get_legacy_molecule()
+std::shared_ptr<Molecule> py_psi_get_legacy_molecule()
 {
     return Process::environment.legacy_molecule();
 }
 
-boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+std::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
 {
     return Process::environment.get_efp();
 }
@@ -1040,26 +1040,26 @@ void py_psi_set_efp_torque(SharedMatrix torq)
 SharedMatrix py_psi_get_efp_torque()
 {
     if (Process::environment.get_efp()->get_frag_count() > 0) {
-        boost::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
+        std::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
         return efp->torque();
     } else {
         return Process::environment.efp_torque();
     }
 }
 
-void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
+void py_psi_set_frequencies(std::shared_ptr<Vector> freq)
 {
     Process::environment.set_frequencies(freq);
 }
 
-boost::shared_ptr<Vector> py_psi_get_frequencies()
+std::shared_ptr<Vector> py_psi_get_frequencies()
 {
     return Process::environment.frequencies();
 }
 
-boost::shared_ptr<Vector> py_psi_get_atomic_point_charges()
+std::shared_ptr<Vector> py_psi_get_atomic_point_charges()
 {
-    boost::shared_ptr<psi::Vector> empty(new psi::Vector());
+    std::shared_ptr<psi::Vector> empty(new psi::Vector());
     return empty; // charges not added to process.h for environment - yet(?)
 }
 
@@ -1123,7 +1123,7 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-boost::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
+std::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
 {
     return Process::environment.legacy_wavefunction();
 }
@@ -1131,7 +1131,7 @@ void py_psi_set_legacy_wavefunction(SharedWavefunction wfn)
 {
     Process::environment.set_legacy_wavefunction(wfn);
 }
-SharedWavefunction py_psi_new_wavefunction(boost::shared_ptr<Molecule> molecule,
+SharedWavefunction py_psi_new_wavefunction(std::shared_ptr<Molecule> molecule,
                                            const std::string& basis)
 {
     // Ultimately options will not go here

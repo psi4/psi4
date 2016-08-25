@@ -48,12 +48,12 @@
 namespace psi { namespace cceom {
 
 void init_io(void);
-void get_moinfo(boost::shared_ptr<Wavefunction>);
+void get_moinfo(std::shared_ptr<Wavefunction>);
 void cleanup(void);
 void exit_io(void);
 void diag(void);
 void get_params(Options &);
-void get_eom_params(boost::shared_ptr<Wavefunction>, Options &);
+void get_eom_params(std::shared_ptr<Wavefunction>, Options &);
 void form_dpd_dp(void);
 int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -68,7 +68,7 @@ void local_done(void);
 
 namespace psi { namespace cceom {
 
-PsiReturnType cceom(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
+PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int i, h, done=0, *cachefiles, **cachelist;
   init_io();

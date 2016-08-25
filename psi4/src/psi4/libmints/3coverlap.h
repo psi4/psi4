@@ -49,9 +49,9 @@ class ThreeCenterOverlapInt
 protected:
     ObaraSaikaThreeCenterRecursion overlap_recur_;
 
-    boost::shared_ptr<BasisSet> bs1_;
-    boost::shared_ptr<BasisSet> bs2_;
-    boost::shared_ptr<BasisSet> bs3_;
+    std::shared_ptr<BasisSet> bs1_;
+    std::shared_ptr<BasisSet> bs2_;
+    std::shared_ptr<BasisSet> bs3_;
 
     /// Buffer to hold the source integrals.
     double *buffer_;
@@ -74,24 +74,24 @@ protected:
 
 public:
     ThreeCenterOverlapInt(std::vector<SphericalTransform>&,
-                          boost::shared_ptr<BasisSet> bs1,
-                          boost::shared_ptr<BasisSet> bs2,
-                          boost::shared_ptr<BasisSet> bs3);
+                          std::shared_ptr<BasisSet> bs1,
+                          std::shared_ptr<BasisSet> bs2,
+                          std::shared_ptr<BasisSet> bs3);
 
-    ThreeCenterOverlapInt(boost::shared_ptr<BasisSet> bs1,
-                          boost::shared_ptr<BasisSet> bs2,
-                          boost::shared_ptr<BasisSet> bs3);
+    ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1,
+                          std::shared_ptr<BasisSet> bs2,
+                          std::shared_ptr<BasisSet> bs3);
 
     virtual ~ThreeCenterOverlapInt();
 
     /// Basis set on center one.
-    boost::shared_ptr<BasisSet> basis();
+    std::shared_ptr<BasisSet> basis();
     /// Basis set on center one.
-    boost::shared_ptr<BasisSet> basis1();
+    std::shared_ptr<BasisSet> basis1();
     /// Basis set on center two.
-    boost::shared_ptr<BasisSet> basis2();
+    std::shared_ptr<BasisSet> basis2();
     /// Basis set on center three.
-    boost::shared_ptr<BasisSet> basis3();
+    std::shared_ptr<BasisSet> basis3();
 
     /// Buffer where the integrals are placed.
     const double *buffer() const { return buffer_; }

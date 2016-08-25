@@ -58,8 +58,8 @@ namespace psi { namespace ccresponse {
 void init_io(void);
 void init_ioff(void);
 void title(void);
-void get_moinfo(boost::shared_ptr<Wavefunction>);
-void get_params(boost::shared_ptr<Wavefunction>, Options&);
+void get_moinfo(std::shared_ptr<Wavefunction>);
+void get_params(std::shared_ptr<Wavefunction>, Options&);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -75,12 +75,12 @@ void local_init(void);
 void local_done(void);
 
 void polar(void);
-void optrot(boost::shared_ptr<Molecule> molecule);
+void optrot(std::shared_ptr<Molecule> molecule);
 void roa(void);
 
-void preppert(boost::shared_ptr<BasisSet> primary);
+void preppert(std::shared_ptr<BasisSet> primary);
 
-int ccresponse(boost::shared_ptr<Wavefunction> ref_wfn, Options &options)
+int ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 {
   int **cachelist, *cachefiles;
 

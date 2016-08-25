@@ -40,7 +40,7 @@
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define idx_asym(i,j) ((i>j) ? ((i*(i-1)/2)+j) : ((j*(j-1)/2)+i))
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 
@@ -53,12 +53,12 @@ class Tensor1i;
 class Tensor2i;
 class Tensor3i;
 
-typedef boost::shared_ptr<Tensor1d> SharedTensor1d;
-typedef boost::shared_ptr<Tensor2d> SharedTensor2d;
-typedef boost::shared_ptr<Tensor3d> SharedTensor3d;
-typedef boost::shared_ptr<Tensor1i> SharedTensor1i;
-typedef boost::shared_ptr<Tensor2i> SharedTensor2i;
-typedef boost::shared_ptr<Tensor3i> SharedTensor3i;
+typedef std::shared_ptr<Tensor1d> SharedTensor1d;
+typedef std::shared_ptr<Tensor2d> SharedTensor2d;
+typedef std::shared_ptr<Tensor3d> SharedTensor3d;
+typedef std::shared_ptr<Tensor1i> SharedTensor1i;
+typedef std::shared_ptr<Tensor2i> SharedTensor2i;
+typedef std::shared_ptr<Tensor3i> SharedTensor3i;
 
 class Tensor1d
 {
@@ -144,7 +144,7 @@ class Tensor2d
   Tensor2d(int d1,int d2);
   Tensor2d(string name, int d1,int d2);
   Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
-  Tensor2d(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
+  Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
   Tensor2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
   Tensor2d(string name, int d1, int d2, int d3, int d4);
   Tensor2d(string name, int d1, int d2, int d3);
@@ -285,34 +285,34 @@ class Tensor2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
-  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
+  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO* const psio, unsigned int fileno);
   void write(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
   void write(psi::PSIO& psio, unsigned int fileno);
   void write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
-  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
-  void write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
+  void write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
   void read(psi::PSIO* psio, unsigned int fileno);
   void read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
+  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
   void read(psi::PSIO& psio, unsigned int fileno);
   void read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
+  void read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
 
   bool read(PSIO* psio, int itap, const char *label, int dim);
-  bool read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-  void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  bool read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  void save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void save(psi::PSIO* const psio, unsigned int fileno);
   void save(psi::PSIO& psio, unsigned int fileno);
-  void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
+  void load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
 

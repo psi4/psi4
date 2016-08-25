@@ -45,7 +45,7 @@ namespace psi {
 
 /// SOMCSCF class
 
-SOMCSCF::SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) :
+SOMCSCF::SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H) :
     jk_(jk)
 {
     matrices_["H"] = H;
@@ -188,7 +188,7 @@ void SOMCSCF::update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir,
             SharedMatrix OPDM, SharedMatrix TPDM)
 {
     // => Update orbitals and density matrices <= //
-    std::vector<boost::shared_ptr<Matrix> > fullC;
+    std::vector<std::shared_ptr<Matrix> > fullC;
     nocc_ = Cocc->ncol();
     noccpi_ = Cocc->colspi();
     matrices_["Cocc"] = Cocc;
@@ -796,7 +796,7 @@ void SOMCSCF::zero_ras(SharedMatrix vector){
 /// End SOMCSCF class
 
 /// DFSOMCSCF class
-DFSOMCSCF::DFSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
             SharedMatrix H) :
             SOMCSCF(jk, AOTOSO, H)
 {
@@ -871,9 +871,9 @@ void DFSOMCSCF::transform(bool approx_only)
 void DFSOMCSCF::set_act_MO()
 {
     // Build (aa|aa)
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
     int nQ = dferi_->size_Q();
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
@@ -885,14 +885,14 @@ void DFSOMCSCF::set_act_MO()
 void DFSOMCSCF::compute_Q(){
 
     timer_on("SOMCSCF: DF-Q matrix");
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     int nQ = dferi_->size_Q();
     int nact2 = nact_ * nact_;
     double* TPDMp = matrices_["TPDM"]->pointer()[0];
 
     // Load aaQ
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
@@ -906,7 +906,7 @@ void DFSOMCSCF::compute_Q(){
     aaQ.reset();
 
     // Load NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["RaQ"];
+    std::shared_ptr<Tensor> NaQT = dfints["RaQ"];
     SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
     FILE* NaQF = NaQT->file_pointer();
@@ -959,10 +959,10 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     int nact2 = nact_*nact_;
     int nact3 = nact2*nact_;
     double* TPDMp = matrices_["TPDM"]->pointer()[0];
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // Read NaQ
-    boost::shared_ptr<Tensor> NaQT = dfints["RaQ"];
+    std::shared_ptr<Tensor> NaQT = dfints["RaQ"];
     SharedMatrix NaQ(new Matrix("RaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
     FILE* NaQF = NaQT->file_pointer();
@@ -1003,7 +1003,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
     // Read and gemm in chunks, need to do blocking later
     int chunk_size = 200;
-    boost::shared_ptr<Tensor> NNQT = dfints["RRQ"];
+    std::shared_ptr<Tensor> NNQT = dfints["RRQ"];
 
     SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
     double** wnQp = wnQ->pointer();
@@ -1024,7 +1024,7 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
     NNQ.reset();
 
     // Read aaQ
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
@@ -1077,8 +1077,8 @@ void DFSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 }// End DFSOMCSCF object
 
 /// DiskSOMCSCF class
-DiskSOMCSCF::DiskSOMCSCF(boost::shared_ptr<JK> jk,
-            boost::shared_ptr<IntegralTransform> ints,
+DiskSOMCSCF::DiskSOMCSCF(std::shared_ptr<JK> jk,
+            std::shared_ptr<IntegralTransform> ints,
             SharedMatrix AOTOSO, SharedMatrix H) :
             SOMCSCF(jk, AOTOSO, H)
 {
@@ -1371,7 +1371,7 @@ void DiskSOMCSCF::compute_Qk(SharedMatrix U, SharedMatrix Uact)
 
 
 /// IncoreSOMCSCF class
-IncoreSOMCSCF::IncoreSOMCSCF(boost::shared_ptr<JK> jk,
+IncoreSOMCSCF::IncoreSOMCSCF(std::shared_ptr<JK> jk,
             SharedMatrix AOTOSO, SharedMatrix H) :
             SOMCSCF(jk, AOTOSO, H)
 {

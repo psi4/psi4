@@ -38,7 +38,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 namespace psi {
@@ -84,7 +84,7 @@ class BasisSet
     std::vector<int> sorted_ao_shell_list_;
 
     //! Molecule object.
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
 
     // Has static information been initialized?
     static bool initialized_shared_;
@@ -156,7 +156,7 @@ public:
      * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
      * @return BasisSet corresponding to this molecule and set of shells
      */
-    static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
+    static std::shared_ptr<BasisSet> build(std::shared_ptr<Molecule> molecule,
                                              const std::vector<ShellInfo> &shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
@@ -199,7 +199,7 @@ public:
     /** Molecule this basis is for.
      *  @return Shared pointer to the molecule for this basis set.
      */
-    boost::shared_ptr<Molecule> molecule() const;
+    std::shared_ptr<Molecule> molecule() const;
     /** Given a shell what is its first AO function
      *  @param i Shell number
      *  @return The function number for the first function for the i'th shell.
@@ -299,7 +299,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty BasisSet object.
      */
-    static boost::shared_ptr<BasisSet> zero_ao_basis_set();
+    static std::shared_ptr<BasisSet> zero_ao_basis_set();
 
     /** Returns an empty SO basis set object.
      *
@@ -307,7 +307,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty SOBasis object.
      */
-    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
+    static std::shared_ptr<SOBasisSet> zero_so_basis_set(const std::shared_ptr<IntegralFactory>& factory);
 
     /** Returns a shell-labeled test basis set object
      *
@@ -316,7 +316,7 @@ public:
      * test basis for use in benchmarking
      * See libmints/benchmark.cc for details
      */
-    static std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > test_basis_set(int max_am);
+    static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet> > test_basis_set(int max_am);
 
     /** Returns a new BasisSet object.
      *
@@ -325,8 +325,8 @@ public:
      * @param mol Molecule to construct basis set for.
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
-                                                 const boost::shared_ptr<Molecule>& mol,
+    static std::shared_ptr<BasisSet> construct(const std::shared_ptr<BasisSetParser>& parser,
+                                                 const std::shared_ptr<Molecule>& mol,
                                                  const std::string& type);
 
     /** Returns a new BasisSet object with qcdb Python machinery.
@@ -337,10 +337,10 @@ public:
      * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> pyconstruct_orbital(const boost::shared_ptr<Molecule>& mol,
+    static std::shared_ptr<BasisSet> pyconstruct_orbital(const std::shared_ptr<Molecule>& mol,
         const std::string& key, const std::string& target, int puream = -1);
 
-    static boost::shared_ptr<BasisSet> pyconstruct_combined(const boost::shared_ptr<Molecule>& mol,
+    static std::shared_ptr<BasisSet> pyconstruct_combined(const std::shared_ptr<Molecule>& mol,
                                                             const std::vector<std::string>& keys,
                                                             const std::vector<std::string>& targets,
                                                             const std::vector<std::string>& fitroles,
@@ -357,12 +357,12 @@ public:
      * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static boost::shared_ptr<BasisSet> pyconstruct_auxiliary(const boost::shared_ptr<Molecule>& mol,
+    static std::shared_ptr<BasisSet> pyconstruct_auxiliary(const std::shared_ptr<Molecule>& mol,
         const std::string& key, const std::string& target,
         const std::string& role, const std::string& other, int puream = -1);
 
     /// Return a decontracted basis set
-    boost::shared_ptr<BasisSet> decontract();
+    std::shared_ptr<BasisSet> decontract();
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

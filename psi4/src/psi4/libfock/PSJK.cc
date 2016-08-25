@@ -55,7 +55,7 @@ using namespace psi;
 
 namespace psi {
 #if 0
-PSJK::PSJK(boost::shared_ptr<BasisSet> primary,
+PSJK::PSJK(std::shared_ptr<BasisSet> primary,
     Options& options) :
     JK(primary), options_(options)
 {
@@ -108,7 +108,7 @@ void PSJK::preiterations()
 {
     // PS requires constant sieve, must be static througout object life
     if (!sieve_) {
-        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+        sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
 
     build_QR();
@@ -140,7 +140,7 @@ void PSJK::compute_JK()
 }
 void PSJK::build_QR()
 {
-    boost::shared_ptr<PseudospectralGrid> grid(new PseudospectralGrid(primary_->molecule(),
+    std::shared_ptr<PseudospectralGrid> grid(new PseudospectralGrid(primary_->molecule(),
         primary_, options_));
     int npoints = grid->npoints();
     int nbf = primary_->nbf();
@@ -164,8 +164,8 @@ void PSJK::build_QR()
     // R (Collocation)
     R_ = SharedMatrix(new Matrix("R", nbf, npoints));
     double** Rp = R_->pointer();
-    boost::shared_ptr<BasisFunctions> points(new BasisFunctions(primary_, max_points, max_functions));
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid->blocks();
+    std::shared_ptr<BasisFunctions> points(new BasisFunctions(primary_, max_points, max_functions));
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid->blocks();
     int offset = 0;
     for (int index = 0; index < blocks.size(); index++) {
         points->compute_functions(blocks[index]);
@@ -203,8 +203,8 @@ void PSJK::build_QR()
             outfile->Printf( "    Warning, Renormalization had to be conditioned.\n\n");
         }
 
-        boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
-        boost::shared_ptr<OneBodyAOInt> ints(factory->ao_overlap());
+        std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+        std::shared_ptr<OneBodyAOInt> ints(factory->ao_overlap());
         SharedMatrix S(new Matrix("S", nbf, nbf));
         ints->compute(S);
         ints.reset();
@@ -225,10 +225,10 @@ void PSJK::build_QR()
 }
 void PSJK::build_Amn_disk(double theta, const std::string& entry)
 {
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
-    std::vector<boost::shared_ptr<PseudospectralInt> > ints;
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+    std::vector<std::shared_ptr<PseudospectralInt> > ints;
     for (int i = 0; i < df_ints_num_threads_; i++) {
-        ints.push_back(boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(factory->ao_pseudospectral())));
+        ints.push_back(std::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(factory->ao_pseudospectral())));
         ints[i]->set_omega(theta);
     }
 
@@ -255,7 +255,7 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
             #ifdef _OPENMP
                 thread = omp_get_thread_num();
             #endif
-            boost::shared_ptr<PseudospectralInt> eri = ints[thread];
+            std::shared_ptr<PseudospectralInt> eri = ints[thread];
             const double* buffer = eri->buffer();
             eri->set_point(Gp[row + Pstart][0], Gp[row + Pstart][1], Gp[row + Pstart][2]);
             double* Amp = Amnp[row];
@@ -373,8 +373,8 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
 }
 void PSJK::build_JK_SR()
 {
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
-    boost::shared_ptr<TwoBodyAOInt> eri(factory->erf_complement_eri(theta_));
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+    std::shared_ptr<TwoBodyAOInt> eri(factory->erf_complement_eri(theta_));
     const double* buffer = eri->buffer();
 
     double cutoff = sieve_->sieve();
@@ -560,14 +560,14 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
         }
     }
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
-    boost::shared_ptr<TwoBodyAOInt> eri;
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+    std::shared_ptr<TwoBodyAOInt> eri;
     if (op == "") {
-        eri = boost::shared_ptr<TwoBodyAOInt>(factory->eri());
+        eri = std::shared_ptr<TwoBodyAOInt>(factory->eri());
     } else if (op == "SR") {
-        eri = boost::shared_ptr<TwoBodyAOInt>(factory->erf_complement_eri(theta));
+        eri = std::shared_ptr<TwoBodyAOInt>(factory->erf_complement_eri(theta));
     } else if (op == "LR") {
-        eri = boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(theta));
+        eri = std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(theta));
     } else {
         throw PSIEXCEPTION("What is this?");
     }

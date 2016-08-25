@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <tuple>
 
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
@@ -53,12 +54,9 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libqt/qt.h"
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-
 #include "hf.h"
 
-using namespace boost;
+
 using namespace std;
 
 namespace psi { namespace scf {
@@ -153,15 +151,15 @@ void HF::frac()
     // Every frac iteration: renormalize the Ca/Cb matrices
 
     // Sort the eigenvalues in the usual manner
-    std::vector<boost::tuple<double,int,int> > pairs_a;
-    std::vector<boost::tuple<double,int,int> > pairs_b;
+    std::vector<std::tuple<double,int,int> > pairs_a;
+    std::vector<std::tuple<double,int,int> > pairs_b;
     for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
+            pairs_a.push_back(std::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
     }
     for (int h=0; h<epsilon_b_->nirrep(); ++h) {
         for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(boost::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
+            pairs_b.push_back(std::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
     }
     sort(pairs_a.begin(),pairs_a.end());
     sort(pairs_b.begin(),pairs_b.end());
@@ -192,15 +190,15 @@ void HF::frac_renormalize()
     outfile->Printf( "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
 
     // Sort the eigenvalues in the usual manner
-    std::vector<boost::tuple<double,int,int> > pairs_a;
-    std::vector<boost::tuple<double,int,int> > pairs_b;
+    std::vector<std::tuple<double,int,int> > pairs_a;
+    std::vector<std::tuple<double,int,int> > pairs_b;
     for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
+            pairs_a.push_back(std::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
     }
     for (int h=0; h<epsilon_b_->nirrep(); ++h) {
         for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(boost::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
+            pairs_b.push_back(std::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
     }
     sort(pairs_a.begin(),pairs_a.end());
     sort(pairs_b.begin(),pairs_b.end());
@@ -248,8 +246,8 @@ void HF::compute_spin_contamination()
     }
 
     SharedMatrix S = SharedMatrix(factory_->create_matrix("S (Overlap)"));
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
-    boost::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
+    std::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
     so_overlap->compute(S);
 
     double dN = 0.0;

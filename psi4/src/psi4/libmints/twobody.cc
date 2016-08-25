@@ -31,7 +31,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 
-using namespace boost;
+;
 using namespace psi;
 
 static void transform2e_1(int, SphericalTransformIter&, double*, double*, int);
@@ -66,27 +66,27 @@ TwoBodyAOInt::~TwoBodyAOInt()
 {
 }
 
-boost::shared_ptr<BasisSet> TwoBodyAOInt::basis()
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis()
 {
     return original_bs1_;
 }
 
-boost::shared_ptr<BasisSet> TwoBodyAOInt::basis1()
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis1()
 {
     return original_bs1_;
 }
 
-boost::shared_ptr<BasisSet> TwoBodyAOInt::basis2()
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis2()
 {
     return original_bs2_;
 }
 
-boost::shared_ptr<BasisSet> TwoBodyAOInt::basis3()
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis3()
 {
     return original_bs3_;
 }
 
-boost::shared_ptr<BasisSet> TwoBodyAOInt::basis4()
+std::shared_ptr<BasisSet> TwoBodyAOInt::basis4()
 {
     return original_bs4_;
 }
@@ -101,7 +101,7 @@ TwoBodyAOInt* TwoBodyAOInt::clone()
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4, int nchunk)
+void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_ptr<GaussianShell> s2, std::shared_ptr<GaussianShell> s3, std::shared_ptr<GaussianShell> s4, int nchunk)
 {
     // Integrals assume this normalization is 1.0.
     return;
@@ -634,9 +634,9 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
 }
 
 
-const boost::python::list TwoBodyAOInt::py_buffer() const {
-    boost::python::list ret_val;
+const pybind11::list TwoBodyAOInt::py_buffer() const {
+    pybind11::list ret_val;
     for(int i = 0; i < curr_buff_size_; ++i)
-        ret_val.append(target_[i]);
+        ret_val.append(pybind11::float_(target_[i]));
     return ret_val;
 }

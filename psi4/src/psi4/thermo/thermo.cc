@@ -51,7 +51,7 @@ PsiReturnType thermo(SharedWavefunction ref_wfn, SharedVector vib_freqs, Options
   double T = options.get_double("T"); // T in K
   double P = options.get_double("P"); // P in Pascals
 
-  const boost::shared_ptr<Molecule> mol = ref_wfn->molecule();
+  const std::shared_ptr<Molecule> mol = ref_wfn->molecule();
 
   double E_elec = psi::Process::environment.globals["CURRENT ENERGY"];
 

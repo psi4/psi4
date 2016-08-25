@@ -37,7 +37,7 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libiwl/iwl.hpp"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 

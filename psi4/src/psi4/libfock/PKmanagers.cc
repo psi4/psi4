@@ -74,8 +74,8 @@ void ijklBasisIterator::next() {
     }
 }
 
-std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> psio,
-                  boost::shared_ptr<BasisSet> primary, size_t memory, Options &options,
+std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio,
+                  std::shared_ptr<BasisSet> primary, size_t memory, Options &options,
                   bool dowK, double omega_in) {
 
     std::string algo = options.get_str("PK_ALGO");
@@ -144,7 +144,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(boost::shared_ptr<PSIO> ps
 
 }
 
-PKManager::PKManager(boost::shared_ptr<BasisSet> primary, size_t memory, Options& options) :
+PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& options) :
 primary_(primary), memory_(memory), options_(options) {
 
     nbf_ = primary_->nbf();
@@ -194,18 +194,18 @@ void PKManager::print_batches() {
 void PKManager::compute_integrals(bool wK) {
 
     // Get an AO integral factory
-    boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
+    std::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary_));
 
     // Get ERI object, one per thread
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > tb;
 
     if(wK) {
         for(int i = 0; i < nthreads_; ++i) {
-            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
         }
     } else {
         for(int i = 0; i < nthreads_; ++i) {
-            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
         }
     }
 
@@ -488,7 +488,7 @@ void PKManager::finalize_D() {
     D_vec_.clear();
 }
 
-PKMgrDisk::PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+PKMgrDisk::PKMgrDisk(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
           size_t memory, Options &options) : PKManager(primary,memory,options) {
     psio_ = psio;
     AIO_ = std::shared_ptr<AIOHandler>(new AIOHandler(psio_));
@@ -819,7 +819,7 @@ void PKMgrDisk::finalize_JK() {
     close_PK_file(true);
 }
 
-PKMgrReorder::PKMgrReorder(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+PKMgrReorder::PKMgrReorder(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                            size_t memory, Options &options) :
     PKMgrDisk(psio,primary,memory,options)  {
     max_mem_buf_ = options.get_int("MAX_MEM_BUF");
@@ -936,7 +936,7 @@ void PKMgrReorder::finalize_PK() {
     }
 }
 
-PKMgrYoshimine::PKMgrYoshimine(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+PKMgrYoshimine::PKMgrYoshimine(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                                size_t memory, Options &options) :
     PKMgrDisk(psio,primary,memory,options) {
     iwl_file_J_ = PSIF_SO_PKSUPER1;
@@ -997,10 +997,10 @@ void PKMgrYoshimine::allocate_buffers() {
     // K address for the first bucket
     // we actually need the boost shared_ptr, the std::shared_ptr does
     // not support array syntax
-    boost::shared_ptr<size_t []> current_pos(new size_t[2 * buf_per_thread]);
+    std::shared_ptr<std::vector<size_t>> current_pos(new std::vector<size_t>(2 * buf_per_thread));
 
-    current_pos[0] = 0;
-    current_pos[1] = 0;
+    (*current_pos)[0] = 0;
+    (*current_pos)[1] = 0;
     //Current position of the bucket in the IWL file
     // For K, each integral can potentially go into two buckets, so we
     // give each bucket twice the J bucket's size. It's wasting quite a bit
@@ -1008,8 +1008,8 @@ void PKMgrYoshimine::allocate_buffers() {
     for(int i = 1; i < buf_per_thread; ++i) {
         size_t batchsize = batch_ind_max()[i - 1] - batch_ind_min()[i - 1];
         size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
-        current_pos[2 * i] = iwlperbatch * iwl_int_size_ + current_pos[2 * i - 2];
-        current_pos[2 * i + 1] = 2 * (iwlperbatch * iwl_int_size_) + current_pos[2 * i - 1];
+        (*current_pos)[2 * i] = iwlperbatch * iwl_int_size_ + (*current_pos)[2 * i - 2];
+        (*current_pos)[2 * i + 1] = 2 * (iwlperbatch * iwl_int_size_) + (*current_pos)[2 * i - 1];
     }
 
     // Ok, now we have the size of a buffer and how many buffers
@@ -1024,12 +1024,12 @@ void PKMgrYoshimine::allocate_buffers_wK() {
     // Need a vector of starting positions for each batch in the wK
     // IWL file
     int bufperthread = batch_ind_min().size();
-    boost::shared_ptr< size_t [] > current_pos(new size_t[bufperthread]);
-    current_pos[0] = 0;
+    std::shared_ptr<std::vector<size_t>> current_pos(new std::vector<size_t>(bufperthread));
+    (*current_pos)[0] = 0;
     for(int i = 1; i < bufperthread; ++i) {
         size_t batchsize = batch_ind_max()[i - 1] - batch_ind_min()[i - 1];
         size_t iwlperbatch = batchsize / ints_per_buf_ + 1;
-        current_pos[i] = iwlperbatch * iwl_int_size_ + current_pos[i - 1];
+        (*current_pos)[i] = iwlperbatch * iwl_int_size_ + (*current_pos)[i - 1];
     }
 
     // Now we pass these new positions to the Workers, which will also
@@ -1064,17 +1064,17 @@ void PKMgrYoshimine::form_PK_wK() {
 void PKMgrYoshimine::compute_integrals(bool wK) {
 
     // Get an AO integral factory
-    boost::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary()));
+    std::shared_ptr<IntegralFactory> intfact(new IntegralFactory(primary()));
 
     // Get ERI object, one per thread
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > tb;
     if(!wK) {
         for(int i = 0; i < nthreads(); ++i) {
-            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
         }
     } else {
         for(int i = 0; i < nthreads(); ++i) {
-            tb.push_back(boost::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
         }
     }
 

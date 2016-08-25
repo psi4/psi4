@@ -49,13 +49,13 @@ class MintsHelper {
 private:
     /// The Options reference for basis sets and things
     Options& options_;
-    boost::shared_ptr<PSIO> psio_;
-    boost::shared_ptr<MatrixFactory> factory_;
-    boost::shared_ptr<Molecule> molecule_;
-    boost::shared_ptr<IntegralFactory> integral_;
-    boost::shared_ptr<BasisSet> basisset_;
-    boost::shared_ptr<SOBasisSet> sobasis_;
-    boost::shared_ptr<TwoBodyAOInt> eriInts_;
+    std::shared_ptr<PSIO> psio_;
+    std::shared_ptr<MatrixFactory> factory_;
+    std::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<SOBasisSet> sobasis_;
+    std::shared_ptr<TwoBodyAOInt> eriInts_;
     int print_;
 
     /// Value which any two-electron integral is below is discarded
@@ -70,23 +70,23 @@ private:
     SharedMatrix mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2);
 
 
-    SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
-    SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
+    SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
+    SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
 
     void common_init();
 
 public:
 
-    void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
-    void init_helper(boost::shared_ptr<BasisSet> basis);
+    void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
+    void init_helper(std::shared_ptr<BasisSet> basis);
 
     /// Constructor, using basisset
-    MintsHelper(boost::shared_ptr<BasisSet> basis,
+    MintsHelper(std::shared_ptr<BasisSet> basis,
                 Options& options = Process::environment.options,
                 int print = 0);
 
     /// Constructor, using wavefunction
-    MintsHelper(boost::shared_ptr<Wavefunction> wavefunction);
+    MintsHelper(std::shared_ptr<Wavefunction> wavefunction);
     /// Destructor, does nothing
     ~MintsHelper();
 
@@ -101,7 +101,7 @@ public:
     void set_print(int print) {print_ = print; }
 
     /// Returns petite list that is capable of transforming basis functions (nbf) to SO's.
-    boost::shared_ptr<PetiteList> petite_list() const;
+    std::shared_ptr<PetiteList> petite_list() const;
 
     enum {
         kFromCartesianAO = true,
@@ -110,15 +110,15 @@ public:
     /** Returns petite list that is capable of transforming AO basis functions (nbf) to SO's.
      *  \param include_pure_transform Is either kFromCartesianAO or kFromBF.
      */
-    boost::shared_ptr<PetiteList> petite_list(bool include_pure_transform) const;
+    std::shared_ptr<PetiteList> petite_list(bool include_pure_transform) const;
     /// Basis set being used.
-    boost::shared_ptr<BasisSet> basisset() const;
+    std::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
-    boost::shared_ptr<SOBasisSet> sobasisset() const;
+    std::shared_ptr<SOBasisSet> sobasisset() const;
     /// Matrix factory being used
-    boost::shared_ptr<MatrixFactory> factory() const;
+    std::shared_ptr<MatrixFactory> factory() const;
     /// Integral factory being used
-    boost::shared_ptr<IntegralFactory> integral() const;
+    std::shared_ptr<IntegralFactory> integral() const;
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
@@ -134,10 +134,10 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
-    SharedMatrix ao_eri(boost::shared_ptr<BasisSet> bs1,
-                        boost::shared_ptr<BasisSet> bs2,
-                        boost::shared_ptr<BasisSet> bs3,
-                        boost::shared_ptr<BasisSet> bs4);
+    SharedMatrix ao_eri(std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2,
+                        std::shared_ptr<BasisSet> bs3,
+                        std::shared_ptr<BasisSet> bs4);
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     /// AO ERF Integrals
@@ -145,30 +145,30 @@ public:
     /// MO ERFC Omega Integrals
     SharedMatrix ao_erfc_eri(double omega);
     /// MO F12 Integrals
-    SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr,
-                        boost::shared_ptr<BasisSet> bs1,
-                        boost::shared_ptr<BasisSet> bs2,
-                        boost::shared_ptr<BasisSet> bs3,
-                        boost::shared_ptr<BasisSet> bs4);
+    SharedMatrix ao_f12(std::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12(std::shared_ptr<CorrelationFactor> corr,
+                        std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2,
+                        std::shared_ptr<BasisSet> bs3,
+                        std::shared_ptr<BasisSet> bs4);
     /// MO F12 Integrals
-    SharedMatrix ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12_scaled(boost::shared_ptr<CorrelationFactor> corr,
-                        boost::shared_ptr<BasisSet> bs1,
-                        boost::shared_ptr<BasisSet> bs2,
-                        boost::shared_ptr<BasisSet> bs3,
-                        boost::shared_ptr<BasisSet> bs4);
+    SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr,
+                        std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2,
+                        std::shared_ptr<BasisSet> bs3,
+                        std::shared_ptr<BasisSet> bs4);
     /// MO F12 squared Integrals
-    SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr,
-                        boost::shared_ptr<BasisSet> bs1,
-                        boost::shared_ptr<BasisSet> bs2,
-                        boost::shared_ptr<BasisSet> bs3,
-                        boost::shared_ptr<BasisSet> bs4);
+    SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr,
+                        std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2,
+                        std::shared_ptr<BasisSet> bs3,
+                        std::shared_ptr<BasisSet> bs4);
     /// MO F12G12 Integrals
-    SharedMatrix ao_f12g12(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12g12(std::shared_ptr<CorrelationFactor> corr);
     /// MO F12 double commutator Integrals
-    SharedMatrix ao_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr);
+    SharedMatrix ao_f12_double_commutator(std::shared_ptr<CorrelationFactor> corr);
     /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_eri(SharedMatrix Cocc, SharedMatrix Cvir);
@@ -179,13 +179,13 @@ public:
     /// MO ERFC Omega Integrals
     SharedMatrix mo_erfc_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12 Integrals
-    SharedMatrix mo_f12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    SharedMatrix mo_f12(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12 squared Integrals
-    SharedMatrix mo_f12_squared(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    SharedMatrix mo_f12_squared(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12G12 Integrals
-    SharedMatrix mo_f12g12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    SharedMatrix mo_f12g12(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12 double commutator Integrals
-    SharedMatrix mo_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    SharedMatrix mo_f12_double_commutator(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
 
     /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
@@ -199,13 +199,13 @@ public:
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();
     // JWM 4/3/2015
-    SharedMatrix ao_overlap(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
-    SharedMatrix ao_kinetic(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO Potential Integrals
     SharedMatrix ao_potential();
-    SharedMatrix ao_potential(boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
+    SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
@@ -236,7 +236,7 @@ public:
     std::vector<SharedMatrix > so_traceless_quadrupole();
 
     /// Returns a CdSalcList object
-    boost::shared_ptr<CdSalcList> cdsalcs(int needed_irreps=0xF,
+    std::shared_ptr<CdSalcList> cdsalcs(int needed_irreps=0xF,
                                           bool project_out_translations=true,
                                           bool project_out_rotations=true);
 

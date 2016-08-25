@@ -25,9 +25,6 @@
  * @END LICENSE
  */
 
-#include <boost/regex.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
 #include "psi4/physconst.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
@@ -37,10 +34,13 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libefp_solver/efp_solver.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include <efp.h>
 
-boost::regex efpAtomSymbol("A\\d*([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
-boost::smatch reMatches;
+#include <regex>
+
+std::regex efpAtomSymbol("A\\d*([A-Z]{1,2})\\d*", std::regex_constants::icase);
+std::smatch reMatches;
 
 // TODO: change allocated memory to shared pointers and ditch the deletes
 
@@ -86,9 +86,11 @@ void EFP::add_fragments(std::vector<std::string> fnames)
     // Paths to search for efp files: here + PSIPATH + library
     std::string libraryPath = Process::environment("PSIDATADIR") + "/efpfrag";
     std::string efpPath = ".:" + Process::environment("PSIPATH") + ":" + libraryPath;
-    boost::char_separator<char> sep(":");
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-    tokenizer tokens(efpPath, sep);
+//    boost::char_separator<char> sep(":");
+//    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+//    tokenizer tokens(efpPath, sep);
+
+    std::vector<std::string> tokens = split(efpPath, ":");
 
     nfrag_ = fnames.size();
 
@@ -111,13 +113,14 @@ void EFP::add_fragments(std::vector<std::string> fnames)
         not_found = true;
 
         // Loop over possible locations
-        for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
-            std::string psiPathWithFragment = *tok_iter + "/" + name + ".efp";
-            boost::filesystem::path bf_path = boost::filesystem::system_complete(psiPathWithFragment);
+        for (auto tok_iter : tokens) {
+            std::string psiPathWithFragment = tok_iter + "/" + name + ".efp";
+//            boost::filesystem::path bf_path = boost::filesystem::system_complete(psiPathWithFragment);
+            std::string bf_path = filesystem::system_complete(psiPathWithFragment);
 
-            if (!(res = efp_add_potential(efp_, bf_path.string().c_str()))) {
+            if (!(res = efp_add_potential(efp_, bf_path.c_str()))) {
                 outfile->Printf("  EFP fragment %s read from %s\n",
-                    name.c_str(), bf_path.string().c_str());
+                    name.c_str(), bf_path.c_str());
                 not_found = false;
                 break;
             }
@@ -304,10 +307,10 @@ double * EFP::get_frag_atom_coord(int frag_idx)
 efp_result electron_density_field_fn(size_t n_pt, const double *xyz, double *field, void *user_data)
 {
     // TODO These should all be members of the SCF class in the final implementation.
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
-    boost::shared_ptr<Molecule> mol = wfn->molecule();
-    boost::shared_ptr<BasisSet> basis = wfn->basisset();
-    boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
+    std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+    std::shared_ptr<Molecule> mol = wfn->molecule();
+    std::shared_ptr<BasisSet> basis = wfn->basisset();
+    std::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
     int nbf = basis->nbf();
     std::vector<SharedMatrix> intmats;
@@ -429,9 +432,9 @@ void EFP::set_qm_atoms() {
     enum efp_result res;
 
     int natom = molecule_->natom();
-    boost::shared_ptr<Vector> q (new Vector(natom));
+    std::shared_ptr<Vector> q (new Vector(natom));
     double * q_p = q->pointer();
-    boost::shared_ptr<Vector> xyz (new Vector(3*natom));
+    std::shared_ptr<Vector> xyz (new Vector(3*natom));
     double * xyz_p = xyz->pointer();
 
     for (int A=0; A<natom; A++) {
@@ -452,7 +455,7 @@ void EFP::set_qm_atoms() {
  * Returns shared matrix containing the EFP contribution to the potential
  * felt by QM atoms, due to permanent EFP moments, in a SCF procedure.
  */
-boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
+std::shared_ptr<Matrix> EFP::modify_Fock_permanent()
 {
     enum efp_result res;
 
@@ -463,8 +466,8 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     // multipole coordinates are stored array xyz.
-    boost::shared_ptr<Vector> xyz  (new Vector(3*n_multipole));
-    boost::shared_ptr<Vector> mult (new Vector((1+3+6+10)*n_multipole));
+    std::shared_ptr<Vector> xyz  (new Vector(3*n_multipole));
+    std::shared_ptr<Vector> mult (new Vector((1+3+6+10)*n_multipole));
 
     // get multipoles from libefp
     //     dipoles stored as     x,y,z
@@ -478,8 +481,8 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     // Scale multipole integrals by multipole magnitudes.  The result goes into V
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
-    boost::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
+    std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+    std::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
 
                                // 0    X    Y    Z      XX       YY       ZZ       XY       XZ       YZ
     const double prefacs[20] = { 1.0, 1.0, 1.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0/3.0, 2.0/3.0, 2.0/3.0, 2.0/3.0,
@@ -554,7 +557,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_permanent()
  * Returns shared matrix containing the EFP contribution to the potential
  * felt by QM atoms, due to EFP induced dipoles, in a SCF procedure.
  */
-boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
+std::shared_ptr<Matrix> EFP::modify_Fock_induced()
 {
     enum efp_result res;
 
@@ -564,17 +567,17 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
         throw PsiException("EFP::modify_Fock_induced():efp_get_induced_dipole_count() " +
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
-    boost::shared_ptr<Vector> xyz_id (new Vector(3*n_id));
+    std::shared_ptr<Vector> xyz_id (new Vector(3*n_id));
     if ((res = efp_get_induced_dipole_coordinates(efp_, xyz_id->pointer())))
         throw PsiException("EFP::modify_Fock_induced():efp_get_induced_dipole_coordinates() " +
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
-    boost::shared_ptr<Vector> id (new Vector(3*n_id));
+    std::shared_ptr<Vector> id (new Vector(3*n_id));
     if ((res = efp_get_induced_dipole_values(efp_, id->pointer())))
         throw PsiException("EFP::modify_Fock_induced():efp_get_induced_dipole_values() " +
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
-    boost::shared_ptr<Vector> idt (new Vector(3*n_id));
+    std::shared_ptr<Vector> idt (new Vector(3*n_id));
     if ((res = efp_get_induced_dipole_conj_values(efp_, idt->pointer())))
         throw PsiException("EFP::modify_Fock_induced():efp_get_induced_dipole_conj_values() " +
             std::string (efp_result_to_string(res)),__FILE__,__LINE__);
@@ -584,8 +587,8 @@ boost::shared_ptr<Matrix> EFP::modify_Fock_induced()
     id->scale(0.5);
 
     // scale field integrals by induced dipole magnitudes.  the result goes into V
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
-    boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
+    std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+    std::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
 
     int nbf = wfn->basisset()->nbf();
     std::vector<SharedMatrix> mats;
@@ -835,15 +838,15 @@ void EFP::print_out() {
 //    return natom;
 //}
 
-//boost::shared_ptr<Matrix> EFP::EFP_nuclear_potential()
+//std::shared_ptr<Matrix> EFP::EFP_nuclear_potential()
 //{
 //    enum efp_result res;
 //
-//    boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+//    std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
 //
 //    int nbf = wfn->basisset()->nbf();
 //
-//    boost::shared_ptr<Matrix> V (new Matrix(nbf,nbf));
+//    std::shared_ptr<Matrix> V (new Matrix(nbf,nbf));
 //
 //    for (int frag=0; frag<nfrag_; frag++) {
 //        size_t natom = 0;
@@ -867,7 +870,7 @@ void EFP::print_out() {
 //            Zxyzp[i][3] = atoms[i].z;
 //        }
 //
-//        boost::shared_ptr<PotentialInt> pot(static_cast<PotentialInt*>(wfn->integral()->ao_potential()));
+//        std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt*>(wfn->integral()->ao_potential()));
 //        pot->set_charge_field(Zxyz);
 //        pot->compute(V_charge);
 //
@@ -883,12 +886,12 @@ void EFP::print_out() {
 ///*
 // * Get gradient of the interaction energy of the EFP electrostatics with the QM nuclei (point charges)
 // */
-//boost::shared_ptr<Vector> EFP::get_electrostatic_gradient()
+//std::shared_ptr<Vector> EFP::get_electrostatic_gradient()
 //{
 //    enum efp_result res;
 //
 //    int natom = molecule_->natom();
-//    boost::shared_ptr<Vector> grad ( new Vector( 3*natom ) );
+//    std::shared_ptr<Vector> grad ( new Vector( 3*natom ) );
 //    double * grad_p = grad->pointer();
 //
 //    // verify natom matches the number of point charges in efp
@@ -946,7 +949,7 @@ void EFP::print_out() {
 //double EFP::EFP_QM_nuclear_repulsion_energy()
 //{
 //    double nu = 0.0;
-//    boost::shared_ptr<Molecule> mol = Process::environment.molecule();
+//    std::shared_ptr<Molecule> mol = Process::environment.molecule();
 //
 //    for (int frag=0; frag<nfrag_; frag++) {
 //        size_t natom = 0;

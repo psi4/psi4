@@ -79,7 +79,7 @@ public:
     Dispersion();
     virtual ~Dispersion();
 
-    static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0,
+    static std::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0,
         double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
 
     std::string name() const { return name_; }
@@ -91,7 +91,7 @@ public:
     void set_citation(const std::string & citation) { citation_ = citation; }
     void set_bibtex(const std::string & bibtex) { bibtex_ = bibtex; }
 
-    boost::shared_ptr<Vector> set_atom_list(boost::shared_ptr<Molecule> mol);
+    std::shared_ptr<Vector> set_atom_list(std::shared_ptr<Molecule> mol);
 
     double get_d() const { return d_; }
     double get_s6() const { return s6_; }
@@ -107,13 +107,13 @@ public:
     void set_a1(double a1) { a1_ = a1; }
     void set_a2(double a2) { a2_ = a2; }
 
-    std::string print_energy(boost::shared_ptr<Molecule> m);
-    std::string print_gradient(boost::shared_ptr<Molecule> m);
-    std::string print_hessian(boost::shared_ptr<Molecule> m);
+    std::string print_energy(std::shared_ptr<Molecule> m);
+    std::string print_gradient(std::shared_ptr<Molecule> m);
+    std::string print_hessian(std::shared_ptr<Molecule> m);
 
-    virtual double compute_energy(boost::shared_ptr<Molecule> m);
-    virtual SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
-    virtual SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
+    virtual double compute_energy(std::shared_ptr<Molecule> m);
+    virtual SharedMatrix compute_gradient(std::shared_ptr<Molecule> m);
+    virtual SharedMatrix compute_hessian(std::shared_ptr<Molecule> m);
 
     virtual void print(std::string OutFileRMR = "outfile", int level = 1) const;
     void py_print() const { print("outfile", 1); }

@@ -58,15 +58,15 @@ class ElectricFieldInt : public OneBodyAOInt
 
 public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    ElectricFieldInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    ElectricFieldInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor
     virtual ~ElectricFieldInt();
 
     //! Does the method provide first derivatives?
     bool has_deriv1() { return true; }
 
-    static Vector3 nuclear_contribution(const Vector3 &origin, boost::shared_ptr<Molecule> mol);
-    static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, boost::shared_ptr<Molecule> mol);
+    static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
+    static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
 };
 
 }

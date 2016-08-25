@@ -34,7 +34,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
-#include <algorithm>
+#include <numeric>
 #include <assert.h>
 
 #include "liboptions.h"
@@ -43,15 +43,13 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
 #include "psi4/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/python.hpp>
-#include <boost/python/object.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include "psi4/pragma.h"
+#include <memory>
+
+#include <pybind11/pybind11.h>
+
 #include "psi4/psi4-dec.h"
+
 namespace psi {
 
 // DataType base
@@ -172,7 +170,7 @@ double DataType::to_double() const
     throw DataTypeException("don't know how to convert to a double");
 }
 
-boost::python::list DataType::to_list() const
+pybind11::list DataType::to_list() const
 {
     throw DataTypeException("don't know how to convert to a list");
 }
@@ -1044,7 +1042,7 @@ void Options::set_str_i(const std::string & module, const std::string &key, std:
     locals_[module][key].changed();
 }
 
-void Options::set_python(const std::string & module, const std::string &key, const boost::python::object &p)
+void Options::set_python(const std::string & module, const std::string &key, const pybind11::object &p)
 {
     locals_[module][key] = new PythonDataType(p);
     locals_[module][key].changed();
@@ -1076,7 +1074,7 @@ void Options::set_global_str(const std::string &key, const std::string &s)
     get_global(key).assign(s);
 }
 
-void Options::set_global_python(const std::string &key, const boost::python::object &p)
+void Options::set_global_python(const std::string &key, const pybind11::object &p)
 {
     globals_[key] = Data(new PythonDataType(p));
     globals_[key].changed();
@@ -1295,8 +1293,18 @@ Data& Options::use(std::string& key)
             }
         }
 
-        printf("\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
-        outfile->Printf("\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
+        std::string choices_joined;
+        std::accumulate(std::begin(choices), std::end(choices), 0,
+                        [&choices_joined](int &, std::string &s) {
+                            if (!choices_joined.empty()) {
+                                choices_joined.append(" ");
+                            }
+                            choices_joined.append(s);
+                            return 0;
+                        });
+
+        printf("\nDid you mean? %s\n\n",choices_joined.c_str());
+        outfile->Printf("\nDid you mean? %s\n\n",choices_joined.c_str());
         throw IndexException(key);
     }
     else if (!exists_in_active(key) && exists_in_global(key))

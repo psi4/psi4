@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/vector.h"
 #include <string>
@@ -47,11 +47,11 @@ class Options;
 
 class GradientWriter
 {
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
     const Matrix& gradient_;
 
 public:
-    GradientWriter(boost::shared_ptr<Molecule> mol, const Matrix& grad);
+    GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad);
 
     void write(const std::string& filename);
 };
@@ -60,7 +60,7 @@ class FCHKWriter
 {
 private:
     /*! \brief Extracts information from a wavefunction object, and writes it into a formatted FCHK file.  */
-    boost::shared_ptr<Wavefunction> wavefunction_;
+    std::shared_ptr<Wavefunction> wavefunction_;
     FILE *chk_;
     void write_number(const char *label, int value);
     void write_number(const char *label, double value);
@@ -71,41 +71,41 @@ private:
     void write_matrix(const char *label, const std::vector<int> &mat);
 
 public:
-    FCHKWriter(boost::shared_ptr<Wavefunction> wavefunction);
+    FCHKWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write(const std::string &filename);
 };
 
 class MoldenWriter
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
+    std::shared_ptr<Wavefunction> wavefunction_;
 
 public:
-    void write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB);
-    void writeNO(const std::string &filename, boost::shared_ptr<Matrix> Na, boost::shared_ptr<Matrix> Nb, boost::shared_ptr<Vector> Oa, boost::shared_ptr<Vector> Ob);
-    MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction);
+    void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB);
+    void writeNO(const std::string &filename, std::shared_ptr<Matrix> Na, std::shared_ptr<Matrix> Nb, std::shared_ptr<Vector> Oa, std::shared_ptr<Vector> Ob);
+    MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
 
 };
 
 class MOWriter
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
+    std::shared_ptr<Wavefunction> wavefunction_;
     Options & options_;
 private:
     double * Ca_pointer, * eps;
     int * map, * sym, * occ, nmo, nso;
     void write_mos(Molecule & mol);
 public:
-    MOWriter(boost::shared_ptr<Wavefunction> wavefunction,Options&options);
+    MOWriter(std::shared_ptr<Wavefunction> wavefunction,Options&options);
     void write();
 };
 
 
 class NBOWriter
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
+    std::shared_ptr<Wavefunction> wavefunction_;
 
 public:
-    NBOWriter(boost::shared_ptr<Wavefunction> wavefunction);
+    NBOWriter(std::shared_ptr<Wavefunction> wavefunction);
 
     void write(const std::string &filename);
 };

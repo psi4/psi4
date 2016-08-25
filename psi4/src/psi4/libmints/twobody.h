@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -40,7 +40,6 @@
 #undef _XOPEN_SOURCE
 #endif
 #include "psi4/libpsi4util/exception.h"
-#include <boost/python/list.hpp>
 #include "pybuffer.h"
 
 namespace psi {
@@ -63,15 +62,15 @@ class TwoBodyAOInt
 protected:
     const IntegralFactory* integral_;
 
-    boost::shared_ptr<BasisSet> bs1_;
-    boost::shared_ptr<BasisSet> bs2_;
-    boost::shared_ptr<BasisSet> bs3_;
-    boost::shared_ptr<BasisSet> bs4_;
+    std::shared_ptr<BasisSet> bs1_;
+    std::shared_ptr<BasisSet> bs2_;
+    std::shared_ptr<BasisSet> bs3_;
+    std::shared_ptr<BasisSet> bs4_;
 
-    const boost::shared_ptr<BasisSet> original_bs1_;
-    const boost::shared_ptr<BasisSet> original_bs2_;
-    const boost::shared_ptr<BasisSet> original_bs3_;
-    const boost::shared_ptr<BasisSet> original_bs4_;
+    const std::shared_ptr<BasisSet> original_bs1_;
+    const std::shared_ptr<BasisSet> original_bs2_;
+    const std::shared_ptr<BasisSet> original_bs3_;
+    const std::shared_ptr<BasisSet> original_bs4_;
 
     /// Buffer to hold the final integrals.
     double *target_;
@@ -105,10 +104,10 @@ protected:
     void permute_1234_to_3421(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
     void permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
 
-//    TwoBodyInt(boost::shared_ptr<BasisSet> bs1,
-//               boost::shared_ptr<BasisSet> bs2,
-//               boost::shared_ptr<BasisSet> bs3,
-//               boost::shared_ptr<BasisSet> bs4,
+//    TwoBodyInt(std::shared_ptr<BasisSet> bs1,
+//               std::shared_ptr<BasisSet> bs2,
+//               std::shared_ptr<BasisSet> bs3,
+//               std::shared_ptr<BasisSet> bs4,
 //               int deriv = 0);
 
     TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv=0);
@@ -117,15 +116,15 @@ public:
     virtual ~TwoBodyAOInt();
 
     /// Basis set on center one
-    boost::shared_ptr<BasisSet> basis();
+    std::shared_ptr<BasisSet> basis();
     /// Basis set on center one
-    boost::shared_ptr<BasisSet> basis1();
+    std::shared_ptr<BasisSet> basis1();
     /// Basis set on center two
-    boost::shared_ptr<BasisSet> basis2();
+    std::shared_ptr<BasisSet> basis2();
     /// Basis set on center three
-    boost::shared_ptr<BasisSet> basis3();
+    std::shared_ptr<BasisSet> basis3();
     /// Basis set on center four
-    boost::shared_ptr<BasisSet> basis4();
+    std::shared_ptr<BasisSet> basis4();
 
     /// Sets whether we're forcing this object to always generate Cartesian integrals
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
@@ -138,7 +137,7 @@ public:
 
     /// Get a python list version of the current buffer
     /// DEPRECATED Use py_buffer_object when possible
-    const boost::python::list py_buffer() const;
+    const pybind11::list py_buffer() const;
 
     const PyBuffer<double>* py_buffer_object() const {
         if(!enable_pybuffer_) {
@@ -170,7 +169,7 @@ public:
     virtual size_t compute_shell_deriv2(int, int, int, int) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);
+    void normalize_am(std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, int nchunk=1);
 
     /// Return true if the clone member can be called. By default returns false.
     virtual bool cloneable();
@@ -182,7 +181,7 @@ public:
     void pure_transform(int, int, int, int, int nchunk);
 };
 
-typedef boost::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
+typedef std::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
 
 }
 

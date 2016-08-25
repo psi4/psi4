@@ -61,7 +61,7 @@ namespace psi {
 
   protected:
 
-    boost::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<BasisSet> basis_;
 
     bool do_J_;
     bool do_K_;
@@ -75,11 +75,11 @@ namespace psi {
     //std::vector<SharedMatrix> wK_;
 
     // ERIs
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri_;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri_;
     /// Integral factory (must be retained for Spherical Transforms)
-    boost::shared_ptr<IntegralFactory> factory_;
+    std::shared_ptr<IntegralFactory> factory_;
     /// ERI Sieve
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
 
     // for each mu, we have a vector of pairs (d_munu * numax, nu_ind)
@@ -114,7 +114,7 @@ namespace psi {
 
   public:
 
-    LinK(boost::shared_ptr<BasisSet> basis_in,
+    LinK(std::shared_ptr<BasisSet> basis_in,
          std::vector<SharedMatrix>& density_in);
 
     ~LinK();

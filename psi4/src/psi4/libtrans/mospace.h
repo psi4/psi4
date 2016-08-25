@@ -52,7 +52,7 @@ class MOSpace{
          * The label associated with this space is 'o'
          */
         #define MOSPACE_FZC 'o'
-        static boost::shared_ptr<MOSpace> fzc;
+        static std::shared_ptr<MOSpace> fzc;
         /**
          * The MOSpace::occ space can be used to define the occupied space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -63,14 +63,14 @@ class MOSpace{
          * The label associated with this space is 'O'
          */
         #define MOSPACE_OCC 'O'
-        static boost::shared_ptr<MOSpace> occ;
+        static std::shared_ptr<MOSpace> occ;
         /**
          * The MOSpace::frv space can be used to define the frozen virtual space.
          *
          * The label associated with this space is 'v'
          */
         #define MOSPACE_FZV 'v'
-        static boost::shared_ptr<MOSpace> fzv;
+        static std::shared_ptr<MOSpace> fzv;
         /**
          * The MOSpace::vir space can be used to define the virtual space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -81,7 +81,7 @@ class MOSpace{
          * The label associated with this space is 'V'
          */
         #define MOSPACE_VIR 'V'
-        static boost::shared_ptr<MOSpace> vir;
+        static std::shared_ptr<MOSpace> vir;
         /**
          * The MOSpace::all space can be used to define the full MO space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -90,14 +90,14 @@ class MOSpace{
          * The label associated with this space is 'A'
          */
         #define MOSPACE_ALL 'A'
-        static boost::shared_ptr<MOSpace> all;
+        static std::shared_ptr<MOSpace> all;
         /**
          * The MOSpace::nil space can be used to define the atomic orbital space.
          *
          * The label associated with this space is 'n'
          */
         #define MOSPACE_NIL 'n'
-        static boost::shared_ptr<MOSpace> nil;
+        static std::shared_ptr<MOSpace> nil;
         /**
          * The MOSpace::dum space is a dummy space with a single function in each irrep.
          * It is used for converting a single aux index into a DPD pair.
@@ -105,7 +105,7 @@ class MOSpace{
          * The label associated with this space is 'd'
          */
         #define MOSPACE_DUM 'd'
-        static boost::shared_ptr<MOSpace> dum;
+        static std::shared_ptr<MOSpace> dum;
 
         // These are to allow the map to be used
         friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)

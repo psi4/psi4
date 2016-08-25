@@ -46,14 +46,14 @@
 #include <ctype.h>
 #include <cmath>
 
-using namespace boost;
+
 using namespace std;
 
 using ULI=unsigned long int;
 
 namespace psi {
 
-PSTensorII::PSTensorII(boost::shared_ptr<BasisSet> primary,
+PSTensorII::PSTensorII(std::shared_ptr<BasisSet> primary,
                    SharedMatrix C,
                    int nocc,
                    int nvir,
@@ -187,15 +187,15 @@ void PSTensorII::print_header()
 void PSTensorII::buildGrid()
 {
     if (options_.get_str("PS_GRID_FILE") == "") {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
             primary_, options_));
     } else {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
             primary_, options_.get_str("PS_GRID_FILE"), options_));
     }
 
     naux_ = grid_->npoints();
-    w_ = boost::shared_ptr<Vector>(new Vector("Grid Weights", naux_));
+    w_ = std::shared_ptr<Vector>(new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
 
     C_DCOPY(naux_, grid_->w(), 1, wp, 1);
@@ -209,7 +209,7 @@ void PSTensorII::buildDealiasSet()
         if (print_)
             outfile->Printf("  Dealias Basis Automatically Generated.\n\n");
 
-        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
+        std::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
         dealias_ = d->dealiasSet();
     } else {
         if (print_)
@@ -501,8 +501,8 @@ SharedMatrix PSTensorII::Aso()
     SharedMatrix A(new Matrix("Aso",  naux_, nso_ * nso_));
     double** Ap = A->pointer();
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
     if (do_omega_) {
         ints->set_omega(omega_);
@@ -620,7 +620,7 @@ SharedMatrix PSTensorII::Amo()
 }
 SharedMatrix PSTensorII::Imo()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     return mints->mo_eri(C_,C_);
 }
 SharedMatrix PSTensorII::Ipsmo()
@@ -685,7 +685,7 @@ void PSTensorII::form_Rpao()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -710,7 +710,7 @@ void PSTensorII::form_Rdao()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -768,8 +768,8 @@ void PSTensorII::form_Rdmo()
 }
 void PSTensorII::form_Spdao()
 {
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Spdao_ = SharedMatrix(new Matrix("S (primary x dealias)", nso_, ndso_));
     Sint->compute(Spdao_);
@@ -793,8 +793,8 @@ void PSTensorII::form_Spdmo()
 }
 void PSTensorII::form_Sddao()
 {
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Sddao_ = SharedMatrix(new Matrix("S (dealias x dealias)", ndso_, ndso_));
     Sint->compute(Sddao_);
@@ -816,7 +816,7 @@ void PSTensorII::form_Sddoo()
 void PSTensorII::form_Cdd()
 {
     SharedMatrix V(new Matrix("Eigvecs", ndso_, ndso_));
-    boost::shared_ptr<Vector> c(new Vector("Eigvals", ndso_));
+    std::shared_ptr<Vector> c(new Vector("Eigvals", ndso_));
     double** Vp = V->pointer();
     double*  cp = c->pointer();
 
@@ -854,7 +854,7 @@ void PSTensorII::form_Cdd()
         Cdd_->print();
 }
 // Older PSTensor
-PSTensor::PSTensor(boost::shared_ptr<BasisSet> primary,
+PSTensor::PSTensor(std::shared_ptr<BasisSet> primary,
                    SharedMatrix C,
                    int nocc,
                    int nvir,
@@ -949,7 +949,7 @@ void PSTensor::buildDealiasSet()
 
             outfile->Printf("  Dealias Basis Automatically Generated\n\n");
 
-            boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
+            std::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
             dealias_ = d->dealiasSet();
 
         } else {
@@ -969,10 +969,10 @@ void PSTensor::buildDealiasSet()
 void PSTensor::buildGrid()
 {
     if (options_.get_str("PS_GRID_FILE") == "") {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
             primary_, options_));
     } else {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
             primary_, options_.get_str("PS_GRID_FILE"), options_));
     }
 
@@ -980,7 +980,7 @@ void PSTensor::buildGrid()
 
 
     naux_ = grid_->npoints();
-    w_ = boost::shared_ptr<Vector>(new Vector("Grid Weights", naux_));
+    w_ = std::shared_ptr<Vector>(new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
 
     C_DCOPY(naux_, grid_->w(), 1, wp, 1);
@@ -1000,8 +1000,8 @@ void PSTensor::buildR()
 }
 void PSTensor::form_Spdao()
 {
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Spdao_ = SharedMatrix(new Matrix("S (primary x dealias)", nso_, ndealias_));
     Sint->compute(Spdao_);
@@ -1030,7 +1030,7 @@ void PSTensor::form_Rpao()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -1055,7 +1055,7 @@ void PSTensor::form_Rdao()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -1251,7 +1251,7 @@ void PSTensor::form_Cpp()
 void PSTensor::form_U()
 {
     SharedMatrix V(new Matrix("Eigvecs", nmo_, nmo_));
-    boost::shared_ptr<Vector> c(new Vector("Eigvals", nmo_));
+    std::shared_ptr<Vector> c(new Vector("Eigvals", nmo_));
     double** Vp = V->pointer();
     double*  cp = c->pointer();
 
@@ -1364,7 +1364,7 @@ void PSTensor::form_Cdd()
 void PSTensor::form_W()
 {
     SharedMatrix V(new Matrix("Eigvecs", ndealias_, ndealias_));
-    boost::shared_ptr<Vector> c(new Vector("Eigvals", ndealias_));
+    std::shared_ptr<Vector> c(new Vector("Eigvals", ndealias_));
     double** Vp = V->pointer();
     double*  cp = c->pointer();
 
@@ -1589,8 +1589,8 @@ SharedMatrix PSTensor::Aso()
     SharedMatrix A(new Matrix("Aso",  naux_, nso_ * nso_));
     double** Ap = A->pointer();
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
     if (use_omega_) {
         ints->set_omega(omega_);
@@ -1708,7 +1708,7 @@ SharedMatrix PSTensor::Amo()
 }
 SharedMatrix PSTensor::Imo()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     return mints->mo_eri(C_,C_);
 }
 SharedMatrix PSTensor::Ipsmo()

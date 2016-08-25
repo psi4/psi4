@@ -36,7 +36,7 @@ namespace psi { namespace sapt {
 
 SAPT2::SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA,
             SharedWavefunction MonomerB, Options& options,
-            boost::shared_ptr<PSIO>psio)
+            std::shared_ptr<PSIO>psio)
              : SAPT(Dimer, MonomerA, MonomerB, options, psio),
   e_elst10_(0.0),
   e_elst12_(0.0),
@@ -443,7 +443,7 @@ void SAPT2::print_results()
 void SAPT2::df_integrals()
 {
   // Get fitting metric
-  boost::shared_ptr<FittingMetric> metric = boost::shared_ptr<FittingMetric>(
+  std::shared_ptr<FittingMetric> metric = std::shared_ptr<FittingMetric>(
     new FittingMetric(ribasis_));
   metric->form_eig_inverse();
   double **J_temp = metric->get_metric()->pointer();
@@ -451,15 +451,15 @@ void SAPT2::df_integrals()
   C_DCOPY(ndf_*ndf_,J_temp[0],1,J_mhalf[0],1);
   metric.reset();
 
-  boost::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(ribasis_,
+  std::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(ribasis_,
     zero_, ribasis_, zero_));
-  boost::shared_ptr<TwoBodyAOInt> Jint = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> Jint = std::shared_ptr<TwoBodyAOInt>(
     rifactory_J->eri());
   const double *Jbuffer = Jint->buffer();
 
-  boost::shared_ptr<IntegralFactory> ao_eri_factory(new IntegralFactory(
+  std::shared_ptr<IntegralFactory> ao_eri_factory(new IntegralFactory(
     basisset_, basisset_, basisset_, basisset_));
-  boost::shared_ptr<TwoBodyAOInt> ao_eri = boost::shared_ptr<TwoBodyAOInt>(
+  std::shared_ptr<TwoBodyAOInt> ao_eri = std::shared_ptr<TwoBodyAOInt>(
     ao_eri_factory->eri());
   const double *ao_buffer = ao_eri->buffer();
 
@@ -498,7 +498,7 @@ void SAPT2::df_integrals()
     DFSchwartz[P] = max;
   }
 
-  boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,
+  std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_,
     zero_, basisset_, basisset_));
 
   int nthreads = 1;
@@ -507,11 +507,11 @@ void SAPT2::df_integrals()
   #endif
   int rank = 0;
 
-  boost::shared_ptr<TwoBodyAOInt> *eri =
-    new boost::shared_ptr<TwoBodyAOInt>[nthreads];
+  std::shared_ptr<TwoBodyAOInt> *eri =
+    new std::shared_ptr<TwoBodyAOInt>[nthreads];
   const double **buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
-    eri[i] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[i] = eri[i]->buffer();
   }
 

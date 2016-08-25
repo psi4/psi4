@@ -29,7 +29,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/fjt.h"
-using namespace boost;
+;
 using namespace psi;
 
 /////////
@@ -56,7 +56,7 @@ ERI::~ERI()
 // F12
 /////////
 
-F12::F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+F12::F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12Fundamental(cf,
@@ -76,7 +76,7 @@ F12::~F12()
 // F12Scaled
 /////////
 
-F12Scaled::F12Scaled(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+F12Scaled::F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12ScaledFundamental(cf,
@@ -96,7 +96,7 @@ F12Scaled::~F12Scaled()
 // F12 squared
 /////////
 
-F12Squared::F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+F12Squared::F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12SquaredFundamental(cf,
@@ -116,7 +116,7 @@ F12Squared::~F12Squared()
 // F12G12
 /////////
 
-F12G12::F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+F12G12::F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12G12Fundamental(cf,
@@ -136,7 +136,7 @@ F12G12::~F12G12()
 // F12DoubleCommutator
 /////////
 
-F12DoubleCommutator::F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+F12DoubleCommutator::F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12DoubleCommutatorFundamental(cf,

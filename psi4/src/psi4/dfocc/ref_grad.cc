@@ -146,7 +146,7 @@ void DFOCC::ref_grad()
         double** Tp = gradients["Kinetic"]->pointer();
 
         // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -230,10 +230,10 @@ void DFOCC::ref_grad()
         #endif
 
         // Potential derivatives
-        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+        std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
         std::vector<SharedMatrix> Vtemps;
         for (int t = 0; t < threads; t++) {
-            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+            Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
             Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
         }
 
@@ -305,7 +305,7 @@ void DFOCC::ref_grad()
         double** Sp = gradients["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -387,11 +387,11 @@ void DFOCC::ref_grad()
     #endif
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
         "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
         "BASIS", options_.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
     int nbasis = primary_->nbf();
 
@@ -410,10 +410,10 @@ void DFOCC::ref_grad()
     int naux = auxiliary_->nbf();
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -513,7 +513,7 @@ void DFOCC::ref_grad()
     //int nso = primary_->nbf();
     //int naux = auxiliary_->nbf();
 
-    boost::shared_ptr<ERISieve> sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
+    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -536,10 +536,10 @@ void DFOCC::ref_grad()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
     }
 
     // => Temporary Gradients <= //

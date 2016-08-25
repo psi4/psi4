@@ -32,7 +32,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
@@ -110,7 +110,7 @@ class PKManager;
  * \code
  *      // Constructor, Algorithm corresponds
  *      // to Type
- *      boost::shared_ptr<JKType> jk(new JKType(
+ *      std::shared_ptr<JKType> jk(new JKType(
  *          basis, ...));
  *
  *      // Set any desired knobs
@@ -279,7 +279,7 @@ protected:
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
     /// Primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// AO2USO transformation matrix
     SharedMatrix AO2USO_;
     /// Pseudo-occupied C matrices, left side
@@ -348,7 +348,7 @@ public:
      *
      *
      */
-    JK(boost::shared_ptr<BasisSet> primary);
+    JK(std::shared_ptr<BasisSet> primary);
 
     /// Destructor
     virtual ~JK();
@@ -361,9 +361,9 @@ public:
     * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary,
                                           Options& options);
-    static boost::shared_ptr<JK> build_JK(boost::shared_ptr<BasisSet> primary,
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary,
                                           Options& options, std::string jk_type);
 
 
@@ -563,7 +563,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DiskJK(boost::shared_ptr<BasisSet> primary, Options& options);
+    DiskJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~DiskJK();
 
@@ -585,7 +585,7 @@ public:
 class PKJK : public JK {
 
     /// The PSIO instance to use for I/O
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 
     /// Options object
     Options& options_;
@@ -629,7 +629,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    PKJK(boost::shared_ptr<BasisSet> primary, Options& options);
+    PKJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     virtual ~PKJK();
 
@@ -660,7 +660,7 @@ protected:
     /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
     int df_ints_num_threads_;
     /// ERI Sieve
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -674,10 +674,10 @@ protected:
     virtual void postiterations();
 
     /// Build the J and K matrices for this integral class
-    void build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
-        std::vector<boost::shared_ptr<Matrix> >& D,
-        std::vector<boost::shared_ptr<Matrix> >& J,
-        std::vector<boost::shared_ptr<Matrix> >& K);
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
+        std::vector<std::shared_ptr<Matrix> >& D,
+        std::vector<std::shared_ptr<Matrix> >& J,
+        std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Common initialization
     void common_init();
@@ -692,7 +692,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(boost::shared_ptr<BasisSet> primary);
+    DirectJK(std::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DirectJK();
 
@@ -730,7 +730,7 @@ class GTFockJK: public JK{
    private:
       ///The actual instance that does the implementing
 
-      boost::shared_ptr<MinimalInterface> Impl_;
+      std::shared_ptr<MinimalInterface> Impl_;
    protected:
       /// Do we need to backtransform to C1 under the hood?
       virtual bool C1() const { return true; }
@@ -756,7 +756,7 @@ class GTFockJK: public JK{
        *  \param[in] AreSymm A flag specifying whether the density
        *         matrices you'll be passing in are symmetric.
        */
-      GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
+      GTFockJK(std::shared_ptr<psi::BasisSet> Primary,
             size_t NMats=1,
             bool AreSymm=true);
 
@@ -775,9 +775,9 @@ protected:
     // => DF-Specific stuff <= //
 
     /// Auxiliary basis set
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// PSIO object
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// Cache action for three-index integrals
     std::string df_ints_io_;
     /// Number of threads for DF integrals
@@ -793,7 +793,7 @@ protected:
     /// Maximum number of nocc in C vectors
     int max_nocc_;
     /// Sieve, must be static throughout the life of the object
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
     /// Main (Q|mn) Tensor (or chunk for disk-based)
     SharedMatrix Qmn_;
@@ -803,9 +803,9 @@ protected:
     SharedMatrix Qrmn_;
 
     // => Temps (built/destroyed in compute_JK) <= //
-    boost::shared_ptr<Vector> J_temp_;
-    boost::shared_ptr<Vector> D_temp_;
-    boost::shared_ptr<Vector> d_temp_;
+    std::shared_ptr<Vector> J_temp_;
+    std::shared_ptr<Vector> D_temp_;
+    std::shared_ptr<Vector> d_temp_;
 
     SharedMatrix E_left_;
     SharedMatrix E_right_;
@@ -862,8 +862,8 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK( boost::shared_ptr<BasisSet> primary,
-       boost::shared_ptr<BasisSet> auxiliary);
+    DFJK( std::shared_ptr<BasisSet> primary,
+       std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
     virtual ~DFJK();
@@ -952,7 +952,7 @@ public:
      *        structure as this molecule
      * @param cholesky_tolerance tolerance for cholesky decomposition.
      */
-    CDJK( boost::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+    CDJK( std::shared_ptr<BasisSet> primary, double cholesky_tolerance);
 
     /// Destructor
     virtual ~CDJK();
@@ -972,9 +972,9 @@ protected:
     // => DF-Specific stuff <= //
 
     /// Auxiliary basis set
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
     /// PSIO object
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// Cache action for three-index integrals
     std::string df_ints_io_;
     /// Number of threads for DF integrals
@@ -986,7 +986,7 @@ protected:
     /// Core or disk?
     bool is_core_;
     /// Sieve, must be static throughout the life of the object
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
     /// Fitting metric (COULOMB or EWALD) [EWALD is SR]
     std::string metric_;
     /// Ewald metric range parameter
@@ -1023,28 +1023,28 @@ protected:
     /// Modified MHG bump function, by atom pair and auxiliary basis center
     std::vector<std::vector<double> > bump_atoms_;
     /// Three-index tensors (pq|A)(A|B)^-1 for each atom pair
-    std::vector<boost::shared_ptr<Matrix> > Bpq_;
+    std::vector<std::shared_ptr<Matrix> > Bpq_;
 
     /// The DF Z operator
-    boost::shared_ptr<Matrix> Z_;
+    std::shared_ptr<Matrix> Z_;
     /// The DF long-range Z operator
-    boost::shared_ptr<Matrix> Z_LR_;
+    std::shared_ptr<Matrix> Z_LR_;
 
-    boost::shared_ptr<Matrix> build_Z(double omega);
+    std::shared_ptr<Matrix> build_Z(double omega);
     void build_atom_pairs();
     void build_shell_pairs();
     void build_auxiliary_partition();
     void build_Bpq();
-    void bump(boost::shared_ptr<Matrix> J,
+    void bump(std::shared_ptr<Matrix> J,
               const std::vector<double>& bump_atoms,
               const std::vector<int>& auxiliary_atoms,
               bool bump_diagonal);
-    void build_J(boost::shared_ptr<Matrix> Z,
-                 const std::vector<boost::shared_ptr<Matrix> >& D,
-                 const std::vector<boost::shared_ptr<Matrix> >& J);
-    void build_K(boost::shared_ptr<Matrix> Z,
-                 const std::vector<boost::shared_ptr<Matrix> >& D,
-                 const std::vector<boost::shared_ptr<Matrix> >& K);
+    void build_J(std::shared_ptr<Matrix> Z,
+                 const std::vector<std::shared_ptr<Matrix> >& D,
+                 const std::vector<std::shared_ptr<Matrix> >& J);
+    void build_K(std::shared_ptr<Matrix> Z,
+                 const std::vector<std::shared_ptr<Matrix> >& D,
+                 const std::vector<std::shared_ptr<Matrix> >& K);
 
 public:
     // => Constructors < = //
@@ -1057,8 +1057,8 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    FastDFJK( boost::shared_ptr<BasisSet> primary,
-       boost::shared_ptr<BasisSet> auxiliary);
+    FastDFJK( std::shared_ptr<BasisSet> primary,
+       std::shared_ptr<BasisSet> auxiliary);
 
     /// Destructor
     virtual ~FastDFJK();
@@ -1146,11 +1146,11 @@ class DirectJK : public JK {
 protected:
 
     /// Integral objects
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri_;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri_;
     /// Integral factory (must be retained for Spherical Transforms)
-    boost::shared_ptr<IntegralFactory> factory_;
+    std::shared_ptr<IntegralFactory> factory_;
     /// ERI Sieve
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -1176,7 +1176,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(boost::shared_ptr<BasisSet> primary);
+    DirectJK(std::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DirectJK();
 
@@ -1201,7 +1201,7 @@ protected:
     /// Options reference (needed to build grid)
     Options& options_;
     /// Dealiasing basis (if needed)
-    boost::shared_ptr<BasisSet> dealias_;
+    std::shared_ptr<BasisSet> dealias_;
     /// Number of threads for three-center integrals
     int df_ints_num_threads_;
     /// File number for (Q|mn) tensor
@@ -1211,9 +1211,9 @@ protected:
     /// QUADRATURE, RENORMALIZATION, or DEALIASING
     std::string dealiasing_;
     /// PSIO object
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// Sieve, must be static throughout the life of the object
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
     /// Q_m^P matrix
     SharedMatrix Q_;
     /// R_m^P matrix
@@ -1221,7 +1221,7 @@ protected:
     /// Grid definition [P x [x y z w]]
     SharedMatrix grid_;
     /// 4-center integrators
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints_4c_;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > ints_4c_;
     /// Q R D (for J)
     SharedVector d_;
     /// R D (for K)
@@ -1269,7 +1269,7 @@ public:
      *        structure as this molecule
      * @param options, Options reference used to build grid
      */
-    PSJK(boost::shared_ptr<BasisSet> primary,
+    PSJK(std::shared_ptr<BasisSet> primary,
         Options& options);
 
     /// Destructor
@@ -1296,7 +1296,7 @@ public:
      * Custom dealias basis
      * @param dealias, new dealias basis
      */
-    void set_dealias_basis(boost::shared_ptr<BasisSet> dealias) { dealias_ = dealias; }
+    void set_dealias_basis(std::shared_ptr<BasisSet> dealias) { dealias_ = dealias; }
     /**
      * Which file number should the (Q|mn) integrals go in
      * @param unit Unit number

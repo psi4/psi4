@@ -79,7 +79,7 @@ void CIWavefunction::transform_ci_integrals() {
     SharedMatrix Cfzv = get_orbitals("FZV");
 
     // Build up active space
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
 
     // Indices should be empty
     std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
@@ -93,14 +93,14 @@ void CIWavefunction::transform_ci_integrals() {
         orbnum += CalcInfo_->dropped_uocc[h];
     }
 
-    boost::shared_ptr<MOSpace> act_space(new MOSpace('X', orbitals, indices));
+    std::shared_ptr<MOSpace> act_space(new MOSpace('X', orbitals, indices));
     spaces.push_back(act_space);
 
     IntegralTransform* ints = new IntegralTransform(
         Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
-    ints_ = boost::shared_ptr<IntegralTransform>(ints);
+    ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
     // Incase we do two ci runs
@@ -126,9 +126,9 @@ void CIWavefunction::setup_dfmcscf_ints() {
     outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
 
     /// Grab and build basis sets
-    boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
+    std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
         molecule_, "BASIS", options_.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(
+    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(
         primary->molecule(), "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"),
         "JKFIT", options_.get_str("BASIS"), primary->has_puream());
 
@@ -282,7 +282,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     }
 
     dferi_->compute();
-    std::map<std::string, boost::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // => Compute onel ints <= //
     onel_ints_from_jk();
@@ -290,7 +290,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     // => Compute twoel ints <= //
     int nQ = dferi_->size_Q();
 
-    boost::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
 
     double* aaQp = aaQ->pointer()[0];
@@ -318,7 +318,7 @@ void CIWavefunction::setup_mcscf_ints() {
     SharedMatrix Cfzv = get_orbitals("FZV");
 
     // Need active and rot spaces
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
 
     std::vector<int> rot_orbitals(CalcInfo_->num_rot_orbs, 0);
     std::vector<int> act_orbitals(CalcInfo_->num_ci_orbs, 0);
@@ -346,8 +346,8 @@ void CIWavefunction::setup_mcscf_ints() {
         rot_orbnum += CalcInfo_->frozen_uocc[h];
     }
 
-    rot_space_ = boost::shared_ptr<MOSpace>(new MOSpace('R', rot_orbitals, indices));
-    act_space_ = boost::shared_ptr<MOSpace>(new MOSpace('X', act_orbitals, indices));
+    rot_space_ = std::shared_ptr<MOSpace>(new MOSpace('R', rot_orbitals, indices));
+    act_space_ = std::shared_ptr<MOSpace>(new MOSpace('X', act_orbitals, indices));
     spaces.push_back(rot_space_);
     spaces.push_back(act_space_);
 
@@ -356,7 +356,7 @@ void CIWavefunction::setup_mcscf_ints() {
         Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
-    ints_ = boost::shared_ptr<IntegralTransform>(ints);
+    ints_ = std::shared_ptr<IntegralTransform>(ints);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
     // Incase we do two ci runs
@@ -504,7 +504,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
     int nav = nact + CalcInfo_->num_rsv_orbs;
 
     // Read RaQ
-    boost::shared_ptr<Tensor> RaQT = dferi_->ints()["RaQ"];
+    std::shared_ptr<Tensor> RaQT = dferi_->ints()["RaQ"];
     SharedMatrix RaQ(new Matrix("RaQ", nrot, nact * nQ));
 
     double* RaQp = RaQ->pointer()[0];
@@ -538,7 +538,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
     }
 
     // Read aaQ
-    boost::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
+    std::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
 
     double* aaQp = aaQ->pointer()[0];

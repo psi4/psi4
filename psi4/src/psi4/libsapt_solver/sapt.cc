@@ -38,7 +38,7 @@ namespace psi { namespace sapt {
 
 SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
            SharedWavefunction MonomerB, Options& options,
-           boost::shared_ptr<PSIO> psio)
+           std::shared_ptr<PSIO> psio)
             : Wavefunction(options)
 {
   shallow_copy(Dimer);
@@ -102,18 +102,18 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
+  ribasis_ = std::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
     "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"),
     "RIFIT", options_.get_str("BASIS")));
   elst_basis_ = 0;
   if (options_.get_str("DF_BASIS_ELST") != "") {
-    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
+    elstbasis_ = std::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
     "DF_BASIS_ELST", options_.get_str("DF_BASIS_ELST"),
     "RIFIT", options_.get_str("BASIS")));
     // TODO: never dealt with an optional basis set before. right default role?
     elst_basis_ = 1;
   }
-  zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
+  zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
 
   if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
       exch_scale_alpha_ = 0.0;
@@ -133,7 +133,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   realsA.push_back(0);
   std::vector<int> ghostsA;
   ghostsA.push_back(1);
-  boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
+  std::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
     ghostsA);
   foccA_ = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
 
@@ -141,7 +141,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   realsB.push_back(1);
   std::vector<int> ghostsB;
   ghostsB.push_back(0);
-  boost::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
+  std::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
     ghostsB);
   foccB_ = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
 
@@ -215,15 +215,15 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 
   int nbf[8];
   nbf[0] = nso_;
-  boost::shared_ptr<MatrixFactory> fact =
-    boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+  std::shared_ptr<MatrixFactory> fact =
+    std::shared_ptr<MatrixFactory>(new MatrixFactory);
   fact->init_with(1, nbf, nbf);
 
-  boost::shared_ptr<IntegralFactory> intfact =
-    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
+  std::shared_ptr<IntegralFactory> intfact =
+    std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,
     basisset_, basisset_, basisset_));
 
-  boost::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
+  std::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
   SharedMatrix Smat = SharedMatrix
     (fact->create_matrix("Overlap"));
   Sint->compute(Smat);
@@ -239,7 +239,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 
   free_block(sAJ);
 
-  boost::shared_ptr<PotentialInt> potA(static_cast<PotentialInt*>(
+  std::shared_ptr<PotentialInt> potA(static_cast<PotentialInt*>(
     intfact->ao_potential()));
   SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
   for (int n=0, p=0; n<monomerA->natom(); n++) {
@@ -260,7 +260,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
     (fact->create_matrix("Nuclear Attraction (Monomer A)"));
   potA->compute(VAmat);
 
-  boost::shared_ptr<PotentialInt> potB(static_cast<PotentialInt*>(
+  std::shared_ptr<PotentialInt> potB(static_cast<PotentialInt*>(
     intfact->ao_potential()));
   SharedMatrix ZxyzB(new Matrix("Charges B (Z,x,y,z)", natomsB_, 4));
   for (int n=0, p=0; n<monomerB->natom(); n++) {
@@ -312,10 +312,10 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
 
 void SAPT::get_denom()
 {
-  boost::shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
-  boost::shared_ptr<Vector> evals_virA(new Vector(nvirA_));
-  boost::shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
-  boost::shared_ptr<Vector> evals_virB(new Vector(nvirB_));
+  std::shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
+  std::shared_ptr<Vector> evals_virA(new Vector(nvirA_));
+  std::shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
+  std::shared_ptr<Vector> evals_virB(new Vector(nvirB_));
 
   for (int a=0; a<aoccA_; a++)
     evals_aoccA->set(0,a,evalsA_[a+foccA_]);

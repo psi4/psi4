@@ -30,32 +30,6 @@
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
 */
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-#include <boost/python.hpp>
-
-#include <stdexcept>
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
-#include <map>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libparallel/parallel.h"
@@ -76,30 +50,46 @@
 #include "coordentry.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 
+#include <pybind11/pybind11.h>
+
+#include <memory>
+#include <regex>
+#include <stdexcept>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <map>
+#include <list>
+
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \
          PyErr_Print();       \
          exit(1);             \
      }
 
-using namespace std;
 using namespace psi;
-using namespace boost;
 
 bool BasisSet::initialized_shared_ = false;
 
-std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
+std::vector <Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
 namespace {
-bool has_ending (std::string const &fullString, std::string const &ending)
+bool has_ending(std::string const &fullString, std::string const &ending)
 {
     if (fullString.length() >= ending.length()) {
-        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
     } else {
         return false;
     }
 }
+
+std::string to_upper_copy(const std::string &original)
+{
+    std::string upper = original;
+    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    return upper;
 }
+} // namespace anonmyous
 
 // Constructs a zero AO basis set
 BasisSet::BasisSet()
@@ -107,7 +97,7 @@ BasisSet::BasisSet()
     initialize_singletons();
 
     // Add a dummy atom at the origin, to hold this basis function
-    molecule_ = boost::shared_ptr<Molecule>(new Molecule);
+    molecule_ = std::shared_ptr<Molecule>(new Molecule);
     molecule_->add_atom(0, 0.0, 0.0, 0.0);
     // Fill with data representing a single S function, at the origin, with 0 exponent
     n_uprimitive_ = 1;
@@ -156,11 +146,11 @@ BasisSet::BasisSet()
                                uexponents_, GaussianType(0), 0, xyz_, 0);
 }
 
-boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> /*molecule*/,
-                                            const std::vector<ShellInfo>& /*shells*/)
+std::shared_ptr <BasisSet> BasisSet::build(std::shared_ptr <Molecule> /*molecule*/,
+                                           const std::vector <ShellInfo> & /*shells*/)
 {
     //TODO fixme!!!
-    boost::shared_ptr<BasisSet> basis(new BasisSet());
+    std::shared_ptr <BasisSet> basis(new BasisSet());
     //    basis->molecule_ = molecule;
     //    basis->shells_ = shells;
     //    basis->refresh();
@@ -175,11 +165,11 @@ void BasisSet::initialize_singletons()
         return;
 
     // Populate the exp_ao arrays
-    for (int l=0; l<LIBINT_MAX_AM; ++l) {
-        for (int i=0; i<=l; ++i) {
-            int x = l-i;
-            for (int j=0; j<=i; ++j) {
-                int y = i-j;
+    for (int l = 0; l < LIBINT_MAX_AM; ++l) {
+        for (int i = 0; i <= l; ++i) {
+            int x = l - i;
+            for (int j = 0; j <= i; ++j) {
+                int y = i - j;
                 int z = j;
 
                 Vector3 xyz_ao(x, y, z);
@@ -191,15 +181,15 @@ void BasisSet::initialize_singletons()
     initialized_shared_ = true;
 }
 
-boost::shared_ptr<Molecule> BasisSet::molecule() const
+std::shared_ptr <Molecule> BasisSet::molecule() const
 {
     return molecule_;
 }
 
 void BasisSet::print(std::string out) const
 {
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-                                                                 boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("  Basis Set: %s\n", name_.c_str());
     printer->Printf("    Number of shells: %d\n", nshell());
     printer->Printf("    Number of basis function: %d\n", nbf());
@@ -208,7 +198,7 @@ void BasisSet::print(std::string out) const
     printer->Printf("    Max angular momentum: %d\n\n", max_am());
 }
 
-void BasisSet::print_by_level(std::string out,  int level) const
+void BasisSet::print_by_level(std::string out, int level) const
 {
     if (level < 1)
         return;
@@ -223,8 +213,8 @@ void BasisSet::print_by_level(std::string out,  int level) const
 void BasisSet::print_summary(std::string out) const
 {
 
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-                                                                 boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("  -AO BASIS SET INFORMATION:\n");
     printer->Printf("    Name                   = %s\n", name_.c_str());
     printer->Printf("    Total number of shells = %d\n", nshell());
@@ -233,11 +223,11 @@ void BasisSet::print_summary(std::string out) const
     printer->Printf("    Number of SO           = %d\n", nbf_);
     printer->Printf("    Maximum AM             = %d\n", max_am_);
     printer->Printf("    Spherical Harmonics    = %s\n", (puream_ ? "TRUE" : "FALSE"));
-    printer->Printf( "\n");
+    printer->Printf("\n");
 
     printer->Printf("  -Contraction Scheme:\n");
-    printer->Printf( "    Atom   Type   All Primitives // Shells:\n");
-    printer->Printf( "   ------ ------ --------------------------\n");
+    printer->Printf("    Atom   Type   All Primitives // Shells:\n");
+    printer->Printf("   ------ ------ --------------------------\n");
 
 
     int *nprims = new int[max_am_ + 1];
@@ -247,23 +237,23 @@ void BasisSet::print_summary(std::string out) const
 
     for (int A = 0; A < molecule_->natom(); A++) {
 
-        memset((void*) nprims , '\0', (max_am_ + 1) * sizeof(int));
-        memset((void*) nunique, '\0', (max_am_ + 1) * sizeof(int));
-        memset((void*) nshells, '\0', (max_am_ + 1) * sizeof(int));
+        memset((void *) nprims, '\0', (max_am_ + 1) * sizeof(int));
+        memset((void *) nunique, '\0', (max_am_ + 1) * sizeof(int));
+        memset((void *) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
 
-        printer->Printf( "    %4d    ", A+1);
-        printer->Printf( "%2s     ", molecule_->symbol(A).c_str());
+        printer->Printf("    %4d    ", A + 1);
+        printer->Printf("%2s     ", molecule_->symbol(A).c_str());
 
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
 
         for (int Q = 0; Q < n_shell; Q++) {
-            const GaussianShell& shell = shells_[Q + first_shell];
+            const GaussianShell &shell = shells_[Q + first_shell];
             nshells[shell.am()]++;
-            nunique[shell.am()]+= shell.nprimitive();
-            nprims [shell.am()]+= shell.nprimitive();
+            nunique[shell.am()] += shell.nprimitive();
+            nprims[shell.am()] += shell.nprimitive();
             amtypes[shell.am()] = shell.amchar();
         }
 
@@ -271,18 +261,18 @@ void BasisSet::print_summary(std::string out) const
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nprims[l] == 0)
                 continue;
-            printer->Printf( "%d%c ", nprims[l], amtypes[l]);
+            printer->Printf("%d%c ", nprims[l], amtypes[l]);
         }
         // Shells
-        printer->Printf( "// ");
+        printer->Printf("// ");
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nshells[l] == 0)
                 continue;
-            printer->Printf( "%d%c ", nshells[l], amtypes[l]);
+            printer->Printf("%d%c ", nshells[l], amtypes[l]);
         }
-        printer->Printf( "\n");
+        printer->Printf("\n");
     }
-    printer->Printf( "\n");
+    printer->Printf("\n");
 
     delete[] nprims;
     delete[] nunique;
@@ -293,23 +283,23 @@ void BasisSet::print_summary(std::string out) const
 void BasisSet::print_detail(std::string out) const
 {
     print_summary(out);
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-                                                                 boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::shared_ptr<OutFile>(new OutFile(out)));
 
-    printer->Printf( "  ==> AO Basis Functions <==\n");
-    printer->Printf( "\n");
-    printer->Printf( "    [ %s ]\n",name_.c_str());
+    printer->Printf("  ==> AO Basis Functions <==\n");
+    printer->Printf("\n");
+    printer->Printf("    [ %s ]\n", name_.c_str());
     if (has_puream())
-        printer->Printf( "    spherical\n");
+        printer->Printf("    spherical\n");
     else
-        printer->Printf( "    cartesian\n");
-    printer->Printf( "    ****\n");
+        printer->Printf("    cartesian\n");
+    printer->Printf("    ****\n");
 
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
 
-        printer->Printf( "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
+        printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
 
 
         int first_shell = center_to_shell_[A];
@@ -319,11 +309,11 @@ void BasisSet::print_detail(std::string out) const
             shells_[Q + first_shell].print(out);
 
 
-        printer->Printf( "    ****\n");
+        printer->Printf("    ****\n");
 
     }
 
-    printer->Printf( "\n");
+    printer->Printf("\n");
 
 }
 
@@ -331,14 +321,16 @@ std::string BasisSet::print_detail_cfour() const
 {
     char buffer[120];
     std::stringstream ss;
+    std::string nameUpperCase = name_;
+    std::transform(nameUpperCase.begin(), nameUpperCase.end(), nameUpperCase.begin(), ::toupper);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
 
-        sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A+1);
+        sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A + 1);
         ss << buffer;
         sprintf(buffer, "Psi4 basis %s for element %s atom %d\n\n",
-                boost::to_upper_copy(name_).c_str(), molecule_->symbol(A).c_str(), A+1);
+                nameUpperCase.c_str(), molecule_->symbol(A).c_str(), A + 1);
         ss << buffer;
 
 
@@ -349,7 +341,7 @@ std::string BasisSet::print_detail_cfour() const
         for (int Q = 0; Q < n_shell; Q++)
             max_am_center = (shells_[Q + first_shell].am() > max_am_center) ? shells_[Q + first_shell].am() : max_am_center;
 
-        std::vector< std::vector<int> > shell_per_am (max_am_center + 1);
+        std::vector <std::vector<int>> shell_per_am(max_am_center + 1);
         for (int Q = 0; Q < n_shell; Q++)
             shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
 
@@ -375,8 +367,8 @@ std::string BasisSet::print_detail_cfour() const
         ss << buffer;
 
 
-        std::vector< std::vector <double> > exp_per_am(max_am_center + 1);
-        std::vector< std::vector <double> > coef_per_am(max_am_center + 1);
+        std::vector <std::vector<double>> exp_per_am(max_am_center + 1);
+        std::vector <std::vector<double>> coef_per_am(max_am_center + 1);
         for (int am = 0; am <= max_am_center; am++) {
             // TODO: std::find safe on floats? seems to work
             // Collect unique exponents among all functions
@@ -392,13 +384,12 @@ std::string BasisSet::print_detail_cfour() const
             // Collect coefficients for each exp among all functions, zero otherwise
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
                 for (size_t ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
-                    if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
+                    if (std::abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
                         coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
-                        if ((K+1) != (size_t)(shells_[shell_per_am[am][Q] + first_shell].nprimitive())) {
+                        if ((K + 1) != (size_t)(shells_[shell_per_am[am][Q] + first_shell].nprimitive())) {
                             K++;
                         }
-                    }
-                    else {
+                    } else {
                         coef_per_am[am].push_back(0.0);
                     }
                 }
@@ -419,7 +410,7 @@ std::string BasisSet::print_detail_cfour() const
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
                 ss << buffer;
-                if (((ep+1) % 5 == 0) || ((ep+1) == exp_per_am[am].size())) {
+                if (((ep + 1) % 5 == 0) || ((ep + 1) == exp_per_am[am].size())) {
                     sprintf(buffer, "\n");
                     ss << buffer;
                 }
@@ -430,7 +421,7 @@ std::string BasisSet::print_detail_cfour() const
             // Write contraction coefficients for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 for (size_t bf = 0; bf < shell_per_am[am].size(); bf++) {
-                    sprintf(buffer, "%10.7f ", coef_per_am[am][bf*exp_per_am[am].size()+ep]);
+                    sprintf(buffer, "%10.7f ", coef_per_am[am][bf * exp_per_am[am].size() + ep]);
                     ss << buffer;
                 }
                 sprintf(buffer, "\n");
@@ -444,7 +435,7 @@ std::string BasisSet::print_detail_cfour() const
     return ss.str();
 }
 
-const GaussianShell& BasisSet::shell(int si) const
+const GaussianShell &BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell()) {
         outfile->Printf("BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
@@ -455,48 +446,48 @@ const GaussianShell& BasisSet::shell(int si) const
     return shells_[si];
 }
 
-const GaussianShell& BasisSet::shell(int center, int si) const
+const GaussianShell &BasisSet::shell(int center, int si) const
 {
     return shell(center_to_shell_[center] + si);
 }
 
-boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
+std::shared_ptr <BasisSet> BasisSet::zero_ao_basis_set()
 {
     // In the new implementation, we simply call the default constructor
-    boost::shared_ptr<BasisSet> new_basis(new BasisSet());
+    std::shared_ptr <BasisSet> new_basis(new BasisSet());
     return new_basis;
 }
 
-//boost::shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory)
+//std::shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const std::shared_ptr<IntegralFactory>& factory)
 //{
-//    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-//    boost::shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
+//    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+//    std::shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
 //    return sozero;
 //}
 
 
-boost::shared_ptr<BasisSet> BasisSet::pyconstruct_orbital(const boost::shared_ptr<Molecule>& mol,
-        const std::string& key, const std::string& target,
-        const int forced_puream)
+std::shared_ptr <BasisSet> BasisSet::pyconstruct_orbital(const std::shared_ptr <Molecule> &mol,
+                                                         const std::string &key, const std::string &target,
+                                                         const int forced_puream)
 {
-    boost::shared_ptr<BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
+    std::shared_ptr <BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
     // Uncontract the primary basis set
     std::string str = Process::environment.options.get_str("BASIS");
-    if (str.size() > 11){
-       std::size_t pos = str.find("-DECONTRACT");
-       if (pos != std::string::npos){
-           return basisset->decontract();
-       }
+    if (str.size() > 11) {
+        std::size_t pos = str.find("-DECONTRACT");
+        if (pos != std::string::npos) {
+            return basisset->decontract();
+        }
     }
     return basisset;
 }
 
-boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_ptr<Molecule>& mol,
-                                                           const std::vector<std::string>& keys,
-                                                           const std::vector<std::string>& targets,
-                                                           const std::vector<std::string>& fitroles,
-                                                           const std::vector<std::string>& others,
-                                                           const int forced_puream)
+std::shared_ptr <BasisSet> BasisSet::pyconstruct_combined(const std::shared_ptr <Molecule> &mol,
+                                                          const std::vector <std::string> &keys,
+                                                          const std::vector <std::string> &targets,
+                                                          const std::vector <std::string> &fitroles,
+                                                          const std::vector <std::string> &others,
+                                                          const int forced_puream)
 {
     // Update geometry in molecule, convert to string
     mol->update_geometry();
@@ -513,7 +504,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     f = PyList_New(fitroles.size());
     o = PyList_New(others.size());
 
-    for (size_t i=0; i<keys.size(); ++i) {
+    for (size_t i = 0; i < keys.size(); ++i) {
 #if PY_MAJOR_VERSION == 2
         PyList_SetItem(k, i, PyString_FromString(keys[i].c_str()));
         PyList_SetItem(t, i, PyString_FromString(targets[i].c_str()));
@@ -534,7 +525,7 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct_combined"));
     PY_TRY(pargs, Py_BuildValue("(s O O O O)", smol.c_str(), k, t, f, o));
     PY_TRY(ret, PyEval_CallObject(method, pargs));
-    boost::python::dict pybs = boost::python::extract<boost::python::dict>(ret);
+    pybind11::dict pybs(pybind11::object(ret, true));
 
     // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
     Py_DECREF(ret);
@@ -546,16 +537,16 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     Py_DECREF(module);
 
 //    const std::string basisname = orbonly ? boost::to_upper_copy(orb) : boost::to_upper_copy(aux);
-    std::string name = boost::python::extract<std::string>(pybs.get("name"));
+    std::string name = pybs["name"].cast<std::string>();
     // TODO still need to reconcile name
-    std::string message = boost::python::extract<std::string>(pybs.get("message"));
+    std::string message = pybs["message"].cast<std::string>();
     if (Process::environment.options.get_int("PRINT") > 1)
         outfile->Printf("%s\n", message.c_str());
 
     // Handle mixed puream signals and seed parser with the resolution
-    int native_puream = boost::python::extract<int>(pybs.get("puream"));
+    int native_puream = pybs["puream"].cast<int>();
     int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
-    ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+                      ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
     int resolved_puream;
     if (user_puream == -1)
         resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
@@ -563,25 +554,25 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
         resolved_puream = user_puream;
 
     // Not like we're ever using a non-G94 format
-    const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
+    const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
 
     mol->set_basis_all_atoms(name, "CABS");
 
     // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
-    typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
+    typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> map_ssv;
     map_ssv basis_atom_shell;
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
-    boost::python::list shmp = boost::python::extract<boost::python::list>(pybs.get("shell_map"));
-    for (int ent=0; ent<(len(shmp)); ent+=3) {
-        std::string label = boost::python::extract<std::string>((shmp)[ent]);
-        std::string hash = boost::python::extract<std::string>((shmp)[ent+1]);
-        vector<string> basbit = parser->string_to_vector(boost::python::extract<std::string>((shmp)[ent+2]));
+    pybind11::list shmp = pybs["shell_map"].cast<pybind11::list>();
+    for (int ent = 0; ent < (len(shmp)); ent += 3) {
+        std::string label = shmp[ent].cast<std::string>();
+        std::string hash = shmp[ent + 1].cast<std::string>();
+        std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
         mol->set_shell_by_label(label, hash, "CABS");
         basis_atom_shell[name][label] = parser->parse(label, basbit);
     }
     mol->update_geometry();  // update symmetry with basisset info
 
-    boost::shared_ptr<BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));
+    std::shared_ptr <BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));
     basisset->name_.clear();
     basisset->name_ = name;
 
@@ -590,13 +581,13 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_combined(const boost::shared_p
     return basisset;
 }
 
-boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_ptr<Molecule>& mol,
-        const std::string& key, const std::string& target,
-        const std::string& fitrole, const std::string& other,
-        const int forced_puream)
+std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr <Molecule> &mol,
+                                                           const std::string &key, const std::string &target,
+                                                           const std::string &fitrole, const std::string &other,
+                                                           const int forced_puream)
 {
     // Refactor arguments to make code more comprehensible
-    bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true: false;
+    bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true : false;
     std::string orb, aux;
     if (orbonly) {
         orb = target;
@@ -621,11 +612,11 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     // Extract reference(s) to the function(s) defined in the Pythonized
     //  input file that apply basis sets to a Molecule. Failing that,
     //  form reference to the keyword string for application to all atoms
-    xpressive::sregex match_format = xpressive::as_xpr("-");
+    std::regex match_format("\\-");
     std::string format_empty("");
     std::string orbfuncname = BasisSet::make_filename(orb);
-    orbfuncname = orbfuncname.substr(0, orbfuncname.length()-4);  // chop off .gbs extension
-    orbfuncname = regex_replace(orbfuncname, match_format, format_empty);  // purge dashes
+    orbfuncname = orbfuncname.substr(0, orbfuncname.length() - 4);  // chop off .gbs extension
+    orbfuncname = std::regex_replace(orbfuncname, match_format, format_empty);  // purge dashes
     orbfuncname = "basisspec_psi4_yo__" + orbfuncname;  // prepend with camouflage
     orbfunc = PyDict_GetItemString(global_dict, orbfuncname.c_str());
     if (orbfunc == NULL) {
@@ -637,8 +628,8 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     }
     if (!orbonly) {
         std::string auxfuncname = BasisSet::make_filename(aux);
-        auxfuncname = auxfuncname.substr(0, auxfuncname.length()-4);
-        auxfuncname = regex_replace(auxfuncname, match_format, format_empty);
+        auxfuncname = auxfuncname.substr(0, auxfuncname.length() - 4);
+        auxfuncname = std::regex_replace(auxfuncname, match_format, format_empty);
         auxfuncname = "basisspec_psi4_yo__" + auxfuncname;
         auxfunc = PyDict_GetItemString(global_dict, auxfuncname.c_str());
         if (auxfunc == NULL) {
@@ -651,39 +642,53 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
-    PyObject *module, *klass, *method, *pargs, *ret;
-    PY_TRY(module, PyImport_ImportModule("qcdb.libmintsbasisset"));
-    PY_TRY(klass, PyObject_GetAttrString(module, "BasisSet"));
-    PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct"));
-    if (orbonly) {
-        PY_TRY(pargs, Py_BuildValue("(s s O)", smol.c_str(), key.c_str(), orbfunc));
-    } else {
-        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc,
-            fitrole.c_str(), orbfunc));
+//    PyObject *module, *klass, *method, *pargs, *ret;
+//    PY_TRY(module, PyImport_ImportModule("qcdb.libmintsbasisset"));
+//    PY_TRY(klass, PyObject_GetAttrString(module, "BasisSet"));
+//    PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct"));
+//    if (orbonly) {
+//        PY_TRY(pargs, Py_BuildValue("(s s O)", smol.c_str(), key.c_str(), orbfunc));
+//    } else {
+//        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc,
+//            fitrole.c_str(), orbfunc));
+//    }
+//    PY_TRY(ret, PyEval_CallObject(method, pargs));
+//    pybind11::dict pybs(pybind11::object(ret, true));
+//
+//    // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
+//    Py_DECREF(ret);
+//    Py_DECREF(pargs);
+//    //Py_DECREF(orbfunc);
+//    //if (!orbonly) Py_DECREF(auxfunc);
+//    Py_DECREF(method);
+//    Py_DECREF(klass);
+//    Py_DECREF(module);
+
+    pybind11::object bs = pybind11::module::import("qcdb.libmintsbasisset").attr("BasisSet");
+    pybind11::object pyconstruct = bs.attr("pyconstruct");
+    pybind11::dict pybs;
+    try {
+        if (orbonly)
+            pybs = pyconstruct(smol, key, orbfunc);
+        else
+            pybs = pyconstruct(smol, key, auxfunc, fitrole, orbfunc);
     }
-    PY_TRY(ret, PyEval_CallObject(method, pargs));
-    boost::python::dict pybs = boost::python::extract<boost::python::dict>(ret);
+    catch (pybind11::error_already_set &e) {
+        PyErr_Print();
+        exit(EXIT_FAILURE);
+    }
 
-    // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
-    Py_DECREF(ret);
-    Py_DECREF(pargs);
-    //Py_DECREF(orbfunc);
-    //if (!orbonly) Py_DECREF(auxfunc);
-    Py_DECREF(method);
-    Py_DECREF(klass);
-    Py_DECREF(module);
-
-    const std::string basisname = orbonly ? boost::to_upper_copy(orb) : boost::to_upper_copy(aux);
-    std::string name = boost::python::extract<std::string>(pybs.get("name"));
+    const std::string basisname = orbonly ? to_upper_copy(orb) : to_upper_copy(aux);
+    std::string name = pybs["name"].cast<std::string>();
     // TODO still need to reconcile name
-    std::string message = boost::python::extract<std::string>(pybs.get("message"));
+    std::string message = pybs["message"].cast<std::string>();
     if (Process::environment.options.get_int("PRINT") > 1)
         outfile->Printf("%s\n", message.c_str());
 
     // Handle mixed puream signals and seed parser with the resolution
-    int native_puream = boost::python::extract<int>(pybs.get("puream"));
+    int native_puream = pybs["puream"].cast<int>();
     int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
-        ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+                      ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
     int resolved_puream;
     if (user_puream == -1)
         resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
@@ -691,25 +696,25 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
         resolved_puream = user_puream;
 
     // Not like we're ever using a non-G94 format
-    const boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
+    const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
 
     mol->set_basis_all_atoms(basisname, key);
 
     // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
-    typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
+    typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>> > map_ssv;
     map_ssv basis_atom_shell;
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
-    boost::python::list shmp = boost::python::extract<boost::python::list>(pybs.get("shell_map"));
-    for (int ent=0; ent<(len(shmp)); ent+=3) {
-        std::string label = boost::python::extract<std::string>((shmp)[ent]);
-        std::string hash = boost::python::extract<std::string>((shmp)[ent+1]);
-        vector<string> basbit = parser->string_to_vector(boost::python::extract<std::string>((shmp)[ent+2]));
+    pybind11::list shmp = pybs["shell_map"].cast<pybind11::list>();
+    for (int ent = 0; ent < (len(shmp)); ent += 3) {
+        std::string label = shmp[ent].cast<std::string>();
+        std::string hash = shmp[ent + 1].cast<std::string>();
+        std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
         mol->set_shell_by_label(label, hash, key);
         basis_atom_shell[basisname][label] = parser->parse(label, basbit);
     }
     mol->update_geometry();  // update symmetry with basisset info
 
-    boost::shared_ptr<BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
+    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
     basisset->name_.clear();
     basisset->name_ = basisname;
     basisset->key_ = key;
@@ -720,33 +725,33 @@ boost::shared_ptr<BasisSet> BasisSet::pyconstruct_auxiliary(const boost::shared_
     return basisset;
 }
 
-boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSetParser>& parser,
-                                                const boost::shared_ptr<Molecule>& mol,
-                                                const std::string& type)
+std::shared_ptr <BasisSet> BasisSet::construct(const std::shared_ptr <BasisSetParser> &parser,
+                                               const std::shared_ptr <Molecule> &mol,
+                                               const std::string &type)
 {
     // Update geometry in molecule, if there is a problem an exception is thrown.
     mol->update_geometry();
 
     // For each one try to load the basis set
     std::string psiPath = PSIOManager::shared_object()->get_default_path() +
-            ":" + Process::environment("PSIPATH");
+                          ":" + Process::environment("PSIPATH");
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
-    typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
-    typedef map<string, vector<ShellInfo> > map_sv;
+    typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>> > map_ssv;
+    typedef std::map <std::string, std::vector<ShellInfo>> map_sv;
     map_ssv basis_atom_shell;
 
-    map<string, int> names;
+    std::map<std::string, int> names;
 
-    for (int atom=0; atom<mol->natom(); ++atom) {
+    for (int atom = 0; atom < mol->natom(); ++atom) {
 
-        const string& symbol = mol->atom_entry(atom)->symbol();
-        const string& basisname = mol->atom_entry(atom)->basisset(type);
+        const std::string &symbol = mol->atom_entry(atom)->symbol();
+        const std::string &basisname = mol->atom_entry(atom)->basisset(type);
 
         if (basisname.empty())
             throw PSIEXCEPTION("BasisSet::construct: No basis set specified for "
-                               +symbol+ " and " +type+" type.");
+                               + symbol + " and " + type + " type.");
 
         names[basisname] = 1;
 
@@ -754,101 +759,104 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         basis_atom_shell[basisname][symbol].clear();
     }
 
-    BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
-    {
+    for (map_ssv::value_type &basis : basis_atom_shell) {
         //outfile->Printf( "Working on basis %s\n", basis.first.c_str());
         bool not_found = true;
-        std::list<std::string> user_list;
+        std::list <std::string> user_list;
         user_list.clear();
 
-        boost::char_separator<char> sep(":");
-        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-        tokenizer tokens(psiPath, sep);
-        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
-            std::string psiPathWithBasis = *tok_iter + "/" + BasisSet::make_filename(basis.first);
+//        boost::char_separator<char> sep(":");
+//        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+//        tokenizer tokens(psiPath, sep);
+//        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+        std::regex sep(":");
+        std::sregex_token_iterator tok_iter(psiPath.begin(), psiPath.end(), sep, -1);
+        std::sregex_token_iterator end;
+        for (; tok_iter != end; ++tok_iter) {
+            std::string psiPathWithBasis = std::string(*tok_iter) + "/" + BasisSet::make_filename(basis.first);
             //outfile->Printf( "file %s\n", psiPathWithBasis.c_str());
             try {
                 parser->load_file(psiPathWithBasis);
                 user_list.push_front(psiPathWithBasis.c_str());
             }
-            catch (BasisSetFileNotFound& e) {}
+            catch (BasisSetFileNotFound &e) {}
         }
 
-        BOOST_FOREACH(string user_file, user_list)
-        {
-            boost::filesystem::path bf_path;
-            bf_path = boost::filesystem::system_complete(user_file);
+        for (std::string user_file : user_list) {
+            char bf_path[PATH_MAX + 1];
+//            boost::filesystem::path bf_path;
+//            bf_path = boost::filesystem::system_complete(user_file);
+            realpath(user_file.c_str(), bf_path);
             // Load in the basis set and remove it from atomsymbol_to_basisname
-            vector<string> file = parser->load_file(bf_path.string());
+            std::vector <std::string> file = parser->load_file(bf_path);
 
-            BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
-                string symbol = atom.first;
+            for (map_sv::value_type &atom : basis.second) {
+                std::string symbol = atom.first;
 
                 // Don't even look, if this has already been found
-                if(!basis_atom_shell[basis.first][symbol].empty()) continue;
+                if (!basis_atom_shell[basis.first][symbol].empty()) continue;
 
                 try {
                     // Need to wrap this is a try catch block
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
 
-                    outfile->Printf( "  Basis set %s for %s read from %s\n",
-                                     basis.first.c_str(), symbol.c_str(), user_file.c_str());
+                    outfile->Printf("  Basis set %s for %s read from %s\n",
+                                    basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = false;
                 }
-                catch (BasisSetNotFound& e) {
+                catch (BasisSetNotFound &e) {
                     // This is thrown when load_file fails
 
-                    outfile->Printf( "  Unable to find %s for %s in %s.\n",
-                                     basis.first.c_str(), symbol.c_str(), user_file.c_str());
+                    outfile->Printf("  Unable to find %s for %s in %s.\n",
+                                    basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;
                 }
             }
         }
 
-        string filename = make_filename(basis.first);
-        string path = Process::environment("PSIDATADIR");
-        vector<string> file;
+        std::string filename = make_filename(basis.first);
+        std::string path = Process::environment("PSIDATADIR");
+        std::vector <std::string> file;
 
         try {
             // Don't even look, if this has already been found
-            BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
-                string symbol = atom.first;
+            for (map_sv::value_type &atom : basis.second) {
+                std::string symbol = atom.first;
                 // Don't bother looking if we've already found this
-                if (atom.second.empty()){
-                    if(file.empty()) file = parser->load_file(path + "/basis/" + filename);
+                if (atom.second.empty()) {
+                    if (file.empty()) file = parser->load_file(path + "/basis/" + filename);
                     // If not found this will throw...let it.
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
                 }
             }
         }
-        catch (BasisSetFileNotFound& e) {
-            outfile->Printf( " Unable to load %s from the default Psi4 basis set library.\n", filename.c_str());
-            throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
+        catch (BasisSetFileNotFound &e) {
+            outfile->Printf(" Unable to load %s from the default Psi4 basis set library.\n", filename.c_str());
+            throw PSIEXCEPTION("  Unable to load " + filename + " from the default Psi4 basis set library.");
         }
     }
 
-    boost::shared_ptr<BasisSet> basisset(new BasisSet(type, mol, basis_atom_shell));
+    std::shared_ptr <BasisSet> basisset(new BasisSet(type, mol, basis_atom_shell));
 
     //TODO ACS is this still needed?
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
     basisset->name_.clear();
-    for (map<string, int>::iterator iter = names.begin(), end = names.end();
+    for (std::map<std::string, int>::iterator iter = names.begin(), end = names.end();
          iter != end;
          ++iter) {
         basisset->name_ += (*iter).first + " + ";
     }
     if (has_ending(basisset->name_, " + "))
-        basisset->name_ = basisset->name_.substr(0, basisset->name_.length()-3);
+        basisset->name_ = basisset->name_.substr(0, basisset->name_.length() - 3);
 
     return basisset;
 }
 
-BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
-                   std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map):
-    name_(basistype),
-    molecule_(mol)
+BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
+                   std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> &shell_map)
+: name_ (basistype), molecule_(mol)
 {
     // Singletons
     initialize_singletons();
@@ -856,8 +864,8 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     int natom = molecule_->natom();
 
     /// These will tell us where the primitives for [basis][symbol] start and end, in the compact array
-    std::map<std::string, std::map<std::string, int > >  primitive_start;
-    std::map<std::string, std::map<std::string, int > >  primitive_end;
+    std::map <std::string, std::map<std::string, int>> primitive_start;
+    std::map <std::string, std::map<std::string, int>> primitive_end;
 
     /*
      * First, loop over the unique primitives, and store them
@@ -867,18 +875,20 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     std::vector<double> uoriginal_coefs;
     std::vector<double> uerd_coefs;
     n_uprimitive_ = 0;
-    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > >::iterator  basis_iter;
-    for(basis_iter = shell_map.begin(); basis_iter != shell_map.end(); ++basis_iter){
+    std::map < std::string, std::map < std::string, std::vector < ShellInfo > > > ::iterator
+    basis_iter;
+    for (basis_iter = shell_map.begin(); basis_iter != shell_map.end(); ++basis_iter) {
         const std::string &basis = basis_iter->first;
-        std::map<std::string, std::vector<ShellInfo> > &symbol_map = shell_map[basis];
-        std::map<std::string, std::vector<ShellInfo> >::iterator symbol_iter;
-        for(symbol_iter = symbol_map.begin(); symbol_iter != symbol_map.end(); ++symbol_iter){
+        std::map <std::string, std::vector<ShellInfo>> &symbol_map = shell_map[basis];
+        std::map < std::string, std::vector < ShellInfo > > ::iterator
+        symbol_iter;
+        for (symbol_iter = symbol_map.begin(); symbol_iter != symbol_map.end(); ++symbol_iter) {
             const std::string &label = symbol_iter->first;  // symbol --> label
-            vector<ShellInfo>& shells = symbol_map[label];  // symbol --> label
+            std::vector <ShellInfo> &shells = symbol_map[label];  // symbol --> label
             primitive_start[basis][label] = n_uprimitive_;  // symbol --> label
-            for (size_t i=0; i<shells.size(); ++i) {
+            for (size_t i = 0; i < shells.size(); ++i) {
                 const ShellInfo &shell = shells[i];
-                for(int prim = 0; prim < shell.nprimitive(); ++prim){
+                for (int prim = 0; prim < shell.nprimitive(); ++prim) {
                     uexps.push_back(shell.exp(prim));
                     ucoefs.push_back(shell.coef(prim));
                     uoriginal_coefs.push_back(shell.original_coef(prim));
@@ -897,12 +907,12 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     nprimitive_ = 0;
     nao_ = 0;
     nbf_ = 0;
-    for (int n=0; n < natom; ++n) {
-        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
-        string basis = atom->basisset(basistype);
-        string label = atom->label();  // symbol --> label
-        vector<ShellInfo>& shells = shell_map[basis][label];  // symbol --> label
-        for (size_t i=0; i<shells.size(); ++i) {
+    for (int n = 0; n < natom; ++n) {
+        const std::shared_ptr <CoordEntry> &atom = molecule_->atom_entry(n);
+        std::string basis = atom->basisset(basistype);
+        std::string label = atom->label();  // symbol --> label
+        std::vector <ShellInfo> &shells = shell_map[basis][label];  // symbol --> label
+        for (size_t i = 0; i < shells.size(); ++i) {
             const ShellInfo &shell = shells[i];
             int nprim = shell.nprimitive();
             nprimitive_ += nprim;
@@ -921,7 +931,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     ucoefficients_ = new double[n_uprimitive_];
     uoriginal_coefficients_ = new double[n_uprimitive_];
     uerd_coefficients_ = new double[n_uprimitive_];
-    for(int i = 0; i < n_uprimitive_; ++i){
+    for (int i = 0; i < n_uprimitive_; ++i) {
         uexponents_[i] = uexps[i];
         ucoefficients_[i] = ucoefs[i];
         uoriginal_coefficients_[i] = uoriginal_coefs[i];
@@ -937,7 +947,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     shell_center_ = new int[n_shells_];
     center_to_nshell_ = new int[natom];
     center_to_shell_ = new int[natom];
-    xyz_ = new double[3*natom];
+    xyz_ = new double[3 * natom];
 
     /*
      * Now loop over all atoms, and point to the appropriate unique data
@@ -950,10 +960,10 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     max_am_ = 0;
     max_nprimitive_ = 0;
     for (int n = 0; n < natom; ++n) {
-        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
-        string basis = atom->basisset(basistype);
-        string label = atom->label();  // symbol --> label
-        vector<ShellInfo>& shells = shell_map[basis][label];  // symbol --> label
+        const std::shared_ptr <CoordEntry> &atom = molecule_->atom_entry(n);
+        std::string basis = atom->basisset(basistype);
+        std::string label = atom->label();  // symbol --> label
+        std::vector <ShellInfo> &shells = shell_map[basis][label];  // symbol --> label
         int ustart = primitive_start[basis][label];  // symbol --> label
         int uend = primitive_end[basis][label];  // symbol --> label
         int nshells = shells.size();
@@ -970,16 +980,16 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             max_am_ = max_am_ > am ? max_am_ : am;
             shell_center_[shell_count] = n;
             GaussianType puream = thisshell.is_pure() ? Pure : Cartesian;
-            if(puream)
+            if (puream)
                 puream_ = true;
             //            outfile->Printf( "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, shell_nprim, atom_nprim);
-            shells_[shell_count] = GaussianShell(am, shell_nprim, &uoriginal_coefficients_[ustart+atom_nprim],
-                    &ucoefficients_[ustart+atom_nprim], &uerd_coefficients_[ustart+atom_nprim], &uexponents_[ustart+atom_nprim], puream, n, xyz_ptr, bf_count);
-            for(int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf){
+            shells_[shell_count] = GaussianShell(am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
+                                                 &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
+            for (int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf) {
                 function_to_shell_[bf_count] = shell_count;
                 function_center_[bf_count++] = n;
             }
-            for(int thisao = 0; thisao < thisshell.ncartesian(); ++thisao){
+            for (int thisao = 0; thisao < thisshell.ncartesian(); ++thisao) {
                 ao_to_shell_[ao_count++] = shell_count;
             }
             atom_nprim += shell_nprim;
@@ -990,21 +1000,22 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
         xyz_ptr[1] = xyz[1];
         xyz_ptr[2] = xyz[2];
         xyz_ptr += 3;
-        if(atom_nprim != uend-ustart){
+        if (atom_nprim != uend - ustart) {
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
         }
     }
 }
 
-std::string BasisSet::make_filename(const std::string& name)
+std::string BasisSet::make_filename(const std::string &name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
-    string basisname = name;
+    std::string basisname = name;
 
     // First make it lower case
-    transform(basisname.begin(), basisname.end(), basisname.begin(), ::tolower);
+    std::transform(basisname.begin(), basisname.end(), basisname.begin(), ::tolower);
 
-    string format_underscore("_"); // empty string
+#if 0
+    std::string format_underscore("_"); // empty string
     // Replace all '(' with '_'
     xpressive::sregex match_format = xpressive::as_xpr("(");
     basisname = regex_replace(basisname, match_format, format_underscore);
@@ -1026,6 +1037,11 @@ std::string BasisSet::make_filename(const std::string& name)
     match_format = xpressive::as_xpr("+");
     string format_plus("p");
     basisname = regex_replace(basisname, match_format, format_plus);
+#endif
+
+    basisname = std::regex_replace(basisname, std::regex("\\(|\\)|,"), "_");
+    basisname = std::regex_replace(basisname, std::regex("\\*"), "s");
+    basisname = std::regex_replace(basisname, std::regex("\\+"), "p");
 
     // Add file extension
     basisname += ".gbs";
@@ -1122,7 +1138,7 @@ void BasisSet::refresh()
     //    }
 }
 
-std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int /*max_am*/)
+std::pair <std::vector<std::string>, std::shared_ptr<BasisSet>> BasisSet::test_basis_set(int /*max_am*/)
 {
     throw NOT_IMPLEMENTED_EXCEPTION();
 #if 0
@@ -1263,10 +1279,10 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
         max_shells = 10;
     }
 
-    boost::shared_ptr<BasisSet> new_basis(new BasisSet());
+    std::shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Add 4 atoms to the molecule for this basis (max integal centers is 4 at the moment)
-    new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
+    new_basis->molecule_ = std::shared_ptr<Molecule>(new Molecule);
     // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
     // but to the fxyz array.
     double x = 0.0;
@@ -1300,17 +1316,17 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
 #endif
 }
 
-boost::shared_ptr<BasisSet> BasisSet::decontract()
+std::shared_ptr <BasisSet> BasisSet::decontract()
 {
     // This maps the atom_label to a vector of uncontracted shells
-    std::map<std::string,std::vector<ShellInfo> > u_shells;
+    std::map <std::string, std::vector<ShellInfo>> u_shells;
 
     // This maps the pair (atom_label,am) to a vector of exponents
     // and it is used to check for duplicate basis functions
-    std::map<std::pair<std::string,int>,std::vector<double> > exp_map;
+    std::map <std::pair<std::string, int>, std::vector<double>> exp_map;
 
     int nshell = this->nshell();
-    for(int shelln = 0; shelln < nshell; ++shelln){
+    for (int shelln = 0; shelln < nshell; ++shelln) {
         const GaussianShell &shell = this->shell(shelln);
 
         int am = shell.am();
@@ -1319,27 +1335,27 @@ boost::shared_ptr<BasisSet> BasisSet::decontract()
         double x = shell.center()[0];
         double y = shell.center()[1];
         double z = shell.center()[2];
-        Vector3 center(x,y,z);
+        Vector3 center(x, y, z);
         int start = shell.start();
         int nprim = shell.nprimitive();
 
         std::string label = molecule_->label(nc);
-        std::pair<std::string,int> label_am(label,am);
-        std::vector<double>& exp_vec = exp_map[label_am];
+        std::pair<std::string, int> label_am(label, am);
+        std::vector<double> &exp_vec = exp_map[label_am];
 
-        for(int prim = 0; prim < nprim; ++prim){
+        for (int prim = 0; prim < nprim; ++prim) {
             double exp = shell.exp(prim);
             // Do I have this exponent already?
             bool unique = true;
-            for (size_t i = 0; i < exp_map[label_am].size(); ++i){
-                if (std::fabs(exp - exp_vec[i]) < 1.0e-6){
+            for (size_t i = 0; i < exp_map[label_am].size(); ++i) {
+                if (std::fabs(exp - exp_vec[i]) < 1.0e-6) {
                     unique = false;
                 }
             }
-            if (unique){
-                std::vector<double> c(1,1.0);
-                std::vector<double> e(1,exp);
-                ShellInfo us(am,c,e,pure ? Pure : Cartesian,nc,center,start,Unnormalized);
+            if (unique) {
+                std::vector<double> c(1, 1.0);
+                std::vector<double> e(1, exp);
+                ShellInfo us(am, c, e, pure ? Pure : Cartesian, nc, center, start, Unnormalized);
                 u_shells[label].push_back(us);
                 exp_vec.push_back(exp);
             }
@@ -1347,13 +1363,13 @@ boost::shared_ptr<BasisSet> BasisSet::decontract()
     }
 
     // Create a shell map to create a new BasisSet object
-    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > shell_map;
+    std::map < std::string, std::map < std::string, std::vector < ShellInfo > > > shell_map;
     shell_map["DECONTRACTED_BASIS"] = u_shells;
 
     //molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_ + "-DECONTRACTED");
-    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS",name_);
-    //return boost::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
-    return boost::shared_ptr<BasisSet>(new BasisSet(name_,molecule_,shell_map));
+    molecule_->set_basis_all_atoms("DECONTRACTED_BASIS", name_);
+    //return std::shared_ptr<BasisSet>(new BasisSet(name_ + "-DECONTRACTED",molecule_,shell_map));
+    return std::shared_ptr<BasisSet>(new BasisSet(name_, molecule_, shell_map));
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
@@ -1361,8 +1377,8 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
     zero_arr(phi_ao, nao());
 
     int ao = 0;
-    for(int ns=0; ns < nshell(); ns++) {
-        const GaussianShell& shell = shells_[ns];
+    for (int ns = 0; ns < nshell(); ns++) {
+        const GaussianShell &shell = shells_[ns];
         int am = shell.am();
         int nprim = shell.nprimitive();
         const double *a = shell.exps();
@@ -1372,18 +1388,18 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
         double dx = x - xyz[0];
         double dy = y - xyz[1];
         double dz = z - xyz[2];
-        double rr = dx*dx + dy*dy + dz*dz;
+        double rr = dx * dx + dy * dy + dz * dz;
 
         double cexpr = 0;
-        for(int np=0; np < nprim; np++)
+        for (int np = 0; np < nprim; np++)
             cexpr += c[np] * exp(-a[np] * rr);
 
-        for(int l=0; l < INT_NCART(am); l++) {
-            Vector3& components = exp_ao[am][l];
-            phi_ao[ao+l] += pow(dx, (double) components[0]) *
-                    pow(dy, (double) components[1]) *
-                    pow(dz, (double) components[2]) *
-                    cexpr;
+        for (int l = 0; l < INT_NCART(am); l++) {
+            Vector3 &components = exp_ao[am][l];
+            phi_ao[ao + l] += pow(dx, (double) components[0]) *
+                              pow(dy, (double) components[1]) *
+                              pow(dz, (double) components[2]) *
+                              cexpr;
         }
 
         ao += INT_NCART(am);

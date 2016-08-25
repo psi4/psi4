@@ -47,7 +47,7 @@ namespace psi { namespace cctriples {
 
     void init_io();
     void title(void);
-    void get_moinfo(boost::shared_ptr<Wavefunction>, Options&);
+    void get_moinfo(std::shared_ptr<Wavefunction>, Options&);
     void exit_io(void);
     void cleanup(void);
     double ET_RHF(void);
@@ -92,7 +92,7 @@ namespace psi { namespace cctriples {
     void test_abc_loops_BBA();
     void test_abc_loops_BBB();
 
-PsiReturnType cctriples(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
 {
   double ETAAA, ETAAB, ETABB, ETBBB, ET;
   long int memory;

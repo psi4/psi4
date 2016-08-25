@@ -44,9 +44,9 @@ class OperatorSymmetry
     int order_;
 
     // Variables we need from the user
-    boost::shared_ptr<Molecule> molecule_;
-    boost::shared_ptr<IntegralFactory> integral_;
-    boost::shared_ptr<MatrixFactory> matrix_;
+    std::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<MatrixFactory> matrix_;
 
     /**
      * The symmetry of each component of the multipole.
@@ -89,12 +89,12 @@ public:
      *             proper size and symmetry.
      */
     OperatorSymmetry(int order,
-                     boost::shared_ptr<Molecule> mol,
-                     boost::shared_ptr<IntegralFactory> ints,
-                     boost::shared_ptr<MatrixFactory> mats);
+                     std::shared_ptr<Molecule> mol,
+                     std::shared_ptr<IntegralFactory> ints,
+                     std::shared_ptr<MatrixFactory> mats);
     //OperatorSymmetry(int order,
-    //                 boost::shared_ptr<Molecule> mol,
-    //                 boost::shared_ptr<IntegralFactory> ints);
+    //                 std::shared_ptr<Molecule> mol,
+    //                 std::shared_ptr<IntegralFactory> ints);
     virtual ~OperatorSymmetry();
 
     std::string name_of_component(int i);
@@ -109,9 +109,9 @@ class MultipoleSymmetry
     int order_;
 
     // Variables we need from the user
-    boost::shared_ptr<Molecule> molecule_;
-    boost::shared_ptr<IntegralFactory> integral_;
-    boost::shared_ptr<MatrixFactory> matrix_;
+    std::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<MatrixFactory> matrix_;
 
     /**
      * The symmetry of each component of the multipole.
@@ -141,12 +141,12 @@ public:
      *             proper size and symmetry.
      */
     MultipoleSymmetry(int order,
-                     boost::shared_ptr<Molecule> mol,
-                     boost::shared_ptr<IntegralFactory> ints,
-                     boost::shared_ptr<MatrixFactory> mats);
+                     std::shared_ptr<Molecule> mol,
+                     std::shared_ptr<IntegralFactory> ints,
+                     std::shared_ptr<MatrixFactory> mats);
     //MultipoleSymmetry(int order,
-    //                 boost::shared_ptr<Molecule> mol,
-    //                 boost::shared_ptr<IntegralFactory> ints);
+    //                 std::shared_ptr<Molecule> mol,
+    //                 std::shared_ptr<IntegralFactory> ints);
     virtual ~MultipoleSymmetry();
 
     /**

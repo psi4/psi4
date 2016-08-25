@@ -54,7 +54,7 @@
 #include "defines.h"
 #include "occwave.h"
 
-using namespace boost;
+
 using namespace std;
 
 
@@ -69,7 +69,7 @@ void OCCWave::omp2_ip_poles()
 //===========================================================================================
 if (reference_ == "RESTRICTED") {
      // Memory allocation
-     SharedVector eOccOrbA = boost::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
+     SharedVector eOccOrbA = std::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
      eOccOrbA->zero();
 
      dpdbuf4 K, T, D;
@@ -265,8 +265,8 @@ if (reference_ == "RESTRICTED") {
 else if (reference_ == "UNRESTRICTED") {
 
      // Memory allocation
-     SharedVector eOccOrbA = boost::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
-     SharedVector eOccOrbB = boost::shared_ptr<Vector>(new Vector("eOccOrbB", nirrep_, occpiB));
+     SharedVector eOccOrbA = std::shared_ptr<Vector>(new Vector("eOccOrbA", nirrep_, occpiA));
+     SharedVector eOccOrbB = std::shared_ptr<Vector>(new Vector("eOccOrbB", nirrep_, occpiB));
      eOccOrbA->zero();
      eOccOrbB->zero();
 

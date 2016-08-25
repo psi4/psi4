@@ -38,7 +38,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -48,8 +48,8 @@
 namespace psi {
 
 /* Definition of global data */
-boost::shared_ptr<PSIO> _default_psio_lib_;
-boost::shared_ptr<PSIOManager> _default_psio_manager_;
+std::shared_ptr<PSIO> _default_psio_lib_;
+std::shared_ptr<PSIOManager> _default_psio_manager_;
 std::string PSIO::default_namespace_;
 
 int PSIO::_error_exit_code_ = 1;
@@ -114,14 +114,14 @@ PSIO::PSIO()
     pid_ = getpid();
 }
 
-boost::shared_ptr<PSIO> PSIO::shared_object()
+std::shared_ptr<PSIO> PSIO::shared_object()
 {
     return _default_psio_lib_;
 }
 
 int psio_init(void) {
     if (_default_psio_lib_.get() == 0) {
-        boost::shared_ptr<PSIO> temp(new PSIO);
+        std::shared_ptr<PSIO> temp(new PSIO);
         _default_psio_lib_ = temp;
         if (_default_psio_lib_ == 0) {
             ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");
@@ -129,7 +129,7 @@ int psio_init(void) {
         }
     }
     if (_default_psio_manager_.get() == 0) {
-        boost::shared_ptr<PSIOManager> temp(new PSIOManager);
+        std::shared_ptr<PSIOManager> temp(new PSIOManager);
         _default_psio_manager_ = temp;
         if (_default_psio_manager_ == 0) {
             ::fprintf(stderr,"LIBPSIO::init() -- failed to allocate the memory");

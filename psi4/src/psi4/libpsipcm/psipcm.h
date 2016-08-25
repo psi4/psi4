@@ -35,7 +35,7 @@
 #include "psi4/libmints/potentialint.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 #include <pcmsolver.h>
@@ -44,13 +44,13 @@ namespace psi {
 class Matrix;
 class BasisSet;
 class Options;
-using SharedMatrix=boost::shared_ptr<Matrix>;
+using SharedMatrix=std::shared_ptr<Matrix>;
 
 class PCM {
   public:
     enum CalcType {Total, NucAndEle, EleOnly};
     PCM() {};
-    PCM(Options &options, boost::shared_ptr<PSIO> psio, int nirrep, boost::shared_ptr<BasisSet> basisset);
+    PCM(Options &options, std::shared_ptr<PSIO> psio, int nirrep, std::shared_ptr<BasisSet> basisset);
     ~PCM();
     double compute_E(SharedMatrix &D, CalcType type = NucAndEle);//Total); this should be the default (once an advanced option is available)
     SharedMatrix compute_V();
@@ -83,7 +83,7 @@ class PCM {
     double compute_E_electronic(SharedMatrix &D);
 
     /// Current basis set (for puream and nao/nso info)
-    boost::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<BasisSet> basisset_;
 
     /// The AO->SO transformation matrix, which is used for transforming
     /// matrices between pure and Cartesian representations.
@@ -100,7 +100,7 @@ class PCM {
 
 };
 
-typedef boost::shared_ptr<psi::PCM> SharedPCM;
+typedef std::shared_ptr<psi::PCM> SharedPCM;
 
 } // psi
 #endif

@@ -45,7 +45,7 @@ struct MinimalInterface{
 
 
 namespace psi {
-GTFockJK::GTFockJK(boost::shared_ptr<psi::BasisSet> Primary,
+GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary,
       size_t NMats,bool AreSymm):
       JK(Primary),Impl_(new MinimalInterface(NMats,AreSymm)){
 

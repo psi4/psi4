@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/wavefunction.h"
@@ -43,7 +43,7 @@ class JK;
 class DFERI;
 class IntegralTransform;
 class MOSpace;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef std::shared_ptr<Matrix> SharedMatrix;
 
 // Well this is not ideal
 struct _SlaterDetSet;
@@ -63,7 +63,7 @@ struct graph_set;
 struct H_zero_block;
 struct detci_timings;
 struct mcscf_params;
-typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
+typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
 namespace psi { namespace detci {
@@ -73,8 +73,8 @@ class CIWavefunction : public Wavefunction
 {
 
 public:
-    CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction);
-    CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
+    CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CIWavefunction();
 
 
@@ -276,11 +276,11 @@ private:
     /// => Integrals <= ///
     bool ints_init_;
     bool df_ints_init_;
-    boost::shared_ptr<IntegralTransform> ints_; // Non-DF
-    boost::shared_ptr<MOSpace> rot_space_;
-    boost::shared_ptr<MOSpace> act_space_;
-    boost::shared_ptr<DFERI> dferi_; // DF
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<IntegralTransform> ints_; // Non-DF
+    std::shared_ptr<MOSpace> rot_space_;
+    std::shared_ptr<MOSpace> act_space_;
+    std::shared_ptr<DFERI> dferi_; // DF
+    std::shared_ptr<JK> jk_;
 
     /// General transforms
     // void tf_onel_ints();

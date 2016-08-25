@@ -36,10 +36,6 @@
 
 #define STORE_TEI 0
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi{ namespace mcscf{
 
 enum ReferenceType {rhf, rohf, uhf, tcscf};
@@ -47,7 +43,7 @@ enum ReferenceType {rhf, rohf, uhf, tcscf};
 class SCF  : public Wavefunction
 {
 public:
-  explicit SCF(SharedWavefunction ref_wfn, Options& options_, boost::shared_ptr<PSIO> psio);
+  explicit SCF(SharedWavefunction ref_wfn, Options& options_, std::shared_ptr<PSIO> psio);
   ~SCF();
   double compute_energy();
 

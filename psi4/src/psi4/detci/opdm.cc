@@ -591,7 +591,7 @@ void CIWavefunction::opdm_properties()
         }
     }
 
-    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
+    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Ca(get_orbitals("ALL"));
     SharedMatrix opdm_a;
     SharedMatrix opdm_b;

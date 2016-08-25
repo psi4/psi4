@@ -45,13 +45,13 @@
 #include "psi4/libmints/basisset_parser.h"
 
 using ULI=unsigned long int;
-using namespace boost;
+
 using namespace std;
 
 namespace psi {
 
-DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
-                   boost::shared_ptr<BasisSet> auxiliary,
+DFTensor::DFTensor(std::shared_ptr<BasisSet> primary,
+                   std::shared_ptr<BasisSet> auxiliary,
                    SharedMatrix C,
                    int nocc,
                    int nvir,
@@ -63,8 +63,8 @@ DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
 {
     common_init();
 }
-DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
-                   boost::shared_ptr<BasisSet> auxiliary,
+DFTensor::DFTensor(std::shared_ptr<BasisSet> primary,
+                   std::shared_ptr<BasisSet> auxiliary,
                    SharedMatrix C,
                    int nocc,
                    int nvir) :
@@ -73,7 +73,7 @@ DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
 {
     common_init();
 }
-DFTensor::DFTensor(boost::shared_ptr<Wavefunction> wfn, const std::string& type)
+DFTensor::DFTensor(std::shared_ptr<Wavefunction> wfn, const std::string& type)
  : options_(Process::environment.options)
 {
     if (!wfn){
@@ -85,7 +85,7 @@ DFTensor::DFTensor(boost::shared_ptr<Wavefunction> wfn, const std::string& type)
 
     primary_ = wfn->basisset();
 
-    boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+    std::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, primary_->molecule(), type);
 
     C_ = wfn->Ca();
@@ -149,7 +149,7 @@ void DFTensor::print_header()
 }
 void DFTensor::build_metric()
 {
-    boost::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_, true));
     met->form_eig_inverse();
     metric_ = met->get_metric();
 
@@ -165,10 +165,10 @@ SharedMatrix DFTensor::Qso()
     double** Bp = B->pointer();
     double** Jp = metric_->pointer();
 
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,zero,primary_,primary_));
-    boost::shared_ptr<TwoBodyAOInt> eri(fact->eri());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,zero,primary_,primary_));
+    std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 
     for (int P = 0; P < auxiliary_->nshell(); P++) {
@@ -341,7 +341,7 @@ SharedMatrix DFTensor::Qmo()
 }
 SharedMatrix DFTensor::Imo()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     return mints->mo_eri(C_,C_);
 }
 SharedMatrix DFTensor::Idfmo()

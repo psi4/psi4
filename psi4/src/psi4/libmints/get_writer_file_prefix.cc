@@ -30,19 +30,14 @@
  \ingroup MINTS
  */
 
-#include <cstdlib>
-#include <unistd.h>
-#include <cstring>
-#include <boost/regex.hpp>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/molecule.h"
 
-using namespace boost;
+#include <cstdlib>
+#include <unistd.h>
+#include <cstring>
+#include <regex>
+#include <memory>
 
 namespace psi {
 
@@ -70,33 +65,32 @@ namespace psi {
 std::string get_writer_file_prefix(std::string molecule_name)
 {
 
-  std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
-  if (label != "") {
-    return(label);
-  }
+    std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
+    if (label != "") {
+        return (label);
+    }
 
-  // If no available options WRITER_FILE_LABEL, then we build a defult:
-  // Get the basename of the output filename, append any active molecule name
-  // to it, and return the resulting string
+    // If no available options WRITER_FILE_LABEL, then we build a defult:
+    // Get the basename of the output filename, append any active molecule name
+    // to it, and return the resulting string
 
-  boost::regex outfileBase("(\\w+)(\\.out|\\.dat)", boost::regbase::normal | boost::regbase::icase);
-  boost::smatch reMatches;
+    std::regex outfileBase("(\\w+)(\\.out|\\.dat)", std::regex_constants::icase);
+    std::smatch reMatches;
 
-  // outfile_name is in psi4-dec.h and is a global std::string with the
-  // name of the output file
-  std::string prefix;
-  if (regex_match(outfile_name, reMatches, outfileBase)) {
-    prefix = reMatches[1].str();
-  }
-  else {
-    prefix = outfile_name;
-  }
+    // outfile_name is in psi4-dec.h and is a global std::string with the
+    // name of the output file
+    std::string prefix;
+    if (std::regex_match(outfile_name, reMatches, outfileBase)) {
+        prefix = reMatches[1].str();
+    } else {
+        prefix = outfile_name;
+    }
 
-  if (molecule_name != "") {
-    prefix += "." + molecule_name;
-  }
+    if (molecule_name != "") {
+        prefix += "." + molecule_name;
+    }
 
-  return(prefix);
+    return (prefix);
 }
 
 

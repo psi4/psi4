@@ -55,7 +55,7 @@ namespace psi { namespace ccdensity {
 
 void init_io(void);
 void title(void);
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn);
+void get_moinfo(std::shared_ptr<Wavefunction> wfn);
 void get_frozen(void);
 void get_params(Options& options);
 void exit_io(void);
@@ -82,8 +82,8 @@ void add_core_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *);
 void dump_RHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_ROHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *, struct RHO_Params rho_params);
-void kinetic(boost::shared_ptr<Wavefunction> wfn);
-void dipole(boost::shared_ptr<Wavefunction> wfn);
+void kinetic(std::shared_ptr<Wavefunction> wfn);
+void dipole(std::shared_ptr<Wavefunction> wfn);
 void probable(void);
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
@@ -113,7 +113,7 @@ void get_td_params(Options& options);
 void td_setup(struct TD_Params S);
 void tdensity(struct TD_Params S);
 void td_print(void);
-void oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
+void oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
 void rotational_strength(MintsHelper &mints, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
 void cleanup(void);
@@ -125,12 +125,12 @@ void V_build(void);
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
-void ex_oscillator_strength(boost::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
+void ex_oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data);
 void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
 
-PsiReturnType ccdensity(boost::shared_ptr<Wavefunction> ref_wfn, Options& options)
+PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
 {
   int i;
   int **cachelist, *cachefiles;

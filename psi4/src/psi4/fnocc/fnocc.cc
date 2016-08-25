@@ -31,22 +31,20 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
 
-using namespace boost;
-
 namespace psi{ namespace fnocc{
 
 SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
-  boost::shared_ptr<Wavefunction> wfn;
+  std::shared_ptr<Wavefunction> wfn;
 
   if ( !options.get_bool("DFCC") ){
 
       // frozen natural orbital ccsd(t)
       if (options.get_bool("NAT_ORBS")) {
 
-          boost::shared_ptr<FrozenNO> fno(new FrozenNO(ref_wfn, options));
+          std::shared_ptr<FrozenNO> fno(new FrozenNO(ref_wfn, options));
           fno->ComputeNaturalOrbitals();
-          wfn = (boost::shared_ptr<Wavefunction>)fno;
+          wfn = (std::shared_ptr<Wavefunction>)fno;
 
       }else {
           wfn = ref_wfn;
@@ -57,9 +55,9 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
       outfile->Printf("        ==> Transform all two-electron integrals <==\n");
       outfile->Printf("\n");
 
-      std::vector<shared_ptr<MOSpace> > spaces;
+      std::vector<std::shared_ptr<MOSpace> > spaces;
       spaces.push_back(MOSpace::all);
-      boost::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
+      std::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
                  IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false));
       ints->set_dpd_id(0);
       ints->set_keep_iwl_so_ints(true);
@@ -69,10 +67,10 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
       tstop();
 
       if ( !options.get_bool("RUN_CEPA") ) {
-          boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
+          std::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
           ccsd->compute_energy();
       } else {
-          boost::shared_ptr<CoupledPair> cepa (new CoupledPair(wfn,options));
+          std::shared_ptr<CoupledPair> cepa (new CoupledPair(wfn,options));
           cepa->compute_energy();
       }
 
@@ -93,21 +91,21 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
 
       // three-index integrals are generated/read by fno class
-      boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(ref_wfn,options));
+      std::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(ref_wfn,options));
       fno->ThreeIndexIntegrals();
       if ( options.get_bool("NAT_ORBS") ) {
           fno->ComputeNaturalOrbitals();
-          wfn = (boost::shared_ptr<Wavefunction>)fno;
+          wfn = (std::shared_ptr<Wavefunction>)fno;
       }else {
           wfn = ref_wfn;
       }
       // ccsd(t)!
 
       #ifdef GPUCC
-          boost::shared_ptr<GPUDFCoupledCluster> ccsd (new GPUDFCoupledCluster(wfn,options));
+          std::shared_ptr<GPUDFCoupledCluster> ccsd (new GPUDFCoupledCluster(wfn,options));
           ccsd->compute_energy();
       #else
-          boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
+          std::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
           ccsd->compute_energy();
       #endif
 

@@ -44,11 +44,11 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
+
 
 namespace psi { namespace scf {
 
-CUHF::CUHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+CUHF::CUHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
     common_init();
@@ -388,7 +388,7 @@ void CUHF::compute_orbital_gradient(bool save_diis)
 
     if (save_diis){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(
+            diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(
                                                                max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError,
                                                                DIISManager::OnDisk));
             diis_manager_->set_error_vector_size(2, DIISEntry::Matrix,

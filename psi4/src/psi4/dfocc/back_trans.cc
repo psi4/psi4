@@ -31,7 +31,7 @@
 #include "dfocc.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
-using namespace boost;
+
 using namespace std;
 
 
@@ -442,7 +442,7 @@ void DFOCC::oeprop()
     }
 
     // Compute oeprop
-    boost::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
+    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");

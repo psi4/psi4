@@ -174,8 +174,8 @@ void IntVector::set(int *vec) {
 
 void IntVector::print(std::string out, const char* extra) const {
     int h;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     if (extra == NULL) {
         printer->Printf( "\n # %s #\n", name_.c_str());
     } else {

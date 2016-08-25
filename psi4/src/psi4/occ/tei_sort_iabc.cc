@@ -30,7 +30,7 @@
 #include "occwave.h"
 #include "defines.h"
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 

@@ -55,14 +55,14 @@ void CIWavefunction::compute_mcscf()
 
   Parameters_->print_lvl = 0;
 
-  boost::shared_ptr<SOMCSCF> somcscf;
+  std::shared_ptr<SOMCSCF> somcscf;
   if (MCSCF_Parameters_->mcscf_type == "DF"){
     transform_dfmcscf_ints(!MCSCF_Parameters_->orbital_so);
-    somcscf = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+    somcscf = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
   }
   else {
     transform_mcscf_ints(!MCSCF_Parameters_->orbital_so);
-    somcscf = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+    somcscf = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
   }
 
   // We assume some kind of ras here.
@@ -114,7 +114,7 @@ void CIWavefunction::compute_mcscf()
   SharedMatrix xstep;
   SharedMatrix original_orbs = get_orbitals("ROT");
 
-  boost::shared_ptr<DIISManager> diis_manager(new DIISManager(MCSCF_Parameters_->diis_max_vecs,
+  std::shared_ptr<DIISManager> diis_manager(new DIISManager(MCSCF_Parameters_->diis_max_vecs,
                       "MCSCF DIIS", DIISManager::OldestAdded, DIISManager::InCore));
   diis_manager->set_error_vector_size(1, DIISEntry::Matrix, x.get());
   diis_manager->set_vector_size(1, DIISEntry::Matrix, x.get());

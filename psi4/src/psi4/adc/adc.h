@@ -40,10 +40,6 @@
 #define ANGL_TOL_      50.0
 #define CUTOFF_DENS_   1e-6
 
-namespace boost {
-    template<class T> class shared_ptr;
-}
-
 namespace psi{
 
 class Options;
@@ -52,8 +48,8 @@ class Chkpt;
 class Matrix;
 class Vector;
 class IntegralTransform;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
-typedef boost::shared_ptr<Vector> SharedVector;
+typedef std::shared_ptr<Matrix> SharedMatrix;
+typedef std::shared_ptr<Vector> SharedVector;
 
 namespace adc{
 

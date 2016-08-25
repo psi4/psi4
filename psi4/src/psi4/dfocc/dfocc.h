@@ -335,10 +335,10 @@ protected:
     void trans_corr();
     void trans_ref();
     void trans_mp2();
-    void formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero);
-    void formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero);
-    void b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero);
-    void b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero);
+    void formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
+    void formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
+    void b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
+    void b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
     void b_oo();
     void b_ov();
     void b_vv();
@@ -578,11 +578,11 @@ protected:
     int get_rotation_block(string rotblock);
 
     // DIIS
-    boost::shared_ptr<DIISManager> ccsdDiisManager;
-    boost::shared_ptr<DIISManager> ccsdDiisManagerAA;
-    boost::shared_ptr<DIISManager> ccsdDiisManagerBB;
-    boost::shared_ptr<DIISManager> ccsdDiisManagerAB;
-    boost::shared_ptr<DIISManager> ccsdlDiisManager;
+    std::shared_ptr<DIISManager> ccsdDiisManager;
+    std::shared_ptr<DIISManager> ccsdDiisManagerAA;
+    std::shared_ptr<DIISManager> ccsdDiisManagerBB;
+    std::shared_ptr<DIISManager> ccsdDiisManagerAB;
+    std::shared_ptr<DIISManager> ccsdlDiisManager;
 
     // Gradients
     std::map<std::string, SharedMatrix> gradients;

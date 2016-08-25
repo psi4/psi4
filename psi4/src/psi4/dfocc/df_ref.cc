@@ -91,21 +91,21 @@ void DFOCC::df_ref()
   // 1.  read scf 3-index integrals from disk
 
   // get ntri from sieve
-  boost::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
+  std::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
   const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
   long int ntri_cd = function_pairs.size();
 
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "DF") {
           outfile->Printf("\tReading DF integrals from disk ...\n");
-	  boost::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(), "BASIS", options_.get_str("BASIS"));
-          boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
+	  std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(), "BASIS", options_.get_str("BASIS"));
+          std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
               "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"), primary->has_puream());
-          boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+          std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
           nQ_ref = auxiliary->nbf();
 
           // ntri comes from sieve above
-          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
+          std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
           double** Qmnp = Qmn->pointer();
           psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
@@ -141,7 +141,7 @@ void DFOCC::df_ref()
           // ntri comes from sieve above
           psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
           psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_ref, sizeof(long int));
-          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
+          std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
           double** Qmnp = Qmn->pointer();
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
           psio_->close(PSIF_DFSCF_BJ,1);
@@ -165,11 +165,11 @@ void DFOCC::df_ref()
   //else if (read_scf_3index == "FALSE") {
   else {
     // Read in the basis set informations
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
             "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
         "BASIS", options_.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // Read number of auxilary basis
     nQ_ref = auxiliary_->nbf();
@@ -192,7 +192,7 @@ void DFOCC::df_ref()
 //=======================================================
 //          form J(P,Q)^-1/2
 //=======================================================
-void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
+void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero)
 {
     int nthreads = 1;
     #ifdef _OPENMP
@@ -203,11 +203,11 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
     J_mhalf = block_matrix(nQ_ref, nQ_ref);
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,zero,auxiliary_,zero));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,zero,auxiliary_,zero));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
         buffer.push_back(Jint[t]->buffer());
     }
 
@@ -249,8 +249,8 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
 
     /*
     // Create integral factories for the RI basis
-    boost::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
-    boost::shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
+    std::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
+    std::shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
 
     double **J = block_matrix(nQ_ref, nQ_ref);
     J_mhalf = block_matrix(nQ_ref, nQ_ref);
@@ -317,7 +317,7 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
 //=======================================================
 //          form b(Q, mu nu)
 //=======================================================
-void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
+void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero)
 {
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
     double** Ap = block_matrix(nQ_ref, nso2_);
@@ -328,7 +328,7 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
         nthreads = omp_get_max_threads();
     #endif
 
-    boost::shared_ptr<ERISieve> sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
+    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -351,11 +351,11 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
         buffer.push_back(eri[t]->buffer());
     }
 
@@ -414,8 +414,8 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
     }
 
     /*
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-    boost::shared_ptr<TwoBodyAOInt> eri(fact->eri());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 
     for (int P = 0; P < auxiliary_->nshell(); P++) {

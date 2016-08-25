@@ -125,12 +125,12 @@ public:
 
 class GaussianFundamental : public Fjt {
 protected:
-    boost::shared_ptr<CorrelationFactor> cf_;
+    std::shared_ptr<CorrelationFactor> cf_;
     double rho_;
     double* value_;
 
 public:
-    GaussianFundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~GaussianFundamental();
 
     virtual double* values(int J, double T) = 0;
@@ -142,7 +142,7 @@ public:
      */
 class F12Fundamental : public GaussianFundamental {
 public:
-    F12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12Fundamental();
     double* values(int J, double T);
 };
@@ -152,30 +152,30 @@ public:
  */
 class F12ScaledFundamental : public GaussianFundamental {
 public:
-    F12ScaledFundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12ScaledFundamental();
     double* values(int J, double T);
 };
 
 class F12SquaredFundamental : public GaussianFundamental {
 public:
-    F12SquaredFundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12SquaredFundamental();
     double* values(int J, double T);
 };
 
 class F12G12Fundamental : public GaussianFundamental {
 private:
-    boost::shared_ptr<FJT> Fm_;
+    std::shared_ptr<FJT> Fm_;
 public:
-    F12G12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12G12Fundamental();
     double* values(int J, double T);
 };
 
 class F12DoubleCommutatorFundamental : public GaussianFundamental {
 public:
-    F12DoubleCommutatorFundamental(boost::shared_ptr<CorrelationFactor> cf, int max);
+    F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12DoubleCommutatorFundamental();
     double* values(int J, double T);
 };
@@ -183,7 +183,7 @@ public:
 class ErfFundamental : public GaussianFundamental {
 private:
     double omega_;
-    boost::shared_ptr<FJT> boys_;
+    std::shared_ptr<FJT> boys_;
 public:
     ErfFundamental(double omega, int max);
     virtual ~ErfFundamental();
@@ -194,7 +194,7 @@ public:
 class ErfComplementFundamental : public GaussianFundamental {
 private:
     double omega_;
-    boost::shared_ptr<FJT> boys_;
+    std::shared_ptr<FJT> boys_;
 public:
     ErfComplementFundamental(double omega, int max);
     virtual ~ErfComplementFundamental();

@@ -39,7 +39,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, Options &options,
+std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options,
                                             int freq_irrep_only) {
 
   outfile->Printf("\n-------------------------------------------------------------\n\n");
@@ -56,9 +56,9 @@ std::vector< SharedMatrix > fd_geoms_freq_1(boost::shared_ptr<Molecule> mol, Opt
   outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
-  boost::shared_ptr<MatrixFactory> fact;
-  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
-  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  std::shared_ptr<MatrixFactory> fact;
+  pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
   bool noextern = external ? false : true;
   CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
 

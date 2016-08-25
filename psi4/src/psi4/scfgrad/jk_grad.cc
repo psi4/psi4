@@ -46,7 +46,7 @@ using namespace psi;
 namespace psi {
 namespace scfgrad {
 
-JKGrad::JKGrad(int deriv, boost::shared_ptr<BasisSet> primary) :
+JKGrad::JKGrad(int deriv, std::shared_ptr<BasisSet> primary) :
     deriv_(deriv), primary_(primary)
 {
     common_init();
@@ -54,13 +54,13 @@ JKGrad::JKGrad(int deriv, boost::shared_ptr<BasisSet> primary) :
 JKGrad::~JKGrad()
 {
 }
-boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, boost::shared_ptr<BasisSet> primary)
+std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary)
 {
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE") == "DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
                                                                                 "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
                                                                                 options.get_str("BASIS"), primary->has_puream());
 
@@ -79,7 +79,7 @@ boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, boost::shared_ptr<Basi
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<JKGrad>(jk);
+        return std::shared_ptr<JKGrad>(jk);
     } else if (options.get_str("SCF_TYPE") == "DIRECT" || options.get_str("SCF_TYPE") == "PK" || options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
 
         DirectJKGrad* jk = new DirectJKGrad(deriv,primary);
@@ -96,7 +96,7 @@ boost::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, boost::shared_ptr<Basi
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<JKGrad>(jk);
+        return std::shared_ptr<JKGrad>(jk);
 
     } else {
         throw PSIEXCEPTION("JKGrad::build_JKGrad: Unknown SCF Type");
@@ -121,7 +121,7 @@ void JKGrad::common_init()
     do_wK_ = false;
     omega_ = 0.0;
 }
-DFJKGrad::DFJKGrad(int deriv, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary) :
+DFJKGrad::DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary) :
     JKGrad(deriv,primary), auxiliary_(auxiliary)
 {
     common_init();
@@ -185,7 +185,7 @@ void DFJKGrad::compute_gradient()
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
@@ -309,10 +309,10 @@ void DFJKGrad::build_Amn_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
     }
 
     // => Master Loop <= //
@@ -482,10 +482,10 @@ void DFJKGrad::build_Amn_lr_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_)));
     }
 
     // => Master Loop <= //
@@ -589,7 +589,7 @@ void DFJKGrad::build_AB_inv_terms()
 
     // => Fitting Metric Full Inverse <= //
 
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
     metric->form_full_eig_inverse();
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
@@ -871,10 +871,10 @@ void DFJKGrad::build_AB_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1115,10 +1115,10 @@ void DFJKGrad::build_Amn_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -1439,10 +1439,10 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
     }
 
     // => Temporary Gradients <= //
@@ -1642,7 +1642,7 @@ void DFJKGrad::compute_hessian()
     }
 
 
-    boost::shared_ptr<Molecule> mol = primary_->molecule();
+    std::shared_ptr<Molecule> mol = primary_->molecule();
 
     int np = auxiliary_->nbf();
     int nso = primary_->nbf();
@@ -1657,7 +1657,7 @@ void DFJKGrad::compute_hessian()
     double **Cbp = Cb_->pointer();
 
     int na = Ca_->colspi()[0];
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
     metric->form_full_eig_inverse();
     SharedMatrix PQ = metric->get_metric();
     double** PQp = PQ->pointer();
@@ -1678,10 +1678,10 @@ void DFJKGrad::compute_hessian()
     double **deijp = deij->pointer();
 
     // Build some integral factories
-    boost::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    boost::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
-    boost::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-    boost::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+    std::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+    std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
+    std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
     SharedMatrix Amn(new Matrix("(A|mn)", np, nso*nso));
     SharedMatrix Ami(new Matrix("(A|mi)", np, nso*na));
     SharedMatrix Aij(new Matrix("(A|ij)", np, na*na));
@@ -2334,7 +2334,7 @@ void DFJKGrad::compute_hessian()
     hessians_["Coulomb"]->scale(0.5);
 }
 
-DirectJKGrad::DirectJKGrad(int deriv, boost::shared_ptr<BasisSet> primary) :
+DirectJKGrad::DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary) :
     JKGrad(deriv,primary)
 {
     common_init();
@@ -2387,16 +2387,16 @@ void DirectJKGrad::compute_gradient()
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     if (do_J_ || do_K_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri(1)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri(1)));
         }
-        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute1(ints);
+        std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         if (do_J_) {
             gradients_["Coulomb"]->copy(vals["J"]);
         }
@@ -2405,22 +2405,22 @@ void DirectJKGrad::compute_gradient()
         }
     }
     if (do_wK_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,1)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,1)));
         }
-        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute1(ints);
+        std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
         gradients_["Exchange,LR"]->copy(vals["K"]);
     }
 }
-std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints)
+std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
 {
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();
 
-    std::vector<boost::shared_ptr<Matrix> > Jgrad;
-    std::vector<boost::shared_ptr<Matrix> > Kgrad;
+    std::vector<std::shared_ptr<Matrix> > Jgrad;
+    std::vector<std::shared_ptr<Matrix> > Kgrad;
     for (int thread = 0; thread < nthreads; thread++) {
         Jgrad.push_back(SharedMatrix(new Matrix("JGrad",natom,3)));
         Kgrad.push_back(SharedMatrix(new Matrix("KGrad",natom,3)));
@@ -2609,7 +2609,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute1(std::ve
     Jgrad[0]->scale(0.5);
     Kgrad[0]->scale(0.5);
 
-    std::map<std::string, boost::shared_ptr<Matrix> > val;
+    std::map<std::string, std::shared_ptr<Matrix> > val;
     val["J"] = Jgrad[0];
     val["K"] = Kgrad[0];
     return val;
@@ -2636,16 +2636,16 @@ void DirectJKGrad::compute_hessian()
     }
 
     // => Build ERI Sieve <= //
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     if (do_J_ || do_K_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri(2)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri(2)));
         }
-        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute2(ints);
+        std::map<std::string, std::shared_ptr<Matrix> > vals = compute2(ints);
         if (do_J_) {
             hessians_["Coulomb"]->copy(vals["J"]);
         }
@@ -2654,22 +2654,22 @@ void DirectJKGrad::compute_hessian()
         }
     }
     if (do_wK_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,2)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,2)));
         }
-        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute2(ints);
+        std::map<std::string, std::shared_ptr<Matrix> > vals = compute2(ints);
         hessians_["Exchange,LR"]->copy(vals["K"]);
     }
 }
-std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints)
+std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
 {
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();
 
-    std::vector<boost::shared_ptr<Matrix> > Jhess;
-    std::vector<boost::shared_ptr<Matrix> > Khess;
+    std::vector<std::shared_ptr<Matrix> > Jhess;
+    std::vector<std::shared_ptr<Matrix> > Khess;
     for (int thread = 0; thread < nthreads; thread++) {
         Jhess.push_back(SharedMatrix(new Matrix("JHess",3*natom,3*natom)));
         Khess.push_back(SharedMatrix(new Matrix("KHess",3*natom,3*natom)));
@@ -3189,7 +3189,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute2(std::ve
         }
     }
 
-    std::map<std::string, boost::shared_ptr<Matrix> > val;
+    std::map<std::string, std::shared_ptr<Matrix> > val;
     val["J"] = Jhess[0];
     val["K"] = Khess[0];
     return val;

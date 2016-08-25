@@ -91,7 +91,7 @@ set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
 #These packages don't believe in configuration files...
-foreach(pkg in boost pcmsolver chemps2)
+foreach(pkg in pybind11 pcmsolver chemps2)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
       set(${PKG}_ROOT ${PSI4_STAGE_EX}/${pkg})
@@ -124,9 +124,10 @@ ExternalProject_Add(psi4_core
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-              -DBOOST_ROOT=${BOOST_ROOT}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DCHEMPS2_ROOT=${CHEMPS2_ROOT}
+              -DPYBIND11_ROOT=${PYBIND11_ROOT}
+              -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
@@ -156,6 +157,7 @@ add_dependencies(psi4_core ambit_external
                            gdma_external
                            libint_external
                            pcmsolver_external
+                           pybind11_external
 )
 add_subdirectory(doc)
 enable_testing()

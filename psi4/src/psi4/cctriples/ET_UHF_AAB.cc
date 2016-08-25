@@ -168,7 +168,7 @@ double ET_UHF_AAB(void)
 	    }
 	  }
 	}
-  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf( "Spin Case: AAB\n");
   printer->Printf( "Number of IJK combintions: %d\n", nijk);

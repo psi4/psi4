@@ -39,7 +39,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_1_0(boost::shared_ptr<Molecule> mol, Options &options) {
+std::vector< SharedMatrix > fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options) {
 
   outfile->Printf("\n-------------------------------------------------------------\n\n");
 
@@ -57,9 +57,9 @@ std::vector< SharedMatrix > fd_geoms_1_0(boost::shared_ptr<Molecule> mol, Option
   outfile->Printf("\tNumber of atoms is %d.\n", Natom);
 
   // Get SALCS from libmints
-  boost::shared_ptr<MatrixFactory> fact;
-  boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
-  boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+  std::shared_ptr<MatrixFactory> fact;
+  pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
   bool noextern = external ? false : true;
   CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
 

@@ -53,7 +53,7 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
+
 
 namespace psi {
 namespace scfgrad {
@@ -150,8 +150,8 @@ SharedMatrix SCFGrad::compute_gradient()
     }
 
     // => Potential/Functional <= //
-    boost::shared_ptr<SuperFunctional> functional;
-    boost::shared_ptr<VBase> potential;
+    std::shared_ptr<SuperFunctional> functional;
+    std::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
         potential = VBase::build_V(basisset_, options_, "RV");
@@ -189,7 +189,7 @@ SharedMatrix SCFGrad::compute_gradient()
         double** Tp = gradients["Kinetic"]->pointer();
 
         // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -271,10 +271,10 @@ SharedMatrix SCFGrad::compute_gradient()
             #endif
 
             // Potential derivatives
-            std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+            std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
             std::vector<SharedMatrix> Vtemps;
             for (int t = 0; t < threads; t++) {
-                Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+                Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
                 Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
             }
 
@@ -334,8 +334,8 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_off("Grad: V");
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
     if (external) {
         gradient_terms.push_back("External Potential");
         timer_on("Grad: External");
@@ -380,7 +380,7 @@ SharedMatrix SCFGrad::compute_gradient()
         double** Sp = gradients["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -449,7 +449,7 @@ SharedMatrix SCFGrad::compute_gradient()
     // => Two-Electron Gradient <= //
     timer_on("Grad: JK");
 
-    boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_);
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
@@ -609,8 +609,8 @@ SharedMatrix SCFGrad::compute_hessian()
     }
 
     // => Potential/Functional <= //
-    boost::shared_ptr<SuperFunctional> functional;
-    boost::shared_ptr<VBase> potential;
+    std::shared_ptr<SuperFunctional> functional;
+    std::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
         potential = VBase::build_V(basisset_, options_, "RV");
@@ -650,7 +650,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double** Vp = hessians["Potential"]->pointer();
 
         // Potential energy derivatives
-        boost::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
+        std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
         const double* buffer = Vint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -932,7 +932,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double** Tp = hessians["Kinetic"]->pointer();
 
         // Kinetic energy derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
         const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -1105,7 +1105,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double** Sp = hessians["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
@@ -1244,7 +1244,7 @@ SharedMatrix SCFGrad::compute_hessian()
 
     timer_on("Hess: JK");
 
-    boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_);
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);

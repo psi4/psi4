@@ -37,7 +37,7 @@
 #include "psi4/psi4-dec.h"
 #include <cstdio>
 #include "psi4/libparallel/ParallelPrinter.h"
-using namespace boost;
+;
 using namespace psi;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,13 +128,13 @@ void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SOBasisSet::SOBasisSet(const boost::shared_ptr<BasisSet> &basis, const IntegralFactory *integral)
+SOBasisSet::SOBasisSet(const std::shared_ptr<BasisSet> &basis, const IntegralFactory *integral)
     : basis_(basis), integral_(integral)
 {
     init();
 }
 
-SOBasisSet::SOBasisSet(const boost::shared_ptr<BasisSet> &basis, const boost::shared_ptr<IntegralFactory> &integral)
+SOBasisSet::SOBasisSet(const std::shared_ptr<BasisSet> &basis, const std::shared_ptr<IntegralFactory> &integral)
     : basis_(basis), integral_(integral.get())
 {
     init();
@@ -144,7 +144,7 @@ void SOBasisSet::init()
 {
     int i,j,k;
 
-    boost::shared_ptr<Molecule> mol = basis_->molecule();
+    std::shared_ptr<Molecule> mol = basis_->molecule();
 
     CharacterTable ct = mol->point_group()->char_table();
     nirrep_ = ct.nirrep();
@@ -212,7 +212,7 @@ void SOBasisSet::init()
 
     bool include_pure_transform = true;
 
-    petite_ = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_, include_pure_transform));
+    petite_ = std::shared_ptr<PetiteList>(new PetiteList(basis_, integral_, include_pure_transform));
 
 //    petite_->print();
 
@@ -389,8 +389,8 @@ int SOBasisSet::nfunction(int ishell) const
 void SOBasisSet::print(std::string out) const
 {
     int i,j,k;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf( "  SOBasis:\n");
     printer->Printf( "    nshell(SO) = %d\n", nshell_);
     printer->Printf( "    nirrep = %d\n", nirrep_);
@@ -473,18 +473,18 @@ void SOBasisSet::print(std::string out) const
     }
 }
 
-boost::shared_ptr<BasisSet> SOBasisSet::basis() const
+std::shared_ptr<BasisSet> SOBasisSet::basis() const
 {
     return basis_;
 }
 
 Dimension SOBasisSet::dimension() const
 {
-    boost::shared_ptr<PetiteList> petite = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    std::shared_ptr<PetiteList> petite = std::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
     return petite->SO_basisdim();
 }
 
-const boost::shared_ptr<PetiteList> SOBasisSet::petite_list() const
+const std::shared_ptr<PetiteList> SOBasisSet::petite_list() const
 {
     return petite_;
 }

@@ -57,7 +57,7 @@ using namespace std;
 using namespace psi;
 
 namespace psi {
-DirectJK::DirectJK(boost::shared_ptr<BasisSet> primary) :
+DirectJK::DirectJK(std::shared_ptr<BasisSet> primary) :
    JK(primary)
 {
     common_init();
@@ -89,46 +89,46 @@ void DirectJK::print_header() const
 }
 void DirectJK::preiterations()
 {
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 }
 void DirectJK::compute_JK()
 {
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     if (do_wK_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
         }
         // TODO: Fast K algorithm
         if (do_J_) {
             build_JK(ints,D_ao_,J_ao_,wK_ao_);
         } else {
-            std::vector<boost::shared_ptr<Matrix> > temp;
+            std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
             }
             build_JK(ints,D_ao_,temp,wK_ao_);
         }
     }
 
     if (do_J_ || do_K_) {
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erd_eri()));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erd_eri()));
         }
         if (do_J_ && do_K_) {
             build_JK(ints,D_ao_,J_ao_,K_ao_);
         } else if (do_J_) {
-            std::vector<boost::shared_ptr<Matrix> > temp;
+            std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
             }
             build_JK(ints,D_ao_,J_ao_,temp);
         } else {
-            std::vector<boost::shared_ptr<Matrix> > temp;
+            std::vector<std::shared_ptr<Matrix> > temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+                temp.push_back(std::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
             }
             build_JK(ints,D_ao_,temp,K_ao_);
         }
@@ -139,10 +139,10 @@ void DirectJK::postiterations()
 {
     sieve_.reset();
 }
-void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
-                        std::vector<boost::shared_ptr<Matrix> >& D,
-                        std::vector<boost::shared_ptr<Matrix> >& J,
-                        std::vector<boost::shared_ptr<Matrix> >& K)
+void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
+                        std::vector<std::shared_ptr<Matrix> >& D,
+                        std::vector<std::shared_ptr<Matrix> >& J,
+                        std::vector<std::shared_ptr<Matrix> >& K)
 {
     // => Zeroing <= //
 
@@ -235,11 +235,11 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
 
     // => Intermediate Buffers <= //
 
-    std::vector<std::vector<boost::shared_ptr<Matrix> > > JKT;
+    std::vector<std::vector<std::shared_ptr<Matrix> > > JKT;
     for (int thread = 0; thread < nthread; thread++) {
-        std::vector<boost::shared_ptr<Matrix> > JK2;
+        std::vector<std::shared_ptr<Matrix> > JK2;
         for (size_t ind = 0; ind < D.size(); ind++) {
-            JK2.push_back(boost::shared_ptr<Matrix>(new Matrix("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task)));
+            JK2.push_back(std::shared_ptr<Matrix>(new Matrix("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task)));
         }
         JKT.push_back(JK2);
     }
@@ -573,7 +573,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       boost::shared_ptr<OutFile> printer(new OutFile("bench.dat",APPEND));
+       std::shared_ptr<OutFile> printer(new OutFile("bench.dat",APPEND));
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
@@ -584,7 +584,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
 
 
 
-DirectJK::DirectJK(boost::shared_ptr<BasisSet> primary) :
+DirectJK::DirectJK(std::shared_ptr<BasisSet> primary) :
    JK(primary)
 {
     common_init();
@@ -612,11 +612,11 @@ void DirectJK::print_header() const
 }
 void DirectJK::preiterations()
 {
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
-    factory_= boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    factory_= std::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
     eri_.clear();
     for (int thread = 0; thread < omp_nthread_; thread++) {
-        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->erd_eri()));
+        eri_.push_back(std::shared_ptr<TwoBodyAOInt>(factory_->erd_eri()));
     }
 }
 void DirectJK::compute_JK()

@@ -49,15 +49,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-#include <boost/python.hpp>
-#include <boost/python/dict.hpp>
-#include <boost/python/tuple.hpp>
+#include <pybind11/pybind11.h>
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
@@ -68,6 +61,7 @@
 #include "civect.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libmints/vector.h"
+
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);
@@ -586,16 +580,16 @@ void CIvect::divide(SharedCIVector denom, int tvec, int ovec) {
   }
 }
 
-boost::python::dict CIvect::numpy_array_interface() {
+pybind11::dict CIvect::numpy_array_interface() {
     // Why is this so complex other places?
     if (!buf_locked_)
         throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
-    boost::python::dict rv;
-    rv["shape"] = boost::python::make_tuple(buffer_size_);
-    rv["data"] = boost::python::make_tuple((long)buffer_, false);
+    pybind11::dict rv;
+    rv["shape"] = pybind11::make_tuple(buffer_size_);
+    rv["data"] = pybind11::make_tuple((long)buffer_, false);
     std::string typestr = is_big_endian() ? ">" : "<";
     typestr += "f" + psi::to_string((int)sizeof(double));
-    rv["typestr"] = typestr;
+    rv["typestr"] = pybind11::str(typestr);
     return rv;
 }
 

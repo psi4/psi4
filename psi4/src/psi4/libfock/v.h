@@ -57,13 +57,13 @@ protected:
     /// Options object, used to build grid
     Options& options_;
     /// Basis set used in the integration
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Desired superfunctional kernal
-    boost::shared_ptr<SuperFunctional> functional_;
+    std::shared_ptr<SuperFunctional> functional_;
     /// Point function computer (densities, gammas, basis values)
-    boost::shared_ptr<PointFunctions> properties_;
+    std::shared_ptr<PointFunctions> properties_;
     /// Integration grid, built by KSPotential
-    boost::shared_ptr<DFTGrid> grid_;
+    std::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
 
@@ -104,18 +104,18 @@ protected:
     /// Set things up
     void common_init();
 public:
-    VBase(boost::shared_ptr<SuperFunctional> functional,
-        boost::shared_ptr<BasisSet> primary,
+    VBase(std::shared_ptr<SuperFunctional> functional,
+        std::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~VBase();
 
-    static boost::shared_ptr<VBase> build_V(boost::shared_ptr<BasisSet> primary,
+    static std::shared_ptr<VBase> build_V(std::shared_ptr<BasisSet> primary,
                                             Options& options, const std::string& type = "RV");
 
-    boost::shared_ptr<BasisSet> basis() const { return primary_; }
-    boost::shared_ptr<SuperFunctional> functional() const { return functional_; }
-    boost::shared_ptr<PointFunctions> properties() const { return properties_; }
-    boost::shared_ptr<DFTGrid> grid() const { return grid_; }
+    std::shared_ptr<BasisSet> basis() const { return primary_; }
+    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
+    std::shared_ptr<PointFunctions> properties() const { return properties_; }
+    std::shared_ptr<DFTGrid> grid() const { return grid_; }
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
     /// Grab this, clear, and push Cocc matrices (with symmetry) to change GS density
@@ -149,8 +149,8 @@ protected:
     virtual void compute_V();
 
 public:
-    RV(boost::shared_ptr<SuperFunctional> functional,
-        boost::shared_ptr<BasisSet> primary,
+    RV(std::shared_ptr<SuperFunctional> functional,
+        std::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~RV();
 
@@ -170,8 +170,8 @@ protected:
     virtual void compute_V();
 
 public:
-    UV(boost::shared_ptr<SuperFunctional> functional,
-        boost::shared_ptr<BasisSet> primary,
+    UV(std::shared_ptr<SuperFunctional> functional,
+        std::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~UV();
 
@@ -191,8 +191,8 @@ protected:
     virtual void compute_V();
 
 public:
-    RK(boost::shared_ptr<SuperFunctional> functional,
-        boost::shared_ptr<BasisSet> primary,
+    RK(std::shared_ptr<SuperFunctional> functional,
+        std::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~RK();
 
@@ -207,8 +207,8 @@ protected:
     virtual void compute_V();
 
 public:
-    UK(boost::shared_ptr<SuperFunctional> functional,
-        boost::shared_ptr<BasisSet> primary,
+    UK(std::shared_ptr<SuperFunctional> functional,
+        std::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~UK();
 

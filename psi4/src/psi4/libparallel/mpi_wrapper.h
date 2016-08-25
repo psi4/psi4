@@ -32,7 +32,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "parallel.h"
 #include "libparallel.h"
@@ -104,7 +104,7 @@ namespace psi {
        *  created by Psi and the last thing destroyed by Psi.
        *
        */
-      boost::shared_ptr<boost::mpi::environment> Env;
+      std::shared_ptr<boost::mpi::environment> Env;
 
       ///This is a mapping between communicator names and communicators.
       std::map<std::string, boost::mpi::communicator> Communicators;

@@ -58,8 +58,8 @@ void Functional::set_parameter(const std::string& key, double val)
 void Functional::print(std::string out, int level) const
 {
     if (level < 1) return;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf( "   => %s Functional <=\n\n", name_.c_str());
 
     printer->Printf( "%s", description_.c_str());

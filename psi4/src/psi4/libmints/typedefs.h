@@ -28,6 +28,8 @@
 #ifndef libmints_typedefs_h
 #define libmints_typedefs_h
 
+#include <memory> // for shared_ptr
+
 // Handy mints timer macros, requires libqt to be included
 #ifdef MINTS_TIMER
 #   include "psi4/libqt/qt.h"
@@ -38,18 +40,14 @@
 #   define mints_timer_off(a)
 #endif
 
-namespace boost {
-template<typename T> class shared_ptr;
-}
-
 // Forward declare psi
 namespace psi {
 class Matrix;
 class Vector;
 class Wavefunction;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
-typedef boost::shared_ptr<Vector> SharedVector;
-typedef boost::shared_ptr<Wavefunction> SharedWavefunction;
+using SharedMatrix = std::shared_ptr<Matrix>;
+using SharedVector = std::shared_ptr<Vector>;
+using SharedWavefunction =  std::shared_ptr<Wavefunction>;
 
 // Useful when working with SO-TEIs
 template<typename T>

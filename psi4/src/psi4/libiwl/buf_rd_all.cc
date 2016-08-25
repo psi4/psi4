@@ -49,8 +49,8 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
     Label *lblptr;
     Value *valptr;
     int idx, p, q, r, s, pq, rs, pqrs;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     lblptr = labels_;
     valptr = values_;
 
@@ -119,8 +119,8 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
     int *, int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Label *lblptr;
     Value *valptr;
@@ -211,8 +211,8 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
                    int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
    int lastbuf;
   Label *lblptr;
   Value *valptr;
@@ -301,8 +301,8 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *,
                    int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
 
   int lastbuf;
   Label *lblptr;

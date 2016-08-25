@@ -53,7 +53,7 @@ namespace psi { namespace cclambda {
 
 void init_io(void);
 void title(void);
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn);
+void get_moinfo(std::shared_ptr<Wavefunction> wfn);
 void get_params(Options& options);
 void cleanup(void);
 void init_amps(struct L_Params L_params);
@@ -106,12 +106,12 @@ void local_done(void);
 
 // Forward declaration to call cctriples
 namespace psi { namespace cctriples {
-PsiReturnType cctriples(boost::shared_ptr<Wavefunction> ref_wfn, Options &options);
+PsiReturnType cctriples(std::shared_ptr<Wavefunction> ref_wfn, Options &options);
 }}
 
 namespace psi { namespace cclambda {
 
-CCLambdaWavefunction::CCLambdaWavefunction(boost::shared_ptr<Wavefunction>
+CCLambdaWavefunction::CCLambdaWavefunction(std::shared_ptr<Wavefunction>
 reference_wavefunction, Options &options)
     : Wavefunction(options)
 {

@@ -64,7 +64,7 @@ protected:
 
 public:
     /// Constructor. Assumes nuclear centers/charges as the potential
-    PotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     virtual ~PotentialInt();
 
     /// Computes the first derivatives and stores them in result
@@ -93,8 +93,8 @@ class PotentialSOInt : public OneBodySOInt
 {
     int natom_;
 public:
-    PotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
-    PotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
+    PotentialSOInt(const std::shared_ptr<OneBodyAOInt>& , const std::shared_ptr<IntegralFactory> &);
+    PotentialSOInt(const std::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
 
     /**
      * Computes one-electron integral derivative matrices.

@@ -24,49 +24,42 @@
  *
  * @END LICENSE
  */
-#include <stdexcept>
-#include <boost/foreach.hpp>
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-#include <boost/python/tuple.hpp>
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
-//#include "mints.h"
-//#include "psi4/compiler.h"
 
-using namespace boost;
-using namespace psi;
+#include <pybind11/pybind11.h>
 
-static void transform1e_1(int am, SphericalTransformIter& sti, double *s, double *t, int nl)
+#include <stdexcept>
+
+namespace psi {
+
+namespace {
+static void transform1e_1(int am, SphericalTransformIter &sti, double *s, double *t, int nl)
 {
-    memset(t,0,INT_NPURE(am)*nl*sizeof(double));
+    memset(t, 0, INT_NPURE(am) * nl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex()*nl;
-        double *tptr = t + sti.pureindex()*nl;
+        double *sptr = s + sti.cartindex() * nl;
+        double *tptr = t + sti.pureindex() * nl;
         double coef = sti.coef();
 
 //        outfile->Printf( "1e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
-        for(int l=0; l<nl; l++) {
+        for (int l = 0; l < nl; l++) {
 //            outfile->Printf( "\ttptr = %8.5f coef = %8.5f sptr = %8.5f\n", *tptr, coef, *sptr);
             *(tptr++) += coef * *(sptr++);
         }
     }
 }
 
-static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double *t, int nk, int nl)
+static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double *t, int nk, int nl)
 {
     const int sl = nl;
     const int tl = INT_NPURE(am);
 
-    memset(t,0,nk*tl*sizeof(double));
+    memset(t, 0, nk * tl * sizeof(double));
 
     for (sti.first(); !sti.is_done(); sti.next()) {
         double *sptr = s + sti.cartindex();
@@ -75,19 +68,19 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
 
 //        outfile->Printf( "1e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
-        for(int k=0; k<nk; k++,sptr+=sl,tptr+=tl) {
+        for (int k = 0; k < nk; k++, sptr += sl, tptr += tl) {
 //            outfile->Printf( "\ttptr = %8.5f coef = %8.5f sptr = %8.5f\n", *tptr, coef, *sptr);
             *(tptr) += coef * *(sptr);
         }
     }
 }
+} // namespace anonmyous
 
-OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv)
-    : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1),
-    pybuffer_(&buffer_, true)
-
+OneBodyAOInt::OneBodyAOInt(std::vector <SphericalTransform> &spherical_transforms, std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, int deriv)
+        : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1),
+          pybuffer_(&buffer_, true)
 {
-	enable_pybuffer_ = false;
+    enable_pybuffer_ = false;
     force_cartesian_ = false;
     buffer_ = 0;
     natom_ = bs1_->molecule()->natom();
@@ -104,22 +97,22 @@ OneBodyAOInt::~OneBodyAOInt()
     delete[] target_;
 }
 
-boost::shared_ptr<BasisSet> OneBodyAOInt::basis()
+std::shared_ptr <BasisSet> OneBodyAOInt::basis()
 {
     return bs1_;
 }
 
-boost::shared_ptr<BasisSet> OneBodyAOInt::basis1()
+std::shared_ptr <BasisSet> OneBodyAOInt::basis1()
 {
     return bs1_;
 }
 
-boost::shared_ptr<BasisSet> OneBodyAOInt::basis2()
+std::shared_ptr <BasisSet> OneBodyAOInt::basis2()
 {
     return bs2_;
 }
 
-const double* OneBodyAOInt::buffer() const
+const double *OneBodyAOInt::buffer() const
 {
     return buffer_;
 }
@@ -129,12 +122,12 @@ bool OneBodyAOInt::cloneable()
     return false;
 }
 
-OneBodyAOInt* OneBodyAOInt::clone()
+OneBodyAOInt *OneBodyAOInt::clone()
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyAOInt::normalize_am(const GaussianShell& /*s1*/, const GaussianShell& /*s2*/, int /*nchunk*/)
+void OneBodyAOInt::normalize_am(const GaussianShell & /*s1*/, const GaussianShell & /*s2*/, int /*nchunk*/)
 {
     // ACS removed this; the normalize function just returns 1.0
 //    // Integrals are done. Normalize for angular momentum
@@ -165,10 +158,10 @@ void OneBodyAOInt::normalize_am(const GaussianShell& /*s1*/, const GaussianShell
 //    }
 }
 
-void OneBodyAOInt::pure_transform(const GaussianShell& s1,
-                                  const GaussianShell& s2, int chunks)
+void OneBodyAOInt::pure_transform(const GaussianShell &s1,
+                                  const GaussianShell &s2, int chunks)
 {
-    for (int chunk=0; chunk<chunks; ++chunk) {
+    for (int chunk = 0; chunk < chunks; ++chunk) {
         const int am1 = s1.am();
         const int is_pure1 = s1.is_pure() && am1 > 0;
         const int ncart1 = s1.ncartesian();
@@ -185,28 +178,28 @@ void OneBodyAOInt::pure_transform(const GaussianShell& s1,
         // Memory pointers that aid in transform
         double *source1, *target1;
         double *source2, *target2;
-        double *source = buffer_ + (chunk*ncart12);
+        double *source = buffer_ + (chunk * ncart12);
         double *target = target_;
         double *tmpbuf = tformbuf_;
 
-        int transform_index = 2*is_pure1 + is_pure2;
-        switch(transform_index) {
-        case 0:
-            break;
-        case 1:
-            source2 = source;
-            target2 = target;
-            break;
-        case 2:
-            source1 = source;
-            target1 = target;
-            break;
-        case 3:
-            source2 = source;
-            target2 = tmpbuf;
-            source1 = tmpbuf;
-            target1 = target;
-            break;
+        int transform_index = 2 * is_pure1 + is_pure2;
+        switch (transform_index) {
+            case 0:
+                break;
+            case 1:
+                source2 = source;
+                target2 = target;
+                break;
+            case 2:
+                source1 = source;
+                target1 = target;
+                break;
+            case 3:
+                source2 = source;
+                target2 = tmpbuf;
+                source1 = tmpbuf;
+                target1 = target;
+                break;
         }
 
         if (is_pure2) {
@@ -219,43 +212,42 @@ void OneBodyAOInt::pure_transform(const GaussianShell& s1,
         }
 
         if (transform_index) {
-            memcpy(buffer_+(chunk*nbf12), target_, sizeof(double) * nbf12);
+            memcpy(buffer_ + (chunk * nbf12), target_, sizeof(double) * nbf12);
         }
     }
 }
 
 void OneBodyAOInt::compute_shell(int sh1, int sh2)
 {
-    const GaussianShell& s1 = bs1_->shell(sh1);
-    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell &s1 = bs1_->shell(sh1);
+    const GaussianShell &s2 = bs2_->shell(sh2);
 
     // Call the child's compute_pair method, results better be in buffer_.
     compute_pair(s1, s2);
 
     // Normalize for angular momentum
     normalize_am(s1, s2, nchunk_);
-    if(!force_cartesian_){
+    if (!force_cartesian_) {
         // Pure angular momentum (6d->5d, ...) transformation
         pure_transform(s1, s2, nchunk_);
         buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
-        if(enable_pybuffer_){
-            pybuffer_.set_shape(boost::python::make_tuple(nchunk_, s1.nfunction(), s2.nfunction()));
+        if (enable_pybuffer_) {
+            pybuffer_.set_shape(pybind11::make_tuple(nchunk_, s1.nfunction(), s2.nfunction()));
         }
-    }
-    else{
+    } else {
         buffer_size_ = nchunk_ * s1.ncartesian() * s2.ncartesian();
-        if(enable_pybuffer_){
-            pybuffer_.set_shape(boost::python::make_tuple(nchunk_, s1.ncartesian(), s2.ncartesian()));
+        if (enable_pybuffer_) {
+            pybuffer_.set_shape(pybind11::make_tuple(nchunk_, s1.ncartesian(), s2.ncartesian()));
         }
     }
 }
 
-void OneBodyAOInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&)
+void OneBodyAOInt::compute_pair_deriv1(const GaussianShell &, const GaussianShell &)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
 
-void OneBodyAOInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&)
+void OneBodyAOInt::compute_pair_deriv2(const GaussianShell &, const GaussianShell &)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
@@ -263,8 +255,8 @@ void OneBodyAOInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell
 
 void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
 {
-    const GaussianShell& s1 = bs1_->shell(sh1);
-    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell &s1 = bs1_->shell(sh1);
+    const GaussianShell &s2 = bs2_->shell(sh2);
 
     // Call the child's compute_pair method, results better be in buffer_.
     compute_pair_deriv1(s1, s2);
@@ -277,20 +269,20 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
         pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyAOInt::compute(SharedMatrix& result)
+void OneBodyAOInt::compute(SharedMatrix &result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
 
-    int i_offset=0;
+    int i_offset = 0;
     double *location;
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
-    for (int i=0; i<ns1; ++i) {
+    for (int i = 0; i < ns1; ++i) {
         int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
+        int j_offset = 0;
+        for (int j = 0; j < ns2; ++j) {
             int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
 
             // Compute the shell (automatically transforms to pure am in needed)
@@ -298,9 +290,9 @@ void OneBodyAOInt::compute(SharedMatrix& result)
 
             // For each integral that we got put in its contribution
             location = buffer_;
-            for (int p=0; p<ni; ++p) {
-                for (int q=0; q<nj; ++q) {
-                    result->add(0, i_offset+p, j_offset+q, *location);
+            for (int p = 0; p < ni; ++p) {
+                for (int q = 0; q < nj; ++q) {
+                    result->add(0, i_offset + p, j_offset + q, *location);
                     location++;
                 }
             }
@@ -311,7 +303,7 @@ void OneBodyAOInt::compute(SharedMatrix& result)
     }
 }
 
-void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
+void OneBodyAOInt::compute(std::vector <SharedMatrix> &result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -321,22 +313,22 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 
     // Check the length of result, must be chunk
     // There not an easy way of checking the size now.
-    if (result.size() != (size_t)nchunk_) {
-        outfile->Printf( "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
+    if (result.size() != (size_t) nchunk_) {
+        outfile->Printf("result length = %ld, nchunk = %d\n", result.size(), nchunk_);
         throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
     }
 
     // Check the individual matrices, we can only handle nirrep() == 1
-    BOOST_FOREACH(SharedMatrix a, result) {
+    for (SharedMatrix a : result) {
         if (a->nirrep() != 1) {
             throw SanityCheckError("OneBodyInt::compute(result): one or more of the matrices given has symmetry.", __FILE__, __LINE__);
         }
     }
 
-    for (int i=0; i<ns1; ++i) {
+    for (int i = 0; i < ns1; ++i) {
         int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
+        int j_offset = 0;
+        for (int j = 0; j < ns2; ++j) {
             int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
 
             // Compute the shell
@@ -344,10 +336,10 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 
             // For each integral that we got put in its contribution
             location = buffer_;
-            for (int r=0; r<nchunk_; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result[r]->add(0, i_offset+p, j_offset+q, *location);
+            for (int r = 0; r < nchunk_; ++r) {
+                for (int p = 0; p < ni; ++p) {
+                    for (int q = 0; q < nj; ++q) {
+                        result[r]->add(0, i_offset + p, j_offset + q, *location);
                         location++;
                     }
                 }
@@ -358,7 +350,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
     }
 }
 
-void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
+void OneBodyAOInt::compute_deriv1(std::vector <SharedMatrix> &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -370,19 +362,19 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
     double *location = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != (size_t)3*natom_)
+    if (result.size() != (size_t) 3 * natom_)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     if (result[0]->nirrep() != 1)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__, __LINE__);
 
-    for (int i=0; i<ns1; ++i) {
+    for (int i = 0; i < ns1; ++i) {
         int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
-        int center_i3 = 3*bs1_->shell(i).ncenter();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
+        int center_i3 = 3 * bs1_->shell(i).ncenter();
+        int j_offset = 0;
+        for (int j = 0; j < ns2; ++j) {
             int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
-            int center_j3 = 3*bs2_->shell(j).ncenter();
+            int center_j3 = 3 * bs2_->shell(j).ncenter();
 
             if (center_i3 != center_j3) {
 
@@ -391,20 +383,20 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
 
                 // Center i
                 location = buffer_;
-                for (int r=0; r<3; ++r) {
-                    for (int p=0; p<ni; ++p) {
-                        for (int q=0; q<nj; ++q) {
-                            result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
+                for (int r = 0; r < 3; ++r) {
+                    for (int p = 0; p < ni; ++p) {
+                        for (int q = 0; q < nj; ++q) {
+                            result[center_i3 + r]->add(0, i_offset + p, j_offset + q, *location);
                             location++;
                         }
                     }
                 }
 
                 // Center j -- only if center i != center j
-                for (int r=0; r<3; ++r) {
-                    for (int p=0; p<ni; ++p) {
-                        for (int q=0; q<nj; ++q) {
-                            result[center_j3+r]->add(0, i_offset+p, j_offset+q, *location);
+                for (int r = 0; r < 3; ++r) {
+                    for (int p = 0; p < ni; ++p) {
+                        for (int q = 0; q < nj; ++q) {
+                            result[center_j3 + r]->add(0, i_offset + p, j_offset + q, *location);
                             location++;
                         }
                     }
@@ -418,7 +410,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
     }
 }
 
-void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
+void OneBodyAOInt::compute_deriv2(std::vector <SharedMatrix> &result)
 {
     if (deriv_ < 2)
         throw SanityCheckError("OneBodyInt::compute_deriv2(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -429,19 +421,19 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
     int i_offset = 0;
 
     // Check the length of result, must be 3*natom_
-    if (result.size() != (size_t)9*natom_*natom_)
+    if (result.size() != (size_t) 9 * natom_ * natom_)
         throw SanityCheckError("OneBodyInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__, __LINE__);
 
     if (result[0]->nirrep() != 1)
         throw SanityCheckError("OneBodyInt::compute_deriv2(result): results must be C1 symmetry.", __FILE__, __LINE__);
 
-    for (int i=0; i<ns1; ++i) {
+    for (int i = 0; i < ns1; ++i) {
         int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
-        int center_i3 = 3*bs1_->shell(i).ncenter();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
+        int center_i3 = 3 * bs1_->shell(i).ncenter();
+        int j_offset = 0;
+        for (int j = 0; j < ns2; ++j) {
             int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
-            int center_j3 = 3*bs2_->shell(j).ncenter();
+            int center_j3 = 3 * bs2_->shell(j).ncenter();
 
             if (center_i3 != center_j3) {
 
@@ -486,4 +478,6 @@ void OneBodyAOInt::compute_shell_deriv2(int i, int j)
     // Pure angular momentum (6d->5d, ...) transformation
     if (!force_cartesian_)
         pure_transform(bs1_->shell(i), bs2_->shell(j), nchunk_);
+}
+
 }

@@ -33,12 +33,6 @@
 #include "psi4/psi4-dec.h"
 #include <string>
 
-
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi {
 class Chkpt;
 

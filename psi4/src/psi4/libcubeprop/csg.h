@@ -49,9 +49,9 @@ protected:
     /// Options object for overages and voxel spacing
     Options& options_;
     /// Molecule this grid is built around
-    boost::shared_ptr<Molecule> mol_;
+    std::shared_ptr<Molecule> mol_;
     /// Basis set this grid is built around
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// File path for grid storage
     std::string filepath_;
 
@@ -81,11 +81,11 @@ protected:
     // => Grid Computers <= //
 
     /// Vector of blocks
-    std::vector<boost::shared_ptr<BlockOPoints> > blocks_;
+    std::vector<std::shared_ptr<BlockOPoints> > blocks_;
     /// Points to basis extents, built internally
-    boost::shared_ptr<BasisExtents> extents_;
+    std::shared_ptr<BasisExtents> extents_;
     /// RKS points object
-    boost::shared_ptr<RKSFunctions> points_;
+    std::shared_ptr<RKSFunctions> points_;
 
     // => Helper Routines <= //
 
@@ -95,7 +95,7 @@ protected:
 public:
     // => Constructors <= //
 
-    CubicScalarGrid(boost::shared_ptr<BasisSet> primary, Options& options);
+    CubicScalarGrid(std::shared_ptr<BasisSet> primary, Options& options);
     virtual ~CubicScalarGrid();
 
     // => High-Level Setup Routines <= //
@@ -105,7 +105,7 @@ public:
     /// Build grid with specified geometry (e.g., from another grid)
     void build_grid(const std::string filepath, int* N, double* D, double* O);
     /// Build grid from the dimensions in another grid
-    void build_grid(boost::shared_ptr<CubicScalarGrid> other);
+    void build_grid(std::shared_ptr<CubicScalarGrid> other);
     /// Header info
     void print_header();
 
@@ -151,32 +151,32 @@ public:
     // => Low-Level Scalar Field Computation (Use only if you know what you are doing) <= //
 
     /// Add a density-type property to the scalar field
-    void add_density(double* v, boost::shared_ptr<Matrix> D);
+    void add_density(double* v, std::shared_ptr<Matrix> D);
     /// Add an ESP-type property to the scalar field (total density matrix, must set DF_BASIS_SCF option)
-    void add_esp(double* v, boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights = std::vector<double>());
+    void add_esp(double* v, std::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights = std::vector<double>());
     /// Add a basis function property for desired indices to the scalar fields in v (rows are basis functions)
     void add_basis_functions(double** v, const std::vector<int>& indices);
     /// Add orbital property for desired indices to the scalar fields in v (rows are orbitals)
-    void add_orbitals(double** v, boost::shared_ptr<Matrix> C);
+    void add_orbitals(double** v, std::shared_ptr<Matrix> C);
     /// Add a LOL-type property to the scalar field
-    void add_LOL(double* v, boost::shared_ptr<Matrix> D);
+    void add_LOL(double* v, std::shared_ptr<Matrix> D);
     /// Add an ELF-type property to the scalar field
-    void add_ELF(double* v, boost::shared_ptr<Matrix> D);
+    void add_ELF(double* v, std::shared_ptr<Matrix> D);
 
     // => High-Level Scalar Field Computation <= //
 
     /// Compute a density-type property and drop a file corresponding to name and type
-    void compute_density(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    void compute_density(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute an ESP-type property and drop a file corresponding to name and type
-    void compute_esp(boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights, const std::string& name, const std::string& type = "CUBE");
+    void compute_esp(std::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights, const std::string& name, const std::string& type = "CUBE");
     /// Compute a set of basis function-type properties and drop files corresponding to name, index, and type
     void compute_basis_functions(const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
     /// Compute a set of orbital-type properties and drop files corresponding to name, index, symmetry label, and type
-    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type = "CUBE");
+    void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type = "CUBE");
     /// Compute a LOL-type property and drop a file corresponding to name and type
-    void compute_LOL(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    void compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
     /// Compute an ELF-type property and drop a file corresponding to name and type (TODO: this seems very unstable)
-    void compute_ELF(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    void compute_ELF(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
 
 };
 

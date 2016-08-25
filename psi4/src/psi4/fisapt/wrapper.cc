@@ -30,7 +30,7 @@
 #include "psi4/fisapt/fisapt.h"
 #include "psi4/psi4-dec.h"
 
-using namespace boost;
+
 
 namespace psi{
 
@@ -40,7 +40,7 @@ PsiReturnType fisapt(SharedWavefunction ref_wfn, Options& options)
 {
     tstart();
 
-    boost::shared_ptr<fisapt::FISAPT> intra(new fisapt::FISAPT(ref_wfn, options));
+    std::shared_ptr<fisapt::FISAPT> intra(new fisapt::FISAPT(ref_wfn, options));
     intra->compute_energy();
 
     tstop();

@@ -52,13 +52,13 @@ private:
 
 public:
     CorrelationFactor(unsigned int nparam);
-    CorrelationFactor(boost::shared_ptr<Vector> coeff,
-                      boost::shared_ptr<Vector> exponent);
+    CorrelationFactor(std::shared_ptr<Vector> coeff,
+                      std::shared_ptr<Vector> exponent);
     virtual ~CorrelationFactor();
 
     virtual double slater_exponent() const { return 1.0; }
-    void set_params(boost::shared_ptr<Vector> coeff,
-                    boost::shared_ptr<Vector> exponent);
+    void set_params(std::shared_ptr<Vector> coeff,
+                    std::shared_ptr<Vector> exponent);
     double *exponent() const { return exponent_; }
     double *coeff() const { return coeff_; }
 };
@@ -71,7 +71,7 @@ private:
 public:
 
     virtual double slater_exponent() const { return slater_exponent_; }
-    
+
     FittedSlaterCorrelationFactor(double exponent);
     double exponent(){return slater_exponent_;}
 };

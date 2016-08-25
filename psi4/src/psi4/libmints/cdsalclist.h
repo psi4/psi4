@@ -33,7 +33,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
@@ -123,8 +123,8 @@ public:
 
 class CdSalcList
 {
-    boost::shared_ptr<Molecule> molecule_;
-    boost::shared_ptr<MatrixFactory> factory_;
+    std::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<MatrixFactory> factory_;
 
     char needed_irreps_;
     bool project_out_translations_;
@@ -154,8 +154,8 @@ public:
      *  \param project_out_translations Project out translational SALCs
      *  \param project_out_rotations Project out rotational SALCs
      */
-    CdSalcList(boost::shared_ptr<Molecule> mol,
-               boost::shared_ptr<MatrixFactory> fact,
+    CdSalcList(std::shared_ptr<Molecule> mol,
+               std::shared_ptr<MatrixFactory> fact,
                int needed_irreps=0xFF,
                bool project_out_translations=true,
                bool project_out_rotations=true);

@@ -41,10 +41,6 @@
 #include "uhf.h"
 #include "psi4/libfunctional/superfunctional.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class Matrix;
@@ -59,23 +55,23 @@ class KS {
 
 protected:
     /// KS Potential (the heart of the algorithm)
-    boost::shared_ptr<VBase> potential_;
+    std::shared_ptr<VBase> potential_;
     /// Pointer to potential's functional
-    boost::shared_ptr<SuperFunctional> functional_;
+    std::shared_ptr<SuperFunctional> functional_;
     /// primary basis set (might get fancy later)
-    boost::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<BasisSet> basisset_;
     /// primary so basis set
-    boost::shared_ptr<SOBasisSet> sobasisset_;
+    std::shared_ptr<SOBasisSet> sobasisset_;
     /// Options object
     Options& options_;
     /// Molecule object
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
     /// PSIO object
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// ERI object for omega integrals
-    boost::shared_ptr<TwoBodySOInt> omega_eri_;
+    std::shared_ptr<TwoBodySOInt> omega_eri_;
     /// Factory (for Spherical Harmonics)
-    boost::shared_ptr<IntegralFactory> omega_factory_;
+    std::shared_ptr<IntegralFactory> omega_factory_;
 
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
@@ -83,7 +79,7 @@ protected:
     void common_init(SharedWavefunction ref_wfn);
 
 public:
-    KS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio);
+    KS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio);
     virtual ~KS();
 };
 
@@ -105,7 +101,7 @@ protected:
 
     void common_init();
 public:
-    RKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    RKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RKS();
 };
 
@@ -131,7 +127,7 @@ protected:
 
     void common_init();
 public:
-    UKS(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    UKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UKS();
 };
 

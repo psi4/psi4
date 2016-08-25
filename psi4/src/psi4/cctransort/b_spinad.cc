@@ -29,7 +29,7 @@
 #include "psi4/libpsio/psio.hpp"
 namespace psi { namespace cctransort {
 
-void b_spinad(boost::shared_ptr<PSIO> psio)
+void b_spinad(std::shared_ptr<PSIO> psio)
 {
   dpdbuf4 B, Bs, Ba;
 

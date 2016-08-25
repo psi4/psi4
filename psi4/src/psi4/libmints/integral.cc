@@ -49,23 +49,23 @@
 #include "psi4/libmints/erd_eri.h"
 #include <libint/libint.h>
 
-using namespace boost;
+;
 using namespace psi;
 
-IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1,
-                                 boost::shared_ptr<BasisSet> bs2,
-                                 boost::shared_ptr<BasisSet> bs3,
-                                 boost::shared_ptr<BasisSet> bs4)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1,
+                                 std::shared_ptr<BasisSet> bs2,
+                                 std::shared_ptr<BasisSet> bs3,
+                                 std::shared_ptr<BasisSet> bs4)
 {
     set_basis(bs1, bs2, bs3, bs4);
 }
 
-IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
 {
     set_basis(bs1, bs2, bs1, bs2);
 }
 
-IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1)
 {
     set_basis(bs1, bs1, bs1, bs1);
 }
@@ -75,28 +75,28 @@ IntegralFactory::~IntegralFactory()
 
 }
 
-boost::shared_ptr<BasisSet> IntegralFactory::basis1() const
+std::shared_ptr<BasisSet> IntegralFactory::basis1() const
 {
     return bs1_;
 }
 
-boost::shared_ptr<BasisSet> IntegralFactory::basis2() const
+std::shared_ptr<BasisSet> IntegralFactory::basis2() const
 {
     return bs2_;
 }
 
-boost::shared_ptr<BasisSet> IntegralFactory::basis3() const
+std::shared_ptr<BasisSet> IntegralFactory::basis3() const
 {
     return bs3_;
 }
 
-boost::shared_ptr<BasisSet> IntegralFactory::basis4() const
+std::shared_ptr<BasisSet> IntegralFactory::basis4() const
 {
     return bs4_;
 }
 
-void IntegralFactory::set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
-                boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4)
+void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4)
 {
     bs1_ = bs1;
     bs2_ = bs2;
@@ -114,7 +114,7 @@ OneBodyAOInt* IntegralFactory::ao_overlap(int deriv)
 
 OneBodySOInt* IntegralFactory::so_overlap(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -130,7 +130,7 @@ OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv)
 
 OneBodySOInt* IntegralFactory::so_kinetic(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -141,7 +141,7 @@ OneBodyAOInt* IntegralFactory::ao_potential(int deriv)
 
 OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
     return new PotentialSOInt(ao_int, this);
 }
 
@@ -152,7 +152,7 @@ OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv)
 
 OneBodySOInt* IntegralFactory::so_rel_potential(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
     return new RelPotentialSOInt(ao_int, this);
 }
 
@@ -163,7 +163,7 @@ OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv)
 
 OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -184,7 +184,7 @@ OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
 
 OneBodySOInt* IntegralFactory::so_dipole(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -195,7 +195,7 @@ OneBodyAOInt* IntegralFactory::ao_nabla(int deriv)
 
 OneBodySOInt* IntegralFactory::so_nabla(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -206,7 +206,7 @@ OneBodyAOInt* IntegralFactory::ao_angular_momentum(int deriv)
 
 OneBodySOInt* IntegralFactory::so_angular_momentum(int deriv)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -217,7 +217,7 @@ OneBodyAOInt* IntegralFactory::ao_quadrupole()
 
 OneBodySOInt* IntegralFactory::so_quadrupole()
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_quadrupole());
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_quadrupole());
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -233,13 +233,13 @@ OneBodyAOInt* IntegralFactory::ao_efp_multipole_potential(int order)
 
 OneBodySOInt* IntegralFactory::so_efp_multipole_potential(int order)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_efp_multipole_potential(order));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_efp_multipole_potential(order));
     return new OneBodySOInt(ao_int, this);
 }
 
 OneBodySOInt* IntegralFactory::so_multipoles(int order)
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -250,7 +250,7 @@ OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole()
 
 OneBodySOInt* IntegralFactory::so_traceless_quadrupole()
 {
-    boost::shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -287,27 +287,27 @@ TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool 
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_scaled(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+TwoBodyAOInt* IntegralFactory::f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12Scaled(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+TwoBodyAOInt* IntegralFactory::f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12Squared(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+TwoBodyAOInt* IntegralFactory::f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12G12(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
+TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
     return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
 }

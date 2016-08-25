@@ -54,7 +54,7 @@ namespace psi { namespace cctriples {
     ** Modified by TDC, March 1999.
     */
 
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn, Options &options)
+void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options)
 {
     int i, h, errcod, nactive, nirreps;
     std::string junk;

@@ -34,7 +34,7 @@
 #include "occwave.h"
 #include "defines.h"
 
-using namespace boost;
+
 using namespace std;
 
 namespace psi{ namespace occwave{

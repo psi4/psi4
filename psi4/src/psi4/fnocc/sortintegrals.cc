@@ -203,7 +203,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       abcd2[k] = integralbuffer+(nelem+20L)*(nfiles+5L+3L*ov3nfiles+k);
   }
 
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
 
   psio_address ijkl_addr  = PSIO_ZERO;
   psio_address klcd_addr  = PSIO_ZERO;
@@ -976,7 +976,7 @@ void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,U
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci5[k] >= bucketsize) {
-         boost::shared_ptr<PSIO> psio(new PSIO());
+         std::shared_ptr<PSIO> psio(new PSIO());
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci2",(char*)&abci5[k][0],nabci5[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1054,7 +1054,7 @@ void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,U
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci3[k] >= bucketsize) {
-         boost::shared_ptr<PSIO> psio(new PSIO());
+         std::shared_ptr<PSIO> psio(new PSIO());
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci3",(char*)&abci3[k][0],nabci3[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1132,7 +1132,7 @@ void abci1_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci1,U
   }
   for (k = 0; k < nfiles; k++) {
       if (nabci1[k] >= bucketsize) {
-         boost::shared_ptr<PSIO> psio(new PSIO());
+         std::shared_ptr<PSIO> psio(new PSIO());
          //write
          psio->open(filestart+k,PSIO_OPEN_OLD);
          psio->write(filestart+k,"E2abci",(char*)&abci1[k][0],nabci1[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1495,7 +1495,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   }
   for (k = 0; k < nfiles; k++) {
       if (nabcd2[k] >= bucketsize) {
-         boost::shared_ptr<PSIO> psio(new PSIO());
+         std::shared_ptr<PSIO> psio(new PSIO());
          //write
          psio->open(PSIF_DCC_SORT_START+k+nfiles,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k+nfiles,"E2abcd2",(char*)&abcd2[k][0],nabcd2[k]*sizeof(struct integral),addr[k],&addr[k]);
@@ -1735,7 +1735,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   for (k = 0; k < nfiles; k++) {
       if (nabcd1[k] >= bucketsize) {
          //write
-         boost::shared_ptr<PSIO> psio(new PSIO());
+         std::shared_ptr<PSIO> psio(new PSIO());
          psio->open(PSIF_DCC_SORT_START+k,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k,"E2abcd1",(char*)&abcd1[k][0],nabcd1[k]*sizeof(struct integral),addr[k],&addr[k]);
          psio->close(PSIF_DCC_SORT_START+k,1);
@@ -1900,7 +1900,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
 }
 
 void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim,ULI filestart,ULI nfiles){
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
      // bins are coreloads
      ULI nbins,binsize,lastbin;
      for (ULI i=1; i<=blockdim; i++){
@@ -1941,7 +1941,7 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
 }
 
 void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
      psio->open(PSIFILE,PSIO_OPEN_OLD);
@@ -2125,7 +2125,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
   }
 }
 void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
      psio->open(PSIFILE,PSIO_OPEN_OLD);
@@ -2216,7 +2216,7 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
   double * tmp2 = new double[maxelem];
 
   // in the interest of diskspace, get rid of PSIF_DCC_ABCI
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
   psio->close(PSIF_DCC_ABCI,0);
 
@@ -2354,7 +2354,7 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   /**
     * write to disk
     */
-  boost::shared_ptr<PSIO> psio(new PSIO());
+  std::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_NEW);
   psio->write_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);

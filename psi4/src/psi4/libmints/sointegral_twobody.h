@@ -76,13 +76,13 @@ public:
 class TwoBodySOInt
 {
 protected:
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb_;
-    boost::shared_ptr<IntegralFactory> integral_;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > tb_;
+    std::shared_ptr<IntegralFactory> integral_;
 
-    boost::shared_ptr<SOBasisSet> b1_;
-    boost::shared_ptr<SOBasisSet> b2_;
-    boost::shared_ptr<SOBasisSet> b3_;
-    boost::shared_ptr<SOBasisSet> b4_;
+    std::shared_ptr<SOBasisSet> b1_;
+    std::shared_ptr<SOBasisSet> b2_;
+    std::shared_ptr<SOBasisSet> b3_;
+    std::shared_ptr<SOBasisSet> b4_;
 
     size_t size_;
     std::vector<double *> buffer_;
@@ -92,14 +92,14 @@ protected:
 
     int iirrepoff_[8], jirrepoff_[8], kirrepoff_[8], lirrepoff_[8];
 
-    boost::shared_ptr<PetiteList> petite1_;
-    boost::shared_ptr<PetiteList> petite2_;
-    boost::shared_ptr<PetiteList> petite3_;
-    boost::shared_ptr<PetiteList> petite4_;
+    std::shared_ptr<PetiteList> petite1_;
+    std::shared_ptr<PetiteList> petite2_;
+    std::shared_ptr<PetiteList> petite3_;
+    std::shared_ptr<PetiteList> petite4_;
 
-    boost::shared_ptr<PointGroup> pg_;
+    std::shared_ptr<PointGroup> pg_;
 
-    boost::shared_ptr<DCD> dcd_;
+    std::shared_ptr<DCD> dcd_;
 
     bool only_totally_symmetric_;
     int nthread_;
@@ -120,16 +120,16 @@ protected:
     void common_init();
 public:
     // Constructor, assuming 1 thread
-    TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>&,
-                 const boost::shared_ptr<IntegralFactory>&);
+    TwoBodySOInt(const std::shared_ptr<TwoBodyAOInt>&,
+                 const std::shared_ptr<IntegralFactory>&);
     // Constructor, using vector of AO objects for threading
-    TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
-                 const boost::shared_ptr<IntegralFactory>& integral);
-    TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& aoint,
-                 const boost::shared_ptr<IntegralFactory>& intfac,
+    TwoBodySOInt(const std::vector<std::shared_ptr<TwoBodyAOInt> > &tb,
+                 const std::shared_ptr<IntegralFactory>& integral);
+    TwoBodySOInt(const std::shared_ptr<TwoBodyAOInt>& aoint,
+                 const std::shared_ptr<IntegralFactory>& intfac,
                  const CdSalcList& cdsalcs);
-    TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& tb,
-                 const boost::shared_ptr<IntegralFactory>& integral,
+    TwoBodySOInt(const std::vector<std::shared_ptr<TwoBodyAOInt> >& tb,
+                 const std::shared_ptr<IntegralFactory>& integral,
                  const CdSalcList& cdsalcs);
 
     virtual ~TwoBodySOInt();
@@ -137,11 +137,11 @@ public:
     bool only_totally_symmetric() const { return only_totally_symmetric_; }
     void set_only_totally_symmetric(bool ots) { only_totally_symmetric_ = ots; }
 
-    boost::shared_ptr<SOBasisSet> basis() const;
-    boost::shared_ptr<SOBasisSet> basis1() const;
-    boost::shared_ptr<SOBasisSet> basis2() const;
-    boost::shared_ptr<SOBasisSet> basis3() const;
-    boost::shared_ptr<SOBasisSet> basis4() const;
+    std::shared_ptr<SOBasisSet> basis() const;
+    std::shared_ptr<SOBasisSet> basis1() const;
+    std::shared_ptr<SOBasisSet> basis2() const;
+    std::shared_ptr<SOBasisSet> basis3() const;
+    std::shared_ptr<SOBasisSet> basis4() const;
 
     const double *buffer(int thread=0) const { return buffer_[thread]; }
 
@@ -196,7 +196,7 @@ public:
     int compute_pq_pair_deriv1(const int &p, const int &q, const size_t &pair_number, const TwoBodySOIntFunctor &body) {
 
         const_cast<TwoBodySOIntFunctor &>(body).load_tpdm(pair_number);
-        boost::shared_ptr<SO_RS_Iterator> shellIter(
+        std::shared_ptr<SO_RS_Iterator> shellIter(
                     new SO_RS_Iterator(p, q,
                                        b1_, b2_, b3_, b4_));
 
@@ -1121,7 +1121,7 @@ void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
                            "environment variable to MPI or LOCAL.\n");
     }
     else {
-        boost::shared_ptr<SOShellCombinationsIterator>
+        std::shared_ptr<SOShellCombinationsIterator>
         shellIter(new SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
         this->compute_quartets(shellIter, functor);
     }
@@ -1136,7 +1136,7 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
 
     if (comm_ == "MADNESS") {  }
     else {
-        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
+        std::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
         size_t pair_number = 0;
         for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
             compute_pq_pair_deriv1<TwoBodySOIntFunctor>(
@@ -1146,8 +1146,8 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
     }
 }
 
-typedef boost::shared_ptr<OneBodySOInt> SharedOneBodySOInt;
-typedef boost::shared_ptr<TwoBodySOInt> SharedTwoBodySOInt;
+typedef std::shared_ptr<OneBodySOInt> SharedOneBodySOInt;
+typedef std::shared_ptr<TwoBodySOInt> SharedTwoBodySOInt;
 
 }
 

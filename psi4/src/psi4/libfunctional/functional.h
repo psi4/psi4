@@ -89,7 +89,7 @@ public:
     virtual ~Functional();
 
     // Build a base version of a DFA functional (say B97_X)
-    static boost::shared_ptr<Functional> build_base(const std::string& alias);
+    static std::shared_ptr<Functional> build_base(const std::string& alias);
 
     // => Computers <= //
 

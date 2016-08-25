@@ -40,7 +40,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
@@ -522,7 +521,7 @@ void CIWavefunction::get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
-      str += boost::lexical_cast<std::string>( Parameters_->ex_lvl) ;
+      str += std::to_string(Parameters_->ex_lvl) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());
@@ -595,7 +594,7 @@ void CIWavefunction::get_parameters(Options &options)
     i = options["AVG_STATES"].size();
     if (i < 1 || i > Parameters_->num_roots) {
       std::string str = "Invalid number of states to average (";
-      str += boost::lexical_cast<std::string>( i) ;
+      str += std::to_string( i) ;
       str += ")";
       throw PsiException(str,__FILE__,__LINE__);
     }
@@ -608,7 +607,7 @@ void CIWavefunction::get_parameters(Options &options)
       if (Parameters_->average_states[i] < 1) {
         std::string str = "AVG_STATES start numbering from 1.\n";
         str += "Invalid state number ";
-        str += boost::lexical_cast<std::string>( Parameters_->average_states[i]) ;
+        str += std::to_string( Parameters_->average_states[i]) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
       Parameters_->average_states[i] -= 1; /* number from 1 externally */
@@ -618,7 +617,7 @@ void CIWavefunction::get_parameters(Options &options)
     if (options["AVG_WEIGHTS"].has_changed()) {
       if (options["AVG_WEIGHTS"].size() != Parameters_->average_num) {
         std::string str = "Mismatched number of average weights (";
-        str += boost::lexical_cast<std::string>( i) ;
+        str += std::to_string( i) ;
         str += ")";
         throw PsiException(str,__FILE__,__LINE__);
       }
@@ -695,7 +694,7 @@ void CIWavefunction::get_parameters(Options &options)
     char*str2 = new char[25];
     sprintf(str2,"%20.15lf",junk);
     str += str2;
-    delete str2;
+    delete[] str2;
     throw PsiException(str,__FILE__,__LINE__);
   }
   for (i=0; i<Parameters_->average_num; i++) {

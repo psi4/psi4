@@ -52,8 +52,8 @@ void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A
   double **ref_coeff_A, double **ref_coeff_B, double R_AB, double theta_A, double theta_B,
   double tau, double phi_A, double phi_B, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
   int i, j, errcod, pts, xyz;
   double tval, norm, B_angle, R_B1B2, R_B2B3, e12[3], e12b[3], e12c[3], e12d[3], erot[3];
   double **ref_A, **ref_B, **ref_B_final;

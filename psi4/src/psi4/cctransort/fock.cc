@@ -31,7 +31,7 @@
 
 namespace psi { namespace cctransort {
 
-void fock_uhf(boost::shared_ptr<Wavefunction> ref, Dimension &aoccpi, Dimension  &boccpi,
+void fock_uhf(std::shared_ptr<Wavefunction> ref, Dimension &aoccpi, Dimension  &boccpi,
               Dimension &avirpi, Dimension &bvirpi, Dimension &frdocc, int print)
 {
   dpdfile2 fa, fb;
@@ -113,7 +113,7 @@ void fock_uhf(boost::shared_ptr<Wavefunction> ref, Dimension &aoccpi, Dimension 
   global_dpd_->file2_close(&fb);
 }
 
-void fock_rhf(boost::shared_ptr<Wavefunction> ref, Dimension &occpi, Dimension &openpi,
+void fock_rhf(std::shared_ptr<Wavefunction> ref, Dimension &occpi, Dimension &openpi,
               Dimension &virpi, Dimension &frdocc, int print)
 {
   dpdfile2 fa, fb;

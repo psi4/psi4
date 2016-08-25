@@ -36,7 +36,7 @@
 
 #include "psi4/psi4-dec.h"
 
-using namespace boost;
+
 
 namespace psi { namespace deriv {
 

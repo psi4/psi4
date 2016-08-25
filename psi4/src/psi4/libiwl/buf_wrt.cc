@@ -41,8 +41,8 @@ void IWL::write(int p, int q, int pq, int pqsym,
     double *arr, int rmax, int *ioff, int *orbsym, int *firsti,
     int *lasti, int printflag, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int r, s, rs, rsym, ssym, smax, idx;
     double value;
     Label *lblptr;
@@ -102,8 +102,8 @@ void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double *arr, int rmax, int *ioff, int *orbsym, int *firsti,
    int *lasti, int printflag, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
   int r, s, rs, rsym, ssym, smax, idx;
   double value;
   Label *lblptr;

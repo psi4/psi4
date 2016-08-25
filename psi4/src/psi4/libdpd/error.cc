@@ -38,8 +38,8 @@ namespace psi {
 
 void DPD::dpd_error(const char *caller, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf( "Error in: %s\n", caller);
     close(dpd_default);
     exit(PSI_RETURN_FAILURE);

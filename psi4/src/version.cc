@@ -37,7 +37,7 @@ namespace psi {
 void print_version(std::string);
 void print_version(std::string)
 {
-  boost::shared_ptr<PsiOutStream> printer=outfile;
+  std::shared_ptr<PsiOutStream> printer=outfile;
   printer->Printf( "    -----------------------------------------------------------------------\n");
   printer->Printf( "          Psi4: An Open-Source Ab Initio Electronic Structure Package\n");
 #ifdef PSI_VERSION

@@ -31,10 +31,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include <map>
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class PSIO;
@@ -47,7 +43,7 @@ class DFMP2 : public Wavefunction {
 protected:
 
     // Auxiliary basis
-    boost::shared_ptr<BasisSet> ribasis_;
+    std::shared_ptr<BasisSet> ribasis_;
     // Energy map
     std::map<std::string, double> energies_;
     // Gradients map
@@ -120,7 +116,7 @@ protected:
     void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
 
 public:
-    DFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    DFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~DFMP2();
 
     double compute_energy();
@@ -180,7 +176,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    RDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    RDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RDFMP2();
 };
 
@@ -236,7 +232,7 @@ protected:
     virtual void form_gradient();
 
 public:
-    UDFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    UDFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UDFMP2();
 };
 
@@ -250,7 +246,7 @@ protected:
     virtual void print_header();
 
 public:
-    RODFMP2(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    RODFMP2(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RODFMP2();
 };
 

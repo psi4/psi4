@@ -31,11 +31,6 @@
 #include <string>
 #include <map>
 
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi{
 
 class PSIO;
@@ -63,7 +58,7 @@ class DIISEntry{
          */
         enum InputType {DPDBuf4, DPDFile2, Matrix, Vector, Pointer};
         DIISEntry(std::string label, int ID, int count, int vectorSize, double *vector,
-                  int errorVectorSize, double *errorVector, boost::shared_ptr<PSIO> psio);
+                  int errorVectorSize, double *errorVector, std::shared_ptr<PSIO> psio);
         ~DIISEntry();
         /// Whether the dot product of this entry's and the nth entry's error vector is known
         bool dot_is_known_with(int n) {return _knownDotProducts[n];}
@@ -123,7 +118,7 @@ class DIISEntry{
         /// The label used for disk storage
         std::string _label;
         /// PSIO object
-        boost::shared_ptr<PSIO> _psio;
+        std::shared_ptr<PSIO> _psio;
 };
 
 } // End namespace

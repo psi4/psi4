@@ -33,11 +33,11 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-using namespace boost;
+;
 using namespace psi;
 
 // Initialize overlap_recur_ to +2 basis set angular momentum
-TracelessQuadrupoleInt::TracelessQuadrupoleInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2) :
+TracelessQuadrupoleInt::TracelessQuadrupoleInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) :
     OneBodyAOInt(st, bs1, bs2), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
     int maxam1 = bs1_->max_am();

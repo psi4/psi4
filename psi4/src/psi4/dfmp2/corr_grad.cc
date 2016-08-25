@@ -47,7 +47,7 @@ using namespace psi;
 namespace psi {
 namespace dfmp2 {
 
-CorrGrad::CorrGrad(boost::shared_ptr<BasisSet> primary) :
+CorrGrad::CorrGrad(std::shared_ptr<BasisSet> primary) :
     primary_(primary)
 {
     common_init();
@@ -55,13 +55,13 @@ CorrGrad::CorrGrad(boost::shared_ptr<BasisSet> primary) :
 CorrGrad::~CorrGrad()
 {
 }
-boost::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(boost::shared_ptr<BasisSet> primary)
+std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<BasisSet> primary)
 {
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE") == "DF") {
 
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
+        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
             "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
 
         DFCorrGrad* jk = new DFCorrGrad(primary,auxiliary);
@@ -79,7 +79,7 @@ boost::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(boost::shared_ptr<BasisSet>
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return boost::shared_ptr<CorrGrad>(jk);
+        return std::shared_ptr<CorrGrad>(jk);
 
     } else {
         throw PSIEXCEPTION("CorrGrad::build_CorrGrad: Unknown SCF Type");
@@ -99,7 +99,7 @@ void CorrGrad::common_init()
 
     cutoff_ = 0.0;
 }
-DFCorrGrad::DFCorrGrad(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary) :
+DFCorrGrad::DFCorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary) :
     CorrGrad(primary), auxiliary_(auxiliary)
 {
     common_init();
@@ -146,7 +146,7 @@ void DFCorrGrad::compute_gradient()
     gradients_["Exchange"] = SharedMatrix(new Matrix("Exchange Gradient",natom,3));
 
     // => Build ERI Sieve <= //
-    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
 
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
@@ -303,10 +303,10 @@ void DFCorrGrad::build_Amn_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
     }
 
     // => Master Loop <= //
@@ -454,7 +454,7 @@ void DFCorrGrad::build_AB_inv_terms()
 
     // => Fitting Metric Full Inverse <= //
 
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+    std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
     metric->form_full_eig_inverse();
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
@@ -639,10 +639,10 @@ void DFCorrGrad::build_AB_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -844,10 +844,10 @@ void DFCorrGrad::build_Amn_x_terms()
 
     // => Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //

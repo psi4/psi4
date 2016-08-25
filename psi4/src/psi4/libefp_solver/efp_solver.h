@@ -59,7 +59,7 @@ class EFP {
         struct efp * efp_;
 
         /// active QM molecule
-        boost::shared_ptr<Molecule> molecule_;
+        std::shared_ptr<Molecule> molecule_;
 
         /// Flags for EFP/EFP options
         bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_;
@@ -122,10 +122,10 @@ class EFP {
         void set_qm_atoms();
 
         /// Returns EFP permanent moment contribution to V
-        boost::shared_ptr<Matrix> modify_Fock_permanent();
+        std::shared_ptr<Matrix> modify_Fock_permanent();
 
         /// Returns EFP induced dipole contribution to V
-        boost::shared_ptr<Matrix> modify_Fock_induced();
+        std::shared_ptr<Matrix> modify_Fock_induced();
 
         /// Returns EFP contribution to SCF energy; wrapper to efp_get_wavefunction_dependent_energy
         double scf_energy_update();
@@ -157,9 +157,9 @@ class EFP {
 //        /// Number of EFP atoms
 //        int efp_natom();
 //        /// Computes the nuclear potential integrals from the EFP fragments
-//        boost::shared_ptr<Matrix> EFP_nuclear_potential();
+//        std::shared_ptr<Matrix> EFP_nuclear_potential();
 //        /// Wrapper to efp_get_point_charge_gradient
-//        boost::shared_ptr<Vector> get_electrostatic_gradient();
+//        std::shared_ptr<Vector> get_electrostatic_gradient();
 //        /// Add EFP fragment
 //        void add_fragment(std::string fname);
 //        /// Sets the geometry hints for all fragments at once

@@ -57,7 +57,7 @@ void CCEnergyWavefunction::analyze(void)
   max = 9;
   min = 0;
   width = (max-min) / (num_div);
-  boost::shared_ptr<OutFile> printer(new OutFile("tamps.dat",APPEND));
+  std::shared_ptr<OutFile> printer(new OutFile("tamps.dat",APPEND));
   amp_array = init_array(num_div);
 
   nvir = moinfo_.virtpi[0];
@@ -116,7 +116,7 @@ void CCEnergyWavefunction::analyze(void)
   max = 2;
   min = -5;
   width = (max-min) / (num_div);
-  boost::shared_ptr<OutFile> printer2(new OutFile("t1amps.dat",APPEND));
+  std::shared_ptr<OutFile> printer2(new OutFile("t1amps.dat",APPEND));
   amp_array = init_array(num_div);
 
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");

@@ -53,7 +53,7 @@
 #include "git.h"
 #include "scf.h"
 
-using namespace boost;
+
 
 namespace psi{
 MOInfoSCF*     moinfo_scf = 0;
@@ -73,7 +73,7 @@ using namespace std;
 SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options)
 {
   using namespace psi;
-  boost::shared_ptr<PSIO> psio(new PSIO);
+  std::shared_ptr<PSIO> psio(new PSIO);
 
   tstart();
 

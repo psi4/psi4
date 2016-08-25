@@ -33,7 +33,7 @@
 
 #include "psi4/libpsio/psio.hpp"
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 
@@ -117,7 +117,7 @@ class Array2d
   Array2d(int d1,int d2);
   Array2d(string name, int d1,int d2);
   Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
-  Array2d(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
+  Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
   Array2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
   Array2d();			   //default constructer
   ~Array2d(); 		   	   //destructer
@@ -208,18 +208,18 @@ class Array2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
-  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void write(psi::PSIO* const psio, unsigned int fileno);
   void write(psi::PSIO& psio, unsigned int fileno);
   void read(psi::PSIO* psio, unsigned int fileno);
-  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read(psi::PSIO& psio, unsigned int fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
-  bool read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-  void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  bool read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  void save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void save(psi::PSIO* const psio, unsigned int fileno);
   void save(psi::PSIO& psio, unsigned int fileno);
-  void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
+  void load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
 

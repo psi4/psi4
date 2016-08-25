@@ -106,23 +106,23 @@ protected:
     double *, int, int, int, int, int, int);
   double s_ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *,
     const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *,
-    double *, int, int, int, boost::shared_ptr<Matrix>);
+    double *, int, int, int, std::shared_ptr<Matrix>);
   double s_ccd_amplitudes(const char *, const char *, const char *, const char *, const char *, const char *,
     const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *, const char *,
-    double *, int, int, int, boost::shared_ptr<Matrix>);
+    double *, int, int, int, std::shared_ptr<Matrix>);
 
   void ccd_prep(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
     const char *, const char *, int, const char *, const char *, const char *, double *, int, int, int,
-    boost::shared_ptr<Matrix>, const char *);
+    std::shared_ptr<Matrix>, const char *);
   double ccd_energy(const char *, const char *, int, int);
   void ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
-    const char *, const char *, const char *, double *, int, int, int, boost::shared_ptr<Matrix>);
+    const char *, const char *, const char *, double *, int, int, int, std::shared_ptr<Matrix>);
   double ccd_amplitudes(const char *, const char *, const char *, const char *, const char *, const char *,
-    const char *, const char *, const char *, const char *, double *, int, int, int, boost::shared_ptr<Matrix>);
+    const char *, const char *, const char *, const char *, double *, int, int, int, std::shared_ptr<Matrix>);
 
-  void vvvv_prep(const char*, const char*, double**, int, int, boost::shared_ptr<Matrix>);
-  double **vvvv_ccd(const char *, const char *, const char *, int, int, boost::shared_ptr<Matrix>);
-  boost::shared_ptr<Matrix> mo2no(int ampfile, const char* VV_opdm, int nvir, double cutoff);
+  void vvvv_prep(const char*, const char*, double**, int, int, std::shared_ptr<Matrix>);
+  double **vvvv_ccd(const char *, const char *, const char *, int, int, std::shared_ptr<Matrix>);
+  std::shared_ptr<Matrix> mo2no(int ampfile, const char* VV_opdm, int nvir, double cutoff);
 
   double **read_IJKL(int, char *, int, int);
   void write_IJKL(double **, int, const char *, int, int);
@@ -139,7 +139,7 @@ protected:
 public:
   SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA,
          SharedWavefunction MonomerB, Options& options,
-         boost::shared_ptr<PSIO>psio);
+         std::shared_ptr<PSIO>psio);
   virtual ~SAPT2p();
 
   virtual double compute_energy();
@@ -180,10 +180,10 @@ private:
     char *get_vec_label(int);
 
 protected:
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 
 public:
-    SAPTDIIS(int, const char *, const char *, int, int, boost::shared_ptr<PSIO>);
+    SAPTDIIS(int, const char *, const char *, int, int, std::shared_ptr<PSIO>);
     ~SAPTDIIS();
 
     void store_vectors();

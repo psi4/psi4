@@ -47,7 +47,7 @@ class OCCWave : public Wavefunction
     void common_init();
 
 public:
-    OCCWave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    OCCWave(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
 
     virtual ~OCCWave();
     virtual double compute_energy();

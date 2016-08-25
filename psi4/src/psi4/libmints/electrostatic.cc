@@ -36,11 +36,11 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-using namespace boost;
+;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
+ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv) :
     PotentialInt(st, bs1, bs2, deriv)
 {
 }
@@ -194,9 +194,9 @@ void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell
     }
 }
 
-SharedVector ElectrostaticInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+SharedVector ElectrostaticInt::nuclear_contribution(std::shared_ptr<Molecule> mol)
 {
-    boost::shared_ptr<Vector> sret(new Vector(mol->natom()));
+    std::shared_ptr<Vector> sret(new Vector(mol->natom()));
     double *ret = sret->pointer();
 
     int natom = mol->natom();

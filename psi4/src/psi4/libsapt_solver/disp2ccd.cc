@@ -41,8 +41,8 @@ void SAPT2p::disp2ccd() //!
     outfile->Printf("\n==> CCD Dispersion <==\n\n");
   }
 
-  boost::shared_ptr<Matrix> mo2noA;
-  boost::shared_ptr<Matrix> mo2noB;
+  std::shared_ptr<Matrix> mo2noA;
+  std::shared_ptr<Matrix> mo2noB;
   if (nat_orbs_v4_) {
     double cutoff = options_.get_double("OCC_TOLERANCE");
     mo2noA = mo2no(PSIF_SAPT_AMPS,"pRR Density Matrix", nvirA_,cutoff);
@@ -700,7 +700,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
 double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char *CA_RAR, const char *TARAR, //!
   const char *GARAR, const char *GARRA, const char *AAAA, const char *ARAR, const char *AARR, const char *RRRRp,
   const char *RRRRm, const char *XARAR, const char *YARAR, const char *XAA, const char *XRR, double *evalsA_,
-  int noccA_, int virA, int foccA_, boost::shared_ptr<Matrix> mo2no)
+  int noccA_, int virA, int foccA_, std::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA_ - foccA_;
 
@@ -756,7 +756,7 @@ timer_off("CCD Intra Amps     ");
 double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const char *CA_RAR, //!
   const char *TARAR, const char *GARAR, const char *GARRA, const char *AAAA, const char *ARAR, const char *AARR,
   const char *RRRRp, const char *RRRRm, const char *XARAR, const char *YARAR, const char *XAA, const char *XRR,
-  double *evalsA_, int noccA_, int virA, int foccA_, boost::shared_ptr<Matrix> mo2no)
+  double *evalsA_, int noccA_, int virA, int foccA_, std::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA_ - foccA_;
 
@@ -1158,18 +1158,18 @@ void SAPT2p::disp_s_prep(const char *TAR, const char *TpAR, const char *ThetaARA
 
 void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm, //!
   double** B_p_RR, int virA, int ndf,
-  boost::shared_ptr<Matrix> mo2no)
+  std::shared_ptr<Matrix> mo2no)
 {
   timer_on("v^4 Prep           ");
 
-  boost::shared_ptr<Matrix> B2;
-  boost::shared_ptr<Matrix> B3;
+  std::shared_ptr<Matrix> B2;
+  std::shared_ptr<Matrix> B3;
   double** B_p_RR2;
   int virA2;
   if (mo2no) {
     virA2 = mo2no->colspi()[0];
-    B3 = boost::shared_ptr<Matrix>(new Matrix("B3",virA2 * virA,  ndf));
-    B2 = boost::shared_ptr<Matrix>(new Matrix("B2",virA2 * virA2, ndf));
+    B3 = std::shared_ptr<Matrix>(new Matrix("B3",virA2 * virA,  ndf));
+    B2 = std::shared_ptr<Matrix>(new Matrix("B2",virA2 * virA2, ndf));
     double** B_p_RR3 = B3->pointer();
     B_p_RR2 = B2->pointer();
     double** Vp = mo2no->pointer();
@@ -1229,7 +1229,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm, //!
   timer_off("v^4 Prep           ");
 }
 double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRRm, //!
-  int occA, int virA, boost::shared_ptr<Matrix> mo2no)
+  int occA, int virA, std::shared_ptr<Matrix> mo2no)
 {
   timer_on("v^4 Term           ");
 
@@ -1308,7 +1308,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
   psio_address next_RRRRp = PSIO_ZERO;
 
-    boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+    std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     psio_->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[0][0][0]),
         blocksize*virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
@@ -1429,7 +1429,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARAR, const char *GARRA, //!
   const char *AAAA, const char *ARAR, const char *AARR, const char *RRRRp, const char *RRRRm,
   int DFfile, const char *AAints, const char *ARints, const char *RRints, double *evals,
-  int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no, const char *T2ARAR)
+  int noccA, int virA, int foccA, std::shared_ptr<Matrix> mo2no, const char *T2ARAR)
 {
   int occA = noccA - foccA;
 
@@ -1649,7 +1649,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
 
 void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *ThetaARAR, //!
   const char *GARAR, const char *GARRA, const char *AAAA, const char *ARAR, const char *AARR, const char *RRRRp,
-  const char *RRRRm, double *evals, int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no)
+  const char *RRRRm, double *evals, int noccA, int virA, int foccA, std::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA - foccA;
 
@@ -1721,7 +1721,7 @@ double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int vi
 
 double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const char *ThetaARAR, //!
   const char *GARAR, const char *GARRA, const char *AAAA, const char *ARAR, const char *AARR, const char *RRRRp,
-  const char *RRRRm, double *evals, int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no)
+  const char *RRRRm, double *evals, int noccA, int virA, int foccA, std::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA - foccA;
 
@@ -2030,7 +2030,7 @@ void SAPT2p::write_IJKL(double **A, int filenum, const char *label, int length_I
 }
 
 SAPTDIIS::SAPTDIIS(int ampfile, const char *amplabel, const char *errlabel, int length,
-                   int maxvec, boost::shared_ptr<PSIO> psio) : psio_(psio), vec_label_(amplabel), err_label_(errlabel)
+                   int maxvec, std::shared_ptr<PSIO> psio) : psio_(psio), vec_label_(amplabel), err_label_(errlabel)
 {
     diis_file_ = 56;
     psio_->open(diis_file_,0);
@@ -2149,16 +2149,16 @@ char *SAPTDIIS::get_vec_label(int num)
     return(label);
 }
 
-boost::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char* VV_opdm, int nvir, double cutoff)
+std::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char* VV_opdm, int nvir, double cutoff)
 {
-    boost::shared_ptr<Matrix> D(new Matrix("D", nvir, nvir));
+    std::shared_ptr<Matrix> D(new Matrix("D", nvir, nvir));
     double** Dp = D->pointer();
     psio_->read_entry(ampfile,VV_opdm,(char *) Dp[0],
       sizeof(double)*nvir*nvir);
     D->scale(2.0);
 
-    boost::shared_ptr<Matrix> V(new Matrix("V", nvir, nvir));
-    boost::shared_ptr<Vector> d(new Vector("d", nvir));
+    std::shared_ptr<Matrix> V(new Matrix("V", nvir, nvir));
+    std::shared_ptr<Vector> d(new Vector("d", nvir));
     D->diagonalize(V,d,descending);
     D.reset();
 
@@ -2176,7 +2176,7 @@ boost::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char* VV_opdm, int nv
         fclose(fh);
     }
 
-    boost::shared_ptr<Matrix> U(new Matrix("U",nvir,nno));
+    std::shared_ptr<Matrix> U(new Matrix("U",nvir,nno));
     double** Up = U->pointer();
     double** Vp = V->pointer();
     int offset = 0;

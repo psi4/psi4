@@ -48,7 +48,7 @@ class Dimension;
 class Wavefunction;
 class PSIO;
 
-typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
+typedef std::vector<std::shared_ptr< MOSpace> > SpaceVec;
 
   /**
      The IntegralTransform class transforms one- and two-electron integrals
@@ -132,7 +132,7 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(boost::shared_ptr<Wavefunction> wfn,
+        IntegralTransform(std::shared_ptr<Wavefunction> wfn,
                           SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
@@ -157,13 +157,13 @@ class IntegralTransform{
         void presort_so_tei();
         void generate_oei();
         void update_orbitals();
-        void transform_oei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2, const char *label);
-        void transform_tei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
-                           const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4,
+        void transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2, const char *label);
+        void transform_tei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
+                           const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4,
                            HalfTrans = MakeAndNuke);
-        void transform_tei_first_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2);
-        void transform_tei_second_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
-                                       const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
+        void transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2);
+        void transform_tei_second_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
+                                       const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4);
         void backtransform_density();
         void backtransform_tpdm_restricted();
         void backtransform_tpdm_unrestricted();
@@ -174,7 +174,7 @@ class IntegralTransform{
         int DPD_ID(char *str);
         int DPD_ID(const char *str);
         int DPD_ID(const std::string &str);
-        int DPD_ID(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2, SpinType spin, bool pack);
+        int DPD_ID(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2, SpinType spin, bool pack);
 
         /*===== The set/get accessor functions =====*/
 
@@ -226,9 +226,9 @@ class IntegralTransform{
         int get_dpd_id() const {return myDPDNum_;}
 
         /// Get the psio object being used by this object
-        boost::shared_ptr<PSIO> get_psio() const;
+        std::shared_ptr<PSIO> get_psio() const;
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
-        void set_psio(boost::shared_ptr<PSIO> psio);
+        void set_psio(std::shared_ptr<PSIO> psio);
 
         /// The file to output DPD integrals to
         void set_dpd_int_file(int file) { dpdIntFile_ = file; }
@@ -275,9 +275,9 @@ class IntegralTransform{
         // Frozen core energy
         double frozen_core_energy_;
         // The wavefunction object, containing the orbital infomation
-        boost::shared_ptr<Wavefunction> wfn_;
+        std::shared_ptr<Wavefunction> wfn_;
         // Pointer to the PSIO object to use for file I/O
-        boost::shared_ptr<PSIO>  psio_;
+        std::shared_ptr<PSIO>  psio_;
         // The type of transformation
         TransformationType transformationType_;
         // The unique MO spaces provided to this object's constructor
@@ -395,9 +395,9 @@ class IntegralTransform{
         // The cache files used by libDPD
         int *cacheFiles_, **cacheList_;
         // The alpha MO coefficients for each irrep
-        boost::shared_ptr<Matrix> Ca_;
+        std::shared_ptr<Matrix> Ca_;
         // The alpha MO coefficients for each irrep
-        boost::shared_ptr<Matrix> Cb_;
+        std::shared_ptr<Matrix> Cb_;
         // Whether to keep the IWL SO integral file after processing
         bool keepIwlSoInts_;
         // Whether to keep the IWL MO two particle density matrix

@@ -47,8 +47,8 @@
 #include "psi4/libmints/integral.h"
 
 #include <algorithm>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
+#include <std/tuple/tuple.hpp>
+#include <std/tuple/tuple_comparison.hpp>
 
 #include <sstream>
 
@@ -58,22 +58,21 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
 
 namespace psi {
 namespace scfgrad {
 
-boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
+std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 {
     // => Control Parameters <= //
 
-    boost::shared_ptr<Vector> eps     = epsilon_a_subset("AO","ALL");
-    boost::shared_ptr<Vector> eps_occ = epsilon_a_subset("AO","OCC");
-    boost::shared_ptr<Vector> eps_vir = epsilon_a_subset("AO","VIR");
-    boost::shared_ptr<Matrix> C    = Ca_subset("AO","ALL");
-    boost::shared_ptr<Matrix> Cocc = Ca_subset("AO","OCC");
-    boost::shared_ptr<Matrix> Cvir = Ca_subset("AO","VIR");
-    boost::shared_ptr<Matrix> Dt = Da_subset("AO");
+    std::shared_ptr<Vector> eps     = epsilon_a_subset("AO","ALL");
+    std::shared_ptr<Vector> eps_occ = epsilon_a_subset("AO","OCC");
+    std::shared_ptr<Vector> eps_vir = epsilon_a_subset("AO","VIR");
+    std::shared_ptr<Matrix> C    = Ca_subset("AO","ALL");
+    std::shared_ptr<Matrix> Cocc = Ca_subset("AO","OCC");
+    std::shared_ptr<Matrix> Cvir = Ca_subset("AO","VIR");
+    std::shared_ptr<Matrix> Dt = Da_subset("AO");
     double** Dap = Dt->pointer();
 
     double** Cp  = C->pointer();
@@ -93,7 +92,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Target <= //
 
-    boost::shared_ptr<Matrix> response(new Matrix("RHF Response",3*natom,3*natom));
+    std::shared_ptr<Matrix> response(new Matrix("RHF Response",3*natom,3*natom));
 
     // => Response Utility File <= //
 
@@ -102,21 +101,21 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => Spi <= //
     {
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
         const double* buffer = Sint->buffer();
 
-        boost::shared_ptr<Matrix> Smix(new Matrix("Smix",nso,nocc));
-        boost::shared_ptr<Matrix> Smiy(new Matrix("Smiy",nso,nocc));
-        boost::shared_ptr<Matrix> Smiz(new Matrix("Smiz",nso,nocc));
+        std::shared_ptr<Matrix> Smix(new Matrix("Smix",nso,nocc));
+        std::shared_ptr<Matrix> Smiy(new Matrix("Smiy",nso,nocc));
+        std::shared_ptr<Matrix> Smiz(new Matrix("Smiz",nso,nocc));
         double** Smixp = Smix->pointer();
         double** Smiyp = Smiy->pointer();
         double** Smizp = Smiz->pointer();
 
-        boost::shared_ptr<Matrix> Sai(new Matrix("Sai",nvir,nocc));
+        std::shared_ptr<Matrix> Sai(new Matrix("Sai",nvir,nocc));
         double** Saip = Sai->pointer();
-        boost::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
+        std::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
         double** Sijp = Sij->pointer();
-        boost::shared_ptr<Matrix> Spi(new Matrix("Spi",nmo,nocc));
+        std::shared_ptr<Matrix> Spi(new Matrix("Spi",nmo,nocc));
         double** Spip = Spi->pointer();
 
         psio_address next_Sai = PSIO_ZERO;
@@ -251,17 +250,17 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => Tpi <= //
     {
         // Kinetic derivatives
-        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
 
-        boost::shared_ptr<Matrix> Tmix(new Matrix("Tmix",nso,nocc));
-        boost::shared_ptr<Matrix> Tmiy(new Matrix("Tmiy",nso,nocc));
-        boost::shared_ptr<Matrix> Tmiz(new Matrix("Tmiz",nso,nocc));
+        std::shared_ptr<Matrix> Tmix(new Matrix("Tmix",nso,nocc));
+        std::shared_ptr<Matrix> Tmiy(new Matrix("Tmiy",nso,nocc));
+        std::shared_ptr<Matrix> Tmiz(new Matrix("Tmiz",nso,nocc));
         double** Tmixp = Tmix->pointer();
         double** Tmiyp = Tmiy->pointer();
         double** Tmizp = Tmiz->pointer();
 
-        boost::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
+        std::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
         double** Tpip = Tpi->pointer();
         psio_address next_Tpi = PSIO_ZERO;
 
@@ -352,17 +351,17 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     // => Vpi <= //
     {
         // Potential derivatives
-        boost::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
+        std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
         const double* buffer = Vint->buffer();
 
-        boost::shared_ptr<Matrix> Vmix(new Matrix("Vmix",nso,nocc));
-        boost::shared_ptr<Matrix> Vmiy(new Matrix("Vmiy",nso,nocc));
-        boost::shared_ptr<Matrix> Vmiz(new Matrix("Vmiz",nso,nocc));
+        std::shared_ptr<Matrix> Vmix(new Matrix("Vmix",nso,nocc));
+        std::shared_ptr<Matrix> Vmiy(new Matrix("Vmiy",nso,nocc));
+        std::shared_ptr<Matrix> Vmiz(new Matrix("Vmiz",nso,nocc));
         double** Vmixp = Vmix->pointer();
         double** Vmiyp = Vmiy->pointer();
         double** Vmizp = Vmiz->pointer();
 
-        boost::shared_ptr<Matrix> Vpi(new Matrix("Vpi",nmo,nocc));
+        std::shared_ptr<Matrix> Vpi(new Matrix("Vpi",nmo,nocc));
         double** Vpip = Vpi->pointer();
         psio_address next_Vpi = PSIO_ZERO;
 
@@ -447,14 +446,14 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             /*
              *  The DF algorithm
              */
-            boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
+            std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
                                                                                       "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
                                                                                       "JKFIT", options_.get_str("BASIS"));
 
-            boost::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
-            boost::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
-            boost::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-            boost::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+            std::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
+            std::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+            std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
+            std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
             int np = auxiliary_->nbf();
             int nso = basisset_->nbf();
             int nauxshell = auxiliary_->nshell();
@@ -482,7 +481,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             // This probably shouldn't be recomputed here; we already needed it to get the
             // second derivative integrals.  One fine day, this should be refactored.
-            boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
+            std::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
             metric->form_full_eig_inverse();
             SharedMatrix PQ = metric->get_metric();
             double** PQp = PQ->pointer();
@@ -786,9 +785,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
              * The conventional integral algorithm
              */
 
-            boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
+            std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-            boost::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
+            std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, 0.0));
 
 
             const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
@@ -841,18 +840,18 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
                     // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
                     if (am1 < am2){
-                        boost::swap(P,Q);
-                        boost::swap(Pcenter,Qcenter);
+                        std::swap(P,Q);
+                        std::swap(Pcenter,Qcenter);
                     }
                     if (am3 < am4){
-                        boost::swap(R,S);
-                        boost::swap(Rcenter,Scenter);
+                        std::swap(R,S);
+                        std::swap(Rcenter,Scenter);
                     }
                     if( (am1 + am2) > (am3 + am4) ){
-                        boost::swap(P,R);
-                        boost::swap(Q,S);
-                        boost::swap(Pcenter,Rcenter);
-                        boost::swap(Qcenter,Scenter);
+                        std::swap(P,R);
+                        std::swap(Q,S);
+                        std::swap(Pcenter,Rcenter);
+                        std::swap(Qcenter,Scenter);
                     }
 
                     ints->compute_shell_deriv1(P,Q,R,S);
@@ -1056,7 +1055,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         } // End if density fitted
     }
 
-    boost::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
+    std::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
     size_t mem = 0.9 * memory_ / 8L;
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;
@@ -1078,16 +1077,16 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     /*
      * The following quantities are only defined if symmetry is to be used
      */
-    boost::shared_ptr<Matrix> C_so;
-    boost::shared_ptr<Matrix> Cocc_so;
+    std::shared_ptr<Matrix> C_so;
+    std::shared_ptr<Matrix> Cocc_so;
     // C1 MO -> AO (backward transformation)
-    boost::shared_ptr<Matrix> Cinvao;
+    std::shared_ptr<Matrix> Cinvao;
     // C1 MO -> SO (backward transformation)
-    boost::shared_ptr<Matrix> Cinvso;
+    std::shared_ptr<Matrix> Cinvso;
     // C1 MO -> Symmetrized MO
-    boost::shared_ptr<Matrix> Cmo2mosym;
+    std::shared_ptr<Matrix> Cmo2mosym;
     // SO -> C1 MO (forward transformation)
-    boost::shared_ptr<Matrix> Cso2mofull;
+    std::shared_ptr<Matrix> Cso2mofull;
 
     // for debugging
     // ignore_symmetry = false;
@@ -1108,17 +1107,17 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
          * which allows us to roll back to the SO basis and then forward transform, to get a matrix that will
          * correctly account for the ordering of the MOs with and without symmetry.
          */
-        boost::shared_ptr<OneBodyAOInt> aoSint(integral_->ao_overlap());
-        boost::shared_ptr<Matrix> Sao(new Matrix("Sao", nso, nso));
+        std::shared_ptr<OneBodyAOInt> aoSint(integral_->ao_overlap());
+        std::shared_ptr<Matrix> Sao(new Matrix("Sao", nso, nso));
         aoSint->compute(Sao);
         double **pS = Sao->pointer();
 
         // C1 MO -> AO (backward transformation)
-        Cinvao = boost::shared_ptr<Matrix>(new Matrix("Cinvao = Ct_ao Sao", nmo, nso));
+        Cinvao = std::shared_ptr<Matrix>(new Matrix("Cinvao = Ct_ao Sao", nmo, nso));
         C_DGEMM('T', 'N', nmo, nso, nso, 1.0, Cp[0], nmo, pS[0], nso, 0.0, Cinvao->pointer()[0], nso);
 
         // C1 MO -> SO (backward transformation)
-        Cinvso = boost::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nsopi_));
+        Cinvso = std::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nsopi_));
         for(int h = 0; h < nirrep_; ++h){
             if(!nsopi_[h]) continue;
             C_DGEMM('N', 'N', nmo, nsopi_[h], nso, 1.0, Cinvao->pointer()[0], nso, AO2SO_->pointer(h)[0],
@@ -1126,7 +1125,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
 
         // C1 MO -> Symmetrized MO
-        Cmo2mosym = boost::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nmopi_));
+        Cmo2mosym = std::shared_ptr<Matrix>(new Matrix(nirrep_, nmo, nmopi_));
         for(int h = 0; h < nirrep_; ++h){
             if(!doccpi_[h] || !nsopi_[h]) continue;
             C_DGEMM('N', 'N', nmo, nmopi_[h], nsopi_[h], 1.0, Cinvso->pointer(h)[0], nsopi_[h],
@@ -1134,7 +1133,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         }
 
         // SO -> C1 MO (forward transformation)
-        Cso2mofull = boost::shared_ptr<Matrix>(new Matrix(nirrep_, (int*)nsopi_, nmo));
+        Cso2mofull = std::shared_ptr<Matrix>(new Matrix(nirrep_, (int*)nsopi_, nmo));
         for(int h = 0; h < nirrep_; ++h){
             if(!nsopi_[h]) continue;
             C_DGEMM('T', 'N', nsopi_[h], nmo, nso, 1.0, AO2SO_->pointer(h)[0],
@@ -1144,18 +1143,18 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => J2pi/K2pi <= //
     {
-        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();
-        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();
-        const std::vector<boost::shared_ptr<Matrix> >& J = jk->J();
-        const std::vector<boost::shared_ptr<Matrix> >& K = jk->K();
+        std::vector<std::shared_ptr<Matrix> >& L = jk->C_left();
+        std::vector<std::shared_ptr<Matrix> >& R = jk->C_right();
+        const std::vector<std::shared_ptr<Matrix> >& J = jk->J();
+        const std::vector<std::shared_ptr<Matrix> >& K = jk->K();
         L.clear();
         R.clear();
 
-        boost::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
+        std::shared_ptr<Matrix> Sij(new Matrix("Sij",nocc,nocc));
         double** Sijp = Sij->pointer();
-        boost::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
+        std::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
         double** Tp = T->pointer();
-        boost::shared_ptr<Matrix> U(new Matrix("Tempai",nmo,nocc));
+        std::shared_ptr<Matrix> U(new Matrix("Tempai",nmo,nocc));
         double** Up = U->pointer();
 
         // Write some placeholder data to PSIO, to get the sizing right
@@ -1167,7 +1166,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             if(ignore_symmetry){
                 // Just pass C1 quantities in; this object doesn't respect symmetry anyway
                 L.push_back(Cocc);
-                R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
+                R.push_back(std::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
             }else{
                 // Add symmetry back into the AO index of the quantities before calling.  The MO index doesn't
                 // matter too much here; it's contracted away during formation of the D matrices.
@@ -1206,8 +1205,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
-                    R[a] = boost::shared_ptr<Matrix>(new Matrix("R", nsopi_, doccpi_, salcirrep));
-                    boost::shared_ptr<Matrix> Tmpij(new Matrix(nirrep_, nocc, (int*)doccpi_));
+                    R[a] = std::shared_ptr<Matrix>(new Matrix("R", nsopi_, doccpi_, salcirrep));
+                    std::shared_ptr<Matrix> Tmpij(new Matrix(nirrep_, nocc, (int*)doccpi_));
                     for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
                         const CdSalc::Component& salccomponent = thissalc.component(comp);
                         int salcatom = salccomponent.atom;
@@ -1253,8 +1252,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     J[a]->add(K[a]);
 
                     // Transform from SO to C1 MO basis
-                    boost::shared_ptr<Matrix> Fmat(new Matrix("F derivative", nmo, nocc));
-                    boost::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, (int*)nsopi_, nocc));
+                    std::shared_ptr<Matrix> Fmat(new Matrix("F derivative", nmo, nocc));
+                    std::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, (int*)nsopi_, nocc));
                     for(int h = 0; h < nirrep_; ++h){
                         if(!nsopi_[h] || !nsopi_[h^salcirrep]) continue;
                         C_DGEMM('N', 'N', nsopi_[h], nocc, nsopi_[h^salcirrep], 1.0, J[a]->pointer(h)[0], nsopi_[h^salcirrep],
@@ -1286,8 +1285,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Fpi <= //
     {
-        boost::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
-        boost::shared_ptr<Matrix> Fpi(new Matrix("Fpi",nmo,nocc));
+        std::shared_ptr<Matrix> Tpi(new Matrix("Tpi",nmo,nocc));
+        std::shared_ptr<Matrix> Fpi(new Matrix("Fpi",nmo,nocc));
         double** Tpip = Tpi->pointer();
         double** Fpip = Fpi->pointer();
 
@@ -1308,8 +1307,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Bpi <= //
     {
-        boost::shared_ptr<Matrix> Tai(new Matrix("T",nvir,nocc));
-        boost::shared_ptr<Matrix> Bai(new Matrix("B",nvir,nocc));
+        std::shared_ptr<Matrix> Tai(new Matrix("T",nvir,nocc));
+        std::shared_ptr<Matrix> Bai(new Matrix("B",nvir,nocc));
         double** Taip = Tai->pointer();
         double** Baip = Bai->pointer();
 
@@ -1338,7 +1337,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         SharedWavefunction wfn(new Wavefunction(options_));
         wfn->shallow_copy(this);
 
-        boost::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, !ignore_symmetry));
+        std::shared_ptr<RCPHF> cphf(new RCPHF(wfn, options_, !ignore_symmetry));
         cphf->set_jk(jk);
 
         std::map<std::string, SharedMatrix>& b = cphf->b();
@@ -1347,7 +1346,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         psio_address next_Bai = PSIO_ZERO;
         psio_address next_Uai = PSIO_ZERO;
 
-        boost::shared_ptr<Matrix> T(new Matrix("T",nvir,nocc));
+        std::shared_ptr<Matrix> T(new Matrix("T",nvir,nocc));
         double** Tp = T->pointer();
 
         if(!ignore_symmetry){
@@ -1373,9 +1372,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                boost::shared_ptr<Matrix> B;
+                std::shared_ptr<Matrix> B;
                 if(ignore_symmetry){
-                    B = boost::shared_ptr<Matrix>(new Matrix(ss.str(),nocc,nvir));
+                    B = std::shared_ptr<Matrix>(new Matrix(ss.str(),nocc,nvir));
                     psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
                     double** Bp = B->pointer();
                     for (int i = 0; i < nocc; i++) {
@@ -1384,8 +1383,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 }else{
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
-                    boost::shared_ptr<Matrix> Tmpmo(new Matrix(nirrep_, nocc, (int*)nvirpi));
-                    B = boost::shared_ptr<Matrix>(new Matrix(ss.str(),doccpi_,nvirpi,salcirrep));
+                    std::shared_ptr<Matrix> Tmpmo(new Matrix(nirrep_, nocc, (int*)nvirpi));
+                    B = std::shared_ptr<Matrix>(new Matrix(ss.str(),doccpi_,nvirpi,salcirrep));
                     for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
                         const CdSalc::Component& salccomponent = thissalc.component(comp);
                         int salcatom = salccomponent.atom;
@@ -1421,7 +1420,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                boost::shared_ptr<Matrix> X = x[ss.str()];
+                std::shared_ptr<Matrix> X = x[ss.str()];
                 double** Xp = X->pointer();
                 if(ignore_symmetry){
                     for (int i = 0; i < nocc; i++) {
@@ -1433,8 +1432,8 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                     const CdSalc& thissalc = SALCList[a+A];
                     int salcirrep = thissalc.irrep();
 
-                    boost::shared_ptr<Matrix> Tmpmo_c1(new Matrix(nvir, nocc));
-                    boost::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, nvir, (int*)doccpi_));
+                    std::shared_ptr<Matrix> Tmpmo_c1(new Matrix(nvir, nocc));
+                    std::shared_ptr<Matrix> Tmpso_occ(new Matrix(nirrep_, nvir, (int*)doccpi_));
                     for(int h = 0; h < nirrep_; ++h){
                         if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
 
@@ -1468,7 +1467,7 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Upi <= //
     {
-        boost::shared_ptr<Matrix> Upi(new Matrix("U",nmo,nocc));
+        std::shared_ptr<Matrix> Upi(new Matrix("U",nmo,nocc));
         double** Upqp = Upi->pointer();
 
         psio_address next_Spi = PSIO_ZERO;
@@ -1485,22 +1484,22 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => Qpi <= //
     {
-        std::vector<boost::shared_ptr<Matrix> >& L = jk->C_left();
-        std::vector<boost::shared_ptr<Matrix> >& R = jk->C_right();
-        const std::vector<boost::shared_ptr<Matrix> >& J = jk->J();
-        const std::vector<boost::shared_ptr<Matrix> >& K = jk->K();
+        std::vector<std::shared_ptr<Matrix> >& L = jk->C_left();
+        std::vector<std::shared_ptr<Matrix> >& R = jk->C_right();
+        const std::vector<std::shared_ptr<Matrix> >& J = jk->J();
+        const std::vector<std::shared_ptr<Matrix> >& K = jk->K();
         L.clear();
         R.clear();
         for (int a = 0; a < max_A; a++) {
             L.push_back(Cocc);
-            R.push_back(boost::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
+            R.push_back(std::shared_ptr<Matrix>(new Matrix("R",nso,nocc)));
         }
 
-        boost::shared_ptr<Matrix> Upi(new Matrix("Upi",nmo,nocc));
+        std::shared_ptr<Matrix> Upi(new Matrix("Upi",nmo,nocc));
         double** Upip = Upi->pointer();
-        boost::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
+        std::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
         double** Tp = T->pointer();
-        boost::shared_ptr<Matrix> U(new Matrix("T",nmo,nocc));
+        std::shared_ptr<Matrix> U(new Matrix("T",nmo,nocc));
         double** Up = U->pointer();
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
@@ -1537,9 +1536,9 @@ boost::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         size_t max_a = memory / (3L * npi);
         max_a = (max_a > 3 * natom ? 3 * natom : max_a);
 
-        boost::shared_ptr<Matrix> L(new Matrix("L",max_a * nmo, nocc));
-        boost::shared_ptr<Matrix> R(new Matrix("R",max_a * nmo, nocc));
-        boost::shared_ptr<Matrix> T(new Matrix("T",max_a * nmo, nocc));
+        std::shared_ptr<Matrix> L(new Matrix("L",max_a * nmo, nocc));
+        std::shared_ptr<Matrix> R(new Matrix("R",max_a * nmo, nocc));
+        std::shared_ptr<Matrix> T(new Matrix("T",max_a * nmo, nocc));
         double** Lp = L->pointer();
         double** Rp = R->pointer();
         double** Tp = T->pointer();

@@ -36,8 +36,6 @@
 #include <vector>
 #include <utility>
 
-
-
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
@@ -71,13 +69,9 @@
 #include <omp.h>
 #endif
 
-using namespace boost;
-using namespace std;
-using namespace psi;
-
 namespace psi { namespace scf {
 
-HF::HF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+HF::HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : Wavefunction(options),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6)
@@ -143,7 +137,7 @@ void HF::common_init()
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
         // Map the symmetry of the input DOCC, to account for displacements
-        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
@@ -178,7 +172,7 @@ void HF::common_init()
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
         // Map the symmetry of the input SOCC, to account for displacements
-        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
@@ -254,7 +248,7 @@ void HF::common_init()
     perturb_ = nothing;
     lambda_ = 0.0;
     if (perturb_h_) {
-        string perturb_with;
+        std::string perturb_with;
 
         lambda_ = options_.get_double("PERTURB_MAGNITUDE");
 
@@ -416,12 +410,12 @@ void HF::integrals()
         if(options_.get_str("SCF_TYPE") == "GTFOCK") {
           #ifdef HAVE_JK_FACTORY
             //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-            boost::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+            std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
             Process::environment.set_legacy_molecule(molecule_);
             if(options_.get_bool("SOSCF"))
-                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
+                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
             else
-                jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
             Process::environment.set_legacy_molecule(other_legacy);
           #else
             throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
@@ -460,7 +454,7 @@ void HF::integrals()
     if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
 
         // Need a temporary functional
-        boost::shared_ptr<SuperFunctional> functional =
+        std::shared_ptr<SuperFunctional> functional =
             SuperFunctional::current(options_);
 
         // K matrices
@@ -496,7 +490,7 @@ double HF::finalize_E()
             if (psio_->tocscan(PSIF_SO_TEI, IWL_KEY_BUF) == NULL) {
                 psio_->close(PSIF_SO_TEI,1);
                 outfile->Printf("    SO Integrals not on disk, computing...");
-                boost::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
+                std::shared_ptr<MintsHelper> mints(new MintsHelper(basisset_, options_, 0));
                 mints->integrals();
                 outfile->Printf("done.\n");
             } else {
@@ -678,11 +672,11 @@ void HF::find_occupation()
         std::vector<std::pair<double, int> > pairs_b;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {
             for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-                pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
+                pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
         }
         for (int h=0; h<epsilon_b_->nirrep(); ++h) {
             for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-                pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
+                pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
         }
         sort(pairs_a.begin(),pairs_a.end());
         sort(pairs_b.begin(),pairs_b.end());
@@ -936,8 +930,8 @@ void HF::form_H()
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
     if (external) {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
@@ -1120,7 +1114,7 @@ void HF::compute_fcpi()
         std::vector<std::pair<double, int> > pairs;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {
             for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+                pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
             frzcpi_[h] = 0;
         }
         sort(pairs.begin(),pairs.end());
@@ -1149,10 +1143,10 @@ void HF::compute_fvpi()
         std::vector<std::pair<double, int> > pairs;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {
             for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+                pairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
             frzvpi_[h] = 0;
         }
-        sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
+        sort(pairs.begin(),pairs.end(), std::greater<std::pair<double, int> >());
 
         for (int i=0; i<nfzv; ++i)
             frzvpi_[pairs[i].second]++;
@@ -1189,7 +1183,7 @@ void HF::print_orbitals()
 
             std::vector<std::pair<double, int> > orb_e;
             for (int a = 0; a < nmopi_[h]; a++)
-                orb_e.push_back(make_pair(epsilon_a_->get(h,a), a));
+                orb_e.push_back(std::make_pair(epsilon_a_->get(h,a), a));
             std::sort(orb_e.begin(), orb_e.end());
 
             std::vector<int> orb_order(nmopi_[h]);
@@ -1197,9 +1191,9 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occ.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
+                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(occ.begin(), occ.end());
@@ -1220,7 +1214,7 @@ void HF::print_orbitals()
 
             std::vector<std::pair<double, int> > orb_eA;
             for (int a = 0; a < nmopi_[h]; a++)
-                orb_eA.push_back(make_pair(epsilon_a_->get(h,a), a));
+                orb_eA.push_back(std::make_pair(epsilon_a_->get(h,a), a));
             std::sort(orb_eA.begin(), orb_eA.end());
 
             std::vector<int> orb_orderA(nmopi_[h]);
@@ -1228,13 +1222,13 @@ void HF::print_orbitals()
                 orb_orderA[orb_eA[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1)));
+                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                virA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1)));
+                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
 
             std::vector<std::pair<double, int> > orb_eB;
             for (int a = 0; a < nmopi_[h]; a++)
-                orb_eB.push_back(make_pair(epsilon_b_->get(h,a), a));
+                orb_eB.push_back(std::make_pair(epsilon_b_->get(h,a), a));
             std::sort(orb_eB.begin(), orb_eB.end());
 
             std::vector<int> orb_orderB(nmopi_[h]);
@@ -1242,9 +1236,9 @@ void HF::print_orbitals()
                 orb_orderB[orb_eB[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                occB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1)));
+                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
             for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
-                virB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1)));
+                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
 
         }
         std::sort(occA.begin(), occA.end());
@@ -1267,7 +1261,7 @@ void HF::print_orbitals()
 
             std::vector<std::pair<double, int> > orb_e;
             for (int a = 0; a < nmopi_[h]; a++)
-                orb_e.push_back(make_pair(epsilon_a_->get(h,a), a));
+                orb_e.push_back(std::make_pair(epsilon_a_->get(h,a), a));
             std::sort(orb_e.begin(), orb_e.end());
 
             std::vector<int> orb_order(nmopi_[h]);
@@ -1275,11 +1269,11 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                docc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
+                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
-                socc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
+                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
-                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(docc.begin(), docc.end());
@@ -1317,7 +1311,7 @@ void HF::guess()
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
-    string guess_type = options_.get_str("GUESS");
+    std::string guess_type = options_.get_str("GUESS");
     if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
         outfile->Printf( "  SCF Guess was Projection but file not found.\n");
         outfile->Printf( "  Switching over to SAD guess.\n\n");
@@ -1517,9 +1511,9 @@ void HF::load_orbitals()
         }
     }
 
-    boost::shared_ptr<BasisSet> dual_basis;
+    std::shared_ptr<BasisSet> dual_basis;
     if (basisname != options_.get_str("BASIS")) {
-        //boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+        //std::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
         //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
         //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
@@ -1530,7 +1524,7 @@ void HF::load_orbitals()
         // TODO: oh my, forced_puream!
         // TODO: oh my, a basis for which a fn hasn't been set in the input translation
         // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
-        //boost::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
+        //std::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
         //            "DUAL_BASIS_SCF");
         // TODO: I think Rob was planning to rework this projection bit anyways
         // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to
@@ -1726,7 +1720,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
+        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
         mints->one_electron_integrals();
 
         integrals();
@@ -1737,7 +1731,7 @@ void HF::initialize()
 
         // EFP: Add in permanent moment contribution and cache
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-            boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
+            std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
             H_->add(Vefp);
             Horig_ = SharedMatrix(new Matrix("H orig Matrix", basisset_->nbf(), basisset_->nbf()));
             Horig_->copy(H_);
@@ -1784,13 +1778,13 @@ void HF::iterations()
         save_density_and_energy();
 
         // Call any preiteration callbacks
-        call_preiteration_callbacks();
+//        call_preiteration_callbacks();
 
 
         // add efp contribution to Fock matrix
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             H_->copy(Horig_);
-    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+    	    std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
     	    H_->add(Vefp);
         }
 
@@ -1982,7 +1976,7 @@ void HF::iterations()
         }
 
         // Call any postiteration callbacks
-        call_postiteration_callbacks();
+//        call_postiteration_callbacks();
 
     } while (!converged_ && iteration_ < maxiter_ );
 
@@ -2062,7 +2056,7 @@ void HF::print_occupation()
 }
 
 //  Returns a vector of the occupation of the a orbitals
-boost::shared_ptr<Vector> HF::occupation_a() const
+std::shared_ptr<Vector> HF::occupation_a() const
 {
   SharedVector occA = SharedVector(new Vector(nmopi_));
   for(int h=0; h < nirrep_;++h)
@@ -2073,7 +2067,7 @@ boost::shared_ptr<Vector> HF::occupation_a() const
 }
 
 //  Returns a vector of the occupation of the b orbitals
-boost::shared_ptr<Vector> HF::occupation_b() const
+std::shared_ptr<Vector> HF::occupation_b() const
 {
   SharedVector occB = SharedVector(new Vector(nmopi_));
   for(int h=0; h < nirrep_;++h)
@@ -2083,7 +2077,7 @@ boost::shared_ptr<Vector> HF::occupation_b() const
   return occB;
 }
 
-void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, boost::shared_ptr<Vector>& epsm)
+void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm)
 {
     //Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
@@ -2119,7 +2113,7 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 
     // Hack to get orbital e for this Fock
     SharedMatrix C2(new Matrix("C2", nirrep_, nsopi, nmopi));
-    boost::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
+    std::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
     diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {

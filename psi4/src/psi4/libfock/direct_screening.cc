@@ -32,7 +32,7 @@
 #include "psi4/libmints/integral.h"
 using namespace psi;
 
-DirectScreening::DirectScreening(boost::shared_ptr<BasisSet> basis_in,
+DirectScreening::DirectScreening(std::shared_ptr<BasisSet> basis_in,
            std::vector<SharedMatrix>& density_in)
 :
 basis_(basis_in),
@@ -41,19 +41,19 @@ do_K_(true),
 D_(density_in)
 {
 
-  factory_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basis_,
+  factory_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basis_,
                                                                     basis_,
                                                                     basis_,
                                                                     basis_));
 
   Options& options = Process::environment.options;
   double cutoff = options.get_double("SCHWARZ_CUTOFF");
-  sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(basis_, cutoff));
+  sieve_ = std::shared_ptr<ERISieve>(new ERISieve(basis_, cutoff));
   //std::cout << "cutoff: " << cutoff << "\n";
 
   eri_.clear();
   //for (int thread = 0; thread < omp_nthread_; thread++) {
-  eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
+  eri_.push_back(std::shared_ptr<TwoBodyAOInt>(factory_->eri()));
   //}
 
   for (size_t N = 0; N < D_.size() && do_J_; ++N) {

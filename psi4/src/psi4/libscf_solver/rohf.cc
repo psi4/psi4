@@ -50,11 +50,11 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
+
 
 namespace psi { namespace scf {
 
-ROHF::ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+ROHF::ROHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
     common_init();
@@ -319,7 +319,7 @@ void ROHF::compute_orbital_gradient(bool save_diis)
 
     if(save_diis){
         if (initialized_diis_manager_ == false) {
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
             initialized_diis_manager_ = true;
@@ -1098,7 +1098,7 @@ bool ROHF::stability_analysis()
         for(int h = 1; h < nirrep_; ++h)
             vir_offsets[h] = vir_offsets[h-1] + doccpi_[h] - navir[h];
 
-        std::vector<boost::shared_ptr<MOSpace> > spaces;
+        std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
 #define ID(x) ints.DPD_ID(x)

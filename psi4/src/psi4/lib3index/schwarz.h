@@ -43,7 +43,7 @@ protected:
     double schwarz_;
 
     // Basis set for this schwarz
-    boost::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<BasisSet> basis_;
 
     // Is the sieve initialized
     bool initialized_;
@@ -66,7 +66,7 @@ protected:
     void form_schwarz_ints();
 
 public:
-    SchwarzSieve(boost::shared_ptr<BasisSet>, double cutoff);
+    SchwarzSieve(std::shared_ptr<BasisSet>, double cutoff);
     virtual ~SchwarzSieve();
 
     void form_schwarz_sieve(double cutoff);

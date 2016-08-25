@@ -44,7 +44,7 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 {
   tstart();
 
-  boost::shared_ptr<PSIO> psio(new PSIO);
+  std::shared_ptr<PSIO> psio(new PSIO);
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
     SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);

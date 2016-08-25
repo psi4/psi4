@@ -30,7 +30,7 @@
 
 namespace psi{ namespace cctransort {
 
-void sort_tei_uhf(boost::shared_ptr<PSIO> psio, int print)
+void sort_tei_uhf(std::shared_ptr<PSIO> psio, int print)
 {
   dpdbuf4 K;
 

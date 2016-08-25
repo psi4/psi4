@@ -16,7 +16,7 @@ add_custom_target(update_version
 add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
 add_dependencies(versioned_code update_version)
 set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
-target_include_directories(versioned_code PUBLIC ${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(versioned_code PUBLIC ${PYBIND11_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(sources_list export_psio.cc
         export_mints.cc
@@ -63,18 +63,12 @@ target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
         mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
         thermo mrcc scf sapt gdma_interface dmrg
         )
-target_link_libraries(psi4 PRIVATE ${Boost_LIBRARIES})
 target_link_libraries(psi4 PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(psi4 PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(psi4 PRIVATE ${LAPACK_LIBRARIES})
 target_link_libraries(psi4 PRIVATE ${BLAS_LIBRARIES})
 
-target_include_directories(psi4 PUBLIC ${Boost_INCLUDE_DIRS}
-        ${LIBDERIV_INCLUDE_DIRS}
-        )
-target_include_directories(psi4 PUBLIC ${Boost_INCLUDE_DIRS})
-#                                            ${LIBDERIV_INCLUDE_DIRS}
-#)
+target_include_directories(psi4 PUBLIC ${PYBIND11_INCLUDE_DIRS})
 target_include_directories(psi4 PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
 

@@ -34,7 +34,7 @@ namespace psi {
 
 namespace pk {
 
-AOShellSieveIterator::AOShellSieveIterator(boost::shared_ptr<BasisSet> prim,
+AOShellSieveIterator::AOShellSieveIterator(std::shared_ptr<BasisSet> prim,
                                            SharedSieve sieve_input) :
 shell_pairs_(sieve_input->shell_pairs()) {
     bs_ = prim;
@@ -323,7 +323,7 @@ void AOFctSieveIterator::next() {
 
 
 
-PKWorker::PKWorker(boost::shared_ptr<BasisSet> primary, SharedSieve sieve,
+PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
                    std::shared_ptr<AIOHandler> AIO, int target_file,
                    size_t buf_size) {
     AIO_ = AIO;
@@ -465,7 +465,7 @@ void PKWorker::next_quartet() {
     shells_left_ = shell_found;
 }
 
-PKWrkrReord::PKWrkrReord(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
+PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
                          int target_file, size_t buffer_size, unsigned int nbuffer) :
     PKWorker(primary,sieve,AIO,target_file,buffer_size) {
 
@@ -748,7 +748,7 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
 
 }
 
-PKWrkrInCore::PKWrkrInCore(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size,
+PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size,
                            size_t lastbuf, double *Jbuf, double *Kbuf, double *wKbuf, int nworkers) :
     PKWorker(primary,sieve,std::shared_ptr<AIOHandler>(),0,buf_size) {
 
@@ -863,9 +863,9 @@ void PKWrkrInCore::finalize_ints_wK(size_t pk_pairs) {
     }
 }
 
-PKWrkrIWL::PKWrkrIWL(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp,
+PKWrkrIWL::PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp,
                      int targetfile, int K_file, size_t buf_size, std::vector<int> &bufforpq,
-                     boost::shared_ptr<size_t[]> pos) :
+                     std::shared_ptr<std::vector<size_t>> pos) :
     PKWorker(primary,sieve,AIOp,targetfile,buf_size) {
     K_file_ = K_file;
     buf_for_pq_ = bufforpq;
@@ -875,8 +875,8 @@ PKWrkrIWL::PKWrkrIWL(boost::shared_ptr<BasisSet> primary, SharedSieve sieve, std
 
     // Constructing the IWL buffers needed
     for(int i = 0; i < nbuf(); ++i) {
-        IWL_J_.push_back(new IWLAsync_PK(&(addresses_[2 * i]), AIO(), target_file()));
-        IWL_K_.push_back(new IWLAsync_PK(&(addresses_[2 * i + 1]), AIO(), K_file_));
+        IWL_J_.push_back(new IWLAsync_PK(&((*addresses_)[2 * i]), AIO(), target_file()));
+        IWL_K_.push_back(new IWLAsync_PK(&((*addresses_)[2 * i + 1]), AIO(), K_file_));
     }
 }
 
@@ -890,13 +890,13 @@ PKWrkrIWL::~PKWrkrIWL() {
     }
 }
 
-void PKWrkrIWL::allocate_wK(boost::shared_ptr<size_t[]> pos, int wKfile) {
+void PKWrkrIWL::allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile) {
     wK_file_ = wKfile;
     addresses_wK_ = pos;
 
     // Constructing the IWL buffers needed for wK
     for(int i = 0; i < nbuf(); ++i) {
-        IWL_wK_.push_back(new IWLAsync_PK(&(addresses_wK_[i]), AIO(), wK_file_));
+        IWL_wK_.push_back(new IWLAsync_PK(&((*addresses_wK_)[i]), AIO(), wK_file_));
     }
 }
 

@@ -31,7 +31,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-using namespace boost;
+
 using namespace std;
 
 
@@ -42,12 +42,12 @@ void OCCWave::semi_canonic()
         // tell other functions that orbitals are already semi canonical.
         orbs_already_sc = 1;
 
-	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
-	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
-	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
-	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
-	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirrep_, occpiA));
-	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirrep_, virtpiA));
+	SharedMatrix UooA = std::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
+	SharedMatrix UvvA = std::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
+	SharedMatrix FockooA = std::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
+	SharedMatrix FockvvA = std::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
+	SharedVector eigooA = std::shared_ptr<Vector>(new Vector(nirrep_, occpiA));
+	SharedVector eigvvA = std::shared_ptr<Vector>(new Vector(nirrep_, virtpiA));
 
 	UooA->zero();
 	UvvA->zero();
@@ -158,7 +158,7 @@ void OCCWave::semi_canonic()
 	}
 
         // Get new MOs
-        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirrep_, nsopi_, nmopi_));
+        Ca_new = std::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 	Ca_new->zero();
 	Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0);
 	Ca_->zero();
@@ -179,12 +179,12 @@ void OCCWave::semi_canonic()
 
      // UHF REFERENCE
      if (reference_ == "UNRESTRICTED") {
-	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
-	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
-	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
-	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
-	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirrep_, occpiB));
-	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirrep_, virtpiB));
+	SharedMatrix UooB = std::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
+	SharedMatrix UvvB = std::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
+	SharedMatrix FockooB = std::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
+	SharedMatrix FockvvB = std::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
+	SharedVector eigooB = std::shared_ptr<Vector>(new Vector(nirrep_, occpiB));
+	SharedVector eigvvB = std::shared_ptr<Vector>(new Vector(nirrep_, virtpiB));
 
 	UooB->zero();
 	UvvB->zero();
@@ -294,7 +294,7 @@ void OCCWave::semi_canonic()
 	}
 
         // Get new MOs
-	Cb_new = boost::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirrep_, nsopi_, nmopi_));
+	Cb_new = std::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirrep_, nsopi_, nmopi_));
 	Cb_new->zero();
 	Cb_new->gemm(false, false, 1.0, Cb_, UorbB, 0.0);
 	Cb_->zero();

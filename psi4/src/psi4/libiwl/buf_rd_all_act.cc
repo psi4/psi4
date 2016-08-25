@@ -45,8 +45,8 @@ int IWL::read_all_active(double *ints,
     int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
     int fstact, int lstact, int printflg,std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Label *lblptr;
     Value *valptr;
@@ -167,8 +167,8 @@ int iwl_buf_rd_all_act(struct iwlbuf *Buf, double *ints,
   valptr = Buf->values;
 
   lastbuf = Buf->lastbuf;
-  boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-        boost::shared_ptr<OutFile>(new OutFile(out)));
+  std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+        std::shared_ptr<OutFile>(new OutFile(out)));
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
     p = (int) lblptr[idx++];
     q = (int) lblptr[idx++];

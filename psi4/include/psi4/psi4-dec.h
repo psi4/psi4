@@ -28,12 +28,9 @@
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
+#include "psi4/pragma.h"
 #include <string>
+#include <memory>
 
 #include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libparallel/process.h"
@@ -50,7 +47,7 @@ extern bool env_initialized;
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-extern boost::shared_ptr<PsiOutStream> outfile;
+extern std::shared_ptr<PsiOutStream> outfile;
 void die_if_not_converged();
 }//End namespace psi
 #endif

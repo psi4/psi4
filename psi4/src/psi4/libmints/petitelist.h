@@ -38,7 +38,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 namespace psi {
@@ -71,7 +71,7 @@ inline int64_t i_offset64(int64_t i)
  *  \param mol Molecule to form mapping matrix from.
  *  \returns Integer matrix of dimension natoms X nirreps.
  */
-int **compute_atom_map(const boost::shared_ptr<Molecule> &mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
+int **compute_atom_map(const std::shared_ptr<Molecule> &mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
 int **compute_atom_map(const Molecule* mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
 /// @}
 
@@ -81,12 +81,12 @@ int **compute_atom_map(const Molecule* mol, double tol = 0.1, bool suppress_mol_
  *  \param atom_map Map to free.
  *  \param mol Molecule used to create atom_map.
  */
-void delete_atom_map(int **atom_map, const boost::shared_ptr<Molecule> &mol);
+void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule> &mol);
 void delete_atom_map(int **atom_map, const Molecule* mol);
 /// @}
 
-int **compute_shell_map(int **atom_map, const boost::shared_ptr<BasisSet> &);
-void delete_shell_map(int **shell_map, const boost::shared_ptr<BasisSet> &);
+int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &);
+void delete_shell_map(int **shell_map, const std::shared_ptr<BasisSet> &);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -160,7 +160,7 @@ class PetiteList
     int nblocks_;
     bool c1_;
 
-    boost::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<BasisSet> basis_;
     const IntegralFactory* integral_;
 
     bool include_pure_transform_;
@@ -179,18 +179,18 @@ class PetiteList
     void init(double tol=0.05);
 
 public:
-    PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&, bool include_pure_transform = false);
-    PetiteList(const boost::shared_ptr<BasisSet>&, const IntegralFactory*, bool include_pure_transform = false);
+    PetiteList(const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&, bool include_pure_transform = false);
+    PetiteList(const std::shared_ptr<BasisSet>&, const IntegralFactory*, bool include_pure_transform = false);
     ~PetiteList();
 
     bool include_pure_transform() const {return include_pure_transform_;}
 
     /// The AO basis set used to create this petite list
-    boost::shared_ptr<BasisSet> basis() { return basis_; }
+    std::shared_ptr<BasisSet> basis() { return basis_; }
     /// The integral factory used to create this petite list
     const IntegralFactory* integral() { return integral_; }
     /// Create a clone of this petite list
-    boost::shared_ptr<PetiteList> clone();
+    std::shared_ptr<PetiteList> clone();
 
     /// Number of irreps
     int nirrep() const { return nirrep_; }

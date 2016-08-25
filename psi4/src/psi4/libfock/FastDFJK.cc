@@ -61,8 +61,8 @@ using namespace psi;
 namespace psi {
 
 
-FastDFJK::FastDFJK(boost::shared_ptr<BasisSet> primary,
-   boost::shared_ptr<BasisSet> auxiliary) :
+FastDFJK::FastDFJK(std::shared_ptr<BasisSet> primary,
+   std::shared_ptr<BasisSet> auxiliary) :
    JK(primary), auxiliary_(auxiliary)
 {
     common_init();
@@ -124,7 +124,7 @@ void FastDFJK::preiterations()
 {
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
-        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+        sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
 
     build_atom_pairs();
@@ -190,7 +190,7 @@ void FastDFJK::postiterations()
     bump_atoms_.clear();
     Bpq_.clear();
 }
-boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
+std::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
 {
     int naux = auxiliary_->nbf();
     int nshell = auxiliary_->nshell();
@@ -199,17 +199,17 @@ boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
         nthread = df_ints_num_threads_;
     #endif
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
     for (int thread = 0; thread < nthread; thread++) {
         if (omega != 0.0) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(omega)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(fact->erf_eri(omega)));
         } else {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(fact->eri()));
         }
     }
 
-    boost::shared_ptr<Matrix> Z(new Matrix((omega != 0.0 ? "Z_LR" : "Z"), naux, naux));
+    std::shared_ptr<Matrix> Z(new Matrix((omega != 0.0 ? "Z_LR" : "Z"), naux, naux));
     double** Zp = Z->pointer();
 
     #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -288,9 +288,9 @@ void FastDFJK::build_auxiliary_partition()
     bump_atoms_.clear();
 
     // Atomic distance matrix
-    boost::shared_ptr<Molecule> mol = auxiliary_->molecule();
+    std::shared_ptr<Molecule> mol = auxiliary_->molecule();
     int natom = mol->natom();
-    boost::shared_ptr<Matrix> RAB(new Matrix("RAB",natom,natom));
+    std::shared_ptr<Matrix> RAB(new Matrix("RAB",natom,natom));
     double** RABp = RAB->pointer();
     for (int A = 0; A < natom; A++) {
         for (int B = A; B < natom; B++) {
@@ -411,29 +411,29 @@ void FastDFJK::build_Bpq()
         nthread = df_ints_num_threads_;
     #endif
 
-    boost::shared_ptr<IntegralFactory>  fact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
-    boost::shared_ptr<IntegralFactory> Jfact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> >  ints1;
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jints1;
+    std::shared_ptr<IntegralFactory>  fact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
+    std::shared_ptr<IntegralFactory> Jfact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> >  ints1;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jints1;
 
-    boost::shared_ptr<IntegralFactory>  fact2(new IntegralFactory(auxiliary_,primary_,primary_,primary_));
-    boost::shared_ptr<IntegralFactory> Jfact2(new IntegralFactory(auxiliary_));
-    std::vector<boost::shared_ptr<ThreeCenterOverlapInt> >  ints2;
-    std::vector<boost::shared_ptr<OneBodyAOInt> >          Jints2;
+    std::shared_ptr<IntegralFactory>  fact2(new IntegralFactory(auxiliary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> Jfact2(new IntegralFactory(auxiliary_));
+    std::vector<std::shared_ptr<ThreeCenterOverlapInt> >  ints2;
+    std::vector<std::shared_ptr<OneBodyAOInt> >          Jints2;
 
     bool algorithm;
     for (int thread = 0; thread < nthread; thread++) {
         if (metric_ == "COULOMB") {
-            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->eri()));
-            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->eri()));
+            ints1.push_back(std::shared_ptr<TwoBodyAOInt>(fact1->eri()));
+            Jints1.push_back(std::shared_ptr<TwoBodyAOInt>(Jfact1->eri()));
             algorithm = false;
         } else if (metric_ == "EWALD") {
-            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->erf_complement_eri(theta_)));
-            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->erf_complement_eri(theta_)));
+            ints1.push_back(std::shared_ptr<TwoBodyAOInt>(fact1->erf_complement_eri(theta_)));
+            Jints1.push_back(std::shared_ptr<TwoBodyAOInt>(Jfact1->erf_complement_eri(theta_)));
             algorithm = false;
         } else if (metric_ == "OVERLAP") {
-            ints2.push_back(boost::shared_ptr<ThreeCenterOverlapInt>(fact2->overlap_3c()));
-            Jints2.push_back(boost::shared_ptr<OneBodyAOInt>(Jfact2->ao_overlap()));
+            ints2.push_back(std::shared_ptr<ThreeCenterOverlapInt>(fact2->overlap_3c()));
+            Jints2.push_back(std::shared_ptr<OneBodyAOInt>(Jfact2->ao_overlap()));
             algorithm = true;
         } else {
             throw PSIEXCEPTION("Unknown fitting metric");
@@ -475,11 +475,11 @@ void FastDFJK::build_Bpq()
 
         // => Tensor Allocation <= //
 
-        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", naux, npq));
+        std::shared_ptr<Matrix> Apq(new Matrix("Apq", naux, npq));
         double** Ap = Apq->pointer();
-        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", naux, npq));
+        std::shared_ptr<Matrix> Bpq(new Matrix("Bpq", naux, npq));
         double** Bp = Bpq->pointer();
-        boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
+        std::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
         double** Jp = J->pointer();
 
         // => Generate Integrals <= //
@@ -564,7 +564,7 @@ void FastDFJK::build_Bpq()
         Bpq_[pair] = Bpq;
     }
 }
-void FastDFJK::bump(boost::shared_ptr<Matrix> J, const std::vector<double>& bump_atoms, const std::vector<int>& auxiliary_atoms, bool bump_diagonal)
+void FastDFJK::bump(std::shared_ptr<Matrix> J, const std::vector<double>& bump_atoms, const std::vector<int>& auxiliary_atoms, bool bump_diagonal)
 {
     double** Jp = J->pointer();
     for (size_t C = 0, dA = 0; C < auxiliary_atoms.size(); C++) {
@@ -595,9 +595,9 @@ void FastDFJK::bump(boost::shared_ptr<Matrix> J, const std::vector<double>& bump
     }
 }
 
-void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
-                       const std::vector<boost::shared_ptr<Matrix> >& D,
-                       const std::vector<boost::shared_ptr<Matrix> >& J)
+void FastDFJK::build_J(std::shared_ptr<Matrix> Z,
+                       const std::vector<std::shared_ptr<Matrix> >& D,
+                       const std::vector<std::shared_ptr<Matrix> >& J)
 {
     // => Sizing <= //
 
@@ -631,15 +631,15 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
 
     // => Temporaries <= //
 
-    std::vector<boost::shared_ptr<Vector> > vs;
-    std::vector<boost::shared_ptr<Vector> > cs;
-    std::vector<boost::shared_ptr<Vector> > c;
+    std::vector<std::shared_ptr<Vector> > vs;
+    std::vector<std::shared_ptr<Vector> > cs;
+    std::vector<std::shared_ptr<Vector> > c;
     for (int thread = 0; thread < nthread; thread++) {
-        vs.push_back(boost::shared_ptr<Vector>(new Vector("vs", max_nso2)));
-        cs.push_back(boost::shared_ptr<Vector>(new Vector("cs", max_naux)));
-        c.push_back( boost::shared_ptr<Vector>(new Vector("c", naux)));
+        vs.push_back(std::shared_ptr<Vector>(new Vector("vs", max_nso2)));
+        cs.push_back(std::shared_ptr<Vector>(new Vector("cs", max_naux)));
+        c.push_back( std::shared_ptr<Vector>(new Vector("c", naux)));
     }
-    boost::shared_ptr<Vector> d(new Vector("d",naux));
+    std::shared_ptr<Vector> d(new Vector("d",naux));
 
     // ==> Master Loop over J Tasks <= //
 
@@ -665,7 +665,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
 
             const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            boost::shared_ptr<Matrix> B = Bpq_[pair];
+            std::shared_ptr<Matrix> B = Bpq_[pair];
 
             int nauxs = B->rowspi()[0];
             int nso2s = B->colspi()[0];
@@ -732,7 +732,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
 
             const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            boost::shared_ptr<Matrix> B = Bpq_[pair];
+            std::shared_ptr<Matrix> B = Bpq_[pair];
 
             int nauxs = B->rowspi()[0];
             int nso2s = B->colspi()[0];
@@ -777,9 +777,9 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
         }
     }
 }
-void FastDFJK::build_K(boost::shared_ptr<Matrix> /*Z*/,
-                       const std::vector<boost::shared_ptr<Matrix> >& /*D*/,
-                       const std::vector<boost::shared_ptr<Matrix> >& /*K*/)
+void FastDFJK::build_K(std::shared_ptr<Matrix> /*Z*/,
+                       const std::vector<std::shared_ptr<Matrix> >& /*D*/,
+                       const std::vector<std::shared_ptr<Matrix> >& /*K*/)
 {
     throw PSIEXCEPTION("K: Not implemented yet");
 }

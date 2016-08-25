@@ -39,7 +39,7 @@
 
 namespace psi {
 
-void collect_atoms(boost::shared_ptr<Molecule> molecule, double charges[], double centers[])
+void collect_atoms(std::shared_ptr<Molecule> molecule, double charges[], double centers[])
 {
     int nat = molecule->natom();
     for(int i = 0; i < nat; ++i) {
@@ -87,7 +87,7 @@ PCMInput pcmsolver_input()
 }
 
 
-PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost::shared_ptr<BasisSet> basisset)
+PCM::PCM(Options &options, std::shared_ptr<PSIO> /* psio */, int nirrep, std::shared_ptr<BasisSet> basisset)
 {
   if(!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
   outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
@@ -99,7 +99,7 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost
 
   basisset_ = basisset;
 
-  boost::shared_ptr<IntegralFactory>
+  std::shared_ptr<IntegralFactory>
     integrals(new IntegralFactory(basisset, basisset, basisset, basisset));
 
   PetiteList petite(basisset, integrals, true);
@@ -107,7 +107,7 @@ PCM::PCM(Options &options, boost::shared_ptr<PSIO> /* psio */, int nirrep, boost
 
   potential_int_ = static_cast<PCMPotentialInt*>(integrals->pcm_potentialint());
 
-  boost::shared_ptr<Molecule> molecule = basisset->molecule();
+  std::shared_ptr<Molecule> molecule = basisset->molecule();
 
   /* PCMSolver needs to know who has to parse the input.
    * We should have something like this here:
