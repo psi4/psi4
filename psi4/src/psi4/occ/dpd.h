@@ -28,7 +28,7 @@
 #ifndef _psi_src_bin_occ_dpd_h_
 #define _psi_src_bin_occ_dpd_h_
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 
@@ -89,11 +89,11 @@ class SymBlockMatrix
   int *rowspi();
   int *colspi();
   bool load(PSIO* psio, int itap, const char *label, int dim);
-  bool load(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  bool load(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   void write(PSIO* psio, int itap, bool saveSubBlocks);
-  void write(boost::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
-  void read(boost::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
-  void read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
+  void write(std::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
+  void read(std::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
+  void read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
   void mgs();// Modified Gram-Schmidt
   void gs();// Gram-Schmidt
   void diagonalize(SymBlockMatrix* eigvectors, SymBlockVector* eigvalues);
@@ -102,8 +102,8 @@ class SymBlockMatrix
   void cdgesv(SymBlockVector* Xvec); // solve lineq via acml
   void lineq_flin(SymBlockVector* Xvec, double *det); // solve lineq via flin
   void lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff); // solve lineq via pople
-  void read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
-  void read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
+  void read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
+  void read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                  int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
 
 

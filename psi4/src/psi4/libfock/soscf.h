@@ -48,7 +48,6 @@ abcd              - Virtual indices
 
 #include "psi4/libmints/typedefs.h"
 #include <map>
-#include <boost/tuple/tuple.hpp>
 
 namespace psi {
 
@@ -68,8 +67,8 @@ public:
      * @param H       Core hamiltonian in the SO basis.
      * @param casscf  Is this a CAS calculation? (ignore active-active rotations)
      */
-    // SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
-    SOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO,
+    // SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
+    SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO,
             SharedMatrix H);
 
     virtual ~SOMCSCF(void);
@@ -177,7 +176,7 @@ protected:
     Dimension navpi_;
 
     /// Integral objects
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
 
     /// Map of matrices
     std::map<std::string, SharedMatrix > matrices_;
@@ -220,14 +219,14 @@ public:
      * @param df      AOTOSO object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
-    DFSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
+    DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFERI> df, SharedMatrix AOTOSO,
             SharedMatrix H);
 
     virtual ~DFSOMCSCF();
 
 protected:
 
-    boost::shared_ptr<DFERI> dferi_;
+    std::shared_ptr<DFERI> dferi_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual void compute_Q();
@@ -248,14 +247,14 @@ public:
      * @param jk      JK object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
-    DiskSOMCSCF(boost::shared_ptr<JK> jk, boost::shared_ptr<IntegralTransform> ints, SharedMatrix AOTOSO, SharedMatrix H);
+    DiskSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<IntegralTransform> ints, SharedMatrix AOTOSO, SharedMatrix H);
 
     virtual ~DiskSOMCSCF();
 
 protected:
 
-    boost::shared_ptr<IntegralTransform> ints_;
-    boost::shared_ptr<PSIO>  psio_;
+    std::shared_ptr<IntegralTransform> ints_;
+    std::shared_ptr<PSIO>  psio_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual void compute_Q();
@@ -277,7 +276,7 @@ public:
      * @param jk      JK object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
-    IncoreSOMCSCF(boost::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
+    IncoreSOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
     virtual ~IncoreSOMCSCF();
 

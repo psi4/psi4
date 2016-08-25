@@ -49,24 +49,24 @@ protected:
     // => Key Member Data <= //
 
     /// Orbital Basis Set
-    boost::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<BasisSet> basisset_;
     /// AO-basis (C1) OPDM for alpha electrons
-    boost::shared_ptr<Matrix> Da_;
+    std::shared_ptr<Matrix> Da_;
     /// AO-basis (C1) OPDM for beta electrons
-    boost::shared_ptr<Matrix> Db_;
+    std::shared_ptr<Matrix> Db_;
     /// AO-basis (C1) SCF orbital coefficients for alpha electrons
-    boost::shared_ptr<Matrix> Ca_;
+    std::shared_ptr<Matrix> Ca_;
     /// AO-basis (C1) SCF orbital coefficients for beta electrons
-    boost::shared_ptr<Matrix> Cb_;
+    std::shared_ptr<Matrix> Cb_;
     /// Info for alpha electrons (epsilon,rel. index,irrep)
-    std::vector<boost::tuple<double, int, int> > info_a_;
+    std::vector<std::tuple<double, int, int> > info_a_;
     /// Info for beta electrons (epsilon,rel. index,irrep)
-    std::vector<boost::tuple<double, int, int> > info_b_;
+    std::vector<std::tuple<double, int, int> > info_b_;
 
     // => Computers <= //
 
     /// Grid-based property computer
-    boost::shared_ptr<CubicScalarGrid> grid_;
+    std::shared_ptr<CubicScalarGrid> grid_;
 
     // => Helper Functions <= //
 
@@ -92,17 +92,17 @@ public:
     /// Obligatory title info
     void print_header();
     /// Compute a density grid task (key.cube)
-    void compute_density(boost::shared_ptr<Matrix> D, const std::string& key);
+    void compute_density(std::shared_ptr<Matrix> D, const std::string& key);
     /// Compute an ESP grid task (Dt.cube and ESP.cube)
-    void compute_esp(boost::shared_ptr<Matrix> Dt, const std::vector<double>& nuc_weights = std::vector<double>());
+    void compute_esp(std::shared_ptr<Matrix> Dt, const std::vector<double>& nuc_weights = std::vector<double>());
     /// Compute an orbital task (key_N.cube, for 0-based indices of C)
-    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key);
+    void compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& key);
     /// Compute a basis function task (key_N.cube, for 0-based indices of basisset_)
     void compute_basis_functions(const std::vector<int>& indices, const std::string& key);
     /// Compute a LOL grid task (key.cube)
-    void compute_LOL(boost::shared_ptr<Matrix> D, const std::string& key);
+    void compute_LOL(std::shared_ptr<Matrix> D, const std::string& key);
     /// Compute an ELF grid task (key.cube)
-    void compute_ELF(boost::shared_ptr<Matrix> D, const std::string& key);
+    void compute_ELF(std::shared_ptr<Matrix> D, const std::string& key);
 };
 
 }

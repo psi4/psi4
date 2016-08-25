@@ -32,7 +32,7 @@
 
 using namespace psi;
 
-MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int order, int nderiv) :
+MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int order, int nderiv) :
 OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mi_recur_(bs1->max_am()+2, bs2->max_am()+2, order), order_(order)
 {
     int maxam1 = bs1_->max_am();
@@ -59,10 +59,10 @@ MultipoleInt::~MultipoleInt()
     delete[] buffer_;
 }
 
-SharedVector MultipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol, int order, const Vector3 &origin)
+SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin)
 {
     int ntot = (order+1)*(order+2)*(order+3)/6 - 1;
-    boost::shared_ptr<Vector> sret(new Vector(ntot));
+    std::shared_ptr<Vector> sret(new Vector(ntot));
     double *ret = sret->pointer();
 
     int address = 0;

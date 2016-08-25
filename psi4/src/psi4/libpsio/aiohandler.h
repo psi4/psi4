@@ -28,7 +28,7 @@
 #ifndef AIOHANDLER_H
 #define AIOHANDLER_H
 
-#include <boost/thread/thread.hpp>
+#include <thread>
 
 namespace psi {
 
@@ -65,22 +65,22 @@ private:
     /// For IWL: pointer to current position in file
     std::queue<size_t*> address_;
     /// PSIO object this AIO_Handler is built on
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
-    boost::shared_ptr<boost::thread> thread_;
+    std::shared_ptr<std::thread> thread_;
     /// Lock variable
-    boost::mutex *locked_;
+    std::mutex *locked_;
     /// Latest unique job ID
     unsigned long int uniqueID_;
     /// condition variable to wait for a specific job to finish
-    boost::condition_variable condition_;
+    std::condition_variable condition_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
-    AIOHandler(boost::shared_ptr<PSIO> psio);
+    AIOHandler(std::shared_ptr<PSIO> psio);
     /// Destructor
     ~AIOHandler();
     /// Thread object this AIO_Handler is currently running on
-    boost::shared_ptr<boost::thread> get_thread();
+    std::shared_ptr<std::thread> get_thread();
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking

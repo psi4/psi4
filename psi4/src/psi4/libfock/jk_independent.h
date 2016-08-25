@@ -82,7 +82,7 @@ namespace psi {
   public:
     // => Constructors < = //
 
-    JKIndependent(boost::shared_ptr<BasisSet> primary, bool do_separately);
+    JKIndependent(std::shared_ptr<BasisSet> primary, bool do_separately);
     /// Destructor
     virtual ~JKIndependent();
 

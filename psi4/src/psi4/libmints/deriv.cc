@@ -32,18 +32,8 @@
  *      Author: jturney
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <boost/foreach.hpp>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
-
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/deriv.h"
 #include "psi4/libparallel/mpi_wrapper.h"
@@ -52,7 +42,10 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sointegral_onebody.h"
 
-using namespace std;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <memory>
 
 namespace psi {
 
@@ -67,7 +60,7 @@ class CorrelatedFunctor
     /// How large the buffer is, for each shell pair
     size_t *buffer_sizes_;
     /// The PSIO object to use for disk I/O
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 public:
     int nthread;
     std::vector<SharedVector> result;
@@ -161,7 +154,7 @@ public:
 //        return *this;
 //    }
 
-    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> D)
+    ScfRestrictedFunctor(SharedVector results, std::shared_ptr<Matrix> D)
         : D_(D)
     {
         counter=0;
@@ -239,8 +232,8 @@ public:
 
     ScfAndDfCorrelationRestrictedFunctor(SharedVector results,
                                          ScfRestrictedFunctor& scf_functor,
-                                         boost::shared_ptr<Matrix> D,
-                                         boost::shared_ptr<Matrix> D_ref)
+                                         std::shared_ptr<Matrix> D,
+                                         std::shared_ptr<Matrix> D_ref)
         : D_ref_(D_ref), D_(D), scf_functor_(scf_functor), results_(results)
     {
         counter=0;
@@ -374,7 +367,7 @@ public:
 
     ScfUnrestrictedFunctor() { throw PSIEXCEPTION("ScfUnrestrictedFunctor(): Oh come on!!!"); }
 
-    ScfUnrestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> Da, boost::shared_ptr<Matrix> Db)
+    ScfUnrestrictedFunctor(SharedVector results, std::shared_ptr<Matrix> Da, std::shared_ptr<Matrix> Db)
         : Da_(Da),
           Db_(Db)
     {
@@ -435,7 +428,7 @@ public:
     }
 };
 
-Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
+Deriv::Deriv(const std::shared_ptr<Wavefunction>& wave,
              char needed_irreps,
              bool project_out_translations,
              bool project_out_rotations)
@@ -478,9 +471,9 @@ SharedMatrix Deriv::compute()
     }
 
     // Initialize an ERI object requesting derivatives.
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt> > ao_eri;
     for (int i=0; i<Process::environment.get_n_threads(); ++i)
-        ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
+        ao_eri.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
     // A certain optimization can be used if we know we only need totally symmetric
@@ -488,12 +481,12 @@ SharedMatrix Deriv::compute()
     so_eri.set_only_totally_symmetric(true);
 
     // Compute one-electron derivatives.
-    vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
-    vector<SharedMatrix> h_deriv = cdsalcs_.create_matrices("H'");
+    std::vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
+    std::vector<SharedMatrix> h_deriv = cdsalcs_.create_matrices("H'");
 
-    boost::shared_ptr<OneBodySOInt> s_int(integral_->so_overlap(1));
-    boost::shared_ptr<OneBodySOInt> t_int(integral_->so_kinetic(1));
-    boost::shared_ptr<OneBodySOInt> v_int(integral_->so_potential(1));
+    std::shared_ptr<OneBodySOInt> s_int(integral_->so_overlap(1));
+    std::shared_ptr<OneBodySOInt> t_int(integral_->so_kinetic(1));
+    std::shared_ptr<OneBodySOInt> v_int(integral_->so_potential(1));
 
     s_int->compute_deriv1(s_deriv, cdsalcs_);
     t_int->compute_deriv1(h_deriv, cdsalcs_);
@@ -522,7 +515,7 @@ SharedMatrix Deriv::compute()
     SharedMatrix X = wfn_->X();
 
     // The current wavefunction's reference wavefunction, NULL for SCF/DFT
-    boost::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
+    std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
     bool reference_separate = (X) && ref_wfn;
 
@@ -606,9 +599,9 @@ SharedMatrix Deriv::compute()
             if ( !deriv_density_backtransformed_ ) {
 
                 // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
-                vector<boost::shared_ptr<MOSpace> > spaces;
+                std::vector<std::shared_ptr<MOSpace> > spaces;
                 spaces.push_back(MOSpace::all);
-                boost::shared_ptr<IntegralTransform> ints_transform = boost::shared_ptr<IntegralTransform>(
+                std::shared_ptr<IntegralTransform> ints_transform = std::shared_ptr<IntegralTransform>(
                             new IntegralTransform(wfn_,
                                                   spaces,
                                                   wfn_->same_a_b_orbs() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type

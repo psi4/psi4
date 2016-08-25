@@ -31,7 +31,7 @@
 #include "defines.h"
 #include "occwave.h"
 
-using namespace boost;
+
 using namespace std;
 
 

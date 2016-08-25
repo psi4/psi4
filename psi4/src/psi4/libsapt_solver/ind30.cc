@@ -27,7 +27,7 @@
 
 #include "sapt2p3.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -59,7 +59,7 @@ void SAPT2p3::ind30()
   }
   if (print_) {
     outfile->Printf("    Ind30               = %18.12lf [Eh]\n",e_ind30_);
-    
+
   }
 }
 
@@ -81,13 +81,13 @@ void SAPT2p3::ind30r()
   }
   if (print_) {
     outfile->Printf("    Ind30,r             = %18.12lf [Eh]\n",e_ind30r_);
-    
+
   }
 }
 
-double SAPT2p3::ind30r_1(double **cAR, double **cBS, double **wBAA, 
-  double **wBRR, int intfileA, const char *AAlabel, const char *ARlabel, 
-  const char *RRlabel, int intfileB, const char *BSlabel, int noccA, 
+double SAPT2p3::ind30r_1(double **cAR, double **cBS, double **wBAA,
+  double **wBRR, int intfileA, const char *AAlabel, const char *ARlabel,
+  const char *RRlabel, int intfileB, const char *BSlabel, int noccA,
   int nvirA, int noccB, int nvirB)
 {
   double energy = 0.0;
@@ -112,7 +112,7 @@ double SAPT2p3::ind30r_1(double **cAR, double **cBS, double **wBAA,
   C_DGEMV('t',noccB*nvirB,ndf_+3,1.0,B_p_BS[0],ndf_+3,cBS[0],1,0.0,Y,1);
 
   free_block(B_p_BS);
- 
+
   double **B_p_AR = get_DF_ints(intfileA,ARlabel,0,noccA,0,nvirA);
 
   C_DGEMV('t',noccA*nvirA,ndf_+3,1.0,B_p_AR[0],ndf_+3,cAR[0],1,0.0,X,1);
@@ -146,7 +146,7 @@ double SAPT2p3::ind30r_1(double **cAR, double **cBS, double **wBAA,
   for (int a=0; a<noccA; a++) {
     C_DGEMM('N','N',nvirA,ndf_+3,nvirA,1.0,xRR[0],nvirA,C_p_AR[a*nvirA],
       ndf_+3,0.0,D_p_AR[a*nvirA],ndf_+3);
-  } 
+  }
 
   energy -= 4.0*C_DDOT(noccA*nvirA*(ndf_+3),B_p_AR[0],1,D_p_AR[0],1);
 

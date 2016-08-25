@@ -31,11 +31,11 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libpsio/aiohandler.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -553,7 +553,7 @@ void SAPT0::ind20rA_B_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+  std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_AA[2];
   double **C_p_RR[2];
@@ -792,7 +792,7 @@ void SAPT0::ind20rB_A_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+  std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_BB[2];
   double **C_p_SS[2];

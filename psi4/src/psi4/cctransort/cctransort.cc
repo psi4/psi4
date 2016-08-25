@@ -39,7 +39,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
 
-using namespace boost;
+
 using std::vector;
 namespace psi{ namespace cctransort {
 
@@ -52,21 +52,21 @@ void memcheck(int reference);
 
 vector<int> pitzer2qt(vector<Dimension> &spaces);
 
-void sort_tei_rhf(boost::shared_ptr<PSIO> psio, int print);
-void sort_tei_uhf(boost::shared_ptr<PSIO> psio, int print);
+void sort_tei_rhf(std::shared_ptr<PSIO> psio, int print);
+void sort_tei_uhf(std::shared_ptr<PSIO> psio, int print);
 
 void c_sort(int reference);
 void d_sort(int reference);
 void e_sort(int reference);
 void f_sort(int reference);
-void b_spinad(boost::shared_ptr<PSIO>);
+void b_spinad(std::shared_ptr<PSIO>);
 void a_spinad();
 void d_spinad();
 void e_spinad();
 
-void fock_rhf(boost::shared_ptr<Wavefunction> ref, Dimension &occpi, Dimension &openpi,
+void fock_rhf(std::shared_ptr<Wavefunction> ref, Dimension &occpi, Dimension &openpi,
               Dimension &virpi, Dimension &frzcpi, int print);
-void fock_uhf(boost::shared_ptr<Wavefunction> ref, Dimension &aoccpi, Dimension &boccpi,
+void fock_uhf(std::shared_ptr<Wavefunction> ref, Dimension &aoccpi, Dimension &boccpi,
               Dimension &avirpi, Dimension &bvirpi, Dimension &frzcpi, int print);
 
 double scf_check(int reference, Dimension &openpi);
@@ -78,7 +78,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 {
   tstart();
 
-  boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+  std::shared_ptr<PSIO> psio(_default_psio_lib_);
   if(!ref) throw PSIEXCEPTION("SCF has not been run yet!");
 
   int print = options.get_int("PRINT");
@@ -343,7 +343,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   // Transformation
 
   outfile->Printf("\tTransforming integrals...\n");
-  std::vector<boost::shared_ptr<MOSpace> > transspaces;
+  std::vector<std::shared_ptr<MOSpace> > transspaces;
   transspaces.push_back(MOSpace::occ);
   transspaces.push_back(MOSpace::vir);
 

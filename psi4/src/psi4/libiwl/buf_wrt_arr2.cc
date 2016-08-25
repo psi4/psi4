@@ -40,8 +40,8 @@ namespace psi {
 void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int size,
     int printflag, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
    int i,idx;
     double value;
     Label *lblptr;
@@ -102,8 +102,8 @@ void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int si
 void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q,
       int *rlist, int *slist, int size, int printflag, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
   int i,idx;
   double value;
   Label *lblptr;

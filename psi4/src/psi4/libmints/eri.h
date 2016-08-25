@@ -113,7 +113,7 @@ protected:
     ShellPair **pairs12_, **pairs34_;
 
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
-    size_t memory_to_store_shell_pairs(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<BasisSet>&);
+    size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet>&, const std::shared_ptr<BasisSet>&);
 
     //! Original shell index requested
     int osh1_, osh2_, osh3_, osh4_;
@@ -151,35 +151,35 @@ public:
 class F12 : public TwoElectronInt
 {
 public:
-    F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12();
 };
 
 class F12Scaled : public TwoElectronInt
 {
 public:
-    F12Scaled(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12Scaled();
 };
 
 class F12Squared : public TwoElectronInt
 {
 public:
-    F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12Squared();
 };
 
 class F12G12 : public TwoElectronInt
 {
 public:
-    F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12G12();
 };
 
 class F12DoubleCommutator : public TwoElectronInt
 {
 public:
-    F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12DoubleCommutator();
 };
 

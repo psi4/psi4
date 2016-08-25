@@ -50,8 +50,8 @@ namespace psi {
 */
 void print_mat(double **a, int m, int n, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
 int num_frames = int(n/10);
 int num_frames_rem = n%10; //adding one for changing 0->1 start
 int num_frame_counter = 0;

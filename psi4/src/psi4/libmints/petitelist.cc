@@ -64,7 +64,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 
-using namespace boost;
+;
 
 namespace psi {
 
@@ -349,7 +349,7 @@ int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_p
     return atom_map;
 }
 
-int **compute_atom_map(const boost::shared_ptr<Molecule>& molecule, double tol, bool suppress_mol_print_in_exc)
+int **compute_atom_map(const std::shared_ptr<Molecule>& molecule, double tol, bool suppress_mol_print_in_exc)
 {
     return compute_atom_map(molecule.get(), tol, suppress_mol_print_in_exc);
 }
@@ -364,12 +364,12 @@ void delete_atom_map(int **atom_map, const Molecule *molecule)
     }
 }
 
-void delete_atom_map(int **atom_map, const boost::shared_ptr<Molecule>& molecule)
+void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule>& molecule)
 {
     delete_atom_map(atom_map, molecule.get());
 }
 
-int **compute_shell_map(int **atom_map, const boost::shared_ptr<BasisSet>& basis)
+int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet>& basis)
 {
     int **shell_map;
 
@@ -401,7 +401,7 @@ int **compute_shell_map(int **atom_map, const boost::shared_ptr<BasisSet>& basis
     return shell_map;
 }
 
-void delete_shell_map(int **shell_map, const boost::shared_ptr<BasisSet>& basis)
+void delete_shell_map(int **shell_map, const std::shared_ptr<BasisSet>& basis)
 {
     int nshell = basis->nshell();
     if (shell_map) {
@@ -451,14 +451,14 @@ void SOCoefficients::delete_zeros()
 
 ////////////////////////////////////////////////////////////////////////////
 
-PetiteList::PetiteList(const boost::shared_ptr<BasisSet>& gbs, const boost::shared_ptr<IntegralFactory>& ints,
+PetiteList::PetiteList(const std::shared_ptr<BasisSet>& gbs, const std::shared_ptr<IntegralFactory>& ints,
                        bool include_pure_transform)
         : basis_(gbs), integral_(ints.get()), include_pure_transform_(include_pure_transform)
 {
     init();
 }
 
-PetiteList::PetiteList(const boost::shared_ptr<BasisSet>& gbs, const IntegralFactory *ints, bool include_pure_transform)
+PetiteList::PetiteList(const std::shared_ptr<BasisSet>& gbs, const IntegralFactory *ints, bool include_pure_transform)
         : basis_(gbs), integral_(ints), include_pure_transform_(include_pure_transform)
 {
     init();
@@ -509,9 +509,9 @@ PetiteList::~PetiteList()
     nbf_in_ir_ = 0;
 }
 
-boost::shared_ptr<PetiteList> PetiteList::clone()
+std::shared_ptr<PetiteList> PetiteList::clone()
 {
-    return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    return std::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
 }
 
 int PetiteList::nfunction(int i) const
@@ -760,8 +760,8 @@ Dimension PetiteList::SO_basisdim()
 void PetiteList::print(std::string out)
 {
     int i;
-    boost::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                    boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                    std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("PetiteList:\n");
 
     if (c1_) {
@@ -824,7 +824,7 @@ PetiteList::compute_aotoso_info()
     bool to_pure = include_pure_transform_ && basis_->has_puream();
     bool from_cart = include_pure_transform_ || !basis_->has_puream();
 
-    shared_ptr<Molecule> mol = basis_->molecule();
+    std::shared_ptr<Molecule> mol = basis_->molecule();
     CharacterTable ct = mol->point_group()->char_table();
     int nunique = mol->nunique();
     int maxam = basis_->max_am();

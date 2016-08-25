@@ -56,8 +56,8 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
       if (do_diis_ == 1) {
 	  // RHF
           if (reference_ == "RESTRICTED") {
-              boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
-              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
+              std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+              ccsdDiisManager = std::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
               ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
               ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
               T2.reset();
@@ -65,10 +65,10 @@ outfile->Printf("  ----   ----------------      ----------------       ---------
 
 	  // UHF
 	  else if (reference_ == "UNRESTRICTED") {
-              boost::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
-              boost::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
-              boost::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA*naoccB, navirA*navirB));
-              ccsdDiisManager = boost::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
+              std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
+              std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
+              std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA*naoccB, navirA*navirB));
+              ccsdDiisManager = std::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
               ccsdDiisManager->set_error_vector_size(3, DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
               ccsdDiisManager->set_vector_size(3, DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
               T2AA.reset();

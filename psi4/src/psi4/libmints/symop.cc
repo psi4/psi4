@@ -207,8 +207,8 @@ SymmetryOperation::transpose()
 void
 SymmetryOperation::print(std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    printer->Printf( "        1          2          3\n");
     printer->Printf( "  1  ");
     printer->Printf( "%10.7f ", d[0][0]);

@@ -25,47 +25,38 @@
  * @END LICENSE
  */
 #include "psi4/libmints/basisset_parser.h"
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psi4-dec.h"
 
 #include <cstdio>
 #include <fstream>
 #include <algorithm>
 #include <ctype.h>
+#include <memory>
+#include <regex>
 
-using namespace psi;
-using namespace boost;
-using namespace std;
-
-boost::regex basis_separator("^\\s*\\[\\s*(.*?)\\s*\\]\\s*$");
+namespace psi {
+namespace {
+std::regex basis_separator("^\\s*\\[\\s*(.*?)\\s*\\]\\s*$");
+}
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
-template <class T>
-bool from_string(T& t,
-                 const std::string& s,
-                 std::ios_base& (*f)(std::ios_base&))
+template<class T>
+bool from_string(T &t,
+                 const std::string &s,
+                 std::ios_base &(*f)(std::ios_base &))
 {
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
 
-BasisSetFileNotFound::BasisSetFileNotFound(string message,
-                                   const char* _file,
-                                   int _line) throw()
-    : PsiException(message, _file, _line)
+BasisSetFileNotFound::BasisSetFileNotFound(std::string message,
+                                           const char *_file,
+                                           int _line) throw()
+        : PsiException(message, _file, _line)
 {
-    stringstream sstr;
+    std::stringstream sstr;
     sstr << "sanity check failed! " << message;
     rewrite_msg(sstr.str());
 }
@@ -74,12 +65,12 @@ BasisSetFileNotFound::~BasisSetFileNotFound() throw()
 {
 }
 
-BasisSetNotFound::BasisSetNotFound(string message,
-                                   const char* _file,
+BasisSetNotFound::BasisSetNotFound(std::string message,
+                                   const char *_file,
                                    int _line) throw()
-    : PsiException(message, _file, _line)
+        : PsiException(message, _file, _line)
 {
-    stringstream sstr;
+    std::stringstream sstr;
     sstr << "sanity check failed! " << message;
     rewrite_msg(sstr.str());
 }
@@ -90,120 +81,121 @@ BasisSetNotFound::~BasisSetNotFound() throw()
 
 BasisSetParser::BasisSetParser()
 {
-  force_puream_or_cartesian_ = false;
-  forced_is_puream_ = false;
+    force_puream_or_cartesian_ = false;
+    forced_is_puream_ = false;
 }
 
-BasisSetParser::BasisSetParser(bool forced_puream) {
-  force_puream_or_cartesian_ = true;
-  forced_is_puream_ = forced_puream;
+BasisSetParser::BasisSetParser(bool forced_puream)
+{
+    force_puream_or_cartesian_ = true;
+    forced_is_puream_ = forced_puream;
 }
 
 BasisSetParser::~BasisSetParser()
 {
 }
 
-vector<string> BasisSetParser::load_file(const std::string& filename,
-                                         const std::string& basisname)
+std::vector <std::string> BasisSetParser::load_file(const std::string &filename,
+                                                    const std::string &basisname)
 {
     filename_ = filename;
 
     // Loads an entire file.
-    vector<string> lines;
+    std::vector <std::string> lines;
 
+    std::smatch what;
 
-        smatch what;
+    // temp variable
+    std::string text;
 
-        // temp variable
-        string text;
+    // Stream to use
+    std::ifstream infile(filename.c_str());
 
-        // Stream to use
-        ifstream infile(filename.c_str());
+    if (!infile)
+        throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
 
-        if (!infile)
-            throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
+    bool given_basisname = basisname.empty() ? false : true;
+    bool found_basisname = false;
 
-        bool given_basisname = basisname.empty() ? false : true;
-        bool found_basisname = false;
+    while (infile.good()) {
+        std::getline(infile, text);
 
-        while (infile.good()) {
-            getline(infile, text);
+        // If no basisname was given always save the line.
+        if (given_basisname == false)
+            lines.push_back(text);
 
-            // If no basisname was given always save the line.
-            if (given_basisname == false)
-                lines.push_back(text);
+        if (found_basisname) {
 
-            if (found_basisname) {
+            // If we find another [*] we're done.
+            if (std::regex_match(text, what, basis_separator))
+                break;
 
-                // If we find another [*] we're done.
-                if (regex_match(text, what, basis_separator))
-                    break;
-
-                lines.push_back(text);
-                continue;
-            }
-
-            // If the user gave a basisname AND text matches the basisname we want to trigger to retain
-            if (given_basisname && regex_match(text, what, basis_separator)) {
-                if (boost::iequals(what[1].str(), basisname))
-                    found_basisname = true;
-            }
+            lines.push_back(text);
+            continue;
         }
 
+        // If the user gave a basisname AND text matches the basisname we want to trigger to retain
+        if (given_basisname && regex_match(text, what, basis_separator)) {
+            if (iequals(what[1].str(), basisname))
+                found_basisname = true;
+        }
+    }
+
 
     return lines;
 }
 
-vector<string> BasisSetParser::string_to_vector(const std::string &data)
+std::vector <std::string> BasisSetParser::string_to_vector(const std::string &input)
 {
-    vector<string> lines;
-    boost::split(lines, data, boost::is_any_of("\n"));
-    return lines;
+    std::regex re("\\n");
+    std::sregex_token_iterator
+            first{input.begin(), input.end(), re, -1},
+            last;
+    return {first, last};
 }
 
-std::vector<ShellInfo>
-Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::string> &lines)
+std::vector <ShellInfo>
+Gaussian94BasisSetParser::parse(const std::string &symbol, const std::vector <std::string> &lines)
 {
     // Regular expressions that we'll be checking for.
-    regex cartesian("^\\s*cartesian\\s*", regbase::icase);
-    regex spherical("^\\s*spherical\\s*", regbase::icase);
-    regex comment("^\\s*\\!.*");                                         // line starts with !
-    regex separator("^\\s*\\*\\*\\*\\*");                                // line starts with ****
-    regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");             // Match beginning of contraction
-    regex atom_array("^\\s*(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)\\s+0\\s*$", regbase::icase);  // atomic symbol/label terminated by 0
+    std::regex cartesian("^\\s*cartesian\\s*", std::regex_constants::icase);
+    std::regex spherical("^\\s*spherical\\s*", std::regex_constants::icase);
+    std::regex comment("^\\s*\\!.*");                                         // line starts with !
+    std::regex separator("^\\s*\\*\\*\\*\\*");                                // line starts with ****
+    std::regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");             // Match beginning of contraction
+    std::regex atom_array("^\\s*(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)\\s+0\\s*$", std::regex_constants::icase);  // atomic symbol/label terminated by 0
 
     // NUMBER is in psi4-dec.h
-    regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");                // Match s, p, d, f, g, ... functions
-    regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*");  // match sp functions
+    std::regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");                // Match s, p, d, f, g, ... functions
+    std::regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*");  // match sp functions
 
     // s, p and s, p, d can be grouped together in Pople-style basis sets
-    const string sp("SP"), spd("SPD");
+    const std::string sp("SP"), spd("SPD");
 
-    char mo = (char)(-1);
+    char mo = (char) (-1);
     //                     a  b  c  d  e  f  g  h  i  j  k  l  m  n  o  p  q  r  s  t  u  v  w  x  y  z
-    char shell_to_am[] = {mo,mo,mo, 2,mo, 3, 4, 5, 6,mo, 7, 8, 9,10,11, 1,12,13, 0,14,15,16,17,18,19,20};
+    char shell_to_am[] = {mo, mo, mo, 2, mo, 3, 4, 5, 6, mo, 7, 8, 9, 10, 11, 1, 12, 13, 0, 14, 15, 16, 17, 18, 19, 20};
 
     // Hold the result of a regex_match
-    smatch what;
+    std::smatch what;
 
     // Basis type.
     GaussianType gaussian_type = Pure;
 
     if (force_puream_or_cartesian_) {
-      if (forced_is_puream_ == false) gaussian_type = Cartesian;
+        if (forced_is_puream_ == false) gaussian_type = Cartesian;
     }
-
 
     // Need a dummy center for the shell.
     Vector3 center;
 
-    vector<ShellInfo> shell_list;
+    std::vector <ShellInfo> shell_list;
 
     size_t lineno = 0;
     bool found = false;
 
     while (lineno < lines.size()) {
-        string line = lines[lineno++];
+        std::string line = lines[lineno++];
 
         // Ignore blank lines
         if (line.empty())
@@ -250,7 +242,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                 while (!regex_match(line, what, separator)) {
                     // Match shell information
                     if (regex_match(line, what, shell)) {
-                        string shell_type(what[1].first, what[1].second);
+                        std::string shell_type(what[1].first, what[1].second);
                         std::transform(shell_type.begin(), shell_type.end(), shell_type.begin(), ::toupper);
                         int nprimitive;
                         double scale;
@@ -262,20 +254,20 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to convert scale factor:\n" + line);
 
                         if (shell_type.size() == 1) {
-                            int am = (int)shell_to_am[shell_type[0] - 'A'];
+                            int am = (int) shell_to_am[shell_type[0] - 'A'];
 
                             std::vector<double> exponents(nprimitive);
                             std::vector<double> contractions(nprimitive);
 
-                            for (int p=0; p<nprimitive; ++p) {
+                            for (int p = 0; p < nprimitive; ++p) {
                                 line = lines[lineno++];
 
                                 int idx;
-                                while((idx=line.find_first_of('D')) >= 0 ) {
-                                    line.replace( idx, 1, "e" );
+                                while ((idx = line.find_first_of('D')) >= 0) {
+                                    line.replace(idx, 1, "e");
                                 }
-                                while((idx=line.find_first_of('d')) >= 0 ) {
-                                    line.replace( idx, 1, "e" );
+                                while ((idx = line.find_first_of('d')) >= 0) {
+                                    line.replace(idx, 1, "e");
                                 }
 
                                 // Must match primitives1; will work on the others later
@@ -298,25 +290,24 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             //                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
                             // We have a full shell, push it to the basis set
                             shell_list.push_back(ShellInfo(am, contractions, exponents, gaussian_type, 0, center, 0, Unnormalized));
-                        }
-                        else if (shell_type.size() == 2) {
+                        } else if (shell_type.size() == 2) {
                             // This is to handle instances of SP, PD, DF, FG, ...
-                            int am1 = (int)shell_to_am[shell_type[0] - 'A'];
-                            int am2 = (int)shell_to_am[shell_type[1] - 'A'];
+                            int am1 = (int) shell_to_am[shell_type[0] - 'A'];
+                            int am2 = (int) shell_to_am[shell_type[1] - 'A'];
 
                             std::vector<double> exponents(nprimitive);
                             std::vector<double> contractions1(nprimitive);
                             std::vector<double> contractions2(nprimitive);
 
-                            for (int p=0; p<nprimitive; ++p) {
+                            for (int p = 0; p < nprimitive; ++p) {
                                 line = lines[lineno++];
 
                                 int idx;
-                                while((idx=line.find_first_of('D')) >= 0 ) {
-                                    line.replace( idx, 1, "e" );
+                                while ((idx = line.find_first_of('D')) >= 0) {
+                                    line.replace(idx, 1, "e");
                                 }
-                                while((idx=line.find_first_of('d')) >= 0 ) {
-                                    line.replace( idx, 1, "e" );
+                                while ((idx = line.find_first_of('d')) >= 0) {
+                                    line.replace(idx, 1, "e");
                                 }
 
                                 // Must match primitivies2;
@@ -349,8 +340,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             //                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
                             shell_list.push_back(ShellInfo(am1, contractions1, exponents, gaussian_type, 0, center, 0, Unnormalized));
                             shell_list.push_back(ShellInfo(am2, contractions2, exponents, gaussian_type, 0, center, 0, Unnormalized));
-                        }
-                        else {
+                        } else {
                             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping\n");
                         }
                     } else {
@@ -368,3 +358,5 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // The constructor, or the caller, should refresh the basis set.
     return shell_list;
 }
+
+} // namespace psi

@@ -50,12 +50,12 @@ class CdSalcList;
 
 class Deriv
 {
-    const boost::shared_ptr<Wavefunction> wfn_;
-    boost::shared_ptr<IntegralFactory> integral_;
-    boost::shared_ptr<BasisSet> basis_;
-    boost::shared_ptr<SOBasisSet> sobasis_;
-    boost::shared_ptr<MatrixFactory> factory_;
-    boost::shared_ptr<Molecule> molecule_;
+    const std::shared_ptr<Wavefunction> wfn_;
+    std::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<SOBasisSet> sobasis_;
+    std::shared_ptr<MatrixFactory> factory_;
+    std::shared_ptr<Molecule> molecule_;
 
     CdSalcList cdsalcs_;
 
@@ -95,7 +95,7 @@ public:
      * \param project_out_translations remove translations from the CdSalcs
      * \param project_out_rotations remove rotations from the CdSalcs
      */
-    Deriv(const boost::shared_ptr<Wavefunction>& wave,
+    Deriv(const std::shared_ptr<Wavefunction>& wave,
           char needed_irreps=0x1,
           bool project_out_translations=false,
           bool project_out_rotations=false);

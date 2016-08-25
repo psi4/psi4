@@ -39,7 +39,7 @@
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libciomr/libciomr.h"
 
-using namespace boost;
+;
 using namespace psi;
 
 MatrixFactory::MatrixFactory()
@@ -99,7 +99,7 @@ bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
     return true;
 }
 
-bool MatrixFactory::init_with(const boost::shared_ptr<SOBasisSet>& sobasis)
+bool MatrixFactory::init_with(const std::shared_ptr<SOBasisSet>& sobasis)
 {
     return init_with(sobasis->dimension(), sobasis->dimension());
 }

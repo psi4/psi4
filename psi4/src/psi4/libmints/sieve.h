@@ -29,10 +29,10 @@
 #define SIEVE_H
 
 // need this for erfc^{-1} in the QQR sieve
-#include <boost/math/special_functions/erf.hpp>
-#include <cfloat>
+//#include <boost/math/special_functions/erf.hpp>
+//#include <cfloat>
 #include <vector>
-#include <utility>
+//#include <utility>
 #include "psi4/libmints/vector3.h"
 
 namespace psi {
@@ -53,7 +53,7 @@ class TwoBodyAOInt;
  * Use of this class is as follows:
  *
  *     // Initialize the sieve object
- *     boost::shared_ptr<ERISieve> sieve(basisset, sieve_cutoff);
+ *     std::shared_ptr<ERISieve> sieve(basisset, sieve_cutoff);
  *
  *     // Reset the sieve cutoff (you can do this wherever)
  *     sieve->set_sieve(new_cutoff);
@@ -99,7 +99,7 @@ protected:
     int debug_;
 
     /// Basis set reference
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
 
     /// Number of basis functions
     int nbf_;
@@ -169,7 +169,7 @@ protected:
 public:
 
     /// Constructor, basis set and first sieve cutoff
-    ERISieve(boost::shared_ptr<BasisSet> primary, double sieve = 0.0);
+    ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0);
     /// Destructor, frees memory
     virtual ~ERISieve();
 

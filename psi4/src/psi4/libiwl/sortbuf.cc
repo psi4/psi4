@@ -55,8 +55,8 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     int nbfso, int elbert, int intermediate, int no_pq_perm,
     int qdim, int add, int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int i;
     Value *valptr;              /* array of integral values */
     Label *lblptr;              /* array of integral labels */
@@ -297,8 +297,8 @@ void IWL::sort_buffer_pk(IWL *Inbuf, int out_tape, int is_exch, double *ints,
    int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
    unsigned long int pq, rs, pqrs, offset, maxind;
 
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
 
    if (printflg) {
      printer->Printf( "\nsortbuf_pk for pq=%d to %d\n", fpq, lpq);
@@ -485,8 +485,8 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    long int pqrs, offset;
    int first_p, first_q, first_pq, last_p, last_q;
    int nbstri;
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    if (printflg) {
      printer->Printf( "\nsortbuf for pq=%d to %d\n", fpq, lpq);
    }
@@ -718,8 +718,8 @@ void sortbuf_pk(struct iwlbuf *Inbuf, int out_tape, int is_exch,
    int prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
    unsigned long int pq, rs, pqrs, offset, maxind;
 
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
 
    if (printflg) {
      printer->Printf( "\nsortbuf_pk for pq=%d to %d\n", fpq, lpq);

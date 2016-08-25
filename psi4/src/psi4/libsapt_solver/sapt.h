@@ -60,9 +60,9 @@ private:
   void get_denom();
 
 protected:
-  boost::shared_ptr<BasisSet> ribasis_;
-  boost::shared_ptr<BasisSet> elstbasis_;
-  boost::shared_ptr<BasisSet> zero_;
+  std::shared_ptr<BasisSet> ribasis_;
+  std::shared_ptr<BasisSet> elstbasis_;
+  std::shared_ptr<BasisSet> zero_;
 
   int nsoA_;
   int nmoA_;
@@ -108,7 +108,7 @@ protected:
   double **vAAB_;
   double **vBAB_;
 
-  boost::shared_ptr<SAPTDenominator> denom_;
+  std::shared_ptr<SAPTDenominator> denom_;
 
   int nvec_;
 
@@ -120,7 +120,7 @@ protected:
 public:
   SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
        SharedWavefunction MonomerB, Options& options,
-       boost::shared_ptr<PSIO> psio);
+       std::shared_ptr<PSIO> psio);
   virtual ~SAPT();
 
   virtual double compute_energy()=0;

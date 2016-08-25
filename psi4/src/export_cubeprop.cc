@@ -35,7 +35,7 @@ using namespace psi;
 
 void export_cubeprop()
 {
-    class_<CubeProperties, boost::shared_ptr<CubeProperties> >("CubeProperties", "docstring", no_init)
-        .def(init<boost::shared_ptr<Wavefunction>>())
+    class_<CubeProperties, std::shared_ptr<CubeProperties> >("CubeProperties", "docstring", no_init)
+        .def(init<std::shared_ptr<Wavefunction>>())
         .def("compute_properties", &CubeProperties::compute_properties, "docstring");
 }

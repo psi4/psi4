@@ -32,11 +32,6 @@
 #include <vector>
 #include <map>
 
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi{
 
 class DIISEntry;
@@ -106,7 +101,7 @@ class DIISManager{
         /// The label used in disk storage of the DIISEntry objects
         std::string _label;
         /// The PSIO object to use for I/O
-        boost::shared_ptr<PSIO> _psio;
+        std::shared_ptr<PSIO> _psio;
 };
 
 } // End namespace

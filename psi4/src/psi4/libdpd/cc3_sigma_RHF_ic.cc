@@ -70,8 +70,8 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                            dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
                            double omega, std::string out, int nthreads, int newtrips)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
     int h, nirreps, thread, nijk, *ijk_part, errcod=0;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d, row, col;

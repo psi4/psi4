@@ -158,8 +158,8 @@ void IrreducibleRepresentation::print(std::string out) const
 {
     if (!g)
         return;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     int i,d;
 
     printer->Printf( "  %-5s", symb);

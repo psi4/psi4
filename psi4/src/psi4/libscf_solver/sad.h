@@ -28,10 +28,6 @@
 #ifndef LIBSCF_SAD_H
 #define LIBSCF_SAD_H
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class BasisSet;
@@ -47,8 +43,8 @@ protected:
     int print_;
     int debug_;
 
-    boost::shared_ptr<Molecule> molecule_;
-    boost::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<BasisSet> basis_;
     SharedMatrix AO2SO_;
 
     int nalpha_;
@@ -66,7 +62,7 @@ protected:
     SharedMatrix form_D_AO();
     void form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D,
                       SharedMatrix S, SharedMatrix X);
-    void get_uhf_atomic_density(boost::shared_ptr<BasisSet> atomic_basis,
+    void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis,
                                 int n_electrons, int multiplicity, SharedMatrix D);
     void form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
                                   SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
@@ -77,7 +73,7 @@ protected:
 
 public:
 
-    SADGuess(boost::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options);
+    SADGuess(std::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options);
     virtual ~SADGuess();
 
     void compute_guess();

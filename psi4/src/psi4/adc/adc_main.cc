@@ -52,7 +52,7 @@ SharedWavefunction adc(SharedWavefunction ref_wfn, Options &options)
     // this code is completely rewrtten in order to be better suited for Libtrans library, more flexible than transqt2.
     //
 
-    boost::shared_ptr<ADCWfn> adcwfn(new ADCWfn(ref_wfn, options));
+    std::shared_ptr<ADCWfn> adcwfn(new ADCWfn(ref_wfn, options));
     adcwfn->compute_energy();
 
     tstop();

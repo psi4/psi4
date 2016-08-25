@@ -33,7 +33,7 @@
 #include "arrays.h"
 #include "dpd.h"
 #include "psi4/libparallel/ParallelPrinter.h"
-using namespace boost;
+
 using namespace std;
 
 namespace psi{ namespace occwave{
@@ -438,8 +438,8 @@ double **SymBlockMatrix::to_block_matrix()
 
 void SymBlockMatrix::print(std::string OutFileRMR)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
@@ -516,7 +516,7 @@ bool SymBlockMatrix::load(PSIO* psio, int itap, const char *label, int dim)
     return true;
 }//
 
-bool SymBlockMatrix::load(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim)
+bool SymBlockMatrix::load(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim)
 {
     int ntri = 0.5 * dim * (dim  + 1);
     double *mybuffer=init_array(ntri);
@@ -680,12 +680,12 @@ void SymBlockMatrix::write(PSIO* psio, int itap, bool saveSubBlocks)
     if (!already_open) psio->close(itap, 1);     // Close and keep
 }//
 
-void SymBlockMatrix::write(boost::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks)
+void SymBlockMatrix::write(std::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks)
 {
     write(psio.get(), itap, saveSubBlocks);
 }//
 
-void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks)
+void SymBlockMatrix::read(std::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -718,7 +718,7 @@ void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, bool read
 
 }//
 
-void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks)
+void SymBlockMatrix::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -751,7 +751,7 @@ void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, const cha
 
 }//
 
-void SymBlockMatrix::read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx)
+void SymBlockMatrix::read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx)
 {
    	IWL ERIIN(psio.get(), itap, 0.0, 1, 1);
 	int ilsti,nbuf,index,fi;
@@ -800,7 +800,7 @@ void SymBlockMatrix::read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int 
  } while(!ilsti);
 }//
 
-void SymBlockMatrix::read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
+void SymBlockMatrix::read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                                int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx)
 {
    	IWL ERIIN(psio.get(), itap, 0.0, 1, 1);
@@ -1150,8 +1150,8 @@ double SymBlockVector::trace()
 
 void SymBlockVector::print(std::string OutFileRMR)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {

@@ -46,8 +46,8 @@ struct onestack{
 void
 ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    struct onestack *t1stack;
     int Gia = B->my_irrep;
 

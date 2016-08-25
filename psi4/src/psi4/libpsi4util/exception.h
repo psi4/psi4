@@ -33,8 +33,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <string.h>
-#include <boost/current_function.hpp>
-
+#include <psi4/current_function.hpp>
 
 namespace psi {
 
@@ -72,10 +71,12 @@ public:
             const char *file,
             int line
     ) throw();
-    PsiException(const PsiException& copy) throw();
+
+    PsiException(const PsiException &copy) throw();
+
     virtual ~PsiException() throw();
 
-    PsiException& operator=(const PsiException& other)
+    PsiException &operator=(const PsiException &other)
     {
         if (this != &other) {
             msg_ = other.msg_;
@@ -114,11 +115,11 @@ public:
 class NotImplementedException_ : public PsiException
 {
 public:
-    NotImplementedException_(const std::string& message,
+    NotImplementedException_(const std::string &message,
                              const char *lfile,
                              int lline)
             : PsiException(message + " function not implemented", lfile, lline)
-    { }
+    {}
 };
 
 /**
@@ -211,7 +212,7 @@ protected:
     {
         std::stringstream sstr;
         sstr << "value for " << resource_name_ << " exceeded.\n"
-        << "allowed: " << maxval_ << " actual: " << errorval_;
+             << "allowed: " << maxval_ << " actual: " << errorval_;
         return sstr.str().c_str();
     }
 
@@ -242,7 +243,7 @@ public:
     { return errorval_; }
 
     virtual ~LimitExceeded<T>() throw()
-    { };
+    {};
 };
 
 /**
@@ -378,7 +379,7 @@ private:
     */
     template<class T>
     void
-            write_input_msg(std::string msg, std::string param_name, T val) throw();
+    write_input_msg(std::string msg, std::string param_name, T val) throw();
 
 public:
     /**

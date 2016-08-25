@@ -35,23 +35,23 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/shellrotation.h"
 
-using namespace boost;
+;
 using namespace std;
 
 namespace psi{
 
 //OperatorSymmetry::OperatorSymmetry(int order,
-//                                   boost::shared_ptr<Molecule> mol,
-//                                   boost::shared_ptr<IntegralFactory> ints)
+//                                   std::shared_ptr<Molecule> mol,
+//                                   std::shared_ptr<IntegralFactory> ints)
 //    : order_(order), molecule_(mol), integral_(ints)
 //{
 //    common_init();
 //}
 
 OperatorSymmetry::OperatorSymmetry(int order,
-                                   boost::shared_ptr<Molecule> mol,
-                                   boost::shared_ptr<IntegralFactory> ints,
-                                   boost::shared_ptr<MatrixFactory> mats)
+                                   std::shared_ptr<Molecule> mol,
+                                   std::shared_ptr<IntegralFactory> ints,
+                                   std::shared_ptr<MatrixFactory> mats)
     : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
 {
     common_init();
@@ -174,17 +174,17 @@ vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basen
 
 
 //MultipoleSymmetry::MultipoleSymmetry(int order,
-//                                   boost::shared_ptr<Molecule> mol,
-//                                   boost::shared_ptr<IntegralFactory> ints)
+//                                   std::shared_ptr<Molecule> mol,
+//                                   std::shared_ptr<IntegralFactory> ints)
 //    : order_(order), molecule_(mol), integral_(ints)
 //{
 //    common_init();
 //}
 
 MultipoleSymmetry::MultipoleSymmetry(int order,
-                                   boost::shared_ptr<Molecule> mol,
-                                   boost::shared_ptr<IntegralFactory> ints,
-                                   boost::shared_ptr<MatrixFactory> mats)
+                                   std::shared_ptr<Molecule> mol,
+                                   std::shared_ptr<IntegralFactory> ints,
+                                   std::shared_ptr<MatrixFactory> mats)
     : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
 {
     common_init();

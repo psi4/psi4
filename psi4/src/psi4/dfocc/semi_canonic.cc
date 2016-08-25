@@ -33,17 +33,17 @@ using namespace psi;
 using namespace std;
 
 namespace psi{ namespace dfoccwave{
- 
+
 void DFOCC::semi_canonic()
 {
         // tell oter functions tat orbitals are already semi canonical.
         orbs_already_sc = 1;
 
-	SharedTensor2d UooA = boost::shared_ptr<Tensor2d>(new Tensor2d("UooA", naoccA, naoccA));
-	SharedTensor2d UvvA = boost::shared_ptr<Tensor2d>(new Tensor2d("UvvA", navirA, navirA));
-	SharedTensor2d FockooA = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <I|J>", naoccA, naoccA));
-	SharedTensor2d FockvvA = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <A|B>", navirA, navirA));
-     	
+	SharedTensor2d UooA = std::shared_ptr<Tensor2d>(new Tensor2d("UooA", naoccA, naoccA));
+	SharedTensor2d UvvA = std::shared_ptr<Tensor2d>(new Tensor2d("UvvA", navirA, navirA));
+	SharedTensor2d FockooA = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <I|J>", naoccA, naoccA));
+	SharedTensor2d FockvvA = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <A|B>", navirA, navirA));
+
         // Fockoo alpha spin case
         #pragma omp parallel for
 	for(int i = 0 ; i < naoccA; ++i){
@@ -51,7 +51,7 @@ void DFOCC::semi_canonic()
                 FockooA->set(i, j, FockA->get(i + nfrzc, j + nfrzc));
             }
 	}
-	
+
 	// Fockvv alpha spin case
 	#pragma omp parallel for
 	for(int a = 0 ; a < navirA; ++a){
@@ -62,38 +62,38 @@ void DFOCC::semi_canonic()
             }
 	}
 
-	// Diagonalize Fock  
+	// Diagonalize Fock
 	FockooA->diagonalize(UooA, eigooA, cutoff);
 	FockvvA->diagonalize(UvvA, eigvvA, cutoff);
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  outfile->Printf("\n\n\tOCC Alpha Orbital Energies (a.u.) \n"); 
-	  outfile->Printf("\t  ---------------------------------- \n"); 
-	  
-	  
+	  outfile->Printf("\n\n\tOCC Alpha Orbital Energies (a.u.) \n");
+	  outfile->Printf("\t  ---------------------------------- \n");
+
+
 	  // print occ orb energy
 	 outfile->Printf( "\tAlpha occupied orbitals\n");
 	 for (int i = 0; i < naoccA; i++){
 	      outfile->Printf("\t%2d %20.10f \n",i,eigooA->get(i));
-	         
+
 	 }// end loop over naocc
-	  
+
 	  // print vir orb energy
 	  outfile->Printf( "\n\tAlpha virtual orbitals\n");
 	  for (int i = 0; i < navirA; i++){
 	      outfile->Printf("\t%2d %20.10f \n",i + noccA,eigvvA->get(i));
-	      
+
 	  }// end loop over naocc
-	  
+
 	}// end main if
 
-        // Build U	
+        // Build U
 	UorbA->zero();
-	
+
 	//set to identity: it is necessary if we have frozen core or frozen virtual orbitals.
 	UorbA->identity();
-	
+
 	// Uoo contribution alpha spin case
         #pragma omp parallel for
 	for(int i = 0 ; i < naoccA; ++i){
@@ -101,7 +101,7 @@ void DFOCC::semi_canonic()
                 UorbA->set(i + nfrzc, j + nfrzc, UooA->get(i,j));
             }
 	}
-	
+
 	// Uvv contribution alpha spin case
 	#pragma omp parallel for
 	for(int a = 0 ; a < navirA; ++a){
@@ -113,8 +113,8 @@ void DFOCC::semi_canonic()
 	}
 
         // Get new MOs
-        SharedTensor2d Ca_new = boost::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
-	Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0); 
+        SharedTensor2d Ca_new = std::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
+	Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0);
 	CmoA->copy(Ca_new);
 	Ca_new.reset();
 
@@ -132,11 +132,11 @@ void DFOCC::semi_canonic()
 //========================= UHF REFERENCE ==================================================
 //==========================================================================================
      if (reference_ == "UNRESTRICTED") {
-       	SharedTensor2d UooB = boost::shared_ptr<Tensor2d>(new Tensor2d("UooB", naoccB, naoccB));
-	SharedTensor2d UvvB = boost::shared_ptr<Tensor2d>(new Tensor2d("UvvB", navirB, navirB));
-	SharedTensor2d FockooB = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <i|j>", naoccB, naoccB));
-	SharedTensor2d FockvvB = boost::shared_ptr<Tensor2d>(new Tensor2d("Fock <a|b>", navirB, navirB));
-     	
+       	SharedTensor2d UooB = std::shared_ptr<Tensor2d>(new Tensor2d("UooB", naoccB, naoccB));
+	SharedTensor2d UvvB = std::shared_ptr<Tensor2d>(new Tensor2d("UvvB", navirB, navirB));
+	SharedTensor2d FockooB = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <i|j>", naoccB, naoccB));
+	SharedTensor2d FockvvB = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <a|b>", navirB, navirB));
+
         // Fockoo beta spin case
         #pragma omp parallel for
 	for(int i = 0 ; i < naoccB; ++i){
@@ -144,7 +144,7 @@ void DFOCC::semi_canonic()
                 FockooB->set(i, j, FockB->get(i + nfrzc, j + nfrzc));
             }
 	}
-	
+
 	// Fockvv beta spin case
 	#pragma omp parallel for
 	for(int a = 0 ; a < navirB; ++a){
@@ -155,38 +155,38 @@ void DFOCC::semi_canonic()
             }
 	}
 
-	// Diagonalize Fock  
+	// Diagonalize Fock
 	FockooB->diagonalize(UooB, eigooB, cutoff);
 	FockvvB->diagonalize(UvvB, eigvvB, cutoff);
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  outfile->Printf("\n\n\tOCC Beta Orbital Energies (a.u.) \n"); 
-	  outfile->Printf("\t  ---------------------------------- \n"); 
-	  
-	  
+	  outfile->Printf("\n\n\tOCC Beta Orbital Energies (a.u.) \n");
+	  outfile->Printf("\t  ---------------------------------- \n");
+
+
 	  // print occ orb energy
 	 outfile->Printf( "\tBeta occupied orbitals\n");
 	 for (int i = 0; i < naoccB; i++){
 	      outfile->Printf("\t%2d %20.10f \n",i,eigooB->get(i));
-	         
+
 	 }// end loop over naocc
-	  
+
 	  // print vir orb energy
 	  outfile->Printf( "\n\tBeta virtual orbitals\n");
 	  for (int i = 0; i < navirB; i++){
 	      outfile->Printf("\t%2d %20.10f \n",i + noccB,eigvvB->get(i));
-	      
+
 	  }// end loop over naocc
-	  
+
 	}// end main if
 
-        // Build U	
+        // Build U
 	UorbB->zero();
-	
+
 	//set to identity: it is necessary if we have frozen core or frozen virtual orbitals.
 	UorbB->identity();
-	
+
 	// Uoo contribution beta spin case
         #pragma omp parallel for
 	for(int i = 0 ; i < naoccB; ++i){
@@ -194,7 +194,7 @@ void DFOCC::semi_canonic()
                 UorbB->set(i + nfrzc, j + nfrzc, UooB->get(i,j));
             }
 	}
-	
+
 	// Uvv contribution beta spin case
 	#pragma omp parallel for
 	for(int a = 0 ; a < navirB; ++a){
@@ -206,8 +206,8 @@ void DFOCC::semi_canonic()
 	}
 
         // Get new MOs
-        SharedTensor2d Cb_new = boost::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
-	Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0); 
+        SharedTensor2d Cb_new = std::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
+	Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0);
 	CmoB->copy(Cb_new);
 	Cb_new.reset();
 
@@ -220,7 +220,7 @@ void DFOCC::semi_canonic()
 	UvvB.reset();
 	FockooB.reset();
 	FockvvB.reset();
-     }// end uhf	
+     }// end uhf
 
      // build mo coeff blocks
      mo_coeff_blocks();

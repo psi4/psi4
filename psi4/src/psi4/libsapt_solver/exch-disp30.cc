@@ -27,7 +27,7 @@
 
 #include "sapt2p3.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -68,7 +68,7 @@ void SAPT2p3::exch_disp30()
   if (print_) {
     outfile->Printf("    Exch-Disp30         = %18.12lf [Eh]\n",
       e_exch_disp30_);
-    
+
   }
 }
 

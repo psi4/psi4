@@ -149,8 +149,8 @@ CharacterTable::operator=(const CharacterTable& ct)
 void CharacterTable::print(std::string out) const
 {
     if (!nirrep_) return;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     int i;
 
     printer->Printf( "  point group %s\n\n", symb.c_str());

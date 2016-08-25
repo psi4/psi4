@@ -206,7 +206,7 @@ PsiReturnType transqt2(SharedWavefunction ref_wfn, Options & options)
 
     /* read the bare one-electron integrals */
 
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     psio_ = ref_wfn->psio();
 
     SharedMatrix H_so = ref_wfn->H()->clone();

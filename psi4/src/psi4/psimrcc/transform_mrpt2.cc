@@ -85,7 +85,7 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints)
     dpdbuf4 I;
 
     dpd_set_default(ints->get_dpd_id());
-    boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+    std::shared_ptr<PSIO> psio(_default_psio_lib_);
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     std::vector<int> mopi   = moinfo->get_mopi();

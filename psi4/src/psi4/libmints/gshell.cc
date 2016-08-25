@@ -154,8 +154,8 @@ int ShellInfo::nprimitive() const
 
 void ShellInfo::print(std::string out) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
 
    printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
@@ -219,8 +219,8 @@ int GaussianShell::nprimitive() const
 
 void GaussianShell::print(std::string out) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
 
         printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 

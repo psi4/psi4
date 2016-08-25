@@ -34,7 +34,7 @@ using namespace psi;
 
 void export_psio()
 {
-    class_<PSIO, boost::shared_ptr<PSIO> >( "IO", "docstring" ).
+    class_<PSIO, std::shared_ptr<PSIO> >( "IO", "docstring" ).
         def( "state", &PSIO::state, "docstring" ).
         def( "open", &PSIO::open, "docstring" ).
         def( "close", &PSIO::close, "docstring" ).
@@ -53,7 +53,7 @@ void export_psio()
         def( "change_file_namespace", &PSIO::change_file_namespace, "docstring").
         staticmethod("change_file_namespace");
 
-    class_<PSIOManager, boost::shared_ptr<PSIOManager> >( "IOManager", "docstring" ).
+    class_<PSIOManager, std::shared_ptr<PSIOManager> >( "IOManager", "docstring" ).
         def( "shared_object", &PSIOManager::shared_object, "docstring" ).
         staticmethod("shared_object").
         def( "print_out", &PSIOManager::print_out, "docstring" ).

@@ -37,7 +37,7 @@ void export_efp()
 {
     // because there is no default constructor for libefp, need flag
     // "no_init" and the constructor definition, def(init<Options&>())
-    class_<EFP, boost::shared_ptr<EFP> >("EFP", "Class interfacing with libefp", no_init).
+    class_<EFP, std::shared_ptr<EFP> >("EFP", "Class interfacing with libefp", no_init).
         def(init<Options&>()).
         def("compute", &EFP::compute, "Computes libefp energies and, if active, torque").
         def("set_qm_atoms", &EFP::set_qm_atoms, "Provides libefp with QM fragment information").

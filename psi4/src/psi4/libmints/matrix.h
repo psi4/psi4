@@ -28,24 +28,18 @@
 #ifndef _psi_src_lib_libmints_matrix_h_
 #define _psi_src_lib_libmints_matrix_h_
 
-#include <cstdio>
-#include <string>
-#include <vector>
-#include <boost/tuple/tuple.hpp>
 #include "psi4/libparallel/serialize.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-// Forward declarations for boost.python used in the extract_subsets
+#include <pybind11/pybind11.h>
 
-namespace python{
-class tuple;
-class list;
-}}
+#include <cstdio>
+#include <string>
+#include <vector>
+#include <memory>
 
 namespace psi {
 
@@ -282,7 +276,7 @@ public:
      * @returns true if loaded, false otherwise.
      */
     bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
-    bool load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso);
+    bool load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso);
     /** @} */
 
     /**
@@ -295,7 +289,7 @@ public:
      * @param savetype Save information suffixing point group label.
      */
     void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -334,7 +328,7 @@ public:
      * @param savetype Save information suffixing point group label.
      */
     void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void save(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -377,7 +371,7 @@ public:
      * @param sq SimpleMatrix object to set this matrix to.
      */
     void set(const SimpleMatrix * const sq);
-    void set(const boost::shared_ptr<SimpleMatrix>& sq);
+    void set(const std::shared_ptr<SimpleMatrix>& sq);
     /** @} */
 
     /**
@@ -407,7 +401,7 @@ public:
      */
     void set_diagonal(const Vector * const vec);
     void set_diagonal(const Vector& vec);
-    void set_diagonal(const boost::shared_ptr<Vector>& vec);
+    void set_diagonal(const std::shared_ptr<Vector>& vec);
     /** @} */
 
     /**
@@ -468,11 +462,11 @@ public:
     /**
      * Python wrapper for get
      */
-    double pyget(const boost::python::tuple& key);
+    double pyget(const pybind11::tuple& key);
     /**
      * Python wrapper for set
      */
-    void pyset(const boost::python::tuple& key, double value);
+    void pyset(const pybind11::tuple& key, double value);
 
     /**
      * Returns the double** pointer to the h-th irrep block matrix
@@ -588,7 +582,7 @@ public:
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(const Vector& values, std::string out = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(const boost::shared_ptr<Vector>& values, std::string out = "outfile");
+    void eivprint(const std::shared_ptr<Vector>& values, std::string out = "outfile");
 
     /// Returns the rows in irrep h
     int rowdim(const int& h = 0) const { return rowspi_[h]; }
@@ -663,7 +657,7 @@ public:
      * Symmetrizes the a gradient like matrix (N, 3) using information
      * from the given Molecule.
      */
-    void symmetrize_gradient(boost::shared_ptr<Molecule> mol);
+    void symmetrize_gradient(std::shared_ptr<Molecule> mol);
 
     /// Set this to identity
     void identity();
@@ -876,13 +870,13 @@ public:
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
-    void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
+    void diagonalize(SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
     /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
-    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
+    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
@@ -899,12 +893,12 @@ public:
 
     ///@{
     /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
-    boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
+    std::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
     ///@}
 
     ///@{
     /// Matrices/Vectors U (m x m), S (k), V (n x n) to feed to Matrix::svd_a
-    boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_a_temps();
+    std::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_a_temps();
     ///@}
 
     ///@{
@@ -1141,7 +1135,7 @@ public:
      * Takes a Python object (assumes that it is a "matrix" array) and
      * sets the matrix to that.
      */
-    void set_by_python_list(const boost::python::list& data);
+    void set_by_python_list(const pybind11::list& data);
 
      /**
      * Adds accessability to the matrix shape for numpy

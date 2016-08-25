@@ -45,7 +45,7 @@ void PsiInStream::ReadFromStream(){
          Buffer_<<line;
    }
    /*int BufferLength=Buffer_.str().size();
-   boost::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
+   std::shared_ptr<const LibParallel::Communicator> Comm=WorldComm->GetComm();
    Comm->Bcast(&BufferLength,1,WhoIsSpecial());
    char* tempbuffer=new char[BufferLength];
    Comm->Bcast(tempbuffer,BufferLength,WhoIsSpecial());

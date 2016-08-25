@@ -34,7 +34,7 @@
 #include "dcft.h"
 
 using namespace psi;
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 

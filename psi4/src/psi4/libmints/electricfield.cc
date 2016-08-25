@@ -34,11 +34,11 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-using namespace boost;
+;
 using namespace psi;
 using namespace std;
 
-ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int nderiv) :
+ElectricFieldInt::ElectricFieldInt(vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv) :
     OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
     efield_recur_(bs1->max_am()+2, bs2->max_am()+2), natom_(bs1->molecule()->natom())
 {
@@ -66,7 +66,7 @@ ElectricFieldInt::~ElectricFieldInt()
     delete[] buffer_;
 }
 
-Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, boost::shared_ptr<Molecule> mol)
+Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol)
 {
     int natom = mol->natom();
 
@@ -93,7 +93,7 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, boost::sha
     return result;
 }
 
-SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/, boost::shared_ptr<Molecule> /*mol*/)
+SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/, std::shared_ptr<Molecule> /*mol*/)
 {
 //    int natom = mol->natom();
 //    SharedMatrix result(new Matrix("Nuclear contribution to electric field gradient", 1, 6));

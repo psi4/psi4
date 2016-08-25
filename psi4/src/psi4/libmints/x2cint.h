@@ -51,7 +51,7 @@ public:
      * @param V Shared matrix object that will hold the X2C potential energy integrals.
      * @param options an Options object used to read basis set information.
      */
-    void compute(boost::shared_ptr<Molecule> molecule, SharedMatrix S, SharedMatrix T,
+    void compute(std::shared_ptr<Molecule> molecule, SharedMatrix S, SharedMatrix T,
                  SharedMatrix V, Options &options);
     /*! @} */
 
@@ -64,18 +64,18 @@ private:
     bool do_project_;
 
     /// Integral factory
-    boost::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<IntegralFactory> integral_;
 
     /// The basis used to solve the Dirac equation
-    boost::shared_ptr<BasisSet> aoBasis_;
+    std::shared_ptr<BasisSet> aoBasis_;
     /// The basis onto which we project the final FW Hamiltonian
     /// This is used only if we project (do_project)
-    boost::shared_ptr<BasisSet> aoBasis_contracted_;
+    std::shared_ptr<BasisSet> aoBasis_contracted_;
 
     /// Matrix factory for matrices of dimension 2 nbf x 2 nbf
-    boost::shared_ptr<MatrixFactory> ssFactory_;
+    std::shared_ptr<MatrixFactory> ssFactory_;
     /// Matrix factory for matrices of dimension nbf x nbf
-    boost::shared_ptr<MatrixFactory> soFactory_;
+    std::shared_ptr<MatrixFactory> soFactory_;
     /// Dimension of the orbital basis
     Dimension nsopi_;
     /// Dimension of the constracted orbital basis
@@ -114,7 +114,7 @@ private:
     SharedVector E_LS_Mat;
 
     /// Setup the basis objects, integral factories, etc.
-    void setup(boost::shared_ptr<Molecule> molecule, Options &options);
+    void setup(std::shared_ptr<Molecule> molecule, Options &options);
     /// Compute the S, T, V, and W integrals
     void compute_integrals();
     /// Compute the Hamiltonian and overlap matrices of the modified Dirac equation

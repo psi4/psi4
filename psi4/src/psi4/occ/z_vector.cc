@@ -31,7 +31,7 @@
 #include "occwave.h"
 #include "defines.h"
 
-using namespace boost;
+
 using namespace std;
 
 
@@ -172,7 +172,7 @@ if (reference_ == "RESTRICTED") {
     if (print_ > 2) zvectorA->print();
 
     // Build Zmatrix
-    ZmatA = boost::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_));
+    ZmatA = std::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_));
     for(int x = 0; x < nidpA; x++) {
 	int a = idprowA[x];
 	int i = idpcolA[x];
@@ -485,8 +485,8 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
     // Build Zmatrix
-    ZmatA = boost::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_));
-    ZmatB = boost::shared_ptr<Matrix>(new Matrix("Beta Z-Matrix", nirrep_, nmopi_, nmopi_));
+    ZmatA = std::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_));
+    ZmatB = std::shared_ptr<Matrix>(new Matrix("Beta Z-Matrix", nirrep_, nmopi_, nmopi_));
     for(int x = 0; x < nidpA; x++) {
 	int a = idprowA[x];
 	int i = idpcolA[x];

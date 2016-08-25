@@ -28,7 +28,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 #include "psi4/libqt/qt.h"
@@ -60,9 +60,9 @@ SharedVector DFChargeFitter::fit()
 
     /* 3-index */ {
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),
         primary_,primary_));
-    boost::shared_ptr<TwoBodyAOInt> eri(factory->eri());
+    std::shared_ptr<TwoBodyAOInt> eri(factory->eri());
     const double* buffer = eri->buffer();
 
     for (int Q = 0; Q < auxiliary_->nshell(); Q++) {
@@ -92,9 +92,9 @@ SharedVector DFChargeFitter::fit()
     SharedMatrix J(new Matrix("J", naux, naux));
     double** Jp = J->pointer();
 
-    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),
                                                                    auxiliary_,BasisSet::zero_ao_basis_set()));
-    boost::shared_ptr<TwoBodyAOInt> eri(factory->eri());
+    std::shared_ptr<TwoBodyAOInt> eri(factory->eri());
     const double* buffer = eri->buffer();
 
     for (int Q = 0; Q < auxiliary_->nshell(); Q++) {

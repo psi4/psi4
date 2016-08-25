@@ -64,7 +64,7 @@ namespace psi { namespace detci {
 SharedWavefunction detci(SharedWavefunction ref_wfn, Options &options)
 {
 
-   boost::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(ref_wfn, options));
+   std::shared_ptr<CIWavefunction> ciwfn(new CIWavefunction(ref_wfn, options));
 
    ciwfn->compute_energy();
 

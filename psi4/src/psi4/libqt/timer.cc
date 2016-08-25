@@ -137,7 +137,7 @@ void timer_done(void)
   gethostname(host, 40);
 
   /* Dump the timing data to timer.dat and free the timers */
-  boost::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
+  std::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
   printer->Printf( "\n");
   printer->Printf( "Host: %s\n", host);
   printer->Printf( "\n");

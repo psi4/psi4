@@ -71,8 +71,8 @@ namespace psi {
 */
 class CorrelationTable {
   private:
-    boost::shared_ptr<PointGroup> group_;
-    boost::shared_ptr<PointGroup> subgroup_;
+    std::shared_ptr<PointGroup> group_;
+    std::shared_ptr<PointGroup> subgroup_;
 
     int n_;
     int subn_;
@@ -84,21 +84,21 @@ class CorrelationTable {
     CorrelationTable();
 
     /// Create a correlation table for the two groups.
-    CorrelationTable(const boost::shared_ptr<PointGroup>& group,
-                     const boost::shared_ptr<PointGroup>& subgroup);
+    CorrelationTable(const std::shared_ptr<PointGroup>& group,
+                     const std::shared_ptr<PointGroup>& subgroup);
 
     ~CorrelationTable();
 
     /// Returns the higher order point group.
-    boost::shared_ptr<PointGroup> group() const { return group_; }
+    std::shared_ptr<PointGroup> group() const { return group_; }
     /// Returns the lower order point group.
-    boost::shared_ptr<PointGroup> subgroup() const { return subgroup_; }
+    std::shared_ptr<PointGroup> subgroup() const { return subgroup_; }
 
     /** Initalize the correlation table.  Returns 0 for success and nonzero
         for failure.  This will fail if the subgroup is not really a subgroup
         of group. */
-    int initialize_table(const boost::shared_ptr<PointGroup>& group,
-                         const boost::shared_ptr<PointGroup>& subgroup);
+    int initialize_table(const std::shared_ptr<PointGroup>& group,
+                         const std::shared_ptr<PointGroup>& subgroup);
 
     /// Converts error codes from initialize_table into a text string.
     const char *error(int errcod);

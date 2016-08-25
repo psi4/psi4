@@ -31,12 +31,12 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 
-using namespace boost;
+;
 using namespace psi;
 
 namespace psi {
 
-Localizer::Localizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C) :
+Localizer::Localizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
     primary_(primary), C_(C)
 {
     if (C->nirrep() != 1) {
@@ -59,16 +59,16 @@ void Localizer::common_init()
     maxiter_ = 50;
     converged_ = false;
 }
-boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options)
+std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options& options)
 {
-    boost::shared_ptr<Localizer> local;
+    std::shared_ptr<Localizer> local;
 
     if (type == "BOYS") {
         BoysLocalizer* l = new BoysLocalizer(primary,C);
-        local = boost::shared_ptr<Localizer>(l);
+        local = std::shared_ptr<Localizer>(l);
     } else if (type == "PIPEK_MEZEY") {
         PMLocalizer* l = new PMLocalizer(primary,C);
-        local = boost::shared_ptr<Localizer>(l);
+        local = std::shared_ptr<Localizer>(l);
     } else {
         throw PSIEXCEPTION("Localizer: Unrecognized localization algorithm");
     }
@@ -81,15 +81,15 @@ boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::sh
 
     return local;
 }
-boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C)
+std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C)
 {
     return Localizer::build(type, primary, C, Process::environment.options);
 }
-boost::shared_ptr<Localizer> Localizer::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options)
+std::shared_ptr<Localizer> Localizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C, Options& options)
 {
     return Localizer::build(options.get_str("LOCAL_TYPE"), primary, C, options);
 }
-boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
+std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc)
 {
     if (!L_ || !U_) {
         throw PSIEXCEPTION("Localizer: run compute() first");
@@ -100,7 +100,7 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
 
     if (nmo < 1) return Fc;
 
-    boost::shared_ptr<Matrix> Fl = Matrix::triplet(U_, Fc, U_, true, false, false);
+    std::shared_ptr<Matrix> Fl = Matrix::triplet(U_, Fc, U_, true, false, false);
     double** Fp = Fl->pointer();
     double** Lp = L_->pointer();
     double** Up = U_->pointer();
@@ -111,7 +111,7 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
     }
     std::sort(order.begin(), order.end());
 
-    boost::shared_ptr<Matrix> Fl2(Fl->clone());
+    std::shared_ptr<Matrix> Fl2(Fl->clone());
     Fl2->copy(Fl);
     double** F2p = Fl2->pointer();
     for (int i = 0; i < nmo; i++) {
@@ -120,10 +120,10 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
         }
     }
 
-    boost::shared_ptr<Matrix> L2(L_->clone());
+    std::shared_ptr<Matrix> L2(L_->clone());
     L2->copy(L_);
     double** L2p = L2->pointer();
-    boost::shared_ptr<Matrix> U2(U_->clone());
+    std::shared_ptr<Matrix> U2(U_->clone());
     U2->copy(U_);
     double** U2p = U2->pointer();
     for (int i = 0; i < nmo; i++) {
@@ -134,7 +134,7 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
     return Fl;
 }
 
-BoysLocalizer::BoysLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C) :
+BoysLocalizer::BoysLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
     Localizer(primary,C)
 {
     common_init();
@@ -164,20 +164,20 @@ void BoysLocalizer::localize()
 
     // => Dipole Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
-    boost::shared_ptr<OneBodyAOInt> Dint(fact->ao_dipole());
-    std::vector<boost::shared_ptr<Matrix> > D;
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
+    std::shared_ptr<OneBodyAOInt> Dint(fact->ao_dipole());
+    std::vector<std::shared_ptr<Matrix> > D;
     for (int xyz = 0; xyz < 3; xyz++) {
-        D.push_back(boost::shared_ptr<Matrix>(new Matrix("D", nso, nso)));
+        D.push_back(std::shared_ptr<Matrix>(new Matrix("D", nso, nso)));
     }
     Dint->compute(D);
     Dint.reset();
     fact.reset();
 
-    std::vector<boost::shared_ptr<Matrix> > Dmo;
-    boost::shared_ptr<Matrix> T(new Matrix("T",nso,nmo));
+    std::vector<std::shared_ptr<Matrix> > Dmo;
+    std::shared_ptr<Matrix> T(new Matrix("T",nso,nmo));
     for (int xyz = 0; xyz < 3; xyz++) {
-        Dmo.push_back(boost::shared_ptr<Matrix>(new Matrix("D", nmo, nmo)));
+        Dmo.push_back(std::shared_ptr<Matrix>(new Matrix("D", nmo, nmo)));
         C_DGEMM('N','N',nso,nmo,nso,1.0,D[xyz]->pointer()[0],nso,C_->pointer()[0],nmo,0.0,T->pointer()[0],nmo);
         C_DGEMM('T','N',nmo,nmo,nso,1.0,C_->pointer()[0],nmo,T->pointer()[0],nmo,0.0,Dmo[xyz]->pointer()[0],nmo);
     }
@@ -186,8 +186,8 @@ void BoysLocalizer::localize()
 
     // => Targets <= //
 
-    L_ = boost::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
-    U_ = boost::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
+    L_ = std::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
+    U_ = std::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -342,7 +342,7 @@ void BoysLocalizer::localize()
     C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Up[0],nmo,0.0,Lp[0],nmo);
 }
 
-PMLocalizer::PMLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C) :
+PMLocalizer::PMLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C) :
     Localizer(primary,C)
 {
     common_init();
@@ -373,9 +373,9 @@ void PMLocalizer::localize()
 
     // => Overlap Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-    boost::shared_ptr<Matrix> S(new Matrix("S",nso,nso));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<Matrix> S(new Matrix("S",nso,nso));
     Sint->compute(S);
     Sint.reset();
     fact.reset();
@@ -383,8 +383,8 @@ void PMLocalizer::localize()
 
     // => Targets <= //
 
-    L_ = boost::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
-    U_ = boost::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
+    L_ = std::shared_ptr<Matrix>(new Matrix("L",nso,nmo));
+    U_ = std::shared_ptr<Matrix>(new Matrix("U",nmo,nmo));
     L_->copy(C_);
     U_->identity();
     converged_ = false;
@@ -398,7 +398,7 @@ void PMLocalizer::localize()
 
     // => LS product (avoids GEMV) <= //
 
-    boost::shared_ptr<Matrix> LS(new Matrix("LS",nso,nmo));
+    std::shared_ptr<Matrix> LS(new Matrix("LS",nso,nmo));
     double** LSp = LS->pointer();
     C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Lp[0],nmo,0.0,LSp[0],nmo);
 

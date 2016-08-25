@@ -76,16 +76,16 @@ protected:
     std::set<std::string> tasks_;
 
     /// The wavefunction object this Prop is built around
-    boost::shared_ptr<Wavefunction> wfn_;
+    std::shared_ptr<Wavefunction> wfn_;
     /// The basisset for this wavefunction
-    boost::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<BasisSet> basisset_;
     /// Is this wavefunction object spin-restricted? (Actually closed-shell, but this is wavefunction's convention)
     bool same_orbs_; // This allows pointers to be duplicated/computation skipped
     bool same_dens_; // This allows pointers to be duplicated/computation skipped
     /// The integral factory for this wavefunction's basisset
-    boost::shared_ptr<IntegralFactory> integral_;
+    std::shared_ptr<IntegralFactory> integral_;
     /// The matrix factory for this wavefunction's basisset (SO)
-    boost::shared_ptr<MatrixFactory> factory_;
+    std::shared_ptr<MatrixFactory> factory_;
 
     /// The AO to USO matrix
     SharedMatrix AO2USO_;
@@ -118,14 +118,14 @@ protected:
 public:
 
     /// Build a Prop object with C, epsilon, and restricted buit from wfn
-    Prop(boost::shared_ptr<Wavefunction> wfn);
+    Prop(std::shared_ptr<Wavefunction> wfn);
     /// Virtual destructor
     virtual ~Prop();
 
     // => Wavefunction Modifiers (rarely called, C is usually fixed at HF) <= //
 
     // Change restricted flag. Resets C/D/epsilon matrices from wfn
-    void set_wavefunction(boost::shared_ptr<Wavefunction> wfn);
+    void set_wavefunction(std::shared_ptr<Wavefunction> wfn);
     // Change restricted flag. Resets C/D/epsilon matrices from wfn
     void set_restricted(bool restricted);
     // Set alpha eigenvalues, MO pitzer order basis
@@ -283,7 +283,7 @@ protected:
     Vector3 compute_center(const double *property) const;
 public:
     /// Constructor, uses globals
-    OEProp(boost::shared_ptr<Wavefunction> wfn);
+    OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Constructor, uses globals and Process::environment::reference wavefunction
     OEProp();
     /// Destructor
@@ -327,7 +327,7 @@ public:
 //    /// The grid (grid_["x"] = <double***> x, for instance)
 //    std::map<std::string, double***> grid_;
 //    /// The BasisPoints object to evaluate basis functions on the grid
-//    //boost::shared_ptr<BasisPoints> points_;
+//    //std::shared_ptr<BasisPoints> points_;
 //
 //
 //    /// The number of subintervals
@@ -368,27 +368,27 @@ public:
 //    // Deprecated
 //   // // Compute routines (these all work on a block of points)
 //   // /// Compute mo values
-//   // void compute_mos(boost::shared_ptr<GridBlock> g, unsigned long int offset);
+//   // void compute_mos(std::shared_ptr<GridBlock> g, unsigned long int offset);
 //   // /// Compute basis function values
-//   // void compute_basis_funs(boost::shared_ptr<GridBlock> g, unsigned long int offset);
+//   // void compute_basis_funs(std::shared_ptr<GridBlock> g, unsigned long int offset);
 //   // /// Compute total density
-//   // void compute_rho(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_rho(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute spin density (rho_a - rho_b)
-//   // void compute_rho_s(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_rho_s(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute rho_a (alpha density)
-//   // void compute_rho_a(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_rho_a(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute rho_b (beta density)
-//   // void compute_rho_b(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_rho_b(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute gamma_aa (\nabla rho_a ^2)
-//   // void compute_gamma_aa(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_gamma_aa(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute gamma_ab (\nabla rho_a \nabla rho_b)
-//   // void compute_gamma_ab(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_gamma_ab(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute gamma_bb (\nabla rho_b ^2)
-//   // void compute_gamma_bb(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_gamma_bb(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute tau_a (KE density)
-//   // void compute_tau_a(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_tau_a(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute tau_b (KE density)
-//   // void compute_tau_b(boost::shared_ptr<GridBlock> g, double* results);
+//   // void compute_tau_b(std::shared_ptr<GridBlock> g, double* results);
 //
 //    /// Compute ESP (perhaps more involved, might need a fast Poisson solver)
 //    void compute_ESP();
@@ -409,7 +409,7 @@ public:
 //
 //public:
 //    /// Constructor, uses globals
-//    GridProp(boost::shared_ptr<Wavefunction> wfn);
+//    GridProp(std::shared_ptr<Wavefunction> wfn);
 //    /// Constructor, uses globals and Process::environment::reference wavefunction
 //    GridProp();
 //    /// Destructor

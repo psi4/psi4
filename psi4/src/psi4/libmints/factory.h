@@ -68,7 +68,7 @@ public:
     bool init_with(const Dimension& rows, const Dimension& cols);
 
     /// Manually initialize the matrix factory with SOBasisSet object
-    bool init_with(const boost::shared_ptr<SOBasisSet>& sobasis);
+    bool init_with(const std::shared_ptr<SOBasisSet>& sobasis);
 
     /// Returns number of irreps
     int nirrep() const;

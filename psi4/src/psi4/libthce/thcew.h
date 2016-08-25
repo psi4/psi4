@@ -43,7 +43,7 @@ protected:
     // Energy map
     std::map<std::string, double> energies_;
     // THCE object
-    boost::shared_ptr<THCE> thce_;
+    std::shared_ptr<THCE> thce_;
 
     void common_init();
 
@@ -133,23 +133,23 @@ protected:
     // => DF <= //
 
     // Bia [naux]
-    void build_df_ia(boost::shared_ptr<BasisSet> auxiliary);
+    void build_df_ia(std::shared_ptr<BasisSet> auxiliary);
     // Bii, Bia, Bai, and Baa [naux]
-    void build_df_act(boost::shared_ptr<BasisSet> auxiliary);
+    void build_df_act(std::shared_ptr<BasisSet> auxiliary);
     // Bpp [naux]
-    void build_df_pp(boost::shared_ptr<BasisSet> auxiliary);
+    void build_df_pp(std::shared_ptr<BasisSet> auxiliary);
 
     // => LS-THC <= //
 
     // Xi, Xa, Ziaia [swapped], Sia [swapped], Lia [swapped] [naux,ngrid]
-    void build_lsthc_ia(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X);
+    void build_lsthc_ia(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> X);
     // Xi, Xa, Ziiii -> Zaaaa [swapped], Sii -> Saa [swapped], Lii -> Laa [swapped] [naux,ngrid]
-    void build_lsthc_act(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X);
+    void build_lsthc_act(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> X);
     // Xi, Xa, Zpppp [swapped], Spp [swapped], Lpp [swapped] [naux,ngrid]
-    void build_lsthc_pp(boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> X);
+    void build_lsthc_pp(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> X);
 
     // Ti, Ta, STia [swapped] [namp]
-    void build_meth_ia(boost::shared_ptr<Matrix> X);
+    void build_meth_ia(std::shared_ptr<Matrix> X);
 
 public:
     RTHCEW();

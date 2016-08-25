@@ -29,12 +29,7 @@
 #define FISAPT_LOCAL2_H
 
 #include <vector>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/tuple/tuple.hpp>
+#include <memory>
 
 namespace psi {
 
@@ -71,11 +66,11 @@ protected:
     double condition_;
 
     /// Occupied orbitals, in primary basis
-    boost::shared_ptr<Matrix> C_;
+    std::shared_ptr<Matrix> C_;
     /// Primary orbital basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// MinAO orbital baiss set
-    boost::shared_ptr<BasisSet> minao_;
+    std::shared_ptr<BasisSet> minao_;
 
     // => Stars Parameters <= //
 
@@ -96,9 +91,9 @@ protected:
     std::vector<int> iaos_to_atoms_;
 
     /// Overlap matrix in full basis
-    boost::shared_ptr<Matrix> S_;
+    std::shared_ptr<Matrix> S_;
     /// Non-ghosted IAOs in full basis
-    boost::shared_ptr<Matrix> A_;
+    std::shared_ptr<Matrix> A_;
 
 
     /// Set defaults
@@ -107,8 +102,8 @@ protected:
     /// Build the IAOs
     void build_iaos();
     /// Localization task (returns U and L)
-    static std::map<std::string, boost::shared_ptr<Matrix> > localize_task(
-        boost::shared_ptr<Matrix> L,                        // Matrix of <i|m> [nocc x nmin]
+    static std::map<std::string, std::shared_ptr<Matrix> > localize_task(
+        std::shared_ptr<Matrix> L,                        // Matrix of <i|m> [nocc x nmin]
         const std::vector<std::vector<int> >& minao_inds,   // List of minao indices per active center
         const std::vector<std::pair<int, int> >& rot_inds,  // List of allowed rotations (unique)
         double convergence,                                 // Convergence criterion
@@ -116,12 +111,12 @@ protected:
         int power                                           // Localization metric power
         );
     /// Energy-ordered local orbital permutation [nmo(local) x nmo(ordered)]
-    static boost::shared_ptr<Matrix> reorder_orbitals(
-        boost::shared_ptr<Matrix> F,
+    static std::shared_ptr<Matrix> reorder_orbitals(
+        std::shared_ptr<Matrix> F,
         const std::vector<int>& ranges);
     /// Orbital atomic charges (natom x nmo)
-    boost::shared_ptr<Matrix> orbital_charges(
-        boost::shared_ptr<Matrix> L
+    std::shared_ptr<Matrix> orbital_charges(
+        std::shared_ptr<Matrix> L
         );
 
 
@@ -130,16 +125,16 @@ public:
     // => Constructors <= //
 
     IBOLocalizer2(
-        boost::shared_ptr<BasisSet> primary,
-        boost::shared_ptr<BasisSet> minao,
-        boost::shared_ptr<Matrix> C);
+        std::shared_ptr<BasisSet> primary,
+        std::shared_ptr<BasisSet> minao,
+        std::shared_ptr<Matrix> C);
 
     virtual ~IBOLocalizer2();
 
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
-    static boost::shared_ptr<IBOLocalizer2> build(
-        boost::shared_ptr<BasisSet> primary,
-        boost::shared_ptr<Matrix> C,
+    static std::shared_ptr<IBOLocalizer2> build(
+        std::shared_ptr<BasisSet> primary,
+        std::shared_ptr<Matrix> C,
         Options& options);
 
     // => Computers <= //
@@ -148,9 +143,9 @@ public:
     virtual void print_header() const;
 
     /// Localize the orbitals, returns the matrices L [nbf x nmo], U [nmo(dlocal) x nmo(local)], and F [nmo x nmo]
-    std::map<std::string, boost::shared_ptr<Matrix> > localize(
-        boost::shared_ptr<Matrix> Cocc,              // Orbitals to localize [nbf x nmo], must live in C above
-        boost::shared_ptr<Matrix> Focc,              // Fock matrix of orbitals to localize [nmo x nmo]
+    std::map<std::string, std::shared_ptr<Matrix> > localize(
+        std::shared_ptr<Matrix> Cocc,              // Orbitals to localize [nbf x nmo], must live in C above
+        std::shared_ptr<Matrix> Focc,              // Fock matrix of orbitals to localize [nmo x nmo]
         const std::vector<int>& ranges = std::vector<int>() // [0, nfocc, nocc] will separately localize core and valence
         );
     /// Print the charges

@@ -25,23 +25,22 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <string.h>
 #include "psi4/libqt/qt.h"
 #include "matrix.h"
 #include "vector.h"
 #include "dimension.h"
+#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/mpi_wrapper.h"
+#include "psi4/libparallel/local.h"
 
-#include "../libparallel/mpi_wrapper.h"
-#include "../libparallel/local.h"
-#include <boost/python.hpp>
-#include <boost/python/tuple.hpp>
+#include <pybind11/pybind11.h>
 
 #include <algorithm>
 #include <numeric>
-#include "psi4/libparallel/ParallelPrinter.h"
-using namespace boost;
-using namespace psi;
+#include <cstdlib>
+#include <string.h>
+
+namespace psi {
 
 Vector::Vector()
 {
@@ -50,7 +49,7 @@ Vector::Vector()
     name_ = "";
 }
 
-Vector::Vector(const Vector& c)
+Vector::Vector(const Vector &c)
 {
     nirrep_ = c.nirrep_;
     dimpi_ = c.dimpi_;
@@ -60,7 +59,7 @@ Vector::Vector(const Vector& c)
 }
 
 Vector::Vector(int nirreps, int *dimpi)
-    : dimpi_(nirreps)
+        : dimpi_(nirreps)
 {
     nirrep_ = nirreps;
     dimpi_ = dimpi;
@@ -68,26 +67,26 @@ Vector::Vector(int nirreps, int *dimpi)
 }
 
 Vector::Vector(int dim)
-    : dimpi_(1)
+        : dimpi_(1)
 {
     nirrep_ = 1;
     dimpi_[0] = dim;
     alloc();
 }
 
-Vector::Vector(const std::string& name, int nirreps, int *dimpi)
-    : dimpi_(nirreps)
+Vector::Vector(const std::string &name, int nirreps, int *dimpi)
+        : dimpi_(nirreps)
 {
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
+    for (int h = 0; h < nirrep_; ++h)
         dimpi_[h] = dimpi[h];
     alloc();
     name_ = name;
 }
 
-Vector::Vector(const std::string& name, int dim)
-    : dimpi_(1)
+Vector::Vector(const std::string &name, int dim)
+        : dimpi_(1)
 {
     nirrep_ = 1;
     dimpi_[0] = dim;
@@ -95,7 +94,7 @@ Vector::Vector(const std::string& name, int dim)
     name_ = name;
 }
 
-Vector::Vector(const Dimension& v)
+Vector::Vector(const Dimension &v)
 {
     nirrep_ = v.n();
     dimpi_ = v;
@@ -103,7 +102,7 @@ Vector::Vector(const Dimension& v)
     name_ = v.name();
 }
 
-Vector::Vector(const std::string& name, const Dimension& v)
+Vector::Vector(const std::string &name, const Dimension &v)
 {
     nirrep_ = v.n();
     dimpi_ = v;
@@ -129,7 +128,7 @@ void Vector::init(int nirreps, int *dimpi)
     alloc();
 }
 
-void Vector::init(int nirreps, const int *dimpi, const std::string& name)
+void Vector::init(int nirreps, const int *dimpi, const std::string &name)
 {
     name_ = name;
     dimpi_.init("", nirreps);
@@ -145,7 +144,7 @@ void Vector::init(const Dimension &v)
     alloc();
 }
 
-Vector* Vector::clone()
+Vector *Vector::clone()
 {
     Vector *temp = new Vector(nirrep_, dimpi_);
     temp->copy(this);
@@ -160,7 +159,7 @@ void Vector::alloc()
     int total = dimpi_.sum();
     v_.resize(total);
 
-    std::fill(vector_.begin(), vector_.end(), (double*)0);
+    std::fill(vector_.begin(), vector_.end(), (double *) 0);
     std::fill(v_.begin(), v_.end(), 0.0);
 
     assign_pointer_offsets();
@@ -172,7 +171,7 @@ void Vector::assign_pointer_offsets()
     vector_.resize(dimpi_.n(), 0);
 
     size_t offset = 0;
-    for (int h=0; h<nirrep_; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         if (dimpi_[h])
             vector_[h] = &(v_[0]) + offset;
         else
@@ -183,11 +182,11 @@ void Vector::assign_pointer_offsets()
 
 void Vector::release()
 {
-    std::fill(vector_.begin(), vector_.end(), (double*)0);
+    std::fill(vector_.begin(), vector_.end(), (double *) 0);
     std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-void Vector::copy_from(const Vector& other)
+void Vector::copy_from(const Vector &other)
 {
     nirrep_ = other.dimpi_.n();
     dimpi_ = other.dimpi_;
@@ -215,20 +214,20 @@ void Vector::zero()
     std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-double Vector::pyget(const boost::python::tuple &key)
+double Vector::pyget(const pybind11::tuple &key)
 {
     int h = 0, elem = 0;
-    h = python::extract<int>(key[0]);
-    elem = python::extract<int>(key[1]);
+    h = key[0].cast<int>();
+    elem = key[1].cast<int>();
 
     return get(h, elem);
 }
 
-void Vector::pyset(const boost::python::tuple &key, double value)
+void Vector::pyset(const pybind11::tuple &key, double value)
 {
     int h = 0, elem = 0;
-    h = python::extract<int>(key[0]);
-    elem = python::extract<int>(key[1]);
+    h = key[0].cast<int>();
+    elem = key[1].cast<int>();
 
     set(h, elem, value);
 }
@@ -245,34 +244,35 @@ void Vector::pyset(int key, double value)
     set(h, elem, value);
 }
 
-void Vector::print(std::string out, const char* extra) const
+void Vector::print(std::string out, const char *extra) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
+                                                   std::shared_ptr<OutFile>(new OutFile(out)));
     int h;
     if (extra == NULL) {
         printer->Printf("\n # %s #\n", name_.c_str());
     } else {
         printer->Printf("\n # %s %s #\n", name_.c_str(), extra);
     }
-    for (h=0; h<nirrep_; ++h) {
-        printer->Printf(" Irrep: %d\n", h+1);
-        for (int i=0; i<dimpi_[h]; ++i)
-            printer->Printf("   %4d: %10.7f\n", i+1, vector_[h][i]);
+    for (h = 0; h < nirrep_; ++h) {
+        printer->Printf(" Irrep: %d\n", h + 1);
+        for (int i = 0; i < dimpi_[h]; ++i)
+            printer->Printf("   %4d: %10.7f\n", i + 1, vector_[h][i]);
         printer->Printf("\n");
     }
 }
 
-double *Vector::to_block_vector() {
-    size_t size=0;
-    for (int h=0; h<nirrep_; ++h)
+double *Vector::to_block_vector()
+{
+    size_t size = 0;
+    for (int h = 0; h < nirrep_; ++h)
         size += dimpi_[h];
 
     double *temp = new double[size];
     size_t offset = 0;
-    for (int h=0; h<nirrep_; ++h) {
-        for (int i=0; i<dimpi_[h]; ++i) {
-            temp[i+offset] = vector_[h][i];
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < dimpi_[h]; ++i) {
+            temp[i + offset] = vector_[h][i];
         }
         offset += dimpi_[h];
     }
@@ -280,26 +280,26 @@ double *Vector::to_block_vector() {
     return temp;
 }
 
-void Vector::gemv(bool transa, double alpha, Matrix* A, Vector* X, double beta)
+void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta)
 {
     char trans = transa ? 't' : 'n';
 
-    for (int h =0; h < nirrep_; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]),
                 A->rowspi_[h], &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
     }
 }
 
-double Vector::dot(Vector* X)
+double Vector::dot(Vector *X)
 {
     double tmp = 0.0;
 
-    for (int h=0; h<nirrep_; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         if (dimpi_[h] != X->dimpi_[h]) {
             printf("Vector::dot: Vectors are not of the same size.\n");
             return 0.0;
         }
-        for (int i=0; i<dimpi_[h]; ++i) {
+        for (int i = 0; i < dimpi_[h]; ++i) {
             tmp += vector_[h][i] * X->vector_[h][i];
         }
     }
@@ -311,8 +311,8 @@ double Vector::norm()
 {
     double tmp = 0.0;
 
-    for (int h=0; h<nirrep_; ++h) {
-        for (int i=0; i<dimpi_[h]; ++i) {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < dimpi_[h]; ++i) {
             tmp += vector_[h][i] * vector_[h][i];
         }
     }
@@ -321,25 +321,32 @@ double Vector::norm()
 }
 
 template<class T>
-struct scale_vector {
+struct scale_vector
+{
     typedef T data_type;
     typedef data_type result_type;
 
     const data_type scalar;
-    scale_vector(const data_type& sc) : scalar(sc) {}
 
-    result_type operator()(data_type value) const { value *= scalar; return value; }
+    scale_vector(const data_type &sc) : scalar(sc)
+    {}
+
+    result_type operator()(data_type value) const
+    {
+        value *= scalar;
+        return value;
+    }
 };
 
-void Vector::scale(const double& sc)
+void Vector::scale(const double &sc)
 {
     std::transform(v_.begin(), v_.end(), v_.begin(), scale_vector<double>(sc));
 }
 
-void Vector::add(const std::vector<double>& rhs)
+void Vector::add(const std::vector<double> &rhs)
 {
     size_t min = std::min(rhs.size(), v_.size());
-    for (size_t i=0; i<min; ++i)
+    for (size_t i = 0; i < min; ++i)
         v_[i] += rhs[i];
 }
 
@@ -363,5 +370,7 @@ void Vector::bcast(int)
 
 void Vector::sum()
 {
-   ///RMR-See note in Matrix::sum()
+    ///RMR-See note in Matrix::sum()
 }
+
+} // namespace psi

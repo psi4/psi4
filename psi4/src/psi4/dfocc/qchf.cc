@@ -441,8 +441,8 @@ void DFOCC::gwh()
      SharedTensor2d Cmop = SharedTensor2d(new Tensor2d("C' matrix", nso_, nmo_));
      SharedTensor2d Uso = SharedTensor2d(new Tensor2d("SO-basis U", nso_, nso_));
      SharedTensor2d temp = SharedTensor2d(new Tensor2d("Temp", nso_, nso_));
-     SharedTensor1d e_orb = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <n|n>", nso_));
-     SharedTensor1d DiagS = boost::shared_ptr<Tensor1d>(new Tensor1d("Diag S", nso_));
+     SharedTensor1d e_orb = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <n|n>", nso_));
+     SharedTensor1d DiagS = std::shared_ptr<Tensor1d>(new Tensor1d("Diag S", nso_));
 
      // F_mn = 1/2 * S_mn (H_mm + H_nn)
      for (int mu = 0; mu < nso_; mu++){
@@ -493,8 +493,8 @@ void DFOCC::gwh()
 //=======================================================
 void DFOCC::canonic()
 {
-	SharedTensor2d UeigA = boost::shared_ptr<Tensor2d>(new Tensor2d("UooA", nmo_, nmo_));
-	SharedTensor1d eigA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|A>", nmo_));
+	SharedTensor2d UeigA = std::shared_ptr<Tensor2d>(new Tensor2d("UooA", nmo_, nmo_));
+	SharedTensor1d eigA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|A>", nmo_));
 
 	// Diagonalize Fock
 	FockA->diagonalize(UeigA, eigA, cutoff);
@@ -504,7 +504,7 @@ void DFOCC::canonic()
         UorbA->copy(UeigA);
 
         // Get new MOs
-        SharedTensor2d Ca_new = boost::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
+        SharedTensor2d Ca_new = std::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
 	Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0);
 	CmoA->copy(Ca_new);
 	Ca_new.reset();
@@ -517,8 +517,8 @@ void DFOCC::canonic()
 //========================= UHF REFERENCE ==================================================
 //==========================================================================================
      if (reference_ == "UNRESTRICTED") {
-       	SharedTensor2d UeigB = boost::shared_ptr<Tensor2d>(new Tensor2d("UeigB", nmo_, nmo_));
-	SharedTensor1d eigB = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|a>", nmo_));
+       	SharedTensor2d UeigB = std::shared_ptr<Tensor2d>(new Tensor2d("UeigB", nmo_, nmo_));
+	SharedTensor1d eigB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|a>", nmo_));
 
 	// Diagonalize Fock
 	FockB->diagonalize(UeigB, eigB, cutoff);
@@ -528,7 +528,7 @@ void DFOCC::canonic()
         UorbB->copy(UeigB);
 
         // Get new MOs
-        SharedTensor2d Cb_new = boost::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
+        SharedTensor2d Cb_new = std::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
 	Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0);
 	CmoB->copy(Cb_new);
 	Cb_new.reset();

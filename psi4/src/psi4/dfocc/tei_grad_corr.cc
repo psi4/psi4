@@ -60,12 +60,12 @@ void DFOCC::tei_grad_corr()
     #endif
 
     // Read in the basis set informations
-    boost::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
         "BASIS", Process::environment.options.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+    std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
         "DF_BASIS_CC", Process::environment.options.get_str("DF_BASIS_CC"),
         "RIFIT", Process::environment.options.get_str("BASIS"));
-    boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     //auxiliary_->print();
     int nbasis = primary_->nbf();
     int nQ_corr = auxiliary_->nbf();
@@ -91,10 +91,10 @@ void DFOCC::tei_grad_corr()
     int naux = auxiliary_->nbf();
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -199,7 +199,7 @@ void DFOCC::tei_grad_corr()
     //int nso = primary_->nbf();
     //int naux = auxiliary_->nbf();
 
-    boost::shared_ptr<ERISieve> sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
+    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
@@ -222,10 +222,10 @@ void DFOCC::tei_grad_corr()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    boost::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
     }
 
     // => Temporary Gradients <= //

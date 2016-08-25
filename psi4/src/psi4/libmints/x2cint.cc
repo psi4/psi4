@@ -53,7 +53,7 @@ X2CInt::~X2CInt()
 {
 }
 
-void X2CInt::compute(boost::shared_ptr<Molecule> molecule, SharedMatrix S,
+void X2CInt::compute(std::shared_ptr<Molecule> molecule, SharedMatrix S,
                      SharedMatrix T, SharedMatrix V, Options& options)
 {
     tstart();
@@ -77,7 +77,7 @@ void X2CInt::compute(boost::shared_ptr<Molecule> molecule, SharedMatrix S,
     tstop();
 }
 
-void X2CInt::setup(boost::shared_ptr<Molecule> molecule, Options& options)
+void X2CInt::setup(std::shared_ptr<Molecule> molecule, Options& options)
 {
     outfile->Printf("         ------------------------------------------------------------");
     outfile->Printf("\n         Spin-Free X2C Integrals at the One-Electron Level (SFX2C-1e)");
@@ -121,7 +121,7 @@ void X2CInt::setup(boost::shared_ptr<Molecule> molecule, Options& options)
     outfile->Printf("\n");
 
     // The integral factory oversees the creation of integral objects
-    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(aoBasis_, aoBasis_, aoBasis_, aoBasis_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(aoBasis_, aoBasis_, aoBasis_, aoBasis_));
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule->point_group()) {
@@ -130,7 +130,7 @@ void X2CInt::setup(boost::shared_ptr<Molecule> molecule, Options& options)
 
     // Create an SO basis...we need the point group for this part.
     // SOBasisSet object for the computational basis
-    boost::shared_ptr<SOBasisSet> soBasis(new SOBasisSet(aoBasis_, integral_));
+    std::shared_ptr<SOBasisSet> soBasis(new SOBasisSet(aoBasis_, integral_));
 
     // Obtain the dimension object to initialize the factory.
     nsopi_ = soBasis->dimension();
@@ -140,21 +140,21 @@ void X2CInt::setup(boost::shared_ptr<Molecule> molecule, Options& options)
     Dimension nsspi = nsopi_ + nsopi_;
 
     // Matrix factory for matrices of dimension nbf x nbf
-    soFactory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    soFactory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
     soFactory_->init_with(nsopi_,nsopi_);
 
     // Matrix factory for matrices of dimension 2 nbf x 2 nbf
-    ssFactory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+    ssFactory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
     ssFactory_->init_with(nsspi,nsspi);
 }
 
 void X2CInt::compute_integrals()
 {
     // Create the integral objects
-    boost::shared_ptr<OneBodySOInt> sOBI(integral_->so_overlap());
-    boost::shared_ptr<OneBodySOInt> tOBI(integral_->so_kinetic());
-    boost::shared_ptr<OneBodySOInt> vOBI(integral_->so_potential());
-    boost::shared_ptr<OneBodySOInt> wOBI(integral_->so_rel_potential());
+    std::shared_ptr<OneBodySOInt> sOBI(integral_->so_overlap());
+    std::shared_ptr<OneBodySOInt> tOBI(integral_->so_kinetic());
+    std::shared_ptr<OneBodySOInt> vOBI(integral_->so_potential());
+    std::shared_ptr<OneBodySOInt> wOBI(integral_->so_rel_potential());
 
     // Form the one-electron integral matrices from the matrix factory
     sMat = SharedMatrix(soFactory_->create_matrix("Overlap"));
@@ -457,17 +457,17 @@ void X2CInt::write_integrals_to_disk()
 void X2CInt::project()
 {
     // Integral factory for the BASIS/X2C_BASIS mixed basis
-    boost::shared_ptr<IntegralFactory> integral_contracted(new IntegralFactory(aoBasis_contracted_, aoBasis_, aoBasis_, aoBasis_));
+    std::shared_ptr<IntegralFactory> integral_contracted(new IntegralFactory(aoBasis_contracted_, aoBasis_, aoBasis_, aoBasis_));
 
-    boost::shared_ptr<SOBasisSet> soBasis_contracted(new SOBasisSet(aoBasis_contracted_, integral_contracted));
+    std::shared_ptr<SOBasisSet> soBasis_contracted(new SOBasisSet(aoBasis_contracted_, integral_contracted));
 
     nsopi_contracted_ = soBasis_contracted->dimension();
 
-    boost::shared_ptr<MatrixFactory> soFactory_contracted(new MatrixFactory);
+    std::shared_ptr<MatrixFactory> soFactory_contracted(new MatrixFactory);
     soFactory_contracted->init_with(nsopi_contracted_,nsopi_);
 
     // Form the overlap matrix in the BASIS/X2C_BASIS basis
-    boost::shared_ptr<OneBodySOInt> sOBI_cu(integral_contracted->so_overlap());
+    std::shared_ptr<OneBodySOInt> sOBI_cu(integral_contracted->so_overlap());
     SharedMatrix S_cu(soFactory_contracted->create_matrix("Overlap"));
     sOBI_cu->compute(S_cu);
 

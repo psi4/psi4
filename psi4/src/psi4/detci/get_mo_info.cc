@@ -31,7 +31,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
@@ -193,7 +192,7 @@ void CIWavefunction::get_mo_info() {
         }
     } else {
         std::string str = "(get_mo_info): Can't handle opentype = ";
-        str += boost::lexical_cast<std::string>(Parameters_->opentype);
+        str += std::to_string(Parameters_->opentype);
         throw PsiException(str, __FILE__, __LINE__);
     }
 

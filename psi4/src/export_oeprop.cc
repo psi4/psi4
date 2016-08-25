@@ -34,8 +34,8 @@ using namespace psi;
 
 void export_oeprop()
 {
-    // class_<Prop, boost::shared_ptr<Prop> >("Prop", "docstring", no_init).
-    //     def(init<boost::shared_ptr<Wavefunction> >()).
+    // class_<Prop, std::shared_ptr<Prop> >("Prop", "docstring", no_init).
+    //     def(init<std::shared_ptr<Wavefunction> >()).
     //     def("print_header", pure_virtual(&Prop::print_header)).
     //     def("compute", pure_virtual(&Prop::compute)).
     //     def("set_Da_ao", &Prop::set_Da_ao, "docstring").
@@ -45,8 +45,8 @@ void export_oeprop()
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
-    class_<OEProp, boost::shared_ptr<OEProp> >("OEProp", "docstring", no_init).
-        def(init<boost::shared_ptr<Wavefunction> >()).
+    class_<OEProp, std::shared_ptr<OEProp> >("OEProp", "docstring", no_init).
+        def(init<std::shared_ptr<Wavefunction> >()).
         def("add", &OEProp::oepy_add, "docstring").
         def("compute", &OEProp::oepy_compute, "docstring").
         def("set_title", &OEProp::set_title, "docstring").
@@ -63,7 +63,7 @@ void export_oeprop()
         def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point");
 
 
-    //class_<GridProp, boost::shared_ptr<GridProp> >("GridProp", "docstring").
+    //class_<GridProp, std::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").
     //    def("set_filename", &GridProp::set_filename, "docstring").
     //    def("add_alpha_mo", &GridProp::add_alpha_mo, "docstring").

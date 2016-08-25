@@ -45,7 +45,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
@@ -62,7 +62,7 @@ namespace psi { namespace detci {
 typedef unsigned long long int BIGINT;
 */
 typedef unsigned long int BIGINT;
-//typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
+//typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 
 #define CI_BLK_MAX 5000
 #define IOFF_MAX 50604

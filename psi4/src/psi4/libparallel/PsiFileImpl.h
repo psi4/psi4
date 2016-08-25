@@ -59,10 +59,10 @@ class PsiFileImpl{
    protected:
       template<typename T2>
       void Open(const std::string& filename, const FileMode& Mode,
-            boost::shared_ptr<T2>& FileStream,const bool ImSpecial){
+            std::shared_ptr<T2>& FileStream,const bool ImSpecial){
          if (ImSpecial&&filename!="NULL") {
                this->Close(FileStream);
-               FileStream=boost::shared_ptr<T>(
+               FileStream=std::shared_ptr<T>(
                      (Mode==NOFILEMODE? new T(filename.c_str()):
                      new T(filename.c_str(), FOptions_[Mode])));
                if (!FileStream) {
@@ -73,7 +73,7 @@ class PsiFileImpl{
       }
       ///We cheat to avoid the upcast
       template<typename T2>
-      void Close(boost::shared_ptr<T2>& FileStream){
+      void Close(std::shared_ptr<T2>& FileStream){
          if(FileStream)FileStream.reset();
       }
    public:

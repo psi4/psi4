@@ -92,8 +92,8 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
 
 void MemoryManager::MemCheck(std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    static bool alreadyChecked = false;
 
   printer->Printf( "\n\n");

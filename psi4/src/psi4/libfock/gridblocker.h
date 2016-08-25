@@ -66,7 +66,7 @@ protected:
     const size_t tol_max_points_;
     const size_t tol_min_points_;
     const double tol_max_radius_;
-    boost::shared_ptr<BasisExtents> extents_;
+    std::shared_ptr<BasisExtents> extents_;
 
     // New grid layout (built in blocks -- method specific)
     int npoints_;
@@ -77,13 +77,13 @@ protected:
     double* z_;
     double* w_;
     int* index_;
-    std::vector<boost::shared_ptr<BlockOPoints> > blocks_;
+    std::vector<std::shared_ptr<BlockOPoints> > blocks_;
 
 public:
 
     GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        boost::shared_ptr<BasisExtents> extents);
+        std::shared_ptr<BasisExtents> extents);
     virtual ~GridBlocker();
 
     virtual void block() = 0;
@@ -96,7 +96,7 @@ public:
     double* z() const { return z_; }
     double* w() const { return w_; }
     int* index() const { return index_; }
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks() const { return blocks_; }
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks() const { return blocks_; }
 
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
@@ -113,7 +113,7 @@ public:
 
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        boost::shared_ptr<BasisExtents> extents);
+        std::shared_ptr<BasisExtents> extents);
     virtual ~NaiveGridBlocker();
 
     virtual void block();
@@ -128,7 +128,7 @@ public:
 
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        boost::shared_ptr<BasisExtents> extents);
+        std::shared_ptr<BasisExtents> extents);
     virtual ~OctreeGridBlocker();
 
     virtual void block();

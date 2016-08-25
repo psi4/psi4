@@ -27,7 +27,7 @@
 
 #include "sapt2p3.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -35,7 +35,7 @@ void SAPT2p3::ind_disp30()
 {
   double **tAR = block_matrix(aoccA_,nvirA_);
 
-  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uAR Amplitudes", (char *) 
+  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uAR Amplitudes", (char *)
     tAR[0], sizeof(double)*aoccA_*nvirA_);
 
   double inddisp_1 = 2.0*C_DDOT(aoccA_*nvirA_,tAR[0],1,wBAR_[foccA_],1);
@@ -44,7 +44,7 @@ void SAPT2p3::ind_disp30()
 
   double **tBS = block_matrix(aoccB_,nvirB_);
 
-  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uBS Amplitudes", (char *) 
+  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uBS Amplitudes", (char *)
     tBS[0], sizeof(double)*aoccB_*nvirB_);
 
   double inddisp_2 = 2.0*C_DDOT(aoccB_*nvirB_,tBS[0],1,wABS_[foccB_],1);
@@ -58,7 +58,7 @@ void SAPT2p3::ind_disp30()
 
   double **vARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
   double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
-  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uARBS Amplitudes",(char *) 
+  psio_->read_entry(PSIF_SAPT_AMPS,"IndDisp30 uARBS Amplitudes",(char *)
     tARBS[0],sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
 
   C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,1.0,B_p_AR[0],ndf_+3,
@@ -81,7 +81,7 @@ void SAPT2p3::ind_disp30()
   }
   if (print_) {
     outfile->Printf("    Ind-Disp30          = %18.12lf [Eh]\n",e_ind_disp30_);
-    
+
   }
 }
 

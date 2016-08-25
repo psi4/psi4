@@ -9,20 +9,12 @@
 
 #include "psi4/libpsio/config.h"
 
-namespace boost {
-template <class T>
-class shared_ptr;
-class thread;
-}
-
 namespace psi {
-
-
 
 class PSIO;
 class PSIOManager;
-extern boost::shared_ptr<PSIO> _default_psio_lib_;
-extern boost::shared_ptr<PSIOManager> _default_psio_manager_;
+extern std::shared_ptr<PSIO> _default_psio_lib_;
+extern std::shared_ptr<PSIOManager> _default_psio_manager_;
 
 /**
     PSIOManager is a class designed to be used as a static object to track all
@@ -160,7 +152,7 @@ public:
             **/
     void crashclean();
     /// The one and (should be) only instance of PSIOManager for a PSI4 instance
-    static boost::shared_ptr<PSIOManager> shared_object();
+    static std::shared_ptr<PSIOManager> shared_object();
 };
 
 /**
@@ -295,7 +287,7 @@ public:
     static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
     /// Return the global shared object
-    static boost::shared_ptr<PSIO> shared_object();
+    static std::shared_ptr<PSIO> shared_object();
 
     /** Read the length of the TOC for a given unit directly from the file.
        **

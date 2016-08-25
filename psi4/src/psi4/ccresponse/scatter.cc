@@ -63,7 +63,7 @@
 //#include "oldphysconst.h"
 //#include "mass.h"
 
-using namespace boost;
+
 using namespace psi;
 
 int levi(int a, int b, int c);
@@ -82,10 +82,10 @@ void rs(int nm, int n, double **array, double *e_vals, int matz,
 
 namespace psi { namespace ccresponse {
 
-void print_tensor_der(boost::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list);
+void print_tensor_der(std::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list);
 
 //void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
-void scatter(boost::shared_ptr<Molecule> molecule, Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
+void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 {
     double mstep = options.get_double("DISP_SIZE");
     //-> This is troublesome, need to decide if option should be set as global or local-"FINDIF"
@@ -190,7 +190,7 @@ void scatter(boost::shared_ptr<Molecule> molecule, Options &options, double step
 
     // Write Out the Tensor Derivatives to File tender.dat //
     // Outfile derivs("tender.dat", "w");
-    boost::shared_ptr<OutFile> derivs(new OutFile("tender.dat", TRUNCATE));
+    std::shared_ptr<OutFile> derivs(new OutFile("tender.dat", TRUNCATE));
     derivs->Printf( "******************************************************\n");
     derivs->Printf( "**********                                  **********\n");
     derivs->Printf( "**********        TENSOR DERIVATIVES        **********\n");
@@ -727,7 +727,7 @@ void scatter(boost::shared_ptr<Molecule> molecule, Options &options, double step
 }
 
 // Handy Tensor Derivative Array Printer
-void print_tensor_der(boost::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list)
+void print_tensor_der(std::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list)
 {
   for(int i=0; i < my_tensor_list.size(); ++i)  {
     int atom_num  = i/3;

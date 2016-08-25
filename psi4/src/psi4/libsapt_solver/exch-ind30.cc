@@ -27,7 +27,7 @@
 
 #include "sapt2p3.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -90,7 +90,7 @@ void SAPT2p3::exch_ind30()
   }
   if (print_) {
     outfile->Printf("    Exch-Ind30          = %18.12lf [Eh]\n",e_exch_ind30_);
-    
+
   }
 }
 
@@ -193,7 +193,7 @@ double SAPT2p3::exch_ind30_2(double **sAR)
     0.0,xAR[0],nvirA_);
 
   C_DGEMV('n',noccA_*nvirA_,ndf_+3,1.0,A_p_AR[0],ndf_+3,diagBB_,1,
-    0.0,yAR[0],1); 
+    0.0,yAR[0],1);
 
   energy += 4.0*C_DDOT(noccA_*nvirA_,xAR[0],1,yAR[0],1);
 
@@ -202,7 +202,7 @@ double SAPT2p3::exch_ind30_2(double **sAR)
 
   double **E_p_AB = block_matrix(noccA_*noccB_,ndf_+3);
   double **C_p_BB = block_matrix(noccB_*noccB_,ndf_+3);
- 
+
   for (int a=0; a<noccA_; a++) {
     C_DGEMM('T','N',noccB_,ndf_+3,nvirA_,1.0,ssRB[0],noccB_,A_p_AR[a*nvirA_],
       ndf_+3,0.0,E_p_AB[a*noccB_],ndf_+3);
@@ -212,7 +212,7 @@ double SAPT2p3::exch_ind30_2(double **sAR)
     noccB_*(ndf_+3),0.0,C_p_BB[0],noccB_*(ndf_+3));
 
   energy -= 2.0*C_DDOT(noccB_*noccB_*(ndf_+3),C_p_BB[0],1,B_p_BB[0],1);
- 
+
   free_block(xAB);
   free_block(E_p_AB);
   free_block(C_p_BB);
@@ -288,7 +288,7 @@ double SAPT2p3::exch_ind30_3(double **sBS)
     0.0,xBS[0],nvirB_);
 
   C_DGEMV('n',noccB_*nvirB_,ndf_+3,1.0,B_p_BS[0],ndf_+3,diagAA_,1,
-    0.0,yBS[0],1); 
+    0.0,yBS[0],1);
 
   energy += 4.0*C_DDOT(noccB_*nvirB_,xBS[0],1,yBS[0],1);
 
@@ -297,7 +297,7 @@ double SAPT2p3::exch_ind30_3(double **sBS)
 
   double **E_p_AB = block_matrix(noccA_*noccB_,ndf_+3);
   double **C_p_AA = block_matrix(noccA_*noccA_,ndf_+3);
- 
+
   for (int b=0; b<noccB_; b++) {
     C_DGEMM('N','N',noccA_,ndf_+3,nvirB_,1.0,ssAS[0],nvirB_,B_p_BS[b*nvirB_],
       ndf_+3,0.0,E_p_AB[b*noccA_],ndf_+3);
@@ -307,7 +307,7 @@ double SAPT2p3::exch_ind30_3(double **sBS)
     noccA_*(ndf_+3),0.0,C_p_AA[0],noccA_*(ndf_+3));
 
   energy -= 2.0*C_DDOT(noccA_*noccA_*(ndf_+3),C_p_AA[0],1,A_p_AA[0],1);
- 
+
   free_block(xAB);
   free_block(E_p_AB);
   free_block(C_p_AA);

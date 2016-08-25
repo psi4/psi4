@@ -30,11 +30,6 @@
 
 #include "psi4/psi4-dec.h"
 
-namespace boost {
-template <class T>
-class shared_ptr;
-}
-
 namespace psi {
 
 class PSIO;
@@ -52,13 +47,13 @@ protected:
     /// The options object
     Options& options_;
     /// The primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// The effective alphas of the primary set [center][am][index]
     std::vector<std::vector<std::vector<double> > > primary_alpha_;
     /// The alphas of the dealias set [center][am][index]
     std::vector<std::vector<std::vector<double> > > dealias_alpha_;
     /// The resultant dealias set
-    boost::shared_ptr<BasisSet> dealias_;
+    std::shared_ptr<BasisSet> dealias_;
 
     // => Parameters <= //
     /// Base for core and diffuse functions (~2)
@@ -85,7 +80,7 @@ protected:
     void form_basis();
 
 public:
-    DealiasBasisSet(boost::shared_ptr<BasisSet> primary_, Options& options);
+    DealiasBasisSet(std::shared_ptr<BasisSet> primary_, Options& options);
     virtual ~DealiasBasisSet();
 
     /// Parameter entry
@@ -101,7 +96,7 @@ public:
     void buildDealiasBasisSet();
 
     /// Convenience routine
-    boost::shared_ptr<BasisSet> dealiasSet() const { return dealias_; }
+    std::shared_ptr<BasisSet> dealiasSet() const { return dealias_; }
 };
 
 /*- PSTensorII: Range-Separated Pseudospectral Techniques
@@ -118,13 +113,13 @@ protected:
     unsigned long int memory_;
 
     /// Molecule (for convenience)
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
     /// Primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Dealias basis set
-    boost::shared_ptr<BasisSet> dealias_;
+    std::shared_ptr<BasisSet> dealias_;
     /// Pseudospectral grid
-    boost::shared_ptr<PseudospectralGrid> grid_;
+    std::shared_ptr<PseudospectralGrid> grid_;
     /// options reference
     Options& options_;
 
@@ -219,7 +214,7 @@ protected:
     int navir_;
 
     /// Grid weights (hopefully SPD)
-    boost::shared_ptr<Vector> w_;
+    std::shared_ptr<Vector> w_;
     /// Primary AO collocation matrix
     SharedMatrix Rpao_;
     /// Primary MO collocation matrix
@@ -250,7 +245,7 @@ protected:
     SharedMatrix O_;
 
 public:
-    PSTensorII(boost::shared_ptr<BasisSet> primary,
+    PSTensorII(std::shared_ptr<BasisSet> primary,
              SharedMatrix C,
              int nocc,
              int nvir,
@@ -297,13 +292,13 @@ protected:
     int print_;
 
     /// Molecule (fo convenience)
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
     /// Primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Dealias basis set
-    boost::shared_ptr<BasisSet> dealias_;
+    std::shared_ptr<BasisSet> dealias_;
     /// Pseudospectral grid
-    boost::shared_ptr<PseudospectralGrid> grid_;
+    std::shared_ptr<PseudospectralGrid> grid_;
     /// options reference
     Options& options_;
 
@@ -384,7 +379,7 @@ protected:
     void validate_X();
 
     /// Grid weights (hopefully SPD)
-    boost::shared_ptr<Vector> w_;
+    std::shared_ptr<Vector> w_;
 
     /// Target Q tensor (nmo x naux)
     SharedMatrix Qmo_;
@@ -418,7 +413,7 @@ protected:
 
 public:
 
-    PSTensor(boost::shared_ptr<BasisSet> primary,
+    PSTensor(std::shared_ptr<BasisSet> primary,
              SharedMatrix C,
              int nocc,
              int nvir,
@@ -469,7 +464,7 @@ protected:
     // options
     Options& options_;
     // Molecule
-    boost::shared_ptr<Molecule> molecule_;
+    std::shared_ptr<Molecule> molecule_;
 
     // => Bases/Grids <= //
 
@@ -480,11 +475,11 @@ protected:
     // Minimum eigenvalue for a dealias basis function
     double min_S_dealias_;
     // Primary basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     // Dealias basis set
-    boost::shared_ptr<BasisSet> dealias_;
+    std::shared_ptr<BasisSet> dealias_;
     // Pseudospectral grid
-    boost::shared_ptr<PseudospectralGrid> grid_;
+    std::shared_ptr<PseudospectralGrid> grid_;
     // Number of primary basis functions
     int nso_;
     // Number of orthogonalized primary basis functions
@@ -551,7 +546,7 @@ protected:
     SharedMatrix Ra_;
 
     // Weight Vector
-    boost::shared_ptr<Vector> w_;
+    std::shared_ptr<Vector> w_;
     // C matrix
     SharedMatrix C_;
     // Cinv matrix

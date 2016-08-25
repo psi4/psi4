@@ -38,12 +38,12 @@
 
 #define RELVDEBUG 0
 
-using namespace boost;
+;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1,
-                                 boost::shared_ptr<BasisSet> bs2, int deriv) :
+RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
+                                 std::shared_ptr<BasisSet> bs2, int deriv) :
         OneBodyAOInt(st, bs1, bs2, deriv)
 {
     if (deriv == 0)
@@ -298,14 +298,14 @@ void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix>&)
     throw SanityCheckError("RelPotentialInt::compute_deriv2(): not implemented.", __FILE__, __LINE__);
 }
 
-RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& aoint,
-                                     const boost::shared_ptr<IntegralFactory>& fact)
+RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint,
+                                     const std::shared_ptr<IntegralFactory>& fact)
         : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-RelPotentialSOInt::RelPotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& aoint, const IntegralFactory *fact)
+RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint, const IntegralFactory *fact)
         : OneBodySOInt(aoint, fact)
 {
     natom_ = ob_->basis1()->molecule()->natom();

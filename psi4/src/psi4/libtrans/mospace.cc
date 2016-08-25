@@ -32,13 +32,13 @@
 using namespace psi;
 
 /// Keeps track of which labels have been assigned, for safety
-boost::shared_ptr<MOSpace> MOSpace::fzc(new MOSpace(MOSPACE_FZC));
-boost::shared_ptr<MOSpace> MOSpace::occ(new MOSpace(MOSPACE_OCC));
-boost::shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
-boost::shared_ptr<MOSpace> MOSpace::fzv(new MOSpace(MOSPACE_FZV));
-boost::shared_ptr<MOSpace> MOSpace::all(new MOSpace(MOSPACE_ALL));
-boost::shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
-boost::shared_ptr<MOSpace> MOSpace::dum(new MOSpace(MOSPACE_DUM));
+std::shared_ptr<MOSpace> MOSpace::fzc(new MOSpace(MOSPACE_FZC));
+std::shared_ptr<MOSpace> MOSpace::occ(new MOSpace(MOSPACE_OCC));
+std::shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
+std::shared_ptr<MOSpace> MOSpace::fzv(new MOSpace(MOSPACE_FZV));
+std::shared_ptr<MOSpace> MOSpace::all(new MOSpace(MOSPACE_ALL));
+std::shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
+std::shared_ptr<MOSpace> MOSpace::dum(new MOSpace(MOSPACE_DUM));
 
 /**
  * This creates an empty MOSpace with just a label.  This is solely for the

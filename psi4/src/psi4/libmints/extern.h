@@ -31,8 +31,8 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <tuple>
 #include "typedefs.h"
-#include <boost/tuple/tuple.hpp>
 
 namespace psi {
 
@@ -41,7 +41,7 @@ class Molecule;
 class BasisSet;
 
 /*! \ingroup MINTS
- *  \class ExternalPotential 
+ *  \class ExternalPotential
  *  Stores external potential field, computes external potential matrix
  *  Like standard potential integrals, this is negative definite (electrons are the test charge)
  */
@@ -56,9 +56,9 @@ protected:
     /// Name of potential
     std::string name_;
     /// <Z,x,y,z> array of charges
-    std::vector<boost::tuple<double,double,double,double> > charges_;
+    std::vector<std::tuple<double,double,double,double> > charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
-    std::vector<std::pair<boost::shared_ptr<BasisSet>, SharedVector> > bases_;
+    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
 
 public:
     /// Constructur, does nothing
@@ -66,34 +66,34 @@ public:
     /// Destructor, does nothing
     ~ExternalPotential();
 
-    /// Set name 
-    void setName(const std::string & name) { name_ = name; }    
+    /// Set name
+    void setName(const std::string & name) { name_ = name; }
 
     /// Add a charge Z at (x,y,z)
     void addCharge(double Z,double x, double y, double z);
     /// Add a basis of S auxiliary functions with DF coefficients
-    void addBasis(boost::shared_ptr<BasisSet> basis, SharedVector coefs);
+    void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
-    /// Reset the field to zero (eliminates all entries) 
+    /// Reset the field to zero (eliminates all entries)
     void clear();
-    
+
     /// Compute the external potential matrix in the given basis set
-    SharedMatrix computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
+    SharedMatrix computePotentialMatrix(std::shared_ptr<BasisSet> basis);
     /// Compute the gradients due to the external potential
-    SharedMatrix computePotentialGradients(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> Dt);
+    SharedMatrix computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt);
     /// Compute the contribution to the nuclear repulsion energy for the given molecule
-    double computeNuclearEnergy(boost::shared_ptr<Molecule> mol);
-    
+    double computeNuclearEnergy(std::shared_ptr<Molecule> mol);
+
     /// Print a trace of the external potential
     void print(std::string OutFileRMR = "outfile") const;
 
     /// Python print helper
     void py_print() const { print("outfile"); }
 
-    /// Print flag 
-    void set_print(int print) { print_ = print; } 
-    /// Debug flag          
-    void set_debug(int debug) { debug_ = debug; } 
+    /// Print flag
+    void set_print(int print) { print_ = print; }
+    /// Debug flag
+    void set_debug(int debug) { debug_ = debug; }
 
 };
 

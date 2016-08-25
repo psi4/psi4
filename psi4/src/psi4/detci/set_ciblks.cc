@@ -31,7 +31,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
@@ -323,9 +322,9 @@ void CIWavefunction::set_ciblks()
 
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
-      str += boost::lexical_cast<std::string>( nblocks) ;
+      str += std::to_string( nblocks) ;
       str += " > CI_BLK_MAX = ";
-      str += boost::lexical_cast<std::string>( CI_BLK_MAX) ;
+      str += std::to_string( CI_BLK_MAX) ;
       throw PsiException(str,__FILE__,__LINE__);
       }
 

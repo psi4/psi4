@@ -87,7 +87,7 @@ private:
     Options& options_;
     /// Integral cutoff to apply
     double cutoff_;
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     int nthreads_;
     /// Number of basis functions
     int nbf_;
@@ -135,7 +135,7 @@ protected:
 public:
 
     /// Base constructor
-    PKManager(boost::shared_ptr<BasisSet> primary, size_t memory,
+    PKManager(std::shared_ptr<BasisSet> primary, size_t memory,
               Options& options);
     /// Base destructor, does nothing
     virtual ~PKManager() {}
@@ -154,7 +154,7 @@ public:
     SharedPKWrkr buffer(int i)              const { return iobuffers_[i]; }
     double* D_glob_vecs(int i)              const { return D_vec_[i]; }
     double* JK_glob_vecs(int i)             const { return JK_vec_[i]; }
-    boost::shared_ptr< BasisSet > primary() const { return primary_; }
+    std::shared_ptr< BasisSet > primary() const { return primary_; }
     bool is_sym(int i)                      const { return symmetric_[i]; }
     bool all_sym()                          const { return all_sym_; }
     SharedMatrix original_D(int N)          const { return D_[N]; }
@@ -170,8 +170,8 @@ public:
      * options provided
      * @return abstract PKmanager object tuned with relevant options
      */
-    static std::shared_ptr<PKManager> build_PKManager(boost::shared_ptr<PSIO> psio,
-                boost::shared_ptr<BasisSet> primary, size_t memory, Options &options,
+    static std::shared_ptr<PKManager> build_PKManager(std::shared_ptr<PSIO> psio,
+                std::shared_ptr<BasisSet> primary, size_t memory, Options &options,
                 bool dowK, double omega_in = 0);
 
     // Base functions needed for the class to work
@@ -257,7 +257,7 @@ private:
     int max_batches_;
 
     /// PSIO handler (boost pointer for compatibility)
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
     /// AIO Handler
     std::shared_ptr<AIOHandler> AIO_;
     /// PK file number
@@ -267,7 +267,7 @@ private:
 
 public:
     /// Constructor for PKMgrDisk
-    PKMgrDisk(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+    PKMgrDisk(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
               size_t memory, Options &options);
     /// Destructor for PKMgrDisk, does nothing
     virtual ~PKMgrDisk() {}
@@ -282,7 +282,7 @@ public:
     std::vector< size_t >& batch_pq_max() { return batch_pq_max_;}
     std::vector< int >& batch_for_pq() { return batch_for_pq_; }
     std::shared_ptr< AIOHandler > AIO() const { return AIO_; }
-    boost::shared_ptr< PSIO > psio() const { return psio_; }
+    std::shared_ptr< PSIO > psio() const { return psio_; }
 
     /// Finalize the PK file formation
     virtual void finalize_PK();
@@ -336,7 +336,7 @@ private:
 
 public:
     /// Constructor
-    PKMgrReorder(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+    PKMgrReorder(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                  size_t memory, Options &options);
     /// Destructor
     virtual ~PKMgrReorder() {}
@@ -378,7 +378,7 @@ private:
 
 public:
     /// Constructor
-    PKMgrYoshimine(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+    PKMgrYoshimine(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                    size_t memory, Options &options);
     /// Destructor
     virtual ~PKMgrYoshimine() {}
@@ -438,7 +438,7 @@ private:
 
 public:
     /// Constructor for in-core class
-    PKMgrInCore(boost::shared_ptr<BasisSet> primary, size_t memory,
+    PKMgrInCore(std::shared_ptr<BasisSet> primary, size_t memory,
                 Options &options) : wK_ints_(nullptr), PKManager(primary,memory,options) {}
     /// Destructor for in-core class
     virtual ~PKMgrInCore() {}

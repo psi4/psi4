@@ -31,7 +31,7 @@
 #include "psi4/libqt/qt.h"
 #include "arrays.h"
 
-using namespace boost;
+
 using namespace psi;
 using namespace std;
 #include "psi4/libparallel/ParallelPrinter.h"
@@ -115,8 +115,8 @@ void Array1d::print()
 
 void Array1d::print(std::string OutFileRMR)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
@@ -399,8 +399,8 @@ void Array2d::print()
 
 void Array2d::print(std::string OutFileRMR)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   print_mat(A2d_,dim1_,dim2_,OutFileRMR);
 }//

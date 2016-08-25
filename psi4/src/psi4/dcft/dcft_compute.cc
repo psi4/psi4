@@ -33,7 +33,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "defines.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 

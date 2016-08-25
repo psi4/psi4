@@ -25,11 +25,7 @@
  * @END LICENSE
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
+#include <memory>
 #include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/angularmomentum.h"
@@ -40,11 +36,10 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 using namespace psi;
-using namespace boost;
 
 // Initialize overlap_recur_ to +1 basis set angular momentum, +1 on each center is sufficient
 // to compute the dipole derivatives
-AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int nderiv) :
+AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv) :
     OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
 {
     int maxam1 = bs1_->max_am();

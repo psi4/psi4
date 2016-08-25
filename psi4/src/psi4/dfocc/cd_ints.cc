@@ -124,7 +124,7 @@ void DFOCC::cd_ints()
   // 1.  read scf 3-index integrals from disk
 
   // get ntri from sieve
-  boost::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
+  std::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
   const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
   long int ntri_cd = function_pairs.size();
 
@@ -138,7 +138,7 @@ void DFOCC::cd_ints()
           psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
           // Read the NAUX from the file
           psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
-          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri_cd));
+          std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri_cd));
           double** Qmnp = Qmn->pointer();
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ);
           psio_->close(PSIF_DFSCF_BJ,1);
@@ -164,14 +164,14 @@ void DFOCC::cd_ints()
       else {
           // generate Cholesky 3-index integrals
           outfile->Printf("\tGenerating Cholesky vectors ...\n");
-          boost::shared_ptr<BasisSet> primary = basisset();
-          boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
+          std::shared_ptr<BasisSet> primary = basisset();
+          std::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
           double tol_cd = options_.get_double("CHOLESKY_TOLERANCE");
-          boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),cutoff,tol_cd,Process::environment.get_memory()));
+          std::shared_ptr<CholeskyERI> Ch (new CholeskyERI(std::shared_ptr<TwoBodyAOInt>(integral->eri()),cutoff,tol_cd,Process::environment.get_memory()));
           Ch->choleskify();
           nQ  = Ch->Q();
           nQ_ref = nQ;
-          boost::shared_ptr<Matrix> L = Ch->L();
+          std::shared_ptr<Matrix> L = Ch->L();
           bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
           bQso->set(L);
           L.reset();

@@ -62,11 +62,11 @@ void CoupledCluster::MP2(){
     outfile->Printf("\n");
     outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
     outfile->Printf("\n");
-    boost::shared_ptr<psi::Wavefunction> wfn = reference_wavefunction_;
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::shared_ptr<psi::Wavefunction> wfn = reference_wavefunction_;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<IntegralTransform>
+    std::shared_ptr<IntegralTransform>
         ints(new IntegralTransform(wfn,
                                    spaces,
                                    IntegralTransform::Restricted,
@@ -93,7 +93,7 @@ void CoupledCluster::MP2(){
     // energy
     double * v2 = (double*)malloc(o*o*v*v*sizeof(double));
 
-    boost::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&v2[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_IAJB,0);

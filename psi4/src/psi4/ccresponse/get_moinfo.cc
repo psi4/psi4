@@ -55,7 +55,7 @@ namespace psi { namespace ccresponse {
 ** Modified for ccresponse by TDC May, 2003
 */
 
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
+void get_moinfo(std::shared_ptr<Wavefunction> wfn)
 {
     int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
     int *actpi, offset, act_offset;

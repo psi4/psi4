@@ -41,8 +41,8 @@ namespace psi {
 void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,
     int ntri, int erase, int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int nmo;
 
     psio->open(itap, PSIO_OPEN_OLD);
@@ -81,8 +81,8 @@ void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,
 int iwl_rdone(int itap, const char *label, double *ints, int ntri, int erase,
               int printflg,std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
   int nmo;
 
   psio_open(itap, PSIO_OPEN_OLD);

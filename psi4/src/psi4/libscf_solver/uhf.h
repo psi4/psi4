@@ -31,10 +31,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 class Matrix;
 class Vector;
@@ -91,7 +87,7 @@ protected:
     virtual int soscf_update(void);
 
 public:
-    UHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UHF();
 
     virtual bool same_a_b_orbs() const { return false; }

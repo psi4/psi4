@@ -109,10 +109,10 @@ void DFOCC::ccdl_l2_amps()
     Lnew.reset();
 
     // DIIS
-    boost::shared_ptr<Matrix> RL2(new Matrix("RL2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> RL2(new Matrix("RL2", naoccA*navirA, naoccA*navirA));
     Tau->to_matrix(RL2);
     Tau.reset();
-    boost::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
     l2->to_matrix(L2);
 
     // add entry

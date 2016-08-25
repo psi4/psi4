@@ -30,12 +30,6 @@
 
 #include "sapt.h"
 
-namespace boost {
-
-template<class T> class shared_ptr;
-
-}
-
 namespace psi { namespace sapt {
 
 struct SAPTDFInts;
@@ -161,7 +155,7 @@ protected:
 public:
   SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA,
         SharedWavefunction MonomerB, Options& options,
-        boost::shared_ptr<PSIO>psio);
+        std::shared_ptr<PSIO>psio);
   virtual ~SAPT0();
 
   virtual double compute_energy();

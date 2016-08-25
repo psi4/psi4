@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include <vector>
 
@@ -244,17 +244,17 @@ private:
 
     bool done;
 
-    boost::shared_ptr<BasisSet> bs1_;
-    boost::shared_ptr<BasisSet> bs2_;
-    boost::shared_ptr<BasisSet> bs3_;
-    boost::shared_ptr<BasisSet> bs4_;
+    std::shared_ptr<BasisSet> bs1_;
+    std::shared_ptr<BasisSet> bs2_;
+    std::shared_ptr<BasisSet> bs3_;
+    std::shared_ptr<BasisSet> bs4_;
 
 public:
-    AOShellCombinationsIterator(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
-                              boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
+    AOShellCombinationsIterator(std::shared_ptr<BasisSet>bs1, std::shared_ptr<BasisSet>bs2,
+                              std::shared_ptr<BasisSet>bs3, std::shared_ptr<BasisSet>bs4);
     AOShellCombinationsIterator();
-    void init(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
-            boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4);
+    void init(std::shared_ptr<BasisSet>bs1, std::shared_ptr<BasisSet>bs2,
+            std::shared_ptr<BasisSet>bs3, std::shared_ptr<BasisSet>bs4);
 
     void first();
     void next();
@@ -288,17 +288,17 @@ private:
 
     bool done;
 
-    boost::shared_ptr<SOBasisSet> bs1_;
-    boost::shared_ptr<SOBasisSet> bs2_;
-    boost::shared_ptr<SOBasisSet> bs3_;
-    boost::shared_ptr<SOBasisSet> bs4_;
+    std::shared_ptr<SOBasisSet> bs1_;
+    std::shared_ptr<SOBasisSet> bs2_;
+    std::shared_ptr<SOBasisSet> bs3_;
+    std::shared_ptr<SOBasisSet> bs4_;
 
 public:
-    SOShellCombinationsIterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
-                              boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+    SOShellCombinationsIterator(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
+                              std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
     SOShellCombinationsIterator();
-    void init(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
-            boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+    void init(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
+            std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
 
     void first();
     void next();
@@ -324,10 +324,10 @@ private:
 
     bool done;
 
-    boost::shared_ptr<SOBasisSet> bs1_;
+    std::shared_ptr<SOBasisSet> bs1_;
 
 public:
-    SO_PQ_Iterator(boost::shared_ptr<SOBasisSet>bs1);
+    SO_PQ_Iterator(std::shared_ptr<SOBasisSet>bs1);
     SO_PQ_Iterator();
 
     void first();
@@ -356,17 +356,17 @@ private:
 
     bool done;
 
-    boost::shared_ptr<SOBasisSet> bs1_;
-    boost::shared_ptr<SOBasisSet> bs2_;
-    boost::shared_ptr<SOBasisSet> bs3_;
-    boost::shared_ptr<SOBasisSet> bs4_;
+    std::shared_ptr<SOBasisSet> bs1_;
+    std::shared_ptr<SOBasisSet> bs2_;
+    std::shared_ptr<SOBasisSet> bs3_;
+    std::shared_ptr<SOBasisSet> bs4_;
 
 public:
     SO_RS_Iterator(const int &P, const int &Q,
-                   boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
-                   boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
-    SO_RS_Iterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
-                   boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+                   std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
+                   std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
+    SO_RS_Iterator(std::shared_ptr<SOBasisSet>bs1, std::shared_ptr<SOBasisSet>bs2,
+                   std::shared_ptr<SOBasisSet>bs3, std::shared_ptr<SOBasisSet>bs4);
 
     SO_RS_Iterator();
 
@@ -386,13 +386,13 @@ class IntegralFactory
 {
 protected:
     /// Center 1 basis set
-    boost::shared_ptr<BasisSet> bs1_;
+    std::shared_ptr<BasisSet> bs1_;
     /// Center 2 basis set
-    boost::shared_ptr<BasisSet> bs2_;
+    std::shared_ptr<BasisSet> bs2_;
     /// Center 3 basis set
-    boost::shared_ptr<BasisSet> bs3_;
+    std::shared_ptr<BasisSet> bs3_;
     /// Center 4 basis set
-    boost::shared_ptr<BasisSet> bs4_;
+    std::shared_ptr<BasisSet> bs4_;
 
     /// Provides ability to transform to sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
@@ -401,27 +401,27 @@ protected:
 
 public:
     /** Initialize IntegralFactory object given a BasisSet for each center. */
-    IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
-                    boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
+    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs2 | bs1 bs2). */
-    IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2);
+    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2);
     /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs1 | bs1 bs1). */
-    IntegralFactory(boost::shared_ptr<BasisSet> bs1);
+    IntegralFactory(std::shared_ptr<BasisSet> bs1);
 
     virtual ~IntegralFactory();
 
     /// Return the basis set on center 1.
-    boost::shared_ptr<BasisSet> basis1() const;
+    std::shared_ptr<BasisSet> basis1() const;
     /// Return the basis set on center 2.
-    boost::shared_ptr<BasisSet> basis2() const;
+    std::shared_ptr<BasisSet> basis2() const;
     /// Return the basis set on center 3.
-    boost::shared_ptr<BasisSet> basis3() const;
+    std::shared_ptr<BasisSet> basis3() const;
     /// Return the basis set on center 4.
-    boost::shared_ptr<BasisSet> basis4() const;
+    std::shared_ptr<BasisSet> basis4() const;
 
     /// Set the basis set for each center.
-    virtual void set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
-        boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
+    virtual void set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+        std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodyAOInt* ao_overlap(int deriv=0);
@@ -499,19 +499,19 @@ public:
     virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12Scaled integral object
-    virtual TwoBodyAOInt* f12_scaled(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);

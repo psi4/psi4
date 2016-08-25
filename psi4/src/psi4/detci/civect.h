@@ -31,13 +31,8 @@
 */
 #ifndef _psi_src_bin_detci_civect_h
 #define _psi_src_bin_detci_civect_h
-#ifdef _POSIX_C_SOURCE
-#undef _POSIX_C_SOURCE
-#endif
-#ifdef _XOPEN_SOURCE
-#undef _XOPEN_SOURCE
-#endif
-#include <boost/python/dict.hpp>
+
+#include <pybind11/pybind11.h>
 
 // Forward declarations
 namespace psi { namespace detci {
@@ -48,7 +43,7 @@ struct H_zero_block;
 struct ci_blks;
 class CIWavefunction;
 class CIvect;
-typedef boost::shared_ptr<psi::detci::CIvect> SharedCIVector;
+typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
 namespace psi {
@@ -143,7 +138,7 @@ class CIvect {
     ~CIvect();
 
     /// Numpy interface to the current buffer
-    boost::python::dict numpy_array_interface();
+    pybind11::dict numpy_array_interface();
 
     /// BLAS equivalents for CIVectors
     void axpy(double a, SharedCIVector x, int tvec, int ovec);

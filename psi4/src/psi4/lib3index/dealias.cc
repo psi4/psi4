@@ -40,12 +40,12 @@
 #include "psi4/libmints/basisset.h"
 
 
-using namespace boost;
+
 using namespace std;
 
 namespace psi {
 
-DealiasBasisSet::DealiasBasisSet(boost::shared_ptr<BasisSet> primary, Options& options) :
+DealiasBasisSet::DealiasBasisSet(std::shared_ptr<BasisSet> primary, Options& options) :
     primary_(primary), options_(options)
 {
     setDelta(options_.get_double("DEALIAS_DELTA"));

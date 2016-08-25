@@ -131,7 +131,7 @@ namespace psi { namespace cctriples {
 		}
 	      }
 	    }
-      boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+      std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
       //ffile(&ijkfile,"ijk.dat", 0);
       printer->Printf( "Number of IJK combintions: %d\n", nijk);
       printer->Printf( "\nCurrent IJK Combination: ");

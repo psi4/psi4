@@ -58,7 +58,7 @@ using namespace psi;
 namespace psi {
 
 
-DiskJK::DiskJK(boost::shared_ptr<BasisSet> primary, Options& options) :
+DiskJK::DiskJK(std::shared_ptr<BasisSet> primary, Options& options) :
    JK(primary), options_(options)
 {
     common_init();
@@ -85,13 +85,13 @@ void DiskJK::print_header() const
 }
 void DiskJK::preiterations()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     mints->integrals();
     if(do_wK_)
         mints->integrals_erf(omega_);
 
 
-    boost::shared_ptr<SOBasisSet> bas = mints->sobasisset();
+    std::shared_ptr<SOBasisSet> bas = mints->sobasisset();
 
     so2symblk_ = new int[primary_->nbf()];
     so2index_  = new int[primary_->nbf()];
@@ -109,7 +109,7 @@ void DiskJK::preiterations()
 }
 void DiskJK::compute_JK()
 {
-    boost::shared_ptr<PSIO> psio(new PSIO());
+    std::shared_ptr<PSIO> psio(new PSIO());
     IWL *iwl = new IWL(psio.get(), PSIF_SO_TEI, cutoff_, 1, 1);
     Label *lblptr = iwl->labels();
     Value *valptr = iwl->values();

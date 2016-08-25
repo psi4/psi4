@@ -107,7 +107,7 @@ void MOLECULE::read_geom_grad(void) {
 
   Matrix& gradient = *pgradient.get();
 
-  boost::shared_ptr<Molecule> mol = psi::Process::environment.legacy_molecule();
+  std::shared_ptr<Molecule> mol = psi::Process::environment.legacy_molecule();
   Matrix geometry = mol->geometry();
 
   energy = psi::Process::environment.globals["CURRENT ENERGY"];

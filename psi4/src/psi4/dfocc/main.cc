@@ -27,7 +27,7 @@
 
 #include "dfocc.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace dfoccwave {
 
@@ -35,7 +35,7 @@ SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options)
 {
     // Start the timers
     tstart();
-   
+
     SharedWavefunction dfocc_wfn = SharedWavefunction(new DFOCC(ref_wfn, options));
     dfocc_wfn->compute_energy();
 

@@ -53,7 +53,7 @@ namespace psi { namespace cceom {
 ** Modified by TDC, March 1999
 */
 
-void get_moinfo(boost::shared_ptr<Wavefunction> wfn)
+void get_moinfo(std::shared_ptr<Wavefunction> wfn)
 {
     int i, j, h, p, q, errcod, nactive, nirreps, sym;
     double ***C, ***Ca, ***Cb;

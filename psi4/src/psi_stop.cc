@@ -66,7 +66,7 @@ int psi_stop(FILE* infile, std::string OutFileRMR, char* psi_file_prefix)
       fclose(infile);
 
   infile = NULL;
-  outfile = boost::shared_ptr<OutFile>();
+  outfile = std::shared_ptr<OutFile>();
   psi_file_prefix = NULL;
 
   //psi::yetiEnv.free();

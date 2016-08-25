@@ -38,10 +38,10 @@
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 
-using namespace boost;
+;
 using namespace psi;
 
-IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wfn,
+IntegralTransform::IntegralTransform(std::shared_ptr<Wavefunction> wfn,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
@@ -299,14 +299,14 @@ IntegralTransform::initialize()
     initialized_ = true;
 }
 
-boost::shared_ptr<PSIO>
+std::shared_ptr<PSIO>
 IntegralTransform::get_psio() const
 {
     return psio_;
 }
 
 void
-IntegralTransform::set_psio(boost::shared_ptr<PSIO> psio)
+IntegralTransform::set_psio(std::shared_ptr<PSIO> psio)
 {
     psio_ = psio;
 }

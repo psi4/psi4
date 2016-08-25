@@ -33,14 +33,7 @@
 
 #include "dimension.h"
 
-namespace boost {
-template<class T>
-class shared_ptr;
-}
-
 namespace psi {
-
-
 
 class BasisSet;
 class IntegralFactory;
@@ -137,9 +130,9 @@ public:
 class SOBasisSet
 {
 protected:
-    boost::shared_ptr<BasisSet> basis_;
+    std::shared_ptr<BasisSet> basis_;
     const IntegralFactory* integral_;
-    boost::shared_ptr<PetiteList> petite_;
+    std::shared_ptr<PetiteList> petite_;
 
     int nshell_;
     int nirrep_;
@@ -166,11 +159,11 @@ protected:
 
 public:
     /// Create an SOBasis object given a BasisSet and Integral objects.
-    SOBasisSet(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
-    SOBasisSet(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
+    SOBasisSet(const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&);
+    SOBasisSet(const std::shared_ptr<BasisSet>&, const IntegralFactory*);
     ~SOBasisSet();
 
-    boost::shared_ptr<BasisSet> basis() const;
+    std::shared_ptr<BasisSet> basis() const;
 
     /// Return the number of shells.
     int nshell() const { return nshell_; }
@@ -223,7 +216,7 @@ public:
       * you want. This petite list is specifically useful to the
       * OneBodySOInt and TwoBodySOInt.
       */
-    const boost::shared_ptr<PetiteList> petite_list() const;
+    const std::shared_ptr<PetiteList> petite_list() const;
 
     /// Returns the dimension for each irrep.
     Dimension dimension() const;

@@ -334,8 +334,8 @@ void CCMatrix::print_dpdmatrix(int irrep, std::string OutFileRMR)
 {
   int ii,jj,kk,nn,ll;
   int i,j;
-  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  std::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     std::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
   double** mat=matrix[irrep];
   int left_offset  = left->get_first(irrep);
   int right_offset = right->get_first(irrep);

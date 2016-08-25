@@ -27,7 +27,6 @@
 
 
 #include "psi4/libqt/qt.h"
-#include <cmath>
 #include "points.h"
 #include "cubature.h"
 #include "psi4/libparallel/ParallelPrinter.h"
@@ -36,9 +35,11 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
 
+#include <cmath>
+
 namespace psi {
 
-RKSFunctions::RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
     PointFunctions(primary,max_points,max_functions)
 {
     set_ansatz(0);
@@ -70,24 +71,24 @@ void RKSFunctions::allocate()
     point_values_.clear();
 
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = boost::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
+        point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
         point_values_["RHO_B"] = point_values_["RHO_A"];
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = boost::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
-        point_values_["RHO_AY"] = boost::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
-        point_values_["RHO_AZ"] = boost::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
+        point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
+        point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
+        point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
         point_values_["RHO_BX"] = point_values_["RHO_AX"];
         point_values_["RHO_BY"] = point_values_["RHO_AY"];
         point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
-        point_values_["GAMMA_AA"] = boost::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
+        point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
         point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
         point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
     }
 
     if (ansatz_ >= 2) {
-        point_values_["TAU_A"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
+        point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
         point_values_["TAU_B"] = point_values_["TAU_A"];
     }
 }
@@ -100,7 +101,7 @@ void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
-void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
+void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 {
     if (!D_AO_)
         throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
@@ -192,15 +193,15 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 void RKSFunctions::set_Cs(SharedMatrix C_AO)
 {
     C_AO_ = C_AO;
-    C_local_ = boost::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
-    orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
+    C_local_ = std::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
+    orbital_values_["PSI_A"] = std::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
 void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
-void RKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
+void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 {
     // => Build basis function values <= //
 
@@ -236,8 +237,8 @@ void RKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 
 void RKSFunctions::print(std::string out, int print) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -250,7 +251,7 @@ void RKSFunctions::print(std::string out, int print) const
     printer->Printf( "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
     printer->Printf( "    Point Values:\n");
-    for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
+    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
         printer->Printf( "    %s\n", (*it).first.c_str());
         if (print > 3) {
@@ -262,7 +263,7 @@ void RKSFunctions::print(std::string out, int print) const
     BasisFunctions::print(out,print);
 }
 
-UKSFunctions::UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
     PointFunctions(primary,max_points, max_functions)
 {
     set_ansatz(0);
@@ -298,25 +299,25 @@ void UKSFunctions::allocate()
     point_values_.clear();
 
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = boost::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
-        point_values_["RHO_B"] = boost::shared_ptr<Vector>(new Vector("RHO_B", max_points_));
+        point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
+        point_values_["RHO_B"] = std::shared_ptr<Vector>(new Vector("RHO_B", max_points_));
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = boost::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
-        point_values_["RHO_AY"] = boost::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
-        point_values_["RHO_AZ"] = boost::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
-        point_values_["RHO_BX"] = boost::shared_ptr<Vector>(new Vector("RHO_BX", max_points_));
-        point_values_["RHO_BY"] = boost::shared_ptr<Vector>(new Vector("RHO_BY", max_points_));
-        point_values_["RHO_BZ"] = boost::shared_ptr<Vector>(new Vector("RHO_BZ", max_points_));
-        point_values_["GAMMA_AA"] = boost::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
-        point_values_["GAMMA_AB"] = boost::shared_ptr<Vector>(new Vector("GAMMA_AB", max_points_));
-        point_values_["GAMMA_BB"] = boost::shared_ptr<Vector>(new Vector("GAMMA_BB", max_points_));
+        point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
+        point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
+        point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
+        point_values_["RHO_BX"] = std::shared_ptr<Vector>(new Vector("RHO_BX", max_points_));
+        point_values_["RHO_BY"] = std::shared_ptr<Vector>(new Vector("RHO_BY", max_points_));
+        point_values_["RHO_BZ"] = std::shared_ptr<Vector>(new Vector("RHO_BZ", max_points_));
+        point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
+        point_values_["GAMMA_AB"] = std::shared_ptr<Vector>(new Vector("GAMMA_AB", max_points_));
+        point_values_["GAMMA_BB"] = std::shared_ptr<Vector>(new Vector("GAMMA_BB", max_points_));
     }
 
     if (ansatz_ >= 2) {
-        point_values_["TAU_A"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
-        point_values_["TAU_B"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
+        point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
+        point_values_["TAU_B"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     }
 }
 void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/)
@@ -329,7 +330,7 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
     Db_AO_ = Db_AO;
     build_temps();
 }
-void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
+void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 {
     if (!Da_AO_)
         throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
@@ -470,12 +471,12 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
 {
     Ca_AO_ = Ca_AO;
     Cb_AO_ = Cb_AO;
-    Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
-    Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
-    orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
-    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Cb_AO_->colspi()[0], max_points_));
+    Ca_local_ = std::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
+    Cb_local_ = std::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
+    orbital_values_["PSI_A"] = std::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_B"] = std::shared_ptr<Matrix>(new Matrix("PSI_B", Cb_AO_->colspi()[0], max_points_));
 }
-void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
+void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 {
     // => Build basis function values <= //
 
@@ -521,8 +522,8 @@ void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 
 void UKSFunctions::print(std::string out, int print) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -535,7 +536,7 @@ void UKSFunctions::print(std::string out, int print) const
     printer->Printf( "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
     printer->Printf( "    Point Values:\n");
-    for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
+    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
         printer->Printf( "    %s\n", (*it).first.c_str());
         if (print > 3) {
@@ -547,7 +548,7 @@ void UKSFunctions::print(std::string out, int print) const
     BasisFunctions::print(out,print);
 }
 
-PointFunctions::PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+PointFunctions::PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
     BasisFunctions(primary,max_points, max_functions)
 {
     set_ansatz(0);
@@ -565,7 +566,7 @@ SharedMatrix PointFunctions::orbital_value(const std::string& key)
     return orbital_values_[key];
 }
 
-BasisFunctions::BasisFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
     primary_(primary), max_points_(max_points), max_functions_(max_functions)
 {
     build_spherical();
@@ -583,13 +584,13 @@ void BasisFunctions::build_spherical()
 
     puream_ = true;
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     for (int L = 0; L <= primary_->max_am(); L++) {
-        std::vector<boost::tuple<int,int,double> > comp;
-        boost::shared_ptr<SphericalTransformIter> trans(fact->spherical_transform_iter(L));
+        std::vector<std::tuple<int,int,double> > comp;
+        std::shared_ptr<SphericalTransformIter> trans(fact->spherical_transform_iter(L));
         for (trans->first(); !trans->is_done();trans->next()) {
-            comp.push_back(boost::tuple<int,int,double>(
+            comp.push_back(std::tuple<int,int,double>(
                 trans->pureindex(),
                 trans->cartindex(),
                 trans->coef()));
@@ -641,7 +642,7 @@ SharedMatrix BasisFunctions::basis_value(const std::string& key)
 {
     return basis_values_[key];
 }
-void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
+void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 {
     int max_am = primary_->max_am();
     int max_cart = (max_am + 1) * (max_am + 2) / 2;
@@ -682,7 +683,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             const double *alpha = Qshell.exps();
             const double *norm  = Qshell.coefs();
 
-            const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
+            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
             xc_pow[0] = 1.0;
             yc_pow[0] = 1.0;
@@ -721,9 +722,9 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             // Spherical transform
             if (puream_) {
                 for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = boost::get<0>(transform[index]);
-                    int cartindex = boost::get<1>(transform[index]);
-                    double coef   = boost::get<2>(transform[index]);
+                    int pureindex = std::get<0>(transform[index]);
+                    int cartindex = std::get<1>(transform[index]);
+                    double coef   = std::get<2>(transform[index]);
 
                     C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
                 }
@@ -763,7 +764,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             const double *alpha = Qshell.exps();
             const double *norm  = Qshell.coefs();
 
-            const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
+            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
             xc_pow[0] = 0.0;
             yc_pow[0] = 0.0;
@@ -822,9 +823,9 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             // Spherical transform
             if (puream_) {
                 for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = boost::get<0>(transform[index]);
-                    int cartindex = boost::get<1>(transform[index]);
-                    double coef   = boost::get<2>(transform[index]);
+                    int pureindex = std::get<0>(transform[index]);
+                    int cartindex = std::get<1>(transform[index]);
+                    double coef   = std::get<2>(transform[index]);
 
                     C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
                     C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
@@ -888,7 +889,7 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             const double *alpha = Qshell.exps();
             const double *norm  = Qshell.coefs();
 
-            const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
+            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
             xc_pow[0] = 0.0;
             yc_pow[0] = 0.0;
@@ -974,9 +975,9 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             // Spherical transform
             if (puream_) {
                 for (size_t index = 0; index < transform.size(); index++) {
-                    int pureindex = boost::get<0>(transform[index]);
-                    int cartindex = boost::get<1>(transform[index]);
-                    double coef   = boost::get<2>(transform[index]);
+                    int pureindex = std::get<0>(transform[index]);
+                    int cartindex = std::get<1>(transform[index]);
+                    double coef   = std::get<2>(transform[index]);
 
                     C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
                     C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
@@ -1014,8 +1015,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
 }
 void BasisFunctions::print(std::string out, int print) const
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    printer->Printf( "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
     printer->Printf( "    Basis Values:\n");

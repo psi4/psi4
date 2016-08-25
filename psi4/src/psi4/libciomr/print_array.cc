@@ -50,8 +50,8 @@ namespace psi {
 */
 void print_array(double *a, int m, std::string out)
    {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
       int ii,jj,kk,mm,nn,ll;
       int i,j,i1,i2;
 

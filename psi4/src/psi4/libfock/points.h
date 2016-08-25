@@ -30,9 +30,9 @@
 
 #include <cstdio>
 #include <map>
+#include <tuple>
 
 #include "psi4/libmints/typedefs.h"
-#include <boost/tuple/tuple.hpp>
 
 namespace psi {
 
@@ -49,7 +49,7 @@ class BasisFunctions {
 
 protected:
     /// Basis set for this BasisFunctions
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Pure AM or not
     bool puream_;
     /// Maximum number of points in a block
@@ -63,7 +63,7 @@ protected:
     /// Map of temp names to Matrices containing temps
     std::map<std::string, SharedMatrix > basis_temps_;
     /// [L]: pure_index, cart_index, coef
-    std::vector<std::vector<boost::tuple<int,int,double> > > spherical_transforms_;
+    std::vector<std::vector<std::tuple<int,int,double> > > spherical_transforms_;
 
     /// Setup spherical_transforms_
     void build_spherical();
@@ -73,12 +73,12 @@ protected:
 public:
     // => Constructors <= //
 
-    BasisFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~BasisFunctions();
 
     // => Computers <= //
 
-    void compute_functions(boost::shared_ptr<BlockOPoints> block);
+    void compute_functions(std::shared_ptr<BlockOPoints> block);
 
     // => Accessors <= //
 
@@ -104,26 +104,26 @@ protected:
     /// Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     int ansatz_;
     /// Map of value names to Vectors containing values
-    std::map<std::string, boost::shared_ptr<Vector> > point_values_;
+    std::map<std::string, std::shared_ptr<Vector> > point_values_;
 
     // => Orbital Collocation <= //
 
     /// Map of value names to Matrices containing values
-    std::map<std::string, boost::shared_ptr<Matrix> > orbital_values_;
+    std::map<std::string, std::shared_ptr<Matrix> > orbital_values_;
 
 public:
     // => Constructors <= //
 
-    PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~PointFunctions();
 
     // => Computers <= //
 
-    virtual void compute_points(boost::shared_ptr<BlockOPoints> block) = 0;
+    virtual void compute_points(std::shared_ptr<BlockOPoints> block) = 0;
 
     // => Accessors <= //
 
-    boost::shared_ptr<Vector> point_value(const std::string& key);
+    std::shared_ptr<Vector> point_value(const std::string& key);
     std::map<std::string, SharedVector>& point_values() { return point_values_; }
 
     virtual std::vector<SharedMatrix> scratch() = 0;
@@ -139,10 +139,10 @@ public:
 
     // => Orbital Collocation <= //
 
-    boost::shared_ptr<Matrix> orbital_value(const std::string& key);
+    std::shared_ptr<Matrix> orbital_value(const std::string& key);
     std::map<std::string, SharedMatrix>& orbital_values() { return orbital_values_; }
 
-    virtual void compute_orbitals(boost::shared_ptr<BlockOPoints> block) = 0;
+    virtual void compute_orbitals(std::shared_ptr<BlockOPoints> block) = 0;
     virtual void set_Cs(SharedMatrix Cocc) = 0;
     virtual void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) = 0;
 };
@@ -175,20 +175,20 @@ protected:
     SharedMatrix C_local_;
 
 public:
-    RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~RKSFunctions();
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
 
-    void compute_points(boost::shared_ptr<BlockOPoints> block);
+    void compute_points(std::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
     void print(std::string OutFileRMR = "outfile", int print = 2) const;
 
-    void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
 };
@@ -231,20 +231,20 @@ protected:
     SharedMatrix Cb_local_;
 
 public:
-    UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~UKSFunctions();
 
     void set_pointers(SharedMatrix Da_occ_AO);
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
 
-    void compute_points(boost::shared_ptr<BlockOPoints> block);
+    void compute_points(std::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
     void print(std::string OutFileRMR = "outfile", int print = 2) const;
 
-    void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
+    void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
 };

@@ -27,7 +27,7 @@
 
 #include "sapt2.h"
 
-using namespace boost;
+
 
 namespace psi { namespace sapt {
 
@@ -37,14 +37,14 @@ void SAPT2::ind22()
 
   if (debug_) {
     outfile->Printf("    Ind220              = %18.12lf [Eh]\n",e_ind220);
-    
+
   }
 
   double e_ind202 = ind202();
 
   if (debug_) {
     outfile->Printf("    Ind202              = %18.12lf [Eh]\n\n",e_ind202);
-    
+
   }
 
   e_ind22_ = e_ind220 + e_ind202;
@@ -52,7 +52,7 @@ void SAPT2::ind22()
 
   if (print_) {
     outfile->Printf("    Ind22               = %18.12lf [Eh]\n",e_ind22_);
-    
+
   }
 }
 
@@ -154,9 +154,9 @@ double SAPT2::ind202()
   return(energy);
 }
 
-double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel, 
+double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
   const char *RRlabel, int ampfile, const char *tlabel, double **iAR,
-  double **wBAA, double **wBRR, int foccA, int noccA, int nvirA, 
+  double **wBAA, double **wBRR, int foccA, int noccA, int nvirA,
   double *evalsA)
 {
   int aoccA = noccA - foccA;
@@ -166,9 +166,9 @@ double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
 
   C_DGEMM('N','N',aoccA,nvirA*(ndf_+3),nvirA,1.0,iAR[0],nvirA,B_p_RR[0],
     nvirA*(ndf_+3),0.0,C_p_AR[0],nvirA*(ndf_+3));
- 
+
   free_block(B_p_RR);
- 
+
   double **B_p_AA = get_DF_ints(intfile,AAlabel,foccA,noccA,foccA,noccA);
 
   for (int a=0; a<aoccA; a++) {
@@ -221,7 +221,7 @@ double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
 
   if (debug_) {
     outfile->Printf("\n    Ind22_1             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
@@ -250,7 +250,7 @@ double SAPT2::ind220_2(int ampfile, const char *tlabel, double **iAR,
 
   if (debug_) {
     outfile->Printf("    Ind22_2             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
@@ -273,9 +273,9 @@ double SAPT2::ind220_3(int ampfile, const char *AAlabel, const char *RRlabel,
   double **xRR = block_matrix(nvirA,nvirA);
 
   C_DGEMM('N','T',aoccA,aoccA,nvirA,1.0,iAR[0],nvirA,wBAR[foccA],nvirA,
-    0.0,xAA[0],aoccA); 
+    0.0,xAA[0],aoccA);
   C_DGEMM('T','N',nvirA,nvirA,aoccA,1.0,iAR[0],nvirA,wBAR[foccA],nvirA,
-    0.0,xRR[0],nvirA); 
+    0.0,xRR[0],nvirA);
 
   double energy = 0.0;
 
@@ -289,13 +289,13 @@ double SAPT2::ind220_3(int ampfile, const char *AAlabel, const char *RRlabel,
 
   if (debug_) {
     outfile->Printf("    Ind22_3             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
 }
 
-double SAPT2::ind220_4(int ampfile, const char *thetalabel, int intfile, 
+double SAPT2::ind220_4(int ampfile, const char *thetalabel, int intfile,
   const char *ARlabel, double **iAR, int foccA, int noccA, int nvirA)
 {
   int aoccA = noccA - foccA;
@@ -334,13 +334,13 @@ double SAPT2::ind220_4(int ampfile, const char *thetalabel, int intfile,
 
   if (debug_) {
     outfile->Printf("    Ind22_4             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
 }
 
-double SAPT2::ind220_5(int ampfile, const char *tlabel, double **iAR, 
+double SAPT2::ind220_5(int ampfile, const char *tlabel, double **iAR,
   int foccA, int noccA, int nvirA, double *evalsA)
 {
   int aoccA = noccA - foccA;
@@ -370,14 +370,14 @@ double SAPT2::ind220_5(int ampfile, const char *tlabel, double **iAR,
 
   if (debug_) {
     outfile->Printf("    Ind22_5             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
 }
 
 double SAPT2::ind220_6(int intfile, const char *AAlabel, const char *ARlabel,
-  const char *RRlabel, int ampfile, const char *tlabel, double **iAR, 
+  const char *RRlabel, int ampfile, const char *tlabel, double **iAR,
   int foccA, int noccA, int nvirA)
 {
   int aoccA = noccA - foccA;
@@ -427,16 +427,16 @@ double SAPT2::ind220_6(int intfile, const char *AAlabel, const char *ARlabel,
 
   if (debug_) {
     outfile->Printf("    Ind22_6             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);
 }
 
 double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
-  const char *RRlabel, int BBfile, const char *BSlabel, int ampfile, 
-  const char *tlabel, const char *pAAlabel, const char *pRRlabel, 
-  double **iBS, int foccA, int noccA, int nvirA, int foccB, int noccB, 
+  const char *RRlabel, int BBfile, const char *BSlabel, int ampfile,
+  const char *tlabel, const char *pAAlabel, const char *pRRlabel,
+  double **iBS, int foccA, int noccA, int nvirA, int foccB, int noccB,
   int nvirB)
 {
   int aoccA = noccA - foccA;
@@ -462,25 +462,25 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
 
   C_DGEMV('t',aoccA*aoccA,ndf_+3,1.0,B_p_AA[0],ndf_+3,pAA[0],1,0.0,W,1);
 
-  free_block(B_p_AA); 
+  free_block(B_p_AA);
 
   double **B_p_RR = get_DF_ints(AAfile,RRlabel,0,nvirA,0,nvirA);
 
   C_DGEMV('t',nvirA*nvirA,ndf_+3,1.0,B_p_RR[0],ndf_+3,pRR[0],1,0.0,X,1);
 
-  free_block(B_p_RR); 
+  free_block(B_p_RR);
 
   double **B_p_AR = get_DF_ints(AAfile,ARlabel,foccA,noccA,0,nvirA);
 
   C_DGEMV('t',aoccA*nvirA,ndf_+3,1.0,B_p_AR[0],ndf_+3,tAR[0],1,0.0,Y,1);
 
-  free_block(B_p_AR); 
+  free_block(B_p_AR);
 
   double **B_p_BS = get_DF_ints(BBfile,BSlabel,foccB,noccB,0,nvirB);
 
   C_DGEMV('t',aoccB*nvirB,ndf_+3,1.0,B_p_BS[0],ndf_+3,iBS[0],1,0.0,Z,1);
 
-  free_block(B_p_BS); 
+  free_block(B_p_BS);
 
   double energy = 0.0;
 
@@ -498,7 +498,7 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
 
   if (debug_) {
     outfile->Printf("    Ind22_7             = %18.12lf [Eh]\n",energy);
-    
+
   }
 
   return(energy);

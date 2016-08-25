@@ -54,9 +54,9 @@ protected:
     SharedMatrix D_;
 
     /// Primary Basis Set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
     /// Auxiliary Basis Set
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
 
 public:
 
@@ -66,8 +66,8 @@ public:
     SharedVector fit();
 
     void setD(SharedMatrix D) { D_ = D; }
-    void setPrimary(boost::shared_ptr<BasisSet> primary) { primary_ = primary; }
-    void setAuxiliary(boost::shared_ptr<BasisSet> auxiliary) { auxiliary_ = auxiliary; }
+    void setPrimary(std::shared_ptr<BasisSet> primary) { primary_ = primary; }
+    void setAuxiliary(std::shared_ptr<BasisSet> auxiliary) { auxiliary_ = auxiliary; }
 
     SharedVector d() const { return d_; }
 

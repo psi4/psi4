@@ -35,7 +35,7 @@
 #include "psi4/psifiles.h"
 #include "defines.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 

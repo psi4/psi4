@@ -41,8 +41,8 @@ void IWL::write_mp2r12a(int p, int q, int pq, int pqsym, double **arr,
     int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
     int *occ, int bra_ket_symm, int *ioff, int printflag, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, rs, ssym;
     int R,S,rnew,snew;
     double value;
@@ -115,8 +115,8 @@ void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
    int *occ, int bra_ket_symm, int *ioff, int printflag,std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
    int idx, r, s, rs, ssym;
    int R,S,rnew,snew;
    double value;

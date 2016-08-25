@@ -31,10 +31,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi { namespace scf {
 
 /*
@@ -109,7 +105,7 @@ protected:
     virtual void finalize();
 
 public:
-    CUHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    CUHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~CUHF();
 };
 

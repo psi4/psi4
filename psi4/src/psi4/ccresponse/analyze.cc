@@ -66,7 +66,7 @@ void analyze(const char *pert, int irrep, double omega)
 
 
   sprintf(lbl, "X_%s_%5.3f", pert, omega);
-  boost::shared_ptr<OutFile> printer(new OutFile(lbl,APPEND));
+  std::shared_ptr<OutFile> printer(new OutFile(lbl,APPEND));
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 
@@ -128,7 +128,7 @@ void analyze(const char *pert, int irrep, double omega)
   width = (max-min) / (num_div);
 
   sprintf(lbl, "X1_%s_%5.3f", pert, omega);
-  boost::shared_ptr<OutFile> printer2(new OutFile(lbl,APPEND));
+  std::shared_ptr<OutFile> printer2(new OutFile(lbl,APPEND));
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 

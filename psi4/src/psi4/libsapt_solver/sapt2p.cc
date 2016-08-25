@@ -32,7 +32,7 @@ namespace psi { namespace sapt {
 
 SAPT2p::SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA,
                SharedWavefunction MonomerB, Options& options,
-               boost::shared_ptr<PSIO>psio)
+               std::shared_ptr<PSIO>psio)
                 : SAPT2(Dimer, MonomerA, MonomerB, options, psio),
   e_disp21_(0.0),
   e_disp22sdq_(0.0),

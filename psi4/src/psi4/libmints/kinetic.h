@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include <vector>
 #include "psi4/libmints/osrecur.h"
@@ -65,7 +65,7 @@ class KineticInt : public OneBodyAOInt
 
 public:
     //! Constructor. Do not call directly, use an IntegralFactory.
-    KineticInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    KineticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor.
     virtual ~KineticInt();
 

@@ -43,8 +43,8 @@ namespace psi {
 int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slist,
     int *size, int *ioff, int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Label *lblptr;
     Value *valptr;
@@ -127,8 +127,8 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
       int *qlist, int *rlist, int *slist, int *size, int *ioff,
       int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
    int lastbuf;
   Label *lblptr;
   Value *valptr;

@@ -55,12 +55,12 @@ namespace psi { namespace ccdensity {
 #define IOFF_MAX 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-void dipole(boost::shared_ptr<Wavefunction> wfn)
+void dipole(std::shared_ptr<Wavefunction> wfn)
 {
     /* Call OEProp here for each root opdm */
-    boost::shared_ptr<OEProp> oe(new OEProp(wfn));
-    boost::shared_ptr<Matrix> Ca = wfn->Ca();
-    boost::shared_ptr<Matrix> Cb = wfn->Cb();
+    std::shared_ptr<OEProp> oe(new OEProp(wfn));
+    std::shared_ptr<Matrix> Ca = wfn->Ca();
+    std::shared_ptr<Matrix> Cb = wfn->Cb();
 
     Dimension nmopi = wfn->nmopi();
     Dimension frzvpi = wfn->frzvpi();

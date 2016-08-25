@@ -36,7 +36,6 @@
 #include <sstream>
 #include "mospace.h"
 
-using namespace boost;
 using namespace psi;
 
 void IntegralTransform::common_initialize()
@@ -89,7 +88,7 @@ void IntegralTransform::common_initialize()
 void
 IntegralTransform::process_spaces()
 {
-    std::vector<shared_ptr<MOSpace> >::const_iterator space;
+    std::vector<std::shared_ptr<MOSpace> >::const_iterator space;
 
     //    for(int h = 0; h < _nirreps; ++h){
     //        outfile->Printf( "docc = %d socc = %d frzcpi = %d frvirt = %d, mopi = %d, sopi = %d\n",
@@ -100,7 +99,7 @@ IntegralTransform::process_spaces()
 
     for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
 
-        shared_ptr<MOSpace> moSpace = *space;
+        std::shared_ptr<MOSpace> moSpace = *space;
         int *aOrbsPI = new int[nirreps_];
         int *aIndex;
         int *aOrbSym;
@@ -325,7 +324,7 @@ IntegralTransform::process_spaces()
     // And now the beta spaces, if needed
     if(transformationType_ != Restricted){
         for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
-            shared_ptr<MOSpace> moSpace = *space;
+            std::shared_ptr<MOSpace> moSpace = *space;
             int *bOrbsPI = new int[nirreps_];;
             int *bIndex;
             int *bOrbSym;
@@ -598,7 +597,7 @@ IntegralTransform::set_orbitals(SharedMatrix C)
 void
 IntegralTransform::process_eigenvectors()
 {
-    std::vector<shared_ptr<MOSpace> >::const_iterator space;
+    std::vector<std::shared_ptr<MOSpace> >::const_iterator space;
 
     if(print_ > 4){
         Ca_->print();
@@ -617,7 +616,7 @@ IntegralTransform::process_eigenvectors()
     Dimension zero = Dimension(nirreps_);
 
     for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
-        shared_ptr<MOSpace> moSpace = *space;
+        std::shared_ptr<MOSpace> moSpace = *space;
         SharedMatrix Ca, Cb;
         if(moSpace->label() == MOSPACE_FZC){
             // This is the frozen occupied space

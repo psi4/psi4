@@ -25,8 +25,6 @@
  * @END LICENSE
  */
 
-#include <boost/filesystem.hpp>
-
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libmints/sieve.h"
@@ -45,13 +43,10 @@
 #include <omp.h>
 #endif
 
-using namespace boost;
-using namespace std;
-
 namespace psi {
 
 CubicScalarGrid::CubicScalarGrid(
-        boost::shared_ptr<BasisSet> primary,
+        std::shared_ptr<BasisSet> primary,
         Options& options) :
         primary_(primary),
         mol_(primary->molecule()),
@@ -91,7 +86,7 @@ void CubicScalarGrid::build_grid(const std::string filepath, int* N, double* D, 
 
     populate_grid();
 }
-void CubicScalarGrid::build_grid(boost::shared_ptr<CubicScalarGrid> other)
+void CubicScalarGrid::build_grid(std::shared_ptr<CubicScalarGrid> other)
 {
     filepath_ = other->filepath();
 
@@ -166,7 +161,7 @@ void CubicScalarGrid::populate_grid()
     w_ = new double[npoints_];
 
     double epsilon = options_.get_double("CUBIC_BASIS_TOLERANCE");
-    extents_ = boost::shared_ptr<BasisExtents> (new BasisExtents(primary_, epsilon));
+    extents_ = std::shared_ptr<BasisExtents> (new BasisExtents(primary_, epsilon));
 
     int max_points = options_.get_int("CUBIC_BLOCK_MAX_POINTS");
     double xyz = pow((double) max_points, 1.0/3.0);
@@ -199,7 +194,7 @@ void CubicScalarGrid::populate_grid()
                         }
                     }
                 }
-                blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(block_size,xp,yp,zp,wp,extents_)));
+                blocks_.push_back(std::shared_ptr<BlockOPoints>(new BlockOPoints(block_size,xp,yp,zp,wp,extents_)));
             }
         }
     }
@@ -210,7 +205,7 @@ void CubicScalarGrid::populate_grid()
             max_functions : blocks_[ind]->functions_local_to_global().size());
     }
 
-    points_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
+    points_ = std::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     points_->set_ansatz(0);
 }
 void CubicScalarGrid::print_header()
@@ -276,8 +271,13 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     ss << filepath_ << "/" << name << ".cube";
 
     // Is filepath a valid directory?
-    boost::filesystem::path data_dir(filepath_);
-    if(not boost::filesystem::is_directory(data_dir)){
+//    boost::filesystem::path data_dir(filepath_);
+//    if(not boost::filesystem::is_directory(data_dir)){
+    char data_dir[PATH_MAX + 1];
+    realpath(filepath_.c_str(), data_dir);
+    struct stat sb;
+
+    if (stat(data_dir, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Flush();
@@ -310,10 +310,10 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 
     fclose(fh);
 }
-void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
+void CubicScalarGrid::add_density(double* v, std::shared_ptr<Matrix> D)
 {
     points_->set_pointers(D);
-    boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
+    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
     double* rhop = rho->pointer();
 
     size_t offset = 0L;
@@ -324,11 +324,11 @@ void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
         offset += npoints;
     }
 }
-void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights)
+void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::vector<double>& nuc_weights)
 {
     // => Auxiliary Basis Set <= //
 
-    boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
+    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
         "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
         options_.get_str("BASIS"), primary_->has_puream());
     double cutoff    = options_.get_double("INTS_TOLERANCE");
@@ -347,19 +347,19 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
 
     // => Density Fitting (TODO: Could be sped up) <= //
 
-    boost::shared_ptr<IntegralFactory> Ifact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    std::shared_ptr<IntegralFactory> Ifact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
     for (int thread = 0; thread < nthreads; thread++) {
-        ints.push_back(boost::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
     }
 
-    boost::shared_ptr<ERISieve> sieve(new ERISieve(primary_, cutoff));
+    std::shared_ptr<ERISieve> sieve(new ERISieve(primary_, cutoff));
     const std::vector<std::pair<int,int> >& pairs = sieve->shell_pairs();
 
-    boost::shared_ptr<Vector> c(new Vector("c", naux));
+    std::shared_ptr<Vector> c(new Vector("c", naux));
     double* cp = c->pointer();
 
-    boost::shared_ptr<Matrix> Amn(new Matrix("Amn", maxP, nbf*nbf));
+    std::shared_ptr<Matrix> Amn(new Matrix("Amn", maxP, nbf*nbf));
     double** Amnp = Amn->pointer();
 
     double** Dp = D->pointer();
@@ -413,14 +413,14 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
     Ifact.reset();
     ints.clear();
 
-    boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
+    std::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
     double** Jp = J->pointer();
 
-    boost::shared_ptr<IntegralFactory> Jfact(new IntegralFactory(
+    std::shared_ptr<IntegralFactory> Jfact(new IntegralFactory(
         auxiliary,BasisSet::zero_ao_basis_set(),
         auxiliary,BasisSet::zero_ao_basis_set()));
 
-    boost::shared_ptr<TwoBodyAOInt> Jints(Jfact->eri());
+    std::shared_ptr<TwoBodyAOInt> Jints(Jfact->eri());
     const double* Jbuffer = Jints->buffer();
 
     for (int P = 0; P < auxiliary->nshell(); P++) {
@@ -449,7 +449,7 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
 
     J->power(-1.0, condition);
 
-    boost::shared_ptr<Vector> d(new Vector("d", naux));
+    std::shared_ptr<Vector> d(new Vector("d", naux));
     double* dp = d->pointer();
 
     C_DGEMV('N',naux,naux,1.0,Jp[0],naux,cp,1,0.0,dp,1);
@@ -461,14 +461,14 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
 
     // => Electronic Part <= //
 
-    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set()));
-    std::vector<boost::shared_ptr<Matrix> > ZxyzT;
-    std::vector<boost::shared_ptr<Matrix> > VtempT;
-    std::vector<boost::shared_ptr<PotentialInt> > VintT;
+    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set()));
+    std::vector<std::shared_ptr<Matrix> > ZxyzT;
+    std::vector<std::shared_ptr<Matrix> > VtempT;
+    std::vector<std::shared_ptr<PotentialInt> > VintT;
     for (int thread = 0; thread < nthreads; thread++) {
-        ZxyzT.push_back(boost::shared_ptr<Matrix>(new Matrix("Zxyz",1,4)));
-        VtempT.push_back(boost::shared_ptr<Matrix>(new Matrix("Vtemp",naux,1)));
-        VintT.push_back(boost::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
+        ZxyzT.push_back(std::shared_ptr<Matrix>(new Matrix("Zxyz",1,4)));
+        VtempT.push_back(std::shared_ptr<Matrix>(new Matrix("Vtemp",naux,1)));
+        VintT.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
         VintT[thread]->set_charge_field(ZxyzT[thread]);
     }
 
@@ -515,7 +515,7 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D, const std:
 }
 void CubicScalarGrid::add_basis_functions(double** v, const std::vector<int>& indices)
 {
-    boost::shared_ptr<Matrix> phi = points_->basis_value("PHI");
+    std::shared_ptr<Matrix> phi = points_->basis_value("PHI");
     double** phip = phi->pointer();
 
     size_t offset = 0L;
@@ -538,12 +538,12 @@ void CubicScalarGrid::add_basis_functions(double** v, const std::vector<int>& in
         offset += npoints;
     }
 }
-void CubicScalarGrid::add_orbitals(double** v, boost::shared_ptr<Matrix> C)
+void CubicScalarGrid::add_orbitals(double** v, std::shared_ptr<Matrix> C)
 {
     int na = C->colspi()[0];
 
     points_->set_Cs(C);
-    boost::shared_ptr<Matrix> psi = points_->orbital_value("PSI_A");
+    std::shared_ptr<Matrix> psi = points_->orbital_value("PSI_A");
     double** psip = psi->pointer();
 
     size_t offset = 0L;
@@ -558,13 +558,13 @@ void CubicScalarGrid::add_orbitals(double** v, boost::shared_ptr<Matrix> C)
         offset += npoints;
     }
 }
-void CubicScalarGrid::add_LOL(double* v, boost::shared_ptr<Matrix> D)
+void CubicScalarGrid::add_LOL(double* v, std::shared_ptr<Matrix> D)
 {
     points_->set_ansatz(2);
     points_->set_pointers(D);
 
-    boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    boost::shared_ptr<Vector> tau = points_->point_value("TAU_A");
+    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
+    std::shared_ptr<Vector> tau = points_->point_value("TAU_A");
     double* rhop = rho->pointer();
     double* taup = tau->pointer();
 
@@ -586,14 +586,14 @@ void CubicScalarGrid::add_LOL(double* v, boost::shared_ptr<Matrix> D)
 
     points_->set_ansatz(0);
 }
-void CubicScalarGrid::add_ELF(double* v, boost::shared_ptr<Matrix> D)
+void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D)
 {
     points_->set_ansatz(2);
     points_->set_pointers(D);
 
-    boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    boost::shared_ptr<Vector> gam = points_->point_value("GAMMA_AA");
-    boost::shared_ptr<Vector> tau = points_->point_value("TAU_A");
+    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
+    std::shared_ptr<Vector> gam = points_->point_value("GAMMA_AA");
+    std::shared_ptr<Vector> tau = points_->point_value("TAU_A");
     double* rhop = rho->pointer();
     double* gamp = gam->pointer();
     double* taup = tau->pointer();
@@ -618,7 +618,7 @@ void CubicScalarGrid::add_ELF(double* v, boost::shared_ptr<Matrix> D)
 
     points_->set_ansatz(0);
 }
-void CubicScalarGrid::compute_density(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
 {
     double* v = new double[npoints_];
     memset(v,'\0',npoints_*sizeof(double));
@@ -626,7 +626,7 @@ void CubicScalarGrid::compute_density(boost::shared_ptr<Matrix> D, const std::st
     write_gen_file(v,name,type);
     delete[] v;
 }
-void CubicScalarGrid::compute_esp(boost::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_esp(std::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name, const std::string& type)
 {
     double* v = new double[npoints_];
     memset(v,'\0',npoints_*sizeof(double));
@@ -646,9 +646,9 @@ void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, c
     }
     free_block(v);
 }
-void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::vector<std::string>& labels, const std::string& name, const std::string& type)
 {
-    boost::shared_ptr<Matrix> C2(new Matrix(primary_->nbf(), indices.size()));
+    std::shared_ptr<Matrix> C2(new Matrix(primary_->nbf(), indices.size()));
     double** Cp  = C->pointer();
     double** C2p = C2->pointer();
     for (int k = 0; k < indices.size(); k++) {
@@ -664,7 +664,7 @@ void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::v
     }
     free_block(v);
 }
-void CubicScalarGrid::compute_LOL(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
 {
     double* v = new double[npoints_];
     memset(v,'\0',npoints_*sizeof(double));
@@ -672,7 +672,7 @@ void CubicScalarGrid::compute_LOL(boost::shared_ptr<Matrix> D, const std::string
     write_gen_file(v,name,type);
     delete[] v;
 }
-void CubicScalarGrid::compute_ELF(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+void CubicScalarGrid::compute_ELF(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
 {
     double* v = new double[npoints_];
     memset(v,'\0',npoints_*sizeof(double));

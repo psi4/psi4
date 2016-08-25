@@ -93,10 +93,10 @@ class CholeskyERI : public Cholesky {
 
 protected:
     double schwarz_;
-    boost::shared_ptr<BasisSet> basisset_;
-    boost::shared_ptr<TwoBodyAOInt> integral_;
+    std::shared_ptr<BasisSet> basisset_;
+    std::shared_ptr<TwoBodyAOInt> integral_;
 public:
-    CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
+    CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
     virtual ~CholeskyERI();
 
     virtual size_t N();
@@ -109,11 +109,11 @@ class CholeskyMP2 : public Cholesky {
 protected:
     bool symmetric_;
     SharedMatrix Qia_;
-    boost::shared_ptr<Vector> eps_aocc_;
-    boost::shared_ptr<Vector> eps_avir_;
+    std::shared_ptr<Vector> eps_aocc_;
+    std::shared_ptr<Vector> eps_avir_;
 public:
-    CholeskyMP2(SharedMatrix Qia, boost::shared_ptr<Vector> eps_aocc,
-        boost::shared_ptr<Vector> eps_avir, bool symmetric,
+    CholeskyMP2(SharedMatrix Qia, std::shared_ptr<Vector> eps_aocc,
+        std::shared_ptr<Vector> eps_avir, bool symmetric,
         double delta, unsigned long int memory);
     virtual ~CholeskyMP2();
 
@@ -125,11 +125,11 @@ public:
 class CholeskyDelta : public Cholesky {
 
 protected:
-    boost::shared_ptr<Vector> eps_aocc_;
-    boost::shared_ptr<Vector> eps_avir_;
+    std::shared_ptr<Vector> eps_aocc_;
+    std::shared_ptr<Vector> eps_avir_;
 public:
-    CholeskyDelta(boost::shared_ptr<Vector> eps_aocc,
-        boost::shared_ptr<Vector> eps_avir,
+    CholeskyDelta(std::shared_ptr<Vector> eps_aocc,
+        std::shared_ptr<Vector> eps_avir,
         double delta, unsigned long int memory);
     virtual ~CholeskyDelta();
 

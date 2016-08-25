@@ -28,7 +28,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 #include "psi4/libqt/qt.h"
 #include <math.h>
@@ -175,7 +175,7 @@ void CholeskyMatrix::compute_row(int row, double* target)
     ::memcpy(static_cast<void*>(target),static_cast<void*>(A_->pointer()[row]),N() * sizeof(double));
 }
 
-CholeskyERI::CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz,
+CholeskyERI::CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz,
     double delta, unsigned long int memory) :
     integral_(integral), schwarz_(schwarz), Cholesky(delta, memory)
 {
@@ -249,8 +249,8 @@ void CholeskyERI::compute_row(int row, double* target)
 }
 
 CholeskyMP2::CholeskyMP2(SharedMatrix Qia,
-    boost::shared_ptr<Vector> eps_aocc,
-    boost::shared_ptr<Vector> eps_avir,
+    std::shared_ptr<Vector> eps_aocc,
+    std::shared_ptr<Vector> eps_avir,
     bool symmetric,
     double delta, unsigned long int memory) :
     Qia_(Qia), eps_aocc_(eps_aocc), eps_avir_(eps_avir),
@@ -303,8 +303,8 @@ void CholeskyMP2::compute_row(int row, double* target)
 }
 
 CholeskyDelta::CholeskyDelta(
-    boost::shared_ptr<Vector> eps_aocc,
-    boost::shared_ptr<Vector> eps_avir,
+    std::shared_ptr<Vector> eps_aocc,
+    std::shared_ptr<Vector> eps_avir,
     double delta, unsigned long int memory) :
     eps_aocc_(eps_aocc), eps_avir_(eps_avir),
     Cholesky(delta, memory)

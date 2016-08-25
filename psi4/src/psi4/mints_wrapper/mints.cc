@@ -30,15 +30,15 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/mintshelper.h"
 
-using namespace boost;
+
 
 namespace psi { namespace mints {
 
-PsiReturnType mints(boost::shared_ptr<BasisSet> basis)
+PsiReturnType mints(std::shared_ptr<BasisSet> basis)
 {
     tstart();
 
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(basis, Process::environment.options, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(basis, Process::environment.options, 0));
     mints->integrals();
 
     tstop();

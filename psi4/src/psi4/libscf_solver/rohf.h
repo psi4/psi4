@@ -32,10 +32,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi { namespace scf {
 
 class ROHF : public HF {
@@ -87,7 +83,7 @@ protected:
 
     void common_init();
 public:
-    ROHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    ROHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 
     SharedMatrix moFeff() const {return moFeff_; }

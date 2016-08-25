@@ -67,7 +67,6 @@ With the newest CMake rewrite there are three steps: configuration, build, and i
        - `PYTHON_EXECUTABLE` Path to the python executable you want to use
        - `PYTHON_LIBRARY` Path to the python library that goes with the exe
        - `PYTHON_INCLUDE_DIR` Path to the python include files
-       - `BOOST_ROOT` The root to a precompiled Boost Library
        - `ENABLE_PCMSOLVER` On means build PCMSolver library (requires Fortran)
        - `ENABLE_CHEMPS2`   Enables chemps2 library for DMRG
        - `ENABLE_DKH` Enables relativistic DKH integrals (requires Fortran)

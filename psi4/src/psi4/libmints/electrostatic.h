@@ -52,7 +52,7 @@ class ElectrostaticInt : public PotentialInt
 
 public:
     /// Constructor
-    ElectrostaticInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    ElectrostaticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     ~ElectrostaticInt();
 
     // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
@@ -75,7 +75,7 @@ public:
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }
 
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol);
 };
 
 }

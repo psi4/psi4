@@ -74,7 +74,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
     for(int I = 0;I < rpi_[irrep];I++) lambda_o[I] = omega_guess_->get(irrep, I);
     shift_denom4(irrep, omega_in);
 
-    boost::shared_ptr<OutFile> printer(new OutFile("iter.dat",APPEND));
+    std::shared_ptr<OutFile> printer(new OutFile("iter.dat",APPEND));
 
     timer_on("SEM");
     while(converged < rpi_[irrep] && iter < sem_max_){

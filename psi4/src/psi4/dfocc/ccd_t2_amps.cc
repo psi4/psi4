@@ -95,10 +95,10 @@ void DFOCC::ccd_t2_amps()
     Tnew.reset();
 
     // DIIS
-    boost::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
     Tau->to_matrix(RT2);
     Tau.reset();
-    boost::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
     t2->to_matrix(T2);
 
     // add entry

@@ -55,11 +55,11 @@
 
 using namespace std;
 using namespace psi;
-using namespace boost;
+
 
 namespace psi { namespace scf {
 
-KS::KS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
+KS::KS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
     common_init(ref_wfn);
@@ -81,7 +81,7 @@ void KS::common_init(SharedWavefunction ref_wfn)
     potential_->print_header();
 
 }
-RKS::RKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
+RKS::RKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
     RHF(ref_wfn, options, psio), KS(ref_wfn, options, psio)
 {
     common_init();
@@ -197,7 +197,7 @@ double RKS::compute_E()
     }
 
     double dashD_E = 0.0;
-    boost::shared_ptr<Dispersion> disp = functional_->dispersion();
+    std::shared_ptr<Dispersion> disp = functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }
@@ -242,7 +242,7 @@ bool RKS::stability_analysis()
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
     return false;
 }
-UKS::UKS(SharedWavefunction ref_wfn, Options & options, boost::shared_ptr<PSIO> psio) :
+UKS::UKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
     UHF(ref_wfn, options, psio), KS(ref_wfn, options,psio)
 {
     common_init();
@@ -379,7 +379,7 @@ double UKS::compute_E()
     }
 
     double dashD_E = 0.0;
-    boost::shared_ptr<Dispersion> disp = functional_->dispersion();
+    std::shared_ptr<Dispersion> disp = functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }

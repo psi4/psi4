@@ -28,11 +28,6 @@
 #ifndef CCLAMBDA_H
 #define CCLAMBDA_H
 
-// Forward declarations
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 class Wavefunction;
 class Options;
@@ -43,7 +38,7 @@ namespace psi { namespace cclambda {
 class CCLambdaWavefunction : public Wavefunction
 {
 public:
-    CCLambdaWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    CCLambdaWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCLambdaWavefunction();
 
     double compute_energy();

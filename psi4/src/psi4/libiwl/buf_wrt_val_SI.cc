@@ -41,8 +41,8 @@ namespace psi {
     short int r, short int s, double value, int printflag,
     std::string out, int dirac)
   {
-     boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           boost::shared_ptr<OutFile>(new OutFile(out)));
+     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+           std::shared_ptr<OutFile>(new OutFile(out)));
      int idx;
     Label *lblptr;
     Value *valptr;
@@ -111,8 +111,8 @@ namespace psi {
     short int r, short int s, double value, int printflag,
     std::string out, int dirac)
   {
-       boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             boost::shared_ptr<OutFile>(new OutFile(out)));
+       std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             std::shared_ptr<OutFile>(new OutFile(out)));
 
        int idx;
     Label *lblptr;

@@ -27,11 +27,11 @@
 
 #ifndef THCE_H
 #define THCE_H
-#include <map>
+
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
-#include <boost/tuple/tuple.hpp>
-//#include "boost/tuple/tuple_comparison.hpp"
+
+#include <map>
 
 namespace psi {
 
@@ -53,7 +53,7 @@ protected:
     /// List of currently declared dimensions (dimension classes)
     std::map<std::string, int> dimensions_;
     /// List of currently declated tensors
-    std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
+    std::map<std::string, std::shared_ptr<Tensor> > tensors_;
 
     // => Safety/Debugging <= //
 
@@ -79,9 +79,9 @@ public:
     /// Accessor to the list of currently declared dimensions (dimension classes)
     std::map<std::string, int>& dimensions() { return dimensions_; }
     /// Accessor to the list of currently declared tensors
-    std::map<std::string, boost::shared_ptr<Tensor> >& tensors() { return tensors_; }
+    std::map<std::string, std::shared_ptr<Tensor> >& tensors() { return tensors_; }
     /// Direct tensor element accessor
-    boost::shared_ptr<Tensor>& operator[] (const std::string& key) { return tensors_[key]; }
+    std::shared_ptr<Tensor>& operator[] (const std::string& key) { return tensors_[key]; }
 
     /// Print a brief summary
     void print_header(std::string fh="outfile") const { print(fh,0); }
@@ -104,7 +104,7 @@ public:
     /// Add or overwrite a new disk tensor, given a name and comma-separated dimension list
     void new_disk_tensor(const std::string& name, const std::string& dimensions, bool save = false, bool load = false);
     /// Add or alias an existing Tensor of any type
-    void add_tensor(const std::string& name, boost::shared_ptr<Tensor> tensor);
+    void add_tensor(const std::string& name, std::shared_ptr<Tensor> tensor);
     /// Decrement a Tensor of any type (removes from tensors_)
     void delete_tensor(const std::string& name);
 
@@ -211,7 +211,7 @@ public:
     /// <true,-1,-1,true,2,3>   % Full/Slice
     /// <true,1,2,true,4,5>     % Slice/Slice
     /// Slice indices are 0-based, and of the form [start,end)
-    virtual void slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,int,int,bool,int,int> >& topology);
+    virtual void slice(std::shared_ptr<Tensor> A, std::vector<std::tuple<bool,int,int,bool,int,int> >& topology);
     /// Access the data pointer
     virtual double* pointer() const { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
     /// Access the file pointer
@@ -235,13 +235,13 @@ public:
     // > Binary Operations < //
 
     /// Direct elementwise generalized DAXPY: C = alpha * A + beta * C (ignores active dims)
-    virtual void add(boost::shared_ptr<Tensor> A, double alpha = 1.0, double beta = 0.0) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
+    virtual void add(std::shared_ptr<Tensor> A, double alpha = 1.0, double beta = 0.0) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
     /// Permute from A into C (ignores active dims)
     /// Topology (P) contains rank of index in C indexed by rank in A
     /// C_{P=0,P=1,...} = A_{0,1,...}, e.g.,
     /// C_{k,i,l,j} = A_{i,j,k,l} =>
     /// [1,3,0,2]
-    virtual void permute(boost::shared_ptr<Tensor> A, std::vector<int>& topology) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
+    virtual void permute(std::shared_ptr<Tensor> A, std::vector<int>& topology) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
 
     // > Ternary Operations < //
 
@@ -257,7 +257,7 @@ public:
     ///
     /// Active dimensions H, L, and R are inherited in C from A and B tensors.
     /// If an index is H or I both A and B active dimensions must agree
-    virtual void contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor> B, std::vector<boost::tuple<std::string,int,int,int> >& topology, double alpha = 1.0, double beta = 0.0) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
+    virtual void contract(std::shared_ptr<Tensor> A, std::shared_ptr<Tensor> B, std::vector<std::tuple<std::string,int,int,int> >& topology, double alpha = 1.0, double beta = 0.0) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
 
     // => DiskTensor Interface <= //
 
@@ -298,25 +298,25 @@ public:
     virtual ~CoreTensor();
 
     /// Order-0 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         double* data = NULL, bool trust = false);
     /// Order-1 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         double* data = NULL, bool trust = false);
     /// Order-2 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         double* data = NULL, bool trust = false);
     /// Order-3 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,
         double* data = NULL, bool trust = false);
     /// Order-4 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,
@@ -369,13 +369,13 @@ public:
     // > Binary Operations < //
 
     /// Direct elementwise generalized DAXPY: C = alpha * A + beta * C (ignores active dims)
-    virtual void add(boost::shared_ptr<Tensor> A, double alpha = 1.0, double beta = 0.0);
+    virtual void add(std::shared_ptr<Tensor> A, double alpha = 1.0, double beta = 0.0);
     /// Permute from A into C
     /// Topology (P) contains rank of index in C indexed by rank in A
     /// C_{P=0,P=1,...} = A_{0,1,...}, e.g.,
     /// C_{k,i,l,j} = A_{i,j,k,l} =>
     /// [1,3,0,2]
-    virtual void permute(boost::shared_ptr<Tensor> A, std::vector<int>& topology);
+    virtual void permute(std::shared_ptr<Tensor> A, std::vector<int>& topology);
 
     // > Ternary Operations < //
 
@@ -390,7 +390,7 @@ public:
     ///
     /// Active dimensions H, L, and R are inherited in C from A and B tensors.
     /// If an index is H or I both A and B active dimensions must agree
-    virtual void contract(boost::shared_ptr<Tensor> A, boost::shared_ptr<Tensor> B, std::vector<boost::tuple<std::string,int,int,int> >& topology, double alpha = 1.0, double beta = 0.0);
+    virtual void contract(std::shared_ptr<Tensor> A, std::shared_ptr<Tensor> B, std::vector<std::tuple<std::string,int,int,int> >& topology, double alpha = 1.0, double beta = 0.0);
 
 };
 
@@ -428,25 +428,25 @@ public:
     virtual ~DiskTensor();
 
     /// Order-0 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         bool save = false, bool load = false);
     /// Order-1 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         bool save = false, bool load = false);
     /// Order-2 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         bool save = false, bool load = false);
     /// Order-3 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,
         bool save = false, bool load = false);
     /// Order-4 Constructor
-    static boost::shared_ptr<Tensor> build(const std::string& name,
+    static std::shared_ptr<Tensor> build(const std::string& name,
         const std::string& dimension1, int size1,
         const std::string& dimension2, int size2,
         const std::string& dimension3, int size3,

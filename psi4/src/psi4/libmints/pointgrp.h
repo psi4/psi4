@@ -91,7 +91,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 namespace psi {
@@ -651,13 +651,13 @@ public:
 
     // PointGroup(StateIn&);
     PointGroup(const PointGroup&);
-    PointGroup(const boost::shared_ptr<PointGroup>&);
+    PointGroup(const std::shared_ptr<PointGroup>&);
     ~PointGroup();
 
     PointGroup& operator=(const PointGroup&);
 
     /// Returns 1 if the point groups are equivalent, 0 otherwise.
-    int equiv(const boost::shared_ptr<PointGroup>&, double tol = 1.0e-6) const;
+    int equiv(const std::shared_ptr<PointGroup>&, double tol = 1.0e-6) const;
 
     /// Returns the CharacterTable for this point group.
     CharacterTable char_table() const;

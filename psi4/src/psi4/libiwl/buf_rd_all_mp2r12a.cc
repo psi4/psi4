@@ -54,8 +54,8 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
     valptr = values_;
 
     lastbuf = lastbuf_;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          std::shared_ptr<OutFile>(new OutFile(out)));
     for (idx=4*idx_; idx_ < inbuf_; idx_++) {
         p = (int) lblptr[idx++];
         q = (int) lblptr[idx++];
@@ -144,8 +144,8 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
 			   int *ioff_lt, int *ioff_rt, int bra_ket_symm,
                            int *, int printflg, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         std::shared_ptr<OutFile>(new OutFile(out)));
 
    int lastbuf;
   Label *lblptr;

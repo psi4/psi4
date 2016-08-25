@@ -89,7 +89,7 @@ void linresp(double *tensor, double A, double B,
              const char *pert_x, int x_irrep, double omega_x,
              const char *pert_y, int y_irrep, double omega_y);
 
-void optrot(boost::shared_ptr<Molecule> molecule)
+void optrot(std::shared_ptr<Molecule> molecule)
 {
   double ***tensor_rl, ***tensor_pl, ***tensor_rp, **tensor0;
   double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;

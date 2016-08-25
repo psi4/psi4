@@ -55,7 +55,7 @@ class DipoleInt : public OneBodyAOInt
 
 public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    DipoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    DipoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor
     virtual ~DipoleInt();
 
@@ -63,7 +63,7 @@ public:
     bool has_deriv1() { return true; }
 
     /// Returns the nuclear contribution to the dipole moment
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, const Vector3 &origin);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
 };
 
 }

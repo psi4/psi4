@@ -46,8 +46,8 @@ namespace psi {
 
 int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            std::shared_ptr<OutFile>(new OutFile(out)));
    int h, i, all_buf_irrep;
     dpdparams4 *Params;
 

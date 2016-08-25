@@ -152,7 +152,7 @@ void MOInfo::read_info()
     string wavefunction_sym_str = options.get_str("WFN_SYM");
     bool wfn_sym_found = false;
 
-    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if(old_pg){
         for(int h = 0; h < nirreps; ++h){
             string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
@@ -260,7 +260,7 @@ void MOInfo::read_mo_spaces()
     actv_docc.assign(nirreps,0);
 
     // Map the symmetry of the input occupations, to account for displacements
-    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if(old_pg){
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
@@ -290,8 +290,8 @@ void MOInfo::read_mo_spaces()
 
 
 
-        boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
-        boost::shared_ptr<PointGroup> sub =  ref_wfn.molecule()->point_group();
+        std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+        std::shared_ptr<PointGroup> sub =  ref_wfn.molecule()->point_group();
         // Build the correlation table between full, and subgroup
         CorrelationTable corrtab(full, sub);
 

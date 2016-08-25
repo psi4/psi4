@@ -53,7 +53,7 @@ protected:
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;
 
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
 
     /**
     * Rules:
@@ -82,7 +82,7 @@ protected:
     void common_init();
 
 public:
-    CorrGrad(boost::shared_ptr<BasisSet> primary);
+    CorrGrad(std::shared_ptr<BasisSet> primary);
     virtual ~CorrGrad();
 
     /**
@@ -91,7 +91,7 @@ public:
     * @param options Options reference, with preset parameters
     * @return abstract Corr object, tuned in with preset options
     */
-    static boost::shared_ptr<CorrGrad> build_CorrGrad(boost::shared_ptr<BasisSet> primary);
+    static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<BasisSet> primary);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }
@@ -147,9 +147,9 @@ public:
 class DFCorrGrad : public CorrGrad {
 
 protected:
-    boost::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<BasisSet> auxiliary_;
 
-    boost::shared_ptr<PSIO> psio_;
+    std::shared_ptr<PSIO> psio_;
 
     /// Number of threads for DF integrals
     int df_ints_num_threads_;
@@ -157,7 +157,7 @@ protected:
     double condition_;
 
     /// Sieve, must be static throughout the life of the object
-    boost::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<ERISieve> sieve_;
 
     void common_init();
 
@@ -178,7 +178,7 @@ protected:
     unsigned int unit_c_;
 
 public:
-    DFCorrGrad(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary);
+    DFCorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
     virtual ~DFCorrGrad();
 
     void compute_gradient();

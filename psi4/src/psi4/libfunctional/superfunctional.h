@@ -77,13 +77,13 @@ protected:
 
     // => Exchange-side DFA functionals <= //
 
-    std::vector<boost::shared_ptr<Functional> > x_functionals_;
+    std::vector<std::shared_ptr<Functional> > x_functionals_;
     double x_alpha_;
     double x_omega_;
 
     // => Correlation-side DFA functionals <= //
 
-    std::vector<boost::shared_ptr<Functional> > c_functionals_;
+    std::vector<std::shared_ptr<Functional> > c_functionals_;
     double c_alpha_;
     double c_ss_alpha_;
     double c_os_alpha_;
@@ -91,7 +91,7 @@ protected:
 
     // => Empirical Dispersion Correction <= //
 
-    boost::shared_ptr<Dispersion> dispersion_;
+    std::shared_ptr<Dispersion> dispersion_;
 
     // => Functional values and partials <= //
 
@@ -112,9 +112,9 @@ public:
     SuperFunctional();
     virtual ~SuperFunctional();
 
-    static boost::shared_ptr<SuperFunctional> current(Options& options, int max_points = -1, int deriv = 1);
-    static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1);
-    static boost::shared_ptr<SuperFunctional> blank();
+    static std::shared_ptr<SuperFunctional> current(Options& options, int max_points = -1, int deriv = 1);
+    static std::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1);
+    static std::shared_ptr<SuperFunctional> blank();
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)
     void allocate();
@@ -135,13 +135,13 @@ public:
     std::map<std::string, SharedVector>& values() { return values_; }
     SharedVector value(const std::string& key);
 
-    std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
-    std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
+    std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
+    std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
 
-    boost::shared_ptr<Functional> x_functional(const std::string& name);
-    boost::shared_ptr<Functional> c_functional(const std::string& name);
-    void add_x_functional(boost::shared_ptr<Functional> fun);
-    void add_c_functional(boost::shared_ptr<Functional> fun);
+    std::shared_ptr<Functional> x_functional(const std::string& name);
+    std::shared_ptr<Functional> c_functional(const std::string& name);
+    void add_x_functional(std::shared_ptr<Functional> fun);
+    void add_c_functional(std::shared_ptr<Functional> fun);
 
     // => Setters <= //
 
@@ -159,7 +159,7 @@ public:
     void set_c_ss_alpha(double alpha) { c_ss_alpha_ = alpha; partition_gks(); }
     void set_c_os_alpha(double alpha) { c_os_alpha_ = alpha; partition_gks(); }
 
-    void set_dispersion(boost::shared_ptr<Dispersion> disp) { dispersion_ = disp; }
+    void set_dispersion(std::shared_ptr<Dispersion> disp) { dispersion_ = disp; }
 
     // => Accessors <= //
 
@@ -179,7 +179,7 @@ public:
     double c_os_alpha() const { return c_os_alpha_; }
 
 
-    boost::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
+    std::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
 
     bool is_meta() const;
     bool is_gga() const;

@@ -29,16 +29,16 @@
 #include<iostream>
 #include<sstream>
 #include<map>
-#include<boost/shared_ptr.hpp>
+#include<memory>
 #include "BasesBase.h"
 //This is the signature of std::endl and other sorts of iomanip things
 typedef std::ostream& (*StreamManips)(std::ostream&);
 
 ///A shared output stream
-typedef boost::shared_ptr<std::ostream> SharedOutStream;
+typedef std::shared_ptr<std::ostream> SharedOutStream;
 
 ///A shared input stream
-typedef boost::shared_ptr<std::istream> SharedInStream;
+typedef std::shared_ptr<std::istream> SharedInStream;
 
 
 
@@ -71,7 +71,7 @@ class PsiStreamBase:public BasesBase{
       std::stringstream Buffer_;
 
       ///The actual stream
-      boost::shared_ptr<T> Stream_;
+      std::shared_ptr<T> Stream_;
 
       ///I always forget how to empty a stringstream
       void EmptyBuffer(){

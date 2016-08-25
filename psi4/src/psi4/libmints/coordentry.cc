@@ -42,7 +42,7 @@ namespace {
 /**
  * Takes a CoordValue object, and returns a string for printing.
  */
-std::string variable_to_string(boost::shared_ptr<CoordValue>& val, int precision)
+std::string variable_to_string(std::shared_ptr<CoordValue>& val, int precision)
 {
     std::string valstr;
     if(val->type() == CoordValue::VariableType){
@@ -101,7 +101,7 @@ const double& CoordEntry::Z() const
  *
  * @return Whether the two atoms are the same.
  */
-bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) const
+bool CoordEntry::is_equivalent_to(const std::shared_ptr<CoordEntry> &other) const
 {
     if(other->Z_ != Z_) return false;
     if(other->mass_ != mass_) return false;
@@ -150,13 +150,13 @@ const std::string& CoordEntry::shell(const std::string& type) const
 
 
 CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
+               std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
 {
 }
 
 CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-               boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z,
+               std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z,
                const std::map<std::string, std::string>& basis,
                const std::map<std::string, std::string>& shells)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells), x_(x), y_(y), z_(z)
@@ -210,9 +210,9 @@ void CartesianEntry::set_coordinates(double x, double y, double z)
 }
 
 ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-                           boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
-                           boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
-                           boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
+                           std::shared_ptr<CoordEntry> rto, std::shared_ptr<CoordValue> rval,
+                           std::shared_ptr<CoordEntry> ato, std::shared_ptr<CoordValue> aval,
+                           std::shared_ptr<CoordEntry> dto, std::shared_ptr<CoordValue> dval)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
@@ -223,12 +223,12 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mas
 ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
              const std::map<std::string, std::string>& basis,
              const std::map<std::string, std::string>& shells,
-             boost::shared_ptr<CoordEntry> rto,
-             boost::shared_ptr<CoordValue> rval,
-             boost::shared_ptr<CoordEntry> ato,
-             boost::shared_ptr<CoordValue> aval,
-             boost::shared_ptr<CoordEntry> dto,
-             boost::shared_ptr<CoordValue> dval)
+             std::shared_ptr<CoordEntry> rto,
+             std::shared_ptr<CoordValue> rval,
+             std::shared_ptr<CoordEntry> ato,
+             std::shared_ptr<CoordValue> aval,
+             std::shared_ptr<CoordEntry> dto,
+             std::shared_ptr<CoordValue> dval)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis, shells),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),

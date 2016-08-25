@@ -51,12 +51,12 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
 #include "rhf.h"
-using namespace boost;
+
 using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio)
+RHF::RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
     common_init();
@@ -178,9 +178,9 @@ void RHF::compute_orbital_gradient(bool save_fock)
     if(save_fock){
         if (initialized_diis_manager_ == false) {
             if (scf_type_ == "direct")
-                diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
+                diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
             else
-                diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+                diis_manager_ = std::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
             diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
             diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
             initialized_diis_manager_ = true;
@@ -493,7 +493,7 @@ bool RHF::stability_analysis()
         SharedMatrix moF(new Matrix("MO basis fock matrix", nmopi_, nmopi_));
         moF->transform(Fa_, Ca_);
 
-        std::vector<boost::shared_ptr<MOSpace> > spaces;
+        std::vector<std::shared_ptr<MOSpace> > spaces;
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
         IntegralTransform ints(shared_from_this(), spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,

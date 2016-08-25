@@ -49,7 +49,7 @@ namespace psi { namespace ccdensity {
 #define IOFF_MAX 32641
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-void kinetic(boost::shared_ptr<Wavefunction> wfn)
+void kinetic(std::shared_ptr<Wavefunction> wfn)
 {
   int nmo, noei, stat, i, I, h, j, nclsd;
   int *order, *doccpi, *ioff;

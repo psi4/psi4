@@ -31,7 +31,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 namespace psi {
@@ -58,7 +58,7 @@ namespace psi {
         /** Run the input file script */
         virtual void run(FILE *input) = 0;
 
-        static boost::shared_ptr<Script> language;
+        static std::shared_ptr<Script> language;
     };
 
     class Python : public Script {

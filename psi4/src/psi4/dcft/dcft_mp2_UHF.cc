@@ -36,7 +36,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libdiis/diismanager.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 
@@ -52,7 +52,7 @@ DCFTSolver::mp2_guess()
     dpdbuf4 I, D;
 
     // Initialize the integral transformation object
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::Unrestricted);

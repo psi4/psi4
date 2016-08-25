@@ -58,9 +58,9 @@ protected:
     // => Input Spec <= //
 
     /// Active occupied orbital eigenvalues
-    boost::shared_ptr<Vector> eps_occ_;
+    std::shared_ptr<Vector> eps_occ_;
     /// Active virtual orbital eigenvalues
-    boost::shared_ptr<Vector> eps_vir_;
+    std::shared_ptr<Vector> eps_vir_;
     /// Allowed maximum error
     double delta_;
     /// Bias (careful if negative)
@@ -73,17 +73,17 @@ protected:
     /// Number of Laplace points selected
     int npoints_;
     /// Laplace factor for occupied space, N_w x N_i
-    boost::shared_ptr<Tensor> tau_occ_;
+    std::shared_ptr<Tensor> tau_occ_;
     /// Laplace factor for virtual space, N_w x N_a
-    boost::shared_ptr<Tensor> tau_vir_;
+    std::shared_ptr<Tensor> tau_vir_;
 
 public:
 
     // => Constructors <= //
 
     /// Master constructor
-    LaplaceDenom(boost::shared_ptr<Vector> eps_occ,
-                 boost::shared_ptr<Vector> eps_vir,
+    LaplaceDenom(std::shared_ptr<Vector> eps_occ,
+                 std::shared_ptr<Vector> eps_vir,
                  double delta = 1.0E-6,
                  double omega = 0.0,
                  int rank = 2);
@@ -101,9 +101,9 @@ public:
     /// Number of Laplace points
     int npoints() const { return npoints_; }
     /// Laplace factor for occupied space, N_w x N_i
-    boost::shared_ptr<Tensor> tau_occ() const { return tau_occ_; }
+    std::shared_ptr<Tensor> tau_occ() const { return tau_occ_; }
     /// Laplace factor for virtual space, N_w x N_a
-    boost::shared_ptr<Tensor> tau_vir() const { return tau_vir_; }
+    std::shared_ptr<Tensor> tau_vir() const { return tau_vir_; }
 
 };
 

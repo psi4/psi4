@@ -24,10 +24,12 @@
  *
  * @END LICENSE
  */
-#include <boost/algorithm/string.hpp>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/extern.h"
+
+#include <regex>
 
 //MKL Header
 #ifdef __INTEL_MKL__
@@ -47,20 +49,18 @@
 #endif
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-using namespace std;
-using namespace psi;
-using namespace boost;
+
+namespace psi {
 
 Process::Environment Process::environment;
 const std::string empty_;
-
 
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize()
 {
     // If envp is NULL, try to obtain envp from enviorn in unistd.h
 
-    string psi4datadir;
+    std::string psi4datadir;
 
     // First set some defaults:
     // The std::string --> c-string --> std::string construction
@@ -72,11 +72,10 @@ void Process::Environment::initialize()
     environment_["MAD_NUM_THREADS"] = "1";
 
     // Go through user provided environment overwriting defaults if necessary
-    int i=0;
+    int i = 0;
     if (environ) {
         while (environ[i] != NULL) {
-            std::vector<std::string> strs;
-            boost::split(strs, environ[i], boost::is_any_of("="));
+            std::vector <std::string> strs = split(environ[i], "=");
             environment_[strs[0]] = strs[1];
 
             // I'm tired of having to (re)set PSIDATADIR for PSI3/4
@@ -114,31 +113,31 @@ void Process::Environment::set_n_threads(int nthread)
     // Process::environment.options.set_global_int("NUM_THREADS",nthread);
 }
 
-const string& Process::Environment::operator()(const string& key) const
+const std::string &Process::Environment::operator()(const std::string &key) const
 {
     // Search for the key:
-    map<string, string>::const_iterator it = environment_.find(key);
+    std::map<std::string, std::string>::const_iterator it = environment_.find(key);
 
     if (it == environment_.end())
-        return empty_;      // Not found return empty string.
+        return empty_;      // Not found return empty std::string.
     else
         return it->second;  // Found, return the value
 }
 
-string Process::Environment::operator()(const string& key)
+std::string Process::Environment::operator()(const std::string &key)
 {
     // Search for the key:
-    map<string, string>::const_iterator it = environment_.find(key);
+    std::map<std::string, std::string>::const_iterator it = environment_.find(key);
 
     if (it == environment_.end())
-        return string(); // Not found return empty string.
+        return std::string(); // Not found return empty std::string.
     else
         return it->second; // Found, return the value
 }
 
-const string& Process::Environment::set(const std::string &key, const std::string &value)
+const std::string &Process::Environment::set(const std::string &key, const std::string &value)
 {
-    const string& old = operator()(key);
+    const std::string &old = operator()(key);
     environment_[key] = value;
 
     // Attempt to set the variable in the system.
@@ -157,32 +156,32 @@ const string& Process::Environment::set(const std::string &key, const std::strin
     return old;
 }
 
-void Process::Environment::set_molecule(const boost::shared_ptr<Molecule>& molecule)
+void Process::Environment::set_molecule(const std::shared_ptr <Molecule> &molecule)
 {
     molecule_ = molecule;
 }
 
-boost::shared_ptr<Molecule> Process::Environment::molecule() const
+std::shared_ptr <Molecule> Process::Environment::molecule() const
 {
     return molecule_;
 }
 
-void Process::Environment::set_legacy_molecule(const boost::shared_ptr<Molecule>& legacy_molecule)
+void Process::Environment::set_legacy_molecule(const std::shared_ptr <Molecule> &legacy_molecule)
 {
     legacy_molecule_ = legacy_molecule;
 }
 
-boost::shared_ptr<Molecule> Process::Environment::legacy_molecule() const
+std::shared_ptr <Molecule> Process::Environment::legacy_molecule() const
 {
     return legacy_molecule_;
 }
 
-void Process::Environment::set_legacy_wavefunction(const boost::shared_ptr<Wavefunction>& legacy_wavefunction)
+void Process::Environment::set_legacy_wavefunction(const std::shared_ptr <Wavefunction> &legacy_wavefunction)
 {
     legacy_wavefunction_ = legacy_wavefunction;
 }
 
-boost::shared_ptr<Wavefunction> Process::Environment::legacy_wavefunction() const
+std::shared_ptr <Wavefunction> Process::Environment::legacy_wavefunction() const
 {
     return legacy_wavefunction_;
 }
@@ -192,20 +191,24 @@ Process::Environment Process::get_environment()
     return environment;
 }
 
-unsigned long int Process::Environment::get_memory() const { return memory_; }
-void Process::Environment::set_memory(unsigned long int m)  { memory_ = m; }
+unsigned long int Process::Environment::get_memory() const
+{ return memory_; }
 
-int Process::Environment::get_n_threads() const {return nthread_; }
+void Process::Environment::set_memory(unsigned long int m)
+{ memory_ = m; }
 
-namespace psi {
+int Process::Environment::get_n_threads() const
+{ return nthread_; }
+
 void die_if_not_converged()
 {
-  outfile->Printf( "Iterations did not converge.");
+    outfile->Printf("Iterations did not converge.");
 
-  if (Process::environment.options.get_bool("DIE_IF_NOT_CONVERGED"))
-    throw PSIEXCEPTION("Iterations did not converge.");
-  else {
-    outfile->Printf( "Iterations did not converge.");
-  }
+    if (Process::environment.options.get_bool("DIE_IF_NOT_CONVERGED"))
+        throw PSIEXCEPTION("Iterations did not converge.");
+    else {
+        outfile->Printf("Iterations did not converge.");
+    }
 }
+
 }

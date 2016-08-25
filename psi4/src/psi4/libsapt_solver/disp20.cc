@@ -79,8 +79,8 @@ void SAPT0::disp20()
           double scale = dAR_[i][ar];
           C_DSCAL(C_ARBS_iter.curr_size,scale,&(T_p_AR[0][ar]),aoccA_*nvirA_);
         }
-      
-#pragma omp for 
+
+#pragma omp for
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
           C_DSCAL(C_ARBS_iter.curr_size,scale,&(T_p_BS[0][bs]),aoccB_*nvirB_);
@@ -117,7 +117,7 @@ void SAPT0::disp20()
 
   if (print_) {
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
-    
+
   }
 }
 
@@ -138,14 +138,14 @@ void SAPT2::disp20()
   double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
 
   psio_->read_entry(PSIF_SAPT_AMPS,"tARBS Amplitudes",(char *) tARBS[0],
-    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_); 
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
 
   e_disp20_ = 4.0*C_DDOT((long int) aoccA_*nvirA_*aoccB_*nvirB_,vARBS[0],1,
     tARBS[0],1);
 
   if (print_) {
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
-    
+
   }
 
   free_block(tARBS);
@@ -160,7 +160,7 @@ void SAPT2::disp20()
 
     C_DGEMM('N','T',aoccA_*no_nvirA_,aoccB_*no_nvirB_,ndf_,1.0,C_p_AR[0],
       ndf_+3,C_p_BS[0],ndf_+3,0.0,vARBS[0],aoccB_*no_nvirB_);
-  
+
     free_block(C_p_AR);
     free_block(C_p_BS);
 
@@ -179,7 +179,7 @@ void SAPT2::disp20()
 
     if (print_) {
       outfile->Printf("    Disp20 (NO)         = %18.12lf [Eh]\n",e_no_disp20_);
-      
+
     }
   }
 }
@@ -188,10 +188,10 @@ void SAPT2::disp20()
  *
 void SAPT0::disp20()
 {
-  boost::shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
-  boost::shared_ptr<Vector> evals_virA(new Vector(nvirA_));
-  boost::shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
-  boost::shared_ptr<Vector> evals_virB(new Vector(nvirB_));
+  std::shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
+  std::shared_ptr<Vector> evals_virA(new Vector(nvirA_));
+  std::shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
+  std::shared_ptr<Vector> evals_virB(new Vector(nvirB_));
 
   for (int a=0; a<aoccA_; a++)
     evals_aoccA->set(0,a,evalsA_[a+foccA_]);
@@ -202,7 +202,7 @@ void SAPT0::disp20()
   for (int s=0; s<nvirB_; s++)
     evals_virB->set(0,s,evalsB_[s+noccB_]);
 
-  denom_ = boost::shared_ptr<SAPTLaplaceDenominator>(new 
+  denom_ = std::shared_ptr<SAPTLaplaceDenominator>(new
     SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
     options_.get_double("DENOMINATOR_DELTA"),debug_));
 
@@ -329,7 +329,7 @@ void SAPT0::disp20()
 
   if (print_) {
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n",e_disp20_);
-    
+
   }
 
   psio_->close(PSIF_SAPT_TEMP,0);

@@ -30,14 +30,6 @@
 
 #include "typedefs.h"
 
-////////////////////////////////////////////
-// Forward declarations
-namespace boost {
-template<class T> class shared_ptr;
-namespace python{
-class tuple;
-}}
-
 namespace psi {
 
 struct dpdfile2;

@@ -55,7 +55,7 @@ class Vector3;
 class PCMPotentialInt : public PotentialInt
 {
 public:
-    PCMPotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    PCMPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     /// Drives the loops over all shell pairs, to compute integrals
     template<typename PCMPotentialIntFunctor>
     void compute(PCMPotentialIntFunctor &functor);

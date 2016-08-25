@@ -59,7 +59,7 @@ using namespace psi;
 namespace psi {
 
 
-PKJK::PKJK(boost::shared_ptr<BasisSet> primary, Options& options) :
+PKJK::PKJK(std::shared_ptr<BasisSet> primary, Options& options) :
     JK(primary), options_(options)
 {
     common_init();

@@ -34,7 +34,7 @@
 #include "psi4/libmints/pointgrp.h"
 #include "occwave.h"
 
-using namespace boost;
+
 using namespace std;
 
 
@@ -48,18 +48,18 @@ void OCCWave::ekt_ip()
 //========================= RHF =============================================================
 //===========================================================================================
      // Memory allocation
-     SharedMatrix GFock_primeA = boost::shared_ptr<Matrix>(new Matrix("Alpha GF prime", nirrep_, nmopi_, nmopi_));
-     SharedMatrix GFock_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha GF copy", nirrep_, nmopi_, nmopi_));
-     SharedMatrix g1symm_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
-     SharedMatrix g1HalfA = boost::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
-     SharedMatrix UvecA = boost::shared_ptr<Matrix>(new Matrix("UvecA", nirrep_, nmopi_, nmopi_));
-     SharedMatrix Uvec_primeA = boost::shared_ptr<Matrix>(new Matrix("Uvec_primeA", nirrep_, nmopi_, nmopi_));
-     SharedMatrix PSA = boost::shared_ptr<Matrix>(new Matrix("Alpha pole strength matrix", nirrep_, nmopi_, nmopi_));
-     SharedMatrix gc_transA = boost::shared_ptr<Matrix>(new Matrix("Alpha C'*g", nirrep_, nmopi_, nmopi_));
-     SharedMatrix tempA = boost::shared_ptr<Matrix>(new Matrix("Alpha temp", nirrep_, nmopi_, nmopi_));
-     SharedVector Diag_g1A = boost::shared_ptr<Vector>(new Vector("Diag OO-block OPDM", nirrep_, nmopi_));
-     SharedVector ps_vecA = boost::shared_ptr<Vector>(new Vector("alpha pole strength vector", nirrep_, nmopi_));
-     SharedVector eorbA = boost::shared_ptr<Vector>(new Vector("eorbA", nirrep_, nmopi_));
+     SharedMatrix GFock_primeA = std::shared_ptr<Matrix>(new Matrix("Alpha GF prime", nirrep_, nmopi_, nmopi_));
+     SharedMatrix GFock_copyA = std::shared_ptr<Matrix>(new Matrix("Alpha GF copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1symm_copyA = std::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1HalfA = std::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
+     SharedMatrix UvecA = std::shared_ptr<Matrix>(new Matrix("UvecA", nirrep_, nmopi_, nmopi_));
+     SharedMatrix Uvec_primeA = std::shared_ptr<Matrix>(new Matrix("Uvec_primeA", nirrep_, nmopi_, nmopi_));
+     SharedMatrix PSA = std::shared_ptr<Matrix>(new Matrix("Alpha pole strength matrix", nirrep_, nmopi_, nmopi_));
+     SharedMatrix gc_transA = std::shared_ptr<Matrix>(new Matrix("Alpha C'*g", nirrep_, nmopi_, nmopi_));
+     SharedMatrix tempA = std::shared_ptr<Matrix>(new Matrix("Alpha temp", nirrep_, nmopi_, nmopi_));
+     SharedVector Diag_g1A = std::shared_ptr<Vector>(new Vector("Diag OO-block OPDM", nirrep_, nmopi_));
+     SharedVector ps_vecA = std::shared_ptr<Vector>(new Vector("alpha pole strength vector", nirrep_, nmopi_));
+     SharedVector eorbA = std::shared_ptr<Vector>(new Vector("eorbA", nirrep_, nmopi_));
 
      // For Non-OO methods
      if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);
@@ -282,18 +282,18 @@ void OCCWave::ekt_ip()
 //===========================================================================================
 if (reference_ == "UNRESTRICTED") {
      // Memory allocation
-     SharedMatrix GFock_primeB = boost::shared_ptr<Matrix>(new Matrix("Beta OO-block GF prime", nirrep_, nmopi_, nmopi_));
-     SharedMatrix GFock_copyB = boost::shared_ptr<Matrix>(new Matrix("Beta GF copy", nirrep_, nmopi_, nmopi_));
-     SharedMatrix g1symm_copyB = boost::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
-     SharedMatrix g1HalfB = boost::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
-     SharedMatrix UvecB = boost::shared_ptr<Matrix>(new Matrix("UvecB", nirrep_, nmopi_, nmopi_));
-     SharedMatrix Uvec_primeB = boost::shared_ptr<Matrix>(new Matrix("Uvec_primeB", nirrep_, nmopi_, nmopi_));
-     SharedMatrix PSB = boost::shared_ptr<Matrix>(new Matrix("Beta pole strength matrix", nirrep_, nmopi_, nmopi_));
-     SharedMatrix gc_transB = boost::shared_ptr<Matrix>(new Matrix("Beta C'*g", nirrep_, nmopi_, nmopi_));
-     SharedMatrix tempB = boost::shared_ptr<Matrix>(new Matrix("Beta temp", nirrep_, nmopi_, nmopi_));
-     SharedVector Diag_g1B = boost::shared_ptr<Vector>(new Vector("DiagA OO-block OPDM", nirrep_, nmopi_));
-     SharedVector ps_vecB = boost::shared_ptr<Vector>(new Vector("Beta pole strength vector", nirrep_, nmopi_));
-     SharedVector eorbB = boost::shared_ptr<Vector>(new Vector("eorbB", nirrep_, nmopi_));
+     SharedMatrix GFock_primeB = std::shared_ptr<Matrix>(new Matrix("Beta OO-block GF prime", nirrep_, nmopi_, nmopi_));
+     SharedMatrix GFock_copyB = std::shared_ptr<Matrix>(new Matrix("Beta GF copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1symm_copyB = std::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1HalfB = std::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
+     SharedMatrix UvecB = std::shared_ptr<Matrix>(new Matrix("UvecB", nirrep_, nmopi_, nmopi_));
+     SharedMatrix Uvec_primeB = std::shared_ptr<Matrix>(new Matrix("Uvec_primeB", nirrep_, nmopi_, nmopi_));
+     SharedMatrix PSB = std::shared_ptr<Matrix>(new Matrix("Beta pole strength matrix", nirrep_, nmopi_, nmopi_));
+     SharedMatrix gc_transB = std::shared_ptr<Matrix>(new Matrix("Beta C'*g", nirrep_, nmopi_, nmopi_));
+     SharedMatrix tempB = std::shared_ptr<Matrix>(new Matrix("Beta temp", nirrep_, nmopi_, nmopi_));
+     SharedVector Diag_g1B = std::shared_ptr<Vector>(new Vector("DiagA OO-block OPDM", nirrep_, nmopi_));
+     SharedVector ps_vecB = std::shared_ptr<Vector>(new Vector("Beta pole strength vector", nirrep_, nmopi_));
+     SharedVector eorbB = std::shared_ptr<Vector>(new Vector("eorbB", nirrep_, nmopi_));
 
      // Make sure GFM is symmetric
      if (sym_gfm_ == "TRUE") {

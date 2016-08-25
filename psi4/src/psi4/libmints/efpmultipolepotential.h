@@ -27,12 +27,10 @@
 
 #ifndef _psi_src_lib_libmints_efpmultipolepotential_h_
 #define _psi_src_lib_libmints_efpmultipolepotential_h_
+
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/osrecur.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
 namespace psi {
 
 class BasisSet;
@@ -95,7 +93,7 @@ class EFPMultipolePotentialInt : public OneBodyAOInt
 
 public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    EFPMultipolePotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
+    EFPMultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor
     virtual ~EFPMultipolePotentialInt();
 

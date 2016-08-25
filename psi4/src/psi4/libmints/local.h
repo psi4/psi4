@@ -29,20 +29,17 @@
 #define _psi_src_lib_libmints_local_h_
 
 #include <vector>
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-#include <boost/tuple/tuple.hpp>
+#include <memory>
 
 namespace psi {
 class Options;
+
 class Matrix;
+
 class BasisSet;
 
-class Localizer {
-
+class Localizer
+{
 protected:
 
     // => Parameters <= //
@@ -60,16 +57,16 @@ protected:
     int maxiter_;
 
     /// Primary orbital basis set
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr <BasisSet> primary_;
     /// Delocalized Orbitals
-    boost::shared_ptr<Matrix> C_;
+    std::shared_ptr <Matrix> C_;
 
     // => Targets <= //
 
     /// Localized Orbitals
-    boost::shared_ptr<Matrix> L_;
+    std::shared_ptr <Matrix> L_;
     /// MO -> LO transformation
-    boost::shared_ptr<Matrix> U_;
+    std::shared_ptr <Matrix> U_;
     /// Did the algorithm converge?
     bool converged_;
 
@@ -80,40 +77,59 @@ public:
 
     // => Constructors <= //
 
-    Localizer(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Matrix> C);
+    Localizer(std::shared_ptr <BasisSet> primary_, std::shared_ptr <Matrix> C);
 
     virtual ~Localizer();
 
-    static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
-    static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
-    static boost::shared_ptr<Localizer> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
+    static std::shared_ptr <Localizer> build(const std::string &type, std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
+
+    static std::shared_ptr <Localizer> build(const std::string &type, std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C, Options &options);
+
+    static std::shared_ptr <Localizer> build(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C, Options &options);
 
     // => Computers <= //
 
     /// Print out the localization algorithm and parameters
     virtual void print_header() const = 0;
+
     /// Perform the localization algorithm
     virtual void localize() = 0;
+
     /// Given a Fock matrix in the original basis (usually diagonal), produce an ordered copy in the local basis, and reorder L and U
-    boost::shared_ptr<Matrix> fock_update(boost::shared_ptr<Matrix> F_orig);
+    std::shared_ptr <Matrix> fock_update(std::shared_ptr <Matrix> F_orig);
 
     // => Accessors <= //
 
-    boost::shared_ptr<Matrix> L() const { return L_; }
-    boost::shared_ptr<Matrix> U() const { return U_; }
-    bool converged() const { return converged_; }
+    std::shared_ptr <Matrix> L() const
+    { return L_; }
+
+    std::shared_ptr <Matrix> U() const
+    { return U_; }
+
+    bool converged() const
+    { return converged_; }
 
     // => Knobs <= //
 
-    void set_print(int print) { print_ = print; }
-    void set_debug(int debug) { debug_ = debug; }
-    void set_bench(int bench) { bench_ = bench; }
-    void set_convergence(double convergence) { convergence_ = convergence; }
-    void set_maxiter(int maxiter) { maxiter_ = maxiter; }
+    void set_print(int print)
+    { print_ = print; }
+
+    void set_debug(int debug)
+    { debug_ = debug; }
+
+    void set_bench(int bench)
+    { bench_ = bench; }
+
+    void set_convergence(double convergence)
+    { convergence_ = convergence; }
+
+    void set_maxiter(int maxiter)
+    { maxiter_ = maxiter; }
 
 };
 
-class BoysLocalizer : public Localizer {
+class BoysLocalizer : public Localizer
+{
 
 protected:
 
@@ -121,16 +137,18 @@ protected:
     void common_init();
 
 public:
-    BoysLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
+    BoysLocalizer(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
 
     virtual ~BoysLocalizer();
 
     virtual void print_header() const;
+
     virtual void localize();
 
 };
 
-class PMLocalizer : public Localizer {
+class PMLocalizer : public Localizer
+{
 
 protected:
 
@@ -138,11 +156,12 @@ protected:
     void common_init();
 
 public:
-    PMLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
+    PMLocalizer(std::shared_ptr <BasisSet> primary, std::shared_ptr <Matrix> C);
 
     virtual ~PMLocalizer();
 
     virtual void print_header() const;
+
     virtual void localize();
 
 };

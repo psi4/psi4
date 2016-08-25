@@ -39,7 +39,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
 
-using namespace boost;
+
 using namespace std;
 
 namespace psi{
@@ -50,7 +50,7 @@ PsiReturnType stability(SharedWavefunction ref_wfn, Options& options)
 {
 
     tstart();
-    boost::shared_ptr<UStab> stab = boost::shared_ptr<UStab>(new UStab(ref_wfn, options));
+    std::shared_ptr<UStab> stab = std::shared_ptr<UStab>(new UStab(ref_wfn, options));
     stab->compute_energy();
     tstop();
 
@@ -78,7 +78,7 @@ void UStab::common_init()
 
 }
 
-void UStab::set_reference(boost::shared_ptr<Wavefunction> wfn)
+void UStab::set_reference(std::shared_ptr<Wavefunction> wfn)
 {
     reference_wavefunction_ = wfn;
 
@@ -108,7 +108,7 @@ void UStab::set_reference(boost::shared_ptr<Wavefunction> wfn)
 
 void UStab::print_header()
 {
-    boost::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
+    std::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
     outfile->Printf( "\n");
     outfile->Printf( "         ------------------------------------------------------------\n");
     outfile->Printf( "                              UHF Stability code                     \n");
@@ -142,9 +142,9 @@ double UStab::compute_energy()
         preiterations();
 
     // Construct components
-    boost::shared_ptr<USTABHamiltonian> H(new USTABHamiltonian(jk_, Cocca_,Cvira_,Coccb_,Cvirb_,eps_occa_,eps_vira_,
+    std::shared_ptr<USTABHamiltonian> H(new USTABHamiltonian(jk_, Cocca_,Cvira_,Coccb_,Cvirb_,eps_occa_,eps_vira_,
                             eps_occb_,eps_virb_));
-    boost::shared_ptr<DLUSolver> solver;
+    std::shared_ptr<DLUSolver> solver;
     if (options_.get_str("SOLVER_TYPE") == "DL")
         solver = DLUSolver::build_solver(options_,H);
     else if (options_.get_str("SOLVER_TYPE") == "RAYLEIGH")
@@ -173,7 +173,7 @@ double UStab::compute_energy()
     }
 
     // Unpack
-    const std::vector<boost::shared_ptr<Vector> > stabvecs = solver->eigenvectors();
+    const std::vector<std::shared_ptr<Vector> > stabvecs = solver->eigenvectors();
     const std::vector<std::vector<double> > stabvals = solver->eigenvalues();
 
     std::vector<std::pair<SharedMatrix, SharedMatrix > > evec_temp;

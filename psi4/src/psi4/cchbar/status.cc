@@ -36,8 +36,8 @@ namespace psi { namespace cchbar {
 
 void status(const char *s, std::string out)
 {
-   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-           boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+           std::shared_ptr<OutFile>(new OutFile(out)));
    printer->Printf( "     %-15s...complete\n", s);
 }
 

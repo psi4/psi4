@@ -40,11 +40,11 @@
 #include "psi4/libdpd/dpd.gbl"
 
 using namespace psi;
-using namespace boost;
+;
 
 void
-IntegralTransform::transform_tei_second_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
-                                             const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4)
+IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
+                                             const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4)
 {
     check_initialized();
 

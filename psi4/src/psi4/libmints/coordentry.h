@@ -35,7 +35,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 #define CLEANUP_THRESH 1.0E-14
@@ -91,7 +91,7 @@ public:
     /// Flag the current value as outdated
     void invalidate() { computed_ = false; }
     /// Clones the current object, using a user-provided variable array, for deep copying
-    virtual boost::shared_ptr<CoordValue> clone( std::map<std::string, double>& map) =0;
+    virtual std::shared_ptr<CoordValue> clone( std::map<std::string, double>& map) =0;
 };
 
 /**
@@ -105,8 +105,8 @@ public:
     double compute() { return value_; }
     void set(double val) { if (!fixed_) value_ = val; }
     CoordValueType type() { return NumberType; }
-    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& /*map*/) {
-        return boost::shared_ptr<CoordValue>(new NumberValue(value_, fixed_));
+    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& /*map*/) {
+        return std::shared_ptr<CoordValue>(new NumberValue(value_, fixed_));
     }
 };
 
@@ -127,8 +127,8 @@ public:
     const std::string & name() const { return name_; }
     void set(double val) { if (!fixed_) { geometryVariables_[name_] = negate_ ? -val : val; } }
     CoordValueType type() { return VariableType; }
-    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
-        return boost::shared_ptr<CoordValue>(new VariableValue(name_, map, negate_, fixed_));
+    std::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+        return std::shared_ptr<CoordValue>(new VariableValue(name_, map, negate_, fixed_));
     }
 };
 
@@ -207,11 +207,11 @@ public:
     /// Whether the current atom's coordinates are up-to-date.
     bool is_computed() const { return computed_; }
     /// Whether this atom has the same mass and basis sets as another atom
-    bool is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) const;
+    bool is_equivalent_to(const std::shared_ptr<CoordEntry> &other) const;
     /// Flags the current coordinates as being outdated.
     virtual void invalidate() =0;
     /// Clones the current object, using a user-provided variable array, for deep copying
-    virtual boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
+    virtual std::shared_ptr<CoordEntry> clone( std::vector<std::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
 
     /// Whether the current atom is ghosted or not.
     const bool& is_ghosted() const { return ghosted_; }
@@ -262,14 +262,14 @@ public:
 };
 
 class CartesianEntry : public CoordEntry{
-    boost::shared_ptr<CoordValue> x_;
-    boost::shared_ptr<CoordValue> y_;
-    boost::shared_ptr<CoordValue> z_;
+    std::shared_ptr<CoordValue> x_;
+    std::shared_ptr<CoordValue> y_;
+    std::shared_ptr<CoordValue> z_;
 public:
     CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-                   boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z);
+                   std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z);
     CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-                   boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis, const std::map<std::string, std::string>& shells);
+                   std::shared_ptr<CoordValue> x, std::shared_ptr<CoordValue> y, std::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis, const std::map<std::string, std::string>& shells);
 
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
@@ -277,38 +277,38 @@ public:
     void print_in_input_format();
     std::string string_in_input_format();
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
-    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> >& /*atoms*/, std::map<std::string, double>& map){
-        boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_, shells_));
+    std::shared_ptr<CoordEntry> clone( std::vector<std::shared_ptr<CoordEntry> >& /*atoms*/, std::map<std::string, double>& map){
+        std::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_, shells_));
         return temp;
     }
 };
 
 class ZMatrixEntry : public CoordEntry
 {
-    boost::shared_ptr<CoordEntry> rto_;
-    boost::shared_ptr<CoordValue> rval_;
-    boost::shared_ptr<CoordEntry> ato_;
-    boost::shared_ptr<CoordValue> aval_;
-    boost::shared_ptr<CoordEntry> dto_;
-    boost::shared_ptr<CoordValue> dval_;
+    std::shared_ptr<CoordEntry> rto_;
+    std::shared_ptr<CoordValue> rval_;
+    std::shared_ptr<CoordEntry> ato_;
+    std::shared_ptr<CoordValue> aval_;
+    std::shared_ptr<CoordEntry> dto_;
+    std::shared_ptr<CoordValue> dval_;
 
 public:
     ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
-                 boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
-                 boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
-                 boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
+                 std::shared_ptr<CoordEntry> rto=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> rval=std::shared_ptr<CoordValue>(),
+                 std::shared_ptr<CoordEntry> ato=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> aval=std::shared_ptr<CoordValue>(),
+                 std::shared_ptr<CoordEntry> dto=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> dval=std::shared_ptr<CoordValue>());
     ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                  const std::map<std::string, std::string>& basis,
                  const std::map<std::string, std::string>& shells,
-                 boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
-                 boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
-                 boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
-                 boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
+                 std::shared_ptr<CoordEntry> rto=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> rval=std::shared_ptr<CoordValue>(),
+                 std::shared_ptr<CoordEntry> ato=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> aval=std::shared_ptr<CoordValue>(),
+                 std::shared_ptr<CoordEntry> dto=std::shared_ptr<CoordEntry>(),
+                 std::shared_ptr<CoordValue> dval=std::shared_ptr<CoordValue>());
 
     virtual ~ZMatrixEntry();
     void invalidate () { computed_ = false; if(rval_ != 0) rval_->invalidate();
@@ -319,20 +319,20 @@ public:
     std::string string_in_input_format();
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return ZMatrixCoord; }
-    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
-        boost::shared_ptr<CoordEntry> temp;
+    std::shared_ptr<CoordEntry> clone( std::vector<std::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        std::shared_ptr<CoordEntry> temp;
         if(rto_ == 0 && ato_ == 0 && dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_));
+            temp = std::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_));
         }else if(ato_ == 0 && dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
+            temp = std::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
                                           atoms[rto_->entry_number()], rval_->clone(map)));
         }else if(dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
+            temp = std::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
                                           atoms[rto_->entry_number()], rval_->clone(map),
                                           atoms[ato_->entry_number()], aval_->clone(map)));
         }
         else {
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
+            temp = std::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_, shells_,
                                       atoms[rto_->entry_number()], rval_->clone(map),
                                       atoms[ato_->entry_number()], aval_->clone(map),
                                       atoms[dto_->entry_number()], dval_->clone(map)));

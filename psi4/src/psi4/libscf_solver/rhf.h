@@ -31,10 +31,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
 namespace psi {
 
 class TwoBodySOInt;
@@ -82,7 +78,7 @@ protected:
     virtual int soscf_update(void);
 
 public:
-    RHF(SharedWavefunction ref_wfn, Options& options, boost::shared_ptr<PSIO> psio);
+    RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
 

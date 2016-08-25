@@ -25,8 +25,6 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
-
 #include <cstdlib>
 #include <cstdio>
 #include <string>
@@ -50,41 +48,39 @@
 #include "psi4/libscf_solver/cuhf.h"
 #include "psi4/libscf_solver/ks.h"
 
-
-using namespace boost;
 using namespace std;
 
 namespace psi { namespace scf {
 
-SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* pre, PyObject* post)
+SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options)
 {
     tstart();
 
-    boost::shared_ptr<PSIO> psio = PSIO::shared_object();
+    std::shared_ptr<PSIO> psio = PSIO::shared_object();
 
     string reference = options.get_str("REFERENCE");
-    boost::shared_ptr<Wavefunction> scf;
+    std::shared_ptr<Wavefunction> scf;
     double energy;
     //bool parallel = options.get_bool("PARALLEL");
 
 
     if (reference == "RHF") {
-        scf = boost::shared_ptr<Wavefunction>(new RHF(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new RHF(ref_wfn, options, psio));
     }
     else if (reference == "ROHF") {
-        scf = boost::shared_ptr<Wavefunction>(new ROHF(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new ROHF(ref_wfn, options, psio));
     }
     else if (reference == "UHF") {
-        scf = boost::shared_ptr<Wavefunction>(new UHF(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new UHF(ref_wfn, options, psio));
     }
     else if (reference == "CUHF") {
-        scf = boost::shared_ptr<Wavefunction>(new CUHF(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new CUHF(ref_wfn, options, psio));
     }
     else if (reference == "RKS") {
-        scf = boost::shared_ptr<Wavefunction>(new RKS(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new RKS(ref_wfn, options, psio));
     }
     else if (reference == "UKS") {
-        scf = boost::shared_ptr<Wavefunction>(new UKS(ref_wfn, options, psio));
+        scf = std::shared_ptr<Wavefunction>(new UKS(ref_wfn, options, psio));
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
@@ -93,7 +89,7 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
 
     // print the basis set
     if ( options.get_bool("PRINT_BASIS") ) {
-        boost::shared_ptr<BasisSet> basisset = BasisSet::pyconstruct_orbital(scf->molecule(),
+        std::shared_ptr<BasisSet> basisset = BasisSet::pyconstruct_orbital(scf->molecule(),
             "BASIS", options.get_str("BASIS"));
         basisset->print_detail();
     }
@@ -101,16 +97,11 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
     // Set this early because the efp mechanism uses it.
     Process::environment.set_legacy_wavefunction(scf);
 
-    if (pre)
-        scf->add_preiteration_callback(pre);
-    if (post)
-        scf->add_postiteration_callback(post);
-
     energy = scf->compute_energy();
 
     // Print a molden file
     if ( options.get_bool("MOLDEN_WRITE") ) {
-       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
+       std::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
        std::string filename = get_writer_file_prefix(scf->molecule()->name()) + ".molden";
        HF* hf = (HF*)scf.get();
        SharedVector occA = hf->occupation_a();
@@ -120,7 +111,7 @@ SharedWavefunction scf(SharedWavefunction ref_wfn, Options & options, PyObject* 
 
     // Print molecular orbitals
     if ( options.get_bool("PRINT_MOS") ) {
-       boost::shared_ptr<MOWriter> mo(new MOWriter(scf,options));
+       std::shared_ptr<MOWriter> mo(new MOWriter(scf,options));
        mo->write();
     }
 

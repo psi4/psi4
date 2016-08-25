@@ -33,16 +33,16 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/fisapt/local2.h"
 
-using namespace boost;
+
 
 namespace psi {
 
 namespace fisapt {
 
 IBOLocalizer2::IBOLocalizer2(
-    boost::shared_ptr<BasisSet> primary,
-    boost::shared_ptr<BasisSet> minao,
-    boost::shared_ptr<Matrix> C) :
+    std::shared_ptr<BasisSet> primary,
+    std::shared_ptr<BasisSet> minao,
+    std::shared_ptr<Matrix> C) :
     primary_(primary),
     minao_(minao),
     C_(C)
@@ -72,17 +72,17 @@ void IBOLocalizer2::common_init()
     stars_completeness_ = 0.9;
     stars_.clear();
 }
-boost::shared_ptr<IBOLocalizer2> IBOLocalizer2::build(
-    boost::shared_ptr<BasisSet> primary,
-    boost::shared_ptr<Matrix> C,
+std::shared_ptr<IBOLocalizer2> IBOLocalizer2::build(
+    std::shared_ptr<BasisSet> primary,
+    std::shared_ptr<Matrix> C,
     Options& options)
 {
 //    Options& options = Process::environment.options;
 
-    boost::shared_ptr<BasisSet> minao = BasisSet::pyconstruct_orbital(primary->molecule(),
+    std::shared_ptr<BasisSet> minao = BasisSet::pyconstruct_orbital(primary->molecule(),
         "BASIS", options.get_str("MINAO_BASIS"));
 
-    boost::shared_ptr<IBOLocalizer2> local(new IBOLocalizer2(primary, minao, C));
+    std::shared_ptr<IBOLocalizer2> local(new IBOLocalizer2(primary, minao, C));
 
     local->set_print(options.get_int("PRINT"));
     local->set_debug(options.get_int("DEBUG"));
@@ -120,7 +120,7 @@ void IBOLocalizer2::build_iaos()
 {
     // => Ghosting <= //
 
-    boost::shared_ptr<Molecule> mol = minao_->molecule();
+    std::shared_ptr<Molecule> mol = minao_->molecule();
     true_atoms_.clear();
     true_iaos_.clear();
     iaos_to_atoms_.clear();
@@ -142,17 +142,17 @@ void IBOLocalizer2::build_iaos()
 
     // => Overlap Integrals <= //
 
-    boost::shared_ptr<IntegralFactory> fact11(new IntegralFactory(primary_,primary_));
-    boost::shared_ptr<IntegralFactory> fact12(new IntegralFactory(primary_,minao_));
-    boost::shared_ptr<IntegralFactory> fact22(new IntegralFactory(minao_,minao_));
+    std::shared_ptr<IntegralFactory> fact11(new IntegralFactory(primary_,primary_));
+    std::shared_ptr<IntegralFactory> fact12(new IntegralFactory(primary_,minao_));
+    std::shared_ptr<IntegralFactory> fact22(new IntegralFactory(minao_,minao_));
 
-    boost::shared_ptr<OneBodyAOInt> ints11(fact11->ao_overlap());
-    boost::shared_ptr<OneBodyAOInt> ints12(fact12->ao_overlap());
-    boost::shared_ptr<OneBodyAOInt> ints22(fact22->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> ints11(fact11->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> ints12(fact12->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> ints22(fact22->ao_overlap());
 
-    boost::shared_ptr<Matrix> S11(new Matrix("S11", primary_->nbf(), primary_->nbf()));
-    boost::shared_ptr<Matrix> S12f(new Matrix("S12f", primary_->nbf(), minao_->nbf()));
-    boost::shared_ptr<Matrix> S22f(new Matrix("S22f", minao_->nbf(), minao_->nbf()));
+    std::shared_ptr<Matrix> S11(new Matrix("S11", primary_->nbf(), primary_->nbf()));
+    std::shared_ptr<Matrix> S12f(new Matrix("S12f", primary_->nbf(), minao_->nbf()));
+    std::shared_ptr<Matrix> S22f(new Matrix("S22f", minao_->nbf(), minao_->nbf()));
 
     ints11->compute(S11);
     ints12->compute(S12f);
@@ -168,8 +168,8 @@ void IBOLocalizer2::build_iaos()
 
     // => Ghosted Overlap Integrals <= //
 
-    boost::shared_ptr<Matrix> S12(new Matrix("S12", primary_->nbf(), true_iaos_.size()));
-    boost::shared_ptr<Matrix> S22(new Matrix("S22", true_iaos_.size(), true_iaos_.size()));
+    std::shared_ptr<Matrix> S12(new Matrix("S12", primary_->nbf(), true_iaos_.size()));
+    std::shared_ptr<Matrix> S22(new Matrix("S22", true_iaos_.size(), true_iaos_.size()));
 
     double** S12p  = S12->pointer();
     double** S12fp = S12f->pointer();
@@ -190,8 +190,8 @@ void IBOLocalizer2::build_iaos()
 
     // => Metric Inverses <= //
 
-    boost::shared_ptr<Matrix>S11_m12(S11->clone());
-    boost::shared_ptr<Matrix>S22_m12(S22->clone());
+    std::shared_ptr<Matrix>S11_m12(S11->clone());
+    std::shared_ptr<Matrix>S22_m12(S22->clone());
     S11_m12->copy(S11);
     S22_m12->copy(S22);
     S11_m12->power(-1.0/2.0, condition_);
@@ -199,44 +199,44 @@ void IBOLocalizer2::build_iaos()
 
     // => Tilde C <= //
 
-    boost::shared_ptr<Matrix> C = C_;
-    boost::shared_ptr<Matrix> T1 = Matrix::doublet(S22_m12, S12, false, true);
-    boost::shared_ptr<Matrix> T2 = Matrix::doublet(S11_m12, Matrix::triplet(T1, T1, C, true, false, false), false, false);
-    boost::shared_ptr<Matrix> T3 = Matrix::doublet(T2, T2, true, false);
+    std::shared_ptr<Matrix> C = C_;
+    std::shared_ptr<Matrix> T1 = Matrix::doublet(S22_m12, S12, false, true);
+    std::shared_ptr<Matrix> T2 = Matrix::doublet(S11_m12, Matrix::triplet(T1, T1, C, true, false, false), false, false);
+    std::shared_ptr<Matrix> T3 = Matrix::doublet(T2, T2, true, false);
     T3->power(-1.0/2.0, condition_);
-    boost::shared_ptr<Matrix> Ctilde = Matrix::triplet(S11_m12, T2, T3, false, false, false);
+    std::shared_ptr<Matrix> Ctilde = Matrix::triplet(S11_m12, T2, T3, false, false, false);
 
     // => D and Tilde D <= //
 
-    boost::shared_ptr<Matrix> D = Matrix::doublet(C, C, false, true);
-    boost::shared_ptr<Matrix> Dtilde = Matrix::doublet(Ctilde, Ctilde, false, true);
+    std::shared_ptr<Matrix> D = Matrix::doublet(C, C, false, true);
+    std::shared_ptr<Matrix> Dtilde = Matrix::doublet(Ctilde, Ctilde, false, true);
 
     // => A (Before Orthogonalization) <= //
 
-    boost::shared_ptr<Matrix> DSDtilde = Matrix::triplet(D, S11, Dtilde,false, false, false);
+    std::shared_ptr<Matrix> DSDtilde = Matrix::triplet(D, S11, Dtilde,false, false, false);
     DSDtilde->scale(2.0);
 
-    boost::shared_ptr<Matrix> L = Matrix::doublet(S11_m12, S11_m12, false, false); // TODO: Possibly Unstable
+    std::shared_ptr<Matrix> L = Matrix::doublet(S11_m12, S11_m12, false, false); // TODO: Possibly Unstable
     L->add(DSDtilde);
     L->subtract(D);
     L->subtract(Dtilde);
 
-    boost::shared_ptr<Matrix> AN = Matrix::doublet(L, S12, false, false);
+    std::shared_ptr<Matrix> AN = Matrix::doublet(L, S12, false, false);
 
     // => A (After Orthogonalization) <= //
 
-    boost::shared_ptr<Matrix> V = Matrix::triplet(AN, S11, AN, true, false, false);
+    std::shared_ptr<Matrix> V = Matrix::triplet(AN, S11, AN, true, false, false);
     V->power(-1.0/2.0, condition_);
 
-    boost::shared_ptr<Matrix> A = Matrix::doublet(AN, V, false, false);
+    std::shared_ptr<Matrix> A = Matrix::doublet(AN, V, false, false);
 
     // => Assignment <= //
 
     S_ = S11;
     A_ = A;
 }
-std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize_task(
-    boost::shared_ptr<Matrix> L,
+std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize_task(
+    std::shared_ptr<Matrix> L,
     const std::vector<std::vector<int> >& minao_inds,
     const std::vector<std::pair<int, int> >& rot_inds,
     double convergence,
@@ -247,11 +247,11 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize_task(
     int nmin = L->colspi()[0];
     int nocc = L->rowspi()[0];
 
-    boost::shared_ptr<Matrix> L2(L->clone());
+    std::shared_ptr<Matrix> L2(L->clone());
     L2->copy(L);
     double** Lp = L2->pointer();
 
-    boost::shared_ptr<Matrix> U(new Matrix("U", nocc, nocc));
+    std::shared_ptr<Matrix> U(new Matrix("U", nocc, nocc));
     U->identity();
     double** Up = U->pointer();
 
@@ -332,7 +332,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize_task(
 
     U->transpose_this();
 
-    std::map<std::string, boost::shared_ptr<Matrix> > ret;
+    std::map<std::string, std::shared_ptr<Matrix> > ret;
     ret["U"] = U;
     ret["L"] = L2;
 
@@ -341,14 +341,14 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize_task(
 
     return ret;
 }
-boost::shared_ptr<Matrix> IBOLocalizer2::reorder_orbitals(
-    boost::shared_ptr<Matrix> F,
+std::shared_ptr<Matrix> IBOLocalizer2::reorder_orbitals(
+    std::shared_ptr<Matrix> F,
     const std::vector<int>& ranges)
 {
     int nmo = F->rowspi()[0];
     double** Fp = F->pointer();
 
-    boost::shared_ptr<Matrix> U(new Matrix("U", nmo, nmo));
+    std::shared_ptr<Matrix> U(new Matrix("U", nmo, nmo));
     double** Up = U->pointer();
 
     for (int ind = 0; ind < ranges.size() - 1; ind++) {
@@ -366,9 +366,9 @@ boost::shared_ptr<Matrix> IBOLocalizer2::reorder_orbitals(
 
     return U;
 }
-std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize(
-        boost::shared_ptr<Matrix> Cocc,
-        boost::shared_ptr<Matrix> Focc,
+std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(
+        std::shared_ptr<Matrix> Cocc,
+        std::shared_ptr<Matrix> Focc,
         const std::vector<int>& ranges2
         )
 {
@@ -402,15 +402,15 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize(
         }
     }
 
-    boost::shared_ptr<Matrix> L = Matrix::triplet(Cocc,S_,A_,true,false,false);
+    std::shared_ptr<Matrix> L = Matrix::triplet(Cocc,S_,A_,true,false,false);
     L->set_name("L");
 
-    std::map<std::string, boost::shared_ptr<Matrix> > ret1 = IBOLocalizer2::localize_task(L,minao_inds,rot_inds,convergence_,maxiter_,power_);
+    std::map<std::string, std::shared_ptr<Matrix> > ret1 = IBOLocalizer2::localize_task(L,minao_inds,rot_inds,convergence_,maxiter_,power_);
     L = ret1["L"];
-    boost::shared_ptr<Matrix> U = ret1["U"];
+    std::shared_ptr<Matrix> U = ret1["U"];
 
     if (use_stars_) {
-        boost::shared_ptr<Matrix> Q = orbital_charges(L);
+        std::shared_ptr<Matrix> Q = orbital_charges(L);
         double** Qp = Q->pointer();
         int nocc  = Q->colspi()[0];
         int natom = Q->rowspi()[0];
@@ -467,14 +467,14 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize(
         }
         outfile->Printf( "\n\n");
 
-        std::map<std::string, boost::shared_ptr<Matrix> > ret2 = IBOLocalizer2::localize_task(L,minao_inds2,rot_inds2,convergence_,maxiter_,power_);
+        std::map<std::string, std::shared_ptr<Matrix> > ret2 = IBOLocalizer2::localize_task(L,minao_inds2,rot_inds2,convergence_,maxiter_,power_);
         L = ret2["L"];
-        boost::shared_ptr<Matrix> U3 = ret2["U"];
+        std::shared_ptr<Matrix> U3 = ret2["U"];
         U = Matrix::doublet(U,U3,false,false);
 
-        std::map<std::string, boost::shared_ptr<Matrix> > ret3 = IBOLocalizer2::localize_task(L,minao_inds,rot_inds,convergence_,maxiter_,power_);
+        std::map<std::string, std::shared_ptr<Matrix> > ret3 = IBOLocalizer2::localize_task(L,minao_inds,rot_inds,convergence_,maxiter_,power_);
         L = ret3["L"];
-        boost::shared_ptr<Matrix> U4 = ret3["U"];
+        std::shared_ptr<Matrix> U4 = ret3["U"];
         U = Matrix::doublet(U,U4,false,false);
 
         // => Analysis <= //
@@ -519,17 +519,17 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize(
         outfile->Printf( "\n\n");
     }
 
-    boost::shared_ptr<Matrix> Focc2 = Matrix::triplet(U,Focc,U,true,false,false);
-    boost::shared_ptr<Matrix> U2 = IBOLocalizer2::reorder_orbitals(Focc2, ranges);
+    std::shared_ptr<Matrix> Focc2 = Matrix::triplet(U,Focc,U,true,false,false);
+    std::shared_ptr<Matrix> U2 = IBOLocalizer2::reorder_orbitals(Focc2, ranges);
 
-    boost::shared_ptr<Matrix> Uocc3 = Matrix::doublet(U,U2,false,false);
-    boost::shared_ptr<Matrix> Focc3 = Matrix::triplet(Uocc3,Focc,Uocc3,true,false,false);
-    boost::shared_ptr<Matrix> Locc3 = Matrix::doublet(Cocc,Uocc3,false,false);
+    std::shared_ptr<Matrix> Uocc3 = Matrix::doublet(U,U2,false,false);
+    std::shared_ptr<Matrix> Focc3 = Matrix::triplet(Uocc3,Focc,Uocc3,true,false,false);
+    std::shared_ptr<Matrix> Locc3 = Matrix::doublet(Cocc,Uocc3,false,false);
 
     L = Matrix::doublet(U2,L,true,false);
-    boost::shared_ptr<Matrix> Q = orbital_charges(L);
+    std::shared_ptr<Matrix> Q = orbital_charges(L);
 
-    std::map<std::string, boost::shared_ptr<Matrix> > ret;
+    std::map<std::string, std::shared_ptr<Matrix> > ret;
     ret["L"] = Locc3;
     ret["U"] = Uocc3;
     ret["F"] = Focc3;
@@ -542,15 +542,15 @@ std::map<std::string, boost::shared_ptr<Matrix> > IBOLocalizer2::localize(
 
     return ret;
 }
-boost::shared_ptr<Matrix> IBOLocalizer2::orbital_charges(
-    boost::shared_ptr<Matrix> L)
+std::shared_ptr<Matrix> IBOLocalizer2::orbital_charges(
+    std::shared_ptr<Matrix> L)
 {
     double** Lp = L->pointer();
     int nocc = L->rowspi()[0];
     int nmin = L->colspi()[0];
     int natom = true_atoms_.size();
 
-    boost::shared_ptr<Matrix> Q(new Matrix("Q", natom, nocc));
+    std::shared_ptr<Matrix> Q(new Matrix("Q", natom, nocc));
     double** Qp = Q->pointer();
 
     for (int i = 0; i < nocc; i++) {
@@ -565,15 +565,15 @@ void IBOLocalizer2::print_charges(double scale)
 {
     if (!A_) build_iaos();
 
-    boost::shared_ptr<Matrix> L = Matrix::triplet(C_, S_, A_, true, false, false);
+    std::shared_ptr<Matrix> L = Matrix::triplet(C_, S_, A_, true, false, false);
 
     int nocc = L->rowspi()[0];
     int natom = true_atoms_.size();
 
-    boost::shared_ptr<Matrix> Q = orbital_charges(L);
+    std::shared_ptr<Matrix> Q = orbital_charges(L);
     double** Qp = Q->pointer();
 
-    boost::shared_ptr<Vector> N(new Vector("N", natom));
+    std::shared_ptr<Vector> N(new Vector("N", natom));
     double* Np = N->pointer();
 
     for (int A = 0; A < natom; A++) {
@@ -582,7 +582,7 @@ void IBOLocalizer2::print_charges(double scale)
         }
     }
 
-    boost::shared_ptr<Molecule> mol = minao_->molecule();
+    std::shared_ptr<Molecule> mol = minao_->molecule();
 
     outfile->Printf("   > Atomic Charges <\n\n");
     outfile->Printf("    %4s %3s %11s %11s %11s\n",

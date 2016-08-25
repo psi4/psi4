@@ -33,7 +33,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 #include "psi4/psi4-dec.h"
@@ -127,7 +127,7 @@ void local_init(Options & options)
   int num_zero;
   double **RS;
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
+  std::shared_ptr<Wavefunction> wfn = Process::environment.legacy_wavefunction();
   C = wfn->Ca()->pointer();
   natom = wfn->molecule()->natom();
   nshell = wfn->basisset()->nshell();

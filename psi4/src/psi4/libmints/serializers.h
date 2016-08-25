@@ -214,7 +214,7 @@ void save(Archive & ar, const psi::Molecule & t, unsigned int /*version*/)
     psi::Matrix full_geometry = t.full_geometry();
 //    ar & make_nvp("coordinates", full_geometry);
 //    for (int n=0; n<t.nallatom(); ++n) {
-//        const boost::shared_ptr<psi::CoordEntry> temp = t.atom_entry(n);
+//        const std::shared_ptr<psi::CoordEntry> temp = t.atom_entry(n);
 //        ar & temp;
 //    }
 }

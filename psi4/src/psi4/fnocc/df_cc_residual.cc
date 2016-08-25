@@ -46,7 +46,7 @@
 #include "psi4/lib3index/3index.h"
 
 using namespace psi;
-using namespace boost;
+
 
 namespace psi{ namespace fnocc{
 
@@ -57,7 +57,7 @@ void DFCoupledCluster::CCResidual(){
 
     double start;
 
-    boost::shared_ptr<PSIO> psio (new PSIO());
+    std::shared_ptr<PSIO> psio (new PSIO());
 
     // C2 = -1/2 t(bc,kj) [ (ki|ac) - 1/2 t(ad,li) (kd|lc) ]
     //      +    t(bc,ki) [ (kj|ac) - 1/2 t(ad,lj) (kd|lc) ]

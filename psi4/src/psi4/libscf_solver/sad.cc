@@ -56,13 +56,13 @@
 #include "hf.h"
 #include "sad.h"
 
-using namespace boost;
+
 using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
 
-SADGuess::SADGuess(boost::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
+SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
     basis_(basis), nalpha_(nalpha), nbeta_(nbeta), options_(options)
 {
     common_init();
@@ -74,8 +74,8 @@ void SADGuess::common_init()
 {
     molecule_ = basis_->molecule();
 
-    boost::shared_ptr<IntegralFactory> ints(new IntegralFactory(basis_));
-    boost::shared_ptr<PetiteList> petite(new PetiteList(basis_,ints));
+    std::shared_ptr<IntegralFactory> ints(new IntegralFactory(basis_));
+    std::shared_ptr<PetiteList> petite(new PetiteList(basis_,ints));
     AO2SO_ =  petite->aotoso();
 
     print_ = options_.get_int("SAD_PRINT");
@@ -155,7 +155,7 @@ void SADGuess::form_C()
 }
 SharedMatrix SADGuess::form_D_AO()
 {
-    std::vector<boost::shared_ptr<BasisSet> > atomic_bases;
+    std::vector<std::shared_ptr<BasisSet> > atomic_bases;
 
     if (print_ > 6) {
         outfile->Printf("\n  Constructing atomic basis sets\n  Molecule:\n");
@@ -166,10 +166,10 @@ SharedMatrix SADGuess::form_D_AO()
     for (int A = 0; A<molecule_->natom(); A++) {
         std::stringstream mol_string;
         mol_string << std::endl << basis_->molecule()->label(A) << std::endl;
-        boost::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
+        std::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
         atom_mol->reset_point_group("C1"); // Booo symmetry
 
-        boost::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
+        std::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
                                                 basis_->molecule()->atom_entry(A)->basisset());
         atomic_bases.push_back(atom_bas);
 
@@ -304,9 +304,9 @@ SharedMatrix SADGuess::form_D_AO()
 
     return DAO;
 }
-void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec, int nhigh, SharedMatrix D)
+void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, int nhigh, SharedMatrix D)
 {
-    boost::shared_ptr<Molecule> mol = bas->molecule();
+    std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
     if (print_ > 1){
         mol->print();
@@ -429,18 +429,18 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
         nbeta = nalpha;
         double frac_act = std::pow(((double)(Z - nfzc * 2)) / ((double)nact * 2), 0.5);
 
-        occ_a = boost::shared_ptr<Vector>(new Vector("Alpha fractional occupation", nalpha));
+        occ_a = std::shared_ptr<Vector>(new Vector("Alpha fractional occupation", nalpha));
         for (size_t x = 0; x<nfzc; x++) occ_a->set(x, 1.0);
         for (size_t x = nfzc; x<nalpha; x++) occ_a->set(x, frac_act);
-        occ_b = boost::shared_ptr<Vector>(occ_a->clone());
+        occ_b = std::shared_ptr<Vector>(occ_a->clone());
 
     }
     else{
 
         // Conventional occupations
-        occ_a = boost::shared_ptr<Vector>(new Vector("Alpha occupation", nalpha));
+        occ_a = std::shared_ptr<Vector>(new Vector("Alpha occupation", nalpha));
         for (size_t x = 0; x<nalpha; x++) occ_a->set(x, 1.0);
-        occ_b = boost::shared_ptr<Vector>(new Vector("Beta occupation", nbeta));
+        occ_b = std::shared_ptr<Vector>(new Vector("Beta occupation", nbeta));
         for (size_t x = 0; x<nbeta; x++) occ_b->set(x, 1.0);
     }
 
@@ -486,7 +486,7 @@ void SADGuess::get_uhf_atomic_density(boost::shared_ptr<BasisSet> bas, int nelec
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF"){
-        boost::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(bas->molecule(), "BASIS",
+        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(bas->molecule(), "BASIS",
                                                 options_.get_str("DF_BASIS_SAD"));
 
         DFJK* dfjk = new DFJK(bas, auxiliary);
@@ -668,7 +668,7 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
 void HF::compute_SAD_guess()
 {
 
-    boost::shared_ptr<SADGuess> guess(new SADGuess(basisset_, nalpha_, nbeta_, options_));
+    std::shared_ptr<SADGuess> guess(new SADGuess(basisset_, nalpha_, nbeta_, options_));
     guess->compute_guess();
 
     SharedMatrix Ca_sad = guess->Ca();
@@ -710,16 +710,16 @@ void HF::compute_SAD_guess()
 
     E_ = 0.0; // This is the -1th iteration
 }
-SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis)
+SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis)
 {
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
-    boost::shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
-    boost::shared_ptr<IntegralFactory> hybfactory(new IntegralFactory(old_basis,new_basis,old_basis,new_basis));
-    boost::shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());
-    boost::shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
+    std::shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
+    std::shared_ptr<IntegralFactory> hybfactory(new IntegralFactory(old_basis,new_basis,old_basis,new_basis));
+    std::shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());
+    std::shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
 
-    boost::shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
+    std::shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
     SharedMatrix AO2USO(pet->aotoso());
 
     SharedMatrix SAB(new Matrix("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi()));

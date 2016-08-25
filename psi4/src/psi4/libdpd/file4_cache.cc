@@ -309,8 +309,8 @@ void DPD::file4_cache_print_screen(void)
 void DPD::file4_cache_print(std::string out)
 {
     int total_size=0;
-    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             boost::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             std::shared_ptr<OutFile>(new OutFile(out)));
     dpd_file4_cache_entry *this_entry;
 
     this_entry = dpd_main.file4_cache;

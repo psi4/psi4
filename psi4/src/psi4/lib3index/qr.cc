@@ -28,7 +28,7 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
 #include "psi4/libqt/qt.h"
@@ -65,10 +65,10 @@ void QR::form_QR()
         R2->copy(A_);
         double** R2p = R2->pointer();
 
-        boost::shared_ptr<Vector> T2(new Vector("T",n));
+        std::shared_ptr<Vector> T2(new Vector("T",n));
         double* T2p = T2->pointer();
 
-        boost::shared_ptr<IntVector> P2(new IntVector("Pivots",n));
+        std::shared_ptr<IntVector> P2(new IntVector("Pivots",n));
         int* P2p = P2->pointer();
 
         double work_val2 = 0;
@@ -94,7 +94,7 @@ void QR::form_QR()
     double** Rp = Rtemp->pointer();
 
     // Pivot values of reflector generators
-    boost::shared_ptr<Vector> T(new Vector("T",n));
+    std::shared_ptr<Vector> T(new Vector("T",n));
     double* Tp = T->pointer();
 
     // Initial pivots
@@ -239,7 +239,7 @@ void QR::form_PN()
     SharedMatrix T(new Matrix("T",nQ,n));
     SharedMatrix D(new Matrix("D",nQ,nQ));
     SharedMatrix V(new Matrix("V",nQ,nQ));
-    boost::shared_ptr<Vector> d(new Vector("d",nQ));
+    std::shared_ptr<Vector> d(new Vector("d",nQ));
 
     double** Ap = A_->pointer();
     double** Qp = Q_->pointer();

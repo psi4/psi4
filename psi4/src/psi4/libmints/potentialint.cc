@@ -30,7 +30,7 @@
 namespace psi{
 
 PCMPotentialInt::PCMPotentialInt(std::vector<SphericalTransform>& trans,
-boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv):
+std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv):
     PotentialInt(trans, bs1, bs1)
 {
     UNUSED(bs2);

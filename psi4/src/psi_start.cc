@@ -53,7 +53,7 @@ char *psi_file_prefix;
 std::string outfile_name;
 std::string restart_id;
 bool env_initialized;
-boost::shared_ptr<PsiOutStream> outfile;
+std::shared_ptr<PsiOutStream> outfile;
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
 void create_new_plugin_makefile();
 void print_version();
@@ -293,10 +293,10 @@ int psi_start(int argc, char *argv[])
         }
     }
     if(ofname == "stdout"){
-        outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+        outfile=std::shared_ptr<PsiOutStream>(new PsiOutStream());
     }
     else{
-       outfile=boost::shared_ptr<PsiOutStream>
+       outfile=std::shared_ptr<PsiOutStream>
           (new OutFile(ofname,(append?APPEND:TRUNCATE)));
     }
 

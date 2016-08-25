@@ -52,7 +52,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
@@ -386,9 +385,9 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
       if (L > maxnvect) {
          std::string str = "(test_sem): L(";
-         str += boost::lexical_cast<std::string>( L) ;
+         str += std::to_string( L) ;
          str += ") > maxnvect(";
-         str += boost::lexical_cast<std::string>( maxnvect) ;
+         str += std::to_string( maxnvect) ;
          str += ")! Aborting!";
          throw PsiException(str,__FILE__,__LINE__);
          }

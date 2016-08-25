@@ -32,26 +32,16 @@
 #include <string>
 #include <cstdio>
 #include <map>
+#include <memory>
 
-#include "typedefs.h"
+#include <pybind11/pybind11.h>
 
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 #define DEFAULT_SYM_TOL 1.0E-8
 #define FULL_PG_TOL 1.0e-8 // default
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
- PRAGMA_WARNING_POP
-
+#include "typedefs.h"
 #include "coordentry.h"
-
-// Forward declarations for boost.python used in the extract_subsets
-namespace boost{
-namespace python{
-       class list;
-}}
 
 namespace psi {
 class PointGroup;
@@ -99,7 +89,7 @@ public:
         ALLatom = 3     /*!< All atom types */
     };
 
-    typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
+    typedef std::vector<std::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
 
 protected:
@@ -154,7 +144,7 @@ protected:
     int get_anchor_atom(const std::string &str, const std::string &line);
 
     /// Point group to use with this molecule.
-    boost::shared_ptr<PointGroup> pg_;
+    std::shared_ptr<PointGroup> pg_;
     /// Full point group.
     FullPointGroup full_pg_;
     /// n of the highest rotational axis Cn
@@ -302,7 +292,7 @@ public:
     /// Returns charge of atom
     double fcharge(int atom) const;
     /// Returns the CoordEntry for an atom
-    const boost::shared_ptr<CoordEntry>& atom_entry(int atom) const;
+    const std::shared_ptr<CoordEntry>& atom_entry(int atom) const;
 
     void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
     void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
@@ -380,7 +370,7 @@ public:
     Matrix nuclear_repulsion_energy_deriv2() const;
 
     /// Computes the nuclear repuslion energy between this and another Molecule
-    double pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> other) const;
+    double pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> other) const;
 
     /// Translates molecule by r
     void translate(const Vector3& r);
@@ -465,8 +455,8 @@ public:
     /// Symmetry
     /// @{
     bool has_symmetry_element(Vector3& op, double tol=DEFAULT_SYM_TOL) const;
-    boost::shared_ptr<PointGroup> point_group() const;
-    void set_point_group(boost::shared_ptr<PointGroup> pg);
+    std::shared_ptr<PointGroup> point_group() const;
+    void set_point_group(std::shared_ptr<PointGroup> pg);
     /// Determine and set FULL point group
     void set_full_point_group(double tol=FULL_PG_TOL);
     /// Does the molecule have an inversion center at origin
@@ -478,14 +468,14 @@ public:
     /// Is the molecule linear, or planar?
     void is_linear_planar(bool& linear, bool& planar, double tol=DEFAULT_SYM_TOL) const;
     /// Find computational molecular point group, user can override this with the "symmetry" keyword
-    boost::shared_ptr<PointGroup> find_point_group(double tol=DEFAULT_SYM_TOL) const;
+    std::shared_ptr<PointGroup> find_point_group(double tol=DEFAULT_SYM_TOL) const;
     /// Override symmetry from outside the molecule string
     void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
-    boost::shared_ptr<PointGroup> find_highest_point_group(double tol=DEFAULT_SYM_TOL) const;
+    std::shared_ptr<PointGroup> find_highest_point_group(double tol=DEFAULT_SYM_TOL) const;
     /// Determine symmetry reference frame. If noreorient is set, this is the rotation matrix
     /// applied to the geometry in update_geometry.
-    boost::shared_ptr<Matrix> symmetry_frame(double tol=DEFAULT_SYM_TOL);
+    std::shared_ptr<Matrix> symmetry_frame(double tol=DEFAULT_SYM_TOL);
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
@@ -510,7 +500,7 @@ public:
      *
      * @param geom a string providing the user's input
      */
-    static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
+    static std::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
 
     /**
      * Regenerates a input file molecule specification string
@@ -534,7 +524,7 @@ public:
      * Sets the specified list of fragments to be real.
      * @param reals The list of real fragments.
      */
-    void set_active_fragments(boost::python::list reals);
+    void set_active_fragments(pybind11::list reals);
 
     /**
      * Sets the specified fragment to be real.
@@ -546,7 +536,7 @@ public:
      * Sets the specified list of fragments to be ghosts.
      * @param ghosts The list of ghosts fragments.
      */
-    void set_ghost_fragments(boost::python::list ghosts);
+    void set_ghost_fragments(pybind11::list ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
@@ -561,7 +551,7 @@ public:
      * @param ghost_list The list of fragments that should be present in the molecule as ghosts.
      * @return The ref counted cloned molecule
      */
-    boost::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
+    std::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
                                                 const std::vector<int> &ghost_list) const;
 
     /**
@@ -570,8 +560,8 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_1(boost::python::list reals,
-                                                   boost::python::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_1(pybind11::list reals,
+                                                   pybind11::list ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -579,7 +569,7 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_2(boost::python::list reals,
+    std::shared_ptr<Molecule> py_extract_subsets_2(pybind11::list reals,
                                                    int ghost = -1);
 
     /**
@@ -588,8 +578,8 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_3(int reals,
-                                                   boost::python::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_3(int reals,
+                                                   pybind11::list ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -597,7 +587,7 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_4(int reals,
+    std::shared_ptr<Molecule> py_extract_subsets_4(int reals,
                                                    int ghost = -1);
 
     /**
@@ -605,14 +595,14 @@ public:
      * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_5(boost::python::list reals);
+    std::shared_ptr<Molecule> py_extract_subsets_5(pybind11::list reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
      * @param reals An int containing the real atoms.
      * @return The ref counted cloned molecule.
      */
-    boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
+    std::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
     // => Fragment Composition <= //
 
@@ -676,7 +666,7 @@ public:
     void update_geometry();
 };
 
-typedef boost::shared_ptr<Molecule> SharedMolecule;
+typedef std::shared_ptr<Molecule> SharedMolecule;
 
 }
 

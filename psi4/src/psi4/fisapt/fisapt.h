@@ -31,7 +31,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/wavefunction.h"
 #include <map>
-#include <boost/tuple/tuple.hpp>
+#include <tuple>
 
 namespace psi {
 
@@ -50,20 +50,20 @@ protected:
     /// Memory in doubles
     size_t doubles_;
     /// Reference wavefunction
-    boost::shared_ptr<Wavefunction> reference_;
+    std::shared_ptr<Wavefunction> reference_;
 
     /// Orbital Basis Set (full molecule)
-    boost::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> primary_;
 
     /// Global JK object
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
 
     /// Map of scalars
     std::map<std::string, double> scalars_;
     /// Map of vectors
-    std::map<std::string, boost::shared_ptr<Vector> > vectors_;
+    std::map<std::string, std::shared_ptr<Vector> > vectors_;
     /// Map of matrices
-    std::map<std::string, boost::shared_ptr<Matrix> > matrices_;
+    std::map<std::string, std::shared_ptr<Matrix> > matrices_;
 
     // => FISAPT 0th-Order Wavefunction <= //
 
@@ -123,22 +123,22 @@ protected:
     void print_trailer();
 
     // Build the ExchInd20 potential in the monomer A ov space
-    boost::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
     // Build the Ind20 potential in the monomer A ov space
-    boost::shared_ptr<Matrix> build_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
 
     /// Helper to drop a matrix to filepath/A->name().dat
-    void drop(boost::shared_ptr<Matrix> A, const std::string& filepath);
+    void drop(std::shared_ptr<Matrix> A, const std::string& filepath);
     /// Helper to drop a vector to filepath/A->name().dat
-    void drop(boost::shared_ptr<Vector> A, const std::string& filepath);
+    void drop(std::shared_ptr<Vector> A, const std::string& filepath);
     /// Helper to extract columns from a matrix
-    static boost::shared_ptr<Matrix> extract_columns(
+    static std::shared_ptr<Matrix> extract_columns(
         const std::vector<int>& cols,
-        boost::shared_ptr<Matrix> A);
+        std::shared_ptr<Matrix> A);
 
 public:
     /// Initialize an FISAPT object with an SCF reference
-    FISAPT(boost::shared_ptr<Wavefunction> scf, Options& options);
+    FISAPT(std::shared_ptr<Wavefunction> scf, Options& options);
     virtual ~FISAPT();
 
     /// Gogo!
@@ -155,34 +155,34 @@ protected:
     Options& options_;
 
     /// Global JK object
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
 
     /// Map of scalars
     std::map<std::string, double> scalars_;
     /// Map of vectors
-    std::map<std::string, boost::shared_ptr<Vector> > vectors_;
+    std::map<std::string, std::shared_ptr<Vector> > vectors_;
     /// Map of matrices
-    std::map<std::string, boost::shared_ptr<Matrix> > matrices_;
+    std::map<std::string, std::shared_ptr<Matrix> > matrices_;
 
     /// Print orbitals
     void print_orbitals(
         const std::string& header,
         int start,
-        boost::shared_ptr<Vector> eps
+        std::shared_ptr<Vector> eps
         );
 
 
 public:
 
     FISAPTSCF(
-        boost::shared_ptr<JK> jk,    // JK object
+        std::shared_ptr<JK> jk,    // JK object
         double enuc,                 // Nuclear repulsion energy
-        boost::shared_ptr<Matrix> S, // Overlap integrals
-        boost::shared_ptr<Matrix> X, // Restricted orthogonalization matrix [nbf x nmo]
-        boost::shared_ptr<Matrix> T, // Kinetic integrals
-        boost::shared_ptr<Matrix> V, // Potential integrals
-        boost::shared_ptr<Matrix> W, // External embedding potential
-        boost::shared_ptr<Matrix> C, // Guess for occupied orbitals [nbf x nocc]
+        std::shared_ptr<Matrix> S, // Overlap integrals
+        std::shared_ptr<Matrix> X, // Restricted orthogonalization matrix [nbf x nmo]
+        std::shared_ptr<Matrix> T, // Kinetic integrals
+        std::shared_ptr<Matrix> V, // Potential integrals
+        std::shared_ptr<Matrix> W, // External embedding potential
+        std::shared_ptr<Matrix> C, // Guess for occupied orbitals [nbf x nocc]
         Options& options
         );
     virtual ~FISAPTSCF();
@@ -190,8 +190,8 @@ public:
     void compute_energy();
 
     std::map<std::string, double>& scalars()                      { return scalars_; }
-    std::map<std::string, boost::shared_ptr<Vector> >& vectors()  { return vectors_; }
-    std::map<std::string, boost::shared_ptr<Matrix> >& matrices() { return matrices_; }
+    std::map<std::string, std::shared_ptr<Vector> >& vectors()  { return vectors_; }
+    std::map<std::string, std::shared_ptr<Matrix> >& matrices() { return matrices_; }
 
 };
 
@@ -209,45 +209,45 @@ protected:
     // Maximum allowed iterations
     int maxiter_;
     // JK Object
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
 
     // => Monomer A Problem <= //
 
     // Perturbation applied to A
-    boost::shared_ptr<Matrix> w_A_;
+    std::shared_ptr<Matrix> w_A_;
     // Response of A
-    boost::shared_ptr<Matrix> x_A_;
+    std::shared_ptr<Matrix> x_A_;
     // Active occ orbital coefficients of A
-    boost::shared_ptr<Matrix> Cocc_A_;
+    std::shared_ptr<Matrix> Cocc_A_;
     // Active vir orbital coefficients of A
-    boost::shared_ptr<Matrix> Cvir_A_;
+    std::shared_ptr<Matrix> Cvir_A_;
     // Active occ orbital eigenvalues of A
-    boost::shared_ptr<Vector> eps_occ_A_;
+    std::shared_ptr<Vector> eps_occ_A_;
     // Active vir orbital eigenvalues of A
-    boost::shared_ptr<Vector> eps_vir_A_;
+    std::shared_ptr<Vector> eps_vir_A_;
 
     // => Monomer B Problem <= //
 
     // Perturbation applied to B
-    boost::shared_ptr<Matrix> w_B_;
+    std::shared_ptr<Matrix> w_B_;
     // Response of B
-    boost::shared_ptr<Matrix> x_B_;
+    std::shared_ptr<Matrix> x_B_;
     // Active occ orbital coefficients of B
-    boost::shared_ptr<Matrix> Cocc_B_;
+    std::shared_ptr<Matrix> Cocc_B_;
     // Active vir orbital coefficients of B
-    boost::shared_ptr<Matrix> Cvir_B_;
+    std::shared_ptr<Matrix> Cvir_B_;
     // Active occ orbital eigenvalues of B
-    boost::shared_ptr<Vector> eps_occ_B_;
+    std::shared_ptr<Vector> eps_occ_B_;
     // Active vir orbital eigenvalues of B
-    boost::shared_ptr<Vector> eps_vir_B_;
+    std::shared_ptr<Vector> eps_vir_B_;
 
     // Form the s = Ab product for the provided vectors b (may or may not need more iterations)
-    std::map<std::string, boost::shared_ptr<Matrix> > product(std::map<std::string, boost::shared_ptr<Matrix> > b);
+    std::map<std::string, std::shared_ptr<Matrix> > product(std::map<std::string, std::shared_ptr<Matrix> > b);
     // Apply the denominator from r into z
-    void preconditioner(boost::shared_ptr<Matrix> r,
-                        boost::shared_ptr<Matrix> z,
-                        boost::shared_ptr<Vector> o,
-                        boost::shared_ptr<Vector> v);
+    void preconditioner(std::shared_ptr<Matrix> r,
+                        std::shared_ptr<Matrix> z,
+                        std::shared_ptr<Vector> o,
+                        std::shared_ptr<Vector> v);
 
 public:
     CPHF_FISAPT();

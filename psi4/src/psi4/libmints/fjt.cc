@@ -61,7 +61,7 @@
 #include "psi4/psi4-dec.h"
 using namespace psi;
 using namespace std;
-using namespace boost;
+;
 
 const double oon[] = {0.0, 1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0, 1.0/8.0, 1.0/9.0, 1.0/10.0, 1.0/11.0};
 
@@ -531,7 +531,7 @@ FJT::values(int J,double wval)
 // GaussianFundamental
 ////////
 
-GaussianFundamental::GaussianFundamental(boost::shared_ptr<CorrelationFactor> cf, int maxJ)
+GaussianFundamental::GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int maxJ)
 {
     cf_ = cf;
 
@@ -556,7 +556,7 @@ void GaussianFundamental::set_rho(double rho)
 // F12Fundamental
 ////////
 
-F12Fundamental::F12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+F12Fundamental::F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max)
     : GaussianFundamental(cf, max)
 {
 
@@ -600,7 +600,7 @@ double *F12Fundamental::values(int J, double T)
 // F12ScaledFundamental
 ////////
 
-F12ScaledFundamental::F12ScaledFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+F12ScaledFundamental::F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
 : GaussianFundamental(cf, max)
 {
 
@@ -645,7 +645,7 @@ double *F12ScaledFundamental::values(int J, double T)
 // F12SquaredFundamental
 ////////
 
-F12SquaredFundamental::F12SquaredFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+F12SquaredFundamental::F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
     : GaussianFundamental(cf, max)
 {
 
@@ -689,10 +689,10 @@ double* F12SquaredFundamental::values(int J, double T)
 // F12G12Fundamental
 ////////
 
-F12G12Fundamental::F12G12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+F12G12Fundamental::F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max)
     : GaussianFundamental(cf, max)
 {
-    Fm_ = boost::shared_ptr<FJT>(new FJT(max));
+    Fm_ = std::shared_ptr<FJT>(new FJT(max));
 }
 
 F12G12Fundamental::~F12G12Fundamental()
@@ -745,7 +745,7 @@ double* F12G12Fundamental::values(int J, double T)
 // F12DoubleCommutatorFundamental
 ////////
 
-F12DoubleCommutatorFundamental::F12DoubleCommutatorFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+F12DoubleCommutatorFundamental::F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max)
     : GaussianFundamental(cf, max)
 {
 }
@@ -795,11 +795,11 @@ double* F12DoubleCommutatorFundamental::values(int J, double T)
 ////////
 
 ErfFundamental::ErfFundamental(double omega, int max)
-    : GaussianFundamental(boost::shared_ptr<CorrelationFactor>(), max)
+    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max)
 {
     omega_ = omega;
     rho_ = 0;
-    boys_ = boost::shared_ptr<FJT>(new FJT(max));
+    boys_ = std::shared_ptr<FJT>(new FJT(max));
 }
 
 ErfFundamental::~ErfFundamental()
@@ -833,11 +833,11 @@ double* ErfFundamental::values(int J, double T)
 ////////
 
 ErfComplementFundamental::ErfComplementFundamental(double omega, int max)
-    : GaussianFundamental(boost::shared_ptr<CorrelationFactor>(), max)
+    : GaussianFundamental(std::shared_ptr<CorrelationFactor>(), max)
 {
     omega_ = omega;
     rho_ = 0;
-    boys_ = boost::shared_ptr<FJT>(new FJT(max));
+    boys_ = std::shared_ptr<FJT>(new FJT(max));
 }
 
 ErfComplementFundamental::~ErfComplementFundamental()

@@ -61,10 +61,10 @@
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <boost/shared_ptr.hpp>
+ #include <memory>
  PRAGMA_WARNING_POP
 
-using namespace boost;
+
 using namespace std;
 using namespace psi;
 
@@ -168,7 +168,7 @@ void PseudoTrial::form_bases()
 
         outfile->Printf("  Dealias Basis Automatically Generated\n\n");
 
-        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
+        std::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
         dealias_ = d->dealiasSet();
 
     } else {
@@ -189,9 +189,9 @@ void PseudoTrial::form_grid()
 {
 
     if (options_.get_str("PS_GRID_FILE") != "") {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_.get_str("PS_GRID_FILE"), options_));
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_.get_str("PS_GRID_FILE"), options_));
     } else {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_));
+        grid_ = std::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_));
     }
 
     grid_->print();
@@ -200,7 +200,7 @@ void PseudoTrial::form_grid()
 
     double* w = grid_->w();
 
-    w_ = boost::shared_ptr<Vector> (new Vector("Grid Weights", naux_));
+    w_ = std::shared_ptr<Vector> (new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
 
     for (int Q = 0; Q < naux_; Q++)
@@ -209,8 +209,8 @@ void PseudoTrial::form_grid()
 
 void PseudoTrial::form_Spp()
 {
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Spp_ = SharedMatrix(new Matrix("S (primary x primary)", nso_, nso_));
     Sint->compute(Spp_);
@@ -223,8 +223,8 @@ void PseudoTrial::form_Spd()
 {
     if (!do_dealias_) return;
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Spd_ = SharedMatrix(new Matrix("S (primary x dealias)", nso_, ndealias_));
     Sint->compute(Spd_);
@@ -237,8 +237,8 @@ void PseudoTrial::form_Sdd()
 {
     if (!do_dealias_) return;
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
+    std::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
     Sdd_ = SharedMatrix(new Matrix("S (dealias x dealias)", ndealias_, ndealias_));
     Sint->compute(Sdd_);
@@ -281,7 +281,7 @@ void PseudoTrial::form_Xpp()
 {
     SharedMatrix St(new Matrix("Temporary S", nso_, nso_));
     SharedMatrix Xt(new Matrix("Temporary X", nso_, nso_));
-    boost::shared_ptr<Vector> st(new Vector("s", nso_));
+    std::shared_ptr<Vector> st(new Vector("s", nso_));
 
     double** Stp = St->pointer();
     double** Xtp = Xt->pointer();
@@ -345,7 +345,7 @@ void PseudoTrial::form_Xdd()
 
     SharedMatrix St(new Matrix("Temporary S", ndealias_, ndealias_));
     SharedMatrix Xt(new Matrix("Temporary X", ndealias_, ndealias_));
-    boost::shared_ptr<Vector> st(new Vector("s", ndealias_));
+    std::shared_ptr<Vector> st(new Vector("s", ndealias_));
 
     double** Stp = St->pointer();
     double** Xtp = Xt->pointer();
@@ -492,7 +492,7 @@ void PseudoTrial::form_Rp()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -525,7 +525,7 @@ void PseudoTrial::form_Rd()
 
     #if 0
 
-    boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
+    std::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -701,8 +701,8 @@ void PseudoTrial::form_A()
     A_ = SharedMatrix(new Matrix("A (primary-primary x points)", nso_ * nso_, naux_));
     double** Ap = A_->pointer();
 
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
     double* x = grid_->x();
     double* y = grid_->y();
@@ -725,7 +725,7 @@ void PseudoTrial::form_A()
 
 void PseudoTrial::form_I()
 {
-    boost::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
+    std::shared_ptr<MintsHelper> mints(new MintsHelper(primary_, options_, 0));
     I_ = mints->ao_eri();
     I_->print();
 }

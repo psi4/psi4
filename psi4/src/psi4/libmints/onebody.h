@@ -41,7 +41,6 @@
 
 #include "psi4/libpsi4util/exception.h"
 #include "pybuffer.h"
-#include <boost/python/list.hpp>
 
 namespace psi {
 
@@ -57,8 +56,8 @@ class SphericalTransform;
 class OneBodyAOInt
 {
 protected:
-    boost::shared_ptr<BasisSet> bs1_;
-    boost::shared_ptr<BasisSet> bs2_;
+    std::shared_ptr<BasisSet> bs1_;
+    std::shared_ptr<BasisSet> bs2_;
     std::vector<SphericalTransform>& spherical_transforms_;
 
     Vector3 origin_;
@@ -84,7 +83,7 @@ protected:
     /// The PyBuffer object used for sharing the target_ buffer without copying data
     PyBuffer<double> pybuffer_;
 
-    OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
+    OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv=0);
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
     virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
@@ -100,11 +99,11 @@ public:
     virtual ~OneBodyAOInt();
 
     /// Basis set on center one.
-    boost::shared_ptr<BasisSet> basis();
+    std::shared_ptr<BasisSet> basis();
     /// Basis set on center one.
-    boost::shared_ptr<BasisSet> basis1();
+    std::shared_ptr<BasisSet> basis1();
     /// Basis set on center two.
-    boost::shared_ptr<BasisSet> basis2();
+    std::shared_ptr<BasisSet> basis2();
 
     /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
     int nchunk() const { return nchunk_; }
@@ -116,11 +115,11 @@ public:
     const double *buffer() const;
 
     /// Get a python list version of the current buffer
-    const boost::python::list py_buffer() const {
-        boost::python::list ret_val;
+    const pybind11::list py_buffer() const {
+        pybind11::list ret_val;
         //TODO: Just change over the pointer rather than copying, or at least do a memcopy
         for(int i = 0; i < buffer_size_; ++i)
-            ret_val.append(buffer_[i]);
+            ret_val.append(pybind11::float_(buffer_[i]));
         return ret_val;
     }
 
@@ -181,7 +180,7 @@ public:
     void set_origin(const Vector3& _origin) { origin_ = _origin; }
 };
 
-typedef boost::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
+typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
 }
 
 #endif

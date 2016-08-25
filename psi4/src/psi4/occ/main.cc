@@ -27,7 +27,7 @@
 
 #include "occwave.h"
 
-using namespace boost;
+
 
 namespace psi{ namespace occwave {
 
@@ -35,10 +35,10 @@ SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
 {
     // Start the timers
     tstart();
-   
+
     SharedWavefunction occ = SharedWavefunction(new OCCWave(ref_wfn, options));
     occ->compute_energy();
-    
+
     // Shut down the timers
     tstop();
 

@@ -29,14 +29,13 @@
 #include "psi4/libmints/integralparameters.h"
 
 using namespace psi;
-using namespace boost;
 
 CorrelationFactor::CorrelationFactor(unsigned int nparam)
     : IntegralParameters(nparam)
 {
 }
 
-CorrelationFactor::CorrelationFactor(boost::shared_ptr<Vector> coeff, boost::shared_ptr<Vector> exponent)
+CorrelationFactor::CorrelationFactor(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent)
     : IntegralParameters(coeff->dim())
 {
     set_params(coeff, exponent);
@@ -48,7 +47,7 @@ CorrelationFactor::~CorrelationFactor()
     delete[] exponent_;
 }
 
-void CorrelationFactor::set_params(boost::shared_ptr<Vector> coeff, boost::shared_ptr<Vector> exponent)
+void CorrelationFactor::set_params(std::shared_ptr<Vector> coeff, std::shared_ptr<Vector> exponent)
 {
     int nparam = coeff->dim();
     if (nparam) {

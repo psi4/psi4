@@ -38,7 +38,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libiwl/iwl.hpp"
 
-using namespace boost;
+
 
 namespace psi{ namespace dcft{
 
@@ -97,8 +97,8 @@ DCFTSolver::init()
     ao_s_        = SharedMatrix(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
     so_h_        = SharedMatrix(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
     s_half_inv_  = SharedMatrix(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
-    epsilon_a_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
-    epsilon_b_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
+    epsilon_a_   = std::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
+    epsilon_b_   = std::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     kappa_mo_a_  = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
     kappa_mo_b_  = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_));
     tau_so_a_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));

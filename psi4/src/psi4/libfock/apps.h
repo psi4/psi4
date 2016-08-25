@@ -28,7 +28,7 @@
 #ifndef APPS_H
 #define APPS_H
 #include <set>
-#include <boost/tuple/tuple.hpp>
+#include <tuple>
 #include "psi4/libmints/wavefunction.h"
 
 namespace psi {
@@ -56,18 +56,18 @@ protected:
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
 
-    boost::shared_ptr<Vector> eps_focc_;
-    boost::shared_ptr<Vector> eps_fvir_;
-    boost::shared_ptr<Vector> eps_aocc_;
-    boost::shared_ptr<Vector> eps_avir_;
+    std::shared_ptr<Vector> eps_focc_;
+    std::shared_ptr<Vector> eps_fvir_;
+    std::shared_ptr<Vector> eps_aocc_;
+    std::shared_ptr<Vector> eps_avir_;
 
     SharedMatrix AO2USO_;
 
     /// How far to converge the two-norm of the residual
     double convergence_;
     /// Global JK object, built in preiterations, destroyed in postiterations
-    boost::shared_ptr<JK> jk_;
-    boost::shared_ptr<VBase> v_;
+    std::shared_ptr<JK> jk_;
+    std::shared_ptr<VBase> v_;
 
     bool use_symmetry_;
     double Eref_;
@@ -88,13 +88,13 @@ public:
     void set_print(int print) { print_ = print; }
 
     /// Gets a handle to the JK object, if built by preiterations
-    boost::shared_ptr<JK> jk() const { return jk_;}
+    std::shared_ptr<JK> jk() const { return jk_;}
     /// Set the JK object, say from SCF
-    void set_jk(boost::shared_ptr<JK> jk) { jk_ = jk; }
+    void set_jk(std::shared_ptr<JK> jk) { jk_ = jk; }
     /// Gets a handle to the VBase object, if built by preiterations
-    boost::shared_ptr<VBase> v() const { return v_;}
+    std::shared_ptr<VBase> v() const { return v_;}
     /// Set the VBase object, say from SCF (except that wouldn't work, right?)
-    void set_jk(boost::shared_ptr<VBase> v) { v_ = v; }
+    void set_jk(std::shared_ptr<VBase> v) { v_ = v; }
     /// Builds JK object, if needed
     virtual void preiterations();
     /// Destroys JK object, if needed
@@ -120,7 +120,7 @@ public:
     void set_Eref(double Eref) { Eref_ = Eref; }
 
     /// Update reference info
-    void set_reference(boost::shared_ptr<Wavefunction> reference);
+    void set_reference(std::shared_ptr<Wavefunction> reference);
 };
 
 // => APPLIED CLASSES <= //
@@ -129,7 +129,7 @@ class RCIS : public RBase {
 
 protected:
 
-    std::vector<boost::tuple<double, int, int, int> > states_;
+    std::vector<std::tuple<double, int, int, int> > states_;
     std::vector<SharedMatrix > singlets_;
     std::vector<SharedMatrix > triplets_;
     std::vector<double> E_singlets_;
@@ -151,9 +151,9 @@ protected:
     virtual SharedMatrix Dso(SharedMatrix T1, bool diff = false);
     virtual SharedMatrix Dao(SharedMatrix T1, bool diff = false);
 
-    virtual std::pair<SharedMatrix, boost::shared_ptr<Vector> > Nmo(SharedMatrix T1, bool diff = false);
-    virtual std::pair<SharedMatrix, boost::shared_ptr<Vector> > Nso(SharedMatrix T1, bool diff = false);
-    virtual std::pair<SharedMatrix, boost::shared_ptr<Vector> > Nao(SharedMatrix T1, bool diff = false);
+    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nmo(SharedMatrix T1, bool diff = false);
+    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nso(SharedMatrix T1, bool diff = false);
+    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nao(SharedMatrix T1, bool diff = false);
 
     virtual std::pair<SharedMatrix, SharedMatrix > ADmo(SharedMatrix T1);
     virtual std::pair<SharedMatrix, SharedMatrix > ADso(SharedMatrix T1);
