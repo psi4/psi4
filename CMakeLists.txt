@@ -149,7 +149,6 @@ ExternalProject_Add(psi4_core
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
 add_dependencies(psi4_core ambit_external
-                           boost_external 
                            chemps2_external
                            dkh_external
                            libefp_external
