@@ -72,6 +72,7 @@ def mcscf_solver(ref_wfn):
     mcscf_ndet = ciwfn.ndet()
     mcscf_nuclear_energy = ciwfn.molecule().nuclear_repulsion_energy()
     mcscf_steplimit = psi4.get_option("DETCI", "MCSCF_MAX_ROT")
+    mcscf_rotate = psi4.get_option("DETCI", "MCSCF_ROTATE")
 
     # DIIS info
     mcscf_diis_start = psi4.get_option("DETCI", "MCSCF_DIIS_START")
@@ -88,8 +89,8 @@ def mcscf_solver(ref_wfn):
     # Start with SCF energy and other params
     scf_energy = psi4.get_variable("HF TOTAL ENERGY")
     eold = scf_energy
-    converged = False
     norb_iter = 1
+    converged = False
     ah_step = False
     qc_step = False
 
@@ -100,6 +101,32 @@ def mcscf_solver(ref_wfn):
     # Grab needed objects
     diis_obj = diis_helper.DIIS_helper(mcscf_diis_max_vecs)
     mcscf_obj = ciwfn.mcscf_object()
+
+    # Execute the rotate command
+    for rot in mcscf_rotate:
+        if len(rot) != 4:
+            raise PsiException("Each element of the MCSCF rotate command requires 4 arguements (irrep, orb1, orb2, theta).")
+
+        irrep, orb1, orb2, theta = rot
+        if irrep > ciwfn.Ca().nirrep():
+            raise PsiException("MCSCF_ROTATE: Expression %s irrep number is larger than the number of irreps" %
+                                    (str(rot)))
+
+        if max(orb1, orb2) > ciwfn.Ca().coldim()[irrep]:
+            raise PsiException("MCSCF_ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
+                                    (str(rot)))
+
+        theta = np.deg2rad(theta)
+
+        x = ciwfn.Ca().nph[irrep][:, orb1].copy()
+        y = ciwfn.Ca().nph[irrep][:, orb2].copy()
+
+        xp = np.cos(theta) * x - np.sin(theta) * y
+        yp = np.sin(theta) * x + np.cos(theta) * y
+        
+        ciwfn.Ca().nph[irrep][:, orb1] = xp
+        ciwfn.Ca().nph[irrep][:, orb2] = yp
+
 
     # Limited RAS functionality
     if psi4.get_local_option("DETCI", "WFN") == "RASSCF" and mcscf_target_conv_type != "TS":
@@ -201,7 +228,7 @@ def mcscf_solver(ref_wfn):
 
         # Figure out what the next step should be
         if (orb_grad_rms < mcscf_so_start_grad) and (abs(ediff) < abs(mcscf_so_start_e)) and\
-                (mcscf_iter >= 3):
+                (mcscf_iter >= 2):
 
             if mcscf_target_conv_type == 'AH':
                 ah_step = True
@@ -210,7 +237,7 @@ def mcscf_solver(ref_wfn):
                 break
             else:
                 continue
-        #raise Exception("")
+        #raise PsiException("")
 
     # If we converged do not do onestep
     if converged or (mcscf_target_conv_type != 'OS'):
@@ -289,7 +316,7 @@ def mcscf_solver(ref_wfn):
     # Die if we did not converge
     if (not converged):
         if psi4.get_global_option("DIE_IF_NOT_CONVERGED"):
-            raise Exception("MCSCF: Iterations did not converge!")
+            raise PsiException("MCSCF: Iterations did not converge!")
         else:
             psi4.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
 
