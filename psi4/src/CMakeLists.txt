@@ -124,15 +124,3 @@ message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
 
 target_link_libraries(psi4-bin PRIVATE psi4)
 
-#get_property(psi4_modules GLOBAL PROPERTY PSI4_MODULES)
-#why twicetarget_link_libraries(psi4-bin PRIVATE ${psi4_lib_list} psi4_main)
-#add_dependencies(psi4-bin psi4_main)
-#set(psi4_lib_list ${PYTHON_LIBRARIES}
-#                  psi4_main
-#                  ${psi4_modules}
-#                  ${LIBDERIV_LIBRARIES}
-#                  ${CMAKE_THREAD_LIBS_INIT}
-#                  ${LAPACK_LIBRARIES}
-#                  ${BLAS_LIBRARIES}
-#)
-#target_link_libraries(psi4-bin PRIVATE ${psi4_lib_list} psi4_main)
