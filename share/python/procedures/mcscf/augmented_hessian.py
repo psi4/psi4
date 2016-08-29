@@ -100,32 +100,14 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         S = fullS[:microi + 1, :microi + 1]
         G = fullG[:microi + 1, :microi + 1]
 
-        # Diagonalize the subspace
-        # svals, vecs = np.linalg.eigh(S)
-
         # Solve Gv = lSv
-        # S = LL.T
-        # L^-1 A L^-1T LT v = l L^-1T v
-        L = np.linalg.cholesky(S)
-
-        # So unstable man, who thought it was a good idea to invert
-        # and divide by small numbers. Davidson, thats who.
-        Ldiag = np.diag(L).copy() ** -0.5
-        tL = L * Ldiag[:, None] * Ldiag
-        eigvals, eigvecs = np.linalg.eigh(tL)
-
-        # Check the range
-        maxval = np.max(np.abs(eigvals[[0, -1]])) * 1.e-12
-
-        # Zero out the ones outside the interval
-        eigvals[(np.abs(eigvals) < maxval)] = 0
-        eigvals[np.abs(eigvals) > 1.e-16] = eigvals[np.abs(eigvals) > 1.e-16] ** -1
-        invL = np.dot(eigvecs * eigvals, eigvecs.T)
-        invL *= Ldiag * Ldiag[:, None]
+        v, L = np.linalg.eigh(S)
+        mask = v > (np.min(np.abs(v)) * 1.e-10)
+        invL = L[:, mask] * (v[mask] ** -0.5)
 
         # Solve in S basis, rotate back
-        evals, evecs = np.linalg.eigh(np.dot(invL, G).dot(invL.T))
-        vectors = np.dot(invL.T, evecs)
+        evals, evecs = np.linalg.eigh(np.dot(invL.T, G).dot(invL))
+        vectors = np.dot(invL, evecs)
 
         # Figure out the right root to follow
         if np.sum(np.abs(vectors[0]) > min_lambda) == 0:

@@ -594,6 +594,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x)
     Cr.clear();
 
     // For inactive Fock
+
     SharedMatrix CLUocc = Matrix::doublet(matrices_["C"], Uocc, false, true);
     Cl.push_back(CLUocc);
     Cr.push_back(matrices_["Cocc"]);
@@ -1119,7 +1120,7 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
             offset_nmo += nmopi_[h];
             continue;
         }
-        double** Qkp = matrices_["Qk"]->pointer(h);
+        double** Qkp = Qk->pointer(h);
         for (int a=0; a<nactpi_[h]; a++){
             C_DAXPY(nmopi_[h], 1.0, dQkp[offset_act+a]+offset_nmo, 1, Qkp[a], 1);
         }

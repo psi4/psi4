@@ -761,6 +761,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /* - Do we run conventional or density fitted? -*/
     options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
 
+    /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
+    [irrep, orbital1, orbital2, degree] where an angle of 0 would do nothing and an angle
+    of 90 would switch the two orbitals. -*/
+    options.add("MCSCF_ROTATE", new ArrayType());
+
     /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
     to TS for RASSCF. -*/
     options.add_str("MCSCF_ALGORITHM", "TS", "TS AH OS");

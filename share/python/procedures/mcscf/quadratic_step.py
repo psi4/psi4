@@ -104,7 +104,7 @@ def OCHx(mcscf_obj, ciwfn, C0, vector):
 
 def CCHx(ciwfn, vector, output, ci_energy):
 
-    # 2.0 * (< r | H | c > - c * e_ci)
+    # 2.0 * (< ret | H | c > - c * e_ci)
     ciwfn.sigma(vector, output, 0, 0)
     output.axpy(-ci_energy, vector, 0, 0)
     output.scale(2.0, 0)

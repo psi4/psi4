@@ -3973,19 +3973,25 @@ def run_detcas(name, **kwargs):
             ['OPDM_RELAX']
             )
 
-        psi4.set_global_option('SCF_TYPE', 'DF')
-        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF') and (user_ref == 'RHF'):
+        # No real reason to do a conventional guess
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'DF')
+
+        # If RHF get MP2 NO's
+        # Why doesnt this work for conv?
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
+                    (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
             psi4.set_global_option('ONEPDM', True)
             psi4.set_global_option('OPDM_RELAX', False)
             ref_wfn = run_dfmp2_gradient(name, **kwargs)
         else:
             ref_wfn = scf_helper(name, **kwargs)
 
-            # Ensure IWL files have been written
-            if psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
-                mints = psi4.MintsHelper(ref_wfn.basisset())
-                mints.set_print(1)
-                mints.integrals()
+        # Ensure IWL files have been written
+        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
+            mints = psi4.MintsHelper(ref_wfn.basisset())
+            mints.set_print(1)
+            mints.integrals()
 
         ref_optstash.restore()
 
