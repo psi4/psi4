@@ -44,7 +44,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 
 #include "psi4/psi4-dec.h"
@@ -68,15 +67,15 @@ using namespace psi;
 namespace py = pybind11;
 
 // Python helper wrappers
-void export_benchmarks(py::module);
-void export_blas_lapack(py::module);
-void export_plugins(py::module);
-void export_psio(py::module);
-void export_mints(py::module);
-void export_functional(py::module);
-void export_oeprop(py::module);
-void export_efp(py::module);
-void export_cubeprop(py::module);
+void export_benchmarks(py::module&);
+void export_blas_lapack(py::module&);
+void export_plugins(py::module&);
+void export_psio(py::module&);
+void export_mints(py::module&);
+void export_functional(py::module&);
+void export_oeprop(py::module&);
+void export_efp(py::module&);
+void export_cubeprop(py::module&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -108,7 +107,7 @@ namespace libfock   { SharedWavefunction   libfock(SharedWavefunction, Options&)
 namespace fnocc     { SharedWavefunction     fnocc(SharedWavefunction, Options&); }
 namespace occwave   { SharedWavefunction   occwave(SharedWavefunction, Options&); }
 namespace mcscf     { SharedWavefunction     mcscf(SharedWavefunction, Options&); }
-namespace scf       { SharedWavefunction       scf(SharedWavefunction, Options&, PyObject *pre, PyObject *post); }
+namespace scf       { SharedWavefunction       scf(SharedWavefunction, Options&); }
 
 #ifdef USING_gdma
 namespace gdma_interface { SharedWavefunction     gdma_interface(SharedWavefunction, Options&, const std::string &datfilename); }
@@ -362,11 +361,10 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
-SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn, PyObject *precallback,
-                              PyObject *postcallback)
+SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("SCF");
-    return scf::scf(ref_wfn, Process::environment.options, precallback, postcallback);
+    return scf::scf(ref_wfn, Process::environment.options);
 }
 
 // double py_psi_scf_dummy()

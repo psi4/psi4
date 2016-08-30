@@ -25,6 +25,7 @@
  * @END LICENSE
  */
 
+#include <pybind11/pybind11.h>
 #include "psi4/libmints/vector.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -33,6 +34,7 @@
 #include "psi4/libdisp/dispersion.h"
 
 using namespace psi;
+namespace py = pybind11;
 
 
 void export_functional(py::module &m)
@@ -87,7 +89,7 @@ void export_functional(py::module &m)
     py::class_<Functional, std::shared_ptr<Functional> >(m, "Functional", "docstring").
         // TODO need init
         def_static("build_base", &Functional::build_base,
-            py::arg("alias")"docstring").
+            py::arg("alias"), "docstring").
         def("name", &Functional::name, "docstring").
         def("description", &Functional::description, "docstring").
         def("citation", &Functional::citation, "docstring").

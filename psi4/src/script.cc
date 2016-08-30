@@ -28,7 +28,6 @@
 #include "script.h"
 
 using namespace psi;
-using namespace boost;
 
 std::shared_ptr<Script> Script::language;
 
