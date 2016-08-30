@@ -25,10 +25,13 @@
  * @END LICENSE
  */
 
+#include <pybind11/pybind11.h>
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/wavefunction.h"
 
+
 using namespace psi;
+namespace py = pybind11;
 
 void export_oeprop(py::module &m)
 {
@@ -50,8 +53,8 @@ void export_oeprop(py::module &m)
         def("compute", &OEProp::oepy_compute, "docstring").
         def("set_title", &OEProp::set_title, "docstring").
         def("clear", &OEProp::clear, "docstring").
-        def("set_Da_ao", &OEProp::set_Da_ao, "docstring", py::arg("symmetry") = 0).
-        def("set_Db_ao", &OEProp::set_Db_ao, "docstring", py::arg("symmetry") = 0).
+        def("set_Da_ao", &OEProp::set_Da_ao, "docstring", py::arg("Da"), py::arg("symmetry") = 0).
+        def("set_Db_ao", &OEProp::set_Db_ao, "docstring", py::arg("Db"), py::arg("symmetry") = 0).
         def("set_Da_so", &OEProp::set_Da_so, "docstring").
         def("set_Db_so", &OEProp::set_Db_so, "docstring").
         def("set_Da_mo", &OEProp::set_Da_mo, "docstring").

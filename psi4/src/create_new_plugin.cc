@@ -25,34 +25,28 @@
  * @END LICENSE
  */
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-
-#include "psi4/libmints/basisset.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <regex>
+#include <sys/stat.h>
+
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-
-using namespace std;
-using namespace psi;
-using namespace boost;
 
 namespace {
 std::string make_filename(const std::string& name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
-    string filename = name;
+    std::string filename = name;
 
-    string format_underscore("_"); // empty string
+#if 0
+    // Old Boost code
+    std::string format_underscore("_"); // empty string
     // Replace all '(' with '_'
     xpressive::sregex match_format = xpressive::as_xpr("(");
     filename = regex_replace(filename, match_format, format_underscore);
@@ -77,8 +71,18 @@ std::string make_filename(const std::string& name)
 
     // Replace all '-' with '_'
     match_format = xpressive::as_xpr("-");
-    string format_hyphen("_");
+    std::string format_hyphen("_");
     filename = regex_replace(filename, match_format, format_hyphen);
+#endif
+
+    // Replace ( ) , - with _
+    filename = std::regex_replace(filename, std::regex("\\(|\\)|,|\\-"), "_");
+
+    // Replace * with s
+    filename = std::regex_replace(filename, std::regex("\\*"), "s");
+
+    // Replace + with p
+    filename = std::regex_replace(filename, std::regex("\\+"), "p");
 
     return filename;
 }
@@ -119,16 +123,16 @@ class PluginFileManager{
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
 
-        boost::filesystem::path bf_path;
-        bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
-        if(!boost::filesystem::is_directory(bf_path)) {
+        std::string fpath =  filesystem::system_complete(psiDataDirWithPlugin);
+        struct stat sb;
+        if(::stat(fpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
             printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
                     "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }
 
         // Make a faux camel-case of the name
-        string Name = plugin_name_;
+        std::string Name = plugin_name_;
         Name[0] = ::toupper(Name[0]);
 
         // Formatted strings, to be substituted in later
@@ -140,7 +144,8 @@ class PluginFileManager{
         std::string format_includes(TOSTRING(PLUGIN_INCLUDES));
         std::string format_objdir(TOSTRING(PLUGIN_OBJDIR));
         std::string format_plugin(plugin_name_);
-        std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name_);
+        std::string format_PLUGIN = plugin_name_;
+        std::transform(format_PLUGIN.begin(), format_PLUGIN.end(), format_PLUGIN.begin(), ::toupper);
         std::string format_ldflags(TOSTRING(PLUGIN_LDFLAGS));
 
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
@@ -162,6 +167,8 @@ class PluginFileManager{
             std::string filestring = file.str();
             fclose(fp);
 
+#if 0
+            // Old Boost style
             // Search and replace placeholders in the string
             boost::xpressive::sregex match_format;
             //boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
@@ -186,11 +193,22 @@ class PluginFileManager{
             filestring = xpressive::regex_replace(filestring, match_format, format_objdir);
             match_format = boost::xpressive::as_xpr("@PLUGIN_LDFLAGS@");
             filestring = xpressive::regex_replace(filestring, match_format, format_ldflags);
+#endif
+
+            filestring = std::regex_replace(filestring, std::regex("@plugin@"), format_plugin);
+            filestring = std::regex_replace(filestring, std::regex("@Plugin@"), Name);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN@"), format_PLUGIN);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_CXX@"), format_cxx);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_DEFINES@"), format_defines);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_FLAGS@"), format_flags);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_INCLUDES@"), format_includes);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_OBJDIR@"), format_objdir);
+            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_LDFLAGS@"), format_ldflags);
 
             // Write the new file out
             fp = fopen(target_name.c_str(), "w");
             if (fp == 0) {
-                boost::filesystem::remove_all(plugin_name_);
+                // boost::filesystem::remove_all(plugin_name_);
                 printf("Unable to create %s\n", target_name.c_str());
                 exit(1);
             }
@@ -212,10 +230,11 @@ void create_new_plugin(std::string name, const std::string& template_name)
     transform(template_name_lower.begin(), template_name_lower.end(), template_name_lower.begin(), ::tolower);
 
     // Start == check to make sure the plugin name is valid
-    string plugin_name = make_filename(name);
-    smatch results;
-    regex check_name("^[A-Za-z].*");
-    if (!regex_match(plugin_name, results, check_name)) {
+    std::string plugin_name = make_filename(name);
+//    smatch results;
+//    regex check_name("^[A-Za-z].*");
+//    if (!regex_match(plugin_name, results, check_name)) {
+    if (!std::isalpha(plugin_name[0])) {
         printf("Plugin name must begin with a letter.\n");
         exit(1);
     }
@@ -226,7 +245,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
         template_name_lower = "plugin";
 
     // Make a directory with the name plugin_name
-    if (!boost::filesystem::create_directory(plugin_name)) {
+    if (!filesystem::create_directory(plugin_name)) {
         printf("Plugin directory %s already exists.\n", plugin_name.c_str());
         exit(1);
     }
@@ -235,6 +254,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
     // Process the files
     PluginFileManager file_manager(plugin_name);
     file_manager.add_file("Makefile.template", "Makefile");
+    file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.add_file("input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");
@@ -260,6 +280,7 @@ void create_new_plugin_makefile()
 
     PluginFileManager file_manager(".");
     file_manager.add_file("Makefile.template", "Makefile");
+    file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.process();
 }
 
