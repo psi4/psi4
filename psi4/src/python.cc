@@ -788,29 +788,30 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
     }
     size_t size = len(values);
     for (int n = 0; n < size; ++n) {
-        py::list lval = values[n].cast<py::list>();
-        std::string sval = values[n].cast<std::string>();
-        float fval = values[n].cast<float>();
-        int ival = values[n].cast<int>();
-
-        extract<py::list> lval(values[n]);
-        extract<std::string> sval(values[n]);
-        extract<double> fval(values[n]);
-        extract<int> ival(values[n]);
-        if (lval.check()) {
-            py::list l = extract<py::list>(values[n]);
+        try {
+            py::list l = values[n].cast<py::list>();
             DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_local_option_array(module, key, l, newentry);
-        } else if (sval.check()) {
-            std::string s = extract<std::string>(values[n]);
-            Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
-        } else if (ival.check()) {
-            int i = extract<int>(values[n]);
-            Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
-        } else if (fval.check()) {
-            double f = extract<double>(values[n]);
-            Process::environment.options.set_local_array_double(module, nonconst_key, f, entry);
+        } 
+        catch (pybind11::cast_error e) {
+            // This is not a list; try to cast to a string
+            try {
+                std::string s = values[n].cast<std::string>();
+                Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
+            } catch(pybind11::cast_error e) {
+                try {
+                    // This is not a list or string; try to cast to an integer
+                    int i = values[n].cast<int>();
+                    Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
+                } catch(pybind11::cast_error e) {
+                    // This had better be castable to a float.  We don't catch the exception here
+                    // because if we encounter one, something bad has happened
+                    double f = values[n].cast<double>();
+                    Process::environment.options.set_local_array_double(module, nonconst_key, f, entry);
+                }
+            }
+
         }
     }
     return true;
@@ -830,30 +831,36 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
     }
     size_t size = len(values);
     for (int n = 0; n < size; ++n) {
-        extract<py::list> lval(values[n]);
-        extract<std::string> sval(values[n]);
-        extract<double> fval(values[n]);
-        extract<int> ival(values[n]);
-        if (lval.check()) {
-            py::list l = extract<py::list>(values[n]);
+        try {
+            py::list l = values[n].cast<py::list>();
             DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
-        } else if (sval.check()) {
-            std::string s = extract<std::string>(values[n]);
-            Process::environment.options.set_global_array_string(nonconst_key, s, entry);
-        } else if (ival.check()) {
-            int i = extract<int>(values[n]);
-            Process::environment.options.set_global_array_int(nonconst_key, i, entry);
-        } else if (fval.check()) {
-            double f = extract<double>(values[n]);
-            Process::environment.options.set_global_array_double(nonconst_key, f, entry);
+        } 
+        catch (pybind11::cast_error e) {
+            // This is not a list; try to cast to a string
+            try {
+                std::string s = values[n].cast<std::string>();
+                Process::environment.options.set_global_array_string(nonconst_key, s, entry);
+            } catch(pybind11::cast_error e) {
+                try {
+                    // This is not a list or string; try to cast to an integer
+                    int i = values[n].cast<int>();
+                    Process::environment.options.set_global_array_int(nonconst_key, i, entry);
+                } catch(pybind11::cast_error e) {
+                    // This had better be castable to a float.  We don't catch the exception here
+                    // because if we encounter one, something bad has happened
+                    double f = values[n].cast<double>();
+                    Process::environment.options.set_global_array_double(nonconst_key, f, entry);
+                }
+            }
+
         }
     }
     return true;
 }
 
-void py_psi_set_local_option_python(const string& key, py::object& obj)
+void py_psi_set_local_option_python(const std::string& key, py::object& obj)
 {
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -917,7 +924,7 @@ py::object py_psi_get_local_option(std::string const& module, std::string const&
     Data& data = Process::environment.options.get_local(nonconst_key);
 
     if (data.type() == "string" || data.type() == "istring")
-        return str(data.to_string());
+        return py::str(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
         return py::object(data.to_integer());
     else if (data.type() == "double")
