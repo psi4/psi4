@@ -25,14 +25,13 @@
  * @END LICENSE
  */
 
-//#include <boost/python.hpp>
 #include "psi4/libpsio/psio.hpp"
+#include <pybind11/pybind11.h>
 
-//using namespace boost;
-//using namespace boost::python;
 using namespace psi;
+namespace py = pybind11;
 
-void export_psio(py:module &m)
+void export_psio(py::module &m)
 {
     py::class_<PSIO, std::shared_ptr<PSIO> >( m, "IO", "docstring" ).
         def( "state", &PSIO::state, "docstring" ).
@@ -44,18 +43,13 @@ void export_psio(py:module &m)
         def( "tocprint", &PSIO::tocprint, "docstring" ).
         def( "tocwrite", &PSIO::tocwrite, "docstring" ).
         def( "shared_object", &PSIO::shared_object).
-        def( "set_pid", &PSIO::set_pid, "docstring" ).
-        staticmethod("shared_object").
-        def( "get_default_namespace", &PSIO::get_default_namespace, "docstring").
-        staticmethod("get_default_namespace").
-        def( "set_default_namespace", &PSIO::set_default_namespace, "docstring").
-        staticmethod("set_default_namespace").
-        def( "change_file_namespace", &PSIO::change_file_namespace, "docstring").
-        staticmethod("change_file_namespace");
+        def_static( "set_pid", &PSIO::set_pid, "docstring" ).
+        def_static( "get_default_namespace", &PSIO::get_default_namespace, "docstring").
+        def_static( "set_default_namespace", &PSIO::set_default_namespace, "docstring").
+        def_static( "change_file_namespace", &PSIO::change_file_namespace, "docstring");
 
     py::class_<PSIOManager, std::shared_ptr<PSIOManager> >( m, "IOManager", "docstring" ).
-        def( "shared_object", &PSIOManager::shared_object, "docstring" ).
-        staticmethod("shared_object").
+        def_static( "shared_object", &PSIOManager::shared_object, "docstring" ).
         def( "print_out", &PSIOManager::print_out, "docstring" ).
         def( "psiclean", &PSIOManager::psiclean, "docstring" ).
         def( "crashclean", &PSIOManager::crashclean, "docstring" ).
