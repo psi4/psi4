@@ -38,8 +38,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <memory>
-#include <thread>
-#include <mutex>
+#include <algorithm>
 
 using namespace std;
 

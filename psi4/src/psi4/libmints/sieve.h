@@ -32,6 +32,7 @@
 //#include <boost/math/special_functions/erf.hpp>
 //#include <cfloat>
 #include <vector>
+#include <memory>
 //#include <utility>
 #include "psi4/libmints/vector3.h"
 
