@@ -42,14 +42,16 @@ void export_psio(py::module &m)
         def( "tocclean", &PSIO::tocclean, "docstring" ).
         def( "tocprint", &PSIO::tocprint, "docstring" ).
         def( "tocwrite", &PSIO::tocwrite, "docstring" ).
-        def( "shared_object", &PSIO::shared_object).
-        def_static( "set_pid", &PSIO::set_pid, "docstring" ).
-        def_static( "get_default_namespace", &PSIO::get_default_namespace, "docstring").
-        def_static( "set_default_namespace", &PSIO::set_default_namespace, "docstring").
-        def_static( "change_file_namespace", &PSIO::change_file_namespace, "docstring");
+        def( "set_pid", &PSIO::set_pid, "docstring" ).
+        def_static("shared_object", &PSIO::shared_object, "docstring").
+        def_static("get_default_namespace", &PSIO::get_default_namespace, "docstring").
+        def_static("set_default_namespace", &PSIO::set_default_namespace,
+            py::arg("ns"), "docstring").
+        def_static("change_file_namespace", &PSIO::change_file_namespace,
+            py::arg("fileno"), py::arg("ns1"), py::arg("ns2"), "docstring");
 
     py::class_<PSIOManager, std::shared_ptr<PSIOManager> >( m, "IOManager", "docstring" ).
-        def_static( "shared_object", &PSIOManager::shared_object, "docstring" ).
+        def_static("shared_object", &PSIOManager::shared_object, "docstring").
         def( "print_out", &PSIOManager::print_out, "docstring" ).
         def( "psiclean", &PSIOManager::psiclean, "docstring" ).
         def( "crashclean", &PSIOManager::crashclean, "docstring" ).

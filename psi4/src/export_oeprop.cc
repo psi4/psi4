@@ -25,11 +25,9 @@
  * @END LICENSE
  */
 
-//#include <boost/python.hpp>
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/wavefunction.h"
 
-//using namespace boost::python;
 using namespace psi;
 
 void export_oeprop(py::module &m)
@@ -52,8 +50,8 @@ void export_oeprop(py::module &m)
         def("compute", &OEProp::oepy_compute, "docstring").
         def("set_title", &OEProp::set_title, "docstring").
         def("clear", &OEProp::clear, "docstring").
-        def("set_Da_ao", &OEProp::set_Da_ao, "docstring").
-        def("set_Db_ao", &OEProp::set_Db_ao, "docstring").
+        def("set_Da_ao", &OEProp::set_Da_ao, "docstring", py::arg("symmetry") = 0).
+        def("set_Db_ao", &OEProp::set_Db_ao, "docstring", py::arg("symmetry") = 0).
         def("set_Da_so", &OEProp::set_Da_so, "docstring").
         def("set_Db_so", &OEProp::set_Db_so, "docstring").
         def("set_Da_mo", &OEProp::set_Da_mo, "docstring").
