@@ -178,7 +178,7 @@ extern void print_version(std::string);
 
 std::string to_upper(const std::string& key)
 {
-    std::string nonconst_key = to_upper(key);
+    std::string nonconst_key = key;
     std::transform(nonconst_key.begin(), nonconst_key.end(), nonconst_key.begin(), ::toupper);
     return nonconst_key;
 }
@@ -1512,11 +1512,13 @@ PyObject * initpsimod(void) {
     export_functional(psimod);
 
     // ??
-    // py::class_<Process::Environment>(psimod, "Environment").
-    //         def("__getitem__", &Process::Environment::operator(), "docstring");
+    py::class_<Process::Environment>(psimod, "Environment")
+            .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
+            //def("__getitem__", &Process::Environment::operator(), "docstring");
 
     py::class_<Process>(psimod, "Process").
-            def_property_readonly_static("environment", Process::get_environment, "docstring");
+            def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
+            //def_property("environment", Process::get_environment, "docstring");
 
     return psimod.ptr();
 }
@@ -1622,9 +1624,9 @@ void Python::run(FILE *input)
 
         try {
             std::string inputfile;
-            py::object scope = py::module::import("__main__").attr("__dict__");
             s = strdup("import psi4");
             PyRun_SimpleString(s);
+            py::dict scope = py::dict(py::module::import("__main__").attr("__dict__"));
 
             if (!interactive_python) {
 
@@ -1648,7 +1650,7 @@ void Python::run(FILE *input)
 
                     char *val;
                     PyArg_Parse(ret, "s", &val);
-                    inputfile = val;
+                    inputfile = std::string(val);
 
                     Py_DECREF(ret);
                     Py_DECREF(pargs);
@@ -1663,9 +1665,14 @@ void Python::run(FILE *input)
 
                 }
 
-                std::string strStartScript(inputfile);
 
-                py::eval(strStartScript, scope);
+                printf("I am about to call py::eval!\n");
+                fflush(stdout);
+                printf("%s\n", inputfile.c_str());
+                fflush(stdout);
+
+                py::eval<py::eval_statements>(inputfile, scope);
+                printf("I have called py::eval\n");
             }
             else { // interactive python
                 // Process the input file

@@ -446,7 +446,7 @@ void export_mints(py::module& m)
             def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring").
             def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring").
             //def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, CanonicalOrthog()).
-            def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta") = 0.0, py::arg("eigvec") = SharedMatrix()).
+            // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta") = 0.0, py::arg("eigvec") = SharedMatrix()).
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
