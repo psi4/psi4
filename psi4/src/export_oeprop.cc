@@ -25,14 +25,14 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
+//#include <boost/python.hpp>
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/wavefunction.h"
 
-using namespace boost::python;
+//using namespace boost::python;
 using namespace psi;
 
-void export_oeprop()
+void export_oeprop(py::module &m)
 {
     // class_<Prop, std::shared_ptr<Prop> >("Prop", "docstring", no_init).
     //     def(init<std::shared_ptr<Wavefunction> >()).
@@ -45,8 +45,9 @@ void export_oeprop()
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
-    class_<OEProp, std::shared_ptr<OEProp> >("OEProp", "docstring", no_init).
-        def(init<std::shared_ptr<Wavefunction> >()).
+    py::class_<OEProp, std::shared_ptr<OEProp> >(m, "OEProp", "docstring").
+        // TODO had no_init but init member present
+        def(py::init<std::shared_ptr<Wavefunction> >()).
         def("add", &OEProp::oepy_add, "docstring").
         def("compute", &OEProp::oepy_compute, "docstring").
         def("set_title", &OEProp::set_title, "docstring").

@@ -25,16 +25,16 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
+//#include <boost/python.hpp>
 #include "psi4/libpsio/psio.hpp"
 
-using namespace boost;
-using namespace boost::python;
+//using namespace boost;
+//using namespace boost::python;
 using namespace psi;
 
-void export_psio()
+void export_psio(py:module &m)
 {
-    class_<PSIO, std::shared_ptr<PSIO> >( "IO", "docstring" ).
+    py::class_<PSIO, std::shared_ptr<PSIO> >( m, "IO", "docstring" ).
         def( "state", &PSIO::state, "docstring" ).
         def( "open", &PSIO::open, "docstring" ).
         def( "close", &PSIO::close, "docstring" ).
@@ -53,7 +53,7 @@ void export_psio()
         def( "change_file_namespace", &PSIO::change_file_namespace, "docstring").
         staticmethod("change_file_namespace");
 
-    class_<PSIOManager, std::shared_ptr<PSIOManager> >( "IOManager", "docstring" ).
+    py::class_<PSIOManager, std::shared_ptr<PSIOManager> >( m, "IOManager", "docstring" ).
         def( "shared_object", &PSIOManager::shared_object, "docstring" ).
         staticmethod("shared_object").
         def( "print_out", &PSIOManager::print_out, "docstring" ).
