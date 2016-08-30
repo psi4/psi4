@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <sys/stat.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/eval.h>
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libefp_solver/efp_solver.h"
@@ -795,17 +796,17 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
             // Now we need to recurse, to fill in the data
             py_psi_set_local_option_array(module, key, l, newentry);
         } 
-        catch (pybind11::cast_error e) {
+        catch (py::cast_error e) {
             // This is not a list; try to cast to a string
             try {
                 std::string s = values[n].cast<std::string>();
                 Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
-            } catch(pybind11::cast_error e) {
+            } catch(py::cast_error e) {
                 try {
                     // This is not a list or string; try to cast to an integer
                     int i = values[n].cast<int>();
                     Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
-                } catch(pybind11::cast_error e) {
+                } catch(py::cast_error e) {
                     // This had better be castable to a float.  We don't catch the exception here
                     // because if we encounter one, something bad has happened
                     double f = values[n].cast<double>();
@@ -838,17 +839,17 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
         } 
-        catch (pybind11::cast_error e) {
+        catch (py::cast_error e) {
             // This is not a list; try to cast to a string
             try {
                 std::string s = values[n].cast<std::string>();
                 Process::environment.options.set_global_array_string(nonconst_key, s, entry);
-            } catch(pybind11::cast_error e) {
+            } catch(py::cast_error e) {
                 try {
                     // This is not a list or string; try to cast to an integer
                     int i = values[n].cast<int>();
                     Process::environment.options.set_global_array_int(nonconst_key, i, entry);
-                } catch(pybind11::cast_error e) {
+                } catch(py::cast_error e) {
                     // This had better be castable to a float.  We don't catch the exception here
                     // because if we encounter one, something bad has happened
                     double f = values[n].cast<double>();
@@ -1623,8 +1624,7 @@ void Python::run(FILE *input)
 
         try {
             std::string inputfile;
-            py::object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
-            py::object objectDict = objectMain.attr("__dict__");
+            py::object scope = py::module::import("__main__").attr("__dict__");
             s = strdup("import psi4");
             PyRun_SimpleString(s);
 
@@ -1667,7 +1667,7 @@ void Python::run(FILE *input)
 
                 std::string strStartScript(inputfile);
 
-                py::object objectScriptInit = py::eval(strStartScript, objectDict, objectDict);
+                py::eval(strStartScript, scop);
             }
             else { // interactive python
                 // Process the input file
