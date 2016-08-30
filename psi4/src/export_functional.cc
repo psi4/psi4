@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
+//#include <boost/python.hpp>
 #include "psi4/libmints/vector.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -33,13 +33,15 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdisp/dispersion.h"
 
-using namespace boost;
-using namespace boost::python;
+//using namespace boost;
+//using namespace boost::python;
 using namespace psi;
 
-void export_functional()
+
+void export_functional(py::module &m)
 {
-    class_<SuperFunctional, std::shared_ptr<SuperFunctional>, boost::noncopyable >("SuperFunctional", "docstring", no_init).
+    py::class_<SuperFunctional, std::shared_ptr<SuperFunctional> >(m, "SuperFunctional", "docstring").
+        // TODO add init
         def("build", &SuperFunctional::build, "docstring").
         staticmethod("build").
         def("blank", &SuperFunctional::blank, "docstring").
@@ -86,7 +88,8 @@ void export_functional()
         def("print_out",&SuperFunctional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
-    class_<Functional, std::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
+    py::class_<Functional, std::shared_ptr<Functional> >(m, "Functional", "docstring").
+        // TODO need init
         def("build_base", &Functional::build_base, "docstring").
         staticmethod("build_base").
         def("name", &Functional::name, "docstring").
@@ -112,7 +115,8 @@ void export_functional()
         def("print_out", &Functional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
-    class_<Dispersion, std::shared_ptr<Dispersion>, boost::noncopyable >("Dispersion", "docstring", no_init).
+    py::class_<Dispersion, std::shared_ptr<Dispersion> >(m, "Dispersion", "docstring").
+        // TODO need init
         def("build", &Dispersion::build, "docstring").
         staticmethod("build").
         def("name", &Dispersion::name, "docstring").
