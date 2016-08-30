@@ -24,17 +24,7 @@
  *
  * @END LICENSE
  */
-#include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <boost/python.hpp>
-#include <boost/python/dict.hpp>
-#include <boost/python/tuple.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/python/suite/indexing/map_indexing_suite.hpp>
-PRAGMA_WARNING_POP
 #include "psi4/libmints/deriv.h"
-
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
@@ -80,9 +70,12 @@ PRAGMA_WARNING_POP
 
 #include <string>
 
-using namespace boost;
-using namespace boost::python;
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
+
 using namespace psi;
+namespace py = pybind11;
 
 /* Start Numpy __array_interface__
 Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
@@ -118,115 +111,115 @@ Additional details, tutorials, and examples can be found here:
 https://github.com/dgasmith/psi4numpy
 */
 
-class Numpy_Interface {
-// Dummy class to hold __array_interface__ for numpy
-public:
-    dict interface;
-};
-
-dict matrix_array_interface(SharedMatrix mat, int irrep){
-    dict rv;
-
-    // Shape
-    std::vector<int> numpy_shape = mat->numpy_shape();
-    if (numpy_shape.size()){
-        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
-        pybind11::list shape;
-        for (int i=0; i<numpy_shape.size(); i++){
-           shape.append(numpy_shape[i]);
-        }
-        rv["shape"] = boost::python::tuple(shape);
-        // rv["shape"] = numpy_shape;
-    }
-    else{
-        int rows = mat->rowspi(irrep);
-        int cols = mat->colspi(irrep);
-        rv["shape"] = boost::python::make_tuple(rows, cols);
-    }
-
-    // Data and type
-    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), false);
-    std::string typestr = is_big_endian() ? ">" : "<";
-    {
-        std::stringstream sstr;
-        sstr << (int)sizeof(double);
-        typestr += "f" + sstr.str();
-    }
-    rv["typestr"] = typestr;
-    return rv;
-}
-
-dict matrix_array_interface_c1(SharedMatrix mat){
-    if(mat->nirrep() != 1){
-        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
-                            use Matrix.array_interfaces() instead.");
-    }
-    return matrix_array_interface(mat, 0);
-}
-
-pybind11::list make_matix_array_interfaces(SharedMatrix mat){
-    pybind11::list interfaces;
-    Numpy_Interface tmp_interface = Numpy_Interface();
-    for(int h=0; h < mat->nirrep(); h++){
-        dict array_interface = matrix_array_interface(mat, h);
-        tmp_interface.interface = array_interface;
-        interfaces.append(tmp_interface);
-    }
-    return interfaces;
-}
-
-dict vector_array_interface(SharedVector vec, int irrep){
-    dict rv;
-
-    // Shape
-    std::vector<int> numpy_shape = vec->numpy_shape();
-    if (numpy_shape.size()){
-        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
-        pybind11::list shape;
-        for (int i=0; i<numpy_shape.size(); i++){
-           shape.append(numpy_shape[i]);
-        }
-        rv["shape"] = boost::python::tuple(shape);
-    }
-    else {
-        const int elements = vec->dim(irrep);
-        rv["shape"] = boost::python::make_tuple(elements);
-    }
-
-    // Data and type
-    rv["data"] = boost::python::make_tuple((long)vec->pointer(irrep), false);
-    std::string typestr = is_big_endian() ? ">" : "<";
-    {
-        std::stringstream sstr;
-        sstr << (int)sizeof(double);
-        typestr += "f" + sstr.str();
-    }
-    rv["typestr"] = typestr;
-    return rv;
-}
-
-dict vector_array_interface_c1(SharedVector vec){
-    if(vec->nirrep() != 1){
-        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
-                            use Vector.array_interfaces() instead.");
-    }
-    return vector_array_interface(vec, 0);
-}
-
-pybind11::list make_vector_array_interfaces(SharedVector vec){
-    pybind11::list interfaces;
-    Numpy_Interface tmp_interface = Numpy_Interface();
-    for(int h=0; h < vec->nirrep(); h++){
-        dict array_interface = vector_array_interface(vec, h);
-        tmp_interface.interface = array_interface;
-        interfaces.append(tmp_interface);
-    }
-    return interfaces;
-}
+//class Numpy_Interface {
+//// Dummy class to hold __array_interface__ for numpy
+//public:
+//    py::dict interface;
+//};
+//
+//py::dict matrix_array_interface(SharedMatrix mat, int irrep){
+//    py::dict rv;
+//
+//    // Shape
+//    std::vector<int> numpy_shape = mat->numpy_shape();
+//    if (numpy_shape.size()){
+//        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
+//        py::list shape;
+//        for (int i=0; i<numpy_shape.size(); i++){
+//           shape.append(py::int_(numpy_shape[i]));
+//        }
+//        rv["shape"] = py::tuple(shape);
+//        // rv["shape"] = numpy_shape;
+//    }
+//    else{
+//        int rows = mat->rowspi(irrep);
+//        int cols = mat->colspi(irrep);
+//        rv["shape"] = py::make_tuple(rows, cols);
+//    }
+//
+//    // Data and type
+//    rv["data"] = py::make_tuple((long)mat->get_pointer(irrep), false);
+//    std::string typestr = is_big_endian() ? ">" : "<";
+//    {
+//        std::stringstream sstr;
+//        sstr << (int)sizeof(double);
+//        typestr += "f" + sstr.str();
+//    }
+//    rv["typestr"] = py::str(typestr);
+//    return rv;
+//}
+//
+//py::dict matrix_array_interface_c1(SharedMatrix mat){
+//    if(mat->nirrep() != 1){
+//        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
+//                            use Matrix.array_interfaces() instead.");
+//    }
+//    return matrix_array_interface(mat, 0);
+//}
+//
+//py::list make_matix_array_interfaces(SharedMatrix mat){
+//    py::list interfaces;
+//    Numpy_Interface tmp_interface = Numpy_Interface();
+//    for(int h=0; h < mat->nirrep(); h++){
+//        py::dict array_interface = matrix_array_interface(mat, h);
+//        tmp_interface.interface = array_interface;
+//        interfaces.append(py::object(tmp_interface));
+//    }
+//    return interfaces;
+//}
+//
+//py::dict vector_array_interface(SharedVector vec, int irrep){
+//    py::dict rv;
+//
+//    // Shape
+//    std::vector<int> numpy_shape = vec->numpy_shape();
+//    if (numpy_shape.size()){
+//        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
+//        pybind11::list shape;
+//        for (int i=0; i<numpy_shape.size(); i++){
+//           shape.append(py::int_(numpy_shape[i]));
+//        }
+//        rv["shape"] = py::tuple(shape);
+//    }
+//    else {
+//        const int elements = vec->dim(irrep);
+//        rv["shape"] = py::make_tuple(elements);
+//    }
+//
+//    // Data and type
+//    rv["data"] = py::make_tuple((long)vec->pointer(irrep), false);
+//    std::string typestr = is_big_endian() ? ">" : "<";
+//    {
+//        std::stringstream sstr;
+//        sstr << (int)sizeof(double);
+//        typestr += "f" + sstr.str();
+//    }
+//    rv["typestr"] = py::str(typestr);
+//    return rv;
+//}
+//
+//py::dict vector_array_interface_c1(SharedVector vec){
+//    if(vec->nirrep() != 1){
+//        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
+//                            use Vector.array_interfaces() instead.");
+//    }
+//    return vector_array_interface(vec, 0);
+//}
+//
+//py::list make_vector_array_interfaces(SharedVector vec){
+//    py::list interfaces;
+//    Numpy_Interface tmp_interface = Numpy_Interface();
+//    for(int h=0; h < vec->nirrep(); h++){
+//        py::dict array_interface = vector_array_interface(vec, h);
+//        tmp_interface.interface = array_interface;
+//        interfaces.append(tmp_interface);
+//    }
+//    return interfaces;
+//}
 
 /* End numpy __array_interface__ */
 
-std::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
+std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
 {
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
@@ -264,46 +257,49 @@ std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
 }
 
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
+//
+///* IntegralFactory overloads */
+///* Functions that return OneBodyAOInt objects */
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_overlap_overloads, IntegralFactory::ao_overlap, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(so_overlap_overloads, IntegralFactory::so_overlap, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_kinetic_overloads, IntegralFactory::ao_kinetic, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_potential_overloads, IntegralFactory::ao_potential, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_pseudospectral_overloads, IntegralFactory::ao_pseudospectral, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_dipole_overloads, IntegralFactory::ao_dipole, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_nabla_overloads, IntegralFactory::ao_nabla, 0, 1);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_angular_momentum_overloads, IntegralFactory::ao_angular_momentum, 0, 1);
+///* Functions that return TwoBodyAOInt objects */
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(eri_overloads, IntegralFactory::eri, 0, 2);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_overloads, IntegralFactory::f12, 1, 3);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12g12_overloads, IntegralFactory::f12g12, 1, 3);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_squared_overloads, IntegralFactory::f12_squared, 1, 3);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, IntegralFactory::f12_double_commutator, 1, 3);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
+//
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
+//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
+//
+//BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_orb_overloads, BasisSet::pyconstruct_orbital, 3, 4);
+//BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_aux_overloads, BasisSet::pyconstruct_auxiliary, 5, 6);
 
-/* IntegralFactory overloads */
-/* Functions that return OneBodyAOInt objects */
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_overlap_overloads, IntegralFactory::ao_overlap, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(so_overlap_overloads, IntegralFactory::so_overlap, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_kinetic_overloads, IntegralFactory::ao_kinetic, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_potential_overloads, IntegralFactory::ao_potential, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_pseudospectral_overloads, IntegralFactory::ao_pseudospectral, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_dipole_overloads, IntegralFactory::ao_dipole, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_nabla_overloads, IntegralFactory::ao_nabla, 0, 1);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_angular_momentum_overloads, IntegralFactory::ao_angular_momentum, 0, 1);
-/* Functions that return TwoBodyAOInt objects */
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(eri_overloads, IntegralFactory::eri, 0, 2);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_overloads, IntegralFactory::f12, 1, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12g12_overloads, IntegralFactory::f12g12, 1, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_squared_overloads, IntegralFactory::f12_squared, 1, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, IntegralFactory::f12_double_commutator, 1, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
-
-BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_orb_overloads, BasisSet::pyconstruct_orbital, 3, 4);
-BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_aux_overloads, BasisSet::pyconstruct_auxiliary, 5, 6);
-
-void export_mints()
+void export_mints(py::module& m)
 {
-    def("nuclear_dipole", py_nuclear_dipole, "docstring");
+    m.def("nuclear_dipole", py_nuclear_dipole, "docstring");
 
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
-    class_<std::vector<SharedMatrix > >("matrix_vector", "docstring").
-            def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
+    //py::class_<std::vector<SharedMatrix > >(m, "matrix_vector", "docstring").
+    //        def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
+    py::bind_vector<SharedMatrix>(m, "VectorMatrix");
+
     // Other vector types
-    class_<std::vector<double> >("vector_of_doubles", "docstring").
-            def(vector_indexing_suite<std::vector<double>, true >());
+    //py::class_<std::vector<double> >(m, "vector_of_doubles", "docstring").
+    //        def(vector_indexing_suite<std::vector<double>, true >());
+    py::bind_vector<double>(m, "VectorDouble");
 
     // Use typedefs to explicitly tell Boost.Python which function in the class
     // to use. In most cases, you should not be making Python specific versions
@@ -316,15 +312,15 @@ void export_mints()
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int);
     typedef double (Vector::*vector_getitem_2)(int, int);
-    typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
-    typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
+    typedef void (Vector::*vector_setitem_n)(const py::tuple&, double);
+    typedef double (Vector::*vector_getitem_n)(const py::tuple&);
 
-    class_<Numpy_Interface>("Psi_Numpy_Interface", "docstring", no_init).
-            add_property("__array_interface__", &Numpy_Interface::interface, "docstring");
+    //class_<Numpy_Interface>("Psi_Numpy_Interface", "docstring", no_init).
+    //        add_property("__array_interface__", &Numpy_Interface::interface, "docstring");
 
-    class_<Dimension>("Dimension", "docstring").
-            def(init<int>()).
-            def(init<int, const std::string&>()).
+    py::class_<Dimension>(m, "Dimension", "docstring").
+            def(py::init<int>()).
+            def(py::init<int, const std::string&>()).
             def("print_out",
                 &Dimension::print,
                 "docstring").
@@ -332,20 +328,23 @@ void export_mints()
                 &Dimension::init,
                 "Re-initializes the dimension object").
             def("n", &Dimension::n,
-                return_value_policy<copy_const_reference>(),
+                //py::return_value_policy<copy_const_reference>(),
+                py::return_value_policy::copy,
                 "The order of the dimension").
-            add_property("name",
-                         make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
+            def_property("name",
+                         //make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
+                         &Dimension::name,
                          &Dimension::set_name,
                          "The name of the dimension. Used in printing.").
-            def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
+            //def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
+            def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
-    class_<Vector, std::shared_ptr<Vector> >( "Vector", "docstring").
-            def(init<int>()).
-            def(init<const Dimension&>()).
-            def(init<const std::string&, int>()).
-            def(init<const std::string&, const Dimension&>()).
+    py::class_<Vector, std::shared_ptr<Vector> >(m, "Vector", "docstring").
+            def(py::init<int>()).
+            def(py::init<const Dimension&>()).
+            def(py::init<const std::string&, int>()).
+            def(py::init<const std::string&, const Dimension&>()).
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -358,19 +357,19 @@ void export_mints()
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
-            def("array_interfaces", make_vector_array_interfaces, "docstring").
-            add_property("__array_interface__", vector_array_interface_c1, "docstring");
+            //def("array_interfaces", make_vector_array_interfaces, "docstring").
+            //add_property("__array_interface__", vector_array_interface_c1, "docstring");
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
-    class_<IntVector, std::shared_ptr<IntVector> >( "IntVector", "docstring").
-            def(init<int>()).
+    py::class_<IntVector, std::shared_ptr<IntVector> >(m, "IntVector", "docstring").
+            def(py::init<int>()).
             def("get", &IntVector::get, "docstring").
             def("set", int_vector_set(&IntVector::set), "docstring").
             def("print_out", &IntVector::print_out, "docstring").
             def("dim", &IntVector::dim, "docstring").
             def("nirrep", &IntVector::nirrep, "docstring");
 
-    enum_<diagonalize_order>("DiagonalizeOrder", "docstring")
+    py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "docstring")
             .value("Ascending", ascending)
             .value("Descending", descending)
             .export_values();
