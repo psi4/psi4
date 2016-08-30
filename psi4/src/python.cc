@@ -1241,36 +1241,36 @@ void psi4_python_module_finalize()
 }
 
 
-PYBIND11_PLUGIN(psimod)
-{
+//PYBIND11_PLUGIN(psimod)
+PyObject * initpsimod(void) {
     py::module psimod("psi4", "Psi4: A quantum chemistry program");
 
     psimod.def("initialize", &psi4_python_module_initialize);
     psimod.def("finalize", &psi4_python_module_finalize);
 
 
-    // Might need std
-    py::register_exception_translator([](std::exception_ptr p) {
-        try {
-            if (p) std::rethrow_exception(p);
-        } catch (const PsiException &e) {
-// This is what the example from Pybind11 does...
+//    // Might need std
+//    py::register_exception_translator([](std::exception_ptr p) {
+//        try {
+//            if (p) std::rethrow_exception(p);
+//        } catch (const PsiException &e) {
+//// This is what the example from Pybind11 does...
+////            PyErr_SetString(PyExc_RuntimeError, e.what());
+//// This is what the old Psi4 mechanism did...
+//#ifdef DEBUG
+//#if PY_MAJOR_VERSION == 2
+//            PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+//#else
+//            PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+//#endif
+//            PyErr_SetObject(PyExc_RuntimeError, message);
+//            Py_DECREF(message);
+//#else
 //            PyErr_SetString(PyExc_RuntimeError, e.what());
-// This is what the old Psi4 mechanism did...
-#ifdef DEBUG
-#if PY_MAJOR_VERSION == 2
-            PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-#else
-            PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-#endif
-            PyErr_SetObject(PyExc_RuntimeError, message);
-            Py_DECREF(message);
-#else
-            PyErr_SetString(PyExc_RuntimeError, e.what());
-#endif
-        }
-    });
-
+//#endif
+//        }
+//    });
+//
 //    docstring_options sphx_doc_options(true, true, false);
 
     py::enum_<PsiReturnType>(psimod, "PsiReturnType", "docstring")
@@ -1550,7 +1550,7 @@ void Python::run(FILE *input)
         s = strdup("psi");
 
 #if PY_MAJOR_VERSION == 2
-        if (PyImport_AppendInittab(strdup("psi4"), initpsimod) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), (void(*)())(initpsimod)) == -1) {
             outfile->Printf("Unable to register psi4 with your Python.\n");
             abort();
         }
@@ -1667,7 +1667,7 @@ void Python::run(FILE *input)
 
                 std::string strStartScript(inputfile);
 
-                py::eval(strStartScript, scop);
+                py::eval(strStartScript, scope);
             }
             else { // interactive python
                 // Process the input file
