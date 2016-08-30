@@ -30,6 +30,7 @@
 #include <sstream>
 #include <map>
 #include <iomanip>
+#include <sys/stat.h>
 #include <pybind11/pybind11.h>
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/pointgrp.h"
@@ -924,13 +925,13 @@ py::object py_psi_get_local_option(std::string const& module, std::string const&
     Data& data = Process::environment.options.get_local(nonconst_key);
 
     if (data.type() == "string" || data.type() == "istring")
-        return py::str(data.to_string());
+        return py::cast(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
-        return py::object(data.to_integer());
+        return py::cast(data.to_integer());
     else if (data.type() == "double")
-        return py::object(data.to_double());
+        return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::object(data.to_list());
+        return py::cast(data.to_list());
 
     return py::object();
 }
@@ -941,13 +942,13 @@ py::object py_psi_get_global_option(std::string const& key)
     Data& data = Process::environment.options.get_global(nonconst_key);
 
     if (data.type() == "string" || data.type() == "istring")
-        return str(data.to_string());
+        return py::cast(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
-        return py::object(data.to_integer());
+        return py::cast(data.to_integer());
     else if (data.type() == "double")
-        return py::object(data.to_double());
+        return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::object(data.to_list());
+        return py::cast(data.to_list());
 
     return py::object();
 }
@@ -960,13 +961,13 @@ py::object py_psi_get_option(std::string const& module, std::string const& key)
     Data& data = Process::environment.options.use_local(nonconst_key);
 
     if (data.type() == "string" || data.type() == "istring")
-        return str(data.to_string());
+        return py::cast(data.to_string());
     else if (data.type() == "boolean" || data.type() == "int")
-        return py::object(data.to_integer());
+        return py::cast(data.to_integer());
     else if (data.type() == "double")
-        return py::object(data.to_double());
+        return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::object(data.to_list());
+        return py::cast(data.to_list());
 
     return py::object();
 }
@@ -1125,7 +1126,7 @@ std::string py_psi_get_input_directory()
 void py_psi_print_variable_map()
 {
     int largest_key = 0;
-    for (std::map<string, double>::iterator it = Process::environment.globals.begin();
+    for (std::map<std::string, double>::iterator it = Process::environment.globals.begin();
          it != Process::environment.globals.end(); ++it) {
         if (it->first.size() > largest_key)
             largest_key = it->first.size();
@@ -1134,7 +1135,7 @@ void py_psi_print_variable_map()
 
     std::stringstream line;
     std::string first_tmp;
-    for (std::map<string, double>::iterator it = Process::environment.globals.begin();
+    for (std::map<std::string, double>::iterator it = Process::environment.globals.begin();
          it != Process::environment.globals.end(); ++it) {
         first_tmp = "\"" + it->first + "\"";
         line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right <<
@@ -1200,7 +1201,7 @@ bool psi4_python_module_initialize()
     std::string psiDataDirWithPython = psiDataDirName + "/python";
     std::string fullPath = filesystem::system_complete(psiDataDirWithPython);
     struct stat sb;
-    if(stat(fullPath, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+    if(::stat(fullPath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
         printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
         return false;
@@ -1262,11 +1263,11 @@ PYBIND11_PLUGIN(psimod) {
 
 
     // Might need std
-   i py::register_exception_translator<PsiException>(&translate_psi_exception);
+    py::register_exception_translator<PsiException>(&translate_psi_exception);
 
 //    docstring_options sphx_doc_options(true, true, false);
 
-    enum_<PsiReturnType>(psimod, "PsiReturnType", "docstring")
+    py::enum_<PsiReturnType>(psimod, "PsiReturnType", "docstring")
             .value("Success", Success)
             .value("Failure", Failure)
             .value("Balk", Balk)
@@ -1507,12 +1508,12 @@ PYBIND11_PLUGIN(psimod) {
     export_functional(psimod);
 
     // ???
-    psimod.def std::string (Process::Environment::*environmentStringFunction)(const string&);
+    psimod.def std::string (Process::Environment::*environmentStringFunction)(const std::string&);
 
-    class_<psimod, Process::Environment>("Environment").
+    py::class_<psimod, Process::Environment>("Environment").
             def("__getitem__", environmentStringFunction(&Process::Environment::operator()), "docstring");
 
-    class_<psimod, Process>("Process").
+    py::class_<psimod, Process>("Process").
             add_static_property("environment", Process::get_environment, "docstring");
 
     return psimod.ptr();
