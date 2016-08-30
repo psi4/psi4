@@ -25,17 +25,17 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
 #include "psi4/libcubeprop/cubeprop.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/wavefunction.h"
 
-using namespace boost::python;
+#include <pybind11/pybind11.h>
+
 using namespace psi;
 
-void export_cubeprop()
+void export_cubeprop(pybind11::module& m)
 {
-    class_<CubeProperties, std::shared_ptr<CubeProperties> >("CubeProperties", "docstring", no_init)
-        .def(init<std::shared_ptr<Wavefunction>>())
+    pybind11::class_<CubeProperties, std::shared_ptr<CubeProperties> >(m, "CubeProperties", "docstring")
+        .def(pybind11::init<std::shared_ptr<Wavefunction>>())
         .def("compute_properties", &CubeProperties::compute_properties, "docstring");
 }

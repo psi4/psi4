@@ -25,17 +25,15 @@
  * @END LICENSE
  */
 
-#include <boost/python.hpp>
 #include "psi4/libmints/benchmark.h"
+#include <pybind11/pybind11.h>
 
-using namespace boost::python;
-
-void export_benchmarks()
+void export_benchmarks(pybind11::module& m)
 {
-    def("benchmark_blas1",     &psi::benchmark_blas1, "docstring");
-    def("benchmark_blas2",     &psi::benchmark_blas2, "docstring");
-    def("benchmark_blas3",     &psi::benchmark_blas3, "docstring");
-    def("benchmark_disk",      &psi::benchmark_disk, "docstring");
-    def("benchmark_math",      &psi::benchmark_math, "docstring");
-    def("benchmark_integrals", &psi::benchmark_integrals, "docstring");
+    m.def("benchmark_blas1",     &psi::benchmark_blas1, "docstring");
+    m.def("benchmark_blas2",     &psi::benchmark_blas2, "docstring");
+    m.def("benchmark_blas3",     &psi::benchmark_blas3, "docstring");
+    m.def("benchmark_disk",      &psi::benchmark_disk, "docstring");
+    m.def("benchmark_math",      &psi::benchmark_math, "docstring");
+    m.def("benchmark_integrals", &psi::benchmark_integrals, "docstring");
 }
