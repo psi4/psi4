@@ -47,8 +47,6 @@
 #include "psi4/libmints/integral.h"
 
 #include <algorithm>
-#include <std/tuple/tuple.hpp>
-#include <std/tuple/tuple_comparison.hpp>
 
 #include <sstream>
 

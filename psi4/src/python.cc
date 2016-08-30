@@ -664,11 +664,11 @@ void py_psi_print_global_options()
     Process::environment.options.print_globals();
 }
 
-pybind11::list py_psi_get_global_option_list()
+boost::python::list py_psi_get_global_option_list()
 {
     std::vector<std::string> options_list = Process::environment.options.list_globals();
 
-    pybind11::list options_list_py;
+    boost::python::list options_list_py;
     BOOST_FOREACH(const string& s, options_list) options_list_py.append(s);
 
     return options_list_py;
