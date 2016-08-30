@@ -36,11 +36,14 @@
 using namespace psi;
 namespace py = pybind11;
 
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+
 
 void export_functional(py::module &m)
 {
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring").
         // TODO add init
+        def(py::init<>()).
         def_static("build", &SuperFunctional::build,
             py::arg("alias"), py::arg("max_points")=5000, py::arg("deriv")=1, "docstring").
         def_static("blank", &SuperFunctional::blank, "docstring").

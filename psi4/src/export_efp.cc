@@ -25,20 +25,23 @@
  * @END LICENSE
  */
 
+#include <pybind11/pybind11.h>
+
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include <pybind11/pybind11.h>
-
 using namespace psi;
 using namespace psi::efp;
+namespace py = pybind11;
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 void export_efp(pybind11::module& m)
 {
     // because there is no default constructor for libefp, need flag
     // "no_init" and the constructor definition, def(init<Options&>())
-    pybind11::class_<EFP, std::shared_ptr<EFP> >(m, "EFP", "Class interfacing with libefp").
-        def(pybind11::init<Options&>()).
+    py::class_<EFP, std::shared_ptr<EFP> >(m, "EFP", "Class interfacing with libefp").
+        def(py::init<Options&>()).
         def("compute", &EFP::compute, "Computes libefp energies and, if active, torque").
         def("set_qm_atoms", &EFP::set_qm_atoms, "Provides libefp with QM fragment information").
         def("nfragments", &EFP::get_frag_count, "Returns the number of EFP fragments in the molecule").
