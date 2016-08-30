@@ -412,8 +412,8 @@ def energy(name, **kwargs):
     molecule = kwargs.pop('molecule', psi4.get_active_molecule())
     molecule.update_geometry()
 
-    for precallback in hooks['energy']['pre']:
-        precallback(lowername, **kwargs)
+    #for precallback in hooks['energy']['pre']:
+    #    precallback(lowername, **kwargs)
 
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
 

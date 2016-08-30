@@ -66,6 +66,8 @@ namespace psi {
 using namespace psi;
 namespace py = pybind11;
 
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+
 // Python helper wrappers
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
@@ -1666,13 +1668,7 @@ void Python::run(FILE *input)
                 }
 
 
-                printf("I am about to call py::eval!\n");
-                fflush(stdout);
-                printf("%s\n", inputfile.c_str());
-                fflush(stdout);
-
                 py::eval<py::eval_statements>(inputfile, scope);
-                printf("I have called py::eval\n");
             }
             else { // interactive python
                 // Process the input file

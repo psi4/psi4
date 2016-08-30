@@ -24,6 +24,13 @@
  *
  * @END LICENSE
  */
+#include "psi4/lib3index/3index.h"
+
+#include "psi4/libfock/jk.h"
+
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/civect.h"
+
 #include "psi4/libmints/deriv.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integralparameters.h"
@@ -32,11 +39,6 @@
 #include "psi4/libmints/pybuffer.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
-#include "psi4/lib3index/3index.h"
-#include "psi4/libscf_solver/hf.h"
-#include "psi4/libscf_solver/rhf.h"
-#include "psi4/libscf_solver/rohf.h"
-#include "psi4/libscf_solver/cuhf.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
@@ -64,9 +66,11 @@
 #include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/detci/ciwave.h"
-#include "psi4/detci/civect.h"
+
+#include "psi4/libscf_solver/hf.h"
+#include "psi4/libscf_solver/rhf.h"
+#include "psi4/libscf_solver/rohf.h"
+#include "psi4/libscf_solver/cuhf.h"
 
 #include <string>
 
@@ -77,6 +81,8 @@
 
 using namespace psi;
 namespace py = pybind11;
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 /* Start Numpy __array_interface__
 Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy

@@ -1167,7 +1167,7 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     ref_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-    scf_wfn = psi4.scf(ref_wfn, precallback, postcallback)
+    scf_wfn = psi4.scf(ref_wfn)
     e_scf = psi4.get_variable('CURRENT ENERGY')
 
     # We always would like to print a little dipole information

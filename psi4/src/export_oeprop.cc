@@ -26,12 +26,15 @@
  */
 
 #include <pybind11/pybind11.h>
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/wavefunction.h"
 
+#include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
 namespace py = pybind11;
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 void export_oeprop(py::module &m)
 {

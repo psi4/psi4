@@ -25,11 +25,14 @@
  * @END LICENSE
  */
 
-#include "psi4/libpsio/psio.hpp"
 #include <pybind11/pybind11.h>
+
+#include "psi4/libpsio/psio.hpp"
 
 using namespace psi;
 namespace py = pybind11;
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 void export_psio(py::module &m)
 {
