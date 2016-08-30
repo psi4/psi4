@@ -1690,6 +1690,7 @@ void Python::run(FILE *input)
             std::stringstream whole;
             whole << "An error has occurred python-side. ";
             std::cout << whole.str();
+            PyErr_Print();
 
             outfile->Printf("%s\n\n", whole.str().c_str());
             exit(1);
