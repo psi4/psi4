@@ -25,7 +25,6 @@
  * @END LICENSE
  */
 
-//#include <boost/python.hpp>
 #include "psi4/libmints/vector.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -33,8 +32,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdisp/dispersion.h"
 
-//using namespace boost;
-//using namespace boost::python;
 using namespace psi;
 
 
@@ -42,10 +39,9 @@ void export_functional(py::module &m)
 {
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional> >(m, "SuperFunctional", "docstring").
         // TODO add init
-        def("build", &SuperFunctional::build, "docstring").
-        staticmethod("build").
-        def("blank", &SuperFunctional::blank, "docstring").
-        staticmethod("blank").
+        def_static("build", &SuperFunctional::build,
+            py::arg("alias"), py::arg("max_points")=5000, py::arg("deriv")=1, "docstring").
+        def_static("blank", &SuperFunctional::blank, "docstring").
         def("allocate", &SuperFunctional::allocate, "docstring").
         def("x_functional", &SuperFunctional::x_functional, "docstring").
         def("c_functional", &SuperFunctional::c_functional, "docstring").
@@ -90,8 +86,8 @@ void export_functional(py::module &m)
 
     py::class_<Functional, std::shared_ptr<Functional> >(m, "Functional", "docstring").
         // TODO need init
-        def("build_base", &Functional::build_base, "docstring").
-        staticmethod("build_base").
+        def_static("build_base", &Functional::build_base,
+            py::arg("alias")"docstring").
         def("name", &Functional::name, "docstring").
         def("description", &Functional::description, "docstring").
         def("citation", &Functional::citation, "docstring").
@@ -117,8 +113,8 @@ void export_functional(py::module &m)
 
     py::class_<Dispersion, std::shared_ptr<Dispersion> >(m, "Dispersion", "docstring").
         // TODO need init
-        def("build", &Dispersion::build, "docstring").
-        staticmethod("build").
+        def_static("build", &Dispersion::build,
+            py::arg("type"), py::arg("s6")=0.0, py::arg("p1")=0.0, py::arg("p2")=0.0, py::arg("p3")=0.0, "docstring").
         def("name", &Dispersion::name, "docstring").
         def("description", &Dispersion::description, "docstring").
         def("citation", &Dispersion::citation, "docstring").
