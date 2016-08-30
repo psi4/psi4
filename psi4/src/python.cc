@@ -1239,20 +1239,6 @@ void psi4_python_module_finalize()
 
 }
 
-void translate_psi_exception(const PsiException& e)
-{
-#ifdef DEBUG
-#if PY_MAJOR_VERSION == 2
-    PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-#else
-    PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-#endif
-    PyErr_SetObject(PyExc_RuntimeError, message);
-    Py_DECREF(message);
-#else
-    PyErr_SetString(PyExc_RuntimeError, e.what());
-#endif
-}
 
 PYBIND11_PLUGIN(psimod) {
 {
@@ -1263,7 +1249,26 @@ PYBIND11_PLUGIN(psimod) {
 
 
     // Might need std
-    py::register_exception_translator<PsiException>(&translate_psi_exception);
+    py::register_exception_translator([](std::exception_ptr p) {
+        try {
+            if (p) std::rethrow_exception(p);
+        } catch (const PsiException &e) {
+// This is what the example from Pybind11 does...
+//            PyErr_SetString(PyExc_RuntimeError, e.what());
+// This is what the old Psi4 mechanism did...
+#ifdef DEBUG
+#if PY_MAJOR_VERSION == 2
+            PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#else
+            PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
+#endif
+            PyErr_SetObject(PyExc_RuntimeError, message);
+            Py_DECREF(message);
+#else
+            PyErr_SetString(PyExc_RuntimeError, e.what());
+#endif
+        }
+    });
 
 //    docstring_options sphx_doc_options(true, true, false);
 
