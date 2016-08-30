@@ -22,17 +22,18 @@ find_package(PythonLibs REQUIRED)
 find_package(PYBIND11 REQUIRED)
 
 ### >> Locate Boost Components << ###
-#set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
-#        thread)
-#find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-#
-#set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
-#find_package(Threads)
-#find_package(DL)
-#if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-#    find_package(RT REQUIRED)
-#    list(APPEND Boost_LIBRARIES ${LIBRT_LIBRARIES})
-#endif ()
+set(BOOST_COMPONENTS filesystem python regex serialization system timer chrono
+        thread)
+find_package(Boost 1.57.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+
+set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR})
+find_package(Threads)
+find_package(DL)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    find_package(RT REQUIRED)
+    list(APPEND Boost_LIBRARIES ${LIBRT_LIBRARIES})
+endif ()
+include_directories(${Boost_INCLUDE_DIRS})
 
 #find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
