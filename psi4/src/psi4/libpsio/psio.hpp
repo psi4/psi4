@@ -1,11 +1,11 @@
 #ifndef _psi_src_lib_libpsio_psio_hpp_
 #define _psi_src_lib_libpsio_psio_hpp_
 
-//#include <boost/thread/thread.hpp>
 #include <string>
 #include <map>
 #include <set>
 #include <queue>
+#include <memory>
 
 #include "psi4/libpsio/config.h"
 

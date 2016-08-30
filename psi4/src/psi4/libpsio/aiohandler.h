@@ -29,6 +29,8 @@
 #define AIOHANDLER_H
 
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace psi {
 
