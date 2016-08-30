@@ -1240,7 +1240,7 @@ void psi4_python_module_finalize()
 }
 
 
-PYBIND11_PLUGIN(psimod) {
+PYBIND11_PLUGIN(psimod)
 {
     py::module psimod("psi4", "Psi4: A quantum chemistry program");
 
@@ -1370,7 +1370,7 @@ PYBIND11_PLUGIN(psimod) {
     psimod.def("set_local_option",
         py_psi_set_local_option_int,
         "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
-    psimod.def("set_local_option", py_psi_set_local_option_array, set_local_option_overloads());
+    psimod.def("set_local_option", py_psi_set_local_option_array);
     psimod.def("set_local_option_python",
         py_psi_set_local_option_python,
         "Sets an option to a Python object, but scoped only to a single module.");
@@ -1385,7 +1385,7 @@ PYBIND11_PLUGIN(psimod) {
     psimod.def("set_global_option",
         py_psi_set_global_option_int,
         "Sets value *arg2* to integer keyword *arg1* for all modules.");
-    psimod.def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
+    psimod.def("set_global_option", py_psi_set_global_option_array);
     psimod.def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
 
     // Print options list
@@ -1512,14 +1512,12 @@ PYBIND11_PLUGIN(psimod) {
     export_mints(psimod);
     export_functional(psimod);
 
-    // ???
-    psimod.def std::string (Process::Environment::*environmentStringFunction)(const std::string&);
+    // ??
+    // py::class_<Process::Environment>(psimod, "Environment").
+    //         def("__getitem__", &Process::Environment::operator(), "docstring");
 
-    py::class_<psimod, Process::Environment>("Environment").
-            def("__getitem__", environmentStringFunction(&Process::Environment::operator()), "docstring");
-
-    py::class_<psimod, Process>("Process").
-            add_static_property("environment", Process::get_environment, "docstring");
+    py::class_<Process>(psimod, "Process").
+            def_property_readonly_static("environment", Process::get_environment, "docstring");
 
     return psimod.ptr();
 }
@@ -1551,12 +1549,12 @@ void Python::run(FILE *input)
         s = strdup("psi");
 
 #if PY_MAJOR_VERSION == 2
-        if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), initpsimod) == -1) {
             outfile->Printf("Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
-        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psimod) == -1) {
             outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }
@@ -1579,15 +1577,15 @@ void Python::run(FILE *input)
         PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
         for (size_t i; i < path_list.size(); i++) {
             std::string cpath = filesystem::system_complete(path_list[i]);
-            if (stat(cpath, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+            if (stat(cpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
                 printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
                                "      Current value of PSIPATH is %s\n", psiPath.c_str());
                 exit(1);
             }
 #if PY_MAJOR_VERSION == 2
-            PY_TRY(str, PyString_FromString((*tok_iter).c_str()));
+            PY_TRY(str, PyString_FromString(cpath.c_str()));
 #else
-            PY_TRY(str    , PyUnicode_FromString((*tok_iter).c_str()));
+            PY_TRY(str    , PyUnicode_FromString(cpath.c_str()));
 #endif
             PyList_Append(path, str);
         }
@@ -1599,7 +1597,7 @@ void Python::run(FILE *input)
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPython = psiDataDirName + "/python";
         std::string full_path = filesystem::system_complete(psiDataDirWithPython);
-        if (stat(full_path, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+        if (stat(full_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
             printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
@@ -1669,7 +1667,7 @@ void Python::run(FILE *input)
 
                 std::string strStartScript(inputfile);
 
-                py::object objectScriptInit = exec(strStartScript, objectDict, objectDict);
+                py::object objectScriptInit = py::eval(strStartScript, objectDict, objectDict);
             }
             else { // interactive python
                 // Process the input file
@@ -1682,7 +1680,7 @@ void Python::run(FILE *input)
                 PY_TRY(ret, PyEval_CallObject(function, NULL));
             }
         }
-        catch (error_already_set const& e) {
+        catch (py::error_already_set const& e) {
 
             std::stringstream whole;
             whole << "An error has occurred python-side. ";
