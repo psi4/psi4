@@ -65,16 +65,16 @@ matrix:
         - cmake-data
         - liblapack-dev
         - libhdf5-serial-dev
-        - g++-4.8
-        - gcc-4.8
-        - gfortran-4.8
+        - g++-4.9
+        - gcc-4.9
+        - gfortran-4.9
     env:
-      - CXX_COMPILER='g++-4.8'
-      - C_COMPILER='gcc-4.8'
-      - Fortran_COMPILER='gfortran-4.8'
+      - CXX_COMPILER='g++-4.9'
+      - C_COMPILER='gcc-4.9'
+      - Fortran_COMPILER='gfortran-4.9'
       - BUILD_TYPE='release'
       - NAME='gcc'
-      - VERSION='4.8'
+      - VERSION='4.9'
 
   - os: linux
     compiler: gcc
@@ -89,26 +89,26 @@ matrix:
         - cmake-data
         - libhdf5-serial-dev
         - liblapack-dev
-        - g++-5
-        - gcc-5
-        - gfortran-5
+        - g++-6
+        - gcc-6
+        - gfortran-6
     env:
-      - CXX_COMPILER='g++-5'
-      - C_COMPILER='gcc-5'
-      - Fortran_COMPILER='gfortran-5'
+      - CXX_COMPILER='g++-6'
+      - C_COMPILER='gcc-6'
+      - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='release'
       - NAME='gcc'
-      - VERSION=5
+      - VERSION=6
   - os: linux
     compiler: gcc
     addons: *4
     env:
-      - CXX_COMPILER='g++-5'
-      - C_COMPILER='gcc-5'
-      - Fortran_COMPILER='gfortran-5'
+      - CXX_COMPILER='g++-6'
+      - C_COMPILER='gcc-6'
+      - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='debug'
       - NAME='gcc'
-      - VERSION=5
+      - VERSION=6
 
 
 before_install:
