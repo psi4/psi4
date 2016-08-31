@@ -53,6 +53,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/pseudospectral.h"
+#include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/potential.h"
@@ -1002,6 +1003,8 @@ void export_mints(py::module& m)
             def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy, "docstring").
             def("nalpha", &Wavefunction::nalpha, "docstring").
             def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
+            def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
 
