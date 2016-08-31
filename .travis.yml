@@ -123,8 +123,6 @@ install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     brew install cmake python
-    brew install boost --with-python
-    brew install boost-python
   fi
 before_script:
 - python -c 'import numpy; print numpy.version.version'
@@ -133,7 +131,6 @@ before_script:
 - export CC=${C_COMPILER}
 - export FC=${Fortran_COMPILER}
 - export CTEST_OUTPUT_ON_FAILURE=1
-- export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/boost_install/lib:${LD_LIBRARY_PATH}
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
