@@ -25,7 +25,6 @@
  * @END LICENSE
  */
 
-// This tells us the Python version number
 #include <cstdio>
 #include <sstream>
 #include <map>
@@ -57,12 +56,15 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
+
 namespace psi {
     int psi_start(int argc, char *argv[]);
     int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
 using namespace psi;
 namespace py = pybind11;
 
@@ -720,6 +722,12 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
 bool py_psi_set_local_option_double(std::string const& module, std::string const& key, double value)
 {
     std::string nonconst_key = to_upper(key);
+
+    double intpart;
+    if(specifies_convergence(nonconst_key) && modf(value, &intpart) == 0.0){
+        value = pow(10, -value);
+    }
+
     Process::environment.options.set_double(module, nonconst_key, value);
     return true;
 }
@@ -765,6 +773,12 @@ bool py_psi_set_global_option_int(std::string const& key, int value)
 bool py_psi_set_global_option_double(std::string const& key, double value)
 {
     std::string nonconst_key = to_upper(key);
+
+    double intpart;
+    if(specifies_convergence(nonconst_key) && modf(value, &intpart) == 0.0){
+        value = pow(10, -value);
+    }
+
     Process::environment.options.set_global_double(nonconst_key, value);
     return true;
 }
@@ -795,7 +809,7 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
             DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_local_option_array(module, key, l, newentry);
-        } 
+        }
         catch (py::cast_error e) {
             // This is not a list; try to cast to a string
             try {
@@ -838,7 +852,7 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
             DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
-        } 
+        }
         catch (py::cast_error e) {
             // This is not a list; try to cast to a string
             try {
