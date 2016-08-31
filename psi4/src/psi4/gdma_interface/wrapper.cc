@@ -25,7 +25,6 @@
  * @END LICENSE
  */
 #ifdef USING_gdma
-#include <boost/python.hpp>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libparallel/ParallelPrinter.h"

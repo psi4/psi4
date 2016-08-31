@@ -43,7 +43,6 @@
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
-//#include <boost/math/special_functions/factorials.hpp>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>

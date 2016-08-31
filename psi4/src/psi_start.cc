@@ -40,8 +40,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <boost/filesystem.hpp>
 #include <getopt.h>
+#include <limits.h>
+#include <libgen.h>
 #include "psi4/psifiles.h"
 #include "gitversion.h"
 #include "psi4/libplugin/plugin.h"
@@ -283,8 +284,9 @@ int psi_start(int argc, char *argv[])
         else {
             infile = fopen(ifname.c_str(), "r");
 
-            boost::filesystem::path ipath = boost::filesystem::system_complete(ifname);
-            infile_directory = ipath.parent_path().string();
+            char buf[PATH_MAX + 1];
+            realpath(ifname.c_str(), buf);
+            infile_directory = dirname(buf);
         }
 
         if(infile == NULL) {

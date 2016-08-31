@@ -29,7 +29,6 @@
 #define SIEVE_H
 
 // need this for erfc^{-1} in the QQR sieve
-//#include <boost/math/special_functions/erf.hpp>
 //#include <cfloat>
 #include <vector>
 #include <memory>
