@@ -833,6 +833,11 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
     return true;
 }
 
+bool py_psi_set_local_option_array_wrapper(std::string const& module, std::string const& key, py::list values)
+{
+    // A wrapper to help pybind11 handle default values
+    return py_psi_set_local_option_array(module, key, values);
+}
 
 bool py_psi_set_global_option_array(std::string const& key, py::list values, DataType *entry = NULL)
 {
@@ -874,6 +879,12 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
         }
     }
     return true;
+}
+
+bool py_psi_set_global_option_array_wrapper(std::string const& key, py::list values)
+{
+    // A wrapper to help pybind11 handle default values
+    return py_psi_set_global_option_array(key, values);
 }
 
 void py_psi_set_local_option_python(const std::string& key, py::object& obj)
@@ -1376,31 +1387,31 @@ PyObject * initpsimod(void) {
     psimod.def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
+    psimod.def("set_local_option", py_psi_set_local_option_array_wrapper);
     psimod.def("set_local_option",
         py_psi_set_local_option_string,
         "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
     psimod.def("set_local_option",
-        py_psi_set_local_option_double,
-        "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
-    psimod.def("set_local_option",
         py_psi_set_local_option_int,
         "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
-    psimod.def("set_local_option", py_psi_set_local_option_array);
+    psimod.def("set_local_option",
+        py_psi_set_local_option_double,
+        "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
     psimod.def("set_local_option_python",
         py_psi_set_local_option_python,
         "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
+    psimod.def("set_global_option", py_psi_set_global_option_array_wrapper);
     psimod.def("set_global_option",
         py_psi_set_global_option_string,
         "Sets value *arg2* to string keyword *arg1* for all modules.");
     psimod.def("set_global_option",
-        py_psi_set_global_option_double,
-        "Sets value *arg2* to double keyword *arg1* for all modules.");
-    psimod.def("set_global_option",
         py_psi_set_global_option_int,
         "Sets value *arg2* to integer keyword *arg1* for all modules.");
-    psimod.def("set_global_option", py_psi_set_global_option_array);
+    psimod.def("set_global_option",
+        py_psi_set_global_option_double,
+        "Sets value *arg2* to double keyword *arg1* for all modules.");
     psimod.def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
 
     // Print options list
