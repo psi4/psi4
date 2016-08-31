@@ -1154,7 +1154,7 @@ def scf_helper(name, **kwargs):
             psi4.set_local_option('SCF', 'GUESS', 'GWH')
         else:
             psi4.set_local_option('SCF', 'GUESS', 'CORE')
-        
+
 
     # EFP preparation
     efp = psi4.get_active_efp()
@@ -1762,7 +1762,7 @@ def run_scf_hessian(name, **kwargs):
 
     freqvec = psi4.Vector.from_array(freqs)
     ref_wfn.set_frequencies(freqvec)
-    # End of temporary freq hack.  Remove me later! 
+    # End of temporary freq hack.  Remove me later!
 
     # Write Hessian out.  This probably needs a more permanent home, too.
     # This is a drop-in replacement for the code that lives in findif
@@ -2725,7 +2725,7 @@ def run_dmrgscf(name, **kwargs):
     proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if 'CASPT2' in name.upper():
-        psi4.set_local_option("DMRG", "DMRG_CASPT2_CALC", True) 
+        psi4.set_local_option("DMRG", "DMRG_CASPT2_CALC", True)
 
     dmrg_wfn = psi4.dmrg(ref_wfn)
     optstash.restore()
@@ -2923,7 +2923,7 @@ def run_sapt(name, **kwargs):
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
     for term in ['ELST', 'EXCH', 'IND', 'DISP', 'TOTAL']:
-        psi4.set_variable(' '.join(['SAPT', term, 'ENERGY']), 
+        psi4.set_variable(' '.join(['SAPT', term, 'ENERGY']),
             psi4.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
     psi4.set_variable('CURRENT ENERGY', psi4.get_variable('SAPT TOTAL ENERGY'))
 
