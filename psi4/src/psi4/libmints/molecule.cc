@@ -81,7 +81,7 @@ std::regex atomSymbol_("(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?(?:@(\\d+\\.\\d+))?)", s
 std::regex variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", std::regex_constants::icase);
 std::regex blankLine_("[\\s%]*", std::regex_constants::icase);
 std::regex commentLine_("\\s*[#%].*", std::regex_constants::icase);
-std::regex unitLabel_("\\s*units?[\\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", std::regex_constants::icase);
+std::regex unitLabel_("(\\s*(?:units?)[\\s=]+)((angstrom)|(ang)|(bohr)|(au)|(a\\.u\\.))\\s*", std::regex_constants::icase);
 std::regex chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*");
 std::regex fragmentMarker_("\\s*--\\s*");
 std::regex orientCommand_("\\s*no_?reorient\\s*", std::regex_constants::icase);
@@ -863,8 +863,8 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             lines.erase(lines.begin() + lineNumber);
         } else if (std::regex_match(lines[lineNumber], reMatches, unitLabel_)) {
             // A units specifier
-            if (iequals("ang", reMatches[1].str())
-                || iequals("angstrom", reMatches[1].str())) {
+            if (iequals("ang", reMatches[2].str())
+                || iequals("angstrom", reMatches[2].str())) {
                 mol->set_units(Angstrom);
             } else {
                 mol->set_units(Bohr);
