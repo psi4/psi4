@@ -52,11 +52,11 @@ void ERISieve::common_init()
 {
     // if sieve_ is 0, then erfc_inv is infinite
     // the boost function just throws an error in this case
-    if (sieve_ > 0.0) {
-        throw FeatureNotImplemented("libmints: sieve.cc", "replacement for boost::math::erfc_inv()", __FILE__, __LINE__);
-//        erfc_thresh_ = boost::math::erfc_inv(sieve_);
-    } else
-        erfc_thresh_ = DBL_MAX;
+    //if (sieve_ > 0.0) {
+    //    throw FeatureNotImplemented("libmints: sieve.cc", "replacement for boost::math::erfc_inv()", __FILE__, __LINE__);
+    //    erfc_thresh_ = boost::math::erfc_inv(sieve_);
+    //} else
+    //    erfc_thresh_ = DBL_MAX;
 
     Options &options = Process::environment.options;
     do_qqr_ = false; // Code below for QQR was/is utterly broken.

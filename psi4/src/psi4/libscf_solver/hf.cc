@@ -931,7 +931,9 @@ void HF::form_H()
 
     // If an external field exists, add it to the one-electron Hamiltonian
     pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
+    std::shared_ptr<ExternalPotential> external;
+    if (pyExtern)
+        external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
     if (external) {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");

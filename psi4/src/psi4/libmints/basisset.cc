@@ -586,6 +586,8 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
                                                            const std::string &fitrole, const std::string &other,
                                                            const int forced_puream)
 {
+    namespace py = pybind11;
+
     // Refactor arguments to make code more comprehensible
     bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true : false;
     std::string orb, aux;
@@ -605,9 +607,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
     std::string smol = mol->create_psi4_string_from_molecule();
 
     // Get a reference to the main module (Pythonized input file) and global dictionary
-    PyObject *main_module, *global_dict, *orbfunc, *auxfunc;
-    main_module = PyImport_AddModule("__main__");
-    global_dict = PyModule_GetDict(main_module);
+    py::dict global_dict = py::dict(py::module::import("__main__").attr("__dict__"));
 
     // Extract reference(s) to the function(s) defined in the Pythonized
     //  input file that apply basis sets to a Molecule. Failing that,
@@ -618,52 +618,25 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
     orbfuncname = orbfuncname.substr(0, orbfuncname.length() - 4);  // chop off .gbs extension
     orbfuncname = std::regex_replace(orbfuncname, match_format, format_empty);  // purge dashes
     orbfuncname = "basisspec_psi4_yo__" + orbfuncname;  // prepend with camouflage
-    orbfunc = PyDict_GetItemString(global_dict, orbfuncname.c_str());
-    if (orbfunc == NULL) {
-#if PY_MAJOR_VERSION == 2
-        orbfunc = PyString_FromString(orb.c_str());
-#else
-        orbfunc = PyUnicode_FromString(orb.c_str());
-#endif
+    py::object orbfunc = global_dict[py::str(orbfuncname)];
+    if (!orbfunc) {
+        orbfunc = py::str(orb);
     }
+
+    py::object auxfunc;
     if (!orbonly) {
         std::string auxfuncname = BasisSet::make_filename(aux);
         auxfuncname = auxfuncname.substr(0, auxfuncname.length() - 4);
         auxfuncname = std::regex_replace(auxfuncname, match_format, format_empty);
         auxfuncname = "basisspec_psi4_yo__" + auxfuncname;
-        auxfunc = PyDict_GetItemString(global_dict, auxfuncname.c_str());
-        if (auxfunc == NULL) {
-#if PY_MAJOR_VERSION == 2
-            auxfunc = PyString_FromString(aux.c_str());
-#else
-            auxfunc = PyUnicode_FromString(aux.c_str());
-#endif
+        //auxfunc = PyDict_GetItemString(global_dict, auxfuncname.c_str());
+        auxfunc = global_dict[py::str(auxfuncname)];
+        if (!auxfunc) {
+        auxfunc = py::str(aux);
         }
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
-//    PyObject *module, *klass, *method, *pargs, *ret;
-//    PY_TRY(module, PyImport_ImportModule("qcdb.libmintsbasisset"));
-//    PY_TRY(klass, PyObject_GetAttrString(module, "BasisSet"));
-//    PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct"));
-//    if (orbonly) {
-//        PY_TRY(pargs, Py_BuildValue("(s s O)", smol.c_str(), key.c_str(), orbfunc));
-//    } else {
-//        PY_TRY(pargs, Py_BuildValue("(s s O s O)", smol.c_str(), key.c_str(), auxfunc,
-//            fitrole.c_str(), orbfunc));
-//    }
-//    PY_TRY(ret, PyEval_CallObject(method, pargs));
-//    pybind11::dict pybs(pybind11::object(ret, true));
-//
-//    // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
-//    Py_DECREF(ret);
-//    Py_DECREF(pargs);
-//    //Py_DECREF(orbfunc);
-//    //if (!orbonly) Py_DECREF(auxfunc);
-//    Py_DECREF(method);
-//    Py_DECREF(klass);
-//    Py_DECREF(module);
-
     pybind11::object bs = pybind11::module::import("qcdb.libmintsbasisset").attr("BasisSet");
     pybind11::object pyconstruct = bs.attr("pyconstruct");
     pybind11::dict pybs;
