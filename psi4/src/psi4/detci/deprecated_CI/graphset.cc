@@ -41,7 +41,6 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include <boost/lexical_cast.hpp>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "structs.h"
@@ -607,7 +606,7 @@ void gs_fill(int nel, int norb, int nirreps, struct graph_set *GraphSet)
       /* check the value of num_strings */
       if (graph->num_strings != xmat[nel][norb]) {
          std::string str = "(gs_fill): num_strings != x[nel][norb] for graph ";
-         str += str += boost::lexical_cast<std::string>( gnum) ;
+         str += std::to_string( gnum) ;
          throw PsiException(str,__FILE__,__LINE__);
          }
 

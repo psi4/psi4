@@ -46,7 +46,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <cstring>
-#include <boost/lexical_cast.hpp>
 #include <pthread.h>
 #include "psi4/psi4-dec.h"
 #include "tpool.h"
@@ -116,7 +115,7 @@ void tpool_init(tpool_t   *tpoolp,
 			      tpool_thread,
 			      (void *)tpool)) != 0){
       str = "pthread_create ";
-      str += boost::lexical_cast<std::string>( rtn) ;
+      str += std::to_string(rtn);
       throw PsiException(str,__FILE__,__LINE__);
   }
   }

@@ -42,8 +42,6 @@
 #include "jk_grad.h"
 
 #include <algorithm>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 
 #include <sstream>
 
