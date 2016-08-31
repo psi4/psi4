@@ -8,7 +8,7 @@ matrix:
     addons: &1
       apt:
         sources:
-        - llvm-toolchain-precise-3.5
+        - llvm-toolchain-precise-3.6
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
         packages:
@@ -16,16 +16,16 @@ matrix:
         - cmake
         - cmake-data
         - liblapack-dev
-        - clang-3.5
+        - clang-3.6
         - libhdf5-serial-dev
         - gfortran
     env:
-      - CXX_COMPILER='clang++-3.5'
-      - C_COMPILER='clang-3.5'
+      - CXX_COMPILER='clang++-3.6'
+      - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
       - NAME='clang'
-      - VERSION='3.5'
+      - VERSION='3.6'
 
   - os: linux
     compiler: clang
