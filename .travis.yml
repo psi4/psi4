@@ -135,7 +135,8 @@ before_script:
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
 - mkdir ${TRAVIS_BUILD_DIR}/libint
-- tar -xzvf templibint/libint_x86_64.tgz -C ${TRAVIS_BUILD_DIR}/libint
+- wget http://vergil.chemistry.gatech.edu/test_sphinxman/libint_x86_64.tgz
+- tar -xzvf libint_x86_64.tgz -C ${TRAVIS_BUILD_DIR}/libint
 - > 
     cmake -Bbuild -H. 
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER} 
