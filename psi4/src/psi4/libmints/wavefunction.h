@@ -74,6 +74,7 @@ class SOBasisSet;
 class PSIO;
 class Chkpt;
 class OrbitalSpace;
+class OEProp;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -110,6 +111,8 @@ protected:
     std::shared_ptr<MatrixFactory> factory_;
 
     std::shared_ptr<Wavefunction> reference_wavefunction_;
+
+    std::shared_ptr<OEProp> oeprop_;
 
     /// How much memory you have access to.
     long int memory_;
@@ -366,6 +369,9 @@ public:
     virtual std::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
+
+    std::shared_ptr<OEProp> get_oeprop() const { return oeprop_; }
+    void set_oeprop( std::shared_ptr<OEProp> oeprop ) { oeprop_ = oeprop; }
 
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;

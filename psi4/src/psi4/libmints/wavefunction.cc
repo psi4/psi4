@@ -130,6 +130,8 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
+    oeprop_ = other->oeprop_;
+
     same_a_b_dens_ = other->same_a_b_dens_;
     same_a_b_orbs_ = other->same_a_b_orbs_;
 
@@ -185,6 +187,8 @@ void Wavefunction::deep_copy(const Wavefunction *other)
 
     energy_ = other->energy_;
     efzc_ = other->efzc_;
+
+    // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
