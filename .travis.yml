@@ -134,13 +134,15 @@ before_script:
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
+- mkdir ${TRAVIS_BUILD_DIR}/libint
+- tar -xzvf templibint/libint_x86_64.tgz -C ${TRAVIS_BUILD_DIR}/libint
 - > 
     cmake -Bbuild -H. 
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER} 
     -DCMAKE_C_COMPILER=${C_COMPILER} 
     -DFortran_COMPILER=${Fortran_COMPILER} 
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} 
-    -DMAX_AM_ERI=4 
+    -DLIBINT_ROOT=${TRAVIS_BUILD_DIR}/libint
     -DENABLE_CHEMPS2=off 
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 - cd build
