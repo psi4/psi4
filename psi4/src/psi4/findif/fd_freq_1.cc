@@ -56,8 +56,8 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
     pybind11::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
-    bool noextern = external ? false : true;
+//    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
+    bool noextern = pyExtern ? false : true;
     CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
     int Nirrep = salc_list.nirrep();
 
