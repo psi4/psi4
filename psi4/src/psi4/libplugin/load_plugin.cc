@@ -60,7 +60,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
 //    boost::filesystem::path pluginPath(plugin_pathname);
 //    boost::filesystem::path pluginStem = pluginPath.stem();
 //    info.name = pluginStem.string();
-    info.name = filesystem::path(plugin_pathname).basename();
+    info.name = filesystem::path(plugin_pathname).stem();
 
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.

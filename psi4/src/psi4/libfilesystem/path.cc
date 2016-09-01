@@ -78,7 +78,7 @@ bool path::is_file() const
     return S_ISREG(sb.st_mode);
 }
 
-std::string path::basename() const
+std::string path::stem() const
 {
     char tpath[PATH_MAX+1];
     std::string path = filename();
