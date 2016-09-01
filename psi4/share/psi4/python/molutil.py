@@ -278,10 +278,34 @@ def dynamic_variable_bind(cls):
     """
     cls.__setattr__ = new_set_attr
     cls.__getattr__ = new_get_attr
+
     cls.BFS = BFS
 
 
 dynamic_variable_bind(psi4.Molecule)  # pass class type, not class instance
+
+def wfn_set_attr(self, name, value):
+    """Function to redefine __setattr__ method of molecule class."""
+    self.variables[name] = value
+
+
+def wfn_get_attr(self, name):
+    """Function to redefine __getattr__ method of molecule class."""
+    return self.variables[name]
+
+# def wfn_del_attr(self, name):
+
+
+def wfn_dynamic_variable_bind(cls):
+    """Function to dynamically add extra members to
+    the psi4.Molecule class.
+
+    """
+    cls.variables = dict()
+    cls.__setattr__ = wfn_set_attr
+    cls.__getattr__ = wfn_get_attr
+
+wfn_dynamic_variable_bind(psi4.Wavefunction)
 
 
 #
