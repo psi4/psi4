@@ -1119,7 +1119,7 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-        psi4.scf(new_wfn, precallback, postcallback)
+        psi4.scf(new_wfn)
 
     # broken clean-up
     if do_broken:
