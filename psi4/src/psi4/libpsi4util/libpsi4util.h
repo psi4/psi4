@@ -133,12 +133,6 @@ private:
 
 void generate_combinations(int n, int k, std::vector <std::vector<int>> &combinations);
 
-namespace filesystem {
-std::string system_complete(const std::string& path);
-std::string basename(const std::string& path);
-bool create_directory(const std::string& path, mode_t mode = 0700);
-}
-
 }
 
 #endif // _psi_src_lib_libpsi4util_libpsi4util_h_

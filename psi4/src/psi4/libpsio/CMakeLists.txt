@@ -32,4 +32,4 @@ set(sources_list rw.cc
                  tocread.cc 
                  filescfg.cc 
 )
-psi4_add_library(psio sources_list options ${Boost_LIBRARIES})
+psi4_add_library(psio sources_list options)

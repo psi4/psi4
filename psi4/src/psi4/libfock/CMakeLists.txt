@@ -27,4 +27,3 @@ if(ENABLE_GTFOCK)
 endif()
 
 psi4_add_library(fock sources_list mints functional 3index psio)
-target_include_directories(fock PUBLIC ${Boost_INCLUDE_DIRS})

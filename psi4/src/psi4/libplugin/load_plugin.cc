@@ -28,7 +28,7 @@
 #include "plugin.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libfilesystem/path.h"
 
 #include <regex>
 
@@ -60,7 +60,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
 //    boost::filesystem::path pluginPath(plugin_pathname);
 //    boost::filesystem::path pluginStem = pluginPath.stem();
 //    info.name = pluginStem.string();
-    info.name = filesystem::basename(plugin_pathname);
+    info.name = filesystem::path(plugin_pathname).basename();
 
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.
