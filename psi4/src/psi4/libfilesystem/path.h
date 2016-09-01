@@ -73,7 +73,7 @@ public:
 
     bool is_file() const;
 
-    std::string basename() const;
+    std::string stem() const;
 
     std::string filename() const;
 
