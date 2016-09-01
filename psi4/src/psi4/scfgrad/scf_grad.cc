@@ -333,13 +333,15 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // If an external field exists, add it to the one-electron Hamiltonian
     pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
-    if (external) {
-        gradient_terms.push_back("External Potential");
-        timer_on("Grad: External");
-        gradients["External Potential"] = external->computePotentialGradients(basisset_, Dt);
-        timer_off("Grad: External");
-    }  // end external
+    if (pyExtern) {
+        std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
+        if (external) {
+            gradient_terms.push_back("External Potential");
+            timer_on("Grad: External");
+            gradients["External Potential"] = external->computePotentialGradients(basisset_, Dt);
+            timer_off("Grad: External");
+        }  // end external
+    }
 
     // => Overlap Gradient <= //
     timer_on("Grad: S");
