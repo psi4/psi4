@@ -76,13 +76,14 @@ void Process::Environment::initialize()
     if (environ) {
         while (environ[i] != NULL) {
             std::vector <std::string> strs = split(environ[i], "=");
-            environment_[strs[0]] = strs[1];
+            if (strs.size() > 1) {
+                environment_[strs[0]] = strs[1];
 
-            // I'm tired of having to (re)set PSIDATADIR for PSI3/4
-            // If PSI4DATADIR is set it overrides PSIDATADIR
-            if (strs[0] == "PSI4DATADIR")
-                psi4datadir = strs[1];
-
+                // I'm tired of having to (re)set PSIDATADIR for PSI3/4
+                // If PSI4DATADIR is set it overrides PSIDATADIR
+                if (strs[0] == "PSI4DATADIR")
+                    psi4datadir = strs[1];
+            }
             ++i;
         }
     }
