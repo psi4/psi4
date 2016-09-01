@@ -119,6 +119,7 @@ path path::parent_path() const
         for (size_t i = 0; i < until; i++)
             result.path_.push_back(path_[i]);
     }
+    return result;
 }
 
 path path::operator/(const path &other) const
