@@ -32,6 +32,7 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libfilesystem/path.h"
 
 #include "cubeprop.h"
 #include "csg.h"
@@ -105,13 +106,7 @@ void CubeProperties::compute_properties()
     ss << filepath << "/" << "geom.xyz";
 
     // Is filepath a valid directory?
-//    std::filesystem::path data_dir(filepath);
-//    if(not std::filesystem::is_directory(data_dir)){
-    char data_dir[PATH_MAX + 1];
-    realpath(filepath.c_str(), data_dir);
-    struct stat sb;
-
-    if (stat(data_dir, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+    if (filesystem::path(filepath).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Flush();

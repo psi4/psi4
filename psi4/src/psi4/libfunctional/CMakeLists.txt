@@ -19,4 +19,3 @@ set(sources_list PBE_Cfunctional.cc
                  xfunctional.cc 
 )
 psi4_add_library(functional sources_list disp)
-target_include_directories(functional PUBLIC ${Boost_INCLUDE_DIRS})

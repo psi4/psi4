@@ -37,6 +37,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/potential.h"
+#include "psi4/libfilesystem/path.h"
 #include "csg.h"
 
 #ifdef _OPENMP
@@ -271,13 +272,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     ss << filepath_ << "/" << name << ".cube";
 
     // Is filepath a valid directory?
-//    boost::filesystem::path data_dir(filepath_);
-//    if(not boost::filesystem::is_directory(data_dir)){
-    char data_dir[PATH_MAX + 1];
-    realpath(filepath_.c_str(), data_dir);
-    struct stat sb;
-
-    if (stat(data_dir, &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+    if (filesystem::path(filepath_).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Flush();

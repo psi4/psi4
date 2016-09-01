@@ -43,7 +43,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-
+#include "psi4/libfilesystem/path.h"
 
 #include "psi4/psi4-dec.h"
 #include "script.h"
@@ -1225,7 +1225,7 @@ bool psi4_python_module_initialize()
     // Track down the location of Psi4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
     std::string psiDataDirWithPython = psiDataDirName + "/python";
-    std::string fullPath = filesystem::system_complete(psiDataDirWithPython);
+    std::string fullPath = filesystem::path(psiDataDirWithPython).make_absolute().str();
     struct stat sb;
     if(::stat(fullPath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
         printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
@@ -1604,7 +1604,7 @@ void Python::run(FILE *input)
         PY_TRY(sysmod, PyImport_ImportModule("sys"));
         PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
         for (size_t i; i < path_list.size(); i++) {
-            std::string cpath = filesystem::system_complete(path_list[i]);
+            std::string cpath = filesystem::path(path_list[i]).make_absolute().str();
             if (stat(cpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
                 printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
                                "      Current value of PSIPATH is %s\n", psiPath.c_str());
@@ -1624,7 +1624,7 @@ void Python::run(FILE *input)
         // Track down the location of Psi4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPython = psiDataDirName + "/python";
-        std::string full_path = filesystem::system_complete(psiDataDirWithPython);
+        std::string full_path = filesystem::path(psiDataDirWithPython).make_absolute().str();
         if (stat(full_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
             printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());

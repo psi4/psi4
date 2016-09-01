@@ -73,7 +73,8 @@ install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake
 
 install(DIRECTORY share/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
-        PATTERN fsapt EXCLUDE)
+        PATTERN fsapt EXCLUDE
+        PATTERN "*.pyc" EXCLUDE)
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)

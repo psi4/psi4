@@ -35,8 +35,8 @@ set(sources_list export_psio.cc
         read_options.cc
         )
 
-# TODO: Haveing PSI4_ROOT for plugins isn't right
-set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${Boost_INCLUDE_DIR} -I${PYTHON_INCLUDE_DIR} ")
+# TODO: Having PSI4_ROOT for plugins isn't right
+set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${PYTHON_INCLUDE_DIR} ")
 
 add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
         -Drestrict=${RESTRICT_KEYWORD}
@@ -56,13 +56,16 @@ endif()
 
 install(TARGETS psi4 ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
-set_property(GLOBAL APPEND PROPERTY LIBLIST psi4)
-target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
-        ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
-        cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
-        mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
-        thermo mrcc scf sapt gdma_interface dmrg
-        )
+#set_property(GLOBAL APPEND PROPERTY LIBLIST psi4)
+#target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
+#        ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
+#        cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
+#        mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
+#        thermo mrcc scf sapt gdma_interface dmrg
+#        )
+get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
+
+target_link_libraries(psi4 PRIVATE ${psi4_libraries})
 target_link_libraries(psi4 PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(psi4 PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(psi4 PRIVATE ${LAPACK_LIBRARIES})
@@ -78,7 +81,7 @@ target_include_directories(psi4 PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFA
 # Add both the build and install RPaths so we can test from build dir
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
 set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage/${PSI4_EXTERNAL})
-foreach(ex_proj boost libderiv libint libefp)
+foreach(ex_proj libderiv libint libefp)
     set(PSI4_RPATH
             "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
 endforeach()
@@ -104,7 +107,6 @@ set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
         INSTALL_RPATH_USE_LINK_PATH TRUE
         BUILD_WITH_INSTALL_RPATH TRUE
         )
-get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
 
 message("LIBS: PYTHON   ${PYTHON_LIBRARIES}")
 message("LIBS: PSI4     ${psi4_libraries}")

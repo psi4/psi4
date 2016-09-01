@@ -33,7 +33,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libfilesystem/path.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -123,7 +123,7 @@ class PluginFileManager{
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
 
-        std::string fpath =  filesystem::system_complete(psiDataDirWithPlugin);
+        std::string fpath =  filesystem::path(psiDataDirWithPlugin).make_absolute().str();
         struct stat sb;
         if(::stat(fpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
             printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"

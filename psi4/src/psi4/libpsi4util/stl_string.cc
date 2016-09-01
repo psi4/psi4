@@ -298,28 +298,4 @@ unsigned long int free_smatrix(short ***matrix, int size1, int size2, int size3)
     return (size * sizeof(short));
 }
 
-namespace filesystem {
-std::string system_complete(const std::string& path)
-{
-    char bf_path[PATH_MAX + 1];
-    realpath(path.c_str(), bf_path);
-    return std::string(bf_path);
-}
-
-std::string basename(const std::string& path)
-{
-    char tpath[PATH_MAX+1];
-    if (path.size() > PATH_MAX)
-        throw std::runtime_error("path is longer than PATH_MAX.");
-    strncpy(tpath, path.c_str(), PATH_MAX);
-    char *temp = ::basename(tpath);
-    return std::string(temp);
-}
-
-bool create_directory(const std::string& path, mode_t mode)
-{
-    return mkdir(path.c_str(), mode) == 0;
-}
-
-}
 }

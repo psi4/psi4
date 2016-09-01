@@ -43,6 +43,7 @@
 #include "psi4/fisapt/fisapt.h"
 #include "psi4/libcubeprop/csg.h"
 #include "psi4/fisapt/local2.h"
+#include "psi4/libfilesystem/path.h"
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -35,6 +35,7 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libfilesystem/path.h"
 #include <efp.h>
 
 #include <regex>
@@ -116,7 +117,7 @@ void EFP::add_fragments(std::vector<std::string> fnames)
         for (auto tok_iter : tokens) {
             std::string psiPathWithFragment = tok_iter + "/" + name + ".efp";
 //            boost::filesystem::path bf_path = boost::filesystem::system_complete(psiPathWithFragment);
-            std::string bf_path = filesystem::system_complete(psiPathWithFragment);
+            std::string bf_path = filesystem::path(psiPathWithFragment).make_absolute().str();
 
             if (!(res = efp_add_potential(efp_, bf_path.c_str()))) {
                 outfile->Printf("  EFP fragment %s read from %s\n",
