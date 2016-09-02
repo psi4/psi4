@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 #include "psi4/libmints/vector.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -36,7 +36,7 @@
 using namespace psi;
 namespace py = pybind11;
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 
 void export_functional(py::module &m)

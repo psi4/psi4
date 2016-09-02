@@ -38,7 +38,7 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/cdsalclist.h"
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 namespace psi {
 namespace findif {
