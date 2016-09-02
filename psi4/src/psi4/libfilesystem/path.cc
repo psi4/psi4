@@ -27,9 +27,25 @@ bool create_directory(const path &p)
 path path::make_absolute() const
 {
     // TODO: Handle ~ and environment variables (e.g. $HOME)
-    char temp[PATH_MAX];
-    if (realpath(str().c_str(), temp) == NULL)
-        throw std::runtime_error("path::make_absolute: " + std::string(strerror(errno)));
+    int path_max;
+#ifdef PATH_MAX
+    path_max = PATH_MAX;
+#else
+    path_max = pathconf(path, _PC_PATH_MAX);
+    if (path_max <= 0)
+        path_max = 4096;
+#endif
+
+    char *temp = new char[path_max];
+    if (realpath(str().c_str(), temp) == NULL) {
+        // Ignore errors relating to a file or directory component not existing
+        if (errno != (int)std::errc::no_such_file_or_directory ||
+            errno != (int)std::errc::not_a_directory) {
+            throw std::runtime_error("path::make_absolute: " + std::string(strerror(errno)));
+        }
+    }
+    delete[] temp;
+
     return path(temp);
 }
 
@@ -80,7 +96,7 @@ bool path::is_file() const
 
 std::string path::stem() const
 {
-    char tpath[PATH_MAX+1];
+    char tpath[PATH_MAX + 1];
     std::string path = filename();
     if (path.size() > PATH_MAX)
         throw std::runtime_error("path is longer than PATH_MAX.");
@@ -129,20 +145,20 @@ path path::operator/(const path &other) const
 
     path result(*this);
 
-    for (size_t i=0; i<other.path_.size(); i++)
+    for (size_t i = 0; i < other.path_.size(); i++)
         result.path_.push_back(other.path_[i]);
 
     return result;
 }
 
-path& path::operator=(const path &path)
+path &path::operator=(const path &path)
 {
     path_ = path.path_;
     absolute_ = path.absolute_;
     return *this;
 }
 
-path & path::operator=(path && path)
+path &path::operator=(path && path)
 {
     if (this != &path) {
         path_ = std::move(path.path_);
@@ -158,7 +174,7 @@ bool path::remove_file()
 
 bool path::resize_file(size_t target_length)
 {
-    return ::truncate(str().c_str(), (off_t)target_length) == 0;
+    return ::truncate(str().c_str(), (off_t) target_length) == 0;
 }
 
 path path::getcwd()
