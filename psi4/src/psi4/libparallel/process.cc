@@ -60,8 +60,6 @@ void Process::Environment::initialize()
 {
     // If envp is NULL, try to obtain envp from enviorn in unistd.h
 
-    std::string psi4datadir;
-
     // First set some defaults:
     // The std::string --> c-string --> std::string construction
     //   removes the padding nul characters introduced by the binary
@@ -78,18 +76,10 @@ void Process::Environment::initialize()
             std::vector <std::string> strs = split(environ[i], "=");
             if (strs.size() > 1) {
                 environment_[strs[0]] = strs[1];
-
-                // I'm tired of having to (re)set PSIDATADIR for PSI3/4
-                // If PSI4DATADIR is set it overrides PSIDATADIR
-                if (strs[0] == "PSI4DATADIR")
-                    psi4datadir = strs[1];
             }
             ++i;
         }
     }
-
-    if (psi4datadir.empty() == false)
-        environment_["PSIDATADIR"] = psi4datadir;
 
     nthread_ = 1;
 
