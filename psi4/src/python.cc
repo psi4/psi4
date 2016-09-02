@@ -1600,10 +1600,13 @@ void Python::run(FILE *input)
         // Track down the location of Psi4's auxiliary directories path
         std::string psiPath = Process::environment("PSIPATH") + ":./";
         std::vector<std::string> path_list = split(psiPath, ":");
+        path_list.erase(std::remove_if(path_list.begin(), path_list.end(),
+                    [](const std::string& o) { return o.size() == 0; }));
+
         PyObject *path, *sysmod, *str;
         PY_TRY(sysmod, PyImport_ImportModule("sys"));
         PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
-        for (size_t i; i < path_list.size(); i++) {
+        for (size_t i=0; i < path_list.size(); i++) {
             std::string cpath = filesystem::path(path_list[i]).make_absolute().str();
             if (stat(cpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
                 printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
