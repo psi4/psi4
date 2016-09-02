@@ -28,7 +28,7 @@
 #ifndef _psi_src_lib_libmints_pybuffer_h
 #define _psi_src_lib_libmints_pybuffer_h
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include <sstream>
 #include <string>

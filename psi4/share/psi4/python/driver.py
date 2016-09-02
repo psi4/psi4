@@ -611,8 +611,11 @@ def gradient(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
+        print("about to generate displacements")
         displacements = psi4.fd_geoms_1_0(moleculeclone)
+        print(displacements)
         ndisp = len(displacements)
+        print("generated displacments")
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print(""" %d displacements needed ...""" % (ndisp), end='')
@@ -1806,7 +1809,7 @@ def molden(wfn, filename, density_a=None, density_b=None):
         else:
             NO_occb = NO_occa
             NO_Cb = NO_Ca
-        
+
         mw = psi4.MoldenWriter(wfn)
         mw.writeNO(filename, NO_Ca, NO_Cb, NO_occa, NO_occb)
 

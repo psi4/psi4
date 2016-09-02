@@ -46,7 +46,7 @@
 #include "psi4/pragma.h"
 #include <memory>
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include "psi4/psi4-dec.h"
 

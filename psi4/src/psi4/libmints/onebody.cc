@@ -29,7 +29,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include <stdexcept>
 

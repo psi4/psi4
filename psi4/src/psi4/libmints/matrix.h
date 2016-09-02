@@ -34,7 +34,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include <cstdio>
 #include <string>
@@ -68,7 +68,7 @@ enum diagonalize_order {
  *
  * Using a matrix factory makes creating these a breeze.
  */
-class Matrix : public Serializable {
+class Matrix : public std::enable_shared_from_this<Matrix> {
 protected:
     /// Matrix data
     double ***matrix_;

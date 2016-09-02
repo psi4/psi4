@@ -41,7 +41,7 @@
 #include "psi4/libmints/petitelist.h"
 #include "psi4/physconst.h"
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 namespace psi {
 namespace findif {

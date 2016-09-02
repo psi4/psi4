@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/liboptions/liboptions.h"
@@ -34,7 +34,7 @@ using namespace psi;
 using namespace psi::efp;
 namespace py = pybind11;
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 void export_efp(pybind11::module& m)
 {

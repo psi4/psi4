@@ -50,7 +50,7 @@
 #include "coordentry.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include <memory>
 #include <regex>

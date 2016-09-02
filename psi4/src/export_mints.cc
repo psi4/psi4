@@ -75,15 +75,10 @@
 
 #include <string>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
-#include <pybind11/operators.h>
-
 using namespace psi;
 namespace py = pybind11;
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 /* Start Numpy __array_interface__
 Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
@@ -303,12 +298,12 @@ void export_mints(py::module& m)
     // the vector's data type.
     //py::class_<std::vector<SharedMatrix > >(m, "matrix_vector", "docstring").
     //        def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
-    py::bind_vector<SharedMatrix>(m, "VectorMatrix");
+    py::bind_vector<std::shared_ptr<Matrix>>(m, "VectorMatrix");
 
     // Other vector types
     //py::class_<std::vector<double> >(m, "vector_of_doubles", "docstring").
     //        def(vector_indexing_suite<std::vector<double>, true >());
-    py::bind_vector<double>(m, "VectorDouble");
+//    py::bind_vector<double>(m, "VectorDouble");
 
     // Use typedefs to explicitly tell Boost.Python which function in the class
     // to use. In most cases, you should not be making Python specific versions
@@ -405,7 +400,7 @@ void export_mints(py::module& m)
     typedef void   (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    py::class_<Matrix, SharedMatrix>(m, "Matrix", "docstring").
+    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring").
             def(py::init<int, int>()).
             def(py::init<const std::string&, int, int>()).
             def(py::init<const std::string&, const Dimension&, const Dimension&>()).

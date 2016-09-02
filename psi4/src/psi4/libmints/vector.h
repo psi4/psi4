@@ -36,7 +36,7 @@
 #include <iterator>
 #include <memory>
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 namespace psi {
 
