@@ -25,8 +25,10 @@
  * @END LICENSE
  */
 
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/psimath.h"
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 void export_blas_lapack(pybind11::module& m)
 {

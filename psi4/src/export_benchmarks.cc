@@ -26,7 +26,7 @@
  */
 
 #include "psi4/libmints/benchmark.h"
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 void export_benchmarks(pybind11::module& m)
 {

@@ -49,7 +49,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"

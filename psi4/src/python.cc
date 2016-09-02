@@ -30,8 +30,7 @@
 #include <map>
 #include <iomanip>
 #include <sys/stat.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/eval.h>
+#include <psi4/pybind11.h>
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libefp_solver/efp_solver.h"
@@ -68,7 +67,7 @@ namespace psi {
 using namespace psi;
 namespace py = pybind11;
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 // Python helper wrappers
 void export_benchmarks(py::module&);

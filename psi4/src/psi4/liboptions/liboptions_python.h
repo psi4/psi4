@@ -28,7 +28,7 @@
 #ifndef _psi_src_lib_liboptions_python_h
 #define _psi_src_lib_liboptions_python_h
 
-#include <pybind11/pybind11.h>
+#include <psi4/pybind11.h>
 
 namespace psi {
 
