@@ -2,14 +2,13 @@ find_package(libefp CONFIG QUIET COMPONENTS shallow)
 
 if(${libefp_FOUND})
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-    message(STATUS "Found libefp: ${_loc}")
+    message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
     add_library(libefp_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
-        GIT_TAG fraglibextras
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
