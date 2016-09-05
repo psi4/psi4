@@ -5,7 +5,7 @@ if(${ENABLE_gdma})
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
-        message(STATUS "Suitable gdma located at ${_loc}")
+        message(STATUS "Found gdma: ${_loc} (found version ${gdma_VERSION})")
         add_library(gdma_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

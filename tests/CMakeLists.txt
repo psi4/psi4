@@ -79,6 +79,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
 )
    add_subdirectory(${test_name})
 endforeach()
+message(STATUS "Adding test cases: Psi4")
 
 ###### START internal-executable-dependent tests ################
 
@@ -90,6 +91,7 @@ endforeach()
 #   * Follow un-qualified inclusion as above for normal tests
 
 add_subdirectory(libefp)
+message(STATUS "Adding test cases: Psi4 + libefp")
 
 ###### END internal-executable-dependent tests ##################
 
@@ -109,8 +111,9 @@ find_program(DFTD3_EXECUTABLE
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
-   add_subdirectory(dftd3)
-   message(STATUS "dftd3 executable for interfaced DFTD3 found. Test cases added.")
+    add_subdirectory(dftd3)
+    message(STATUS "Found DFTD3: ${DFTD3_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + DFTD3")
 endif()
 
 # <<<  MRCC  >>>
@@ -120,8 +123,9 @@ find_program(MRCC_EXECUTABLE
              DOC "Path to Kallay's mrcc executable")
 
 if(MRCC_EXECUTABLE)
-   add_subdirectory(mrcc)
-   message(STATUS "dmrcc executable for interfaced MRCC found. Test cases added.")
+    add_subdirectory(mrcc)
+    message(STATUS "Found MRCC: ${MRCC_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + MRCC")
 endif()
 
 # <<<  CFOUR  >>>
@@ -131,15 +135,17 @@ find_program(CFOUR_EXECUTABLE
              DOC "Path to Stanton and Gauss's xcfour executable")
 
 if(CFOUR_EXECUTABLE)
-   add_subdirectory(cfour)
-   message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
+    add_subdirectory(cfour)
+    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + CFOUR")
 endif()
 
 ###### END external-executable-dependent tests ##################
 
 # External module dependent tests
 if(ENABLE_PCMSOLVER)
-   add_subdirectory(pcmsolver)
+    add_subdirectory(pcmsolver)
+    message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
 
 if(NOT PERL_FOUND)
@@ -148,9 +154,11 @@ endif()
 
 if(ENABLE_CheMPS2)
     add_subdirectory(dmrg)
+    message(STATUS "Adding test cases: Psi4 + CheMPS2")
 endif()
 
 if(ENABLE_gdma)
     add_subdirectory(gdma1)
+    message(STATUS "Adding test cases: Psi4 + gdma")
 endif()
 
