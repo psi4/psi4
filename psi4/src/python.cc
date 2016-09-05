@@ -126,7 +126,7 @@ namespace psimrcc { PsiReturnType psimrcc(SharedWavefunction, Options&); }
 namespace sapt { PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&); }
 namespace thermo { PsiReturnType thermo(SharedWavefunction, SharedVector, Options&); }
 
-#ifdef ENABLE_CHEMPS2
+#ifdef USING_CheMPS2
 namespace dmrg       { SharedWavefunction dmrg(SharedWavefunction, Options&);     }
 #endif
 
@@ -504,7 +504,7 @@ double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 }
 #endif
 
-#ifdef ENABLE_CHEMPS2
+#ifdef USING_CheMPS2
 SharedWavefunction py_psi_dmrg(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DMRG");

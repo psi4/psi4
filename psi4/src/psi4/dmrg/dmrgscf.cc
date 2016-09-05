@@ -24,7 +24,7 @@
  *
  * @END LICENSE
  */
-#ifdef ENABLE_CHEMPS2
+#ifdef USING_CheMPS2
 
 //#include <libplugin/plugin.h>
 #include "psi4/libmints/matrix.h"

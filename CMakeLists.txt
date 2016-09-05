@@ -35,7 +35,7 @@ include(ExternalProject)
 
 ############################# Options: Build What? #############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
-option(ENABLE_CHEMPS2 "Enables CheMPS2 for DMRG" OFF)
+option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
@@ -92,7 +92,7 @@ set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
 #These packages don't believe in configuration files...
-foreach(pkg in pybind11 pcmsolver chemps2)
+foreach(pkg in pybind11 pcmsolver)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
       set(${PKG}_ROOT ${PSI4_STAGE_EX}/${pkg})
@@ -126,11 +126,10 @@ ExternalProject_Add(psi4_core
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
-              -DCHEMPS2_ROOT=${CHEMPS2_ROOT}
               -DPYBIND11_ROOT=${PYBIND11_ROOT}
               -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
-              -DENABLE_CHEMPS2=${ENABLE_CHEMPS2}
+              -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_liberd=${ENABLE_liberd}
               -DENABLE_gdma=${ENABLE_gdma}

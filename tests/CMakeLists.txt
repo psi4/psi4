@@ -146,7 +146,7 @@ if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
 endif()
 
-if(ENABLE_CHEMPS2)
+if(ENABLE_CheMPS2)
     add_subdirectory(dmrg)
 endif()
 
