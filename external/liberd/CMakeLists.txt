@@ -5,7 +5,7 @@ if(${ENABLE_liberd})
 
     if(${liberd_FOUND})
         get_property(_loc TARGET liberd::erd PROPERTY LOCATION)
-        message(STATUS "Suitable liberd located at ${_loc}")
+        message(STATUS "Found liberd: ${_loc} (found version ${liberd_VERSION})")
         add_library(liberd_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

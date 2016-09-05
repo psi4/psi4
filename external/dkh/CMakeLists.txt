@@ -5,7 +5,7 @@ if(${ENABLE_dkh})
 
     if(${dkh_FOUND})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
-        message(STATUS "Suitable dkh located at ${_loc}")
+        message(STATUS "Found dkh: ${_loc} (found version ${dkh_VERSION})")
         add_library(dkh_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

@@ -111,15 +111,5 @@ set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
         BUILD_WITH_INSTALL_RPATH TRUE
         )
 
-message("LIBS: PYTHON   ${PYTHON_LIBRARIES}")
-message("LIBS: PSI4     ${psi4_libraries}")
-message("LIBS: CHEMPS2  ${CHEMPS2_LIBRARIES}")
-message("LIBS: GDMA")
-message("LIBS: DERIV    ${LIBDERIV_LIBRARIES}")
-message("LIBS: THREAD   ${CMAKE_THREAD_LIBS_INIT}")
-message("LIBS: LAPACK   ${LAPACK_LIBRARIES}")
-message("LIBS: BLAS     ${BLAS_LIBRARIES}")
-message("LIBS: Fortran  ${CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES}")
-
 target_link_libraries(psi4-bin PRIVATE psi4)
 

@@ -2,7 +2,7 @@ find_package(libint CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${libint_FOUND})
     get_property(_loc TARGET libint::int PROPERTY LOCATION)
-    message(STATUS "Suitable libint located at ${_loc}")
+    message(STATUS "Found libint: ${_loc} (found version ${libint_VERSION})")
     add_library(libint_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
