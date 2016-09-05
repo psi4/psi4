@@ -33,12 +33,10 @@ set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
 #optional_plugin(Ambit)
 #optional_plugin(PCMSolver)
-#optional_plugin(CHEMPS2)
 
-if (${ENABLE_CHEMPS2})
-    find_package(CHEMPS2 REQUIRED)
-    #   set_property(GLOBAL APPEND PROPERTY PSI4_MODULES ${${PLUGIN_NAME}_LIBRARIES})
-    add_definitions(-DENABLE_CHEMPS2)
+if(${ENABLE_CheMPS2})
+    find_package(CheMPS2 CONFIG REQUIRED
+                     HINTS ${CMAKE_PREFIX_PATH}/chemps2)
 endif ()
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED

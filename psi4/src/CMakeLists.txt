@@ -53,6 +53,9 @@ add_library(psi4 STATIC ${psi4_all_sources})
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
+if(TARGET CheMPS2::chemps2)
+    target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:CheMPS2::chemps2,INTERFACE_COMPILE_DEFINITIONS>)
+endif()
 
 install(TARGETS psi4 ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 

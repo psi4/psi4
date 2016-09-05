@@ -40,7 +40,7 @@ psi4_component(PCMSOLVER @ENABLE_PCMSOLVER@)
 psi4_component(AMBIT @ENABLE_AMBIT@)
 psi4_component(GTFOCK @ENABLE_GTFOCK@)
 psi4_component(GDMA @ENABLE_gdma@)
-psi4_component(CHEMPS2 @ENABLE_CHEMPS2@)
+psi4_component(CHEMPS2 @ENABLE_CheMPS2@)
 psi4_component(DKH @ENABLE_dkh@)
 
 foreach(_comp ${PSI4_FIND_COMPONENTS})
