@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <system_error>
 
 #include <unistd.h>
 #include <sys/stat.h>
