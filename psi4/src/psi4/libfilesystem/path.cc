@@ -40,7 +40,7 @@ path path::make_absolute() const
     char *temp = new char[path_max];
     if (realpath(str().c_str(), temp) == NULL) {
         // Ignore errors relating to a file or directory component not existing
-        if (errno != (int)std::errc::no_such_file_or_directory ||
+        if (errno != (int)std::errc::no_such_file_or_directory &&
             errno != (int)std::errc::not_a_directory) {
             throw std::runtime_error("path::make_absolute: " + std::string(strerror(errno)));
         }
