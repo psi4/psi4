@@ -1,6 +1,6 @@
 * cmake check 4.9 gcc when intel compilers
 
-* cmake check 2015+ intel
-
 * numpy wrapper to psi4.Matrix
+
+* figure out pybind11 doc of psimod and replace documentation system
 

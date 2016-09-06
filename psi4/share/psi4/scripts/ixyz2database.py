@@ -37,7 +37,7 @@ sys.path.append(os.environ.get('PSIDATADIR')+'/python')
 try:
     import qcdb
 except ImportError:
-    print """Cannot load qcdb python module. Run this script in situ or append the psi4/share/python directory to $PYTHONPATH.""" 
+    print """Cannot load qcdb python module. Run this script in situ or append the psi4/share/psi4/python directory to $PYTHONPATH.""" 
     exit(1)
 
 """
@@ -48,7 +48,7 @@ Instructions: Detailed instructions may be found at
     In short, move all XYZ files intended for a database into a directory
     and run this script from that directory. Answer a few questions about
     the intended database.  Edit the resulting database.py file if necessary,
-    then copy it into psi4/share/databases/ . Its contents can be accessed as
+    then copy it into psi4/share/psi4/databases/ . Its contents can be accessed as
     normal through the db() wrapper with no further configuration or recompiling.
 Created: Monday, December 21, 2009, LAB
 Last Modified: Tuesday, September 10, 2013, LAB
@@ -446,7 +446,7 @@ if route == 2:
 
 final += """
        *  Make sure the Psi4 driver can find your new database.
-          If running from an installed psi4, move %s.py into INSTALLED_DIRECTORY/share/psi/databases .
+          If running from an installed psi4, move %s.py into INSTALLED_DIRECTORY/share/psi4/databases .
           If running from source, move %s.py into PSIDATADIR/databases .
           Alternatively, add the directory containing %s.py into PYTHONPATH .
 """ % (dbse, dbse, dbse)
