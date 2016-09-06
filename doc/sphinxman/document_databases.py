@@ -16,11 +16,11 @@ def pts(category, pyfile):
     print 'Auto-documenting %s file %s' % (category, pyfile)
 
 
-# Available databases in psi4/share/databases
+# Available databases in psi4/share/psi4/databases
 fdriver = open('source/autodoc_available_databases.rst', 'w')
 fdriver.write('\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../psi4/share/databases/*.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/databases/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
