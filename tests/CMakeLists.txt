@@ -1,5 +1,3 @@
-#These tests aren't set-up the same way as the others
-set(TestsNotSetUpRight cfour optking)
 find_package(Perl QUIET)
 
 # In order to get CTest to run tests in separate categories,
@@ -80,29 +78,38 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
    add_subdirectory(${test_name})
 endforeach()
 message(STATUS "Adding test cases: Psi4")
+if(NOT PERL_FOUND)
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
+endif()
 
-###### START internal-executable-dependent tests ################
+###########################  External Project Tests  ###########################
 
-# For code that is distributed with and required for psi4 to build,
-#   and thus should always be tested, but is developed and maintained
-#   externally and dropped into psi4 as version increment, and thus
-#   should get its own subdirectory:
-#   * Follow directory structure described below for ext-exe-dep
-#   * Follow un-qualified inclusion as above for normal tests
-
-add_subdirectory(libefp)
-message(STATUS "Adding test cases: Psi4 + libefp")
-
-###### END internal-executable-dependent tests ##################
-
-###### START external-executable-dependent tests ################
-
-# Set up groups of test cases analogous to dftd3 below
-#   In particular, new ext-exe-dep tests should
+# For code that (1) is built or detected in the Psi4 superbuild but isn't
+#   maintained in the Psi4 codebase and (2) has Psi4-dependent tests _not_ in
+#   the external codebase, tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
-#   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
-#   * be sure the exe is listed in the python code below (search 'partition')
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not test/dftd3/dftd3-energy)
+#   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
+#   * alphabetize the addons
+
+# <<<  CFOUR  >>>
+
+find_program(CFOUR_EXECUTABLE
+             NAMES xcfour
+             DOC "Path to Stanton and Gauss's xcfour executable")
+
+if(CFOUR_EXECUTABLE)
+    add_subdirectory(cfour)
+    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + CFOUR")
+endif()
+
+# <<<  CHEMPS2  >>>
+
+if(ENABLE_CheMPS2)
+    add_subdirectory(dmrg)
+    message(STATUS "Adding test cases: Psi4 + CheMPS2")
+endif()
 
 # <<<  DFTD3  >>>
 
@@ -114,6 +121,25 @@ if(DFTD3_EXECUTABLE)
     add_subdirectory(dftd3)
     message(STATUS "Found DFTD3: ${DFTD3_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD3")
+endif()
+
+# <<<  DKH  >>>
+
+if(ENABLE_dkh)
+    add_subdirectory(dkh)
+    #message(STATUS "Adding test cases: Psi4 + dkh")  # uncomment when there's a test to add
+endif()
+
+# <<<  LIBEFP  >>>
+
+add_subdirectory(libefp)
+message(STATUS "Adding test cases: Psi4 + libefp")
+
+# <<<  GDMA  >>>
+
+if(ENABLE_gdma)
+    add_subdirectory(gdma)
+    message(STATUS "Adding test cases: Psi4 + gdma")
 endif()
 
 # <<<  MRCC  >>>
@@ -128,37 +154,9 @@ if(MRCC_EXECUTABLE)
     message(STATUS "Adding test cases: Psi4 + MRCC")
 endif()
 
-# <<<  CFOUR  >>>
+# <<<  PCMSOLVER  >>>
 
-find_program(CFOUR_EXECUTABLE
-             NAMES xcfour
-             DOC "Path to Stanton and Gauss's xcfour executable")
-
-if(CFOUR_EXECUTABLE)
-    add_subdirectory(cfour)
-    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
-    message(STATUS "Adding test cases: Psi4 + CFOUR")
-endif()
-
-###### END external-executable-dependent tests ##################
-
-# External module dependent tests
 if(ENABLE_PCMSOLVER)
     add_subdirectory(pcmsolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
-
-if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
-endif()
-
-if(ENABLE_CheMPS2)
-    add_subdirectory(dmrg)
-    message(STATUS "Adding test cases: Psi4 + CheMPS2")
-endif()
-
-if(ENABLE_gdma)
-    add_subdirectory(gdma1)
-    message(STATUS "Adding test cases: Psi4 + gdma")
-endif()
-
