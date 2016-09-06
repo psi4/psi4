@@ -44,9 +44,9 @@ path path::make_absolute() const
             throw std::runtime_error("path::make_absolute: " + std::string(strerror(errno)));
         }
     }
+    path ptemp(temp);
     delete[] temp;
-
-    return path(temp);
+    return ptemp;
 }
 
 bool path::exists() const
