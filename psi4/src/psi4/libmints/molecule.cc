@@ -943,9 +943,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
                     // Process xyzabc hint
                     efp_ctype = XYZABC;
                     trim_spaces(lines[lineNumber]);
-//                    boost::split(splitLine, lines[lineNumber], boost::is_any_of("\t ,"), token_compress_on);
-                    // TODO: Check to make sure this works:
-                    splitLine = split(lines[lineNumber], "[\\s,]+");
+                    splitLine = split(lines[lineNumber], "[\\t ,]+");
                     if (splitLine.size() == 8) {
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[3]);
@@ -967,7 +965,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
                     } else
                         throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 1] +
-                                           ".  atom1_x atom1_y atom1_z expected.");
+                                           " (expected: atom1_x atom1_y atom1_z).");
                     trim_spaces(lines[lineNumber + 2]);
                     splitLine = split(lines[lineNumber + 2], "[\\t ,]+");
                     if (splitLine.size() == 3) {
@@ -976,16 +974,16 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
                     } else
                         throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 2] +
-                                           ".  atom2_x atom2_y atom2_z expected.");
+                                           " (expected: atom2_x atom2_y atom2_z).");
                     trim_spaces(lines[lineNumber + 3]);
-                    splitLine = split(lines[lineNumber + 3], "[\\t ,]}");
+                    splitLine = split(lines[lineNumber + 3], "[\\t ,]+");
                     if (splitLine.size() == 3) {
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
                         *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
                     } else
                         throw PSIEXCEPTION("Illegal EFP points specification line : " + lines[lineNumber + 3] +
-                                           ".  atom3_x atom3_y atom3_z expected.");
+                                           " (expected: atom3_x atom3_y atom3_z).");
                     // Nuke fragment geometry lines
                     lines.erase(lines.begin() + lineNumber + 3);
                     lines.erase(lines.begin() + lineNumber + 2);
