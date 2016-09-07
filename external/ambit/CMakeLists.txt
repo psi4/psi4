@@ -29,7 +29,7 @@ if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
                   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/ambit
                   -DCMAKE_INSTALL_LIBDIR=lib
         CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
+        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                     DESTDIR ${CMAKE_BINARY_DIR}/stage
     )
     add_dependencies(ambit_external boost_external)
