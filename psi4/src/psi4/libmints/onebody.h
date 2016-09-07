@@ -40,7 +40,6 @@
 #include "psi4/libmints/vector3.h"
 
 #include "psi4/libpsi4util/exception.h"
-#include "pybuffer.h"
 
 namespace psi {
 
@@ -77,12 +76,6 @@ protected:
 
     int buffer_size_;
 
-    /// Whether or not to use the PyBuffer
-    bool enable_pybuffer_;
-
-    /// The PyBuffer object used for sharing the target_ buffer without copying data
-    PyBuffer<double> pybuffer_;
-
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int deriv=0);
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
@@ -113,26 +106,6 @@ public:
 
     /// Buffer where the integrals are placed.
     const double *buffer() const;
-
-    /// Get a python list version of the current buffer
-    const pybind11::list py_buffer() const {
-        pybind11::list ret_val;
-        //TODO: Just change over the pointer rather than copying, or at least do a memcopy
-        for(int i = 0; i < buffer_size_; ++i)
-            ret_val.append(pybind11::float_(buffer_[i]));
-        return ret_val;
-    }
-
-    const PyBuffer<double>* py_buffer_object() const {
-        if(!enable_pybuffer_) {
-            throw PSIEXCEPTION("py_buffer object not enabled.  Used set_enable_pybuffer() first.");
-        }
-    	return &pybuffer_;
-    }
-
-    void set_enable_pybuffer(bool enable = true) {
-        enable_pybuffer_ = enable;
-    }
 
     /// Compute the integrals between basis function in the given shell pair.
     void compute_shell(int, int);

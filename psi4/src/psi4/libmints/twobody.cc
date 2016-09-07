@@ -46,8 +46,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
     target_(0),
-    deriv_(deriv),
-    target_pybuffer_(&target_, true)
+    deriv_(deriv)
 {
     //outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
     //        original_bs1_->name().c_str(),
@@ -59,7 +58,6 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
-    enable_pybuffer_ = false;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()
@@ -633,10 +631,3 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
     }
 }
 
-
-const pybind11::list TwoBodyAOInt::py_buffer() const {
-    pybind11::list ret_val;
-    for(int i = 0; i < curr_buff_size_; ++i)
-        ret_val.append(pybind11::float_(target_[i]));
-    return ret_val;
-}

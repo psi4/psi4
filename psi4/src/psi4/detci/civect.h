@@ -46,6 +46,7 @@ class CIvect;
 typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
+namespace py = pybind11;
 namespace psi {
 namespace detci {
 
@@ -138,7 +139,7 @@ class CIvect {
     ~CIvect();
 
     /// Numpy interface to the current buffer
-    pybind11::dict numpy_array_interface();
+    py::dict array_interface();
 
     /// BLAS equivalents for CIVectors
     void axpy(double a, SharedCIVector x, int tvec, int ovec);
