@@ -18,8 +18,8 @@
 #
 # ::
 #
-#   PYBIND11_INCLUDE_DIRS   - where to find chemps2/DMRG.h, etc.
-#   PYBIND11_FOUND          - True if CheMPS2 found.
+#   PYBIND11_INCLUDE_DIRS   - where to find pybind11/pybind11.h, etc.
+#   PYBIND11_FOUND          - True if Pybind11 found.
 #
 # Hints
 # ^^^^^
@@ -52,14 +52,13 @@ list(APPEND _PYBIND11_SEARCHES _PYBIND11_SEARCH_NORMAL)
 set(PYBIND11_NAMES pybind11)
 
 # Try each search configuration.
+unset(PYBIND11_INCLUDE_DIR CACHE)
 foreach(search ${_PYBIND11_SEARCHES})
     find_path(PYBIND11_INCLUDE_DIR 
         NAMES pybind11/pybind11.h
         ${${search}}
-        PATH_SUFFIXES include include/pybind11)
+        PATH_SUFFIXES include ${CMAKE_INSTALL_INCLUDEDIR})
 endforeach()
-
-set(PYBIND11_INCLUDE_DIR ${PYBIND11_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
 
 mark_as_advanced(PYBIND11_INCLUDE_DIR)
 
@@ -70,10 +69,10 @@ find_package_handle_standard_args(PYBIND11
     REQUIRED_VARS PYBIND11_INCLUDE_DIR)
 
 if(PYBIND11_FOUND)
-    set(PYBIND11_INCLUDE_DIRS ${PYBIND11_INCLUDE_DIR})
+    set(PYBIND11_INCLUDE_DIRS ${PYBIND11_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
 
     if(NOT TARGET PYBIND11::PYBIND11)
-        add_library(PYBIND11::PYBIND11 UNKNOWN IMPORTED)
+        add_library(PYBIND11::PYBIND11 INTERFACE IMPORTED)
         set_target_properties(PYBIND11::PYBIND11 PROPERTIES
             INTERFACE_LINK_LIBRARIES "${PYTHON_LIBRARIES}"
             INTERFACE_INCLUDE_DIRECTORIES "${PYBIND11_INCLUDE_DIRS}")

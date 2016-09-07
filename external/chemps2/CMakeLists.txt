@@ -27,7 +27,9 @@ if(${ENABLE_CheMPS2})
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                       -DCMAKE_INSTALL_LIBDIR=lib
+                       -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                       -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+                       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DSTATIC_ONLY=${_a_only}
                        -DSHARED_ONLY=${_so_only}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant

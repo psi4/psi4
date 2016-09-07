@@ -15,7 +15,8 @@ else()
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                   -DCMAKE_INSTALL_LIBDIR=lib
+                   -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                   -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DMAX_AM_ERI=${MAX_AM_ERI}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    #-DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
@@ -24,8 +25,8 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
-        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} 
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} 
+        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 endif()

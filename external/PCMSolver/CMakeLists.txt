@@ -26,7 +26,7 @@ if(NOT PCMSolver_FOUND AND ${ENABLE_PCMSOLVER})
                   -DSTATIC_LIBRARY_ONLY=${ENABLE_STATIC}
                   -DENABLE_GENERIC=${ENABLE_STATIC}
                   -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
+       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                       DESTDIR=${CMAKE_BINARY_DIR}/stage
     )
     configure_file(${CMAKE_SOURCE_DIR}/psi4/share/python/pcm_placeholder.py.in

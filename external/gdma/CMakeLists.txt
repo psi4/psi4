@@ -18,7 +18,8 @@ if(${ENABLE_gdma})
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                       -DCMAKE_INSTALL_LIBDIR=lib
+                       -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
                        # OpenMP irrelevant
@@ -26,7 +27,7 @@ if(${ENABLE_gdma})
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
-            CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS} 
+            CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
     endif()
