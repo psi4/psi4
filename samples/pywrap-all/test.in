@@ -72,7 +72,7 @@ compare_values(ref_OPT_E_1, get_variable('CURRENT ENERGY'), 7, "[6] Wrapper opti
 
 banner('Test [7] opt(energy())')
 h2.reset_point_group('c1')
-h2.fix_orientation(1)
+h2.fix_orientation(True)
 h2.update_geometry()
 # By pure chance there is a funny false super-tight convergence in the
 # SCF below if we read the previous SCF orbitals.  I seem to have avoided

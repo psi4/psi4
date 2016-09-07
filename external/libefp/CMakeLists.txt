@@ -14,17 +14,19 @@ else()
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                   -DCMAKE_INSTALL_LIBDIR=lib
+                   -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                   -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+                   -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    #-DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
-                   -DENABLE_OPENMP=${ENABLE_OPENMP}
+                   -DENABLE_OPENMP=OFF  # Psi4 sometimes reacts poorly to threaded efp
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -DFRAGLIB_UNDERSCORE_L=OFF
                    -DFRAGLIB_DEEP=OFF
-        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} 
+        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 endif()

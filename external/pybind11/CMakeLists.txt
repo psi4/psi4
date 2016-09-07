@@ -17,6 +17,7 @@ else()
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DPYBIND11_CPP_STANDARD=-std=c++11
                    -DPYBIND11_TEST=OFF
                    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
