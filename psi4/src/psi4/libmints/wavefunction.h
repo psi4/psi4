@@ -33,6 +33,7 @@
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 
+#include <pybind11/pybind11.h>
 #include <stddef.h>
 #include <vector>
 #include <memory>
@@ -60,6 +61,8 @@ extern double fac[MAX_FAC];
 #if !defined( INDEX4 )
 #   define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 #endif
+
+namespace py = pybind11;
 
 namespace psi {
 
@@ -512,6 +515,9 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
+
+    /// Python dictionary that can be accessed python side
+    py::dict cdict;
 };
 
 }

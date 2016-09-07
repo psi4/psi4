@@ -71,7 +71,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
    double *b;     /* b vector in Ax = b, or transformed b vector */
    double *sign;  /* sign array  to insure diagonal element of A are positive */
    double **Mtmp; /* tmp M matrix passed to flin */
-   register int i, j, L=0, I;
+   int i, j, L=0, I;
    double norm, rnorm=1.0, *dotprod, *alpha;
    double *dvec;
    int llast=0, last=0, maxdimen;

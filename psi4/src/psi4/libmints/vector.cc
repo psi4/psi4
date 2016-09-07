@@ -373,4 +373,33 @@ void Vector::sum()
     ///RMR-See note in Matrix::sum()
 }
 
+py::dict Vector::array_interface(int irrep){
+    py::dict interface;
+
+    // This is dumb
+    if (numpy_shape_.size()){
+        py::list ls;
+        for (size_t i = 0; i < numpy_shape_.size(); i++){
+            ls.append(py::int_(numpy_shape_[i]));
+        }
+        interface["shape"] = py::make_tuple(ls);
+    }
+    else {
+        interface["shape"] = py::make_tuple(dimpi_[irrep]);
+    }
+
+    interface["data"] = py::make_tuple((long)pointer(irrep), false);
+
+    // Data and type
+    std::string typestr = "<";
+    {
+       std::stringstream sstr;
+       sstr << (int)sizeof(double);
+       typestr += "f" + sstr.str();
+    }
+    interface["typestr"] = py::str(typestr);
+    return interface;
+
+}
+
 } // namespace psi

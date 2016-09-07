@@ -68,7 +68,7 @@ double invert_matrix(double **a, double **y, int N, std::string out)
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             std::shared_ptr<OutFile>(new OutFile(out)));
    double  d, *col, *colptr;
-   register int i, j;
+   int i, j;
    int *indx ;
 
    col = init_array(N) ;

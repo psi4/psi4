@@ -129,20 +129,21 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
                 }
             }
 
-            if(trans_Y)
+            if(trans_Y) {
                 value += dot_block(TMP, Y->matrix[Gs], X->params->spi[Gs],
                                    X->params->rpi[Gr], alpha);
-            else
+            } else {
                 value += dot_block(TMP, Y->matrix[Gr], X->params->rpi[Gr],
                                    X->params->spi[Gs], alpha);
+            }
 
-            if(X->params->rpi[Gr] && X->params->spi[Gs])
+            if(X->params->rpi[Gr] && X->params->spi[Gs]) {
                 if(trans_Y) {
                     free_dpd_block(TMP, X->params->spi[Gs], X->params->rpi[Gr]);
-                }
-                else {
+                } else {
                     free_dpd_block(TMP,X->params->rpi[Gr],X->params->spi[Gs]);
                 }
+            }
         }
 
         if(trans_Z)

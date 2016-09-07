@@ -57,7 +57,7 @@ namespace psi {
 void normalize(double **A, int rows, int cols)
 {
   double normval;
-  register int i, j;
+  int i, j;
 
   /* divide each row by the square root of its norm */
   for (i=0; i<rows; i++) {

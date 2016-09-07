@@ -31,6 +31,37 @@ import sys
 if sys.version_info < (3,0):
     from exceptions import *
 
+def translate_interface(interface):
+    """
+    This is extra stupid with unicode
+    """
+    nouni_interface = {}
+    for k, v in interface.items():
+        if k == 'typestr':
+            nouni_interface[k.encode('ascii', 'ignore')] = v.encode('ascii', 'ignore')
+        else:
+            nouni_interface[k.encode('ascii', 'ignore')] = v
+
+    return nouni_interface
+
+class numpy_holder(object):
+    """
+    Blank object, stupid. Apparently you cannot create a view directly from a dictionary
+    """
+    def __init__(self, interface):
+        self.__array_interface__ = translate_interface(interface)
+
+def _get_raw_views(self, copy=False):
+    """
+    Gets simple raw view of the passed in object.
+    """
+    ret = []
+    for x in [numpy_holder(self.array_interface(h)) for h in xrange(self.nirrep())]:
+        if 0 in x.__array_interface__["shape"]:
+            ret.append(np.empty(shape=x.__array_interface__["shape"]))
+        else:
+            ret.append(np.array(x, copy=copy))
+    return ret
 
 def _find_dim(arr, ndim):
     """
@@ -112,7 +143,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
     Notes
     -----
-    This is a generalized function to convert a NumPy array to 
+    This is a generalized function to convert a NumPy array to a Psi4 object 
 
     Examples
     --------
@@ -157,12 +188,9 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
         else:
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
-        for interface, vals in zip(ret.array_interfaces(), arr):
-            if 0 in interface.__array_interface__["shape"]:
-                continue
-            else:
-                view = np.asarray(interface)
-                view[:] = vals
+        for view, vals in zip(ret.nph, arr):
+            if 0 in view.shape: continue
+            view[:] = vals
 
         return ret            
 
@@ -185,7 +213,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             
                 start1 = 0
                 start2 = 0
-                for num, interface in enumerate(ret.array_interfaces()):
+                for num, interface in enumerate(ret.nph):
                     d1 = dim1[num]
                     d2 = dim2[num]
                     if (d1 == 0) or (d2 == 0):
@@ -201,7 +229,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             # Simple case without irreps
             else:
                 ret = self(name, arr.shape[0], arr.shape[1])
-                ret_view = np.asarray(ret)
+                ret_view = np.asarray(numpy_holder(ret.array_interface(0)))
                 ret_view[:] = arr
                 return ret
 
@@ -215,7 +243,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
                 ret = self(name, dim1)
 
                 start1 = 0
-                for num, interface in enumerate(ret.array_interfaces()):
+                for num, interface in enumerate(ret.nph):
                     d1 = dim1[num]
                     if (d1 == 0):
                         continue
@@ -229,8 +257,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             # Simple case without irreps
             else:
                 ret = self(name, arr.shape[0])
-                ret_view = np.asarray(ret)
-                ret_view[:] = arr
+                ret.np[:] = arr
                 return ret
 
         else:
@@ -248,12 +275,7 @@ def to_array(matrix, copy=True, dense=False):
         if dense:
             copy = False
 
-        ret = []
-        for h in matrix.array_interfaces():
-            if 0 in h.__array_interface__["shape"]:
-                ret.append(np.empty(shape = h.__array_interface__["shape"]))
-            else:
-                ret.append(np.array(h, copy=copy))
+        ret = _get_raw_views(matrix, copy=copy)
 
         # Return the list of arrays
         if dense is False:
@@ -302,10 +324,7 @@ def to_array(matrix, copy=True, dense=False):
         return dense_ret
 
     else:
-        if 0 in matrix.__array_interface__["shape"]:
-            return np.empty(shape = matrix.__array_interface__["shape"])
-        else:
-            return np.array(matrix, copy=copy)
+        return _get_raw_views(matrix, copy=copy)[0]
 
 def _build_view(matrix):
     """
@@ -329,22 +348,50 @@ def _np_shape(self):
 
 @property
 def _np_view(self):
-    if not hasattr(self, '_np_view_data'):
-        self._np_view_data = _build_view(self)
+    """
+    View without only one irrep
+    """
 
-    return self._np_view_data
+    if '_np_view_data' not in self.cdict.keys():
+        self.cdict['_np_view_data'] = _build_view(self)
+
+    return self.cdict['_np_view_data']
+
+@property
+def _nph_view(self):
+    """
+    View with irreps.
+    """
+    if '_np_view_data' not in self.cdict.keys():
+        self.cdict['_np_view_data'] = _build_view(self)
+
+    if self.nirrep() > 1:
+        return self.cdict['_np_view_data']
+    else:
+        return self.cdict['_np_view_data'],
+
+@property
+def _array_conversion(self):
+    if self.nirrep() > 1:
+        raise ValidationError("__array__interface__ can only be called on Psi4 data holders with only one irrep!")
+    else:
+        return self.np.__array_interface__
 
 # Matirx attributes
 psi4.Matrix.from_array = array_to_matrix
 psi4.Matrix.to_array = to_array
 psi4.Matrix.shape = _np_shape
 psi4.Matrix.np = _np_view
+psi4.Matrix.nph = _nph_view
+psi4.Matrix.__array_interface__ = _array_conversion
 
 # Vector attributes
 psi4.Vector.from_array = array_to_matrix
 psi4.Vector.to_array = to_array
 psi4.Vector.shape = _np_shape
 psi4.Vector.np = _np_view
+psi4.Vector.nph = _nph_view
+psi4.Vector.__array_interface__ = _array_conversion
 
 # Dimension attributes
 psi4.Dimension.from_list = _dimension_from_list
