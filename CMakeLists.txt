@@ -76,7 +76,7 @@ option_with_print(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(PSI4_STAGE_EX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external)
+set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ######################### Process & Validate Options ###########################
 include(autocmake_safeguards)
@@ -95,7 +95,7 @@ include(ConfigMath)
 foreach(pkg in pybind11 pcmsolver)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
-      set(${PKG}_ROOT ${PSI4_STAGE_EX}/${pkg})
+      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external/${pkg})
    endif()
 endforeach()
 
@@ -104,7 +104,7 @@ endforeach()
 add_subdirectory(external)
 
 
-list(APPEND CMAKE_PREFIX_PATH  ${PSI4_STAGE_EX})
+list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 ################################# Main Project #################################
 
 ExternalProject_Add(psi4_core
@@ -161,7 +161,7 @@ add_dependencies(psi4_core ambit_external
 add_subdirectory(doc)
 enable_testing()
 add_subdirectory(tests)
-install(DIRECTORY ${CMAKE_BINARY_DIR}/stage/${CMAKE_INSTALL_PREFIX}/
+install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         USE_SOURCE_PERMISSIONS)
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake

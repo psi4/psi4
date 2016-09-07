@@ -154,8 +154,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
 #                ${CCBD}/source/autodoc_man_psi4.txt
 #        DEPENDS ${psi4_SOURCE_DIR}/psi4/src/*/*/*.cc
 #                ${psi4_SOURCE_DIR}/tests/docs-psimod/input.dat
-#                #${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
-#                ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+#                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4${CMAKE_EXECUTABLE_SUFFIX}
 #        COMMENT "Autodoc psi4 module")
 
 
@@ -184,8 +183,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_disp.rst
         DEPENDS ${psi4_SOURCE_DIR}/psi4/share/psi4/python/procedures/functional.py
                 ${psi4_SOURCE_DIR}/tests/docs-dft/input.dat
-                #${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
-                ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc functionals")
 
 
@@ -198,8 +196,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${psi4_SOURCE_DIR}/psi4/share/psi4/python/p4util/basislistdunning.py
                 ${psi4_SOURCE_DIR}/psi4/share/psi4/python/p4util/basislistother.py
                 ${psi4_SOURCE_DIR}/tests/docs-bases/input.dat
-                #${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
-                ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX}
+                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4${CMAKE_EXECUTABLE_SUFFIX}
         COMMENT "Autodoc auxiliary basis sets")
 
 
@@ -224,7 +221,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
         DEPENDS ${CCSD}/document_efpfrag.py
-                ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/share/psi4/efpfrag/*efp
+                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp
         COMMENT "Autodoc efp fragments")
 
 
@@ -292,7 +289,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
     install(
         DIRECTORY ${CCBD}/html
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/psi4
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}
         OPTIONAL)
 
     # * full, proper build with LaTeX
