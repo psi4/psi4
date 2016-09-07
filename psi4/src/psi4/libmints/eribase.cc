@@ -2273,9 +2273,6 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
         n4 = original_bs4_->shell(sh4).nfunction();
     }
     curr_buff_size_ = n1 * n2 * n3 * n4;
-    if (enable_pybuffer_) {
-        target_pybuffer_.set_shape(pybind11::make_tuple(n1, n2, n3, n4));
-    }
 
     // Save the original requested shell ordering. The pre-computed shell pair information
     // requires the original ordering.

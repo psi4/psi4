@@ -38,8 +38,7 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
                                              std::shared_ptr<BasisSet> bs2,
                                              std::shared_ptr<BasisSet> bs3)
     : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()),
-      bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st), enable_pybuffer_(false),
-      pybuffer_(&buffer_, true)
+      bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st)
 {
     size_t size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am());
 
@@ -333,11 +332,4 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
         ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nso1 * nso2 * nso3);
     }
 
-    if(enable_pybuffer_) {
-        pybuffer_.set_shape(pybind11::make_tuple(
-            is_pure1 ? nso1 : nao1,
-            is_pure2 ? nso2 : nao2,
-            is_pure3 ? nso3 : nao3
-        ));
-    }
 }

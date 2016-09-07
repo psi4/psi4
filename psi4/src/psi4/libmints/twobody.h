@@ -40,7 +40,6 @@
 #undef _XOPEN_SOURCE
 #endif
 #include "psi4/libpsi4util/exception.h"
-#include "pybuffer.h"
 
 namespace psi {
 
@@ -51,7 +50,6 @@ class IntegralFactory;
 class AOShellCombinationsIterator;
 class BasisSet;
 class GaussianShell;
-//template <class T> class PyBuffer;
 
 /*! \ingroup MINTS
  *  \class TwoBodyInt
@@ -88,10 +86,6 @@ protected:
     int deriv_;
     /// Whether to force integrals to be generated in the Cartesian (AO) basis;
     bool force_cartesian_;
-    /// The PyBuffer object used for sharing the target_ buffer without copying data
-    PyBuffer<double> target_pybuffer_;
-    /// Whether or not to use the PyBuffer
-    bool enable_pybuffer_;
     /// How the shells were reordered for libint
     PermutedOrder permuted_order_;
 
@@ -134,21 +128,6 @@ public:
 
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; }
-
-    /// Get a python list version of the current buffer
-    /// DEPRECATED Use py_buffer_object when possible
-    const pybind11::list py_buffer() const;
-
-    const PyBuffer<double>* py_buffer_object() const {
-        if(!enable_pybuffer_) {
-            throw PSIEXCEPTION("py_buffer object not enabled.  Used set_enable_pybuffer() first.");
-        }
-    	return &target_pybuffer_;
-    }
-
-    void set_enable_pybuffer(bool enable = true) {
-        enable_pybuffer_ = enable;
-    }
 
     /// Returns the integral factory used to create this object
     const IntegralFactory* integral() const { return integral_; }

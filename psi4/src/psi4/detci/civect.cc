@@ -55,13 +55,13 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/pybuffer.h"
 #include "structs.h"
 #include "ci_tol.h"
 #include "civect.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libmints/vector.h"
 
+namespace py = pybind11;
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);
@@ -580,16 +580,17 @@ void CIvect::divide(SharedCIVector denom, int tvec, int ovec) {
   }
 }
 
-pybind11::dict CIvect::numpy_array_interface() {
+py::dict CIvect::array_interface() {
+
     // Why is this so complex other places?
     if (!buf_locked_)
         throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
-    pybind11::dict rv;
-    rv["shape"] = pybind11::make_tuple(buffer_size_);
-    rv["data"] = pybind11::make_tuple((long)buffer_, false);
-    std::string typestr = is_big_endian() ? ">" : "<";
-    typestr += "f" + psi::to_string((int)sizeof(double));
-    rv["typestr"] = pybind11::str(typestr);
+
+    py::dict rv;
+    rv["shape"] = py::make_tuple(buffer_size_);
+    rv["data"] = py::make_tuple((long)buffer_, false);
+    std::string typestr = "<f" + std::to_string((int)sizeof(double));
+    rv["typestr"] = py::str(typestr);
     return rv;
 }
 

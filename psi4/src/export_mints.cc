@@ -36,7 +36,6 @@
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/view.h"
-#include "psi4/libmints/pybuffer.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/pointgrp.h"
@@ -190,8 +189,6 @@ void export_mints(py::module& m)
             def("nirrep", &Vector::nirrep, "docstring").
             def("array_interface", &Vector::array_interface).
             def_readwrite("cdict", &Vector::cdict);
-            //def("array_interfaces", make_vector_array_interfaces, "docstring").
-            //add_property("__array_interface__", vector_array_interface_c1, "docstring")
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector> >(m, "IntVector", "docstring").
@@ -211,10 +208,6 @@ void export_mints(py::module& m)
             .value("Angstrom", Molecule::Angstrom)
             .value("Bohr", Molecule::Bohr)
             .export_values();
-
-
-    //py::class_<PyBuffer<double>, std::shared_ptr<PyBuffer<double>>>(m, "DoublePyBuffer", "Buffer interface to NumPy arrays").
-    //        add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
@@ -366,8 +359,6 @@ void export_mints(py::module& m)
                   int,
                   PrimitiveType>());
 
-    //class_<std::vector<ShellInfo>>("BSVec")
-    //    .def(vector_indexing_suite<std::vector<ShellInfo>>());
     py::bind_vector<ShellInfo>(m, "BSVec");
 
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(m, "OneBodyAOInt", "docstring");
@@ -377,10 +368,6 @@ void export_mints(py::module& m)
             def_property_readonly("basis", &OneBodyAOInt::basis, "The basis set on center one").
             def_property_readonly("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
             def_property_readonly("basis2", &OneBodyAOInt::basis2, "The basis set on center two"); // <-- Added semicolon
-            // TODO: Fix this
-            //def_property("py_buffer_object", make_function(&OneBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            //def("set_enable_pybuffer", &OneBodyAOInt::set_enable_pybuffer, "docstring").
-            //add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
     //typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
@@ -407,9 +394,6 @@ void export_mints(py::module& m)
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt", "docstring");
             pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring"); // <-- Semicolon
-            //add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            //add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring").
-            //def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring");
 
     py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt, "docstring").
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
@@ -433,8 +417,6 @@ void export_mints(py::module& m)
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(m, "ThreeCenterOverlapInt", "docstring").
             def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring");
-            //def_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            //def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring").
             def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
@@ -977,9 +959,8 @@ void export_mints(py::module& m)
         .def("write", &detci::CIvect::write, "docstring")
         .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
-        .def("set_nvec", &detci::CIvect::set_nvect, "docstring");
-        //.def_property("__array_interface__", &detci::CIvect::numpy_array_interface, "docstring");
-        // .def("blank", &detci::CIWavefunction::blank, "docstring")
+        .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
+        .def("array_interface", &detci::CIvect::array_interface, "docstring");
 
 
 }
