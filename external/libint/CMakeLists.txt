@@ -25,8 +25,8 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
-        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} 
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} 
+        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 endif()

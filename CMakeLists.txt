@@ -56,11 +56,11 @@ include(Psi4Macros)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
-option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON 
+option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON
                   "-xHost" "-march=native")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
-option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF 
+option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF
                   "-fsanitize=address" "-fno-omit-frame-pointer")
 option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
                   "-fsanitize=thread" "-fno-omit-frame-pointer -pie")
@@ -111,10 +111,10 @@ list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
-              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
+              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} 
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
@@ -146,7 +146,7 @@ ExternalProject_Add(psi4_core
                     -DBLAS_LIBRARIES:LIST=${BLAS_LIBRARIES}
                     -DBLAS_INCLUDE_DIRS:LIST=${BLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
-   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install 
+   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
 add_dependencies(psi4_core ambit_external
