@@ -30,7 +30,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math
 )
 include(CheckCompilerVersion)
-include(GNUInstallDirs)
 include(ExternalProject)
 
 ############################# Options: Build What? #############################
@@ -73,12 +72,14 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC
           "Libraries will be compiled with position independent code" TRUE)
 option_with_print(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ######################### Process & Validate Options ###########################
+include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(autocmake_omp)
 #include(autocmake_static_library)
@@ -117,7 +118,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
-              -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR} 
+              -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DBUILD_FPIC=${BUILD_FPIC}
