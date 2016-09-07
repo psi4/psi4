@@ -51,7 +51,7 @@ namespace psi {
 */
 void dirprd_block(double **A, double **B, int rows, int cols)
 {
-  register long int i;
+  long int i;
   double *a, *b;
   long size;
 

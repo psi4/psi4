@@ -41,6 +41,7 @@
 #include <vector>
 #include <memory>
 
+namespace py = pybind11;
 namespace psi {
 
 struct dpdfile2;
@@ -462,11 +463,11 @@ public:
     /**
      * Python wrapper for get
      */
-    double pyget(const pybind11::tuple& key);
+    double pyget(const py::tuple& key);
     /**
      * Python wrapper for set
      */
-    void pyset(const pybind11::tuple& key, double value);
+    void pyset(const py::tuple& key, double value);
 
     /**
      * Returns the double** pointer to the h-th irrep block matrix
@@ -1135,13 +1136,15 @@ public:
      * Takes a Python object (assumes that it is a "matrix" array) and
      * sets the matrix to that.
      */
-    void set_by_python_list(const pybind11::list& data);
+    void set_by_python_list(const py::list& data);
 
      /**
      * Adds accessability to the matrix shape for numpy
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
+    py::dict array_interface(int irrep);
+    py::dict cdict;
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

@@ -3608,5 +3608,33 @@ void Matrix::rotate_columns(int h, int i, int j, double theta)
     double sintheta = sin(theta);
     C_DROT(rowspi_[h], &matrix_[h][0][i], colspi_[h], &matrix_[h][0][j], colspi_[h], costheta, sintheta);
 }
+py::dict Matrix::array_interface(int irrep){
+    py::dict interface;
+
+    // This is dumb
+    if (numpy_shape_.size()){
+        py::list ls;
+        for (size_t i = 0; i < numpy_shape_.size(); i++){
+            ls.append(py::int_(numpy_shape_[i]));
+        }
+        interface["shape"] = py::make_tuple(ls);
+    }
+    else {
+        interface["shape"] = py::make_tuple(rowspi_[irrep], colspi_[irrep]);
+    }
+
+    interface["data"] = py::make_tuple((long)get_pointer(irrep), false);
+
+    // Data and type
+    std::string typestr = "<";
+    {
+       std::stringstream sstr;
+       sstr << (int)sizeof(double);
+       typestr += "f" + sstr.str();
+    }
+    interface["typestr"] = py::str(typestr);
+    return interface;
+
+}
 
 } // namespace psi

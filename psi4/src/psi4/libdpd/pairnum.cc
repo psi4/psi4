@@ -63,6 +63,7 @@ int DPD::pairnum(string pair)
     if(v[4] == "+") return left*5 + 3;
     else if(v[4] == "-") return left*5 + 4;
   }
+  return -1;
 }
 
 } // namespace psi

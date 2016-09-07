@@ -1581,7 +1581,7 @@ void Python::run(FILE *input)
             abort();
         }
 #else
-        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psimod) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), initpsimod) == -1) {
             outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }

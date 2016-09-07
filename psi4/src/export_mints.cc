@@ -80,148 +80,6 @@ namespace py = pybind11;
 
 //PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
-/* Start Numpy __array_interface__
-Adding __array_interface__ to Psi4's Matrix and Vector classes allows all Numpy
-functions to act on this data. For example we can sum all elements of the
-overlap matrix:
-import numpy as np
-...
-mints = MintsHelper(wfn.basisset())
-overlap = mints.ao_overlap()
-np.sum(wavefunction().Ca())
-// Works, returns a numpy array.
-new = np.add(overlap, overlap)
-// Does not work as the + operator is not defined for Matrix objects.
-new = overlap + overlap
-Note: The AO orbtials are used instead of SO so that the Matrix object has
-only one irreducible representation.
-The Vector or Matrix classes can also be wrapped as Numpy array objects:
-// Copies the data in the Psi4 Matrix or Vector
-np_S = np.array(overlap)
-// Does not copy the data in the Psi4 Matrix or Vector
-// Both Numpy and Psi4 objects share the same data
-np_S = np.array(overlap, copy=False)
-np_S = np.asanyarray(overlap)
-Using np.asanyarray is the preferred way of converting Psi4 objects to Numpy
-arrays.  If the data is not copied it is mutable by default and in-place
-operations on the Numpy array will modify the shared data.
-As individual irreducible representations are often not of the same size they
-cannot be contained inside a single Numpy array. A python list of Numpy arrays
-can be built to provide irrep functionality to Numpy:
-so_overlap = mints.so_overlap()
-np_S = [np.asanyarray(irrep) for irrep in so_overlap.array_interfaces()]
-Additional details, tutorials, and examples can be found here:
-https://github.com/dgasmith/psi4numpy
-*/
-
-//class Numpy_Interface {
-//// Dummy class to hold __array_interface__ for numpy
-//public:
-//    py::dict interface;
-//};
-//
-//py::dict matrix_array_interface(SharedMatrix mat, int irrep){
-//    py::dict rv;
-//
-//    // Shape
-//    std::vector<int> numpy_shape = mat->numpy_shape();
-//    if (numpy_shape.size()){
-//        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for matrices with irreps\n");
-//        py::list shape;
-//        for (int i=0; i<numpy_shape.size(); i++){
-//           shape.append(py::int_(numpy_shape[i]));
-//        }
-//        rv["shape"] = py::tuple(shape);
-//        // rv["shape"] = numpy_shape;
-//    }
-//    else{
-//        int rows = mat->rowspi(irrep);
-//        int cols = mat->colspi(irrep);
-//        rv["shape"] = py::make_tuple(rows, cols);
-//    }
-//
-//    // Data and type
-//    rv["data"] = py::make_tuple((long)mat->get_pointer(irrep), false);
-//    std::string typestr = is_big_endian() ? ">" : "<";
-//    {
-//        std::stringstream sstr;
-//        sstr << (int)sizeof(double);
-//        typestr += "f" + sstr.str();
-//    }
-//    rv["typestr"] = py::str(typestr);
-//    return rv;
-//}
-//
-//py::dict matrix_array_interface_c1(SharedMatrix mat){
-//    if(mat->nirrep() != 1){
-//        throw PSIEXCEPTION("Cannot directly export multiple irrep matrices,\
-//                            use Matrix.array_interfaces() instead.");
-//    }
-//    return matrix_array_interface(mat, 0);
-//}
-//
-//py::list make_matix_array_interfaces(SharedMatrix mat){
-//    py::list interfaces;
-//    Numpy_Interface tmp_interface = Numpy_Interface();
-//    for(int h=0; h < mat->nirrep(); h++){
-//        py::dict array_interface = matrix_array_interface(mat, h);
-//        tmp_interface.interface = array_interface;
-//        interfaces.append(py::object(tmp_interface));
-//    }
-//    return interfaces;
-//}
-//
-//py::dict vector_array_interface(SharedVector vec, int irrep){
-//    py::dict rv;
-//
-//    // Shape
-//    std::vector<int> numpy_shape = vec->numpy_shape();
-//    if (numpy_shape.size()){
-//        if (irrep > 0) outfile->Printf("Warning! array_interface is using numpy_shape for vectors with irreps\n");
-//        pybind11::list shape;
-//        for (int i=0; i<numpy_shape.size(); i++){
-//           shape.append(py::int_(numpy_shape[i]));
-//        }
-//        rv["shape"] = py::tuple(shape);
-//    }
-//    else {
-//        const int elements = vec->dim(irrep);
-//        rv["shape"] = py::make_tuple(elements);
-//    }
-//
-//    // Data and type
-//    rv["data"] = py::make_tuple((long)vec->pointer(irrep), false);
-//    std::string typestr = is_big_endian() ? ">" : "<";
-//    {
-//        std::stringstream sstr;
-//        sstr << (int)sizeof(double);
-//        typestr += "f" + sstr.str();
-//    }
-//    rv["typestr"] = py::str(typestr);
-//    return rv;
-//}
-//
-//py::dict vector_array_interface_c1(SharedVector vec){
-//    if(vec->nirrep() != 1){
-//        throw PSIEXCEPTION("Cannot directly export multiple irrep vectors,\
-//                            use Vector.array_interfaces() instead.");
-//    }
-//    return vector_array_interface(vec, 0);
-//}
-//
-//py::list make_vector_array_interfaces(SharedVector vec){
-//    py::list interfaces;
-//    Numpy_Interface tmp_interface = Numpy_Interface();
-//    for(int h=0; h < vec->nirrep(); h++){
-//        py::dict array_interface = vector_array_interface(vec, h);
-//        tmp_interface.interface = array_interface;
-//        interfaces.append(tmp_interface);
-//    }
-//    return interfaces;
-//}
-
-/* End numpy __array_interface__ */
-
 std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
 {
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
@@ -254,35 +112,6 @@ std::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
-
-
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
-//
-///* IntegralFactory overloads */
-///* Functions that return OneBodyAOInt objects */
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_overlap_overloads, IntegralFactory::ao_overlap, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(so_overlap_overloads, IntegralFactory::so_overlap, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_kinetic_overloads, IntegralFactory::ao_kinetic, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_potential_overloads, IntegralFactory::ao_potential, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_pseudospectral_overloads, IntegralFactory::ao_pseudospectral, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_dipole_overloads, IntegralFactory::ao_dipole, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_nabla_overloads, IntegralFactory::ao_nabla, 0, 1);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_angular_momentum_overloads, IntegralFactory::ao_angular_momentum, 0, 1);
-///* Functions that return TwoBodyAOInt objects */
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(eri_overloads, IntegralFactory::eri, 0, 2);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_overloads, IntegralFactory::f12, 1, 3);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12g12_overloads, IntegralFactory::f12g12, 1, 3);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_squared_overloads, IntegralFactory::f12_squared, 1, 3);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, IntegralFactory::f12_double_commutator, 1, 3);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
-//
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
-//
-//BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_orb_overloads, BasisSet::pyconstruct_orbital, 3, 4);
-//BOOST_PYTHON_FUNCTION_OVERLOADS(pyconstruct_aux_overloads, BasisSet::pyconstruct_auxiliary, 5, 6);
-
     // Just a little patch until we can figure out options python-side.
     std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
         return JK::build_JK(basis, Process::environment.options);
@@ -296,8 +125,6 @@ void export_mints(py::module& m)
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
-    //py::class_<std::vector<SharedMatrix > >(m, "matrix_vector", "docstring").
-    //        def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
     py::bind_vector<std::shared_ptr<Matrix>>(m, "VectorMatrix");
 
     // Other vector types
@@ -360,7 +187,9 @@ void export_mints(py::module& m)
             def("__setitem__", vector_setitem_1(&Vector::pyset), "docstring").
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
-            def("nirrep", &Vector::nirrep, "docstring"); // <-- semicolon added here
+            def("nirrep", &Vector::nirrep, "docstring").
+            def("array_interface", &Vector::array_interface).
+            def_readwrite("cdict", &Vector::cdict);
             //def("array_interfaces", make_vector_array_interfaces, "docstring").
             //add_property("__array_interface__", vector_array_interface_c1, "docstring")
 
@@ -465,9 +294,9 @@ void export_mints(py::module& m)
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
-            def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring"); // <--- Added semicolon
-            //def("array_interfaces", make_matix_array_interfaces, "docstring").
-            //add_property("__array_interface__", matrix_array_interface_c1, "docstring");
+            def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
+            def("array_interface", &Matrix::array_interface, "docstring").
+            def_readwrite("cdict", &Matrix::cdict);
 
     py::class_<View>(m, "View").
             def(py::init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -1001,7 +830,8 @@ void export_mints(py::module& m)
             def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
             def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
-            def("compute_gradient", &Wavefunction::compute_gradient, "docstring");
+            def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
+            def_readwrite("cdict", &Wavefunction::cdict);
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>>(m, "HF", py::base<Wavefunction>(), "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
@@ -1090,7 +920,6 @@ void export_mints(py::module& m)
             .def("Qvv", &DFTensor::Qvv, "doctsring")
             .def("Imo", &DFTensor::Imo, "doctsring")
             .def("Idfmo", &DFTensor::Idfmo, "doctsring");
-
 
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
