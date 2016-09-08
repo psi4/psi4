@@ -295,13 +295,13 @@ def cdict_get_attr(self, name):
 
 def cdict_dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
-    the a class with a cdict attribute.
+    the class with a cdict attribute.
 
     """
     cls.__setattr__ = cdict_set_attr
     cls.__getattr__ = cdict_get_attr
 
-cdict_dynamic_variable_bind(psi4.Wavefunction)
+#cdict_dynamic_variable_bind(psi4.Wavefunction)
 
 
 #
