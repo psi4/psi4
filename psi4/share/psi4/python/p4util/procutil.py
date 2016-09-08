@@ -57,7 +57,7 @@ def kwargs_lower(kwargs):
         else:
             try:
                 lvalue = value.lower()
-            except AttributeError:
+            except (AttributeError, KeyError):
                 lvalue = value
 
         if lkey in ['irrep', 'check_bsse', 'linkage', 'bsse_type']:
