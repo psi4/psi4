@@ -464,10 +464,10 @@ def _nbody_gufunc(func, method_string, **kwargs):
 
     # Build and set a wavefunction
     wfn = psi4.new_wavefunction(molecule, 'sto-3g')
-    wfn.nbody_energy = energies_dict
-    wfn.nbody_ptype = ptype_dict
-    wfn.nbody_body_energy = energy_body_dict
-    wfn.nbody_body_ptype = ptype_body_dict
+    wfn.cdict["nbody_energy"] = energies_dict
+    wfn.cdict["nbody_ptype"] = ptype_dict
+    wfn.cdict["nbody_body_energy"] = energy_body_dict
+    wfn.cdict["nbody_body_ptype"] = ptype_body_dict
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)
