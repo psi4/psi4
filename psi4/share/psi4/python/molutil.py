@@ -181,7 +181,7 @@ def extract_cluster_indexing(mol, cluster_size=0):
     return clusters
 
 
-def new_set_attr(self, name, value):
+def molecule_set_attr(self, name, value):
     """Function to redefine __setattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
@@ -193,7 +193,7 @@ def new_set_attr(self, name, value):
     object.__setattr__(self, name, value)
 
 
-def new_get_attr(self, name):
+def molecule_get_attr(self, name):
     """Function to redefine __getattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
@@ -276,36 +276,32 @@ def dynamic_variable_bind(cls):
     the psi4.Molecule class.
 
     """
-    cls.__setattr__ = new_set_attr
-    cls.__getattr__ = new_get_attr
+    cls.__setattr__ = molecule_set_attr
+    cls.__getattr__ = molecule_get_attr
 
     cls.BFS = BFS
 
 
 dynamic_variable_bind(psi4.Molecule)  # pass class type, not class instance
 
-def wfn_set_attr(self, name, value):
-    """Function to redefine __setattr__ method of molecule class."""
-    self.variables[name] = value
+def cdict_set_attr(self, name, value):
+    """Function to redefine __setattr__ method of a class with a cdict."""
+    self.cdict[name] = value
 
 
-def wfn_get_attr(self, name):
-    """Function to redefine __getattr__ method of molecule class."""
-    return self.variables[name]
+def cdict_get_attr(self, name):
+    """Function to redefine __getattr__ method of a class with a cdict."""
+    return self.cdict[name]
 
-# def wfn_del_attr(self, name):
-
-
-def wfn_dynamic_variable_bind(cls):
+def cdict_dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
-    the psi4.Molecule class.
+    the a class with a cdict attribute.
 
     """
-    cls.variables = dict()
-    cls.__setattr__ = wfn_set_attr
-    cls.__getattr__ = wfn_get_attr
+    cls.__setattr__ = cdict_set_attr
+    cls.__getattr__ = cdict_get_attr
 
-wfn_dynamic_variable_bind(psi4.Wavefunction)
+cdict_dynamic_variable_bind(psi4.Wavefunction)
 
 
 #
