@@ -76,10 +76,10 @@ option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-include(GNUInstallDirs)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ######################### Process & Validate Options ###########################
+include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(autocmake_omp)
 #include(autocmake_static_library)
