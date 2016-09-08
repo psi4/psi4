@@ -737,6 +737,7 @@ void export_mints(py::module& m)
             def("petite_list", &SOBasisSet::petite_list, "docstring");
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(m, "ExternalPotential", "docstring").
+            def(py::init()).
             def("setName", &ExternalPotential::setName, "docstring").
             def("addCharge", &ExternalPotential::addCharge, "docstring").
             def("addBasis", &ExternalPotential::addBasis, "docstring").
