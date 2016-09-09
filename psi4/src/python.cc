@@ -722,11 +722,6 @@ bool py_psi_set_local_option_double(std::string const& module, std::string const
 {
     std::string nonconst_key = to_upper(key);
 
-    double intpart;
-    if(specifies_convergence(nonconst_key) && modf(value, &intpart) == 0.0){
-        value = pow(10, -value);
-    }
-
     Process::environment.options.set_double(module, nonconst_key, value);
     return true;
 }
@@ -772,11 +767,6 @@ bool py_psi_set_global_option_int(std::string const& key, int value)
 bool py_psi_set_global_option_double(std::string const& key, double value)
 {
     std::string nonconst_key = to_upper(key);
-
-    double intpart;
-    if(specifies_convergence(nonconst_key) && modf(value, &intpart) == 0.0){
-        value = pow(10, -value);
-    }
 
     Process::environment.options.set_global_double(nonconst_key, value);
     return true;
