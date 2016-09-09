@@ -1,6 +1,10 @@
 language: cpp
 sudo: false
 matrix:
+  allow_failures:
+    - compiler: clang
+      env: CXX_COMPILER='clang++-3.9' C_COMPILER='clang-3.9' Fortran_COMPILER='gfortran' BUILD_TYPE='release' NAME='clang' VERSION='3.9'
+
   include:
 
   - os: linux
