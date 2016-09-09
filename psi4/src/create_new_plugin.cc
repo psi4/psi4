@@ -39,7 +39,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 namespace {
-std::string make_filename(const std::string& name)
+std::string make_filename(const std::string &name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
     std::string filename = name;
@@ -93,13 +93,14 @@ namespace psi {
 /**
  *
  */
-class PluginFileManager{
-  protected:
+class PluginFileManager
+{
+protected:
     std::string plugin_name_;
     std::vector<std::pair<std::string, std::string> > files_;
-  public:
-    PluginFileManager(const std::string &plugin_name):
-       plugin_name_(plugin_name)
+public:
+    PluginFileManager(const std::string &plugin_name) :
+            plugin_name_(plugin_name)
     {
     }
 
@@ -111,7 +112,7 @@ class PluginFileManager{
      */
     void add_file(const std::string &source_name, const std::string &target_name = "")
     {
-        if(target_name == "")
+        if (target_name == "")
             files_.push_back(std::make_pair(source_name, source_name));
         else
             files_.push_back(std::make_pair(source_name, target_name));
@@ -123,11 +124,11 @@ class PluginFileManager{
         std::string psiDataDirName = Process::environment("PSIDATADIR");
         std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
 
-        std::string fpath =  filesystem::path(psiDataDirWithPlugin).make_absolute().str();
+        std::string fpath = filesystem::path(psiDataDirWithPlugin).make_absolute().str();
         struct stat sb;
-        if(::stat(fpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+        if (::stat(fpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
             printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
-                    "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+                           "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
             exit(1);
         }
 
@@ -149,20 +150,20 @@ class PluginFileManager{
         std::string format_ldflags(TOSTRING(PLUGIN_LDFLAGS));
 
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
-        for(iter = files_.begin(); iter != files_.end(); ++iter){
+        for (iter = files_.begin(); iter != files_.end(); ++iter) {
             std::string source_name = psiDataDirWithPlugin + "/" + iter->first;
-            std::string target_name   = plugin_name_ + "/" + iter->second;
+            std::string target_name = plugin_name_ + "/" + iter->second;
 
             // Load in Makefile.template
-            FILE* fp = fopen(source_name.c_str(), "r");
+            FILE *fp = fopen(source_name.c_str(), "r");
             if (fp == NULL) {
-                printf("create_new_plugin: Unable to open %s template.\n",source_name.c_str());
+                printf("create_new_plugin: Unable to open %s template.\n", source_name.c_str());
                 exit(1);
             }
             // Stupid way to read in entire file.
             char line[256];
             std::stringstream file;
-            while(fgets(line, sizeof(line), fp))
+            while (fgets(line, sizeof(line), fp))
                 file << line;
             std::string filestring = file.str();
             fclose(fp);
@@ -222,7 +223,7 @@ class PluginFileManager{
     }
 };
 
-void create_new_plugin(std::string name, const std::string& template_name)
+void create_new_plugin(std::string name, const std::string &template_name)
 {
     std::string template_name_lower(template_name);
     // First make it lower case
@@ -241,7 +242,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
     // End == check to make sure the plugin name is valid
 
 
-    if(template_name_lower.empty())
+    if (template_name_lower.empty())
         template_name_lower = "plugin";
 
     // Make a directory with the name plugin_name
@@ -249,7 +250,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
         printf("Plugin directory %s already exists.\n", plugin_name.c_str());
         exit(1);
     }
-    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name_lower.c_str());
+    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(), template_name_lower.c_str());
 
     // Process the files
     PluginFileManager file_manager(plugin_name);
@@ -260,7 +261,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
     file_manager.add_file("__init__.py.template", "__init__.py");
     file_manager.add_file("doc.rst.template", "doc.rst");
     file_manager.add_file(template_name_lower + ".cc.template", name + ".cc");
-    if(template_name_lower == "scf"){
+    if (template_name_lower == "scf") {
         // The SCF file has multiple files
         file_manager.add_file("scf.scf.h.template", "scf.h");
         file_manager.add_file("scf.scf.cc.template", "scf.cc");
@@ -268,7 +269,7 @@ void create_new_plugin(std::string name, const std::string& template_name)
         // Overwrite the existing pymodule file with a more appropriate one
         file_manager.add_file("scf.pymodule.py.template", "pymodule.py");
     }
-    if(template_name_lower == "ambit"){
+    if (template_name_lower == "ambit") {
         file_manager.add_file("ambit.input.dat.template", "input.dat");
     }
     file_manager.process();

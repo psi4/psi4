@@ -93,3 +93,17 @@ foreach(_dotefp ${_dotefps})
                        COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile})
 endforeach()
 
+# <<< Export Config for Plugins >>>
+include(CMakePackageConfigHelpers)
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/Psi4Plugins")
+configure_package_config_file(
+        share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake
+        INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfigVersion.cmake
+        VERSION ${PSI4_VERSION}
+        COMPATIBILITY SameMajorVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfigVersion.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})

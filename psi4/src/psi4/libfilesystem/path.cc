@@ -99,6 +99,10 @@ std::string path::stem() const
 {
     char tpath[PATH_MAX + 1];
     std::string path = filename();
+
+    std::size_t found = path.find_last_of(".");
+    path = path.substr(0, found);
+
     if (path.size() > PATH_MAX)
         throw std::runtime_error("path is longer than PATH_MAX.");
     strncpy(tpath, path.c_str(), PATH_MAX);

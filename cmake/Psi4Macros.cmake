@@ -62,7 +62,7 @@ macro(general_add_library libname sources dir)
     if (${dir} MATCHES lib)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4
-                FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+                FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.i")
     endif ()
 
     set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})

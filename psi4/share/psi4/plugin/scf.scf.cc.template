@@ -27,9 +27,9 @@
  * @END LICENSE
  */
 
-#include "liboptions/liboptions.h"
-#include "libmints/mints.h"
-#include "libfock/jk.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/mints.h"
+#include "psi4/libfock/jk.h"
 #include "scf.h"
 
 namespace psi{ namespace @plugin@{
@@ -61,7 +61,7 @@ void SCF::init_integrals()
     // The integral factory oversees the creation of integral objects
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
             (basisset_, basisset_, basisset_, basisset_));
-    
+
     // Determine the number of electrons in the system
     // The molecule object is built into all wavefunctions
     int charge = molecule_->molecular_charge();
@@ -75,7 +75,7 @@ void SCF::init_integrals()
 
     outfile->Printf("\tThere are %d doubly occupied orbitals\n", ndocc_);
     molecule_->print();
-    if(print_ > 1){ 
+    if(print_ > 1){
          basisset_->print_detail();
          options_.print();
     }
@@ -128,7 +128,7 @@ double SCF::compute_electronic_energy()
 {
     SharedMatrix HplusF = H_->clone();
     HplusF->add(F_);
-    return D_->vector_dot(HplusF);    
+    return D_->vector_dot(HplusF);
 }
 
 void SCF::update_Cocc()
@@ -137,7 +137,7 @@ void SCF::update_Cocc()
         for(int i = 0; i < ndocc_; ++i){
             Cocc_->set(p, i, C_->get(p, i));
         }
-    }   
+    }
 }
 
 
@@ -191,7 +191,7 @@ double SCF::compute_energy()
 
        // Add the core Hamiltonian term to the Fock operator
        F_->copy(H_);
-       
+
 
        // The JK object handles all of the two electron integrals
        // To enhance efficiency it does use the density, but the orbitals themselves
@@ -207,7 +207,7 @@ double SCF::compute_energy()
 
        // Obtain the new J and K matrices
        const std::vector<SharedMatrix>& J = jk_->J();
-       const std::vector<SharedMatrix>& K = jk_->K();        
+       const std::vector<SharedMatrix>& K = jk_->K();
 
        // Proceede as normal
        J[0]->scale(2.0);
@@ -217,7 +217,7 @@ double SCF::compute_energy()
        // Compute the energy
        e_new = e_nuc_ + compute_electronic_energy();
        double dE = e_new - e_old;
- 
+
        // Compute the orbital gradient, FDS-SDF
        Temp1->gemm(false, false, 1.0, D_, S_, 0.0);
        FDS->gemm(false, false, 1.0, F_, Temp1, 0.0);
@@ -238,7 +238,7 @@ double SCF::compute_energy()
            Temp1->set_name("Orbital gradient");
            Temp1->print();
        }
-     
+
        converged = (fabs(dE) < e_convergence_) && (dRMS < d_convergence_);
 
        outfile->Printf("\t* %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
@@ -247,7 +247,7 @@ double SCF::compute_energy()
        Ft_->transform(F_, X_);
        Ft_->diagonalize(Evecs, Evals, ascending);
 
-       // Form the orbitals from the eigenvectors of the transformed Fock matrix 
+       // Form the orbitals from the eigenvectors of the transformed Fock matrix
        C_->gemm(false, false, 1.0, X_, Evecs, 0.0);
 
        // Update our occupied orbitals
