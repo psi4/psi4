@@ -32,8 +32,8 @@
 #include <sys/stat.h>
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libmints/basisset.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -43,37 +43,6 @@ std::string make_filename(const std::string &name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
     std::string filename = name;
-
-#if 0
-    // Old Boost code
-    std::string format_underscore("_"); // empty string
-    // Replace all '(' with '_'
-    xpressive::sregex match_format = xpressive::as_xpr("(");
-    filename = regex_replace(filename, match_format, format_underscore);
-
-    // Replace all ')' with '_'
-    match_format = xpressive::as_xpr(")");
-    filename = regex_replace(filename, match_format, format_underscore);
-
-    // Replace all ',' with '_'
-    match_format = xpressive::as_xpr(",");
-    filename = regex_replace(filename, match_format, format_underscore);
-
-    // Replace all '*' with 's'
-    match_format = xpressive::as_xpr("*");
-    string format_star("s");
-    filename = regex_replace(filename, match_format, format_star);
-
-    // Replace all '+' with 'p'
-    match_format = xpressive::as_xpr("+");
-    string format_plus("p");
-    filename = regex_replace(filename, match_format, format_plus);
-
-    // Replace all '-' with '_'
-    match_format = xpressive::as_xpr("-");
-    std::string format_hyphen("_");
-    filename = regex_replace(filename, match_format, format_hyphen);
-#endif
 
     // Replace ( ) , - with _
     filename = std::regex_replace(filename, std::regex("\\(|\\)|,|\\-"), "_");
@@ -99,6 +68,7 @@ protected:
     std::string plugin_name_;
     bool cd_into_directory_;
     std::vector<std::pair<std::string, std::string> > files_;
+    std::vector<std::string> source_files_;
 public:
     PluginFileManager(const std::string &plugin_name, bool cd_into_directory = true) :
             plugin_name_(plugin_name), cd_into_directory_(cd_into_directory)
@@ -117,6 +87,10 @@ public:
             files_.push_back(std::make_pair(source_name, source_name));
         else
             files_.push_back(std::make_pair(source_name, target_name));
+
+        std::string ext(filesystem::path(target_name).extension());
+        if (ext == "h" || ext == "cc")
+            source_files_.push_back(target_name);
     }
 
     void process()
@@ -138,17 +112,16 @@ public:
         Name[0] = ::toupper(Name[0]);
 
         // Formatted strings, to be substituted in later
-        //std::string format_top_srcdir(PSI_TOP_SRCDIR);
-        //std::string format_top_objdir(PSI_TOP_OBJDIR);
-        std::string format_cxx(TOSTRING(PLUGIN_CXX));
-        std::string format_defines(TOSTRING(PLUGIN_DEFINES));
-        std::string format_flags(TOSTRING(PLUGIN_FLAGS));
-        std::string format_includes(TOSTRING(PLUGIN_INCLUDES));
-        std::string format_objdir(TOSTRING(PLUGIN_OBJDIR));
+        std::ostringstream imploded;
+        std::copy(source_files_.begin(), source_files_.end(),
+                  std::ostream_iterator<std::string>(imploded, " "));
+        std::string format_source_list = imploded.str();
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = plugin_name_;
         std::transform(format_PLUGIN.begin(), format_PLUGIN.end(), format_PLUGIN.begin(), ::toupper);
         std::string format_ldflags(TOSTRING(PLUGIN_LDFLAGS));
+
+        trim_spaces(format_source_list);
 
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
         for (iter = files_.begin(); iter != files_.end(); ++iter) {
@@ -169,43 +142,10 @@ public:
             std::string filestring = file.str();
             fclose(fp);
 
-#if 0
-            // Old Boost style
-            // Search and replace placeholders in the string
-            boost::xpressive::sregex match_format;
-            //boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
-            //filestring = xpressive::regex_replace(filestring, match_format, format_top_srcdir);
-            //match_format = boost::xpressive::as_xpr("@top_objdir@");
-            //filestring = xpressive::regex_replace(filestring, match_format, format_top_objdir);
-            match_format = boost::xpressive::as_xpr("@plugin@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_plugin);
-            match_format = boost::xpressive::as_xpr("@Plugin@");
-            filestring = xpressive::regex_replace(filestring, match_format, Name);
-            match_format = boost::xpressive::as_xpr("@PLUGIN@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_PLUGIN);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_CXX@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_cxx);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_DEFINES@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_defines);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_FLAGS@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_flags);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_INCLUDES@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_includes);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_OBJDIR@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_objdir);
-            match_format = boost::xpressive::as_xpr("@PLUGIN_LDFLAGS@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_ldflags);
-#endif
-
             filestring = std::regex_replace(filestring, std::regex("@plugin@"), format_plugin);
             filestring = std::regex_replace(filestring, std::regex("@Plugin@"), Name);
             filestring = std::regex_replace(filestring, std::regex("@PLUGIN@"), format_PLUGIN);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_CXX@"), format_cxx);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_DEFINES@"), format_defines);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_FLAGS@"), format_flags);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_INCLUDES@"), format_includes);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_OBJDIR@"), format_objdir);
-            filestring = std::regex_replace(filestring, std::regex("@PLUGIN_LDFLAGS@"), format_ldflags);
+            filestring = std::regex_replace(filestring, std::regex("@sources@"), format_source_list);
 
             // Write the new file out
             fp = fopen(target_name.c_str(), "w");
@@ -262,7 +202,6 @@ void create_new_plugin(std::string name, const std::string &template_name)
         // The SCF file has multiple files
         file_manager.add_file("scf.scf.h.template", "scf.h");
         file_manager.add_file("scf.scf.cc.template", "scf.cc");
-        file_manager.add_file("scf.cc.template", name + ".cc");
         // Overwrite the existing pymodule file with a more appropriate one
         file_manager.add_file("scf.pymodule.py.template", "pymodule.py");
     }

@@ -32,4 +32,4 @@ project(@plugin@ CXX)
 
 find_package(Psi4Plugins 1.0 REQUIRED)
 
-add_psi4_plugin(@plugin@ @plugin@.cc)
+add_psi4_plugin(@plugin@ @sources@)
