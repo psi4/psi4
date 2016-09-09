@@ -28,15 +28,15 @@
 #include <psi4/pybind11.h>
 #include "psi4/libplugin/plugin.h"
 #include "psi4/libparallel/parallel.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libfilesystem/path.h"
 #include <string>
 #include <vector>
 
 using namespace psi;
 namespace py = pybind11;
 
-extern void py_psi_prepare_options_for_module(const std::string& name);
+extern void py_psi_prepare_options_for_module(const std::string &name);
 
 std::map<std::string, plugin_info> plugins;
 
@@ -58,18 +58,16 @@ int py_psi_plugin_load(std::string fullpathname)
 {
     int ret = 0;
 
-    //boost::filesystem::path pluginPath(fullpathname);
-    //boost::filesystem::path pluginStem = pluginPath.stem();
-    //std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
+    filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem());
 
-    //// Make sure the plugin isn't already loaded.
-    //if (plugins.count(uc) == 0) {
-    //    plugins[uc] = plugin_load(fullpathname);
-    //    outfile->Printf("%s loaded.\n", fullpathname.c_str());
-    //    ret = 1;
-    //}
-    //else
-    //    ret = 2;
+    // Make sure the plugin isn't already loaded.
+    if (plugins.count(uc) == 0) {
+        plugins[uc] = plugin_load(fullpathname);
+        outfile->Printf("%s loaded.\n", fullpathname.c_str());
+        ret = 1;
+    } else
+        ret = 2;
 
     return ret;
 }
@@ -85,37 +83,34 @@ int py_psi_plugin_load(std::string fullpathname)
 */
 SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction ref_wfn)
 {
-    //boost::filesystem::path pluginPath(fullpathname);
-    //boost::filesystem::path pluginStem = pluginPath.stem();
-    //std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
-    //if (plugins.count(uc) == 0) {
-    //    plugins[uc] = plugin_load(fullpathname);
-    //}
-    //plugin_info& tmpinfo = plugins[uc];
+    filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem());
+    if (plugins.count(uc) == 0) {
+        plugins[uc] = plugin_load(fullpathname);
+    }
+    plugin_info &tmpinfo = plugins[uc];
 
-    //outfile->Printf("\nReading options from the %s block\n", tmpinfo.name.c_str());
-    //py_psi_prepare_options_for_module(tmpinfo.name);
+    outfile->Printf("\nReading options from the %s block\n", tmpinfo.name.c_str());
+    py_psi_prepare_options_for_module(tmpinfo.name);
 
-    //tmpinfo.read_options(tmpinfo.name, Process::environment.options);
+    tmpinfo.read_options(tmpinfo.name, Process::environment.options);
 
-    //plugin_info& info = plugins[uc];
+    plugin_info &info = plugins[uc];
 
-    //// Call the plugin
-    //// Should be wrapped in a try/catch block.
-    //outfile->Printf("Calling plugin %s.\n\n\n", fullpathname.c_str());
+    // Call the plugin
+    // Should be wrapped in a try/catch block.
+    outfile->Printf("Calling plugin %s.\n\n\n", fullpathname.c_str());
 
-    //// Call the plugin
-    //if (ref_wfn){
-    //    return info.plugin(ref_wfn, Process::environment.options);
-    //}
-    //else if (Process::environment.legacy_wavefunction()){
-    //    outfile->Printf("Using the legacy wavefunction call, please use conventional wavefunction passing in the future.");
-    //    return info.plugin(Process::environment.legacy_wavefunction(),
-    //                       Process::environment.options);
-    //}
-    //else{
-    //    throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");
-    //}
+    // Call the plugin
+    if (ref_wfn) {
+        return info.plugin(ref_wfn, Process::environment.options);
+    } else if (Process::environment.legacy_wavefunction()) {
+        outfile->Printf("Using the legacy wavefunction call, please use conventional wavefunction passing in the future.");
+        return info.plugin(Process::environment.legacy_wavefunction(),
+                           Process::environment.options);
+    } else {
+        throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");
+    }
 }
 
 /**
@@ -128,14 +123,13 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
 */
 void py_psi_plugin_close(std::string fullpathname)
 {
-    //boost::filesystem::path pluginPath(fullpathname);
-    //boost::filesystem::path pluginStem = pluginPath.stem();
-    //std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
-    //if (plugins.count(uc) > 0) {
-    //    plugin_info& info = plugins[uc];
-    //    plugin_close(info);
-    //    plugins.erase(uc);
-    //}
+    filesystem::path pluginPath(fullpathname);
+    std::string uc = to_upper_copy(pluginPath.stem());
+    if (plugins.count(uc) > 0) {
+        plugin_info& info = plugins[uc];
+        plugin_close(info);
+        plugins.erase(uc);
+    }
 }
 
 /**
@@ -158,7 +152,7 @@ void py_psi_plugin_close_all()
  * End of Plug-In functions                                               *
  **************************************************************************/
 
-void export_plugins(py::module& m)
+void export_plugins(py::module &m)
 {
     // plugins
     m.def("plugin_load", py_psi_plugin_load, "docstring");
