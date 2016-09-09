@@ -13,6 +13,8 @@ if (${Psi4Plugins_INCLUDE_DIR} MATCHES "Psi4Plugins_INCLUDE_DIR-NOTFOUND")
     set(Psi4Plugins_FOUND FALSE)
     message(STATUS "No Psi4 include directory found.")
     return()
+else()
+    message(STATUS "Psi4 include directory: ${Psi4Plugins_INCLUDE_DIR}")
 endif()
 
 find_program(Psi4_EXECUTABLE NAMES psi4
@@ -23,6 +25,8 @@ if (${Psi4_EXECUTABLE} MATCHES "Psi4_EXECUTABLE-NOTFOUND")
     set(Psi4Plugins_FOUND FALSE)
     message(STATUS "No Psi4 executable found.")
     return()
+else()
+    message(STATUS "Psi4 executable: ${Psi4_EXECUTABLE}")
 endif()
 
 macro(psi4_component name on)
@@ -67,5 +71,8 @@ function(add_psi4_plugin TARGET SOURCES)
     if (APPLE)
         set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     endif()
+
+    # Add additional properties to the "make clean" to delete *.pyc
+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "*.pyc")
 endfunction(add_psi4_plugin)
 
