@@ -6,3 +6,5 @@
 
 * switch python detection to PythonLibsNew - it's a numpy cmake module that pybind11 uses that enforces libpy to match py and supplies site-packages
 
+* switch SOSCF_R_START to SOSCF_R_START_CONVERGENCE or SOSCF_START_R_CONVERGENCE or SOSCF_START_CONVERGENCE so gets processed as conv double
+
