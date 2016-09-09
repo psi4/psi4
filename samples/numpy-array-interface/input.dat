@@ -7,12 +7,17 @@ arr_matrix = np.random.rand(2, 2)
 arr_matrix_value = arr_matrix[0, 0]
 
 mat1 = psi4.Matrix.from_array(arr_matrix)
-mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix])
+mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix+3])
+
 
 
 # Array from matrix
 np_mat1 = mat1.to_array()
 np_mat2 = mat2.to_array()
+np_mat1_ex = np.array(mat1)
+
+for h in range(mat2.nirrep()):
+# Explicit should fail
 
 np_mat1_view = mat1.to_array(copy=False)
 np_mat2_view = mat2.to_array(copy=False)
@@ -28,6 +33,7 @@ arr_vec_value = arr_vector[0]
 
 vec1 = psi4.Vector.from_array(arr_vector)
 vec2 = psi4.Vector.from_array([arr_vector, arr_vector])
+
 
 
 # Array from Vector
@@ -81,6 +87,5 @@ dense_arr = irreped_vec.to_array(dense=True)
 irreped_vec2 = Vector.from_array(dense_arr, dim1=(1, 0, 2))
 
 irreped_arr = irreped_vec2.to_array()
-
 
 
