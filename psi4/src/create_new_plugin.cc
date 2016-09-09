@@ -252,7 +252,6 @@ void create_new_plugin(std::string name, const std::string &template_name)
 
     // Process the files
     PluginFileManager file_manager(plugin_name);
-    file_manager.add_file("Makefile.template", "Makefile");
     file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.add_file("input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
@@ -280,7 +279,6 @@ void create_new_plugin_makefile()
     filesystem::path cwd = filesystem::path::getcwd();
     std::string name = make_filename(cwd.stem());
     PluginFileManager file_manager(name, false);
-    file_manager.add_file("Makefile.template", "Makefile");
     file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.process();
 }
