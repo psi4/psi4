@@ -28,7 +28,8 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libmints/typedefs.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi{
     // Forward declare several variables
@@ -77,7 +78,7 @@ class SCF : public Wavefunction {
     /// The density matrix
     SharedMatrix D_;
     /// The ubiquitous JK object
-    boost::shared_ptr<JK> jk_;
+    std::shared_ptr<JK> jk_;
     /// Computes the electronic part of the SCF energy, and returns it
     double compute_electronic_energy();
     /// Sets up the integrals object

@@ -61,32 +61,32 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
     }
 
     // Need the molecule to contruct the auxiliary basis set
-    boost::shared_ptr<Molecule> molecule = ref_wfn->molecule();
+    std::shared_ptr<Molecule> molecule = ref_wfn->molecule();
 
     // Obtain basis set objects
     //   1. Orbital basis set
-    boost::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
+    std::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
     //   2. Auxiliary basis set
     // Construct a new basis set.
-    boost::shared_ptr<BasisSet> auxBasis= BasisSet::pyconstruct_auxiliary(molecule,
+    std::shared_ptr<BasisSet> auxBasis= BasisSet::pyconstruct_auxiliary(molecule,
                                                  "DF_BASIS_MP2", options.get_str("DF_BASIS_MP2"),
                                                  "RIFIT", options.get_str("BASIS"));
 
     //   3. "Zero" basis set.
-    boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // The integral factory oversees the creation of integral objects
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis, aoBasis, aoBasis, aoBasis));
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis, aoBasis, aoBasis, aoBasis));
 
     molecule->print();
 
     size_t nbf = aoBasis->nbf();
 
     // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
-    boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
-    boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
+    std::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
+    std::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
 
     // Create ambit tensors to store the one-electron integrals
     Tensor S = Tensor::build(CoreTensor, "S", { nbf, nbf });

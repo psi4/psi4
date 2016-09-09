@@ -27,10 +27,14 @@
  * @END LICENSE
  */
 
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libmints/mints.h"
-#include "psi4/libfock/jk.h"
 #include "scf.h"
+
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
 
 namespace psi{ namespace @plugin@{
 
@@ -59,7 +63,7 @@ void SCF::init_integrals()
 
     // The basisset object contains all of the basis information and is formed in the new_wavefunction call
     // The integral factory oversees the creation of integral objects
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory
             (basisset_, basisset_, basisset_, basisset_));
 
     // Determine the number of electrons in the system
@@ -93,9 +97,9 @@ void SCF::init_integrals()
     SharedMatrix V = SharedMatrix(new Matrix("Potential integrals matrix", nso_, nso_));
 
     // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
-    boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
-    boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
+    std::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
+    std::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
     // Compute the one electron integrals, telling each object where to store the result
     sOBI->compute(S_);
     tOBI->compute(T);
