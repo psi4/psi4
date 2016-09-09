@@ -97,10 +97,11 @@ class PluginFileManager
 {
 protected:
     std::string plugin_name_;
+    bool cd_into_directory_;
     std::vector<std::pair<std::string, std::string> > files_;
 public:
-    PluginFileManager(const std::string &plugin_name) :
-            plugin_name_(plugin_name)
+    PluginFileManager(const std::string &plugin_name, bool cd_into_directory = true) :
+            plugin_name_(plugin_name), cd_into_directory_(cd_into_directory)
     {
     }
 
@@ -152,7 +153,7 @@ public:
         std::vector<std::pair<std::string, std::string> >::const_iterator iter;
         for (iter = files_.begin(); iter != files_.end(); ++iter) {
             std::string source_name = psiDataDirWithPlugin + "/" + iter->first;
-            std::string target_name = plugin_name_ + "/" + iter->second;
+            std::string target_name = cd_into_directory_ ? (plugin_name_ + "/" + iter->second) : iter->second;
 
             // Load in Makefile.template
             FILE *fp = fopen(source_name.c_str(), "r");
@@ -232,9 +233,6 @@ void create_new_plugin(std::string name, const std::string &template_name)
 
     // Start == check to make sure the plugin name is valid
     std::string plugin_name = make_filename(name);
-//    smatch results;
-//    regex check_name("^[A-Za-z].*");
-//    if (!regex_match(plugin_name, results, check_name)) {
     if (!std::isalpha(plugin_name[0])) {
         printf("Plugin name must begin with a letter.\n");
         exit(1);
@@ -279,7 +277,9 @@ void create_new_plugin_makefile()
 {
     printf("Creating new plugin Makefile in the current directory.\n");
 
-    PluginFileManager file_manager(".");
+    filesystem::path cwd = filesystem::path::getcwd();
+    std::string name = make_filename(cwd.stem());
+    PluginFileManager file_manager(name, false);
     file_manager.add_file("Makefile.template", "Makefile");
     file_manager.add_file("CMakeLists.txt.template", "CMakeLists.txt");
     file_manager.process();
