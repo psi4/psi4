@@ -30,7 +30,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/wavefunction.h"
 
 // This allows us to be lazy in getting the spaces in DPD calls
@@ -61,7 +61,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     int print = options.get_int("PRINT");
 
     // Grab the global (default) PSIO object, for file I/O
-    boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+    std::shared_ptr<PSIO> psio(_default_psio_lib_);
 
     // Have the reference (SCF) wavefunction, ref_wfn
     if(!ref_wfn) throw PSIEXCEPTION("SCF has not been run yet!");
@@ -71,7 +71,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // For now, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
     // LibTrans object, check out the plugin_mp2 example in the test suite.
-    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(ref_wfn, spaces, IntegralTransform::Restricted);
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);

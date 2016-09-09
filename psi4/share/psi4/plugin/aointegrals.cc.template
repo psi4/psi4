@@ -30,7 +30,11 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsio/psio.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
 
 namespace psi{ namespace @plugin@ {
 
@@ -72,7 +76,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     SharedMatrix tMat = mints.ao_kinetic();
     SharedMatrix vMat = mints.ao_potential();
 
-    // The SharedMatrix class is a boost::shared_ptr to a Matrix
+    // The SharedMatrix class is a std::shared_ptr to a Matrix
     // Since we have a point to the object we can access it through the "->" operator
     sMat->print();
     tMat->print();

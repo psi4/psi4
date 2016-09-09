@@ -27,9 +27,12 @@
  * @END LICENSE
  */
 
+#include "scf.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libscf_solver/scf.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 
 namespace psi{ namespace @plugin@ {
 
@@ -126,7 +129,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
     }
 
     // Build an SCF object, and tell it to compute its energy
-    SharedWavefunction scfwfn = boost::shared_ptr<Wavefunction>(new SCF(ref_wfn, options));
+    SharedWavefunction scfwfn = std::shared_ptr<Wavefunction>(new SCF(ref_wfn, options));
     scfwfn->compute_energy();
 
     return scfwfn;

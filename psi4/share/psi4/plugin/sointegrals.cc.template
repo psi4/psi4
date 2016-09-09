@@ -30,8 +30,10 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libmints/sointegral.h"
-#include "psi4/libpsio/psio.hpp"
+#include "psi4/libmints/sointegral_onebody.h"
+#include "psi4/libmints/sointegral_twobody.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/factory.h"
 
 namespace psi{ namespace @plugin@ {
 
@@ -73,12 +75,12 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     int doTei = options.get_bool("DO_TEI");
 
     // Get active molecule
-    boost::shared_ptr<Molecule> molecule = ref_wfn->molecule();
+    std::shared_ptr<Molecule> molecule = ref_wfn->molecule();
     // Grab basis object:
-    boost::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
+    std::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
 
     // The integral factory oversees the creation of integral objects
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory
             (aoBasis, aoBasis, aoBasis, aoBasis));
 
     // N.B. This should be called after the basis has been built, because
@@ -89,19 +91,19 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     // checkpoint file
     // ...it needs to raid the checkpoint file to find those dimensions.
     // Create an SOBasis object using the basis set and integral factory.
-    boost::shared_ptr<SOBasisSet> soBasis(new SOBasisSet(aoBasis, integral));
+    std::shared_ptr<SOBasisSet> soBasis(new SOBasisSet(aoBasis, integral));
 
     // Obtain block dimensions from the SO basis
     const Dimension dimension = soBasis->dimension();
 
     // The matrix factory can create matrices of the correct dimensions...
-    boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);
+    std::shared_ptr<MatrixFactory> factory(new MatrixFactory);
     factory->init_with(dimension, dimension);
 
     // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodySOInt> sOBI(integral->so_overlap());
-    boost::shared_ptr<OneBodySOInt> tOBI(integral->so_kinetic());
-    boost::shared_ptr<OneBodySOInt> vOBI(integral->so_potential());
+    std::shared_ptr<OneBodySOInt> sOBI(integral->so_overlap());
+    std::shared_ptr<OneBodySOInt> tOBI(integral->so_kinetic());
+    std::shared_ptr<OneBodySOInt> vOBI(integral->so_potential());
     // Form the one-electron integral matrices from the matrix factory
     SharedMatrix sMat(factory->create_matrix("Overlap"));
     SharedMatrix tMat(factory->create_matrix("Kinetic"));
@@ -129,11 +131,11 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     if(doTei){
         // 1. Obtain an object that knows how to compute two-electron AO
         // integrals.
-        boost::shared_ptr<TwoBodyAOInt> tb(integral->eri());
+        std::shared_ptr<TwoBodyAOInt> tb(integral->eri());
 
         // 2. Create an object that knows how to convert any two-body AO
         // integral to SO.
-        boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
+        std::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral));
 
         // 3. Find out how many SO shells we have.
         int nsoshell = soBasis->nshell();
