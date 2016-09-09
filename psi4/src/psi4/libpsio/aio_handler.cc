@@ -85,11 +85,10 @@ unsigned long int AIOHandler::read(unsigned int unit, const char *key, char *buf
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
+unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end, bool sync)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -124,7 +123,8 @@ unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer
   if (thread_) {
     printf("thread already exists.\n");
   }
-  synchronize();
+  if (sync)
+    synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -143,7 +143,6 @@ unsigned long AIOHandler::read_entry(unsigned int unit, const char *key, char *b
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -162,7 +161,6 @@ unsigned long AIOHandler::write_entry(unsigned int unit, const char *key, char *
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -186,7 +184,6 @@ unsigned long AIOHandler::read_discont(unsigned int unit, const char *key,
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -210,7 +207,6 @@ unsigned long AIOHandler::write_discont(unsigned int unit, const char *key,
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -230,7 +226,6 @@ unsigned long AIOHandler::zero_disk(unsigned int unit, const char *key,
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
@@ -255,7 +250,6 @@ unsigned long AIOHandler::write_iwl(unsigned int unit, const char *key,
   if (job_.size() > 1) return uniqueID_;
 
   //thread start
-  synchronize();
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 

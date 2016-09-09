@@ -90,7 +90,7 @@ public:
               psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
     unsigned long int write(unsigned int unit, const char *key, char *buffer, ULI size,
-               psio_address start, psio_address *end);
+               psio_address start, psio_address *end, bool sync=false);
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
     unsigned long int read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking

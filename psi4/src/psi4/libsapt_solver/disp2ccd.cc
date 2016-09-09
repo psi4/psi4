@@ -1314,8 +1314,8 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
         blocksize*virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
 
   for(int r_read=0; r_read<loopsize; r_read++) {
-        if (r_read < loopsize-1)
-        aio->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[(r_read+1)%2][0][0]),
+    if (r_read < loopsize-1)
+      aio->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[(r_read+1)%2][0][0]),
         blocksize*virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
 
     C_DGEMM('N','T',occtri,blocksize,virtri,1.0,tpAARR[0],virtri,

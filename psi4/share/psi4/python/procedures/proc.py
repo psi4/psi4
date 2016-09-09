@@ -2066,7 +2066,7 @@ def run_dft_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
-    scf_wfn.oeprop = oe
+    scf_wfn.set_oeprop(oe)
 
     optstash.restore()
     return scf_wfn
