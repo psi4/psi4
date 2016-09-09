@@ -18,9 +18,9 @@ if(${ENABLE_CheMPS2})
         endif()
 
         ExternalProject_Add(chemps2_external
-            GIT_REPOSITORY https://github.com/loriab/CheMPS2
-            GIT_TAG cmtarget
-            #GIT_REPOSITORY https://github.com/SebWouters/CheMPS2  #TODO
+            #GIT_REPOSITORY https://github.com/loriab/CheMPS2
+            #GIT_TAG cmtarget
+            GIT_REPOSITORY https://github.com/SebWouters/CheMPS2  #TODO
             #GIT_TAG v1.7.1  # TODO tag when stable
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/chemps2
