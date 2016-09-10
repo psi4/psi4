@@ -1,9 +1,5 @@
 @PACKAGE_INIT@
 
-list(APPEND CMAKE_PREFIX_PATH
-    ${PACKAGE_PREFIX_DIR}/external
-)
-
 # Found one of Psi4's header files.
 find_path(Psi4Plugins_INCLUDE_DIR NAMES psi4/psi4-dec.h
     PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@
@@ -55,6 +51,7 @@ endforeach()
 set(PSI4_INCLUDE_DIRS
     ${Psi4Plugins_INCLUDE_DIR}
     @PYTHON_INCLUDE_DIR@
+    ${Psi4Plugins_INCLUDE_DIR}/@RELATIVE_PYBIND11_INCLUDE_DIR@
 )
 
 set(Psi4Plugins_FOUND TRUE)
