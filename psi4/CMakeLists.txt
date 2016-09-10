@@ -95,6 +95,10 @@ endforeach()
 
 # <<< Export Config for Plugins >>>
 include(CMakePackageConfigHelpers)
+# Determine relative path from Psi4's include directory to PyBind11's
+file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
+    ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR} 
+    ${PYBIND11_INCLUDE_DIR})
 set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/Psi4Plugins")
 configure_package_config_file(
         share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake.in
