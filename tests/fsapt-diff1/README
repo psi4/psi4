@@ -1,0 +1,39 @@
+This test case shows an example of running and analyzing a difference
+F-SAPT0/jun-cc-pvdz procedure for phenol dimer from the S22 database.
+
+This example uses the same S22 phenol dimer F-SAPT for fsapt1 and fsapt2,
+meaning that all differences are zero. In real life, we would change something
+between fsapt1 and fsapt2 (a conformation, functional group, etc).
+
+See tests/fisapt1 for a description of the F-SAPT analysis files created for
+the S22 monomer (before difference analysis).
+
+input.dat - the input file
+output.ref - the reference output file
+fsapt1-ref/* - the reference F-SAPT partition and analysis for phenol dimer/S22
+fsapt2-ref/* - the reference F-SAPT partition and analysis for phenol dimer/S22
+fsaptD-ref/* - the difference F-SAPT partition obtained from
+    fsapt1-ref/fsapt2-ref
+
+    Running the fsapt-diff.py analysis script (fsapt-diff.py fsapt1-ref
+    fsapt2-ref fsaptD-ref) created this folder and the polished difference
+    F-SAPT analysis. fsapt.py must previously have been run in
+    fsapt1-ref/fsapt2-ref:
+
+    fsapt.dat - the numerical order-1/order-2 difference F-SAPT partition
+    *pdb - PDB files containing the order-1 difference F-SAPT partition
+
+    Running the copy_pymol.py (copy_pymol.py) script created the PyMol
+    helper files:
+    
+    run.pymol - a master file to run all sub .pymol files
+    orient.pymol - a file containing the desired view. Use the "Get View"
+        directive in the PyMol GUI to copy the parameters for your desired
+        view and paste into this file
+    vis.pymol - directives for the lighting and textures of the scene
+    *pymol - files to plot and render .png images of the order-1
+        difference F-SAPT PDB files
+
+    Running @run.pymol in PyMol created all the images:
+    
+    *png - difference F-SAPT order-1 analysis images.
