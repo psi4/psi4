@@ -50,7 +50,6 @@
 #include "psi4/libmints/mintshelper.h"
 
 #include "mcscf.h"
-#include "git.h"
 #include "scf.h"
 
 
