@@ -1,0 +1,40 @@
+This test case shows an example of running and analyzing an
+FI-SAPT0/jun-cc-pvdz computation for 2,4-pentanediol (targeting the
+intramolecular hydrogen bond between the two hydroxyl groups)
+
+input.dat - the input file
+output.ref - the reference output file
+fsapt-ref/* - the reference F-SAPT partition. See tests/fisapt1 for more
+    explanation of the "F" part of FI-SAPT
+plot-ref/* - Cube file analysis to view monomer densities, difference densities
+    and ESPs:
+
+    The PSI4 fisapt0 computation produced the following files (NOTE: we
+    have removed the cube files to save space in the repository):
+    
+    geom.xyz - the molecular geometry
+    DA.cube - the interacting density of monomer A
+    DB.cube - the interacting density of monomer B
+    DC.cube - the interacting density of monomer C
+    DFA.cube - the non-interacting density of monomer A
+    DFB.cube - the non-interacting density of monomer B
+    dDA.cube - the difference density DA - DFA for monomer A
+    dDB.cube - the difference density DB - DFB for monomer B
+    VA - the ESP corresponding to interacting monomer A
+    VB - the ESP corresponding to interacting monomer B
+    VC - the ESP corresponding to interacting monomer C
+
+    Running the copy_pymol2.py (copy_pymol2.py) script created the PyMol helper
+    files:
+    
+    run.pymol - a master file to run all sub .pymol files
+    orient.pymol - a file containing the desired view. Use the "Get View"
+        directive in the PyMol GUI to copy the parameters for your desired
+        view and paste into this file
+    vis.pymol - directives for the lighting and textures of the scene
+    *pymol - files to plot and render .png images of the cube file analyses
+
+    Running @run.pymol in PyMol created all the images:
+    
+    *png - FI-SAPT cube file visualizations
+
