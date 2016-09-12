@@ -57,7 +57,6 @@
 #include "psi4/libpsio/psio.hpp"
 
 #include "blas.h"
-#include "git.h"
 #include "main.h"
 #include "sort.h"
 #include "mrcc.h"
@@ -95,7 +94,7 @@ psimrcc(SharedWavefunction ref_wfn, Options &options)
   outfile->Printf("\n   MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by");
   outfile->Printf("\n     MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett");
   outfile->Printf("\n         MRCC            Compiled on %s at %s",__DATE__,__TIME__);
-  outfile->Printf("\n         MRCC            id =%s",GIT_ID);
+  outfile->Printf("\n         MRCC");
   outfile->Printf("\n       MRCCMRCC");
 
   global_timer = new Timer;
