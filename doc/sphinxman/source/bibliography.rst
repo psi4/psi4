@@ -6,6 +6,22 @@ Bibliography
 |
 |
 
+.. [Parrish:2015:051103]
+   R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C.D. Sherrill, 
+   *J. Chem. Phys.* **143**, 051103 (2015).
+
+.. [Parrish:2014:17386]
+   R. M. Parrish and C.D. Sherrill,
+   *J. Am. Chem. Soc.* **136**, 17386 (2014).
+
+.. [Parrish:2014:4417]
+   R. M. Parrish, T. M. Parker, and C.D. Sherrill,
+   *J. Chem. Theory Comput.* **10**, 4417 (2014).
+
+.. [Parrish:2014:044115]
+   R. M. Parrish and C.D. Sherrill,
+   *J. Chem. Phys.* **141**, 044115 (2014).
+
 .. [Jeziorski:1994:1887]
    B. Jeziorski, R. Moszynski, and K. Szalewicz,
    *Chem. Rev.* **94**, 1887 (1994).
