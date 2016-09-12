@@ -26,6 +26,7 @@ A complete list of standard keywords is provided in Appendix
    psimrcc
    detci
    sapt
+   fisapt
    adc
    relativistic
    optking
