@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include "psi4/libcubeprop/cubeprop.h"
 #include "psi4/liboptions/liboptions.h"

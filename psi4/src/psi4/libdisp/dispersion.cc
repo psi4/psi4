@@ -51,7 +51,7 @@
 #include <vector>
 #include <memory>
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \

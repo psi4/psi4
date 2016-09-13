@@ -29,7 +29,7 @@
 #include "psi4/psi4-dec.h"
 #include "superfunctional.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include <memory>
 

@@ -33,7 +33,7 @@
 #include "psi4/libparallel/mpi_wrapper.h"
 #include "psi4/libparallel/local.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include <algorithm>
 #include <numeric>

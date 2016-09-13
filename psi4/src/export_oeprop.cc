@@ -25,7 +25,7 @@
  * @END LICENSE
  */
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
