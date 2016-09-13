@@ -31,6 +31,7 @@ import sys
 if sys.version_info < (3,0):
     from exceptions import *
 
+# The next three functions make me angry
 def translate_interface(interface):
     """
     This is extra stupid with unicode
@@ -57,6 +58,11 @@ def _get_raw_views(self, copy=False):
     """
     ret = []
     for x in [numpy_holder(self.array_interface(h)) for h in xrange(self.nirrep())]:
+
+        # Yet another hack
+        if not isinstance(x.__array_interface__["shape"][0], (int, long, float)):
+            x.__array_interface__["shape"] = tuple(x.__array_interface__["shape"][0])
+
         if 0 in x.__array_interface__["shape"]:
             ret.append(np.empty(shape=x.__array_interface__["shape"]))
         else:
@@ -338,13 +344,14 @@ def _build_view(matrix):
 
 @property
 def _np_shape(self):
-    if not hasattr(self, '_np_view_data'):
-        self._np_view_data = _build_view(self)
+    if '_np_view_data' not in self.cdict.keys():
+        self.cdict['_np_view_data'] = _build_view(self)
 
+    view_data = self.cdict['_np_view_data']
     if self.nirrep() > 1:
-        return tuple(self._np_view_data[x].shape for x in range(self.nirrep()))
+        return tuple(view_data for x in range(self.nirrep()))
     else:
-        return self._np_view_data.shape
+        return view_data.shape
 
 @property
 def _np_view(self):
