@@ -121,7 +121,7 @@ void export_mints(py::module& m)
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
-    py::bind_vector<std::shared_ptr<Matrix>>(m, "VectorMatrix");
+    py::bind_vector<std::vector<std::shared_ptr<Matrix>>>(m, "VectorMatrix");
 
     // Other vector types
     //py::class_<std::vector<double> >(m, "vector_of_doubles", "docstring").
@@ -356,7 +356,7 @@ void export_mints(py::module& m)
                   int,
                   PrimitiveType>());
 
-    py::bind_vector<ShellInfo>(m, "BSVec");
+    py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(m, "OneBodyAOInt", "docstring");
             pyOneBodyAOInt.
