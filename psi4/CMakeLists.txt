@@ -17,8 +17,7 @@ include(GNUInstallDirs)
 test_restrict(restrict)
 
 ### >> Locate Python Interpreter and Library << ###
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibsNew REQUIRED)
 find_package(PYBIND11 REQUIRED)
 
 find_package(Threads)
