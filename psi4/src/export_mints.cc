@@ -234,13 +234,9 @@ void export_mints(py::module& m)
             def("print_out", &Matrix::print_out, "docstring").
             def("rows", &Matrix::rowdim, "docstring").
             def("cols", &Matrix::coldim, "docstring").
-            //def("rowdim", matrix_ret_dimension(&Matrix::rowspi), return_value_policy<copy_const_reference>(), "docstring").
-            //def("coldim", matrix_ret_dimension(&Matrix::colspi), return_value_policy<copy_const_reference>(), "docstring").
             def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy, "docstring").
             def("coldim", matrix_ret_dimension(&Matrix::colspi), py::return_value_policy::copy, "docstring").
-            //def("nirrep", &Matrix::nirrep, return_value_policy<copy_const_reference>(), "docstring").
             def("nirrep", &Matrix::nirrep, py::return_value_policy::copy, "docstring").
-            //def("symmetry", &Matrix::symmetry, return_value_policy<copy_const_reference>(), "docstring").
             def("symmetry", &Matrix::symmetry, py::return_value_policy::copy, "docstring").
             def("identity", &Matrix::identity, "docstring").
             def("copy_lower_to_upper", &Matrix::copy_lower_to_upper, "docstring").
@@ -275,8 +271,11 @@ void export_mints(py::module& m)
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
-            def("doublet", &Matrix::doublet, "docstring").
-            def("triplet", &Matrix::triplet, "docstring").
+            def("doublet", &Matrix::doublet).
+            def("triplet", &Matrix::triplet).
+            // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
+            // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
+            //                                  py::arg("transC") = false, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").

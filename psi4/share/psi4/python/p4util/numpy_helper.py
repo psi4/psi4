@@ -60,8 +60,8 @@ def _get_raw_views(self, copy=False):
     for x in [numpy_holder(self.array_interface(h)) for h in xrange(self.nirrep())]:
 
         # Yet another hack
-        if not isinstance(x.__array_interface__["shape"][0], (int, long, float)):
-            x.__array_interface__["shape"] = tuple(x.__array_interface__["shape"][0])
+        if isinstance(x.__array_interface__["shape"], list):
+            x.__array_interface__["shape"] = tuple(x.__array_interface__["shape"])
 
         if 0 in x.__array_interface__["shape"]:
             ret.append(np.empty(shape=x.__array_interface__["shape"]))
