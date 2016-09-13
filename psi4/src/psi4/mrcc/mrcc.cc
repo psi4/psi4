@@ -580,11 +580,11 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
-bool has_key(const pybind11::dict &data, const std::string &key)
+bool has_key(const py::dict &data, const std::string &key)
 {
     bool found = false;
     for (auto item : data) {
-        if (item.first == pybind11::str(key)) {
+        if (item.first == py::str(key)) {
             found = true;
             break;
         }
@@ -593,7 +593,7 @@ bool has_key(const pybind11::dict &data, const std::string &key)
 }
 }
 
-PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, const pybind11::dict &level)
+PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, const py::dict &level)
 {
     tstart();
 
@@ -653,7 +653,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     return Success;
 }
 
-PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, const pybind11::dict &level)
+PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, const py::dict &level)
 {
     tstart();
 

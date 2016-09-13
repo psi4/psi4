@@ -13,7 +13,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/eval.h>
 
-namespace py =  pybind11;
+namespace py = pybind11;
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 

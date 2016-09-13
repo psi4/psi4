@@ -33,7 +33,7 @@
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 
-#include <pybind11/pybind11.h>
+#include "psi4/pybind11.h"
 #include <stddef.h>
 #include <vector>
 #include <memory>
@@ -62,7 +62,6 @@ extern double fac[MAX_FAC];
 #   define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 #endif
 
-namespace py = pybind11;
 
 namespace psi {
 

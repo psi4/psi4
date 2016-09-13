@@ -32,9 +32,6 @@
 #include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
-namespace py = pybind11;
-
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 void export_oeprop(py::module &m)
 {

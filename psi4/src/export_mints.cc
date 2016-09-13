@@ -75,9 +75,6 @@
 #include <string>
 
 using namespace psi;
-namespace py = pybind11;
-
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
 {

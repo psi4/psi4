@@ -34,20 +34,20 @@ namespace psi {
 
 class PythonDataType : public DataType
 {
-    pybind11::object python_object_;
+    py::object python_object_;
 public:
     PythonDataType();
-    PythonDataType(const pybind11::object& p);
+    PythonDataType(const py::object& p);
     virtual ~PythonDataType();
 
     virtual std::string type() const;
 
-    const pybind11::object& to_python() const;
+    const py::object& to_python() const;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
 #endif
-    void assign(const pybind11::object& p);
+    void assign(const py::object& p);
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

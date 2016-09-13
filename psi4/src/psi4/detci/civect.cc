@@ -61,7 +61,6 @@
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libmints/vector.h"
 
-namespace py = pybind11;
 namespace psi { namespace detci {
 
 extern void transp_sigma(double **a, int rows, int cols, int phase);

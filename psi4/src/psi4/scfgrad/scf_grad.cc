@@ -332,7 +332,7 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_off("Grad: V");
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
     if (pyExtern) {
         std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
         if (external) {

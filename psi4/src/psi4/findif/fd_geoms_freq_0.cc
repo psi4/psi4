@@ -74,7 +74,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
   std::shared_ptr<MatrixFactory> fact;
-  pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
+  py::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
 //  std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
   bool noextern = pyExtern ? false : true;
   CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);

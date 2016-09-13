@@ -930,7 +930,7 @@ void HF::form_H()
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    pybind11::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
     std::shared_ptr<ExternalPotential> external;
     if (pyExtern)
         external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();

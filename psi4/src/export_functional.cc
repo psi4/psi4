@@ -34,10 +34,6 @@
 #include "psi4/libdisp/dispersion.h"
 
 using namespace psi;
-namespace py = pybind11;
-
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
-
 
 void export_functional(py::module &m)
 {

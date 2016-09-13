@@ -65,9 +65,6 @@ namespace psi {
 #define TOSTRING(x) STRINGIFY(x)
 
 using namespace psi;
-namespace py = pybind11;
-
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 // Python helper wrappers
 void export_benchmarks(py::module&);

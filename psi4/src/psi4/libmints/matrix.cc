@@ -3562,14 +3562,14 @@ bool Matrix::equal_but_for_row_order(const Matrix *rhs, double TOL)
     return true;
 }
 
-double Matrix::pyget(const pybind11::tuple &key)
+double Matrix::pyget(const py::tuple &key)
 {
     return get(key[0].cast<int>(),
                key[1].cast<int>(),
                key[2].cast<int>());
 }
 
-void Matrix::pyset(const pybind11::tuple &key, double value)
+void Matrix::pyset(const py::tuple &key, double value)
 {
     return set(key[0].cast<int>(),
                key[1].cast<int>(),
@@ -3577,20 +3577,20 @@ void Matrix::pyset(const pybind11::tuple &key, double value)
                value);
 }
 
-void Matrix::set_by_python_list(const pybind11::list &data)
+void Matrix::set_by_python_list(const py::list &data)
 {
-    size_t rows = pybind11::len(data);
+    size_t rows = py::len(data);
 
     // Make sure nrows < rows
     if ((size_t) nrow() > rows)
         throw PSIEXCEPTION("Uh, moron!");
 
     for (size_t i = 0; i < rows; ++i) {
-        size_t cols = pybind11::len(data[i]);
+        size_t cols = py::len(data[i]);
         if ((size_t) ncol() > cols)
             throw PSIEXCEPTION("Uh, moron!");
         for (size_t j = 0; j < cols; ++j) {
-            set(i, j, data[i].cast<pybind11::list>()[j].cast<double>());
+            set(i, j, data[i].cast<py::list>()[j].cast<double>());
         }
     }
 }

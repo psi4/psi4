@@ -60,7 +60,7 @@ int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, in
         int irrep, int ii, int jj, int disp_i, int disp_j);
 
 SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
-                       const pybind11::list &python_energies, int freq_irrep_only)
+                       const py::list &python_energies, int freq_irrep_only)
 {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
@@ -68,7 +68,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
 
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
-    pybind11::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
+    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
 //    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
     bool noextern = pyExtern ? false : true;
     CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);

@@ -189,9 +189,9 @@ public:
 
     const double &operator[](int i) const { return vector_[0][i]; }
 
-    double pyget(const pybind11::tuple &key);
+    double pyget(const py::tuple &key);
 
-    void pyset(const pybind11::tuple &key, double value);
+    void pyset(const py::tuple &key, double value);
 
     double pyget(int key);
 

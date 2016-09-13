@@ -524,7 +524,7 @@ public:
      * Sets the specified list of fragments to be real.
      * @param reals The list of real fragments.
      */
-    void set_active_fragments(pybind11::list reals);
+    void set_active_fragments(py::list reals);
 
     /**
      * Sets the specified fragment to be real.
@@ -536,7 +536,7 @@ public:
      * Sets the specified list of fragments to be ghosts.
      * @param ghosts The list of ghosts fragments.
      */
-    void set_ghost_fragments(pybind11::list ghosts);
+    void set_ghost_fragments(py::list ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
@@ -560,8 +560,8 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_1(pybind11::list reals,
-                                                   pybind11::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_1(py::list reals,
+                                                   py::list ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -569,7 +569,7 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_2(pybind11::list reals,
+    std::shared_ptr<Molecule> py_extract_subsets_2(py::list reals,
                                                    int ghost = -1);
 
     /**
@@ -579,7 +579,7 @@ public:
      * @return The ref counted cloned molecule.
      */
     std::shared_ptr<Molecule> py_extract_subsets_3(int reals,
-                                                   pybind11::list ghost);
+                                                   py::list ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -595,7 +595,7 @@ public:
      * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_5(pybind11::list reals);
+    std::shared_ptr<Molecule> py_extract_subsets_5(py::list reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost

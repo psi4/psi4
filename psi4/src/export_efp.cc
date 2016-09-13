@@ -32,11 +32,8 @@
 
 using namespace psi;
 using namespace psi::efp;
-namespace py = pybind11;
 
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
-
-void export_efp(pybind11::module& m)
+void export_efp(py::module& m)
 {
     // because there is no default constructor for libefp, need flag
     // "no_init" and the constructor definition, def(init<Options&>())

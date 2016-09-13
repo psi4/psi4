@@ -525,7 +525,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_combined(const std::shared_ptr 
     PY_TRY(method, PyObject_GetAttrString(klass, "pyconstruct_combined"));
     PY_TRY(pargs, Py_BuildValue("(s O O O O)", smol.c_str(), k, t, f, o));
     PY_TRY(ret, PyEval_CallObject(method, pargs));
-    pybind11::dict pybs(pybind11::object(ret, true));
+    py::dict pybs(py::object(ret, true));
 
     // Decref Python env pointers (not main_module, and not global_dict (messes up MintsHelper in proc.py)
     Py_DECREF(ret);
@@ -562,7 +562,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_combined(const std::shared_ptr 
     typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> map_ssv;
     map_ssv basis_atom_shell;
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
-    pybind11::list shmp = pybs["shell_map"].cast<pybind11::list>();
+    py::list shmp = pybs["shell_map"].cast<py::list>();
     for (int ent = 0; ent < (len(shmp)); ent += 3) {
         std::string label = shmp[ent].cast<std::string>();
         std::string hash = shmp[ent + 1].cast<std::string>();
@@ -586,8 +586,6 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
                                                            const std::string &fitrole, const std::string &other,
                                                            const int forced_puream)
 {
-    namespace py = pybind11;
-
     // Refactor arguments to make code more comprehensible
     bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true : false;
     std::string orb, aux;
@@ -637,16 +635,16 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
     }
 
     // Grab pyconstruct off of the Python plane, run it, grab result list
-    pybind11::object bs = pybind11::module::import("qcdb.libmintsbasisset").attr("BasisSet");
-    pybind11::object pyconstruct = bs.attr("pyconstruct");
-    pybind11::dict pybs;
+    py::object bs = py::module::import("qcdb.libmintsbasisset").attr("BasisSet");
+    py::object pyconstruct = bs.attr("pyconstruct");
+    py::dict pybs;
     try {
         if (orbonly)
             pybs = pyconstruct(smol, key, orbfunc);
         else
             pybs = pyconstruct(smol, key, auxfunc, fitrole, orbfunc);
     }
-    catch (pybind11::error_already_set &e) {
+    catch (py::error_already_set &e) {
         PyErr_Print();
         exit(EXIT_FAILURE);
     }
@@ -677,7 +675,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
     typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>> > map_ssv;
     map_ssv basis_atom_shell;
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
-    pybind11::list shmp = pybs["shell_map"].cast<pybind11::list>();
+    py::list shmp = pybs["shell_map"].cast<py::list>();
     for (int ent = 0; ent < (len(shmp)); ent += 3) {
         std::string label = shmp[ent].cast<std::string>();
         std::string hash = shmp[ent + 1].cast<std::string>();

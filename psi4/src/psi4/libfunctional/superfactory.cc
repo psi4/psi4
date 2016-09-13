@@ -49,7 +49,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int 
 
     std::shared_ptr<SuperFunctional> super;
     if (options.get_str("DFT_FUNCTIONAL") == "GEN" || options.get_str("DFT_FUNCTIONAL") == "") {
-        pybind11::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
+        py::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
         super = pySuper.cast<std::shared_ptr<SuperFunctional>>();
         if (!super) {
             throw PSIEXCEPTION("Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL");
@@ -95,7 +95,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias
             PY_TRY(ret, PyEval_CallObject(function, pargs));
 
             // Extract the SuperFunctional
-            super =  pybind11::object(ret, true).cast<std::shared_ptr<SuperFunctional>>();
+            super = py::object(ret, true).cast<std::shared_ptr<SuperFunctional>>();
 
             // Decref Python env pointers
             Py_DECREF(ret);
@@ -103,7 +103,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias
             Py_DECREF(function);
             Py_DECREF(functional);
         }
-        catch (pybind11::error_already_set const& e)
+        catch (py::error_already_set const& e)
         {
             PyErr_Print();
             exit(1);

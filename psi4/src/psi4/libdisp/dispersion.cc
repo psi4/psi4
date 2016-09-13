@@ -348,7 +348,7 @@ double Dispersion::compute_energy(std::shared_ptr <Molecule> m)
                 PY_TRY(ret, PyEval_CallObject(grimme, pargs));
 
                 // Extract the Dispersion Energy
-                E = pybind11::object(ret, true).cast<double>();
+                E = py::object(ret, true).cast<double>();
 
                 // Decref Python env pointers
                 Py_DECREF(ret);
@@ -356,7 +356,7 @@ double Dispersion::compute_energy(std::shared_ptr <Molecule> m)
                 Py_DECREF(grimme);
                 Py_DECREF(molutil);
             }
-            catch (pybind11::error_already_set const &e) {
+            catch (py::error_already_set const &e) {
                 PyErr_Print();
                 exit(1);
             }
@@ -527,7 +527,7 @@ SharedMatrix Dispersion::compute_gradient(std::shared_ptr <Molecule> m)
                 PY_TRY(ret, PyEval_CallObject(grimme, pargs));
 
                 // Extract the Dispersion Gradient
-                G = pybind11::object(ret, true).cast < std::shared_ptr < psi::Matrix >> ();
+                G = py::object(ret, true).cast < std::shared_ptr < psi::Matrix >> ();
 
                 // Decref Python env pointers
                 Py_DECREF(ret);
@@ -535,7 +535,7 @@ SharedMatrix Dispersion::compute_gradient(std::shared_ptr <Molecule> m)
                 Py_DECREF(grimme);
                 Py_DECREF(molutil);
             }
-            catch (pybind11::error_already_set const &e) {
+            catch (py::error_already_set const &e) {
                 PyErr_Print();
                 exit(1);
             }

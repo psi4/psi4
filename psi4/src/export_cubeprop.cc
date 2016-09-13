@@ -32,11 +32,8 @@
 #include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
-namespace py = pybind11;
 
-//PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
-
-void export_cubeprop(pybind11::module& m)
+void export_cubeprop(py::module& m)
 {
     py::class_<CubeProperties, std::shared_ptr<CubeProperties> >(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
