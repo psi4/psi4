@@ -382,7 +382,7 @@ py::dict Vector::array_interface(int irrep){
         for (size_t i = 0; i < numpy_shape_.size(); i++){
             ls.append(py::int_(numpy_shape_[i]));
         }
-        interface["shape"] = py::make_tuple(ls);
+        interface["shape"] = ls;
     }
     else {
         interface["shape"] = py::make_tuple(dimpi_[irrep]);
