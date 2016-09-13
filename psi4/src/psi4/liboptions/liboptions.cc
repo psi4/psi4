@@ -170,7 +170,7 @@ double DataType::to_double() const
     throw DataTypeException("don't know how to convert to a double");
 }
 
-pybind11::list DataType::to_list() const
+py::list DataType::to_list() const
 {
     throw DataTypeException("don't know how to convert to a list");
 }
@@ -1042,7 +1042,7 @@ void Options::set_str_i(const std::string & module, const std::string &key, std:
     locals_[module][key].changed();
 }
 
-void Options::set_python(const std::string & module, const std::string &key, const pybind11::object &p)
+void Options::set_python(const std::string & module, const std::string &key, const py::object &p)
 {
     locals_[module][key] = new PythonDataType(p);
     locals_[module][key].changed();
@@ -1074,7 +1074,7 @@ void Options::set_global_str(const std::string &key, const std::string &s)
     get_global(key).assign(s);
 }
 
-void Options::set_global_python(const std::string &key, const pybind11::object &p)
+void Options::set_global_python(const std::string &key, const py::object &p)
 {
     globals_[key] = Data(new PythonDataType(p));
     globals_[key].changed();

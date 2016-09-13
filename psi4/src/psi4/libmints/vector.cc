@@ -214,7 +214,7 @@ void Vector::zero()
     std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-double Vector::pyget(const pybind11::tuple &key)
+double Vector::pyget(const py::tuple &key)
 {
     int h = 0, elem = 0;
     h = key[0].cast<int>();
@@ -223,7 +223,7 @@ double Vector::pyget(const pybind11::tuple &key)
     return get(h, elem);
 }
 
-void Vector::pyset(const pybind11::tuple &key, double value)
+void Vector::pyset(const py::tuple &key, double value)
 {
     int h = 0, elem = 0;
     h = key[0].cast<int>();

@@ -49,12 +49,12 @@ std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Optio
 std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options);
 
 // functions to carry out finite-differences
-SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const pybind11::list& energies);
-//PsiReturnType fd_2_0(std::shared_ptr<Molecule> mol, Options &options, const pybind11::list& energies);
+SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
+//PsiReturnType fd_2_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
 SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
-                      const pybind11::list& energies, int irrep=-1);
+                      const py::list& energies, int irrep=-1);
 SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
-                      const pybind11::list& E_list, int irrep=-1);
+                      const py::list& E_list, int irrep=-1);
 
 // class to accumulate and print vibrations
 class VIBRATION {
@@ -64,8 +64,8 @@ class VIBRATION {
   double cm;    // harmonic frequency in wavenumbers
 
   public:
-    friend PsiReturnType fd_freq_0(Options &options, const pybind11::list& energies, int irrep);
-    friend PsiReturnType fd_freq_1(Options &options, const pybind11::list& gradients, int irrep);
+    friend PsiReturnType fd_freq_0(Options &options, const py::list& energies, int irrep);
+    friend PsiReturnType fd_freq_1(Options &options, const py::list& gradients, int irrep);
     friend bool ascending(const VIBRATION *, const VIBRATION *);
     friend void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes);
 

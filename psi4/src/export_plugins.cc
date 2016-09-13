@@ -34,7 +34,6 @@
 #include <vector>
 
 using namespace psi;
-namespace py = pybind11;
 
 extern void py_psi_prepare_options_for_module(const std::string &name);
 

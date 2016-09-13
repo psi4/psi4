@@ -60,7 +60,7 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
 
     // Get SALCS from libmints
     std::shared_ptr<MatrixFactory> fact;
-    pybind11::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
+    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
     bool noextern = pyExtern ? false : true;
     CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
 

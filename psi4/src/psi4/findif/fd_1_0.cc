@@ -43,7 +43,7 @@
 namespace psi {
 namespace findif {
 
-SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const pybind11::list &python_energies)
+SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::list &python_energies)
 {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
@@ -51,7 +51,7 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const pybi
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
 
-    pybind11::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
+    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
 //    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
     bool noextern = pyExtern ? false : true;
     CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);

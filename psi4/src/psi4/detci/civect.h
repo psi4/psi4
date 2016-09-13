@@ -46,7 +46,6 @@ class CIvect;
 typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 
-namespace py = pybind11;
 namespace psi {
 namespace detci {
 

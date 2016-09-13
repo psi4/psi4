@@ -41,7 +41,6 @@
 #include <vector>
 #include <memory>
 
-namespace py = pybind11;
 namespace psi {
 
 struct dpdfile2;
