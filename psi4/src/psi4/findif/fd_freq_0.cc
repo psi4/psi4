@@ -39,7 +39,7 @@
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/physconst.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 extern "C" {
 

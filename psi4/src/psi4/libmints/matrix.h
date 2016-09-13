@@ -34,7 +34,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include <cstdio>
 #include <string>

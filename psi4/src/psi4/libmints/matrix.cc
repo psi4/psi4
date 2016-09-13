@@ -51,7 +51,7 @@
 #include "pointgrp.h"
 #include "petitelist.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include <cmath>
 #include <cstdio>

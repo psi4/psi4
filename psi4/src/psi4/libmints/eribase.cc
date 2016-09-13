@@ -35,7 +35,7 @@
 #include "psi4/libmints/fjt.h"
 #include "psi4/libmints/wavefunction.h"
 
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 #include <stdexcept>
 #include <string>

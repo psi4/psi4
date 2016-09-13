@@ -42,7 +42,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
 #include "psi4/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
-#include <psi4/pybind11.h>
+#include "psi4/pybind11.h"
 
 namespace psi {
 
