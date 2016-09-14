@@ -174,14 +174,14 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 
     elif isinstance(valueLO, (psi4.Matrix, psi4.Vector)):
         beta = valueHI.clone()
-        beta.set_name('Helgaker SCF (%s, %s) beta' % (zLO, zHI))
+        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
         beta.subtract(valueLO)
         beta.scale(beta_division)
         beta.scale(beta_mult)
 
         value = valueHI.clone()
         value.subtract(beta)
-        value.set_name('Helgaker SCF (%s, %s) data' % (zLO, zHI))
+        value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
             psi4.print_out("""\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
@@ -312,7 +312,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         beta = valueHI.clone()
         beta.subtract(valueLO)
         beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
-        beta.set_name('Helgaker SCF (%s, %s) beta' % (zLO, zHI))
+        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
 
         value = valueHI.clone()
         value.scale(zHI ** 3)
@@ -322,7 +322,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         value.subtract(tmp)
 
         value.scale(1 / (zHI ** 3 - zLO ** 3))
-        value.set_name('Helgaker Corr (%s, %s) data' % (zLO, zHI))
+        value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
             psi4.print_out("""\n   ==> Helgaker 2-point correlated extrapolation for """
