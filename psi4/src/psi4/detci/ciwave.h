@@ -253,7 +253,8 @@ public:
     void form_tpdm();
 
     // Extraneous
-    void cleanup();
+    void cleanup_ci();
+    void cleanup_dpd();
 
     // Returns a new SOMCSCF object
     boost::shared_ptr<SOMCSCF> mcscf_object();
@@ -286,7 +287,7 @@ private:
 
     /// Sets the ciwavefunction object
     void common_init();
-    bool cleaned_up_;
+    bool cleaned_up_ci_;
 
     /// Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);

@@ -358,8 +358,12 @@ def mcscf_solver(ref_wfn):
         ciwfn.print_vector(dvec, root)
 
 
-    if psi4.get_option("DETCI", "MCSCF_CLEANUP"):
-        ciwfn.cleanup()
+    # What do we need to cleanup?
+    if psi4.get_option("DETCI", "MCSCF_CI_CLEANUP"):
+        ciwfn.cleanup_ci()
+    if psi4.get_option("DETCI", "MCSCF_DPD_CLEANUP"):
+        print('Cleaning up DPD data!')
+        ciwfn.cleanup_dpd()
 
     del diis_obj
     del mcscf_obj

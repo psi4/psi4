@@ -487,7 +487,7 @@ void CIWavefunction::H0block_pairup(int guess)
 */
 void CIWavefunction::H0block_spin_cpl_chk(void)
 {
-  int i,newsize,tmpsize;
+  int i, newsize;
   double zero = 1E-13;
   double diff = 0.0, spin_cpl_vals2;
 
@@ -735,12 +735,11 @@ void CIWavefunction::H0block_fill()
 void CIWavefunction::H0block_coupling_calc(double E)
 {
    int i, j, size, size2;
-   double tval1, tval2, tval3;
+   double tval1, tval2;
    double *delta_2, *gamma_1, *gamma_2, *H_12, *delta_1;
    SlaterDeterminant I, J;
-   int Ia, Ib, Ja, Jb;
+   int Ia, Ib;
    int Ialist, Iblist;
-   double detH0;
 
    size = H0block_->size;
    size2 = H0block_->size + H0block_->coupling_size;

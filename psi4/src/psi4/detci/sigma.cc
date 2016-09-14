@@ -356,7 +356,6 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
 
    int buf, cbuf;
    int sblock, cblock, cblock2;  /* id of sigma and C blocks */
-   int i,j,k;
    int sac, sbc, nas, nbs;
    int cac, cbc, cnas, cnbs;
    int do_cblock, do_cblock2;
@@ -563,7 +562,6 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
    int sairr;                    /* irrep of alpha string for sigma block */
    int cairr;                    /* irrep of alpha string for C block */
    int sbirr, cbirr;
-   int i,j,k;
    int sac, sbc, nas, nbs;
    int cac, cbc, cnas, cnbs;
    int did_sblock = 0;

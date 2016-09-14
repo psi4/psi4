@@ -62,7 +62,10 @@ CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn,
     common_init();
 }
 
-CIWavefunction::~CIWavefunction() {}
+CIWavefunction::~CIWavefunction() {
+    cleanup_ci();
+    cleanup_dpd();
+}
 
 void CIWavefunction::common_init() {
     title();
@@ -108,7 +111,7 @@ void CIWavefunction::common_init() {
     ints_init_ = false;
     df_ints_init_ = false;
     mcscf_object_init_ = false;
-    cleaned_up_ = false;
+    cleaned_up_ci_ = false;
     fzc_fock_computed_ = false;
 
     // Form strings
@@ -131,7 +134,8 @@ size_t CIWavefunction::ndet() { return (size_t)CIblks_->vectlen; }
 
 double CIWavefunction::compute_energy() {
     if (Parameters_->istop) { /* Print size of space, other stuff, only   */
-        cleanup();
+        cleanup_ci();
+        cleanup_dpd();
         Process::environment.globals["CURRENT ENERGY"] = 0.0;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
         Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -165,7 +169,8 @@ double CIWavefunction::compute_energy() {
         outfile->Printf("\t\t\t - Edward Valeev\n\n");
     }
 
-    cleanup();
+    cleanup_ci();
+    cleanup_dpd();
 
     return Process::environment.globals["CURRENT ENERGY"];
 }
@@ -445,10 +450,10 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
-void CIWavefunction::cleanup(void) {
+void CIWavefunction::cleanup_ci(void) {
 
     // Make sure we dont double clean
-    if (!cleaned_up_){
+    if (!cleaned_up_ci_){
 
         // Free Bendazzoli OV arrays
         // if (Parameters_->bendazzoli) free(OV);
@@ -477,17 +482,21 @@ void CIWavefunction::cleanup(void) {
             free_int_matrix(CalcInfo_->ras_orbs[i]);
         };
 
-
-        if (Parameters_->mcscf) {
-            ints_.reset();
-        }
-        // delete CalcInfo_;
-
-        cleaned_up_ = true;
+        cleaned_up_ci_ = true;
     }
 
 }
+void CIWavefunction::cleanup_dpd(void) {
 
+    if (ints_init_) {
+        ints_.reset();
+        ints_init_ = false;
+    }
+    if (mcscf_object_init_){
+        somcscf_.reset();
+        mcscf_object_init_ = false;
+    }
+}
 /*
 ** title(): Function prints a program identification
 */
