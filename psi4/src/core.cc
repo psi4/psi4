@@ -66,6 +66,7 @@ void export_plugins(py::module&);
 void export_psio(py::module&);
 void export_mints(py::module&);
 void export_functional(py::module&);
+void export_fock(py::module&);
 void export_oeprop(py::module&);
 void export_efp(py::module&);
 void export_cubeprop(py::module&);
@@ -1459,6 +1460,7 @@ PYBIND11_PLUGIN(core) {
     export_mints(core);
     export_functional(core);
     export_misc(core);
+    export_fock(core);
 
     // ??
     //py::class_<Process::Environment>(core, "Environment")
@@ -1469,4 +1471,3 @@ PYBIND11_PLUGIN(core) {
 
     return core.ptr();
 }
-

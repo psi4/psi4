@@ -48,9 +48,9 @@
 #include "psi4/libqt/qt.h"
 
 #include <iostream>
-#include "odometer.h"
-#include "ciwave.h"
-#include "structs.h"
+#include "psi4/detci/odometer.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/structs.h"
 
 namespace psi { namespace detci {
 

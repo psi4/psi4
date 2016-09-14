@@ -45,8 +45,8 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/molecule.h"
-#include "ciwave.h"
-#include "structs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/structs.h"
 #include "psi4/psi4-dec.h"
 
 namespace psi { namespace detci {
@@ -520,11 +520,7 @@ void CIWavefunction::get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
-<<<<<<< 2eb6b525a7c860946543cf91bc5b6153756b94d5:psi4/src/psi4/detci/params.cc
-      str += std::to_string(Parameters_->ex_lvl) ;
-=======
-      str += std::to_string( Parameters_->ex_lvl) ;
->>>>>>> CIWave: Boost be gone:src/bin/detci/params.cc
+      str += std::to_string(Parameters_->ex_lvl);
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());

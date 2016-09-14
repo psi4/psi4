@@ -27,6 +27,7 @@
 #include "psi4/lib3index/3index.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/soscf.h"
 
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
@@ -88,9 +89,37 @@ std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
+<<<<<<< 2d86d85e0a83998e463559fb7ea310fae525032c
 // Just a little patch until we can figure out options python-side.
 std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
     return JK::build_JK(basis, aux, Process::environment.options);
+=======
+std::shared_ptr<MatrixFactory> get_matrix_factory()
+{
+    // We need a valid molecule with a valid point group to create a matrix factory.
+    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
+    std::shared_ptr<Molecule> molecule = Process::environment.molecule();
+    if (!molecule) {
+        outfile->Printf( "  Active molecule not set!");
+        throw PSIEXCEPTION("Active molecule not set!");
+    }
+    if (!molecule->point_group()) {
+        outfile->Printf( "  Active molecule does not have point group set!");
+        throw PSIEXCEPTION("Active molecule does not have point group set!");
+    }
+
+    // Read in the basis set
+    std::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
+        "BASIS", Process::environment.options.get_str("BASIS"));
+    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    std::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    const Dimension& dim = sobasis->dimension();
+
+    std::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
+    matfac->init_with(dim, dim);
+
+    return matfac;
+>>>>>>> CIWave: KTB complete
 }
 
 void export_mints(py::module& m)
@@ -929,51 +958,6 @@ void export_mints(py::module& m)
             def("subdegen", &CorrelationTable::subdegen, "docstring").
             def("ngamma", &CorrelationTable::ngamma, "docstring").
             def("group", &CorrelationTable::gamma, "docstring");
-
-    // LIBFOCK wrappers
-    py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
-           .def_static("build_JK", py_build_JK, "docstring")
-           .def("initialize", &JK::initialize)
-           .def("set_cutoff", &JK::set_cutoff)
-           .def("set_memory", &JK::set_memory)
-           .def("set_omp_nthread", &JK::set_omp_nthread)
-           .def("set_do_J", &JK::set_do_J)
-           .def("set_do_K", &JK::set_do_K)
-           .def("set_do_wK", &JK::set_do_wK)
-           .def("set_omega", &JK::set_omega)
-           .def("compute", &JK::compute)
-           .def("finalize", &JK::finalize)
-           .def("C_clear", [](JK &jk){
-                jk.C_left().clear();
-                jk.C_right().clear();
-           })
-           .def("C_left_add", [](JK &jk, SharedMatrix Cl){
-                jk.C_left().push_back(Cl);
-           })
-           .def("C_right_add", [](JK &jk, SharedMatrix Cr){
-                jk.C_right().push_back(Cr);
-           })
-           .def("J", &JK::J, py::return_value_policy::reference_internal)
-           .def("K", &JK::K, py::return_value_policy::reference_internal)
-           .def("wK", &JK::wK, py::return_value_policy::reference_internal)
-           .def("D", &JK::D, py::return_value_policy::reference_internal)
-           .def("print_header", &JK::print_header, "docstring");
-
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator> >(m, "LaplaceDenominator", "docstring")
-            .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
-            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
-            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
-
-
-    py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
-            .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def("Qso", &DFTensor::Qso, "doctsring")
-            .def("Qmo", &DFTensor::Qmo, "doctsring")
-            .def("Qoo", &DFTensor::Qoo, "doctsring")
-            .def("Qov", &DFTensor::Qov, "doctsring")
-            .def("Qvv", &DFTensor::Qvv, "doctsring")
-            .def("Imo", &DFTensor::Imo, "doctsring")
-            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,

@@ -44,9 +44,9 @@
 #include "psi4/libqt/slaterdset.h"
 
 #include "psi4/physconst.h"
-#include "structs.h"
-#include "ci_tol.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ci_tol.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 

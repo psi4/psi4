@@ -44,7 +44,7 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef std::shared_ptr<Matrix> SharedMatrix;
 class SOMCSCF;
 
 // Well this is not ideal
@@ -257,7 +257,7 @@ public:
     void cleanup_dpd();
 
     // Returns a new SOMCSCF object
-    boost::shared_ptr<SOMCSCF> mcscf_object();
+    std::shared_ptr<SOMCSCF> mcscf_object();
 
     /// Functions below this line should be used for debug use only
 

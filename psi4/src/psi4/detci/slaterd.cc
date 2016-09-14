@@ -33,7 +33,7 @@
 #include <cstdio>
 #include <cstdlib> /* was libc.h */
 /* gcc 2.7.0 doesn't like #include <cstring> */
-#include "slaterd.h"
+#include "psi4/detci/slaterd.h"
 
 #include "psi4/psi4-dec.h"
 

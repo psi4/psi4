@@ -36,12 +36,12 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libmints/matrix.h"
-#include "libfock/soscf.h"
-#include "globaldefs.h"
-#include "ciwave.h"
-#include "civect.h"
-#include "structs.h"
-#include "slaterd.h"
+#include "psi4/libfock/soscf.h"
+#include "psi4/detci/globaldefs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/slaterd.h"
 
 namespace psi { namespace detci {
 
@@ -604,10 +604,10 @@ void CIWavefunction::init_mcscf_object(){
 
     if (Parameters_->mcscf_type == "DF") {
         if (!df_ints_init_) setup_dfmcscf_ints();
-        somcscf_ = boost::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+        somcscf_ = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
     } else {
         if (!ints_init_) setup_mcscf_ints();
-        somcscf_ = boost::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+        somcscf_ = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
     }
 
     // We assume some kind of ras here.
@@ -631,7 +631,7 @@ void CIWavefunction::init_mcscf_object(){
     mcscf_object_init_ = true;
 }
 
-boost::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object(){
+std::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object(){
     if (!mcscf_object_init_){
         init_mcscf_object();
     }

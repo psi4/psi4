@@ -39,7 +39,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/detci/ciwave.h"
 #include "psi4/libmints/matrix.h"
-#include "structs.h"
+#include "psi4/detci/structs.h"
 
 namespace psi {
 namespace detci {

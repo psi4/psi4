@@ -28,8 +28,8 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
-#include "diisentry.h"
-#include "libmints/mints.h"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libmints/matrix.h"
 #include <vector>
 #include <map>
 

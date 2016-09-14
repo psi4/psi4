@@ -37,10 +37,10 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/slaterdset.h"
 
-#include "structs.h"
-#include "slaterd.h"
-#include "civect.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/slaterd.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi {
 namespace detci {

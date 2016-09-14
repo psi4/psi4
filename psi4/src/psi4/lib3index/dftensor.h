@@ -34,6 +34,7 @@ class PSIO;
 class BasisSet;
 class Matrix;
 class Vector;
+class Molecule;
 class IntVector;
 class Vector3;
 
