@@ -473,7 +473,12 @@ core.Dimension.to_tuple = _dimension_to_tuple
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
-    return np.asarray(self)
+    return np.asarray(numpy_holder(self.array_interface()))
 
+@property
+def _civec_buffer(self):
+    "Returns a view of the CIVector's buffer"
+    return translate_interface(self.array_interface())
 
-core.CIVector.np = _civec_view
+psi4.CIVector.np = _civec_view
+psi4.CIVector.__array_interface__ = _civec_buffer

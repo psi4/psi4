@@ -65,9 +65,9 @@
 #include "psi4/libfock/soscf.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libpsio/psio.hpp"
-#include "structs.h"
-#include "ciwave.h"
-#include "globaldefs.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/globaldefs.h"
 
 namespace psi { namespace detci {
 

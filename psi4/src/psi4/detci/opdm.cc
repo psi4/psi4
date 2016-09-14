@@ -40,9 +40,9 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
-#include "structs.h"
-#include "civect.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 

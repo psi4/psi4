@@ -48,9 +48,9 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
-#include "structs.h"
-#include "civect.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 
