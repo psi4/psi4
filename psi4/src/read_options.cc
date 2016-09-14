@@ -762,7 +762,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
 
     /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
-    [irrep, orbital1, orbital2, degree] where an angle of 0 would do nothing and an angle
+    [irrep, orbital1, orbital2, theta] where an angle of 0 would do nothing and an angle
     of 90 would switch the two orbitals. -*/
     options.add("MCSCF_ROTATE", new ArrayType());
 
@@ -793,8 +793,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_MCSCF", "");
 
-    /* Cleanup the MCSCF object at the end of a run? */
-    options.add_bool("MCSCF_CLEANUP", true);
+    /* Cleanup the CI info at the end of a run? */
+    options.add_bool("MCSCF_CI_CLEANUP", true);
+
+    /* Cleanup the DPD MCSCF object at the end of a run? */
+    options.add_bool("MCSCF_DPD_CLEANUP", true);
 
 
   }

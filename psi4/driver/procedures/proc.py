@@ -3962,6 +3962,13 @@ def run_detcas(name, **kwargs):
     if user_ref not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
+    if name == 'rasscf':
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+    elif name == 'casscf':
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+    else:
+        raise ValidationError("Run DETCAS: Name %s not understood" % name)
+
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
 
@@ -3994,21 +4001,6 @@ def run_detcas(name, **kwargs):
             mints.integrals()
 
         ref_optstash.restore()
-
-    #raise Exception("")
-
-    if name == 'rasscf':
-        core.set_local_option('DETCI', 'WFN', 'RASSCF')
-    elif name == 'casscf':
-        core.set_local_option('DETCI', 'WFN', 'CASSCF')
-    else:
-        raise ValidationError("Run DETCAS: Name %s not understood" % name)
-
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
-
-    molecule = ref_wfn.molecule()
 
     # The DF case
     if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
