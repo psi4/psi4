@@ -10,7 +10,7 @@ macro(add_regression_test _name _labels)
     endforeach()
     unset(_labels)
     # This is the psi command to actually run the tests
-    set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4${CMAKE_EXECUTABLE_SUFFIX})
+    set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
 
