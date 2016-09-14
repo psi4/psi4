@@ -92,7 +92,7 @@ set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
 #These packages don't believe in configuration files...
-foreach(pkg in pcmsolver pybind11)
+foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
       set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external/${pkg})

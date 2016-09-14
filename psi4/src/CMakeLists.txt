@@ -16,7 +16,7 @@ add_custom_target(update_version
 add_library(versioned_code OBJECT version.cc python.cc psi_start.cc)
 add_dependencies(versioned_code update_version)
 set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
-target_include_directories(versioned_code PUBLIC ${PYBIND11_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(versioned_code PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 set(sources_list export_psio.cc
         export_mints.cc
@@ -56,10 +56,10 @@ endif()
 if(TARGET CheMPS2::chemps2)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:CheMPS2::chemps2,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
+    # prefer to link against interface pybind11 library but can't "link" object library to target
+target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_COMPILE_DEFINITIONS>)
+target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
 
-install(TARGETS psi4-lib
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
 #set_property(GLOBAL APPEND PROPERTY LIBLIST psi4)
 #target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
@@ -70,14 +70,22 @@ install(TARGETS psi4-lib
 #        )
 get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
 
-target_link_libraries(psi4 PRIVATE ${psi4_libraries})
-target_link_libraries(psi4 PRIVATE ${PYTHON_LIBRARIES})
-target_link_libraries(psi4 PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(psi4 PRIVATE ${LAPACK_LIBRARIES})
-target_link_libraries(psi4 PRIVATE ${BLAS_LIBRARIES})
+target_link_libraries(psi4-lib PRIVATE ${psi4_libraries})
+target_link_libraries(psi4-lib PUBLIC pybind11::pybind11)  # public is just to catch psi4.cc
+target_link_libraries(psi4-lib PRIVATE ${PYTHON_LIBRARIES})
+target_link_libraries(psi4-lib PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(psi4-lib PRIVATE ${LAPACK_LIBRARIES})
+target_link_libraries(psi4-lib PRIVATE ${BLAS_LIBRARIES})
 
-target_include_directories(psi4 PUBLIC ${PYBIND11_INCLUDE_DIRS})
-target_include_directories(psi4 PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+target_include_directories(psi4-lib PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+
+add_executable(psi4-bin psi4.cc)
+target_link_libraries(psi4-bin PRIVATE psi4-lib)
+
+install(TARGETS psi4-lib psi4-bin
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
 
 ### >>  Stuff below this is for RPaths and doesn't work quite right
@@ -97,9 +105,6 @@ foreach(math_comp ${LAPACK_LIBRARIES};${BLAS_LIBRARIES})
     set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
 endforeach()
 
-add_executable(psi4-bin psi4.cc)
-install(TARGETS psi4-bin RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
 
 set(psi4_install_lib ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
@@ -107,11 +112,16 @@ set(PSI4_RPATH ${psi4_install_lib}
         ${DESTDIR}/${psi4_install_lib}
         ${PYTHON_LIB_DIR}
         )
-set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
-        INSTALL_RPATH "${PSI4_RPATH}"
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-        BUILD_WITH_INSTALL_RPATH TRUE
-        )
 
-target_link_libraries(psi4-bin PRIVATE psi4)
+set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
+                                          INSTALL_RPATH "${PSI4_RPATH}"
+                                          INSTALL_RPATH_USE_LINK_PATH TRUE
+                                          BUILD_WITH_INSTALL_RPATH TRUE)
+
+set_target_properties(psi4-lib PROPERTIES #PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+                                          OUTPUT_NAME psi4
+                                          #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
+                                          INSTALL_RPATH "${PSI4_RPATH}"
+                                          INSTALL_RPATH_USE_LINK_PATH TRUE
+                                          BUILD_WITH_INSTALL_RPATH TRUE)
 
