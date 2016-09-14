@@ -18,8 +18,8 @@ test_restrict(restrict)
 
 ### >> Locate Python Interpreter and Library << ###
 find_package(PythonLibsNew REQUIRED)
-find_package(PYBIND11 REQUIRED)
-
+find_package(pybind11 CONFIG REQUIRED
+             HINTS ${CMAKE_PREFIX_PATH}/pybind11)
 find_package(Threads)
 find_package(DL)
 
@@ -97,7 +97,7 @@ include(CMakePackageConfigHelpers)
 # Determine relative path from Psi4's include directory to PyBind11's
 file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
     ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR} 
-    ${PYBIND11_INCLUDE_DIR})
+    ${pybind11_INCLUDE_DIR})
 set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/Psi4Plugins")
 configure_package_config_file(
         share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake.in

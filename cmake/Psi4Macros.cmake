@@ -70,7 +70,7 @@ macro(general_add_library libname sources dir)
     foreach (name_i IN LISTS depend_name)
         target_link_libraries(${libname} PRIVATE ${name_i})
     endforeach ()
-    target_include_directories(${libname} PUBLIC ${PYBIND11_INCLUDE_DIRS})
+    target_link_libraries(${libname} PRIVATE pybind11::pybind11)
 endmacro(general_add_library libname sources prefix dir)
 
 #Adds a psi4 library that lives in lib
