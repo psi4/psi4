@@ -49,7 +49,7 @@ add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
         )
 
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
-add_library(psi4 STATIC ${psi4_all_sources})
+add_library(psi4-lib SHARED ${psi4_all_sources})
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
@@ -57,7 +57,9 @@ if(TARGET CheMPS2::chemps2)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:CheMPS2::chemps2,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
 
-install(TARGETS psi4 ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+install(TARGETS psi4-lib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
 #set_property(GLOBAL APPEND PROPERTY LIBLIST psi4)
 #target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
@@ -83,7 +85,7 @@ target_include_directories(psi4 PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFA
 # TODO: Investiage relative RPaths.
 # Add both the build and install RPaths so we can test from build dir
 set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
-set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage/${PSI4_EXTERNAL})
+set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
 foreach(ex_proj libderiv libint libefp)
     set(PSI4_RPATH
             "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")

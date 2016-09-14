@@ -70,7 +70,7 @@ void print_version(std::string)
 
   pid_t pid = getpid();
   printer->Printf( "    Process ID: %6d\n",pid);
-  printer->Printf( "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
+  printer->Printf( "    PSIDATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
 }
 
 }
