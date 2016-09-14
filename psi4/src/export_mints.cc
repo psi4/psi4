@@ -108,10 +108,10 @@ std::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
-    // Just a little patch until we can figure out options python-side.
-    std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
-        return JK::build_JK(basis, Process::environment.options);
-    }
+// Just a little patch until we can figure out options python-side.
+std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
+    return JK::build_JK(basis, Process::environment.options);
+}
 
 void export_mints(py::module& m)
 {
@@ -225,19 +225,18 @@ void export_mints(py::module& m)
             def(py::init<const std::string&, const Dimension&, const Dimension&>()).
             def(py::init<const std::string&>()).
             def("clone", &Matrix::clone, "docstring").
-            def("set_name", &Matrix::set_name, "docstring").
-            //def("name", &Matrix::name, return_value_policy<copy_const_reference>(), "docstring").
-            def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
+            def_property("name",
+                         &Matrix::name,
+                         &Matrix::set_name,
+                         "The name of the Matrix. Used in printing.").
+            // def("set_name", &Matrix::set_name, "docstring").
+            // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
             def("print_out", &Matrix::print_out, "docstring").
             def("rows", &Matrix::rowdim, "docstring").
             def("cols", &Matrix::coldim, "docstring").
-            //def("rowdim", matrix_ret_dimension(&Matrix::rowspi), return_value_policy<copy_const_reference>(), "docstring").
-            //def("coldim", matrix_ret_dimension(&Matrix::colspi), return_value_policy<copy_const_reference>(), "docstring").
             def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy, "docstring").
             def("coldim", matrix_ret_dimension(&Matrix::colspi), py::return_value_policy::copy, "docstring").
-            //def("nirrep", &Matrix::nirrep, return_value_policy<copy_const_reference>(), "docstring").
             def("nirrep", &Matrix::nirrep, py::return_value_policy::copy, "docstring").
-            //def("symmetry", &Matrix::symmetry, return_value_policy<copy_const_reference>(), "docstring").
             def("symmetry", &Matrix::symmetry, py::return_value_policy::copy, "docstring").
             def("identity", &Matrix::identity, "docstring").
             def("copy_lower_to_upper", &Matrix::copy_lower_to_upper, "docstring").
@@ -249,6 +248,7 @@ void export_mints(py::module& m)
             def("trace", &Matrix::trace, "docstring").
             //            def("transpose", &Matrix::transpose).
             def("add", matrix_one(&Matrix::add), "docstring").
+            def("axpy", &Matrix::axpy, "docstring").
             def("subtract", matrix_one(&Matrix::subtract), "docstring").
             def("accumulate_product", matrix_two(&Matrix::accumulate_product), "docstring").
             def("scale", &Matrix::scale, "docstring").
@@ -271,7 +271,11 @@ void export_mints(py::module& m)
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
-            def("doublet", &Matrix::doublet, "docstring").
+            def("doublet", &Matrix::doublet).
+            def("triplet", &Matrix::triplet).
+            // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
+            // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
+            //                                  py::arg("transC") = false, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
@@ -869,20 +873,35 @@ void export_mints(py::module& m)
 
     // LIBFOCK wrappers
 
-
-    //py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
-    //        .def(py::init<std::shared_ptr<BasisSet>, Options&>())
-    //        .def_static("build_JK", py_build_JK, "docstring")
-    //        .def("initialize", &JK::initialize)
-    //        .def("compute", &JK::compute)
-    //        .def("finalize", &JK::finalize)
-    //        .def("C_left", &JK::C_left, py::return_value_policy::reference_internal)
-    //        .def("C_right", &JK::C_right, py::return_value_policy::reference_internal)
-    //        .def("J", &JK::J, py::return_value_policy::reference_internal)
-    //        .def("K", &JK::K, py::return_value_policy::reference_internal)
-    //        .def("wK", &JK::wK, py::return_value_policy::reference_internal)
-    //        .def("D", &JK::D, py::return_value_policy::reference_internal)
-    //        .def("print_header", &JK::print_header, "docstring");
+    py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
+           .def_static("build_JK", py_build_JK, "docstring")
+           .def("initialize", &JK::initialize)
+           .def("set_cutoff", &JK::set_cutoff)
+           .def("set_memory", &JK::set_memory)
+           .def("set_omp_nthread", &JK::set_omp_nthread)
+           .def("set_do_J", &JK::set_do_J)
+           .def("set_do_K", &JK::set_do_K)
+           .def("set_do_wK", &JK::set_do_wK)
+           .def("set_omega", &JK::set_omega)
+           .def("compute", &JK::compute)
+           .def("finalize", &JK::finalize)
+           .def("C_clear", [](JK &jk){
+                jk.C_left().clear();
+                jk.C_right().clear();
+           })
+           .def("C_left_add", [](JK &jk, SharedMatrix Cl){
+                jk.C_left().push_back(Cl);
+           })
+           .def("C_right_add", [](JK &jk, SharedMatrix Cr){
+                jk.C_right().push_back(Cr);
+           })
+           // .def("C_left", &JK::C_left, py::return_value_policy::reference_internal)
+           // .def("C_right", &JK::C_right, py::return_value_policy::reference_internal)
+           .def("J", &JK::J, py::return_value_policy::reference_internal)
+           .def("K", &JK::K, py::return_value_policy::reference_internal)
+           .def("wK", &JK::wK, py::return_value_policy::reference_internal)
+           .def("D", &JK::D, py::return_value_policy::reference_internal)
+           .def("print_header", &JK::print_header, "docstring");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator> >(m, "LaplaceDenominator", "docstring")
             .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())

@@ -854,7 +854,7 @@ public:
     static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false, bool transB = false, bool transC = false);
 
     /**
-     * Simple AXPY call with support for irrep,s Y = a * X + Y
+     * Simple AXPY call with support for irreps Y = a * X + Y
      * @param a Scaling parameter
      * @param X Matrix to be be added
      */
