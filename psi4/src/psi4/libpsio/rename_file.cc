@@ -53,10 +53,10 @@ void PSIO::rename_file(unsigned int old_unit, unsigned int new_unit) {
   get_filename(new_unit, &new_name);
 
   /* Get the path */
-  const char* new_path =
-      PSIOManager::shared_object()->get_file_path(new_unit).c_str();
-  const char* old_path =
-      PSIOManager::shared_object()->get_file_path(old_unit).c_str();
+  std::string sold_path = PSIOManager::shared_object()->get_file_path(old_unit).c_str();
+  std::string snew_path = PSIOManager::shared_object()->get_file_path(new_unit).c_str();
+  const char* old_path = sold_path.c_str();
+  const char* new_path = snew_path.c_str();
 
   /* build the full path */
   char*old_full_path =
