@@ -25,12 +25,10 @@ find_package(pybind11 CONFIG REQUIRED
 find_package(Threads)
 find_package(DL)
 
-#find_package(libderiv REQUIRED COMPONENTS ${LIBINT_OPT_AM})
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
         HINTS ${CMAKE_PREFIX_PATH}/libint)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
-#set_property(GLOBAL PROPERTY LIBLIST "")
 
 #optional_plugin(Ambit)
 #optional_plugin(PCMSolver)

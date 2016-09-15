@@ -35,19 +35,6 @@ set(sources_list export_psio.cc
         read_options.cc
         )
 
-# TODO: Having PSI4_ROOT for plugins isn't right
-set(PLUGIN_INCLUDES "-I${PSI4_ROOT} -I${PYTHON_INCLUDE_DIR} ")
-
-add_definitions(-DPSI_TOP_SRCDIR=${PROJECT_ROOT}
-        -Drestrict=${RESTRICT_KEYWORD}
-        -DPLUGIN_CXX=${CMAKE_CXX_COMPILER}
-        -DPLUGIN_INCLUDES=${PLUGIN_INCLUDES}
-        -DPLUGIN_FLAGS="${CMAKE_CXX_FLAGS}"
-        -DPLUGIN_DEFINES="-fPIC"
-        -DPLUGIN_OBJDIR=${CMAKE_BINARY_DIR}
-        -DPLUGIN_LDFLAGS="${CMAKE_CXX_LINK_FLAGS}"
-        )
-
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 add_library(psi4-lib STATIC ${psi4_all_sources})
 if(TARGET gdma::gdma)
@@ -61,13 +48,6 @@ target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pyb
 target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
 
 
-#set_property(GLOBAL APPEND PROPERTY LIBLIST psi4)
-#target_link_libraries(psi4 PRIVATE mints cubeprop plugin parallel detci
-#        ccresponse ccdensity cchbar fnocc cctriples ccenergy cclambda cceom
-#        cctransort ccsort fisapt dfmp2 dcft findif psimrcc dfocc efp_interface adc
-#        mcscf occ optking functional scf_solver scfgrad transqt2 moinfo 3index
-#        thermo mrcc scf sapt gdma_interface dmrg
-#        )
 get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
 
 target_link_libraries(psi4-lib PRIVATE ${psi4_libraries})
