@@ -650,15 +650,15 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
     int nso = max_functions_;
 
     int npoints = block->npoints();
-    double *restrict x = block->x();
-    double *restrict y = block->y();
-    double *restrict z = block->z();
+    double * x = block->x();
+    double * y = block->y();
+    double * z = block->z();
 
     int maxL = primary_->max_am();
 
-    double *restrict xc_pow = new double[maxL + 3];
-    double *restrict yc_pow = new double[maxL + 3];
-    double *restrict zc_pow = new double[maxL + 3];
+    double * xc_pow = new double[maxL + 3];
+    double * yc_pow = new double[maxL + 3];
+    double * zc_pow = new double[maxL + 3];
 
     const std::vector<int>& shells = block->shells_local_to_global();
 

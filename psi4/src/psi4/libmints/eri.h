@@ -51,21 +51,21 @@ typedef struct ShellPair_typ {
     //! Shells for this information.
     int i, j;
     //! Matrix over primitives with x, y, z coordinate of average Gaussian
-    double *** restrict P;
+    double ***  P;
     //! Distance between shell i and shell j centers
     double AB[3];
     //! Distance between P and shell i center
-    double *** restrict PA;
+    double ***  PA;
     //! Distance between P and shell j center
-    double *** restrict PB;
+    double ***  PB;
     //! Array of alphas for both centers
-    double * restrict ai, * restrict aj;
+    double *  ai, *  aj;
     //! Array of the gammas (ai + aj)
-    double ** restrict gamma;
+    double **  gamma;
     //! Contraction coefficients
-    double * restrict ci, * restrict cj;
+    double *  ci, *  cj;
     //! Overlap between primitives on i and j
-    double ** restrict overlap;
+    double **  overlap;
 } ShellPair;
 
 /*! \ingroup MINTS

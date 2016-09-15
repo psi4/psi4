@@ -67,7 +67,6 @@ set(sources_list local.cc
                  erd_eri.cc 
                  angularmomentum.cc
 )
-add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
 psi4_add_library(mints sources_list iwl options psi4util trans)
 target_link_libraries(mints PRIVATE libint::libint)
 if(TARGET dkh::dkh)
