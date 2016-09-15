@@ -16,7 +16,7 @@ molecule hcn {
 set basis           dzp
 set hessian_write   true # write the hessian to a file for later use
 
-hessian('scf')
+hessian('scf', dertype=1)
 
 
 #####################################################
