@@ -17,7 +17,9 @@ include(GNUInstallDirs)
 test_restrict(restrict)
 
 ### >> Locate Python Interpreter and Library << ###
-find_package(PythonLibsNew REQUIRED)
+#find_package(PythonLibsNew REQUIRED)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED
              HINTS ${CMAKE_PREFIX_PATH}/pybind11)
 find_package(Threads)
