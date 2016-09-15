@@ -8,7 +8,7 @@ else()
     message(STATUS "Suitable pybind11 could not be located, building one instead.")
     ExternalProject_Add(pybind11_external
         GIT_REPOSITORY https://github.com/psi4/pybind11
-        GIT_TAG config
+        GIT_TAG oldpb11full
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/pybind11
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
