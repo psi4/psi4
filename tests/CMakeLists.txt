@@ -61,7 +61,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change 
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9 
                   opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-freeze-coords 
-                  props1 props2 props3 psi4numpy psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 
+                  props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2 
                   pubchem1 pubchem2 pywrap-alias pywrap-all pywrap-basis 
@@ -78,6 +78,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
 )
    add_subdirectory(${test_name})
 endforeach()
+
+# Add internal projects
+add_subdirectory(psi4numpy)
+
+
 message(STATUS "Adding test cases: Psi4")
 if(NOT PERL_FOUND)
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")

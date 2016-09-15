@@ -1,2 +1,2 @@
-add_subdirectory(RHF)
-add_subdirectory(DFMP2)
+add_subdirectory(rhf)
+add_subdirectory(dfmp2)
