@@ -459,17 +459,17 @@ void RV::compute_V()
     double rhoazq      = 0.0;
 
     std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
-    double *restrict QTp = QT->pointer();
+    double * QTp = QT->pointer();
     const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
         std::shared_ptr<BlockOPoints> block = blocks[Q];
         int npoints = block->npoints();
-        double *restrict x = block->x();
-        double *restrict y = block->y();
-        double *restrict z = block->z();
-        double *restrict w = block->w();
+        double * x = block->x();
+        double * y = block->y();
+        double * z = block->z();
+        double * w = block->w();
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
@@ -487,9 +487,9 @@ void RV::compute_V()
 
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
-        double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
-        double *restrict zk = vals["V"]->pointer();
-        double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
+        double * rho_a = properties_->point_value("RHO_A")->pointer();
+        double * zk = vals["V"]->pointer();
+        double * v_rho_a = vals["V_RHO_A"]->pointer();
 
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
@@ -515,11 +515,11 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict rho_ax = properties_->point_value("RHO_AX")->pointer();
-            double *restrict rho_ay = properties_->point_value("RHO_AY")->pointer();
-            double *restrict rho_az = properties_->point_value("RHO_AZ")->pointer();
-            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
-            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
+            double * rho_ax = properties_->point_value("RHO_AX")->pointer();
+            double * rho_ay = properties_->point_value("RHO_AY")->pointer();
+            double * rho_az = properties_->point_value("RHO_AZ")->pointer();
+            double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
+            double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
@@ -547,7 +547,7 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = vals["V_TAU_A"]->pointer();
+            double * v_tau_a = vals["V_TAU_A"]->pointer();
 
             double** phi[3];
             phi[0] = phix;
@@ -937,11 +937,11 @@ void UV::compute_V()
 
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
-        double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
-        double *restrict rho_b = properties_->point_value("RHO_B")->pointer();
-        double *restrict zk = vals["V"]->pointer();
-        double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
-        double *restrict v_rho_b = vals["V_RHO_B"]->pointer();
+        double * rho_a = properties_->point_value("RHO_A")->pointer();
+        double * rho_b = properties_->point_value("RHO_B")->pointer();
+        double * zk = vals["V"]->pointer();
+        double * v_rho_a = vals["V_RHO_A"]->pointer();
+        double * v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
@@ -974,15 +974,15 @@ void UV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict rho_ax = properties_->point_value("RHO_AX")->pointer();
-            double *restrict rho_ay = properties_->point_value("RHO_AY")->pointer();
-            double *restrict rho_az = properties_->point_value("RHO_AZ")->pointer();
-            double *restrict rho_bx = properties_->point_value("RHO_BX")->pointer();
-            double *restrict rho_by = properties_->point_value("RHO_BY")->pointer();
-            double *restrict rho_bz = properties_->point_value("RHO_BZ")->pointer();
-            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
-            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
-            double *restrict v_sigma_bb = vals["V_GAMMA_BB"]->pointer();
+            double * rho_ax = properties_->point_value("RHO_AX")->pointer();
+            double * rho_ay = properties_->point_value("RHO_AY")->pointer();
+            double * rho_az = properties_->point_value("RHO_AZ")->pointer();
+            double * rho_bx = properties_->point_value("RHO_BX")->pointer();
+            double * rho_by = properties_->point_value("RHO_BY")->pointer();
+            double * rho_bz = properties_->point_value("RHO_BZ")->pointer();
+            double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
+            double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
+            double * v_sigma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1);
@@ -1015,8 +1015,8 @@ void UV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = vals["V_TAU_A"]->pointer();
-            double *restrict v_tau_b = vals["V_TAU_B"]->pointer();
+            double * v_tau_a = vals["V_TAU_A"]->pointer();
+            double * v_tau_b = vals["V_TAU_B"]->pointer();
 
             double** phi[3];
             phi[0] = phix;

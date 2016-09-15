@@ -40,10 +40,6 @@
 #include <stdexcept>
 #include <string>
 
-// Cancel out restrict keyword for timings
-#undef restrict
-#define restrict
-
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // libderiv computes 9 of the 12 total derivatives. It computes 3 of the
@@ -53,7 +49,6 @@
 // The first derivatives are provided when second derivatives are asked
 // for.
 #define ERI_2DER_NTYPE (ERI_1DER_NTYPE + 45)
-
 ;
 using namespace psi;
 
@@ -1679,9 +1674,9 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
     double a1, a2, a3, a4;
     int p1, p2, p3, p4, i;
     size_t nprim = 0L;
-    double restrict *pai = p12->ai;
-    double restrict *pgamma12 = p12->gamma[0];
-    double restrict *poverlap12 = p12->overlap[0];
+    double *pai = p12->ai;
+    double *pgamma12 = p12->gamma[0];
+    double *poverlap12 = p12->overlap[0];
     for (p1 = 0; p1 < nprim1; ++p1) {
         a1 = *pai;
         ++pai;
@@ -1703,13 +1698,13 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
             double PABy = p12->P[p1][p2][1];
             double PABz = p12->P[p1][p2][2];
 
-            double restrict *pak = p34->ai;
-            double restrict *pgamma34 = p34->gamma[0];
-            double restrict *poverlap34 = p34->overlap[0];
+            double *pak = p34->ai;
+            double *pgamma34 = p34->gamma[0];
+            double *poverlap34 = p34->overlap[0];
             for (p3 = 0; p3 < nprim3; ++p3) {
                 a3 = *pak;
                 ++pak;
-                double restrict *pal = p34->aj;
+                double *pal = p34->aj;
                 for (p4 = 0; p4 < nprim4; ++p4) {
                     a4 = *pal;
                     eta = *pgamma34;
@@ -2198,7 +2193,7 @@ void TwoElectronInt::free_shell_pairs34()
 {
 }
 
-size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr <BasisSet> &bs1, const std::shared_ptr <BasisSet> &bs2)
+size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSet> &bs1, const std::shared_ptr<BasisSet> &bs2)
 {
     int i, j, np_i, np_j;
     size_t mem = 0;
@@ -2232,7 +2227,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    std::shared_ptr <BasisSet> bs_temp;
+    std::shared_ptr<BasisSet> bs_temp;
 
     p13p24_ = false;
     p12_ = false;
@@ -2440,7 +2435,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
     // If we can, use the precomputed values found in ShellPair.
     if (use_shell_pairs_) {
-        ShellPair *restrict p12, *restrict p34;
+        ShellPair *p12, *p34;
         // 1234 -> 1234 no change
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
@@ -2550,7 +2545,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                         double T = rho * PQ2;
                         fjt_->set_rho(rho);
-                        double *restrict F = fjt_->values(am, T);
+                        double *F = fjt_->values(am, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI * oon, 3.0 / 2.0) * exp(-a3 * a4 * oon * CD2) * c3 * c4;
@@ -2619,7 +2614,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     // is not guaranteed.
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    std::shared_ptr <BasisSet> bs_temp;
+    std::shared_ptr<BasisSet> bs_temp;
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
@@ -2964,7 +2959,7 @@ size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
     // if order is not guarantee.
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    std::shared_ptr <BasisSet> bs_temp;
+    std::shared_ptr<BasisSet> bs_temp;
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
