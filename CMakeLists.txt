@@ -85,7 +85,9 @@ include(autocmake_omp)
 #include(autocmake_static_library)
 
 ################################# Dependencies #################################
-find_package(PythonLibsNew ${PYTHON_VERSION_MAJOR} REQUIRED)
+#find_package(PythonLibsNew REQUIRED)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
