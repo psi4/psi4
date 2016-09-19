@@ -472,32 +472,50 @@ void export_mints(py::module& m)
 
     py::class_<MintsHelper, std::shared_ptr<MintsHelper> >(m, "MintsHelper", "docstring").
             def(py::init<std::shared_ptr<BasisSet> >()).
+
+            // Options and attributes
+            def("nbf", &MintsHelper::nbf, "docstring").
+            def("set_print", &MintsHelper::set_print, "docstring").
+            def("basisset", &MintsHelper::basisset, "docstring").
+            def("sobasisset", &MintsHelper::sobasisset, "docstring").
+            def("factory", &MintsHelper::factory, "docstring").
+            def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
+            def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
+            def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
+
+            // Integral builders
             def("integral", &MintsHelper::integral, "docstring").
             def("integrals", &MintsHelper::integrals, "docstring").
             def("integrals_erf", &MintsHelper::integrals_erf, "docstring").
             def("integrals_erfc", &MintsHelper::integrals_erfc, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
-            def("basisset", &MintsHelper::basisset, "docstring").
-            def("sobasisset", &MintsHelper::sobasisset, "docstring").
-            def("factory", &MintsHelper::factory, "docstring").
-            //def("ao_overlap", &MintsHelper::ao_overlap, "docstring").
+            def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
+
+            // One-electron
             def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "docstring").
             def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "docstring").
+            def("so_overlap", &MintsHelper::so_overlap, "docstring").
             def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring").
             def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring").
+            def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
             def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring").
             def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring").
-            def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
-            def("so_overlap", &MintsHelper::so_overlap, "docstring").
-            def("so_kinetic", &MintsHelper::so_kinetic, "docstring").
             def("so_potential", &MintsHelper::so_potential, "docstring").
+
+            // One-electron properties and
+            def("ao_pvp", &MintsHelper::ao_pvp, "docstring").
+            def("ao_dkh", &MintsHelper::ao_dkh, "docstring").
+            def("so_dkh", &MintsHelper::so_dkh, "docstring").
+            def("ao_dipole", &MintsHelper::ao_dipole, "docstring").
             def("so_dipole", &MintsHelper::so_dipole, "docstring").
             def("so_quadrupole", &MintsHelper::so_quadrupole, "docstring").
             def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole, "docstring").
             def("ao_nabla", &MintsHelper::ao_nabla, "docstring").
             def("so_nabla", &MintsHelper::so_nabla, "docstring").
-            def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
+            def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
+
+            // Two-electron AO
             def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring").
             def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring").
             def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
@@ -510,6 +528,8 @@ void export_mints(py::module& m)
             def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+
+            // Two-electron MO and transformers
             def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").
             def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "docstring").
             def("mo_f12", &MintsHelper::mo_f12, "docstring").
@@ -518,10 +538,7 @@ void export_mints(py::module& m)
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
             def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
             def("mo_transform", &MintsHelper::mo_transform, "docstring").
-            def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
-            def("set_print", &MintsHelper::set_print, "docstring").
-            def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
-            def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
+
             def("play", &MintsHelper::play, "docstring");
 
     py::class_<FittingMetric, std::shared_ptr<FittingMetric> >(m, "FittingMetric", "docstring").
@@ -872,7 +889,6 @@ void export_mints(py::module& m)
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
     // LIBFOCK wrappers
-
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
            .def_static("build_JK", py_build_JK, "docstring")
            .def("initialize", &JK::initialize)
@@ -895,8 +911,6 @@ void export_mints(py::module& m)
            .def("C_right_add", [](JK &jk, SharedMatrix Cr){
                 jk.C_right().push_back(Cr);
            })
-           // .def("C_left", &JK::C_left, py::return_value_policy::reference_internal)
-           // .def("C_right", &JK::C_right, py::return_value_policy::reference_internal)
            .def("J", &JK::J, py::return_value_policy::reference_internal)
            .def("K", &JK::K, py::return_value_policy::reference_internal)
            .def("wK", &JK::wK, py::return_value_policy::reference_internal)
