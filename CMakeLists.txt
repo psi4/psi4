@@ -39,9 +39,9 @@ option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
-option(ENABLE_PCMSOLVER "Enables PCMSolver library (requires Fortran)" OFF)
+option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd) # OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
@@ -133,7 +133,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_liberd=${ENABLE_liberd}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFOCK=${ENABLE_GTFOCK}
-              -DENABLE_PCMSOLVER=${ENABLE_PCMSOLVER}
+              -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}

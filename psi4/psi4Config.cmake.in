@@ -36,7 +36,7 @@ macro(psi4_component name on)
    endif()
 endmacro()
 
-psi4_component(PCMSOLVER @ENABLE_PCMSOLVER@)
+psi4_component(PCMSOLVER @ENABLE_PCMSolver@)
 psi4_component(AMBIT @ENABLE_AMBIT@)
 psi4_component(GTFOCK @ENABLE_GTFOCK@)
 psi4_component(GDMA @ENABLE_gdma@)
