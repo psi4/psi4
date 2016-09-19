@@ -162,7 +162,7 @@ endif()
 
 # <<<  PCMSOLVER  >>>
 
-if(ENABLE_PCMSOLVER)
+if(ENABLE_PCMSolver)
     add_subdirectory(pcmsolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()

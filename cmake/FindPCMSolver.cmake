@@ -56,7 +56,7 @@ set(PCMSolver_NAMES pcm)
 # Try each search configuration.
 foreach(search ${_PCMSolver_SEARCHES})
     find_path(PCMSolver_INCLUDE_DIR
-        NAMES pcmsolver.h
+        NAMES PCMSolver/pcmsolver.h
         ${${search}}
         PATH_SUFFIXES include)
       find_path(PCMSolver_PARSE_DIR

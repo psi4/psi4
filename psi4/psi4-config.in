@@ -49,7 +49,7 @@ def main(argv):
     info['--python'] = '@PYTHON_EXECUTABLE@'
     info['--python-lib'] = '@PYTHON_LIBRARY@'
     info['--has-fortran'] = '@FORTRAN_ENABLED@'
-    info['--has-pcmsolver'] = '@ENABLE_PCMSOLVER@'
+    info['--has-pcmsolver'] = '@ENABLE_PCMSolver@'
     info['--has-chemps2'] = '@ENABLE_CheMPS2@'
     if '@ENABLE_CONDA_DEST@' == 'ON':
         info['--includes'] = '@PLUGIN_INCLUDE_DIRECTORIES@'.replace('${MCONDA}', info['--prefix'])  # aka PLUGIN_INCLUDES
