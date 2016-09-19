@@ -1275,7 +1275,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use second-order SCF convergence methods? -*/
     options.add_bool("SOSCF", false);
     /*- When to start second-order SCF iterations based on gradient RMS. -*/
-    options.add_double("SOSCF_R_START", 1.0E-2);
+    options.add_double("SOSCF_START_CONVERGENCE", 1.0E-2);
     /*- Minimum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MIN_ITER", 1);
     /*- Maximum number of second-order microiterations to perform. -*/

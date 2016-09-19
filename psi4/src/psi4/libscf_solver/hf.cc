@@ -321,7 +321,7 @@ void HF::common_init()
 
     // Second-order convergence acceleration
     soscf_enabled_ = options_.get_bool("SOSCF");
-    soscf_r_start_ = options_.get_double("SOSCF_R_START");
+    soscf_r_start_ = options_.get_double("SOSCF_START_CONVERGENCE");
     soscf_min_iter_ = options_.get_int("SOSCF_MIN_ITER");
     soscf_max_iter_ = options_.get_int("SOSCF_MAX_ITER");
     soscf_conv_ = options_.get_double("SOSCF_CONV");
