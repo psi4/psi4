@@ -4,8 +4,8 @@ import sys
 import time
 import subprocess
 
-if len(sys.argv) not in [5, 6, 7, 8]:
-    print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest alt_output_file alt_psi4_exe""" % (sys.argv[0]))
+if len(sys.argv) not in [5, 6, 7, 8, 9]:
+    print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest alt_output_file alt_psi4_exe alt_psi4datadir""" % (sys.argv[0]))
     sys.exit(1)
 
 # extract run condition from arguments
@@ -14,15 +14,18 @@ logfile = sys.argv[2]
 psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
 sowreap = sys.argv[5]
-if len(sys.argv) in [7, 8]:
+if len(sys.argv) in [7, 8, 9]:
     outfile = sys.argv[6]
 else:
     outfile = 'output.dat'
-if len(sys.argv) == 8:
+if len(sys.argv) in [8, 9]:
     psi = sys.argv[7]
 else:
     psi = '../../bin/psi4'
-psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share/psi4'
+if len(sys.argv) == 9:
+    psidatadir = sys.argv[8]
+else:
+    psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share/psi4'
 
 # open logfile and print test case header
 try:
