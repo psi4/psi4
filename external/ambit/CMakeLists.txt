@@ -8,7 +8,7 @@ if(NOT Ambit_FOUND AND ${ENABLE_AMBIT})
        GIT_REPOSITORY https://github.com/jturney/ambit
        GIT_TAG v0.2
        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                  -DENABLE_OMP=${OpenMP_FOUND}
+                  -DENABLE_OMP=${ENABLE_OPENMP}
                   -DENABLE_VECTORIZATION=${ENABLE_VECTORIZATION}
                   -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                   -DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
