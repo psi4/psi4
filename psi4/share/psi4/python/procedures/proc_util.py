@@ -120,7 +120,7 @@ def oeprop_validator(prop_list):
                 alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
 
             raise ValidationError("OEProp: Feature '%s' is not recognized. %s" % (prop, alternatives))
-    
+
 
 def check_iwl_file_from_scf_type(scf_type, wfn):
     """
@@ -142,7 +142,7 @@ def check_non_symmetric_jk_density(name):
 
     if scf_type not in supp_jk_type:
         raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
-                              "     Please set SCF_TYPE to %s" % (name, supp_string)) 
+                              "     Please set SCF_TYPE to %s" % (name, supp_string))
 
 
 

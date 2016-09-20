@@ -101,6 +101,7 @@ protected:
 
     void common_init();
 public:
+    RKS(SharedWavefunction ref_wfn);
     RKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RKS();
 };
@@ -127,6 +128,7 @@ protected:
 
     void common_init();
 public:
+    UKS(SharedWavefunction ref_wfn);
     UKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UKS();
 };

@@ -48,6 +48,12 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
+CUHF::CUHF(SharedWavefunction ref_wfn)
+    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+{
+    common_init();
+}
+
 CUHF::CUHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {

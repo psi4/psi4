@@ -89,13 +89,13 @@ public:
 class MOWriter
 {
     std::shared_ptr<Wavefunction> wavefunction_;
-    Options & options_;
+    bool restricted_;
 private:
     double * Ca_pointer, * eps;
     int * map, * sym, * occ, nmo, nso;
     void write_mos(Molecule & mol);
 public:
-    MOWriter(std::shared_ptr<Wavefunction> wavefunction,Options&options);
+    MOWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write();
 };
 

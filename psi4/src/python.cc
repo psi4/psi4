@@ -76,6 +76,7 @@ void export_functional(py::module&);
 void export_oeprop(py::module&);
 void export_efp(py::module&);
 void export_cubeprop(py::module&);
+void export_misc(py::module&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -1519,6 +1520,7 @@ PyObject * initpsimod(void) {
     export_psio(psimod);
     export_mints(psimod);
     export_functional(psimod);
+    export_misc(psimod);
 
     // ??
     py::class_<Process::Environment>(psimod, "Environment")

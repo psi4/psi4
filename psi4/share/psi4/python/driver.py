@@ -1757,7 +1757,7 @@ def fchk(wfn, filename):
     fw.write(filename)
 
 
-def molden(wfn, filename, density_a=None, density_b=None):
+def molden(wfn, filename=None, density_a=None, density_b=None):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format. Will write natural orbitals from *density* (MO basis) if supplied.
 
@@ -1770,7 +1770,7 @@ def molden(wfn, filename, density_a=None, density_b=None):
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
 
     :type filename: string
-    :param filename: destination file name for MOLDEN file
+    :param filename: destination file name for MOLDEN file (optional)
 
     :type density_a: psi4.Matrix
     :param density_a: density in the MO basis to build alpha NO's from (optional)
@@ -1789,6 +1789,10 @@ def molden(wfn, filename, density_a=None, density_b=None):
     >>> molden(wfn, 'no_root1.molden', density_a=wfn.opdm(0, 0, "A", True))
 
     """
+
+    if filename is None:
+        filename = psi4.get_writer_file_prefix(wfn.molecule().name()) + ".molden";
+
     if density_a:
         nmopi = wfn.nmopi()
         nsopi = wfn.nsopi()
@@ -1823,7 +1827,6 @@ def molden(wfn, filename, density_a=None, density_b=None):
             occa = psi4.Vector(wfn.nmopi())
             occb = psi4.Vector(wfn.nmopi())
 
-        # At this point occupation number will be difficult to build, lets set them to zero
         mw = psi4.MoldenWriter(wfn)
         mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb)
 

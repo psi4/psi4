@@ -81,6 +81,12 @@ void KS::common_init(SharedWavefunction ref_wfn)
     potential_->print_header();
 
 }
+RKS::RKS(SharedWavefunction ref_wfn) :
+    RHF(ref_wfn, Process::environment.options, PSIO::shared_object()),
+    KS(ref_wfn, Process::environment.options, PSIO::shared_object())
+{
+    common_init();
+}
 RKS::RKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
     RHF(ref_wfn, options, psio), KS(ref_wfn, options, psio)
 {
@@ -241,6 +247,12 @@ bool RKS::stability_analysis()
 {
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
     return false;
+}
+UKS::UKS(SharedWavefunction ref_wfn) :
+    UHF(ref_wfn, Process::environment.options, PSIO::shared_object()),
+    KS(ref_wfn, Process::environment.options, PSIO::shared_object())
+{
+    common_init();
 }
 UKS::UKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
     UHF(ref_wfn, options, psio), KS(ref_wfn, options,psio)

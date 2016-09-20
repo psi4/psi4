@@ -28,6 +28,7 @@ set(sources_list export_psio.cc
         export_benchmarks.cc
         export_efp.cc
         export_cubeprop.cc
+        export_misc.cc
         clean.cc
         create_new_plugin.cc
         script.cc

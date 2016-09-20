@@ -83,6 +83,7 @@ protected:
 
     void common_init();
 public:
+    ROHF(SharedWavefunction ref_wfn);
     ROHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 

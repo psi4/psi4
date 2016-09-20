@@ -979,6 +979,26 @@ def select_mp4(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+def scf_wavefunction_factory(reference, ref_wfn, superfunc):
+    """Builds the correct wavefunction from the provided information
+    """
+
+    if reference == "RHF":
+        return psi4.RHF(ref_wfn)
+    elif reference == "ROHF":
+        return psi4.ROHF(ref_wfn)
+    elif reference == "UHF":
+        return psi4.UHF(ref_wfn)
+    elif reference == "CUHF":
+        return psi4.CUHF(ref_wfn)
+    elif reference == "RKS":
+        return psi4.RKS(ref_wfn)
+    elif reference == "UKS":
+        return psi4.UKS(ref_wfn)
+    else:
+        raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
+
+
 def scf_helper(name, **kwargs):
     """Function serving as helper to SCF, choosing whether to cast
     up or just run SCF with a standard guess. This preserves
@@ -986,6 +1006,8 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
+
+    psi4.tstart() # Manage start and stop as there is no C wrapper
 
     optstash = p4util.OptionsState(
         ['PUREAM'],
@@ -1119,7 +1141,9 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-        psi4.scf(new_wfn)
+        scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn, None)
+        psi4.set_legacy_wavefunction(scf_wfn)
+        scf_wfn.compute_energy()
 
     # broken clean-up
     if do_broken:
@@ -1166,9 +1190,18 @@ def scf_helper(name, **kwargs):
         efp.print_out()
 
     # the SECOND scf call
-    ref_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-    scf_wfn = psi4.scf(ref_wfn)
-    e_scf = psi4.get_variable('CURRENT ENERGY')
+    new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
+    scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn, None)
+    psi4.set_legacy_wavefunction(scf_wfn)
+
+    # Print basis set info
+    if psi4.get_option("SCF", "PRINT_BASIS"):
+        scf_wfn.basisset().print_detail_out()
+
+    e_scf = scf_wfn.compute_energy()
+    psi4.set_variable("SCF TOTAL ENERGY", e_scf)
+    psi4.set_variable("CURRENT ENERGY", e_scf)
+    psi4.set_variable("CURRENT REFERENCE ENERGY", e_scf)
 
     # We always would like to print a little dipole information
     if kwargs.get('scf_do_dipole', True):
@@ -1179,6 +1212,8 @@ def scf_helper(name, **kwargs):
         psi4.set_variable("CURRENT DIPOLE X", psi4.get_variable("SCF DIPOLE X"))
         psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable("SCF DIPOLE Y"))
         psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable("SCF DIPOLE Z"))
+
+    psi4.tstop()
 
     optstash.restore()
     return scf_wfn

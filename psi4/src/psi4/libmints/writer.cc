@@ -1239,18 +1239,13 @@ void NBOWriter::write(const std::string &filename)
 }
 
 
-MOWriter::MOWriter(std::shared_ptr<Wavefunction> wavefunction,Options&options)
-    : wavefunction_(wavefunction), options_(options)
+MOWriter::MOWriter(std::shared_ptr<Wavefunction> wavefunction)
+    : wavefunction_(wavefunction), restricted_(wavefunction->same_a_b_orbs())
 {
 }
 
 void MOWriter::write()
 {
-    // what kind of reference?
-    bool isrestricted = true;
-    if (options_.get_str("REFERENCE") == "UHF")  isrestricted = false;
-    if (options_.get_str("REFERENCE") == "UKS")  isrestricted = false;
-    if (options_.get_str("REFERENCE") == "CUHF") isrestricted = false;
 
     // Get the molecule for ease
     BasisSet& basisset = *wavefunction_->basisset().get();
@@ -1321,7 +1316,7 @@ void MOWriter::write()
     for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
 
     int count = 0;
-    int extra = isrestricted ? 1 : 0;
+    int extra = restricted_ ? 1 : 0;
     for (int h = 0; h < nirrep; h++) {
         double ** Ca_old = Ca_ao_mo->pointer(h);
         for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
@@ -1339,7 +1334,7 @@ void MOWriter::write()
 
     // dump to output file
     outfile->Printf("\n");
-    if ( isrestricted )
+    if ( restricted_ )
         outfile->Printf("  ==> Molecular Orbitals <==\n");
     else
         outfile->Printf("  ==> Alpha-Spin Molecular Orbitals <==\n");
@@ -1348,7 +1343,7 @@ void MOWriter::write()
     write_mos(mol);
 
     // now for beta spin
-    if ( !isrestricted ) {
+    if ( !restricted_ ) {
 
 
         // order orbitals in terms of energy
