@@ -48,6 +48,7 @@ class MinimalInterface;
 class SOSCF;
 class PCM;
 class SuperFunctional;
+class VBase;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -202,6 +203,7 @@ protected:
 
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
+    std::shared_ptr<VBase> potential_;
 
 public:
     /// Nuclear contributions
@@ -213,6 +215,12 @@ public:
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
+
+    /// The DFT Functional object (or null if it has been deleted)
+    std::shared_ptr<SuperFunctional> functional() const { return functional_; }
+
+    /// The DFT Potential object (or null if it has been deleted)
+    std::shared_ptr<VBase> V_potential() const { return potential_; }
 
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
@@ -334,6 +342,9 @@ protected:
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 
+    /** Builds the DFT XC potential */
+    virtual void form_V();
+
     /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
@@ -389,9 +400,8 @@ protected:
     virtual void load_orbitals();
 
 public:
-    HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
-       std::shared_ptr<SuperFunctional> functional);
+    HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
+       Options& options, std::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 

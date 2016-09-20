@@ -36,6 +36,7 @@
 #include <vector>
 #include <utility>
 
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libparallel/parallel.h"
@@ -47,6 +48,7 @@
 #include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libfock/v.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
@@ -56,20 +58,15 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(SharedWavefunction ref_wfn)
-    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
 
-RHF::RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
-         std::shared_ptr<SuperFunctional> func)
-    : HF(ref_wfn, options, psio, func)
-{
-    common_init();
-}
-RHF::RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, options, psio)
+RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
+         Options& options, std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio)
 {
     common_init();
 }
@@ -98,6 +95,7 @@ void RHF::common_init()
     G_         = SharedMatrix(factory_->create_matrix("G"));
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
+    wK_        = SharedMatrix(factory_->create_matrix("wK"));
 
     same_a_b_dens_ = true;
     same_a_b_orbs_ = true;
@@ -122,6 +120,7 @@ void RHF::finalize()
     G_.reset();
     J_.reset();
     K_.reset();
+    wK_.reset();
 
     HF::finalize();
 }
@@ -155,26 +154,67 @@ void forPermutation(int depth, vector<int>& array,
        }
     }
 }
+void RHF::form_V()
+{
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+
+    // Run the potential object
+    potential_->compute();
+
+    // Pull the V matrices off
+    const std::vector<SharedMatrix> & V = potential_->V();
+    V_ = V[0];
+}
 void RHF::form_G()
 {
+    if (functional_->needs_xc()) {
+        timer_on("RKS: Form V");
+        form_V();
+        G_->copy(V_);
+        timer_off("RKS: Form V");
+    } else {
+        G_->zero();
+    }
 
-     /// Push the C matrix on
-     std::vector<SharedMatrix> & C = jk_->C_left();
-     C.clear();
-     C.push_back(Ca_subset("SO", "OCC"));
+    /// Push the C matrix on
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
 
-     // Run the JK object
-     jk_->compute();
+    // Run the JK object
+    jk_->compute();
 
-     // Pull the J and K matrices off
-     const std::vector<SharedMatrix> & J = jk_->J();
-     const std::vector<SharedMatrix> & K = jk_->K();
-     J_ = J[0];
-     K_ = K[0];
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    const std::vector<SharedMatrix> & wK = jk_->wK();
+    J_ = J[0];
+    if (functional_->is_x_hybrid()) {
+        K_ = K[0];
+    }
+    if (functional_->is_x_lrc()) {
+        wK_ = wK[0];
+    }
 
-  J_->scale(2.0);
-  G_->copy(J_);
-  G_->subtract(K_);
+    G_->axpy(2.0, J_);
+
+    double alpha = functional_->x_alpha();
+    double beta = 1.0 - alpha;
+
+    if (alpha != 0.0) {
+        G_->axpy(-alpha, K_);
+    } else {
+        K_->zero();
+    }
+
+    if (functional_->is_x_lrc()) {
+        G_->axpy(-beta, wK_);
+    } else {
+        wK_->zero();
+    }
 }
 
 void RHF::save_information()
@@ -227,9 +267,12 @@ void RHF::form_F()
     Fa_->add(G_);
 
     if (debug_) {
-        Fa_->print("outfile");
+        Fa_->print();
         J_->print();
         K_->print();
+        if (functional_->needs_xc()){
+            V_->print();
+        }
         G_->print();
 
     }
@@ -281,24 +324,53 @@ double RHF::compute_initial_E()
 double RHF::compute_E()
 {
     double one_electron_E = 2.0 * D_->vector_dot(H_);
+    double coulomb_E = 2.0 * D_->vector_dot(J_);
+
+    double XC_E = 0.0;
+    double dashD_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+        std::shared_ptr<Dispersion> disp = functional_->dispersion();
+        if (disp) {
+            dashD_E = disp->compute_energy(molecule_);
+        }
+    }
+
+    double exchange_E = 0.0;
+    double alpha = functional_->x_alpha();
+    double beta = 1.0 - alpha;
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(K_);
+    }
+    if (functional_->is_x_lrc()) {
+        exchange_E -=  beta * Da_->vector_dot(wK_);
+    }
+
+
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E;
-    energies_["XC"] = 0.0;
-    energies_["-D"] = 0.0;
+    energies_["Two-Electron"] =  coulomb_E + exchange_E;
+    energies_["XC"] = XC_E;
+    energies_["-D"] = dashD_E;
 
-    Matrix HplusF;
-    HplusF.copy(H_);
-    HplusF.add(Fa_);
+    double Etotal = 0.0;
+    Etotal += nuclearrep_;
+    Etotal += one_electron_E;
+    Etotal += coulomb_E;
+    Etotal += exchange_E;
+    Etotal += XC_E;
+    Etotal += dashD_E;
 
-    double Etotal = nuclearrep_ + D_->vector_dot(HplusF);
     return Etotal;
 }
 
 void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret)
 {
+    if (functional_->needs_xc()){
+        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
+    }
     // => Effective one electron part <= //
     Dimension virpi = Cvir->colspi();
     for (size_t h=0; h<nirrep_; h++){

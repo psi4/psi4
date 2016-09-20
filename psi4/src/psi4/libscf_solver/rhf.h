@@ -43,12 +43,14 @@ namespace scf {
 
 class RHF : public HF {
 protected:
+
+    // Temporary matrices
     SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
     SharedMatrix J_;
     SharedMatrix K_;
-
+    SharedMatrix wK_;
 
     void form_C();
     void form_D();
@@ -59,6 +61,7 @@ protected:
 
     virtual void form_F();
     virtual void form_G();
+    virtual void form_V();
     virtual void compute_orbital_gradient(bool save_fock);
 
     bool diis();
@@ -78,10 +81,9 @@ protected:
     virtual int soscf_update(void);
 
 public:
-    RHF(SharedWavefunction ref_wfn);
-    RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
-        std::shared_ptr<SuperFunctional> func);
+    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
+    RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
+        Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
 

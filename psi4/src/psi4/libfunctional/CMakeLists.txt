@@ -1,5 +1,4 @@
 set(sources_list PBE_Cfunctional.cc 
-                 superfactory.cc 
                  PZ81_Cfunctional.cc 
                  PW91_Cfunctional.cc 
                  wpbec_functional.cc 

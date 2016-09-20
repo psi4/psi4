@@ -83,8 +83,9 @@ protected:
 
     void common_init();
 public:
-    ROHF(SharedWavefunction ref_wfn);
-    ROHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
+    ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
+         Options& options, std::shared_ptr<PSIO> psio);
     virtual ~ROHF();
 
     SharedMatrix moFeff() const {return moFeff_; }
