@@ -1,40 +1,67 @@
-# Useful CMake variables you should consider setting:
-#    - CMAKE_C_COMPILER The C compiler
-#    - CMAKE_CXX_COMPILER The C++ compiler
-#    - Fortran_COMPILER The Fortran compiler (required for some external projs)
-#    - CMAKE_C_FLAGS Any extra C flags you want to pass
-#    - CMAKE_CXX_FLAGS Any extra C++ flags you want to pass
-#    - Fortran_FLAGS Any extra Fortran flags you want to pass
-#    - CMAKE_BINARY_DIR The build directory (default: build)
-#    - CMAKE_BUILD_TYPE Is this Debug, Release, or Profiling
-#    - BUILD_SHARED_LIBS If ON Psi4 libraries will be shared
-#    - CMAKE_PREFIX_PATH List of places find_package should look for packages
-#    - PYTHON_EXECUTABLE Path to the python executable you want to use
-#    - PYTHON_LIBRARY Path to the python library that goes with the exe
-#    - PYTHON_INCLUDE_DIR Path to the python include files    
-#
-#    CMake by default installs things to:
-#
-#      CMAKE_INSTALL_PREFIX/CMAKE_INSTALL_XDIR
-#
-#    where X is BIN, LIB, or INCLUDE for binaries, libraries, and include files
-#    respectively.  The defaults are bin, lib, and include respectively.
-#
-
-#Need 3.1 for build_always
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(psi4 CXX C)
-#set(CMAKE_CXX_STANDARD 11) Not working with Intel compilers at moment
+#############################  Superbuild Project  #############################
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)  # CMAKE_CXX_STANDARD, BUILD_ALWAYS
+project(psi4
+        LANGUAGES C CXX)
+set(psi4_URL "http://www.psicode.org/")
+set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
+set(psi4_LICENSE "GNU General Public License, version 2")
+set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
-                              ${CMAKE_SOURCE_DIR}/cmake/math
-)
-include(CheckCompilerVersion)
-include(ExternalProject)
+                              ${CMAKE_SOURCE_DIR}/cmake/math)
 
-############################# Options: Build What? #############################
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include(custom_cxxstandard)
+
+################  Options: Overview and Not Otherwise Mentioned  ###############
+
+#  <<<  CMake build overview  >>>
+#
+#    >>> ls
+#    external/  LICENSE  psi4/  tests/  ...
+#    >>> cmake -H. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
+#    ...
+#    -- Generating done
+#    -- Build files have been written to: /current/dir/objdir
+#    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
+#    >>> make install
+
+#  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
+
+#  <<<  Compilers and flags  >>>
+#
+#    - CMAKE_C_COMPILER "C compiler"
+#    - CMAKE_C_FLAGS "Additional C flags"
+#    - CMAKE_CXX_COMPILER "C++ compiler"
+#    - CMAKE_CXX_FLAGS "Additional C++ flags"
+#    - CMAKE_Fortran_COMPILER "Fortran compiler (required for some add-ons)"
+#    - CMAKE_Fortran_FLAGS "Additional Fortran flags"
+
+#  <<<  Detecting dependencies and add-ons  >>>
+#
+#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python2.7)"
+#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python2.7.so)"
+#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
+#    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
+#
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, liberd, gdma, libint, pybind11
+#    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
+#      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
+#    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to OFF to force internal build"
+
+#  <<<  Install  >>>
+#
+#    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (e.g., /path/to/install-psi4)"
+#    - CMAKE_INSTALL_BINDIR "Location within CMAKE_INSTALL_PREFIX to which executables are installed (default: bin)"
+#    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
+#    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"  # NYI
+#    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
+
+############################  Options: Build What?  ############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
-option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG" OFF)
+option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
@@ -51,15 +78,18 @@ if(ENABLE_liberd)
     message(FATAL_ERROR "LibERD will build, link, and run in Psi4 just fine, but it will give *wrong* answers for density-fitting (default) calculations. To continue with ERD, accept that you have been warned, and comment out this line in the main CMakeLists.txt")
 endif()
 
-############################# Options: Build How? ##############################
+############################  Options: Build How?  #############################
 include(Psi4Macros)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
-option(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
-option(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
+option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
+option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
+option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON
                   "-xHost" "-march=native")
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
+option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
+                  "-ftrapuv -check all -fpstkchk" "-fcheck=all" "-fbounds-check -fcheck-array-temporaries")
 option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF
                   "-fsanitize=address" "-fno-omit-frame-pointer")
 option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
@@ -67,24 +97,21 @@ option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
 option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
                   "-fsanitize=undefined" "-fno-omit-frame-pointer")
 option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
-option_with_default(CMAKE_BUILD_TYPE "The type of our build" Release)
+option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
-option_with_default(BUILD_FPIC
-          "Libraries will be compiled with position independent code" TRUE)
-option_with_print(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
-set(CMAKE_INSTALL_MESSAGE LAZY)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)  # NYI
+option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 
-set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
-
-######################### Process & Validate Options ###########################
+########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(autocmake_omp)
 #include(autocmake_static_library)
+set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
-################################# Dependencies #################################
+################################  Dependencies  ################################
 #find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
@@ -104,8 +131,9 @@ endforeach()
 add_subdirectory(external)
 
 list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
-################################# Main Project #################################
 
+################################  Main Project  ################################
+include(ExternalProject)
 ExternalProject_Add(psi4_core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
@@ -114,6 +142,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+              -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
@@ -124,9 +153,6 @@ ExternalProject_Add(psi4_core
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
-              -DPYBIND11_ROOT=${PYBIND11_ROOT}
-              -DENABLE_LIBERD=${ENABLE_LIBERD}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
@@ -155,8 +181,7 @@ add_dependencies(psi4_core ambit_external
                            gdma_external
                            libint_external
                            pcmsolver_external
-                           pybind11_external
-)
+                           pybind11_external)
 add_subdirectory(doc)
 enable_testing()
 add_subdirectory(tests)
