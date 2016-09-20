@@ -87,6 +87,7 @@ protected:
     virtual int soscf_update(void);
 
 public:
+    UHF(SharedWavefunction ref_wfn);
     UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UHF();
 

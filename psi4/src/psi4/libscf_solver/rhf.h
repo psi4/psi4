@@ -78,6 +78,7 @@ protected:
     virtual int soscf_update(void);
 
 public:
+    RHF(SharedWavefunction ref_wfn);
     RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 

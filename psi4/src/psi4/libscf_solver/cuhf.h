@@ -105,6 +105,7 @@ protected:
     virtual void finalize();
 
 public:
+    CUHF(SharedWavefunction ref_wfn);
     CUHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
     virtual ~CUHF();
 };

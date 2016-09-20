@@ -50,6 +50,12 @@
 
 namespace psi { namespace scf {
 
+UHF::UHF(SharedWavefunction ref_wfn)
+    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+{
+    common_init();
+}
+
 UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, options, psio)
 {
