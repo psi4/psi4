@@ -10,10 +10,6 @@ set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-include(custom_cxxstandard)
-
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
 #  <<<  CMake build overview  >>>
@@ -103,11 +99,17 @@ option_with_default(BUILD_FPIC "Compile static libraries with position independe
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)  # NYI
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
+option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
+
+add_subdirectory(external)
+
+    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
+include(custom_cxxstandard)
 #include(autocmake_static_library)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
@@ -128,8 +130,6 @@ foreach(pkg in pcmsolver)
    endif()
 endforeach()
 
-add_subdirectory(external)
-
 list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 
 ################################  Main Project  ################################
@@ -142,7 +142,8 @@ ExternalProject_Add(psi4_core
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-              -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+              -DCMAKE_CXX_STANDARD=${PSI4_CXX_STANDARD}
+              -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}

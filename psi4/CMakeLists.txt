@@ -8,7 +8,6 @@ if(${Fortran_ENABLED})
     enable_language(Fortran)
 endif()
 
-#set(CMAKE_CXX_STANDARD 11) enable if they fix this for Intel
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(Psi4Macros)
