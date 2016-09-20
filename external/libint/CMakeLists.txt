@@ -31,8 +31,3 @@ else()
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 endif()
 
-# prob needed for libm detect
-#   list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-#     CMAKE_CACHE_ARGS -DCMAKE_MODULE_PATH:STRING=${CMAKE_MODULE_PATH}
-#                      -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
-

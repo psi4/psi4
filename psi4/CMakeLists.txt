@@ -31,8 +31,11 @@ find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
 #optional_plugin(Ambit)
-#optional_plugin(PCMSolver)
 
+if(${ENABLE_PCMSolver})
+    find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
+                           #HINTS ${CMAKE_PREFIX_PATH}/pcmsolver)
+endif ()
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 CONFIG REQUIRED
                      HINTS ${CMAKE_PREFIX_PATH}/chemps2)
