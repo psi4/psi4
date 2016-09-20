@@ -9,7 +9,7 @@ else()
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
-        GIT_TAG config
+        GIT_TAG 4df1211c  #config
         #GIT_REPOSITORY https://github.com/ilyak/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
