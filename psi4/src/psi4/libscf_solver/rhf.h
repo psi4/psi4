@@ -80,6 +80,8 @@ protected:
 public:
     RHF(SharedWavefunction ref_wfn);
     RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    RHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
+        std::shared_ptr<SuperFunctional> func);
     virtual ~RHF();
 
 

@@ -47,6 +47,7 @@ class JK;
 class MinimalInterface;
 class SOSCF;
 class PCM;
+class SuperFunctional;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -198,6 +199,9 @@ protected:
     int r_points_; // number of radial integration points
     int theta_points_; // number of colatitude integration points
     int phi_points_; // number of azimuthal integration points
+
+    /// DFT variables
+    std::shared_ptr<SuperFunctional> functional_;
 
 public:
     /// Nuclear contributions
@@ -386,6 +390,8 @@ protected:
 
 public:
     HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
+       std::shared_ptr<SuperFunctional> functional);
 
     virtual ~HF();
 

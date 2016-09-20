@@ -47,6 +47,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int 
         npoints = options.get_int("DFT_BLOCK_MAX_POINTS");
     }
 
+    outfile->Printf("Building current!\n");
     std::shared_ptr<SuperFunctional> super;
     if (options.get_str("DFT_FUNCTIONAL") == "GEN" || options.get_str("DFT_FUNCTIONAL") == "") {
         py::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
@@ -81,6 +82,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int 
 std::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
 {
     std::shared_ptr<SuperFunctional> super;
+    outfile->Printf("Building functional C side!\n");
 
     if (Py_IsInitialized()) {
         try {

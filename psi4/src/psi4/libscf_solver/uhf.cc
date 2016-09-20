@@ -62,6 +62,13 @@ UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psi
     common_init();
 }
 
+UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
+         std::shared_ptr<SuperFunctional> func)
+    : HF(ref_wfn, options, psio, func)
+{
+    common_init();
+}
+
 UHF::~UHF()
 {
 }

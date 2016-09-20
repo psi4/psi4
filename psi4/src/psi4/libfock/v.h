@@ -104,13 +104,14 @@ protected:
     /// Set things up
     void common_init();
 public:
-    VBase(std::shared_ptr<SuperFunctional> functional,
-        std::shared_ptr<BasisSet> primary,
-        Options& options);
-    virtual ~VBase();
+     VBase(std::shared_ptr<SuperFunctional> functional,
+           std::shared_ptr<BasisSet> primary, Options& options);
+     virtual ~VBase();
 
     static std::shared_ptr<VBase> build_V(std::shared_ptr<BasisSet> primary,
-                                            Options& options, const std::string& type = "RV");
+                                          std::shared_ptr<SuperFunctional> functional,
+                                          Options& options,
+                                          const std::string& type = "RV");
 
     std::shared_ptr<BasisSet> basis() const { return primary_; }
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
