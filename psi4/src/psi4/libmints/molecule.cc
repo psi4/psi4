@@ -40,7 +40,7 @@
 #include "psi4/libmints/petitelist.h"
 #include "psi4/masses.h"
 #include "psi4/physconst.h"
-#include "psi4/element_to_Z.h"
+#include "psi4/libmints/element_to_Z.h"
 
 #include <cmath>
 #include <cstdio>

@@ -41,7 +41,6 @@
 #include "dimension.h"
 #include "sobasis.h"
 #include "integral.h"
-#include "psi4/symmetry.h"
 #include "gshell.h"
 #include "factory.h"
 #include "basisset_parser.h"
