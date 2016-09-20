@@ -79,7 +79,8 @@ protected:
     void common_init(SharedWavefunction ref_wfn);
 
 public:
-    KS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio);
+    KS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+       Options & options, std::shared_ptr<PSIO> psio);
     virtual ~KS();
 };
 
@@ -101,8 +102,9 @@ protected:
 
     void common_init();
 public:
-    RKS(SharedWavefunction ref_wfn);
-    RKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    RKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func);
+    RKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+        Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RKS();
 };
 
@@ -128,8 +130,9 @@ protected:
 
     void common_init();
 public:
-    UKS(SharedWavefunction ref_wfn);
-    UKS(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    UKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func);
+    UKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+        Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UKS();
 };
 

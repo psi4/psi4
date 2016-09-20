@@ -979,10 +979,12 @@ def select_mp4(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+
 def scf_wavefunction_factory(reference, ref_wfn, superfunc):
     """Builds the correct wavefunction from the provided information
     """
 
+    psi4.prepare_options_for_module("SCF")
     if reference == "RHF":
         return psi4.RHF(ref_wfn)
     elif reference == "ROHF":
@@ -992,9 +994,11 @@ def scf_wavefunction_factory(reference, ref_wfn, superfunc):
     elif reference == "CUHF":
         return psi4.CUHF(ref_wfn)
     elif reference == "RKS":
-        return psi4.RKS(ref_wfn)
+        func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
+        return psi4.RKS(ref_wfn, func)
     elif reference == "UKS":
-        return psi4.UKS(ref_wfn)
+        func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
+        return psi4.UKS(ref_wfn, func)
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 

@@ -108,7 +108,6 @@ namespace libfock   { SharedWavefunction   libfock(SharedWavefunction, Options&)
 namespace fnocc     { SharedWavefunction     fnocc(SharedWavefunction, Options&); }
 namespace occwave   { SharedWavefunction   occwave(SharedWavefunction, Options&); }
 namespace mcscf     { SharedWavefunction     mcscf(SharedWavefunction, Options&); }
-namespace scf       { SharedWavefunction       scf(SharedWavefunction, Options&); }
 
 #ifdef USING_gdma
 namespace gdma_interface { SharedWavefunction     gdma_interface(SharedWavefunction, Options&, const std::string &datfilename); }
@@ -362,11 +361,11 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
-SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn)
-{
-    py_psi_prepare_options_for_module("SCF");
-    return scf::scf(ref_wfn, Process::environment.options);
-}
+// SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn)
+// {
+//     py_psi_prepare_options_for_module("SCF");
+//     return scf::scf(ref_wfn, Process::environment.options);
+// }
 
 // double py_psi_scf_dummy()
 // {
@@ -1465,7 +1464,7 @@ PyObject * initpsimod(void) {
     psimod.def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     psimod.def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
-    psimod.def("scf", py_psi_scf, "Runs the SCF code.");
+    // psimod.def("scf", py_psi_scf, "Runs the SCF code.");
     psimod.def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
     psimod.def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     psimod.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");

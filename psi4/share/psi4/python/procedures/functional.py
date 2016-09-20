@@ -3640,19 +3640,44 @@ superfunctionals = {
 #            superfunctionals[key.replace(dash_alias[al], al)] = superfunctionals[key]
 
 
-def build_superfunctional(alias, npoints, deriv):
+def build_superfunctional(alias):
     name = alias.lower()
-    try:
-        return superfunctionals[name](name, npoints, deriv)
-    except KeyError:
-        # Return -D/-D2/-D3 aliases
+
+    npoints = psi4.get_option("SCF", "DFT_BLOCK_MAX_POINTS");
+    deriv = 1 # Default depth for now
+
+    # Grab out superfunctional
+    sup = None
+
+    if name in ["gen", ""]:
+        sup = psi4.get_option("DFT_CUSTOM_FUNCTIONAL")
+        if not isinstance(sup, psi4.SuperFunctional):
+            raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
+    elif name in superfunctionals.keys():
+        sup = superfunctionals[name](name, npoints, deriv)
+    elif any(name.endswith(al) for al in dash_alias.keys()):
         for al in dash_alias.keys():
             if name.endswith(al):
                 aliasedname = name.replace(al, dash_alias[al])
                 sup = superfunctionals[aliasedname](aliasedname, npoints, deriv)
                 sup.set_name(name.upper())
-                return sup
-        raise KeyError
+                break
+
+    if sup is None:
+        raise KeyError("SCF: Functional (%s) not found!" % alias)
+
+    # Set options
+    if psi4.has_option_changed("SCF", "DFT_OMEGA") and sup.is_x_lrc():
+        sup.set_x_omega(psi4.get_option("SCF", "DFT_OMEGA"))
+    if psi4.has_option_changed("SCF", "DFT_OMEGA_C") and sup.is_c_lrc():
+        sup.set_c_omega(psi4.get_option("SCF", "DFT_OMEGA_C"))
+
+    if psi4.has_option_changed("SCF", "DFT_ALPHA"):
+        sup.set_x_alpha(psi4.get_option("SCF", "DFT_ALPHA"))
+    if psi4.has_option_changed("SCF", "DFT_ALPHA_C"):
+        sup.set_c_alpha(psi4.get_option("SCF", "DFT_ALPHA_C"))
+
+    return sup
 
 
 def superfunctional_list():

@@ -39,7 +39,8 @@
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
 #include <sstream>
-using ULI=unsigned long int;
+using ULI = unsigned long int;
+
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional,
@@ -58,15 +59,15 @@ void VBase::common_init()
     debug_ = options_.get_int("DEBUG");
 }
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
-                                        Options& options, const std::string& type)
-{
+                                      std::shared_ptr<SuperFunctional> functional,
+                                      Options& options,
+                                      const std::string& type) {
+    // int depth = 1; // By default, do first partials of the kernel
+    // if (type == "RK" || type == "UK")
+    //     depth = 2;
 
-    int depth = 1; // By default, do first partials of the kernel
-    if (type == "RK" || type == "UK")
-        depth = 2;
-
-    int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
-    std::shared_ptr<SuperFunctional> functional = SuperFunctional::current(options,block_size,depth);
+    // int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
+    // std::shared_ptr<SuperFunctional> functional = SuperFunctional::current(options,block_size,depth);
 
     std::shared_ptr<VBase> v;
     if (type == "RV") {

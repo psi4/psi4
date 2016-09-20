@@ -152,18 +152,20 @@ SharedMatrix SCFGrad::compute_gradient()
     std::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(basisset_, options_, "RV");
-        potential->initialize();
-        std::vector<SharedMatrix>& C = potential->C();
-        C.push_back(Ca_subset("SO", "OCC"));
-        functional = potential->functional();
+        throw PSIEXCEPTION("DFT GRADIENTS ARE BROKEN");
+        // potential = VBase::build_V(basisset_, options_, "RV");
+        // potential->initialize();
+        // std::vector<SharedMatrix>& C = potential->C();
+        // C.push_back(Ca_subset("SO", "OCC"));
+        // functional = potential->functional();
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        potential = VBase::build_V(basisset_, options_, "UV");
-        potential->initialize();
-        std::vector<SharedMatrix>& C = potential->C();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        functional = potential->functional();
+        throw PSIEXCEPTION("DFT GRADIENTS ARE BROKEN");
+        //potential = VBase::build_V(basisset_, options_, "UV");
+        //potential->initialize();
+        //std::vector<SharedMatrix>& C = potential->C();
+        //C.push_back(Ca_subset("SO", "OCC"));
+        //C.push_back(Cb_subset("SO", "OCC"));
+        //functional = potential->functional();
     }
 
     // => Sizings <= //
@@ -613,18 +615,20 @@ SharedMatrix SCFGrad::compute_hessian()
     std::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        potential = VBase::build_V(basisset_, options_, "RV");
-        potential->initialize();
-        std::vector<SharedMatrix>& C = potential->C();
-        C.push_back(Ca_subset("SO", "OCC"));
-        functional = potential->functional();
+        throw PSIEXCEPTION("V builds are currently broken"); 
+        //potential = VBase::build_V(basisset_, options_, "RV");
+        //potential->initialize();
+        //std::vector<SharedMatrix>& C = potential->C();
+        //C.push_back(Ca_subset("SO", "OCC"));
+        //functional = potential->functional();
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        potential = VBase::build_V(basisset_, options_, "UV");
-        potential->initialize();
-        std::vector<SharedMatrix>& C = potential->C();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        functional = potential->functional();
+        throw PSIEXCEPTION("V builds are currently broken"); 
+        //potential = VBase::build_V(basisset_, options_, "UV");
+        //potential->initialize();
+        //std::vector<SharedMatrix>& C = potential->C();
+        //C.push_back(Ca_subset("SO", "OCC"));
+        //C.push_back(Cb_subset("SO", "OCC"));
+        //functional = potential->functional();
     }
 
     // => Sizings <= //

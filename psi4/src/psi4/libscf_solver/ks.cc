@@ -59,8 +59,9 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-KS::KS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
-    options_(options), psio_(psio)
+KS::KS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+       Options& options, std::shared_ptr<PSIO> psio)
+    : options_(options), psio_(psio), functional_(super_func)
 {
     common_init(ref_wfn);
 }
@@ -73,22 +74,22 @@ void KS::common_init(SharedWavefunction ref_wfn)
     basisset_ = ref_wfn->basisset();
     sobasisset_ = ref_wfn->sobasisset();
 
-    potential_ = VBase::build_V(basisset_,KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+    potential_ = VBase::build_V(basisset_, functional_, KS::options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
     potential_->initialize();
-    functional_ = potential_->functional();
 
     // Print the KS-specific stuff
     potential_->print_header();
 
 }
-RKS::RKS(SharedWavefunction ref_wfn) :
-    RHF(ref_wfn, Process::environment.options, PSIO::shared_object()),
-    KS(ref_wfn, Process::environment.options, PSIO::shared_object())
+RKS::RKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func) :
+    RHF(ref_wfn, Process::environment.options, PSIO::shared_object(), super_func),
+    KS(ref_wfn, super_func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
-RKS::RKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
-    RHF(ref_wfn, options, psio), KS(ref_wfn, options, psio)
+RKS::RKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+         Options & options, std::shared_ptr<PSIO> psio) :
+    RHF(ref_wfn, options, psio, super_func), KS(ref_wfn, super_func, options, psio)
 {
     common_init();
 }
@@ -103,7 +104,7 @@ void RKS::integrals()
 {
     HF::integrals();
 
-    if (!functional_->is_x_lrc()) return;
+    if (!KS::functional_->is_x_lrc()) return;
 
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
@@ -147,10 +148,10 @@ void RKS::form_G()
     const std::vector<SharedMatrix> & wK = jk_->wK();
     J_ = J[0];
     J_->scale(2.0);
-    if (functional_->is_x_hybrid()) {
+    if (KS::functional_->is_x_hybrid()) {
         K_ = K[0];
     }
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         wK_ = wK[0];
     }
 
@@ -158,7 +159,7 @@ void RKS::form_G()
 
     G_->add(V_);
 
-    double alpha = functional_->x_alpha();
+    double alpha = KS::functional_->x_alpha();
     double beta = 1.0 - alpha;
 
     if (alpha != 0.0) {
@@ -169,7 +170,7 @@ void RKS::form_G()
         K_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         wK_->scale(beta);
         G_->subtract(wK_);
         wK_->scale(1.0/beta);
@@ -193,17 +194,17 @@ double RKS::compute_E()
     std::map<std::string, double>& quad = potential_->quadrature_values();
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
-    double alpha = functional_->x_alpha();
+    double alpha = KS::functional_->x_alpha();
     double beta = 1.0 - alpha;
-    if (functional_->is_x_hybrid()) {
+    if (KS::functional_->is_x_hybrid()) {
         exchange_E -= alpha*Da_->vector_dot(K_);
     }
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         exchange_E -=  beta*Da_->vector_dot(wK_);
     }
 
     double dashD_E = 0.0;
-    std::shared_ptr<Dispersion> disp = functional_->dispersion();
+    std::shared_ptr<Dispersion> disp = KS::functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }
@@ -248,14 +249,15 @@ bool RKS::stability_analysis()
     throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
     return false;
 }
-UKS::UKS(SharedWavefunction ref_wfn) :
-    UHF(ref_wfn, Process::environment.options, PSIO::shared_object()),
-    KS(ref_wfn, Process::environment.options, PSIO::shared_object())
+UKS::UKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func) :
+    UHF(ref_wfn, Process::environment.options, PSIO::shared_object(), super_func),
+    KS(ref_wfn, super_func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
-UKS::UKS(SharedWavefunction ref_wfn, Options & options, std::shared_ptr<PSIO> psio) :
-    UHF(ref_wfn, options, psio), KS(ref_wfn, options,psio)
+UKS::UKS(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> super_func,
+         Options & options, std::shared_ptr<PSIO> psio) :
+    UHF(ref_wfn, options, psio, super_func), KS(ref_wfn, super_func, options, psio)
 {
     common_init();
 }
@@ -271,7 +273,7 @@ void UKS::integrals()
 {
     HF::integrals();
 
-    if (!functional_->is_x_lrc()) return;
+    if (!KS::functional_->is_x_lrc()) return;
 
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
@@ -318,11 +320,11 @@ void UKS::form_G()
     const std::vector<SharedMatrix> & wK = jk_->wK();
     J_->copy(J[0]);
     J_->add(J[1]);
-    if (functional_->is_x_hybrid()) {
+    if (KS::functional_->is_x_hybrid()) {
         Ka_ = K[0];
         Kb_ = K[1];;
     }
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         wKa_ = wK[0];
         wKb_ = wK[1];
     }
@@ -332,7 +334,7 @@ void UKS::form_G()
     Ga_->add(Va_);
     Gb_->add(Vb_);
 
-    double alpha = functional_->x_alpha();
+    double alpha = KS::functional_->x_alpha();
     double beta = 1.0 - alpha;
     if (alpha != 0.0) {
         Ka_->scale(alpha);
@@ -346,7 +348,7 @@ void UKS::form_G()
         Kb_->zero();
     }
 
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         wKa_->scale(beta);
         wKb_->scale(beta);
         Ga_->subtract(wKa_);
@@ -379,19 +381,19 @@ double UKS::compute_E()
     std::map<std::string, double>& quad = potential_->quadrature_values();
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
-    double alpha = functional_->x_alpha();
+    double alpha = KS::functional_->x_alpha();
     double beta = 1.0 - alpha;
-    if (functional_->is_x_hybrid()) {
+    if (KS::functional_->is_x_hybrid()) {
         exchange_E -= alpha*Da_->vector_dot(Ka_);
         exchange_E -= alpha*Db_->vector_dot(Kb_);
     }
-    if (functional_->is_x_lrc()) {
+    if (KS::functional_->is_x_lrc()) {
         exchange_E -=  beta*Da_->vector_dot(wKa_);
         exchange_E -=  beta*Db_->vector_dot(wKb_);
     }
 
     double dashD_E = 0.0;
-    std::shared_ptr<Dispersion> disp = functional_->dispersion();
+    std::shared_ptr<Dispersion> disp = KS::functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }

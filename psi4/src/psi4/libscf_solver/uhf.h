@@ -89,6 +89,8 @@ protected:
 public:
     UHF(SharedWavefunction ref_wfn);
     UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
+    UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
+        std::shared_ptr<SuperFunctional> func);
     virtual ~UHF();
 
     virtual bool same_a_b_orbs() const { return false; }

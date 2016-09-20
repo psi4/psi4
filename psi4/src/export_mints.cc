@@ -72,6 +72,7 @@
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
 #include "psi4/libscf_solver/ks.h"
+#include "psi4/libfunctional/superfunctional.h"
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -856,10 +857,10 @@ void export_mints(py::module& m)
             def(py::init<std::shared_ptr<Wavefunction>>());
 
     py::class_<scf::RKS, std::shared_ptr<scf::RKS>>(m, "RKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>());
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     py::class_<scf::UKS, std::shared_ptr<scf::UKS>>(m, "UKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>());
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 

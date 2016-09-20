@@ -1791,7 +1791,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None):
     """
 
     if filename is None:
-        filename = psi4.get_writer_file_prefix(wfn.molecule().name()) + ".molden";
+        filename = psi4.get_writer_file_prefix(wfn.molecule().name()) + ".molden"
 
     if density_a:
         nmopi = wfn.nmopi()

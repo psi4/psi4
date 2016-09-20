@@ -70,7 +70,6 @@
 #endif
 
 namespace psi { namespace scf {
-
 HF::HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
     : Wavefunction(options),
       nuclear_dipole_contribution_(3),
@@ -78,8 +77,21 @@ HF::HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
 {
     shallow_copy(ref_wfn);
     psio_ = psio;
+    functional_ = nullptr;
     common_init();
 }
+
+HF::HF(SharedWavefunction ref_wfn, Options &options, std::shared_ptr<PSIO> psio,
+       std::shared_ptr<SuperFunctional> functional)
+    : Wavefunction(options),
+      functional_(functional),
+      nuclear_dipole_contribution_(3),
+      nuclear_quadrupole_contribution_(6) {
+    shallow_copy(ref_wfn);
+    psio_ = psio;
+    common_init();
+}
+
 
 HF::~HF()
 {
@@ -451,18 +463,17 @@ void HF::integrals()
     jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
 
     // DFT sometimes needs custom stuff
-    if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
-
-        // Need a temporary functional
-        std::shared_ptr<SuperFunctional> functional =
-            SuperFunctional::current(options_);
+    if (functional_) {
+        // // Need a temporary functional
+        // std::shared_ptr<SuperFunctional> functional =
+        //     SuperFunctional::current(options_);
 
         // K matrices
-        jk_->set_do_K(functional->is_x_hybrid());
+        jk_->set_do_K(functional_->is_x_hybrid());
         // wK matrices
-        jk_->set_do_wK(functional->is_x_lrc());
+        jk_->set_do_wK(functional_->is_x_lrc());
         // w Value
-        jk_->set_omega(functional->x_omega());
+        jk_->set_omega(functional_->x_omega());
     }
 
     // Initialize
@@ -1786,8 +1797,8 @@ void HF::iterations()
         // add efp contribution to Fock matrix
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             H_->copy(Horig_);
-    	    std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
-    	    H_->add(Vefp);
+            std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+            H_->add(Vefp);
         }
 
         E_ = 0.0;
@@ -1832,16 +1843,16 @@ void HF::iterations()
 
           // Compute the PCM charges and polarization energy
           double Epcm = 0.0;
-	  if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
-	  {
-          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-	  }
-	  else
-	  {
-          	Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
-	  }
+      if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
+      {
+            Epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
+      }
+      else
+      {
+            Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
+      }
           energies_["PCM Polarization"] = Epcm;
-	  Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
+      Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
           E_ += Epcm;
 
           // Add the PCM potential to the Fock matrix
