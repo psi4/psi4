@@ -9,6 +9,8 @@ else()
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
+        GIT_TAG config
+        #GIT_REPOSITORY https://github.com/ilyak/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
@@ -16,6 +18,7 @@ else()
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+                   -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    #-DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable

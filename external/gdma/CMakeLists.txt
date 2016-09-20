@@ -1,5 +1,3 @@
-option(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF)
-
 if(${ENABLE_gdma})
     find_package(gdma CONFIG QUIET)
 
