@@ -132,11 +132,11 @@ void RBase::preiterations()
     }
 
     if (!v_) {
-        throw PSIEXCEPTION("V is not currently enabled in apps.cc");
-        // if (options_.get_str("MODULE") == "RCPKS" || options_.get_str("MODULE") == "RTDA" || options_.get_str("MODULE") == "RTDDFT") {
-        //    v_ = VBase::build_V(basisset_, options_, "RK");
-        //    v_->initialize();
-        //}
+        if (options_.get_str("MODULE") == "RCPKS" || options_.get_str("MODULE") == "RTDA" || options_.get_str("MODULE") == "RTDDFT") {
+            throw PSIEXCEPTION("V is not currently enabled in apps.cc");
+            // v_ = VBase::build_V(basisset_, options_, "RK");
+            // v_->initialize();
+        }
     }
 }
 void RBase::postiterations()

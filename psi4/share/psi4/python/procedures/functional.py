@@ -3519,6 +3519,11 @@ def build_hf_superfunctional(name, npoints, deriv):
     # 100% exact exchange
     sup.set_x_alpha(1.0)
 
+	# Zero out other GKS
+    sup.set_c_omega(0.0)
+    sup.set_x_omega(0.0)
+    sup.set_c_alpha(0.0)
+
     # Dont allocate, no functionals
     return sup
 
@@ -3704,8 +3709,8 @@ def build_superfunctional(alias):
         sup.set_c_alpha(psi4.get_option("SCF", "DFT_ALPHA_C"))
 
     # Check SCF_TYPE
-    if psi4.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]:
-        raise KeyWrror("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
+    if sup.is_x_lrc() and (psi4.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+        raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
                         % psi4.get_option("SCF", "SCF_TYPE"))
 
     return sup
