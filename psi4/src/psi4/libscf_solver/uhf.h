@@ -40,10 +40,12 @@ class UHF : public HF {
 protected:
     SharedMatrix Dt_, Dt_old_;
     SharedMatrix Da_old_, Db_old_;
-    SharedMatrix Ga_, Gb_, J_, Ka_, Kb_;
+    SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
+    SharedMatrix Va_, Vb_;
 
     void form_initialF();
     void form_C();
+    void form_V();
     void form_D();
     double compute_initial_E();
     virtual double compute_E();
@@ -87,10 +89,9 @@ protected:
     virtual int soscf_update(void);
 
 public:
-    UHF(SharedWavefunction ref_wfn);
-    UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio);
-    UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
-        std::shared_ptr<SuperFunctional> func);
+    UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
+    UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional,
+        Options& options, std::shared_ptr<PSIO> psio);
     virtual ~UHF();
 
     virtual bool same_a_b_orbs() const { return false; }

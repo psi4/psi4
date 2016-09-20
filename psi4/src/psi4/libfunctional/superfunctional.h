@@ -112,8 +112,6 @@ public:
     SuperFunctional();
     virtual ~SuperFunctional();
 
-    static std::shared_ptr<SuperFunctional> current(Options& options, int max_points = -1, int deriv = 1);
-    static std::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1);
     static std::shared_ptr<SuperFunctional> blank();
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)
@@ -181,6 +179,7 @@ public:
 
     std::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
 
+    bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool is_meta() const;
     bool is_gga() const;
     bool is_x_lrc() const { return x_omega_ != 0.0; }

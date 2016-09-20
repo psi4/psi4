@@ -69,9 +69,10 @@
 
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
+#include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
-#include "psi4/libscf_solver/ks.h"
+// #include "psi4/libscf_solver/ks.h"
 #include "psi4/libfunctional/superfunctional.h"
 
 #include "psi4/libpsio/psio.h"
@@ -842,25 +843,25 @@ void export_mints(py::module& m)
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>>(m, "RHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>());
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>>(m, "ROHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>()).
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>()).
             def("moFeff", &scf::ROHF::moFeff, "docstring").
             def("moFa", &scf::ROHF::moFa, "docstring").
             def("moFb", &scf::ROHF::moFb, "docstring");
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>>(m, "UHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>());
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>>(m, "CUHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>>());
-
-    py::class_<scf::RKS, std::shared_ptr<scf::RKS>>(m, "RKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    py::class_<scf::UKS, std::shared_ptr<scf::UKS>>(m, "UKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+    // py::class_<scf::RKS, std::shared_ptr<scf::RKS>>(m, "RKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+
+    // py::class_<scf::UKS, std::shared_ptr<scf::UKS>>(m, "UKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 

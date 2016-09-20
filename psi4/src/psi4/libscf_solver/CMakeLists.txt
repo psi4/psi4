@@ -1,5 +1,4 @@
 set(sources_list uhf.cc 
-                 ks.cc 
                  cuhf.cc 
                  rhf.cc 
                  hf.cc 

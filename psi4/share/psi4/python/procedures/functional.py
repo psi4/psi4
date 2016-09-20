@@ -3498,8 +3498,34 @@ def build_primitive_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup
 
+
+def build_hf_superfunctional(name, npoints, deriv):
+    # Special "functional" that is simply Hartree Fock
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('HF')
+    # Tab in, trailing newlines
+    sup.set_description('    Hartree Fock as Roothan prescribed\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    \n')
+
+    # 100% exact exchange
+    sup.set_x_alpha(1.0)
+
+    # Dont allocate, no functionals
+    return sup
+
+
 # Superfunctional lookup table
 superfunctionals = {
+        'hf'              : build_hf_superfunctional,
         's_x'             : build_primitive_superfunctional,
         'b88_x'           : build_primitive_superfunctional,
         'b3_x'            : build_primitive_superfunctional,
@@ -3584,13 +3610,13 @@ superfunctionals = {
         'b3lyp-d3mzero'   : build_b3lypd3mzero_superfunctional,
         'b3lyp-d3mbj'     : build_b3lypd3mbj_superfunctional,
         'b3lyp-chg'       : build_b3lypchg_superfunctional,
-        'b3lyp-d1'       : build_b3lypd1_superfunctional,
+        'b3lyp-d1'        : build_b3lypd1_superfunctional,
         'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,
         'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,
         'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,
         'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,
-        'b3lyp5-d3mzero'   : build_b3lyp5d3mzero_superfunctional,
-        'b3lyp5-d3mbj'     : build_b3lyp5d3mbj_superfunctional,
+        'b3lyp5-d3mzero'  : build_b3lyp5d3mzero_superfunctional,
+        'b3lyp5-d3mbj'    : build_b3lyp5d3mbj_superfunctional,
         'wsvwn'           : build_wsvwn_superfunctional,
         'wpbe'            : build_wpbe_superfunctional,
         'wpbe-d3zero'     : build_wpbed3zero_superfunctional,
@@ -3676,6 +3702,11 @@ def build_superfunctional(alias):
         sup.set_x_alpha(psi4.get_option("SCF", "DFT_ALPHA"))
     if psi4.has_option_changed("SCF", "DFT_ALPHA_C"):
         sup.set_c_alpha(psi4.get_option("SCF", "DFT_ALPHA_C"))
+
+    # Check SCF_TYPE
+    if psi4.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]:
+        raise KeyWrror("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
+                        % psi4.get_option("SCF", "SCF_TYPE"))
 
     return sup
 

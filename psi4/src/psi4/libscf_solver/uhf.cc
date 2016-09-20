@@ -33,12 +33,14 @@
 #include <utility>
 #include <tuple>
 
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libfock/v.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/physconst.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -50,21 +52,15 @@
 
 namespace psi { namespace scf {
 
-UHF::UHF(SharedWavefunction ref_wfn)
-    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+UHF::UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
 
-UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, options, psio)
-{
-    common_init();
-}
-
-UHF::UHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio,
-         std::shared_ptr<SuperFunctional> func)
-    : HF(ref_wfn, options, psio, func)
+UHF::UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
+         Options& options, std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio)
 {
     common_init();
 }
@@ -97,6 +93,8 @@ void UHF::common_init()
     J_      = SharedMatrix(factory_->create_matrix("J total"));
     Ka_     = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_     = SharedMatrix(factory_->create_matrix("K beta"));
+    wKa_    = SharedMatrix(factory_->create_matrix("wK alpha"));
+    wKb_    = SharedMatrix(factory_->create_matrix("wK beta"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
@@ -143,9 +141,34 @@ void UHF::save_density_and_energy()
     Dt_old_->copy(Dt_);
     Eold_ = E_;
 }
+void UHF::form_V()
+{
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
 
+    // Run the potential object
+    potential_->compute();
+
+    // Pull the V matrices off
+    const std::vector<SharedMatrix> & V = potential_->V();
+    Va_ = V[0];
+    Vb_ = V[1];
+}
 void UHF::form_G()
 {
+    if (functional_->needs_xc()) {
+        timer_on("RKS: Form V");
+        form_V();
+        Ga_->copy(Va_);
+        Gb_->copy(Vb_);
+        timer_off("RKS: Form V");
+    } else {
+        Ga_->zero();
+        Gb_->zero();
+    }
 
     // Push the C matrix on
     std::vector<SharedMatrix> & C = jk_->C_left();
@@ -159,15 +182,40 @@ void UHF::form_G()
     // Pull the J and K matrices off
     const std::vector<SharedMatrix> & J = jk_->J();
     const std::vector<SharedMatrix> & K = jk_->K();
+    const std::vector<SharedMatrix> & wK = jk_->wK();
     J_->copy(J[0]);
     J_->add(J[1]);
-    Ka_ = K[0];
-    Kb_ = K[1];
+    if (functional_->is_x_hybrid()) {
+        Ka_ = K[0];
+        Kb_ = K[1];
+    }
+    if (functional_->is_x_lrc()) {
+        wKa_ = wK[0];
+        wKb_ = wK[1];
+    }
+    Ga_->add(J_);
+    Gb_->add(J_);
 
-    Ga_->copy(J_);
-    Gb_->copy(Ga_);
-    Ga_->subtract(Ka_);
-    Gb_->subtract(Kb_);
+    double alpha = functional_->x_alpha();
+    double beta = 1.0 - alpha;
+
+    if (alpha != 0.0) {
+        Ga_->axpy(-alpha, Ka_);
+        Gb_->axpy(-alpha, Kb_);
+    }
+    else {
+        Ka_->zero();
+        Kb_->zero();
+    }
+
+    if (functional_->is_x_lrc()) {
+        Ga_->axpy(-beta, wKa_);
+        Gb_->axpy(-beta, wKb_);
+    }
+    else {
+        wKa_->zero();
+        wKb_->zero();
+    }
 }
 
 void UHF::save_information()
@@ -277,21 +325,48 @@ double UHF::compute_initial_E()
 
 double UHF::compute_E()
 {
-    double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+    // E_DFT = 2.0 D*H + D*J - \alpha D*K + E_xc
+    double one_electron_E = Da_->vector_dot(H_);
+    one_electron_E += Db_->vector_dot(H_);
+    double coulomb_E = Da_->vector_dot(J_);
+    coulomb_E += Db_->vector_dot(J_);
+
+    double XC_E = 0.0;
+    double dashD_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+        std::shared_ptr<Dispersion> disp = functional_->dispersion();
+        if (disp) {
+            dashD_E = disp->compute_energy(molecule_);
+        }
+    }
+
+    double exchange_E = 0.0;
+    double alpha = functional_->x_alpha();
+    double beta = 1.0 - alpha;
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(Ka_);
+        exchange_E -= alpha * Db_->vector_dot(Kb_);
+    }
+    if (functional_->is_x_lrc()) {
+        exchange_E -= beta * Da_->vector_dot(wKa_);
+        exchange_E -= beta * Db_->vector_dot(wKb_);
+    }
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E;
-    energies_["XC"] = 0.0;
-    energies_["-D"] = 0.0;
+    energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
+    energies_["XC"] = XC_E;
+    energies_["-D"] = dashD_E;
 
-    double DH  = Dt_->vector_dot(H_);
-    double DFa = Da_->vector_dot(Fa_);
-    double DFb = Db_->vector_dot(Fb_);
-    double Eelec = 0.5 * (DH + DFa + DFb);
-    // outfile->Printf( "electronic energy = %20.14f\n", Eelec);
-    double Etotal = nuclearrep_ + Eelec;
+    double Etotal = 0.0;
+    Etotal += nuclearrep_;
+    Etotal += one_electron_E;
+    Etotal += 0.5 * coulomb_E;
+    Etotal += 0.5 * exchange_E;
+    Etotal += XC_E;
+    Etotal += dashD_E;
+
     return Etotal;
 }
 void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
@@ -299,6 +374,10 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
              SharedMatrix x_b, SharedMatrix IFock_b, SharedMatrix Cocc_b,
              SharedMatrix Cvir_b, SharedMatrix ret_b)
 {
+    if (functional_->needs_xc()){
+        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
+    }
+
     // => Effective one electron part <= //
     Dimension virpi_a = Cvir_a->colspi();
     Dimension virpi_b = Cvir_b->colspi();

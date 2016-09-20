@@ -986,19 +986,19 @@ def scf_wavefunction_factory(reference, ref_wfn, superfunc):
 
     psi4.prepare_options_for_module("SCF")
     if reference == "RHF":
-        return psi4.RHF(ref_wfn)
+        return psi4.RHF(ref_wfn, build_superfunctional('HF'))
     elif reference == "ROHF":
-        return psi4.ROHF(ref_wfn)
+        return psi4.ROHF(ref_wfn, build_superfunctional('HF'))
     elif reference == "UHF":
-        return psi4.UHF(ref_wfn)
+        return psi4.UHF(ref_wfn, build_superfunctional('HF'))
     elif reference == "CUHF":
-        return psi4.CUHF(ref_wfn)
+        return psi4.CUHF(ref_wfn, build_superfunctional('HF'))
     elif reference == "RKS":
         func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
-        return psi4.RKS(ref_wfn, func)
+        return psi4.RHF(ref_wfn, func)
     elif reference == "UKS":
         func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
-        return psi4.UKS(ref_wfn, func)
+        return psi4.UHF(ref_wfn, func)
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 

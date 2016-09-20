@@ -32,6 +32,7 @@
 #include <vector>
 #include <utility>
 
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
@@ -54,14 +55,15 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-ROHF::ROHF(SharedWavefunction ref_wfn)
-    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
 
-ROHF::ROHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, options, psio)
+ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
+           Options& options, std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio)
 {
     common_init();
 }
@@ -96,6 +98,10 @@ void ROHF::common_init()
     epsilon_b_ = epsilon_a_;
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
+
+    if (functional_->needs_xc()){
+        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+    }
 }
 
 void ROHF::semicanonicalize()
@@ -535,6 +541,9 @@ double ROHF::compute_E()
 
 void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 {
+    if (functional_->needs_xc()){
+        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
+    }
     // Index reference
     // left = IAJB + IAjb, right = iajb + iaJB
     // i = docc, a = socc, p = pure virtual

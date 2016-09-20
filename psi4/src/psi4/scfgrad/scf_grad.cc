@@ -38,6 +38,7 @@
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
+#include "psi4/libscf_solver/hf.h"
 #include "scf_grad.h"
 #include "jk_grad.h"
 
@@ -61,6 +62,10 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
 {
     shallow_copy(ref_wfn);
     common_init();
+    scf::HF* scfwfn = (scf::HF*)ref_wfn.get();
+    functional_ = scfwfn->functional();
+    potential_ = scfwfn->V_potential();
+
 }
 SCFGrad::~SCFGrad()
 {
@@ -148,24 +153,15 @@ SharedMatrix SCFGrad::compute_gradient()
     }
 
     // => Potential/Functional <= //
-    std::shared_ptr<SuperFunctional> functional;
-    std::shared_ptr<VBase> potential;
-
     if (options_.get_str("REFERENCE") == "RKS") {
-        throw PSIEXCEPTION("DFT GRADIENTS ARE BROKEN");
-        // potential = VBase::build_V(basisset_, options_, "RV");
-        // potential->initialize();
-        // std::vector<SharedMatrix>& C = potential->C();
-        // C.push_back(Ca_subset("SO", "OCC"));
-        // functional = potential->functional();
+        std::vector<SharedMatrix>& C = potential_->C();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        throw PSIEXCEPTION("DFT GRADIENTS ARE BROKEN");
-        //potential = VBase::build_V(basisset_, options_, "UV");
-        //potential->initialize();
-        //std::vector<SharedMatrix>& C = potential->C();
-        //C.push_back(Ca_subset("SO", "OCC"));
-        //C.push_back(Cb_subset("SO", "OCC"));
-        //functional = potential->functional();
+        std::vector<SharedMatrix>& C = potential_->C();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        C.push_back(Cb_subset("SO", "OCC"));
     }
 
     // => Sizings <= //
@@ -459,22 +455,17 @@ SharedMatrix SCFGrad::compute_gradient()
     jk->set_Da(Da);
     jk->set_Db(Db);
     jk->set_Dt(Dt);
-    if (functional) {
-        jk->set_do_J(true);
-        if (functional->is_x_hybrid()) {
-            jk->set_do_K(true);
-        } else {
-            jk->set_do_K(false);
-        }
-        if (functional->is_x_lrc()) {
-            jk->set_do_wK(true);
-            jk->set_omega(functional->x_omega());
-        } else {
-            jk->set_do_wK(false);
-        }
-    } else {
-        jk->set_do_J(true);
+
+    jk->set_do_J(true);
+    if (functional_->is_x_hybrid()) {
         jk->set_do_K(true);
+    } else {
+        jk->set_do_K(false);
+    }
+    if (functional_->is_x_lrc()) {
+        jk->set_do_wK(true);
+        jk->set_omega(functional_->x_omega());
+    } else {
         jk->set_do_wK(false);
     }
 
@@ -482,34 +473,28 @@ SharedMatrix SCFGrad::compute_gradient()
     jk->compute_gradient();
 
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
-    if (functional) {
-        gradients["Coulomb"] = jk_gradients["Coulomb"];
-        if (functional->is_x_hybrid()) {
-            gradients["Exchange"] = jk_gradients["Exchange"];
-            gradients["Exchange"]->scale(-(functional->x_alpha()));
-        }
-        if (functional->is_x_lrc()) {
-            gradients["Exchange,LR"] = jk_gradients["Exchange,LR"];
-            gradients["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
-        }
-    } else {
-        gradients["Coulomb"] = jk_gradients["Coulomb"];
+    gradients["Coulomb"] = jk_gradients["Coulomb"];
+    if (functional_->is_x_hybrid()) {
         gradients["Exchange"] = jk_gradients["Exchange"];
-        gradients["Exchange"]->scale(-1.0);
+        gradients["Exchange"]->scale(-(functional_->x_alpha()));
+    }
+    if (functional_->is_x_lrc()) {
+        gradients["Exchange,LR"] = jk_gradients["Exchange,LR"];
+        gradients["Exchange,LR"]->scale(-(1.0 - functional_->x_alpha()));
     }
     timer_off("Grad: JK");
 
     // => XC Gradient <= //
     timer_on("Grad: XC");
-    if (functional) {
-        potential->print_header();
-        gradients["XC"] = potential->compute_gradient();
+    if (potential_) {
+        potential_->print_header();
+        gradients["XC"] = potential_->compute_gradient();
     }
     timer_off("Grad: XC");
 
     // => -D Gradient <= //
-    if (functional && functional->dispersion()) {
-        gradients["-D"] = functional->dispersion()->compute_gradient(basisset_->molecule());
+    if (functional_ && functional_->dispersion()) {
+        gradients["-D"] = functional_->dispersion()->compute_gradient(basisset_->molecule());
     }
 
     // => Total Gradient <= //
@@ -615,14 +600,14 @@ SharedMatrix SCFGrad::compute_hessian()
     std::shared_ptr<VBase> potential;
 
     if (options_.get_str("REFERENCE") == "RKS") {
-        throw PSIEXCEPTION("V builds are currently broken"); 
+        throw PSIEXCEPTION("Missing XC derivates for Hessians");
         //potential = VBase::build_V(basisset_, options_, "RV");
         //potential->initialize();
         //std::vector<SharedMatrix>& C = potential->C();
         //C.push_back(Ca_subset("SO", "OCC"));
         //functional = potential->functional();
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        throw PSIEXCEPTION("V builds are currently broken"); 
+        throw PSIEXCEPTION("Missing XC derivates for Hessians");
         //potential = VBase::build_V(basisset_, options_, "UV");
         //potential->initialize();
         //std::vector<SharedMatrix>& C = potential->C();

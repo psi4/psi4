@@ -32,6 +32,8 @@
 #include "psi4/libmints/typedefs.h"
 
 namespace psi {
+class SuperFunctional;
+class VBase;
 
 namespace scfgrad {
 
@@ -41,6 +43,8 @@ protected:
 
     /// Common initialization
     void common_init();
+    std::shared_ptr<SuperFunctional> functional_;
+    std::shared_ptr<VBase> potential_;
 
 public:
     SCFGrad(SharedWavefunction ref_wfn, Options& options);

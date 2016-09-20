@@ -36,7 +36,6 @@
 #include <vector>
 #include <utility>
 
-#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
 #include "psi4/libciomr/libciomr.h"
@@ -47,9 +46,13 @@
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/psifiles.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/v.h"
+#include "psi4/libfunctional/superfunctional.h"
+
 #ifdef HAVE_PCMSOLVER
 #include "psi4/libpsipcm/psipcm.h"
 #endif
+
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/basisset_parser.h"
@@ -70,21 +73,11 @@
 #endif
 
 namespace psi { namespace scf {
-HF::HF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
-    : Wavefunction(options),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6)
-{
-    shallow_copy(ref_wfn);
-    psio_ = psio;
-    functional_ = nullptr;
-    common_init();
-}
 
-HF::HF(SharedWavefunction ref_wfn, Options &options, std::shared_ptr<PSIO> psio,
-       std::shared_ptr<SuperFunctional> functional)
+HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
+       Options &options, std::shared_ptr<PSIO> psio)
     : Wavefunction(options),
-      functional_(functional),
+      functional_(func),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6) {
     shallow_copy(ref_wfn);
@@ -349,6 +342,18 @@ void HF::common_init()
     frac_performed_ = false;
     print_header();
 
+    // DFT stuff
+    if (functional_->needs_xc()){
+        potential_ = VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+        potential_->initialize();
+
+        // Print the KS-specific stuff
+        potential_->print_header();
+    } else {
+        potential_ = nullptr;
+    }
+
+
     // Initialize PCM object, if requested
 #ifdef HAVE_PCMSOLVER
     if(pcm_enabled_ = (options_.get_bool("PCM")))
@@ -366,7 +371,10 @@ int HF::soscf_update()
 {
     throw PSIEXCEPTION("Sorry, second-order convergence has not been implemented for this "
                        "type of SCF wavefunction yet.");
-    return 0;
+}
+void HF::form_V()
+{
+    throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
 }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
@@ -463,18 +471,12 @@ void HF::integrals()
     jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
 
     // DFT sometimes needs custom stuff
-    if (functional_) {
-        // // Need a temporary functional
-        // std::shared_ptr<SuperFunctional> functional =
-        //     SuperFunctional::current(options_);
-
-        // K matrices
-        jk_->set_do_K(functional_->is_x_hybrid());
-        // wK matrices
-        jk_->set_do_wK(functional_->is_x_lrc());
-        // w Value
-        jk_->set_omega(functional_->x_omega());
-    }
+    // K matrices
+    jk_->set_do_K(functional_->is_x_hybrid());
+    // wK matrices
+    jk_->set_do_wK(functional_->is_x_lrc());
+    // w Value
+    jk_->set_omega(functional_->x_omega());
 
     // Initialize
     jk_->initialize();

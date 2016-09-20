@@ -32,6 +32,7 @@
 #include <vector>
 #include <utility>
 
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -48,14 +49,15 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-CUHF::CUHF(SharedWavefunction ref_wfn)
-    : HF(ref_wfn, Process::environment.options, PSIO::shared_object())
+CUHF::CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
+    : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object())
 {
     common_init();
 }
 
-CUHF::CUHF(SharedWavefunction ref_wfn, Options& options, std::shared_ptr<PSIO> psio)
-    : HF(ref_wfn, options, psio)
+CUHF::CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
+           Options& options, std::shared_ptr<PSIO> psio)
+    : HF(ref_wfn, func, options, psio)
 {
     common_init();
 }
@@ -95,6 +97,9 @@ void CUHF::common_init()
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
 
+    if (functional_->needs_xc()){
+        throw PSIEXCEPTION("CUHF: Cannot compute XC components!");
+    }
 }
 
 void CUHF::damp_update()
