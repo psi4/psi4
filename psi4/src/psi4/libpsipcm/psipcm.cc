@@ -24,7 +24,7 @@
  *
  * @END LICENSE
  */
-#ifdef ENABLE_PCMSOLVER
+#ifdef USING_PCMSolver
 
 #include "psipcm.h"
 #include "psi4/libmints/matrix.h"

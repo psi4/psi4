@@ -47,7 +47,7 @@ if(${ENABLE_liberd})
     find_package(liberd CONFIG REQUIRED
                         HINTS ${CMAKE_PREFIX_PATH}/liberd)
 endif()
-if (${ENABLE_gdma})
+if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
                  HINTS ${CMAKE_PREFIX_PATH}/gdma)
 endif()

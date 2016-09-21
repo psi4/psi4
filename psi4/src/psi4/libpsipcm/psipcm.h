@@ -27,7 +27,7 @@
 
 #ifndef PCM_H
 #define PCM_H
-#ifdef ENABLE_PCMSOLVER
+#ifdef USING_PCMSolver
 
 #include <vector>
 #include "psi4/libpsio/psio.hpp"

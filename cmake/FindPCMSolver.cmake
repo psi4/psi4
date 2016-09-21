@@ -92,6 +92,7 @@ if(PCMSolver_FOUND)
     set_target_properties(PCMSolver::PCMSolver PROPERTIES
       IMPORTED_LOCATION ${PCMSolver_LIBRARY}
       INTERFACE_LINK_LIBRARIES "${PCMSolver_LIBRARIES}"
+      INTERFACE_COMPILE_DEFINITIONS USING_PCMSolver
       INTERFACE_INCLUDE_DIRECTORIES "${PCMSolver_INCLUDE_DIRS}")
   endif()
   include_directories(SYSTEM "${PCMSolver_INCLUDE_DIRS}")
