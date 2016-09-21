@@ -49,7 +49,7 @@
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 
-#ifdef HAVE_PCMSOLVER
+#ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 
@@ -355,7 +355,7 @@ void HF::common_init()
 
 
     // Initialize PCM object, if requested
-#ifdef HAVE_PCMSOLVER
+#ifdef USING_PCMSolver
     if(pcm_enabled_ = (options_.get_bool("PCM")))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
 #endif
@@ -582,7 +582,7 @@ double HF::finalize_E()
         // Need to recompute the Fock matrices, as they are modified during the SCF iteration
         // and might need to be dumped to checkpoint later
         form_F();
-#ifdef HAVE_PCMSOLVER
+#ifdef USING_PCMSolver
         if(pcm_enabled_) {
             // Prepare the density
             SharedMatrix D_pcm(Da_->clone());
@@ -1830,7 +1830,7 @@ void HF::iterations()
             E_ += efp_wfn_dependent_energy;
         }
 
-#ifdef HAVE_PCMSOLVER
+#ifdef USING_PCMSolver
         // The PCM potential must be added to the Fock operator *after* the
         // energy computation, not in form_F()
         if(pcm_enabled_) {

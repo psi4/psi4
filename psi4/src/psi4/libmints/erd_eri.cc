@@ -670,4 +670,4 @@ ERDERI::~ERDERI()
 
 } // Namespace
 
-#endif // ENABLE_LIBERD
+#endif // USING_liberd
