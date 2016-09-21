@@ -222,7 +222,7 @@ public:
     void form_D_vec(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cl, std::vector<SharedMatrix> Cr);
     /// Forming J, shared_ptr() initializes to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = {} )=0;
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>())=0;
     /// Preparing triangular vector for J/K
     void make_J_vec(std::vector<SharedMatrix> J);
     /// Extracting results from vectors to matrix
@@ -321,7 +321,7 @@ public:
 
     /// Form J from PK supermatrix, shared_ptr() initialized to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = {});
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
 
     /// Finalize JK matrix formation
     virtual void finalize_JK();
@@ -458,7 +458,7 @@ public:
 
     /// Form J matrix, shared_ptr() initializes to null
     virtual void form_J(std::vector<SharedMatrix> J, std::string exch = "",
-                        std::vector<SharedMatrix> K = {});
+                        std::vector<SharedMatrix> K = std::vector<SharedMatrix>());
     /// Finalize JK formation
     virtual void finalize_JK();
 
