@@ -194,7 +194,8 @@ bool PSIO::exists(unsigned int unit) {
     get_volpath(unit, i, &path);
 
     #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
-    const char* path2 = PSIOManager::shared_object()->get_file_path(unit).c_str();
+    std::string spath2 = PSIOManager::shared_object()->get_file_path(unit);
+    const char* path2 = spath2.c_str();
 
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
     sprintf(fullpath, "%s%s.%u", path2, name, unit);
