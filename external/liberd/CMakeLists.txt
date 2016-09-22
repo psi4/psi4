@@ -18,8 +18,7 @@ if(${ENABLE_liberd})
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                       -DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
+                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        # OpenMP irrelevant
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
