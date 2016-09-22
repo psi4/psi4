@@ -33,7 +33,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/petitelist.h"
-#include <PCMInput.h>
+#include <PCMSolver/PCMInput.h>
 
 
 

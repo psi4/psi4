@@ -38,7 +38,7 @@
  #include <memory>
  PRAGMA_WARNING_POP
 
-#include <pcmsolver.h>
+#include <PCMSolver/pcmsolver.h>
 
 namespace psi {
 class Matrix;

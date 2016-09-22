@@ -9,10 +9,11 @@ set(sources_list uhf.cc
                  stability.cc
 )
 psi4_add_library(scf_solver sources_list mints diis efp_solver)
-if(ENABLE_PCMSOLVER)
-   target_link_libraries(scf_solver INTERFACE psipcm)
-   add_definitions("-DENABLE_PCMSOLVER")
+if(TARGET PCMSolver::PCMSolver)
+    # external libpcm needs host_writer from psipcm, hence the forced symbol export
+    target_link_libraries(scf_solver PRIVATE ${PRE_LIBRARY_OPTION} psipcm ${POST_LIBRARY_OPTION})
+    target_compile_definitions(scf_solver PRIVATE $<TARGET_PROPERTY:PCMSolver::PCMSolver,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
 if(ENABLE_GTFOCK)
-  add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
+    add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()

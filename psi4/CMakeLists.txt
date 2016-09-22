@@ -20,12 +20,12 @@ test_restrict(restrict)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED
-             HINTS ${CMAKE_PREFIX_PATH}/pybind11)
+                      HINTS ${CMAKE_PREFIX_PATH}/pybind11)
 find_package(Threads)
 find_package(DL)
 
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
-        HINTS ${CMAKE_PREFIX_PATH}/libint)
+                    HINTS ${CMAKE_PREFIX_PATH}/libint)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
@@ -37,7 +37,7 @@ if(${ENABLE_PCMSolver})
 endif ()
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 CONFIG REQUIRED
-                     HINTS ${CMAKE_PREFIX_PATH}/chemps2)
+                         HINTS ${CMAKE_PREFIX_PATH}/chemps2)
 endif ()
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED
@@ -49,10 +49,17 @@ if(${ENABLE_liberd})
 endif()
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
-                 HINTS ${CMAKE_PREFIX_PATH}/gdma)
+                      HINTS ${CMAKE_PREFIX_PATH}/gdma)
 endif()
 find_package(libefp CONFIG REQUIRED COMPONENTS shallow
-             HINTS ${CMAKE_PREFIX_PATH}/libefp)
+                    HINTS ${CMAKE_PREFIX_PATH}/libefp)
+
+if(APPLE)
+    set(PRE_LIBRARY_OPTION -Wl,-all_load)
+elseif(UNIX)
+    set(PRE_LIBRARY_OPTION -Wl,--whole-archive)
+    set(POST_LIBRARY_OPTION -Wl,--no-whole-archive)
+endif()
 
 include_directories(include)
 include_directories(src)
