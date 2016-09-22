@@ -19,7 +19,6 @@ else()
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DMAX_AM_ERI=${MAX_AM_ERI}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                   #-DBUILD_SHARED_LIBS=ON  # TODO switch to above line when addons all capable
                    # OpenMP irrelevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DBUILD_FPIC=${BUILD_FPIC}
