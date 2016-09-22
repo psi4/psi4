@@ -6,5 +6,4 @@ set(sources_list fd_misc.cc
                  fd_freq_0.cc 
                  fd_freq_1.cc 
 )
-psi4_add_binary(findif sources_list mints)
-
+psi4_add_module(bin findif sources_list mints)

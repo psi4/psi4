@@ -39,55 +39,36 @@ set(${variable} ${default} CACHE STRING ${msge} FORCE)
 endif()
 endmacro(option_with_default)
 
-#Common guts to adding a Psi4 library irrespective of bin vs. lib home
-#NOTE: list of sources is a CMake list
+# Common guts to adding a Psi4 library irrespective of bin vs. lib home
 #
-#Syntax general_add_library(<library name>, <list of sources>, <lib or bin>,
-#                           <dependencies>)
+# Syntax psi4_add_module(<lib or bin> <library name> <CMake list of sources> <dependencies>)
 #
-macro(general_add_library libname sources dir)
-    #TODO: Switch to OBJECT library?  Simplifies this macro...
-    if (${dir} MATCHES lib)
-        set(prefix lib)
-    endif ()
-    set(current_sources ${${sources}})
-    list(LENGTH current_sources number_of_sources)
-    if (${number_of_sources} GREATER 1)
-        list(SORT current_sources)
-    endif()
+macro(psi4_add_module binlib libname sources)
+
+    set(current_sources ${${sources}};)
+    list(SORT current_sources)
 
     add_library(${libname} STATIC ${current_sources})
     set_target_properties(${libname} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC})
 
-    if (${dir} MATCHES lib)
+    # library modules get their headers installed
+    if(${binlib} MATCHES lib)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4
                 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.i")
-    endif ()
+    endif()
 
-    set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+    # binary modules explicitly compiled into psi4.so
+    if(${binlib} MATCHES bin)
+        set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+    endif()
+
     set(depend_name "${ARGN}")
-    foreach (name_i IN LISTS depend_name)
+    foreach(name_i IN LISTS depend_name)
         target_link_libraries(${libname} PRIVATE ${name_i})
-    endforeach ()
+    endforeach()
     target_link_libraries(${libname} PRIVATE pybind11::pybind11)
-endmacro(general_add_library libname sources prefix dir)
-
-#Adds a psi4 library that lives in lib
-#
-#Syntax: psi4_add_library(<library name> <list of sources> <dependencies>)
-#
-macro(psi4_add_library libname sources)
-   general_add_library(${libname} ${sources} lib ${ARGN})
-endmacro(psi4_add_library libname sources)
-
-#Adds a psi4 library that lives in bin
-#
-#Syntax: psi4_add_binary(<library name> <list of sources> <dependencies>
-#
-macro(psi4_add_binary libname sources)
-   general_add_library(${libname} ${sources} bin ${ARGN})
-endmacro(psi4_add_binary libname sources)
+endmacro()
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)

@@ -8,4 +8,4 @@ set(sources_list model_space_build.cc
                  moinfo_scf.cc 
                  moinfo_base.cc 
 )
-psi4_add_library(moinfo sources_list mints)
+psi4_add_module(lib moinfo sources_list mints)

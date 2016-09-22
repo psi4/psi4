@@ -3,4 +3,4 @@ set(sources_list lreri.cc
                  laplace.cc 
                  thce.cc 
 )
-psi4_add_library(thce sources_list mints)
+psi4_add_module(lib thce sources_list mints)

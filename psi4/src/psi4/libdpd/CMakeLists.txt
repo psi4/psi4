@@ -103,4 +103,4 @@ set(sources_list T3_AAA.cc
                  buf4_trace.cc 
                  pairnum.cc
 )
-psi4_add_library(dpd sources_list mints iwl)
+psi4_add_module(lib dpd sources_list mints iwl)

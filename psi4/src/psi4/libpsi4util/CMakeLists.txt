@@ -4,4 +4,4 @@ set(sources_list quad.cc
                  exception.cc 
                  combinations.cc 
 )
-psi4_add_library(psi4util sources_list parallel)
+psi4_add_module(lib psi4util sources_list parallel)

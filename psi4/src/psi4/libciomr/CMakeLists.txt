@@ -26,4 +26,4 @@ set(sources_list mxmb.cc
                  sq_to_tri.cc 
                  lubksb.cc
 )
-psi4_add_library(ciomr sources_list parallel)
+psi4_add_module(lib ciomr sources_list parallel)

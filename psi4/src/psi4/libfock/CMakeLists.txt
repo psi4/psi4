@@ -26,4 +26,4 @@ if(ENABLE_GTFOCK)
    add_definitions("-DENABLE_GTFOCK")
 endif()
 
-psi4_add_library(fock sources_list mints functional 3index psio)
+psi4_add_module(lib fock sources_list mints functional 3index psio)
