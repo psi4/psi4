@@ -108,7 +108,6 @@ include(autocmake_safeguards)
 #find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
-message("toplvl ${PYTHON_EXECUTABLE}")
 
 add_subdirectory(external)
 

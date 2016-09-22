@@ -38,4 +38,4 @@ omp3_opdm.cc              omp3_tpdm.cc              mp3_pdm_3index_intr.cc
 lccd_iterations.cc        olccd_tpdm.cc             lccd_W_intr.cc
 lccd_pdm_3index_intr.cc   lccd_t2_amps.cc
 )
-psi4_add_module(bin dfocc sources_list mints)
+psi4_add_module(bin dfocc sources_list mints diis)
