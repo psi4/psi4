@@ -1,0 +1,5 @@
+* cmake check 4.9 gcc when intel compilers
+
+* figure out pybind11 doc of psimod and replace documentation system
+
+* switch python detection to PythonLibsNew - it's a numpy cmake module that pybind11 uses that enforces libpy to match py and supplies site-packages

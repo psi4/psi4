@@ -1,0 +1,84 @@
+set(PSI4_CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR})
+list(APPEND CMAKE_MODULE_PATH ${PSI4_CONFIG_PATH}/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${PSI4_CONFIG_PATH}/external
+)
+macro(psi4_not_found name)
+   if(${PSI4_${name}} MATCHES "PSI4_${name}-NOTFOUND")
+      set(PSI4_FOUND FALSE)
+      set(psi4_FOUND FALSE)
+      message(STATUS "No Psi4 ${name} found")
+      return()
+   endif()
+endmacro()
+
+find_library(PSI4_LIBRARY NAMES mints
+                          PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_LIBDIR@ 
+                          NO_DEFAULT_PATH
+)
+psi4_not_found(LIBRARY)
+
+
+find_path(PSI4_INCLUDE_DIR NAMES psi4/include/psi4-dec.h 
+                           PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_INCLUDEDIR@
+                           NO_DEFAULT_PATH
+)
+psi4_not_found(INCLUDE_DIR)
+
+find_program(PSI4_EXECUTABLE NAMES psi4 
+                             PATHS ${PSI4_CONFIG_PATH}/@CMAKE_INSTALL_BINDIR@
+                             NO_DEFAULT_PATH
+)
+psi4_not_found(EXECUTABLE)
+
+macro(psi4_component name on)
+   if(${on})
+      list(APPEND PSI4_COMPONENTS ${name})
+   endif()
+endmacro()
+
+psi4_component(PCMSOLVER @ENABLE_PCMSolver@)
+psi4_component(AMBIT @ENABLE_AMBIT@)
+psi4_component(GTFOCK @ENABLE_GTFOCK@)
+psi4_component(GDMA @ENABLE_gdma@)
+psi4_component(CHEMPS2 @ENABLE_CheMPS2@)
+psi4_component(DKH @ENABLE_dkh@)
+
+foreach(_comp ${PSI4_FIND_COMPONENTS})
+   list(FIND PSI4_COMPONENTS ${_comp} _comp_found)
+   if(NOT ${_comp_found})
+      set(PSI4_FOUND FALSE)
+      set(psi4_FOUND FALSE)
+      message(STATUS 
+      "Psi4 was not compiled with the requested component: ${_comp}")
+      return()
+   endif()
+endforeach()
+
+
+find_package(libderiv REQUIRED COMPONENTS @MAX_AM_ERI@)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs REQUIRED)
+find_package(Threads)
+find_package(DL)
+find_package(LAPACK REQUIRED)
+find_package(RT REQUIRED)
+
+add_library(psi4 INTERFACE)
+set(PSI4_INCLUDE_DIRS ${PSI4_INCLUDE_DIR} 
+                      ${PYTHON_INCLUDE_DIRS}
+                      ${LIBDERIV_INCLUDE_DIRS}
+                                           
+)
+set(PSI4_LIBRARIES ${PSI4_LIBRARY}
+                   ${PYTHON_LIBRARIES}
+                   ${LIBDERIV_LIBRARIES}
+)
+target_include_directories(psi4 INTERFACE ${PSI4_INCLUDE_DIRS})
+target_link_libraries(psi4 INTERFACE ${PSI4_LIBRARIES})
+set(PSI4_FOUND TRUE)
+set(psi4_FOUND TRUE)
+
+
+
+
+
