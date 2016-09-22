@@ -519,6 +519,13 @@ SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
                                      Parameters_, H0block_, buf_init));
     return civect;
 }
+SharedCIVector CIWavefunction::D_vecto(){
+    SharedCIVector civect(new CIvect(Parameters_->icore, Parameters_->maxnvec,
+                                     1, Parameters_->d_filenum, CIblks_, CalcInfo_,
+                                     Parameters_, H0block_, true));
+    civect->init_io_files(true);
+    return civect;
+}
 SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
     hd_type = (hd_type == -1) ? Parameters_->hd_ave : hd_type;
     SharedCIVector Hd = new_civector(1, Parameters_->hd_filenum, true, true);

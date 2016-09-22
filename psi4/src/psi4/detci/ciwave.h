@@ -198,6 +198,11 @@ public:
      **/
     SharedCIVector new_civector(int maxnvect, int filenum, bool use_disk=true,
                                 bool buf_init=true);
+    /**
+     * Returns the "D" vector that contains the current reference CI Wavefunction
+     * @return The "D" vector
+     */
+    SharedCIVector D_vector();
 
     /**
      * Builds a CIVector that is the diagonal of the Hamiltonian
