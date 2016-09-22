@@ -17,4 +17,4 @@ set(sources_list PBE_Cfunctional.cc
                  functional.cc 
                  xfunctional.cc 
 )
-psi4_add_library(functional sources_list disp)
+psi4_add_module(lib functional sources_list disp)

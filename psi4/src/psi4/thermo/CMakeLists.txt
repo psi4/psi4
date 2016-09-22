@@ -1,2 +1,3 @@
 set(sources_list thermo.cc )
-psi4_add_binary(thermo sources_list mints)
+# plugin dependency here is fake, just so it gets linked
+psi4_add_module(bin thermo sources_list mints plugin)

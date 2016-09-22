@@ -27,7 +27,7 @@ set(sources_list buf_rd_arr2.cc
                  buf_put.cc 
                  buf_rd_all.cc 
 )
-psi4_add_library(iwl sources_list)
+psi4_add_module(lib iwl sources_list)
 target_include_directories(iwl PUBLIC options)
 #if(APPLE)
 #   target_link_libraries(iwl PRIVATE options "-Wl,-force_load")

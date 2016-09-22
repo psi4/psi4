@@ -13,4 +13,4 @@ set(sources_list integraltransform_moinfo.cc
                  mospace.cc
                  integraltransform_tei.cc
 )
-psi4_add_library(trans sources_list qt)
+psi4_add_module(lib trans sources_list qt)
