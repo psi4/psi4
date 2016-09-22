@@ -1,5 +1,4 @@
-#These tests aren't set-up the same way as the others
-set(TestsNotSetUpRight cfour optking)
+find_package(Perl QUIET)
 
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".
@@ -26,350 +25,97 @@ set(TestsNotSetUpRight cfour optking)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-add_subdirectory(adc1)
-add_subdirectory(adc2)
-add_subdirectory(casscf-fzc-sp)
-add_subdirectory(casscf-sa-sp)
-add_subdirectory(casscf-sp)
-add_subdirectory(castup1)
-add_subdirectory(castup2)
-add_subdirectory(castup3)
-add_subdirectory(cbs-delta-energy)
-add_subdirectory(cbs-xtpl-energy)
-add_subdirectory(cbs-xtpl-freq)
-add_subdirectory(cbs-xtpl-gradient)
-add_subdirectory(cbs-xtpl-opt)
-add_subdirectory(cbs-xtpl-func)
-add_subdirectory(cbs-xtpl-wrapper)
-add_subdirectory(cc1)
-add_subdirectory(cc10)
-add_subdirectory(cc11)
-add_subdirectory(cc12)
-add_subdirectory(cc13)
-add_subdirectory(cc13a)
-add_subdirectory(cc14)
-add_subdirectory(cc15)
-add_subdirectory(cc16)
-add_subdirectory(cc17)
-add_subdirectory(cc18)
-add_subdirectory(cc19)
-add_subdirectory(cc2)
-add_subdirectory(cc21)
-add_subdirectory(cc22)
-add_subdirectory(cc23)
-add_subdirectory(cc24)
-add_subdirectory(cc25)
-add_subdirectory(cc26)
-add_subdirectory(cc27)
-add_subdirectory(cc28)
-add_subdirectory(cc29)
-add_subdirectory(cc3)
-add_subdirectory(cc30)
-add_subdirectory(cc31)
-add_subdirectory(cc32)
-add_subdirectory(cc33)
-add_subdirectory(cc34)
-add_subdirectory(cc35)
-add_subdirectory(cc36)
-add_subdirectory(cc37)
-add_subdirectory(cc38)
-add_subdirectory(cc39)
-add_subdirectory(cc4)
-add_subdirectory(cc40)
-add_subdirectory(cc41)
-add_subdirectory(cc42)
-add_subdirectory(cc43)
-add_subdirectory(cc44)
-add_subdirectory(cc45)
-add_subdirectory(cc46)
-add_subdirectory(cc47)
-add_subdirectory(cc48)
-add_subdirectory(cc49)
-add_subdirectory(cc4a)
-#add_subdirectory(cc5)
-add_subdirectory(cc50)
-add_subdirectory(cc51)
-add_subdirectory(cc52)
-add_subdirectory(cc53)
-add_subdirectory(cc54)
-add_subdirectory(cc55)
-add_subdirectory(cc5a)
-add_subdirectory(cc6)
-add_subdirectory(cc8)
-add_subdirectory(cc8a)
-add_subdirectory(cc8b)
-add_subdirectory(cc8c)
-add_subdirectory(cc9)
-add_subdirectory(cc9a)
-add_subdirectory(cdomp2-1)
-add_subdirectory(cdomp2-2)
-add_subdirectory(cepa0-grad1)
-add_subdirectory(cepa0-grad2)
-add_subdirectory(cepa1)
-add_subdirectory(cepa2)
-add_subdirectory(cepa3)
-add_subdirectory(cepa-module)
-add_subdirectory(ci-multi)
-add_subdirectory(cisd-h2o+-0)
-add_subdirectory(cisd-h2o+-1)
-add_subdirectory(cisd-h2o+-2)
-add_subdirectory(cisd-h2o-clpse)
-add_subdirectory(cisd-opt-fd)
-add_subdirectory(cisd-sp)
-add_subdirectory(cisd-sp-2)
-add_subdirectory(ci-property)
-add_subdirectory(cubeprop)
-add_subdirectory(decontract)
-add_subdirectory(dcft-grad1)
-add_subdirectory(dcft-grad2)
-add_subdirectory(dcft-grad3)
-add_subdirectory(dcft-grad4)
-add_subdirectory(dcft1)
-add_subdirectory(dcft2)
-add_subdirectory(dcft3)
-add_subdirectory(dcft4)
-add_subdirectory(dcft5)
-add_subdirectory(dcft6)
-add_subdirectory(dcft7)
-add_subdirectory(dcft8)
-add_subdirectory(dcft9)
-add_subdirectory(dfcasscf-sa-sp)
-add_subdirectory(dfcasscf-fzc-sp)
-add_subdirectory(dfcasscf-sp)
-add_subdirectory(dfccd1)
-add_subdirectory(dfccdl1)
-add_subdirectory(dfccd-grad1)
-add_subdirectory(dfccsd1)
-add_subdirectory(dfccsdl1)
-add_subdirectory(dfccsd-grad1)
-add_subdirectory(dfccsdt1)
-add_subdirectory(dfccsdat1)
-add_subdirectory(dfmp2-1)
-add_subdirectory(dfmp2-2)
-add_subdirectory(dfmp2-3)
-add_subdirectory(dfmp2-4)
-add_subdirectory(dfmp2-grad1)
-add_subdirectory(dfmp2-grad2)
-add_subdirectory(dfmp2-grad3)
-add_subdirectory(dfmp2-grad4)
-add_subdirectory(dfomp2-1)
-add_subdirectory(dfomp2-2)
-add_subdirectory(dfomp2-3)
-add_subdirectory(dfomp2-4)
-add_subdirectory(dfomp2-grad1)
-add_subdirectory(dfomp2-grad2)
-add_subdirectory(dfomp3-1)
-add_subdirectory(dfomp3-2)
-add_subdirectory(dfomp3-grad1)
-add_subdirectory(dfomp3-grad2)
-add_subdirectory(dfomp2p5-1)
-add_subdirectory(dfomp2p5-2)
-add_subdirectory(dfomp2p5-grad1)
-add_subdirectory(dfomp2p5-grad2)
-add_subdirectory(dfrasscf-sp)
-add_subdirectory(dfscf-bz2)
-add_subdirectory(dft-b2plyp)
-add_subdirectory(dft-dldf)
-add_subdirectory(dft-freq)
-add_subdirectory(dft-grad)
-add_subdirectory(dft-pbe0-2)
-add_subdirectory(dft-psivar)
-add_subdirectory(dft-b3lyp)
-add_subdirectory(dft1)
-add_subdirectory(dft1-alt)
-add_subdirectory(dft2)
-add_subdirectory(dft3)
-add_subdirectory(docs-bases)
-add_subdirectory(docs-dft)
-add_subdirectory(docs-psimod)
-add_subdirectory(extern1)
-add_subdirectory(fci-dipole)
-add_subdirectory(fci-h2o)
-add_subdirectory(fci-h2o-2)
-add_subdirectory(fci-h2o-fzcv)
-add_subdirectory(fci-tdm)
-add_subdirectory(fci-tdm-2)
-add_subdirectory(fd-freq-energy)
-add_subdirectory(fd-freq-energy-large)
-add_subdirectory(fd-freq-gradient)
-add_subdirectory(fd-freq-gradient-large)
-add_subdirectory(fd-gradient)
-add_subdirectory(freq-isotope)
-add_subdirectory(fnocc1)
-add_subdirectory(fnocc2)
-add_subdirectory(fnocc3)
-add_subdirectory(fnocc4)
-add_subdirectory(frac)
-add_subdirectory(ghosts)
-add_subdirectory(gibbs)
-#add_subdirectory(large-atoms)
-add_subdirectory(matrix1)
-add_subdirectory(mcscf1)
-add_subdirectory(mcscf2)
-add_subdirectory(mcscf3)
-add_subdirectory(min-input)
-add_subdirectory(mints1)
-add_subdirectory(mints2)
-add_subdirectory(mints3)
-add_subdirectory(mints4)
-add_subdirectory(mints5)
-add_subdirectory(mints6)
-add_subdirectory(mints8)
-add_subdirectory(mints9)
-add_subdirectory(molden1)
-add_subdirectory(molden2)
-add_subdirectory(mom)
-add_subdirectory(mp2-1)
-add_subdirectory(mp2-def2)
-add_subdirectory(mp2-grad1)
-add_subdirectory(mp2-grad2)
-add_subdirectory(mp2-module)
-add_subdirectory(mp2p5-grad1)
-add_subdirectory(mp2p5-grad2)
-add_subdirectory(mp3-grad1)
-add_subdirectory(mp3-grad2)
-add_subdirectory(mp2-property)
-add_subdirectory(mpn-bh)
-add_subdirectory(nbody-he-cluster)
-add_subdirectory(numpy-array-interface)
-add_subdirectory(ocepa-freq1)
-add_subdirectory(ocepa-grad1)
-add_subdirectory(ocepa-grad2)
-add_subdirectory(ocepa1)
-add_subdirectory(ocepa2)
-add_subdirectory(ocepa3)
-add_subdirectory(omp2-1)
-add_subdirectory(omp2-2)
-add_subdirectory(omp2-3)
-add_subdirectory(omp2-4)
-add_subdirectory(omp2-5)
-add_subdirectory(omp2-grad1)
-add_subdirectory(omp2-grad2)
-add_subdirectory(omp2p5-1)
-add_subdirectory(omp2p5-2)
-add_subdirectory(omp2p5-grad1)
-add_subdirectory(omp2p5-grad2)
-add_subdirectory(omp3-1)
-add_subdirectory(omp3-2)
-add_subdirectory(omp3-3)
-add_subdirectory(omp3-4)
-add_subdirectory(omp3-5)
-add_subdirectory(omp3-grad1)
-add_subdirectory(omp3-grad2)
-add_subdirectory(opt-lindep-change)
-add_subdirectory(opt1)
-add_subdirectory(opt1-fd)
-add_subdirectory(opt2)
-add_subdirectory(opt2-fd)
-add_subdirectory(opt3)
-add_subdirectory(opt4)
-add_subdirectory(opt5)
-add_subdirectory(opt6)
-add_subdirectory(opt7)
-add_subdirectory(opt8)
-add_subdirectory(opt9)
-#add_subdirectory(opt10) Always times out currently
-add_subdirectory(opt11)
-add_subdirectory(opt12)
-add_subdirectory(opt13)
-add_subdirectory(opt14)
-add_subdirectory(opt-multi-dimer-c1)
-add_subdirectory(opt-multi-dimer-c2h)
-add_subdirectory(opt-multi-frozen-dimer-c2h)
-add_subdirectory(opt-irc-1)
-add_subdirectory(opt-irc-2)
-add_subdirectory(opt-freeze-coords)
-add_subdirectory(props1)
-add_subdirectory(props2)
-add_subdirectory(props3)
-add_subdirectory(props4)
-add_subdirectory(psimrcc-ccsd_t-1)
-add_subdirectory(psimrcc-ccsd_t-2)
-add_subdirectory(psimrcc-ccsd_t-3)
-add_subdirectory(psimrcc-ccsd_t-4)
-add_subdirectory(psimrcc-fd-freq1)
-add_subdirectory(psimrcc-fd-freq2)
-add_subdirectory(psimrcc-pt2)
-add_subdirectory(psimrcc-sp1)
-add_subdirectory(psithon1)
-add_subdirectory(psithon2)
-add_subdirectory(pubchem1)
-add_subdirectory(pubchem2)
-add_subdirectory(pywrap-alias)
-add_subdirectory(pywrap-all)
-add_subdirectory(pywrap-basis)
-add_subdirectory(pywrap-cbs1)
-add_subdirectory(pywrap-checkrun-convcrit)
-add_subdirectory(pywrap-checkrun-rhf)
-add_subdirectory(pywrap-checkrun-rohf)
-add_subdirectory(pywrap-checkrun-uhf)
-add_subdirectory(pywrap-db1)
-add_subdirectory(pywrap-db2)
-add_subdirectory(pywrap-db3)
-add_subdirectory(pywrap-freq-e-sowreap)
-add_subdirectory(pywrap-freq-g-sowreap)
-add_subdirectory(pywrap-molecule)
-add_subdirectory(pywrap-opt-sowreap)
-add_subdirectory(rasci-c2-active)
-add_subdirectory(rasci-h2o)
-add_subdirectory(rasci-ne)
-add_subdirectory(rasscf-sp)
-add_subdirectory(sad1)
-add_subdirectory(sapt1)
-add_subdirectory(sapt2)
-add_subdirectory(sapt3)
-add_subdirectory(sapt4)
-add_subdirectory(sapt5)
-add_subdirectory(sapt6)
-add_subdirectory(scf-bz2)
-add_subdirectory(scf-freq1)
-add_subdirectory(scf-guess-read)
-add_subdirectory(scf-hess1)
-add_subdirectory(scf-bs)
-add_subdirectory(scf1)
-add_subdirectory(scf11-freq-from-energies)
-add_subdirectory(scf2)
-add_subdirectory(scf3)
-add_subdirectory(scf4)
-add_subdirectory(scf5)
-add_subdirectory(scf6)
-add_subdirectory(scf-property)
-add_subdirectory(soscf1)
-add_subdirectory(soscf2)
-add_subdirectory(stability1)
-add_subdirectory(stability2)
-add_subdirectory(tu1-h2o-energy)
-add_subdirectory(tu2-ch2-energy)
-add_subdirectory(tu3-h2o-opt)
-add_subdirectory(tu4-h2o-freq)
-add_subdirectory(tu5-sapt)
-add_subdirectory(tu6-cp-ne2)
-add_subdirectory(x2c1)
-add_subdirectory(x2c2)
-add_subdirectory(x2c3)
-add_subdirectory(zaptn-nh2)
+foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
+                  castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
+                  cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
+                  cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc14 cc15 cc16 
+                  cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28 
+                  cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 
+                  cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a 
+                  cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8 cc8a cc8b cc8c 
+                  cc9 cc9a cdomp2-1 cdomp2-2 cepa0-grad1 cepa0-grad2 cepa1 
+                  cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1 
+                  cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2 
+                  ci-property cubeprop decontract dcft-grad1 dcft-grad2 
+                  dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
+                  dcft7 dcft8 dcft9 dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
+                  dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
+                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
+                  dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfomp2-1 dfomp2-2 dfomp2-3
+                  dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp3-1 dfomp3-2 
+                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
+                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
+                  dft-freq dft-grad dft-pbe0-2 dft-psivar dft-b3lyp dft1 
+                  dft1-alt dft2 dft3 docs-bases docs-dft docs-psimod extern1 
+                  fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
+                  fd-freq-energy fd-freq-energy-large fd-freq-gradient 
+                  fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
+                  fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
+                  mints1 mints2 mints3 mints4 mints5 mints6 mints8 
+                  mints9 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
+                  mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
+                  mp2-property mpn-bh nbody-he-cluster numpy-array-interface 
+                  ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3 
+                  omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2 
+                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2 
+                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change 
+                  opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9 
+                  opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-freeze-coords 
+                  props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 
+                  psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1 
+                  psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2 
+                  pubchem1 pubchem2 pywrap-alias pywrap-all pywrap-basis 
+                  pywrap-cbs1 pywrap-checkrun-convcrit pywrap-checkrun-rhf 
+                  pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
+                  pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap 
+                  pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
+                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
+                  scf-bz2 scf-guess-read scf-bs scf1
+                  scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
+                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
+                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
+                  options1
+)
+   add_subdirectory(${test_name})
+endforeach()
 
-###### START internal-executable-dependent tests ################
+# Add internal projects
+add_subdirectory(psi4numpy)
 
-# For code that is distributed with and required for psi4 to build,
-#   and thus should always be tested, but is developed and maintained
-#   externally and dropped into psi4 as version increment, and thus
-#   should get its own subdirectory:
-#   * Follow directory structure described below for ext-exe-dep
-#   * Follow un-qualified inclusion as above for normal tests
 
-add_subdirectory(libefp)
+message(STATUS "Adding test cases: Psi4")
+if(NOT PERL_FOUND)
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
+endif()
 
-###### END internal-executable-dependent tests ##################
+###########################  External Project Tests  ###########################
 
-###### START external-executable-dependent tests ################
-
-# Set up groups of test cases analogous to dftd3 below
-#   In particular, new ext-exe-dep tests should
+# For code that (1) is built or detected in the Psi4 superbuild but isn't
+#   maintained in the Psi4 codebase and (2) has Psi4-dependent tests _not_ in
+#   the external codebase, tests should
 #   * get their own directory in tests (e.g., tests/dftd3)
-#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy)
-#   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
-#   * be sure the exe is listed in the python code below (search 'partition')
+#   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not test/dftd3/dftd3-energy)
+#   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
+#   * alphabetize the addons
+
+# <<<  CFOUR  >>>
+
+find_program(CFOUR_EXECUTABLE
+             NAMES xcfour
+             DOC "Path to Stanton and Gauss's xcfour executable")
+
+if(CFOUR_EXECUTABLE)
+    add_subdirectory(cfour)
+    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + CFOUR")
+endif()
+
+# <<<  CHEMPS2  >>>
+
+if(ENABLE_CheMPS2)
+    add_subdirectory(dmrg)
+    message(STATUS "Adding test cases: Psi4 + CheMPS2")
+endif()
 
 # <<<  DFTD3  >>>
 
@@ -378,8 +124,28 @@ find_program(DFTD3_EXECUTABLE
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
-   add_subdirectory(dftd3)
-   message(STATUS "dftd3 executable for interfaced DFTD3 found. Test cases added.")
+    add_subdirectory(dftd3)
+    message(STATUS "Found DFTD3: ${DFTD3_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + DFTD3")
+endif()
+
+# <<<  DKH  >>>
+
+if(ENABLE_dkh)
+    add_subdirectory(dkh)
+    #message(STATUS "Adding test cases: Psi4 + dkh")  # uncomment when there's a test to add
+endif()
+
+# <<<  LIBEFP  >>>
+
+add_subdirectory(libefp)
+message(STATUS "Adding test cases: Psi4 + libefp")
+
+# <<<  GDMA  >>>
+
+if(ENABLE_gdma)
+    add_subdirectory(gdma)
+    message(STATUS "Adding test cases: Psi4 + gdma")
 endif()
 
 # <<<  MRCC  >>>
@@ -389,37 +155,14 @@ find_program(MRCC_EXECUTABLE
              DOC "Path to Kallay's mrcc executable")
 
 if(MRCC_EXECUTABLE)
-   add_subdirectory(mrcc)
-   message(STATUS "dmrcc executable for interfaced MRCC found. Test cases added.")
+    add_subdirectory(mrcc)
+    message(STATUS "Found MRCC: ${MRCC_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + MRCC")
 endif()
 
-# <<<  CFOUR  >>>
+# <<<  PCMSOLVER  >>>
 
-find_program(CFOUR_EXECUTABLE
-             NAMES xcfour
-             DOC "Path to Stanton and Gauss's xcfour executable")
-
-if(CFOUR_EXECUTABLE)
-   add_subdirectory(cfour)
-   message(STATUS "xcfour executable for interfaced CFOUR found. Test cases added.")
+if(ENABLE_PCMSolver)
+    add_subdirectory(pcmsolver)
+    message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
-
-###### END external-executable-dependent tests ##################
-
-# External module dependent tests
-if(ENABLE_PCMSOLVER)
-   add_subdirectory(pcmsolver)
-endif()
-
-if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
-endif()
-
-if(ENABLE_CHEMPS2)
-    add_subdirectory(dmrg)
-endif()
-
-if(ENABLE_GDMA)
-    add_subdirectory(gdma1)
-endif()
-

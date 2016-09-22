@@ -56,7 +56,7 @@ set(PCMSolver_NAMES pcm)
 # Try each search configuration.
 foreach(search ${_PCMSolver_SEARCHES})
     find_path(PCMSolver_INCLUDE_DIR
-        NAMES pcmsolver.h
+        NAMES PCMSolver/pcmsolver.h
         ${${search}}
         PATH_SUFFIXES include)
       find_path(PCMSolver_PARSE_DIR
@@ -91,10 +91,10 @@ if(PCMSolver_FOUND)
     add_library(PCMSolver::PCMSolver UNKNOWN IMPORTED)
     set_target_properties(PCMSolver::PCMSolver PROPERTIES
       IMPORTED_LOCATION ${PCMSolver_LIBRARY}
-      INTERFACE_LINK_LIBRARIES "${PCMSolver_LIBRARIES}"
+      #INTERFACE_LINK_LIBRARIES "${PCMSolver_LIBRARIES}"
+      INTERFACE_LINK_LIBRARIES ${ZLIB_LIBRARIES}
+      INTERFACE_COMPILE_DEFINITIONS USING_PCMSolver
       INTERFACE_INCLUDE_DIRECTORIES "${PCMSolver_INCLUDE_DIRS}")
   endif()
   include_directories(SYSTEM "${PCMSolver_INCLUDE_DIRS}")
-  configure_file(${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py.in
-    ${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py)
 endif()

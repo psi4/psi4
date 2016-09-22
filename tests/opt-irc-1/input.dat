@@ -22,7 +22,7 @@ set {
   irc_direction              backward
 }
 
-frequencies('scf')
+frequencies('scf', dertype=1)
 
 # Lower point group from C2v to C2
 h2o2.reset_point_group('c2')

@@ -11,7 +11,6 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # -----------------------------------------------------------------------------
 
-
 if(ENABLE_64BIT_INTEGERS)
     set(MATH_LIB_SEARCH_ORDER MKL ACML)
 else()

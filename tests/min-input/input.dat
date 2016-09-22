@@ -41,7 +41,7 @@ Earray = [
 
 for method in Earray:
    water.reset_point_group('cs')
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
@@ -60,7 +60,7 @@ Earray = [
 
 for method in Earray:
    water.reset_point_group('cs')
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
@@ -87,7 +87,7 @@ Earray = [
 
 for method in Earray:
    water.reset_point_group('cs')
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
