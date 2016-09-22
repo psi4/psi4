@@ -105,6 +105,11 @@ option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 include(GNUInstallDirs)
 include(autocmake_safeguards)
 
+#find_package(PythonLibsNew REQUIRED)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
+message("toplvl ${PYTHON_EXECUTABLE}")
+
 add_subdirectory(external)
 
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
@@ -114,10 +119,6 @@ include(custom_cxxstandard)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ################################  Dependencies  ################################
-#find_package(PythonLibsNew REQUIRED)
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
-
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
