@@ -162,6 +162,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFOCK=${ENABLE_GTFOCK}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
