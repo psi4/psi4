@@ -80,7 +80,7 @@ class MoldenWriter
     std::shared_ptr<Wavefunction> wavefunction_;
 
 public:
-    void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB);
+    void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual);
     void writeNO(const std::string &filename, std::shared_ptr<Matrix> Na, std::shared_ptr<Matrix> Nb, std::shared_ptr<Vector> Oa, std::shared_ptr<Vector> Ob);
     MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
 

@@ -271,7 +271,7 @@ void MoldenWriter::writeNO(const std::string &filename, std::shared_ptr<Matrix> 
 }
 
 
-void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB)
+void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual)
 {
     std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
 
@@ -401,10 +401,19 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
 
     std::vector<std::pair<double, std::pair<int, int> > > mos;
 
+    // Number of MOs to write
+    int nmoh[wavefunction_->nirrep()];
+    for (int h=0; h<wavefunction_->nirrep(); ++h) {
+	if (dovirtual)
+	    nmoh[h] = wavefunction_->nmopi()[h];
+	else
+	    nmoh[h] = wavefunction_->doccpi()[h]+wavefunction_->soccpi()[h];
+    }
+
     // do alpha's
     bool SameOcc = true;
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
-        for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
+        for (int n=0; n<nmoh[h]; ++n) {
             mos.push_back(make_pair(Ea->get(h, n), make_pair(h, n)));
             if(fabs(OccA->get(h,n) - OccB->get(h,n)) > 1e-10)
                 SameOcc = false;
@@ -431,7 +440,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     mos.clear();
     if (Ca != Cb || Ea != Eb || !SameOcc) {
         for (int h=0; h<wavefunction_->nirrep(); ++h) {
-            for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
+            for (int n=0; n<nmoh[h]; ++n) {
                 mos.push_back(make_pair(Eb->get(h, n), make_pair(h, n)));
             }
         }

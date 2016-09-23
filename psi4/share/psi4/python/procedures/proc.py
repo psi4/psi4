@@ -1217,6 +1217,24 @@ def scf_helper(name, **kwargs):
         psi4.set_variable("CURRENT DIPOLE Y", psi4.get_variable("SCF DIPOLE Y"))
         psi4.set_variable("CURRENT DIPOLE Z", psi4.get_variable("SCF DIPOLE Z"))
 
+    # Write out MO's
+    if psi4.get_option("SCF", "PRINT_MOS"):
+        mowriter = psi4.MOWriter(scf_wfn)
+        mowriter.write()
+
+    # Write out a molden file
+    if psi4.get_option("SCF", "MOLDEN_WRITE"):
+        filename = psi4.get_writer_file_prefix(scf_wfn.molecule().name()) + ".molden"
+        dovirt = bool(psi4.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
+
+        occa = scf_wfn.occupation_a()
+        occb = scf_wfn.occupation_a()
+
+        mw = psi4.MoldenWriter(scf_wfn)
+        mw.write(filename, scf_wfn.Ca(), scf_wfn.Cb(), scf_wfn.epsilon_a(),
+                 scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
+                 scf_wfn.occupation_b(), dovirt)
+
     psi4.tstop()
 
     optstash.restore()
