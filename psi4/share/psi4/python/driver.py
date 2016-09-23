@@ -1826,7 +1826,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     else:
         try:
             occa = wfn.occupation_a()
-            occb = wfn.occupation_a()
+            occb = wfn.occupation_b()
         except AttributeError:
             psi4.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
                            "Writing zero's for occupation numbers\n\n")
