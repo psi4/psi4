@@ -950,7 +950,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         std::shared_ptr<MoldenWriter> molden( new MoldenWriter( wfn ) );
         std::string filename = get_writer_file_prefix( wfn->molecule()->name() ) + ".pseudocanonical.molden";
         outfile->Printf( "Write molden file to %s. \n", filename.c_str() );
-        molden->write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation );
+        molden->write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation, true );
 
     }
 

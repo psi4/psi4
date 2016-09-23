@@ -1757,7 +1757,7 @@ def fchk(wfn, filename):
     fw.write(filename)
 
 
-def molden(wfn, filename=None, density_a=None, density_b=None):
+def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format. Will write natural orbitals from *density* (MO basis) if supplied.
 
@@ -1778,6 +1778,9 @@ def molden(wfn, filename=None, density_a=None, density_b=None):
     :type density_b: psi4.Matrix
     :param density_b: density in the MO basis to build beta NO's from, assumes restricted if not supplied (optional)
 
+    :type dovirtual: bool
+    :param dovirtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false) (optional)
+
     :examples:
 
     >>> # [1] Molden file for DFT calculation
@@ -1792,6 +1795,9 @@ def molden(wfn, filename=None, density_a=None, density_b=None):
 
     if filename is None:
         filename = psi4.get_writer_file_prefix(wfn.molecule().name()) + ".molden"
+
+    if dovirtual is None:
+        dovirt = bool(psi4.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
     if density_a:
         nmopi = wfn.nmopi()
@@ -1828,7 +1834,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None):
             occb = psi4.Vector(wfn.nmopi())
 
         mw = psi4.MoldenWriter(wfn)
-        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, True)
+        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
 
 # Aliases
