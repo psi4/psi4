@@ -8,7 +8,7 @@
 .. _`sec:fisapt`:
 
 F/I-SAPT: Functional Group and/or Intramolecular Symmetry-Adapted Perturbation Theory
-==========================================
+=====================================================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
@@ -24,7 +24,7 @@ interaction between two moeities within the embedding field of a third body
 origins of a noncovalent interaction, while I-SAPT allows for one to perform
 a SAPT analysis for intramolecular interactions. F-SAPT and I-SAPT can be
 deployed together in this module, yielding "F/I-SAPT." All F/I-SAPT computations
-in PSI4 use density-fitted SAPT0 as the underlying SAPT methodology. Interested
+in |PSIfour| use density-fitted SAPT0 as the underlying SAPT methodology. Interested
 users should consult the manual page for Ed Hohenstein's `SAPT0 sec:sapt`_ code
 and the SAPT literature to understand the specifics of SAPT0 before beginning
 with F/I-SAPT0.
@@ -71,7 +71,7 @@ F-SAPT: A Representative Example
 Below, we show an example of using F-SAPT0/jun-cc-pVDZ to analyze the
 distribution of the intermolecular interaction energy components between the
 various hydroxyl and phenyl moeities of the phenol dimer. This example is
-explicitly included in :source:`samples/fsapt1 <samples/fsapt1>`. A video
+explicitly included in srcsample:`fsapt1`. A video
 lecture explaining this example is available `here
 <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the order-1 F-SAPT analysis
@@ -125,7 +125,7 @@ analysis is available `here
     
     energy('fisapt0')
 
-This file runs a DF-HF computation on the full dimer using |PSIfour|'s existing
+This file runs a DF-HF computation on the full dimer using |PSIfours| existing
 SCF code. The monomer SCF computations are performed inside the FISAPT module,
 following which a complete DF-SAPT0 computation is performed. Additional bits of
 analysis are performed to generate the order-2 partition of the SAPT terms to
@@ -178,7 +178,7 @@ Users should check the files ``fragA.dat`` and ``fragB.dat`` to ensure that
 there is not too much charge delocalization from one fragment to another. This
 is presented in the "Orbital Check" section in these files - a value larger than
 0.1 docc is an indication that the picture of localizable functional groups may
-be breaking down. We also *strongly advocate* avoiding the cutting of double,
+be breaking down. We also *strongly discourage* the cutting of double,
 triple, or aromatic bonding motifs when partitioning the molecule into fragments
 - cuts across only simple sigma bonds are encouraged.
 
@@ -231,7 +231,7 @@ I-SAPT: A Representative Example
 Below, we show an example of using I-SAPT0/jun-cc-pVDZ to analyze the
 interaction between the two phenol groups in a 2,4-pentanediol molecule.
 This example is
-explicitly included in :source:`samples/isapt1 <samples/isapt1>`. A video
+explicitly included in srcsample:`isapt1`. A video
 lecture explaining this example is available `here
 `here <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the density and ESP fields from
@@ -284,10 +284,10 @@ the I-SAPT embedding procedure is available `here <https://www.youtube.com/watch
 This is essentially the same input as for F-SAPT, except that the molecular
 system is now divided into *three* moeities - subsystems A and B whose
 intramolecular interaction we wish to compute, and a linking unit C.  This file
-runs a DF-HF computation on the full system using |PSIfour|'s existing SCF code.
+runs a DF-HF computation on the full system using |PSIfours| existing SCF code.
 At the start of the FISAPT code, the occupied orbitals are localized and divided
 by charge considerations into A, B, C, and link sets. By default, linking sigma
-bonds are assigned to C (this can be changed by the ``FISAPT_LINK_ASSIGNMENT``
+bonds are assigned to C (this can be changed by the |fisapt__fisapt_link_assignment|
 options). Then, non-interacting Hartree-Fock solutions for A and B are optimized
 in the embedding field of the linking moeity C. At this point, A and B are not
 interacting with each other, but have any potential covalent links or other
@@ -297,9 +297,9 @@ F-SAPT considerations are also possible when I-SAPT is performed - F and I are
 completely direct-product-separable considerations. 
 
 Cube File Visualization with PyMol
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Setting ``fisapt_do_plot true`` above generates a set of ``.cube`` files
+Setting |fisapt__fisapt_do_plot| ``true`` above generates a set of ``.cube`` files
 containing the densities and ESPs of the various subsystems in the I-SAPT
 embedding procedure. These can be used to gain a detailed understanding of the
 intermolecular partition and the polarization between non-interacting and
@@ -345,7 +345,7 @@ Additional Notes
   basis sets for all SAPT terms, which can be problematic for heavy elements.
   As such, Ed's SAPT0 code will yield slightly different results than FISAPT. The
   differences should be very minor for up to and including second-row elements,
-  after which point one needs to use the ``DF_BASIS_ELST`` option in Ed's code to
+  after which point one needs to use the |sapt__df_basis_elst| option in Ed's code to
   provide an accurate result. 
 
 
