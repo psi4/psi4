@@ -1,0 +1,17 @@
+# Zero everything out
+reinitialize
+
+# Load Monomer A
+load IndAB.pdb
+show sticks, all
+
+spectrum b, red_white_blue, IndAB, minimum = -25.00, maximum = 25.00
+
+# Visualization
+@vis.pymol
+
+# Orientation
+@orient.pymol
+
+# Raytraced png
+png IndAB.png, width=1200, height=1200, dpi=300, ray=1
