@@ -38,6 +38,7 @@ Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
 :ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
 :ref:`Karlsruhe <table:basisKarlsruhe>`,
+:ref:`Jensen <table:basisJensen>`,
 and :ref:`Other <table:basisOther>` summarize the orbital basis sets available in
 |PSIfour|.  These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
@@ -279,6 +280,26 @@ Appendix :ref:`apdx:basisElement`.
 |
 |
 
+
+.. _`table:basisJensen`:
+
+.. table:: Summary of Jensen orbital basis sets available in |PSIfour|
+
+    +---------------+--------------+-----------+-------+------------------+
+    | basis set     | no diffuse   | augmented | tight | augmented, tight |
+    +===============+==============+===========+=======+==================+
+    | pcseg-N       | 01234 [#f5]_ |           |       |                  |
+    +---------------+--------------+-----------+-------+------------------+
+    | aug-pcseg-N   |              | 01234     |       |                  |
+    +---------------+--------------+-----------+-------+------------------+
+    | pcSseg-N      |              |           | 01234 |                  |
+    +---------------+--------------+-----------+-------+------------------+
+    | aug-pcSseg-N  |              |           |       | 01234            |
+    +---------------+--------------+-----------+-------+------------------+
+
+|
+|
+
 .. _`table:basisOther`:
 
 .. table:: Summary of other orbital basis sets available in |PSIfour|
@@ -313,4 +334,5 @@ Appendix :ref:`apdx:basisElement`.
 .. [#f4] D\ :math:`\zeta` has :math:`\ell_{max}=2` or d.
          T\ :math:`\zeta` has :math:`\ell_{max}=3` or f.
          Q\ :math:`\zeta` has :math:`\ell_{max}=4` or g, *etc*.
+.. [#f5] *N* in Jensen basis sets corresponds to :math:`N+1\zeta` basis set.
 

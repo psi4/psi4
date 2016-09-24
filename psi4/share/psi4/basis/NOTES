@@ -1,3 +1,23 @@
+*******************************************************************************
+*******************************************************************************
+
+
+Friday, September 23, 2016 -- LAB
+
+[33]   jvansan (GitHub id) has harvested the Jansen pc-N basis sets from EMSL for us. They have the form [aug-]pc[S][seg]-N (N=0--4; N+1-zeta basis set). Since Psi4 can't take advantage of general contractions, those have been hidden in a subfolder.
+
+    Notes from EMSL show the following comparison:
+
+           pc-4          5-Zeta, polarized,                                                                                           DFT optimized
+           pcS-4         5-Zeta, polarized,                    tight augmented,                       for nuclear magnetic shielding, DFT optimized
+    [used] pcseg-4       5-Zeta, polarized,                                     segmented contracted,                                               Consistent Valence
+    [used] pcSseg-4      5-Zeta, polarized,                    tight augmented, segmented contracted, for nuclear magnetic shielding, DFT optimized
+    
+           aug-pc-4      5-Zeta, polarized, diffuse augmented,                                                                        DFT optimized
+           aug-pcS-4     5-Zeta, polarized, diffuse augmented, tight augmented,                       for nuclear magnetic shielding, DFT optimized
+    [used] aug-pcseg-4   5-Zeta, polarized, diffuse augmented,                  segmented contracted,                                               Consistent Valence
+    [used] aug-pcSseg-4  5-Zeta, polarized, diffuse augmented, tight augmented, segmented contracted, for nuclear magnetic shielding, DFT optimized
+
 
 *******************************************************************************
 *******************************************************************************
