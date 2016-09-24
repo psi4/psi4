@@ -927,11 +927,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("D_CONVERGENCE",1E-8);
       /*- Maximum number of iterations for CPHF -*/
       options.add_int("MAXITER", 50);
-      /*- Minimum absolute value below which integrals are neglected.
-      For ISAPT, a variational collapse problem seems to occur for even rather
-      modest values of this cutoff, when DF is used and when very close
-      contacts occur. Therefore, we will be safe and turn it off (this does not
-      affect performance overtly) -*/
+      /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE",0.0);
 
       // => ISAPT Zero-th Order Wavefunction Options <= //
@@ -1210,6 +1206,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
+    /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
+    options.add_bool("MOLDEN_WITH_VIRTUAL", true);
     /*- If true, then repeat the specified guess procedure for the orbitals every time -
     even during a geometry optimization. -*/
     options.add_bool("GUESS_PERSIST", false);

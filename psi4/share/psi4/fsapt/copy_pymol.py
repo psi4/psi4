@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, os
 
-root = '%s/fsapt' % os.environ['PSIDATADIR']
+root = os.path.dirname(os.path.realpath(__file__))
 
 # => Driver Code <= #
 

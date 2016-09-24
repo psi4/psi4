@@ -1,0 +1,3 @@
+approvals = 3
+pattern = "(?i)LGTM"
+
