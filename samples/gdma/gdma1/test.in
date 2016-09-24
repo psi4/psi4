@@ -1,7 +1,7 @@
 #! Water RHF/cc-pVTZ distributed multipole analysis
 ref_energy = -76.0571685433842219                                                                   #TEST
 ref_dma_mat = psi4.Matrix(3, 9)                                                                     #TEST
-ref_dma_mat.set_name('Reference DMA values')                                                        #TEST
+ref_dma_mat.name = 'Reference DMA values'                                                           #TEST
 ref_dma_arr = [                                                                                     #TEST
   [ -0.43406697290168, -0.18762673939633,  0.00000000000000,  0.00000000000000,  0.03206686487531,  #TEST
      0.00000000000000, -0.00000000000000, -0.53123477172696,  0.00000000000000 ],                   #TEST
@@ -14,7 +14,7 @@ for i in range(3):                                                              
     for j in range(9):                                                                              #TEST
         ref_dma_mat.set(i, j, ref_dma_arr[i][j])                                                    #TEST
 ref_tot_mat = psi4.Matrix(1, 9)                                                                     #TEST
-ref_tot_mat.set_name("Reference total values")                                                      #TEST
+ref_tot_mat.name = "Reference total values"                                                         #TEST
 ref_tot_arr = [                                                                                     #TEST
      0.00000000516346, -0.79665315928128,  0.00000000000000,  0.00000000000000,  0.10813259329390,  #TEST
      0.00000000000000,  0.00000000000000, -2.01989585894142,  0.00000000000000                      #TEST

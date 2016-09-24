@@ -1,0 +1,50 @@
+This test case shows an example of running and analyzing a standard
+F-SAPT0/jun-cc-pvdz procedure for phenol dimer from the S22 database.
+
+input.dat - the input file
+output.ref - the reference output file
+fsapt-ref/* - the reference F-SAPT partition and analysis. 
+
+    The PSI4 fisapt0 computation produced the following files:
+    
+    geom.xyz - the dimer geometry
+    ZA.dat - the nuclear charges in monomer A 
+    ZB.dat - the nuclear charges in monomer B
+    QA.dat - the orbital atomic charges in monomer A
+    QB.dat - the orbital atomic charges in monomer B
+    Elst.dat - the nuclear and orbital F-SAPT partition for Elst
+    Exch.dat - the nuclear and orbital F-SAPT partition for Exch
+    IndAB.dat - the nuclear and orbital F-SAPT partition for IndAB
+    IndBA.dat - the nuclear and orbital F-SAPT partition for IndBA
+    Disp.dat - the nuclear and orbital F-SAPT partition for Disp
+    
+    The user (you!) created the fragment definition files (in 1-based
+        order):
+    
+    fA.dat - the grouping of atoms to fragments in monomer A
+    fB.dat - the grouping of atoms to fragments in monomer B
+
+    Running the fsapt.py analysis script (fsapt.py) created the polished
+    F-SAPT analysis:
+
+    fsapt.dat - the numerical order-1/order-2 F-SAPT partition
+    fragA.dat - a detailed description of the orbitals assigned the the
+        fragments of monomer A
+    fragB.dat - a detailed description of the orbitals assigned the the
+        fragments of monomer B
+    *pdb - PDB files containing the order-1 F-SAPT partition
+
+    Running the copy_pymol.py (copy_pymol.py) script created the PyMol
+    helper files:
+    
+    run.pymol - a master file to run all sub .pymol files
+    orient.pymol - a file containing the desired view. Use the "Get View"
+        directive in the PyMol GUI to copy the parameters for your desired
+        view and paste into this file
+    vis.pymol - directives for the lighting and textures of the scene
+    *pymol - files to plot and render .png images of the order-1 F-SAPT
+        PDB files
+
+    Running @run.pymol in PyMol created all the images:
+    
+    *png - F-SAPT order-1 analysis images.

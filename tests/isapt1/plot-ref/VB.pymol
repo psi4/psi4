@@ -1,0 +1,29 @@
+# Zero everything out
+reinitialize
+
+# Load Geometry
+load geom.xyz
+util.cbaw
+show_as sticks, geom
+show nb_spheres, geom
+
+# Load D
+load DB.cube
+isosurface DB_c, DB, 0.002
+color blue, DB_c
+
+# Load V
+load VB.cube
+ramp_new ramp, VB, [-0.05, 0.00, 0.05], [red, white, blue]
+set surface_color, ramp, DB_c
+set transparency, 0.5
+
+disable ramp
+
+# Visualization
+@vis.pymol
+
+### Still images
+@orient.pymol
+
+png VB.png, width=1200, height=800, dpi=300, ray=1
