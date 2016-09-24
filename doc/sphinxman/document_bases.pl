@@ -233,6 +233,14 @@ foreach $b (@HGBS) { if ($b =~ /^def2-.*\.gbs$/) { push(@HAHLRICHS, $b); } }
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Ahlrichs";
 
+#print HTML_OUT "<tr><td><big><b>Jensen</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Jensen}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Jensen**", "", "";
+@HJENSEN = ();
+foreach $b (@HGBS) { if ($b =~ /^.*pc.*seg.*\.gbs$/) { push(@HJENSEN, $b); } }
+foreach $gbs (@HJENSEN) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Jensen";
+
 #print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
 #print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning D-zeta**", "", "";
@@ -338,7 +346,7 @@ foreach $b (@HGBS) { if ($b =~ /^feb-cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); 
 foreach $gbs (@H6DUNNING) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Dunning 6-zeta";
 
-@HCATBASIS = (@HPOPLE,@HAHLRICHS,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
+@HCATBASIS = (@HPOPLE,@HAHLRICHS,@HJENSEN,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
 
 @HREST = ();
 foreach my $item (@HGBS) {
