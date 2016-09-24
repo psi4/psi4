@@ -890,7 +890,7 @@ void export_mints(py::module& m)
 
     py::class_<MOWriter, std::shared_ptr<MOWriter> >(m, "MOWriter", "docstring").
             def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("write", &NBOWriter::write, "docstring");
+            def("write", &MOWriter::write, "docstring");
 
     py::class_<OperatorSymmetry, std::shared_ptr<OperatorSymmetry> >(m, "MultipoleSymmetry", "docstring").
             def(py::init<int, const std::shared_ptr<Molecule>&,
