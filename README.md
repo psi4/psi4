@@ -1,13 +1,13 @@
 Psi4: Open-Source Quantum Chemistry
 -----------------------------------
 
-Psi4 is an open-source suite of ab initio quantum chemistry programs
+Psi4 is an open-source suite of *ab initio* quantum chemistry programs
 designed for efficient, high-accuracy simulations of a variety of
 molecular properties. We can routinely perform computations with more
 than 2500 basis functions running serially or on multi-core machines.
 
-With computationally demanding portions written in C++, Boost exports
-of many C++ classes into Python, and a flexible Python driver, Psi4
+With computationally demanding portions written in C++, Pybind11 exports
+many of the C++ classes into Python, and a flexible Python driver, Psi4
 strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
@@ -40,7 +40,7 @@ strives to be friendly to both users and developers.
 
 * **YouTube Channel** https://www.youtube.com/psitutorials
 
-Instillation Instructions
+Installation Instructions
 -------------------------
 
 With the newest CMake rewrite there are three steps: configuration, build, and install.  After obtaining the source, in the top-level directory do the following:
@@ -53,46 +53,43 @@ With the newest CMake rewrite there are three steps: configuration, build, and i
    ~~~
       - The `-Bbuild` sets the build directory to a directory called `build`
       - The `-D<CMAKE_VARIABLE_ONE>` says set the variable to the given value
-      - The ellipses signify that there are possibly many more variables
-    - Probably the most important variables you can set are:
-       - `CMAKE_C_COMPILER` The C compiler
-       - `CMAKE_CXX_COMPILER` The C++ compiler
-       - `Fortran_COMPILER` The Fortran compiler 
-          - Psi4 proper contains no Fortran, but some external modules do
-       - `CMAKE_C_FLAGS` Any extra C flags you want to pass
-       - `CMAKE_CXX_FLAGS` Any extra C++ flags you want to pass
-       - `Fortran_FLAGS` Any extra Fortran flags you want to pass
-       - `CMAKE_BUILD_TYPE` Is this Debug, Release, or Profiling
-       - `CMAKE_PREFIX_PATH` List of places find_package should look for packages that have been configured with CMake
-       - `PYTHON_EXECUTABLE` Path to the python executable you want to use
-       - `PYTHON_LIBRARY` Path to the python library that goes with the exe
-       - `PYTHON_INCLUDE_DIR` Path to the python include files
-       - `ENABLE_PCMSOLVER` On means build PCMSolver library (requires Fortran)
-       - `ENABLE_CHEMPS2`   Enables chemps2 library for DMRG
-       - `ENABLE_DKH` Enables relativistic DKH integrals (requires Fortran)
-       - `ENABLE_LIBERD` Enables ERD library in addition to libint (requires Fortran)
-       - `ENABLE_GDMA` Enables Stone's GDMA multipole code (requires Fortran)
-       - `ENABLE_AMBIT` Enables the Ambit tensor library
-       - `MAX_AM_ERI` The maximum angular momentum for libint
+      - The ellipses signify the possible addition of more variables. These include:
+       - `CMAKE_INSTALL_PREFIX` Where to install Psi4.
+       - `CMAKE_C_COMPILER` The C compiler.
+       - `CMAKE_CXX_COMPILER` The C++ compiler.
+       - `CMAKE_Fortran_COMPILER` The Fortran compiler. Psi4 does not contain Fortran, but some external modules do.
+       - `CMAKE_C_FLAGS` Any extra C flags you want to pass.
+       - `CMAKE_CXX_FLAGS` Any extra C++ flags you want to pass.
+       - `CMAKE_Fortran_FLAGS` Any extra Fortran flags you want to pass.
+       - `CMAKE_BUILD_TYPE` Is this Debug, Release, or RelWithDebInfo.
+       - `CMAKE_PREFIX_PATH` List of places `find_package` should look for packages that have been configured with CMake.
+       - `PYTHON_EXECUTABLE` Path to the python executable you want to use.
+       - `PYTHON_LIBRARY` Path to the python library that goes with the exe.
+       - `PYTHON_INCLUDE_DIR` Path to the python include files.
+       - `ENABLE_PCMSOLVER` On means build PCMSolver library (requires Fortran).
+       - `ENABLE_CHEMPS2`   Enables chemps2 library for DMRG.
+       - `ENABLE_DKH` Enables relativistic DKH integrals (requires Fortran).
+       - `ENABLE_LIBERD` Enables ERD library in addition to libint (requires Fortran).
+       - `ENABLE_GDMA` Enables Stone's GDMA multipole code (requires Fortran).
+       - `ENABLE_AMBIT` Enables the Ambit tensor library.
+       - `MAX_AM_ERI` The maximum angular momentum for libint.
 
 2.  Build
     - After you ran the configure command, and it ran successfully, change to the build directory and run:
     ~~~{.sh}
-    #n here is the number of cores to use for building
-    make -jn
+    # n is the number of cores to use for building
+    make -j n
     ~~~
 
-3.  Install
-    - Psi4 must now be installed.  Still in the build directory:
+3. (Optional) Test
+    - You may test your installation by invoking in the build directory:
     ~~~{.sh}
-    #n is again the number of cores for installing
-    make -jn install
-    ~~~
-
-4. (Optional) Test
-    - After installing you may test your installation if you like
-    - In the build directory:
-    ~~~{.sh}
-    #Runs a very minimal set of tests.  Omit the -Rtu for all tests
+    # Runs a very minimal set of tests.  Omit the -Rtu for all tests
     ctest -Rtu
+    ~~~
+
+4.  Install
+    - Psi4 must be installed.  From the build directory:
+    ~~~{.sh}
+    make install
     ~~~
