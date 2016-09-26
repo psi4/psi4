@@ -61,7 +61,7 @@ void CIWavefunction::set_ciblks()
    xlvl = Parameters_->ex_lvl;
 
    if (print_) {
-      outfile->Printf( "   There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
+      outfile->Printf( "    There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
@@ -339,7 +339,7 @@ void CIWavefunction::set_ciblks()
 
    if (print_) {
      outfile->Printf(
-       "   The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
+       "    The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
        (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
      }
 
