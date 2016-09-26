@@ -285,7 +285,7 @@ private:
     void print_ras_parameters();
 
     // General setup
-    void title();
+    void title(bool is_mcscf);
     void form_strings();
     void set_ciblks();
     void convergence_death();

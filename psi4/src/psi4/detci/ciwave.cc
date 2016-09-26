@@ -68,7 +68,7 @@ CIWavefunction::~CIWavefunction() {
 }
 
 void CIWavefunction::common_init() {
-    title();
+    title((options_.get_str("WFN") == "CASSCF") || (options_.get_str("WFN") == "RASSCF"));
 
     // Build and set structs
     sme_first_call_ = 1;
@@ -83,6 +83,7 @@ void CIWavefunction::common_init() {
     get_mo_info();            /* read DOCC, SOCC, frozen, nmo, etc        */
     set_ras_parameters();     /* set fermi levels and the like            */
 
+    // Print out information
     print_parameters();
     print_ras_parameters();
 
@@ -497,19 +498,28 @@ void CIWavefunction::cleanup_dpd(void) {
         mcscf_object_init_ = false;
     }
 }
-/*
-** title(): Function prints a program identification
-*/
-void CIWavefunction::title(void) {
-    outfile->Printf("\n");
-    outfile->Printf("         ---------------------------------------------------------\n");
-    outfile->Printf("                                 D E T C I  \n");
-    outfile->Printf("\n");
-    outfile->Printf("                             C. David Sherrill\n");
-    outfile->Printf("                             Matt L. Leininger\n");
-    outfile->Printf("                               18 June 1999\n");
-    outfile->Printf("         ---------------------------------------------------------\n");
-    outfile->Printf("\n");
+void CIWavefunction::title(bool is_mcscf) {
+    if (is_mcscf){
+        outfile->Printf("\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("                Multi-Configurational Self-Consistent Field\n");
+        outfile->Printf("                            (a 'D E T C I' module)\n");
+        outfile->Printf("\n");
+        outfile->Printf("                 Daniel G. A. Smith, C. David Sherrill, and\n");
+        outfile->Printf("                              Matt L. Leininger\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("\n");
+    } else {
+        outfile->Printf("\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("                          Configuration Interaction\n");
+        outfile->Printf("                            (a 'D E T C I' module)\n");
+        outfile->Printf("\n");
+        outfile->Printf("                 C. David Sherrill, Daniel G. A. Smith, and\n");
+        outfile->Printf("                              Matt L. Leininger\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("\n");
+    }
 }
 
 SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
@@ -519,8 +529,8 @@ SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
                                      Parameters_, H0block_, buf_init));
     return civect;
 }
-SharedCIVector CIWavefunction::D_vecto(){
-    SharedCIVector civect(new CIvect(Parameters_->icore, Parameters_->maxnvec,
+SharedCIVector CIWavefunction::D_vector(){
+    SharedCIVector civect(new CIvect(Parameters_->icore, Parameters_->maxnvect,
                                      1, Parameters_->d_filenum, CIblks_, CalcInfo_,
                                      Parameters_, H0block_, true));
     civect->init_io_files(true);
