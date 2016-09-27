@@ -48,7 +48,6 @@ namespace psi { namespace dfmp2 {
 
 SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options & options)
 {
-    tstart();
 
     std::shared_ptr<PSIO> psio(new PSIO);
 
@@ -62,8 +61,6 @@ SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options & options)
     } else {
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");
     }
-
-    tstop();
 
     return dfmp2;
 }
