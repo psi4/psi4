@@ -1884,6 +1884,7 @@ def run_dfmp2_gradient(name, **kwargs):
     a DFMP2 gradient calculation.
 
     """
+    psi4.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
@@ -1911,6 +1912,7 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn.set_gradient(grad)
 
     optstash.restore()
+    psi4.tstop()
     return dfmp2_wfn
 
 
@@ -2729,6 +2731,7 @@ def run_dfmp2(name, **kwargs):
     a density-fitted MP2 calculation.
 
     """
+    psi4.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF', 'SCF_TYPE'])
@@ -2761,6 +2764,7 @@ def run_dfmp2(name, **kwargs):
         psi4.set_variable('CURRENT CORRELATION ENERGY', psi4.get_variable('MP2 CORRELATION ENERGY'))
 
     optstash.restore()
+    psi4.tstop()
     return dfmp2_wfn
 
 
