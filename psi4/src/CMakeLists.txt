@@ -37,8 +37,8 @@ set(sources_list export_psio.cc
         )
 
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
-#add_library(psi4-lib SHARED ${psi4_all_sources})
-add_library(psi4-lib STATIC ${psi4_all_sources})
+add_library(psi4-lib SHARED ${psi4_all_sources})
+#add_library(psi4-lib STATIC ${psi4_all_sources})
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
@@ -100,9 +100,9 @@ set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
                                           INSTALL_RPATH_USE_LINK_PATH TRUE
                                           BUILD_WITH_INSTALL_RPATH TRUE)
 
-set_target_properties(psi4-lib PROPERTIES #PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
-                                          OUTPUT_NAME psi4
-                                          #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
+set_target_properties(psi4-lib PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+                                          OUTPUT_NAME psi4core
+                                          SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
                                           INSTALL_RPATH "${PSI4_RPATH}"
                                           INSTALL_RPATH_USE_LINK_PATH TRUE
                                           BUILD_WITH_INSTALL_RPATH TRUE)
