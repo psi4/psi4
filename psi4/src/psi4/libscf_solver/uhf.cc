@@ -332,13 +332,9 @@ double UHF::compute_E()
     coulomb_E += Db_->vector_dot(J_);
 
     double XC_E = 0.0;
-    double dashD_E = 0.0;
     if (functional_->needs_xc()) {
         XC_E = potential_->quadrature_values()["FUNCTIONAL"];
         std::shared_ptr<Dispersion> disp = functional_->dispersion();
-        if (disp) {
-            dashD_E = disp->compute_energy(molecule_);
-        }
     }
 
     double exchange_E = 0.0;
@@ -357,7 +353,7 @@ double UHF::compute_E()
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
     energies_["XC"] = XC_E;
-    energies_["-D"] = dashD_E;
+    double dashD_E = energies_["-D"];
 
     double Etotal = 0.0;
     Etotal += nuclearrep_;
