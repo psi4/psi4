@@ -40,8 +40,8 @@ import re
 import os
 import sys
 import random
-import pubchem
-from p4util.exceptions import *
+from psi4.driver import pubchem
+from psi4.driver.p4util.exceptions import *
 
 
 # inputfile contents to be preserved from the processor
@@ -746,19 +746,20 @@ def process_input(raw_input, print_level=1):
     # imports
     imports = '\n'.join(future_imports) + '\n'
     imports += 'from psi4 import *\n'
-    imports += 'import dependency_check\n'
-    imports += 'from p4const import *\n'
-    imports += 'from p4util import *\n'
-    imports += 'from molutil import *\n'
-    imports += 'from diatomic import anharmonicity\n'
-    imports += 'from driver import *\n'
-    imports += 'from gaussian_n import *\n'
-    imports += 'from qmmm import *\n'
-    imports += 'from aliases import *\n'
-    imports += 'from driver_cbs import *\n'
-    imports += 'from wrapper_database import database, db, DB_RGT, DB_RXN\n'
-    imports += 'from wrapper_autofrag import auto_fragments\n'
-#    imports += 'from qmmm import *\n'
+    # imports += 'from psi4.psi4core import *\n'
+    # imports += 'import dependency_check\n'
+    # imports += 'from psi4.driver.p4const import *\n'
+    # imports += 'from psi4.driver.p4util import *\n'
+    # imports += 'from psi4.driver.molutil import *\n'
+    # imports += 'from diatomic import anharmonicity\n'
+    # imports += 'from driver import *\n'
+    # imports += 'from gaussian_n import *\n'
+    # imports += 'from qmmm import *\n'
+    # imports += 'from aliases import *\n'
+    # imports += 'from driver_cbs import *\n'
+    # imports += 'from wrapper_database import database, db, DB_RGT, DB_RXN\n'
+    # imports += 'from wrapper_autofrag import auto_fragments\n'
+    # imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4core.IOManager.shared_object()\n'
     imports += 'psi4core.efp_init()\n'  # initialize EFP object before Molecule read in
 

@@ -58,7 +58,7 @@ import gzip
 import re
 import sys
 import os
-from p4util.exceptions import *
+from psi4.driver.p4util.exceptions import *
 
 
 class PubChemObj(object):

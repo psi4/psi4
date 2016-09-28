@@ -30,7 +30,6 @@ from __future__ import print_function
 to data tables and text.
 
 """
-#CUimport psi4
 import sys
 import re
 import psi4core
