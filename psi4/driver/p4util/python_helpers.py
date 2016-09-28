@@ -2,7 +2,7 @@ import os
 import subprocess
 import re
 
-import psi4.driver.qcdb
+from psi4.driver import qcdb
 import psi4core
 
 @staticmethod

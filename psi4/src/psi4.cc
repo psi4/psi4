@@ -52,7 +52,6 @@
 #include <ambit/tensor.h>
 #endif
 #include "psi4/psi4.h"
-#include "script.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -99,9 +98,6 @@ int main(int argc, char **argv)
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
-    Script::language = std::shared_ptr<Script>(new Python);
-    // Create base objects in the scripting language and initialize the language
-    Script::language->initialize();
     interactive_python  = false;
     if (psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
