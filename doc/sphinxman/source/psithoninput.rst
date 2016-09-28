@@ -407,7 +407,7 @@ many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.  
 
 As seen in the neon dimer example from the :ref:`sec:tutorial` section,
-the :py:func:`~driver_nbody._nbody_gufunc` wrapper provides automatic computation of 
+the :py:func:`~driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
 counterpoise-corrected interaction energies between two molecules.  For
 example,::
 

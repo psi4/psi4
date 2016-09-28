@@ -107,7 +107,7 @@ def _print_nbody_energy(energy_body_dict, header):
             previous_e = energy_body_dict[n]
         psi4core.print_out("\n")
 
-def _nbody_gufunc(func, method_string, **kwargs):
+def nbody_gufunc(func, method_string, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized univeral function for computing interaction quantities.

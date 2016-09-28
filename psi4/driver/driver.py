@@ -398,7 +398,7 @@ def energy(name, **kwargs):
 
     # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
-        return driver_nbody._nbody_gufunc(energy, name, ptype='energy', **kwargs)
+        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
 
     # Bounce to CBS if "method/basis" name
     if "/" in lowername:

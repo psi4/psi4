@@ -45,7 +45,7 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
         elif basename == 'wrapper_database':
             fdriver.write('   :exclude-members: db, database\n')
         elif basename == 'driver_nbody':
-            fdriver.write('   :exclude-members: _nbody_gufunc\n')
+            fdriver.write('   :exclude-members: nbody_gufunc\n')
         elif basename == 'driver_cbs':
             fdriver.write('   :exclude-members: cbs, complete_basis_set, xtpl_highest_1,\n')
             fdriver.write('       scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
