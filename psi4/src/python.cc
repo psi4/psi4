@@ -45,7 +45,6 @@
 #include "psi4/libfilesystem/path.h"
 
 #include "psi4/psi4-dec.h"
-#include "script.h"
 #include "gitversion.h"
 #include "psi4/psi4.h"
 #include "psi4/libparallel/ParallelPrinter.h"
@@ -1241,42 +1240,17 @@ void psi4_python_module_finalize()
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
-    if(Script::language)Script::language->finalize();
+    // if(Script::language)Script::language->finalize();
 
 }
 
 
 PYBIND11_PLUGIN(psi4core) {
-// PyObject * initpsi4core(void) {
     py::module psi4core("psi4core", "Psi4: A quantum chemistry program");
 
     psi4core.def("initialize", &psi4_python_module_initialize);
     psi4core.def("finalize", &psi4_python_module_finalize);
 
-
-//    // Might need std
-//    py::register_exception_translator([](std::exception_ptr p) {
-//        try {
-//            if (p) std::rethrow_exception(p);
-//        } catch (const PsiException &e) {
-//// This is what the example from Pybind11 does...
-////            PyErr_SetString(PyExc_RuntimeError, e.what());
-//// This is what the old Psi4 mechanism did...
-//#ifdef DEBUG
-//#if PY_MAJOR_VERSION == 2
-//            PyObject *message = PyString_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-//#else
-//            PyObject *message = PyUnicode_FromFormat("%s (%s:%d)", e.what(), e.file(), e.line());
-//#endif
-//            PyErr_SetObject(PyExc_RuntimeError, message);
-//            Py_DECREF(message);
-//#else
-//            PyErr_SetString(PyExc_RuntimeError, e.what());
-//#endif
-//        }
-//    });
-//
-//    docstring_options sphx_doc_options(true, true, false);
 
     py::enum_<PsiReturnType>(psi4core, "PsiReturnType", "docstring")
             .value("Success", Success)
@@ -1524,184 +1498,3 @@ PYBIND11_PLUGIN(psi4core) {
     return psi4core.ptr();
 }
 
-// Python::Python() : Script()
-// {
-
-// }
-
-// Python::~Python()
-// {
-
-// }
-
-// void Python::initialize()
-// {
-// }
-
-// void Python::finalize()
-// {
-// //    Py_Finalize();
-// }
-
-// void Python::run(FILE *input)
-// {
-//     char *s = 0;
-
-//     if (!Py_IsInitialized()) {
-//         s = strdup("psi");
-
-// #if PY_MAJOR_VERSION == 2
-//         if (PyImport_AppendInittab(strdup("psi4"), (void(*)())(initpsi4core)) == -1) {
-//             outfile->Printf("Unable to register psi4 with your Python.\n");
-//             abort();
-//         }
-// #else
-//         if (PyImport_AppendInittab(strdup("psi4"), initpsi4core) == -1) {
-//             outfile->Printf( "Unable to register psi4 with your Python.\n");
-//             abort();
-//         }
-// #endif
-
-//         // Py_InitializeEx(0) causes sig handlers to not be installed.
-//         Py_InitializeEx(0);
-// #if PY_VERSION_HEX >= 0x03000000
-//         Py_SetProgramName(L"psi");
-// #else
-//         Py_SetProgramName(s);
-// #endif
-
-//         struct stat sb;
-//         // Track down the location of Psi4's auxiliary directories path
-//         std::string psiPath = Process::environment("PSIPATH") + ":./";
-//         std::vector<std::string> path_list = split(psiPath, ":");
-//         path_list.erase(std::remove_if(path_list.begin(), path_list.end(),
-//                     [](const std::string& o) { return o.size() == 0; }));
-
-//         PyObject *path, *sysmod, *str;
-//         PY_TRY(sysmod, PyImport_ImportModule("sys"));
-//         PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
-//         for (size_t i=0; i < path_list.size(); i++) {
-//             std::string cpath = filesystem::path(path_list[i]).make_absolute().str();
-//             if (stat(cpath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
-//                 printf("Unable to read the Psi4 Auxililary folder - check the PSIPATH environmental variable\n"
-//                                "      Current value of PSIPATH is %s\n", psiPath.c_str());
-//                 exit(1);
-//             }
-// #if PY_MAJOR_VERSION == 2
-//             PY_TRY(str, PyString_FromString(cpath.c_str()));
-// #else
-//             PY_TRY(str    , PyUnicode_FromString(cpath.c_str()));
-// #endif
-//             PyList_Append(path, str);
-//         }
-//         Py_DECREF(str);
-//         Py_DECREF(path);
-//         Py_DECREF(sysmod);
-
-//         // Track down the location of Psi4's python script directory.
-//         std::string psiDataDirName = Process::environment("PSIDATADIR");
-//         std::string psiDataDirWithPython = psiDataDirName + "/python";
-//         std::string full_path = filesystem::path(psiDataDirWithPython).make_absolute().str();
-//         if (stat(full_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
-//             printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
-//                            "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
-//             exit(1);
-//         }
-
-//         // Add PSI library python path
-//         PY_TRY(sysmod, PyImport_ImportModule("sys"));
-//         PY_TRY(path, PyObject_GetAttrString(sysmod, "path"));
-// #if PY_MAJOR_VERSION == 2
-//         PY_TRY(str, PyString_FromString(psiDataDirWithPython.c_str()));
-// #else
-//         PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
-// #endif
-
-//         // Append to the path list
-//         PyList_Append(path, str);
-
-//         Py_DECREF(str);
-//         Py_DECREF(path);
-//         Py_DECREF(sysmod);
-//     }
-//     if (Py_IsInitialized()) {
-
-//         try {
-//             std::string inputfile;
-//             s = strdup("import psi4");
-//             PyRun_SimpleString(s);
-//             py::dict scope = py::dict(py::module::import("__main__").attr("__dict__"));
-
-//             if (!interactive_python) {
-
-//                 // Stupid way to read in entire file.
-//                 char line[256];
-//                 std::stringstream file;
-//                 while (fgets(line, sizeof(line), input)) {
-//                     file << line;
-//                 }
-
-//                 if (!skip_input_preprocess) {
-//                     // Process the input file
-//                     PyObject *input;
-//                     PY_TRY(input, PyImport_ImportModule("inputparser"));
-//                     PyObject *function;
-//                     PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
-//                     PyObject *pargs;
-//                     PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()));
-//                     PyObject *ret;
-//                     PY_TRY(ret, PyEval_CallObject(function, pargs));
-
-//                     char *val;
-//                     PyArg_Parse(ret, "s", &val);
-//                     inputfile = std::string(val);
-
-//                     Py_DECREF(ret);
-//                     Py_DECREF(pargs);
-//                     Py_DECREF(function);
-//                     Py_DECREF(input);
-//                 }
-//                 else
-//                     inputfile = file.str();
-
-//                 if (verbose) {
-//                     outfile->Printf("\n Input file to run:\n%s", inputfile.c_str());
-
-//                 }
-
-
-//                 py::eval<py::eval_statements>(inputfile, scope);
-//             }
-//             else { // interactive python
-//                 // Process the input file
-//                 PyObject *input;
-
-//                 PY_TRY(input, PyImport_ImportModule("interactive"));
-//                 PyObject *function;
-//                 PY_TRY(function, PyObject_GetAttrString(input, "run"));
-//                 PyObject *ret;
-//                 PY_TRY(ret, PyEval_CallObject(function, NULL));
-//             }
-//         }
-//         catch (py::error_already_set const& e) {
-
-//             std::stringstream whole;
-//             whole << "An error has occurred python-side. ";
-//             std::cout << whole.str();
-//             PyErr_Print();
-
-//             outfile->Printf("%s\n\n", whole.str().c_str());
-//             exit(1);
-//         }
-//     }
-//     else {
-//         outfile->Printf("Unable to run Python input file.\n");
-//         return;
-//     }
-
-//     if (s)
-//         free(s);
-//     Process::environment.molecule().reset();
-//     Process::environment.legacy_wavefunction().reset();
-//     py_psi_plugin_close_all();
-// }
