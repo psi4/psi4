@@ -72,7 +72,6 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
-// #include "psi4/libscf_solver/ks.h"
 #include "psi4/libfunctional/superfunctional.h"
 
 #include "psi4/libpsio/psio.h"

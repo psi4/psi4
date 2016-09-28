@@ -37,6 +37,7 @@ set(sources_list export_psio.cc
         )
 
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
+#add_library(psi4-lib SHARED ${psi4_all_sources})
 add_library(psi4-lib STATIC ${psi4_all_sources})
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)

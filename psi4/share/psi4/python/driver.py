@@ -611,11 +611,11 @@ def gradient(name, **kwargs):
         moleculeclone = molecule.clone()
 
         # Obtain list of displacements
-        print("about to generate displacements")
+        # print("about to generate displacements")
         displacements = psi4.fd_geoms_1_0(moleculeclone)
-        print(displacements)
+        # print(displacements)
         ndisp = len(displacements)
-        print("generated displacments")
+        # print("generated displacments")
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print(""" %d displacements needed ...""" % (ndisp), end='')

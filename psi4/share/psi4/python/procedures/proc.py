@@ -1002,16 +1002,19 @@ def scf_wavefunction_factory(reference, ref_wfn):
     elif reference == "RKS":
         functional, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4.RHF(ref_wfn, functional)
-        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
-                                                                              tuple_params = modified_disp_params)
-        wfn.cdict["_disp_functor"].print_out()
+        if disp_type:
+            wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+                                                                                  tuple_params = modified_disp_params)
+            wfn.cdict["_disp_functor"].print_out()
         return wfn
     elif reference == "UKS":
         func, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4.UHF(ref_wfn, func)
-        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
-                                                              tuple_params = modified_disp_params)
-        wfn.cdict["_disp_functor"].print_out()
+
+        if disp_type:
+            wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+                                                                  tuple_params = modified_disp_params)
+            wfn.cdict["_disp_functor"].print_out()
         return wfn
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
@@ -1057,9 +1060,9 @@ def scf_helper(name, **kwargs):
     cast = False
     if psi4.has_option_changed('SCF', 'BASIS_GUESS'):
         cast = psi4.get_option('SCF', 'BASIS_GUESS')
-        if yes.match(str(cast)):
+        if p4util.yes.match(str(cast)):
             cast = True
-        elif no.match(str(cast)):
+        elif p4util.no.match(str(cast)):
             cast = False
 
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -1069,9 +1072,9 @@ def scf_helper(name, **kwargs):
 
         if psi4.has_option_changed('SCF', 'DF_BASIS_GUESS'):
             castdf = psi4.get_option('SCF', 'DF_BASIS_GUESS')
-            if yes.match(str(castdf)):
+            if p4util.yes.match(str(castdf)):
                 castdf = True
-            elif no.match(str(castdf)):
+            elif p4util.no.match(str(castdf)):
                 castdf = False
 
     # sort out broken_symmetry settings.
@@ -1110,13 +1113,13 @@ def scf_helper(name, **kwargs):
     # cast set-up
     if (cast):
 
-        if yes.match(str(cast)):
+        if cast is True:
             guessbasis = '3-21G'
         else:
             guessbasis = cast
 
         #if (castdf):
-        #    if yes.match(str(castdf)):
+        #    if p4util.yes.match(str(castdf)):
         #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
         #    else:
         #        guessbasisdf = castdf
@@ -1134,7 +1137,7 @@ def scf_helper(name, **kwargs):
             psi4.set_local_option('SCF', 'SCF_TYPE', 'DF')
             psi4.set_local_option('SCF', 'DF_INTS_IO', 'none')
             #psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
-            if not yes.match(str(castdf)):
+            if not isinstance(cast, bool):
                 psi4.set_global_option('DF_BASIS_SCF', castdf)
 
         # Print some info about the guess

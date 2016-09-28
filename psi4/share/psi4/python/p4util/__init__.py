@@ -33,3 +33,4 @@ from .util import *
 from .exceptions import *
 from .inpsight import *
 from .numpy_helper import *
+from .p4regex import *
