@@ -1,0 +1,20 @@
+{#
+    cloud/relations.html
+    ~~~~~~~~~~~~~~~~~~~~
+    Sphinx sidebar template: relation links,
+    modified from sphinx's basic/relations.html
+#}
+{%- if prev %}
+  <div class="sphinxprev">
+    <h4>{{_(theme_sidebar_prev_title or 'Previous topic') }}</h4>
+    <p class="topless"><a href="{{ prev.link|e }}"
+                          title="{{_(theme_sidebar_prev_title or 'Previous topic') }}">&larr; {{ prev.title }}</a></p>
+  </div>
+{%- endif %}
+{%- if next %}
+  <div class="sphinxnext">
+    <h4>{{_(theme_sidebar_next_title or 'Next topic') }}</h4>
+    <p class="topless"><a href="{{ next.link|e }}"
+                          title="{{_(theme_sidebar_next_title or 'Next topic') }}">&rarr; {{ next.title }}</a></p>
+  </div>
+{%- endif %}
