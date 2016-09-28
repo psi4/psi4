@@ -28,7 +28,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import math
-import psi4
+from psi4 import psi4core
 
 def _autofragment_convert(p, symbol):
     # Finding radii for auto-fragmenter

@@ -27,8 +27,8 @@
 
 from __future__ import absolute_import
 
-import psi4
-import p4const
+from psi4 import psi4core
+from psi4.driver import p4const
 from math import sqrt, pi
 from diatomic_fits import *
 

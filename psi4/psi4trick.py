@@ -5,6 +5,7 @@ import psi4core
 
 # Init psi4core
 psi4core.initialize()
+psi4core.set_memory(int(512e6)) # Set to 512 MB
 
 # Cleanup psi4core at exit
 import atexit

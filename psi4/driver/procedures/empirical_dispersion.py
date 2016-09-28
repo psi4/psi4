@@ -96,7 +96,6 @@ class EmpericalDispersion(object):
         # Build the C++ dispersion class
         if self.disp_type == 'p4':
             self.disp = psi4core.Dispersion.build(self.dtype, **self.dash_params)
-            # self.disp = psi4core.Dispersion.build(self.dtype, self.dash_params['s6'], 0, 0, 0)
         else:
             self.disp = None
 

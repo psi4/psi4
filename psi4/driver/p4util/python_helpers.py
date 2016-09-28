@@ -13,3 +13,5 @@ def pybuild_basis(mol, key, target, fitrole='BASIS', other=None, puream=-1):
     return psibasis
 
 psi4core.BasisSet.build = pybuild_basis
+psi4core.Molecule.run_dftd3 = qcdb.interface_dftd3.run_dftd3
+
