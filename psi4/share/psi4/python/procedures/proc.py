@@ -45,9 +45,10 @@ import p4util
 from p4util.exceptions import *
 from molutil import *
 
-from .functional import *
 from .roa import *
 from . import proc_util
+from . import empirical_dispersion
+from . import functional as dft_functional
 
 # never import driver, wrappers, or aliases into this file
 
@@ -980,25 +981,38 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(reference, ref_wfn, superfunc):
+def scf_wavefunction_factory(reference, ref_wfn):
     """Builds the correct wavefunction from the provided information
     """
 
+    if psi4.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
+        modified_disp_params = psi4.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
+    else:
+        modified_disp_params = None
+
     psi4.prepare_options_for_module("SCF")
     if reference == "RHF":
-        return psi4.RHF(ref_wfn, build_superfunctional('HF'))
+        return psi4.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "ROHF":
-        return psi4.ROHF(ref_wfn, build_superfunctional('HF'))
+        return psi4.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "UHF":
-        return psi4.UHF(ref_wfn, build_superfunctional('HF'))
+        return psi4.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "CUHF":
-        return psi4.CUHF(ref_wfn, build_superfunctional('HF'))
+        return psi4.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "RKS":
-        func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
-        return psi4.RHF(ref_wfn, func)
+        functional, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
+        wfn = psi4.RHF(ref_wfn, functional)
+        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+                                                                              tuple_params = modified_disp_params)
+        wfn.cdict["_disp_functor"].print_out()
+        return wfn
     elif reference == "UKS":
-        func = build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
-        return psi4.UHF(ref_wfn, func)
+        func, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
+        wfn = psi4.UHF(ref_wfn, func)
+        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+                                                              tuple_params = modified_disp_params)
+        wfn.cdict["_disp_functor"].print_out()
+        return wfn
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
@@ -1145,8 +1159,12 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-        scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn, None)
+        scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn)
         psi4.set_legacy_wavefunction(scf_wfn)
+
+        # Compute dftd3
+        if "_disp_functor" in scf_wfn.cdict.keys():
+            scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
         scf_wfn.compute_energy()
 
     # broken clean-up
@@ -1195,12 +1213,16 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
-    scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn, None)
+    scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn)
     psi4.set_legacy_wavefunction(scf_wfn)
 
     # Print basis set info
     if psi4.get_option("SCF", "PRINT_BASIS"):
         scf_wfn.basisset().print_detail_out()
+
+    # Compute dftd3
+    if "_disp_functor" in scf_wfn.cdict.keys():
+        scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
 
     e_scf = scf_wfn.compute_energy()
     psi4.set_variable("SCF TOTAL ENERGY", e_scf)
@@ -2574,7 +2596,7 @@ def run_dft(name, **kwargs):
     scf_wfn = run_scf(name, **kwargs)
     returnvalue = psi4.get_variable('CURRENT ENERGY')
 
-    for ssuper in superfunctional_list():
+    for ssuper in dft_functional.superfunctional_list:
         if ssuper.name().lower() == name:
             dfun = ssuper
 

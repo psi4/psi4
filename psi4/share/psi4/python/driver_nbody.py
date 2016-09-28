@@ -297,9 +297,9 @@ def _nbody_gufunc(func, method_string, **kwargs):
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
             energies_dict[pair] = psi4.get_variable("CURRENT ENERGY")
-            psi4.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % 
+            psi4.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
                                                                 (str(pair[0]), str(pair[1]), energies_dict[pair]))
-    
+
             # Flip this off for now, needs more testing
             #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
             #    psi4.set_global_option('DF_INTS_IO', 'LOAD')

@@ -41,7 +41,7 @@ import sys
 import os, sys, inspect
 path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
 sys.path.append(path_dir)
-from qcdb.interface_dftd3 import *
+import qcdb.interface_dftd3 as dftd3
 
 ## ==> Functionals <== ##
 
@@ -831,7 +831,7 @@ def build_ws_x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wpbe_x_superfunctional(name, npoints, deriv):
@@ -863,7 +863,7 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wpbesol_x_superfunctional(name, npoints, deriv):
@@ -895,7 +895,7 @@ def build_wpbesol_x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_wpw92_c_superfunctional(name, npoints, deriv):
 
@@ -926,7 +926,7 @@ def build_wpw92_c_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_wpbe_c_superfunctional(name, npoints, deriv):
 
@@ -957,7 +957,7 @@ def build_wpbe_c_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_wpbe2_superfunctional(name, npoints, deriv):
 
@@ -989,7 +989,7 @@ def build_wpbe2_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_wb88_x_superfunctional(name, npoints, deriv):
 
@@ -1020,7 +1020,7 @@ def build_wb88_x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_svwn_superfunctional(name, npoints, deriv):
@@ -1053,7 +1053,7 @@ def build_svwn_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_blyp_superfunctional(name, npoints, deriv):
@@ -1086,7 +1086,7 @@ def build_blyp_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_b86bpbe_superfunctional(name, npoints, deriv):
 
@@ -1118,7 +1118,7 @@ def build_b86bpbe_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_pw86pbe_superfunctional(name, npoints, deriv):
 
@@ -1150,7 +1150,7 @@ def build_pw86pbe_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 def build_pw91_superfunctional(name, npoints, deriv):
 
@@ -1182,7 +1182,7 @@ def build_pw91_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_bp86_superfunctional(name, npoints, deriv):
@@ -1215,7 +1215,7 @@ def build_bp86_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_ft97_superfunctional(name, npoints, deriv):
@@ -1248,7 +1248,7 @@ def build_ft97_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_pbe_superfunctional(name, npoints, deriv):
@@ -1281,17 +1281,17 @@ def build_pbe_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_pbe0_superfunctional(name, npoints, deriv):
 
-    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup = build_pbe_superfunctional(name, npoints, deriv)[0]
     sup.set_name('PBE0')
     sup.set_description('    PBE0 Hybrid GGA Exchange-Correlation Functional\n')
     sup.set_citation('    Adamo et. al., J. Chem. Phys., 110(13), 6158, 1999\n')
     sup.set_x_alpha(0.25)
-    return sup
+    return (sup, False)
 
 
 def build_sogga_superfunctional(name, npoints, deriv):
@@ -1327,7 +1327,7 @@ def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_b3lyp_superfunctional(name, npoints, deriv):
@@ -1367,7 +1367,7 @@ def build_b3lyp_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_hf_x_superfunctional(name, npoints, deriv):
@@ -1398,7 +1398,7 @@ def build_hf_x_superfunctional(name, npoints, deriv):
     sup.set_c_alpha(0.0)
 
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_b3lyp5_superfunctional(name, npoints, deriv):
@@ -1438,7 +1438,7 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_b970_superfunctional(name, npoints, deriv):
@@ -1493,7 +1493,7 @@ def build_b970_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_b971_superfunctional(name, npoints, deriv):
@@ -1548,7 +1548,7 @@ def build_b971_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_b972_superfunctional(name, npoints, deriv):
@@ -1603,10 +1603,10 @@ def build_b972_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
-def build_b97d2p4_superfunctional(name, npoints, deriv):
+def build_b97d_superfunctional(name, npoints, deriv):
 
     # Call this first
     sup = psi4.SuperFunctional.blank()
@@ -1648,9 +1648,6 @@ def build_b97d2p4_superfunctional(name, npoints, deriv):
     sup.add_x_functional(X)
     sup.add_c_functional(C)
 
-    # => -D2 (s = 1.25) <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd2p4')))
-
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
@@ -1661,62 +1658,7 @@ def build_b97d2p4_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_b97d2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
-    sup.set_name('B97-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd2gr')))
-
-    return sup
-
-
-def build_b97d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
-    sup.set_name('B97-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd3zero')))
-
-    return sup
-
-
-def build_b97d3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
-    sup.set_name('B97-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd3bj')))
-
-    return sup
-
-
-def build_b97d3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
-    sup.set_name('B97-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd3mzero')))
-
-    return sup
-
-
-def build_b97d3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
-    sup.set_name('B97-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b97-d', 'd3mbj')))
-
-    return sup
+    return (sup, ('b97-d', 'd2p4'))
 
 
 def build_hcth_superfunctional(name, npoints, deriv):
@@ -1777,7 +1719,7 @@ def build_hcth_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_hcth120_superfunctional(name, npoints, deriv):
@@ -1838,29 +1780,7 @@ def build_hcth120_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_hcth120d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_hcth120_superfunctional(name, npoints, deriv)
-    sup.set_name('HCTH120-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('hcth120', 'd3zero')))
-
-    return sup
-
-
-def build_hcth120d3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_hcth120_superfunctional(name, npoints, deriv)
-    sup.set_name('HCTH120-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('hcth120', 'd3bj')))
-
-    return sup
+    return (sup, False)
 
 
 def build_hcth147_superfunctional(name, npoints, deriv):
@@ -1921,7 +1841,7 @@ def build_hcth147_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_hcth407_superfunctional(name, npoints, deriv):
@@ -1982,464 +1902,7 @@ def build_hcth407_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_blypd2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd2p4')))
-
-    return sup
-
-
-def build_blypd2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd2gr')))
-
-    return sup
-
-
-def build_blypd3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd3zero')))
-
-    return sup
-
-
-def build_blypd3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd3bj')))
-
-    return sup
-
-def build_blypd3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd3mzero')))
-
-    return sup
-
-
-def build_blypd3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('blyp', 'd3mbj')))
-
-    return sup
-
-def build_blypd1_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D1')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.2, 0.0, 0.0, 0.0))
-
-    return sup
-
-
-def build_b3lypd1_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D1')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
-
-    return sup
-
-
-def build_b3lypchg_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-CHG')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build('-CHG', 1.00, 0.0, 0.0, 0.0))
-
-    return sup
-
-
-def build_b3lypd2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd2p4')))
-    #sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd')))  # alternatively
-    #sup.set_dispersion(psi4.Dispersion.build('-D2', 1.05, 0.0, 0.0, 0.0))  # alternatively
-
-    return sup
-
-
-def build_b3lypd2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd2gr')))
-    #sup.set_dispersion(psi4.Dispersion.build('-D2GR', 1.05, 20.0, 0.0, 0.0))  # alternatively
-
-    return sup
-
-
-def build_b3lypd3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3zero')))
-    #sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3')))  # alternatively
-    #sup.set_dispersion(psi4.Dispersion.build('-D3ZERO', 1.0, 1.261, 1.703, 14.0))  # alternatively
-
-    return sup
-
-
-def build_b3lypd3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3bj')))
-    #sup.set_dispersion(psi4.Dispersion.build('-D3BJ', 1.000, 0.3981, 1.9889, 4.4211))  # alternatively
-
-    return sup
-
-
-def build_b3lypd3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mzero')))
-
-    return sup
-
-
-def build_b3lypd3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mbj')))
-
-    return sup
-
-
-def build_b3lyp5d2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd2p4')))
-
-    return sup
-
-
-def build_b3lyp5d2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd2gr')))
-
-    return sup
-
-
-def build_b3lyp5d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3zero')))
-
-    return sup
-
-
-def build_b3lyp5d3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3bj')))
-
-    return sup
-
-
-def build_b3lyp5d3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mzero')))
-
-    return sup
-
-
-def build_b3lyp5d3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b3lyp', 'd3mbj')))
-
-    return sup
-
-
-def build_bp86d1_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D1')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
-
-    return sup
-
-
-
-def build_bp86d2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd2p4')))
-
-    return sup
-
-
-def build_bp86d2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd2gr')))
-
-    return sup
-
-
-def build_bp86d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd3zero')))
-
-    return sup
-
-
-def build_bp86d3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd3bj')))
-
-    return sup
-
-
-def build_bp86d3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd3mzero')))
-
-    return sup
-
-
-def build_bp86d3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('bp86', 'd3mbj')))
-
-    return sup
-
-
-def build_pbed1_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D1')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build('-D1', 0.75, 0.0, 0.0, 0.0))
-
-    return sup
-
-
-
-def build_pbed2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd2p4')))
-
-    return sup
-
-
-def build_pbed2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd2gr')))
-
-    return sup
-
-
-def build_pbed3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd3zero')))
-
-    return sup
-
-
-def build_pbed3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd3bj')))
-
-    return sup
-
-
-def build_pbed3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd3mzero')))
-
-    return sup
-
-
-def build_pbed3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe', 'd3mbj')))
-
-    return sup
-
-
-def build_pbe0d2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd2p4')))
-
-    return sup
-
-
-def build_pbe0d2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd2gr')))
-
-    return sup
-
-
-def build_pbe0d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd3zero')))
-
-    return sup
-
-
-def build_pbe0d3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd3bj')))
-
-    return sup
-
-
-def build_pbe0d3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd3mzero')))
-
-    return sup
-
-
-def build_pbe0d3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe0_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('pbe0', 'd3mbj')))
-
-    return sup
+    return (sup, False)
 
 
 def build_wsvwn_superfunctional(name, npoints, deriv):
@@ -2472,7 +1935,7 @@ def build_wsvwn_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wpbe_superfunctional(name, npoints, deriv):
@@ -2505,61 +1968,17 @@ def build_wpbe_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_wpbed3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_wpbe_superfunctional(name, npoints, deriv)
-    sup.set_name('wPBE-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('lcwpbe', 'd3zero')))
-
-    return sup
-
-
-def build_wpbed3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_wpbe_superfunctional(name, npoints, deriv)
-    sup.set_name('wPBE-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('lcwpbe', 'd3bj')))
-
-    return sup
-
-
-def build_wpbed3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_wpbe_superfunctional(name, npoints, deriv)
-    sup.set_name('wPBE-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('lcwpbe', 'd3mzero')))
-
-    return sup
-
-
-def build_wpbed3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_wpbe_superfunctional(name, npoints, deriv)
-    sup.set_name('wPBE-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('lcwpbe', 'd3mbj')))
-
-    return sup
+    return (sup, False)
 
 
 def build_wpbe0_superfunctional(name, npoints, deriv):
 
-    sup = build_wpbe_superfunctional(name, npoints, deriv)
+    sup = build_wpbe_superfunctional(name, npoints, deriv)[0]
     sup.set_name('wPBE0')
     sup.set_description('    PBE0 SR-XC Functional (HJS Model)\n')
     sup.set_x_omega(0.3)
     sup.set_x_alpha(0.25)
-    return sup
+    return (sup, False)
 
 
 def build_wpbesol_superfunctional(name, npoints, deriv):
@@ -2592,17 +2011,17 @@ def build_wpbesol_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wpbesol0_superfunctional(name, npoints, deriv):
 
-    sup = build_wpbesol_superfunctional(name, npoints, deriv)
+    sup = build_wpbesol_superfunctional(name, npoints, deriv)[0]
     sup.set_name('wPBEsol0')
     sup.set_description('    PBEsol0 SR-XC Functional (HJS Model)\n')
     sup.set_x_omega(0.3)
     sup.set_x_alpha(0.25)
-    return sup
+    return (sup, False)
 
 
 def build_wblyp_superfunctional(name, npoints, deriv):
@@ -2635,7 +2054,7 @@ def build_wblyp_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wb97_superfunctional(name, npoints, deriv):
@@ -2696,7 +2115,7 @@ def build_wb97_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wb97x_superfunctional(name, npoints, deriv):
@@ -2757,7 +2176,7 @@ def build_wb97x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wb97xd_superfunctional(name, npoints, deriv):
@@ -2816,14 +2235,11 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.set_x_alpha(alpha)   # Table 1: c_x
     sup.set_c_alpha(0.0)
 
-    # => -D2 (CHG Damping Function) <= #
-    sup.set_dispersion(psi4.Dispersion.build('-CHG', 1.0, 0.0, 0.0, 0.0))
-
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, ('wB97', '-CHG'))
 
 
 def build_m05_superfunctional(name, npoints, deriv):
@@ -2909,7 +2325,7 @@ def build_m05_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_m05_2x_superfunctional(name, npoints, deriv):
@@ -2995,29 +2411,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_m05d3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_m05_superfunctional(name, npoints, deriv)
-    sup.set_name('M05-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('m05', 'd3zero')))
-
-    return sup
-
-
-def build_m05_2xd3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_m05_2x_superfunctional(name, npoints, deriv)
-    sup.set_name('M05-2X-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('m05-2x', 'd3zero')))
-
-    return sup
+    return (sup, False)
 
 
 def build_dldf_superfunctional(name, npoints, deriv):
@@ -3088,29 +2482,20 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_dldfd09_superfunctional(name, npoints, deriv):
+    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
+    sup.set_name('dlDF+DAS09')
 
-    sup = build_dldf_superfunctional(name, npoints, deriv)
-    sup.set_name('dlDF+D09')
+    return (sup, ('dlDF', '-DAS2009'))
 
-    # => +D <= #
-    sup.set_dispersion(psi4.Dispersion.build('-DAS2009', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
-
-    return sup
-
-
-def build_dldfd_superfunctional(name, npoints, deriv):
-
-    sup = build_dldf_superfunctional(name, npoints, deriv)
+def build_dldfd10_superfunctional(name, npoints, deriv):
+    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
     sup.set_name('dlDF+D')
 
-    # => +D <= #
-    sup.set_dispersion(psi4.Dispersion.build('-DAS2010', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
-
-    return sup
+    return (sup, ('dlDF', '-DAS2010'))
 
 
 def build_hfd_superfunctional(name, npoints, deriv):
@@ -3121,11 +2506,8 @@ def build_hfd_superfunctional(name, npoints, deriv):
     sup.set_name('HF+D')
     sup.set_x_alpha(1.0)
 
-    # => +D <= #
-    sup.set_dispersion(psi4.Dispersion.build('-DAS2010', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
-
     sup.allocate()
-    return sup
+    return (sup, ('HF', '-DAS2010'))
 
 
 def build_b2plyp_superfunctional(name, npoints, deriv):
@@ -3162,7 +2544,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
@@ -3222,7 +2604,7 @@ def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_wb97x_2lp_superfunctional(name, npoints, deriv):
@@ -3282,7 +2664,7 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_pbe0_2_superfunctional(name, npoints, deriv):
@@ -3319,7 +2701,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_dsd_blyp_superfunctional(name, npoints, deriv):
@@ -3354,15 +2736,11 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv):
     sup.set_c_os_alpha(0.46)
     sup.set_c_ss_alpha(0.43)
 
-    # => -D2 <=
-
-    sup.set_dispersion(psi4.Dispersion.build('-D2', 0.35, 0.0, 0.0, 0.0))
-
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_dsd_pbep86_superfunctional(name, npoints, deriv):
@@ -3397,15 +2775,11 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
     sup.set_c_ss_alpha(0.23)
     sup.set_c_os_alpha(0.51)
 
-    # => -D2 <=
-
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('dsd-pbep86', 'd2p4')))
-
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
@@ -3440,81 +2814,11 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
     sup.set_c_ss_alpha(0.12)
     sup.set_c_os_alpha(0.53)
 
-    # => -D2 <=
-
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('dsd-pbepbe', 'd2p4')))
-
     # => End User-Customization <= #
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_b2plypd2p4_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D2P4')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd2p4')))
-
-    return sup
-
-
-def build_b2plypd2gr_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D2GR')
-
-    # => -D2 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd2gr')))
-
-    return sup
-
-
-def build_b2plypd3zero_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D3ZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd3zero')))
-
-    return sup
-
-
-def build_b2plypd3bj_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D3BJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd3bj')))
-
-    return sup
-
-
-def build_b2plypd3mzero_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D3MZERO')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd3mzero')))
-
-    return sup
-
-
-def build_b2plypd3mbj_superfunctional(name, npoints, deriv):
-
-    sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D3MBJ')
-
-    # => -D3 <= #
-    sup.set_dispersion(psi4.Dispersion.build(*dash_server('b2plyp', 'd3mbj')))
-
-    return sup
+    return (sup, False)
 
 
 def build_primitive_superfunctional(name, npoints, deriv):
@@ -3553,7 +2857,7 @@ def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
+    return (sup, False)
 
 
 def build_hf_superfunctional(name, npoints, deriv):
@@ -3576,18 +2880,19 @@ def build_hf_superfunctional(name, npoints, deriv):
     # 100% exact exchange
     sup.set_x_alpha(1.0)
 
-	# Zero out other GKS
+    # Zero out other GKS
     sup.set_c_omega(0.0)
     sup.set_x_omega(0.0)
     sup.set_c_alpha(0.0)
 
     # Dont allocate, no functionals
-    return sup
+    return (sup, False)
 
 
 # Superfunctional lookup table
 superfunctionals = {
         'hf'              : build_hf_superfunctional,
+        'hf+d'            : build_hfd_superfunctional,
         's_x'             : build_primitive_superfunctional,
         'b88_x'           : build_primitive_superfunctional,
         'b3_x'            : build_primitive_superfunctional,
@@ -3627,65 +2932,13 @@ superfunctionals = {
         'b97-0'           : build_b970_superfunctional,
         'b97-1'           : build_b971_superfunctional,
         'b97-2'           : build_b972_superfunctional,
+        'b97-d'           : build_b97d_superfunctional,
         'hcth'            : build_hcth_superfunctional,
         'hcth120'         : build_hcth120_superfunctional,
-        'hcth120-d3zero'  : build_hcth120d3zero_superfunctional,
-        'hcth120-d3bj'    : build_hcth120d3bj_superfunctional,
         'hcth147'         : build_hcth147_superfunctional,
         'hcth407'         : build_hcth407_superfunctional,
-        'blyp-d1'         : build_blypd1_superfunctional,
-        'blyp-d2p4'       : build_blypd2p4_superfunctional,
-        'blyp-d2gr'       : build_blypd2gr_superfunctional,
-        'blyp-d3zero'     : build_blypd3zero_superfunctional,
-        'blyp-d3bj'       : build_blypd3bj_superfunctional,
-        'blyp-d3mzero'    : build_blypd3mzero_superfunctional,
-        'blyp-d3mbj'      : build_blypd3mbj_superfunctional,
-        'pbe-d1'          : build_pbed1_superfunctional,
-        'pbe-d2p4'        : build_pbed2p4_superfunctional,
-        'pbe-d2gr'        : build_pbed2gr_superfunctional,
-        'pbe-d3zero'      : build_pbed3zero_superfunctional,
-        'pbe-d3bj'        : build_pbed3bj_superfunctional,
-        'pbe-d3mzero'     : build_pbed3mzero_superfunctional,
-        'pbe-d3mbj'       : build_pbed3mbj_superfunctional,
-        'pbe0-d2p4'       : build_pbe0d2p4_superfunctional,
-        'pbe0-d2gr'       : build_pbe0d2gr_superfunctional,
-        'pbe0-d3zero'     : build_pbe0d3zero_superfunctional,
-        'pbe0-d3bj'       : build_pbe0d3bj_superfunctional,
-        'pbe0-d3mzero'    : build_pbe0d3mzero_superfunctional,
-        'pbe0-d3mbj'      : build_pbe0d3mbj_superfunctional,
-        'bp86-d1'         : build_bp86d1_superfunctional,
-        'bp86-d2p4'       : build_bp86d2p4_superfunctional,
-        'bp86-d2gr'       : build_bp86d2gr_superfunctional,
-        'bp86-d3zero'     : build_bp86d3zero_superfunctional,
-        'bp86-d3bj'       : build_bp86d3bj_superfunctional,
-        'bp86-d3mzero'    : build_bp86d3mzero_superfunctional,
-        'bp86-d3mbj'      : build_bp86d3mbj_superfunctional,
-        'b97-d2p4'        : build_b97d2p4_superfunctional,
-        'b97-d2gr'        : build_b97d2gr_superfunctional,
-        'b97-d3zero'      : build_b97d3zero_superfunctional,
-        'b97-d3bj'        : build_b97d3bj_superfunctional,
-        'b97-d3mzero'     : build_b97d3mzero_superfunctional,
-        'b97-d3mbj'       : build_b97d3mbj_superfunctional,
-        'b3lyp-d2p4'      : build_b3lypd2p4_superfunctional,
-        'b3lyp-d2gr'      : build_b3lypd2gr_superfunctional,
-        'b3lyp-d3zero'    : build_b3lypd3zero_superfunctional,
-        'b3lyp-d3bj'      : build_b3lypd3bj_superfunctional,
-        'b3lyp-d3mzero'   : build_b3lypd3mzero_superfunctional,
-        'b3lyp-d3mbj'     : build_b3lypd3mbj_superfunctional,
-        'b3lyp-chg'       : build_b3lypchg_superfunctional,
-        'b3lyp-d1'        : build_b3lypd1_superfunctional,
-        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,
-        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,
-        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,
-        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,
-        'b3lyp5-d3mzero'  : build_b3lyp5d3mzero_superfunctional,
-        'b3lyp5-d3mbj'    : build_b3lyp5d3mbj_superfunctional,
         'wsvwn'           : build_wsvwn_superfunctional,
         'wpbe'            : build_wpbe_superfunctional,
-        'wpbe-d3zero'     : build_wpbed3zero_superfunctional,
-        'wpbe-d3bj'       : build_wpbed3bj_superfunctional,
-        'wpbe-d3mzero'    : build_wpbed3mzero_superfunctional,
-        'wpbe-d3mbj'      : build_wpbed3mbj_superfunctional,
         'wpbe0'           : build_wpbe0_superfunctional,
         'wpbesol'         : build_wpbesol_superfunctional,
         'wpbesol0'        : build_wpbesol0_superfunctional,
@@ -3695,20 +2948,11 @@ superfunctionals = {
         'wb97x-d'         : build_wb97xd_superfunctional,
         'm05'             : build_m05_superfunctional,
         'm05-2x'          : build_m05_2x_superfunctional,
-        'm05-d3zero'      : build_m05d3zero_superfunctional,
-        'm05-2x-d3zero'   : build_m05_2xd3zero_superfunctional,
         'dldf'            : build_dldf_superfunctional,
         'dldf+d09'        : build_dldfd09_superfunctional,
-        'dldf+d'          : build_dldfd_superfunctional,
-        'hf+d'            : build_hfd_superfunctional,
+        'dldf+d'          : build_dldfd10_superfunctional,
         'sogga'           : build_sogga_superfunctional,
         'b2plyp'          : build_b2plyp_superfunctional,
-        'b2plyp-d2p4'     : build_b2plypd2p4_superfunctional,
-        'b2plyp-d2gr'     : build_b2plypd2gr_superfunctional,
-        'b2plyp-d3zero'   : build_b2plypd3zero_superfunctional,
-        'b2plyp-d3bj'     : build_b2plypd3bj_superfunctional,
-        'b2plyp-d3mzero'  : build_b2plypd3mzero_superfunctional,
-        'b2plyp-d3mbj'    : build_b2plypd3mbj_superfunctional,
         #'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
         #'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
         'pbe0-2'          : build_pbe0_2_superfunctional,
@@ -3722,11 +2966,59 @@ superfunctionals = {
         'wpbe2'           : build_wpbe2_superfunctional,
     }
 
-# Insert -D/-D2/-D3 aliases into superfunctionals dict
-#for key in superfunctionals.keys():
-#    for al in dash_alias.keys():
-#        if key.endswith(dash_alias[al]):
-#            superfunctionals[key.replace(dash_alias[al], al)] = superfunctionals[key]
+## Build up the lost of functionals we can compute
+# Add in plain values
+superfunctional_list = []
+for key in superfunctionals.keys():
+    sup = superfunctionals[key](key, 1, 1)[0]
+    superfunctional_list.append(sup)
+
+# Figure out what Grimme functionals we have
+p4_funcs = set(superfunctionals.keys())
+p4_funcs -= set(['b97-d'])
+for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
+    func_list = (set(superfunctional_listues.keys()) & p4_funcs)
+    for func in func_list:
+        sup = superfunctionals[func](func, 1, 1)[0]
+        sup.set_name(sup.name() + '-' + dashlvl.upper())
+        superfunctional_list.append(sup)
+
+        if dashlvl == 'd2p4':
+            # -D2 overide
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D2')
+            superfunctional_list.append(sup)
+
+            # -D overide
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D')
+            superfunctional_list.append(sup)
+
+        if dashlvl == 'd3zero':
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D3')
+            superfunctional_list.append(sup)
+
+        if dashlvl == 'd3mzero':
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D3M')
+            superfunctional_list.append(sup)
+
+# B97D is an odd one
+for dashlvl in dftd3.full_dash_keys:
+    if dashlvl == 'd2p4': continue
+
+    sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
+    sup.set_name('B97-' + dashlvl.upper())
+    superfunctional_list.append(sup)
+
+# wPBE, grr need a new scheme
+for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
+    sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
+    sup.set_name(sup.name() + '-' + dashlvl.upper())
+    superfunctional_list.append(sup)
+
+
 
 
 def build_superfunctional(alias):
@@ -3736,58 +3028,66 @@ def build_superfunctional(alias):
     deriv = 1 # Default depth for now
 
     # Grab out superfunctional
-    sup = None
-
     if name in ["gen", ""]:
-        sup = psi4.get_option("DFT_CUSTOM_FUNCTIONAL")
-        if not isinstance(sup, psi4.SuperFunctional):
+        sup = (psi4.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
+        if not isinstance(sup[0], psi4.SuperFunctional):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
+
     elif name in superfunctionals.keys():
         sup = superfunctionals[name](name, npoints, deriv)
-    elif any(name.endswith(al) for al in dash_alias.keys()):
-        for al in dash_alias.keys():
-            if name.endswith(al):
-                aliasedname = name.replace(al, dash_alias[al])
-                sup = superfunctionals[aliasedname](aliasedname, npoints, deriv)
-                sup.set_name(name.upper())
-                break
 
-    if sup is None:
+
+    elif any(name.endswith(al) for al in dftd3.full_dash_keys):
+
+        # Odd hack for b97-d
+        if 'b97-d' in name:
+            name = name.replace('b97', 'b97-d')
+
+        dashparam = [x for x in dftd3.full_dash_keys if name.endswith(x)]
+        if len(dashparam) > 1:
+            raise Exception("Dashparam %s is ambiguous.")
+        else:
+            dashparam = dashparam[0]
+
+        base_name = name.replace('-' + dashparam, '')
+
+        if dashparam in ['d2', 'd']:
+            dashparam = 'd2p4'
+
+        if dashparam == 'd3':
+            dashparam = 'd3zero'
+
+        if dashparam == 'd3m':
+            dashparam = 'd3mzero'
+
+        if base_name not in superfunctionals.keys():
+            raise KeyError("SCF: Functional (%s) with base (%s) not found!" % (alias, base_name))
+
+        func = superfunctionals[base_name](base_name, npoints, deriv)[0]
+
+        base_name = base_name.replace('wpbe', 'lcwpbe')
+        sup = (func, (base_name, dashparam))
+
+    else:
         raise KeyError("SCF: Functional (%s) not found!" % alias)
 
     # Set options
-    if psi4.has_option_changed("SCF", "DFT_OMEGA") and sup.is_x_lrc():
-        sup.set_x_omega(psi4.get_option("SCF", "DFT_OMEGA"))
-    if psi4.has_option_changed("SCF", "DFT_OMEGA_C") and sup.is_c_lrc():
-        sup.set_c_omega(psi4.get_option("SCF", "DFT_OMEGA_C"))
+    if psi4.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
+        sup[0].set_x_omega(psi4.get_option("SCF", "DFT_OMEGA"))
+    if psi4.has_option_changed("SCF", "DFT_OMEGA_C") and sup[0].is_c_lrc():
+        sup[0].set_c_omega(psi4.get_option("SCF", "DFT_OMEGA_C"))
 
     if psi4.has_option_changed("SCF", "DFT_ALPHA"):
-        sup.set_x_alpha(psi4.get_option("SCF", "DFT_ALPHA"))
+        sup[0].set_x_alpha(psi4.get_option("SCF", "DFT_ALPHA"))
     if psi4.has_option_changed("SCF", "DFT_ALPHA_C"):
-        sup.set_c_alpha(psi4.get_option("SCF", "DFT_ALPHA_C"))
+        sup[0].set_c_alpha(psi4.get_option("SCF", "DFT_ALPHA_C"))
 
     # Check SCF_TYPE
-    if sup.is_x_lrc() and (psi4.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (psi4.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
                         % psi4.get_option("SCF", "SCF_TYPE"))
 
     return sup
-
-
-def superfunctional_list():
-    val = []
-    for key in superfunctionals.keys():
-        sup = superfunctionals[key](key, 1, 1)
-        val.append(sup)
-
-        # Insert -D/-D2/-D3 aliases into superfunctional_list
-        for al in dash_alias.keys():
-            if key.endswith(dash_alias[al]):
-                sup2 = superfunctionals[key](key, 1, 1)
-                sup2.set_name(key.replace(dash_alias[al], al).upper())
-                val.append(sup2)
-    return val
-
 
 def test_ccl_functional(functional, ccl_functional):
 

@@ -56,6 +56,11 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     only public interface fns used) or a string that can be instantiated
     into a qcdb.Molecule.
 
+    func - functional alias or None
+    dashlvl - functional type d2gr/d3zero/d3bj/d3mzero/d3mbj
+    dashparam - dictionary
+    dertype = derivative level
+
     """
     # Create (if necessary) and update qcdb.Molecule
     if isinstance(self, Molecule):
@@ -72,11 +77,6 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     self.update_geometry()
 
     # Validate arguments
-    dashlvl = dashlvl.lower()
-    dashlvl = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
-    if dashlvl not in dashcoeff.keys():
-        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
-
     if dertype is None:
         dertype = -1
     elif der0th.match(str(dertype)):
@@ -88,33 +88,21 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     else:
         raise ValidationError('Requested derivative level \'dertype\' %s not valid for run_dftd3.' % (dertype))
 
-    if func is None:
-        if dashparam is None:
-            # defunct case
-            raise ValidationError("""Parameters for -D correction missing. Provide a func or a dashparam kwarg.""")
-        else:
-            # case where all param read from dashparam dict (which must have all correct keys)
-            func = 'custom'
-            dashcoeff[dashlvl][func] = {}
-            dashparam = dict((k.lower(), v) for k, v in dashparam.items())
-            for key in dashcoeff[dashlvl]['b3lyp'].keys():
-                if key in dashparam.keys():
-                    dashcoeff[dashlvl][func][key] = dashparam[key]
-                else:
-                    raise ValidationError("""Parameter %s is missing from dashparam dict %s.""" % (key, dashparam))
+    if dashlvl is not None:
+        dashlvl = dashlvl.lower()
+        dashlvl = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+        if dashlvl not in dashcoeff.keys():
+            raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
     else:
-        func = func.lower()
-        if func not in dashcoeff[dashlvl].keys():
-            raise ValidationError("""Functional %s is not available for -D level %s.""" % (func, dashlvl))
-        if dashparam is None:
-            # (normal) case where all param taken from dashcoeff above
-            pass
-        else:
-            # case where items in dashparam dict can override param taken from dashcoeff above
-            dashparam = dict((k.lower(), v) for k, v in dashparam.items())
-            for key in dashcoeff[dashlvl]['b3lyp'].keys():
-                if key in dashparam.keys():
-                    dashcoeff[dashlvl][func][key] = dashparam[key]
+        raise ValidationError("""Must specify a dashlvl""")
+
+    if func is not None:
+        dftd3_params = dash_server(func, dashlvl)
+    else:
+        dftd3_params = {}
+
+    if dashparam is not None:
+        dftd3_params.update(dashparam)
 
     # Move ~/.dftd3par.<hostname> out of the way so it won't interfere
     defaultfile = os.path.expanduser('~') + '/.dftd3par.' + socket.gethostname()
@@ -155,7 +143,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     os.chdir(dftd3_tmpdir)
 
     # Write dftd3_parameters file that governs dispersion calc
-    paramcontents = dash_server(func, dashlvl, 'dftd3')
+    paramcontents = dftd3_coeff_formatter(dashlvl, dftd3_params)
     paramfile1 = 'dftd3_parameters'  # older patched name
     with open(paramfile1, 'w') as handle:
         handle.write(paramcontents)
@@ -165,6 +153,20 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     # Write dftd3_geometry file that supplies geometry to dispersion calc
     numAtoms = self.natom()
+
+    # We seem to have a problem with one atom, force the correct result
+    if numAtoms == 1:
+        dashd = 0.0
+        dashdderiv = psi4.Matrix(1, 3)
+
+        if dertype == -1:
+            return dashd, dashdderiv
+        elif dertype == 0:
+            return dashd
+        elif dertype == 1:
+            return dashdderiv
+
+
     geom = self.save_string_xyz()
     reals = []
     for line in geom.splitlines():

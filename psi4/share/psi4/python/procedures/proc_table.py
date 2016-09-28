@@ -199,12 +199,13 @@ energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
 energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 
 # Integrate DFT with driver routines
-for ssuper in proc.superfunctional_list():
+superfunc_list = proc.dft_functional.superfunctional_list
+for ssuper in superfunc_list:
     procedures['energy'][ssuper.name().lower()] = proc.run_dft
     if not ssuper.is_c_hybrid():
         procedures['property'][ssuper.name().lower()] = proc.run_dft_property
 
-for ssuper in proc.superfunctional_list():
+for ssuper in superfunc_list:
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = proc.run_dft_gradient
 

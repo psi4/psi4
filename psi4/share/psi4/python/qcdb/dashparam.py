@@ -41,6 +41,8 @@ dash_alias = {
     '-d3m': '-d3mzero',  # means -D3 uses the 3-param zero-damping fn, refit for short-range
     }
 
+dash_alias_reverse = {v : k for k, v in dash_alias.items()}
+
 # The dashcoeff dict below defines the -D parameters for all of psi4. 'd2p4' are
 #   taken from already defined functionals in psi4. The remainder of the parameters are
 #   from http://toc.uni-muenster.de/DFTD3/ on September 25, 2012, with the dict keys
@@ -183,29 +185,28 @@ dashcoeff = {
     },
 }
 
+# Full list of all possible endings
+full_dash_keys = dashcoeff.keys() + [x.replace('-', '') for x in dash_alias.keys()]
 
-def dash_server(func, dashlvl, mode='psi4'):
-    """Function to serve up dispersion correction parameters in whatever form needed.
-    When *mode* is 'dftd3', returns a string suitable for writing to ./dftd3_parameters
-    to calculuate the correction at *dashlvl* with the default parameters for functional
-    *func*. When *mode* is 'psi4', returns a tuple of arguments suitable for building
-    a Dispersion object with *dashlvl* parameters for functional *func*.
+def dash_server(func, dashlvl):
+    """ Returns the dictionary of keys for default empirical parameters"""
 
-    There are four computational *dashlvl* choices. 'd2p4' calls the -D2 correction
-    within psi4 (hence, faked for mode='dftd3'). The other three, 'd2gr', 'd3zero',
-    and 'd3bj' call the three dftd3 modes of operation (corresponding to -old, -zero, -bj).
-    Additionally, there are three aliased *dashlvl* choices since the aliases in dash_alias
-    above are imposed.
-
-    """
     # Validate input arguments
     dashlvl = dashlvl.lower()
     dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
+
+    if dashlvleff not in dashcoeff.keys():
+        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
 
     func = func.lower()
     if func not in dashcoeff[dashlvleff].keys():
         raise ValidationError("""Functional %s is not available for -D level %s.""" % (func, dashlvl))
 
+    # Return the values
+    return dashcoeff[dashlvleff][func]
+
+
+def dftd3_coeff_formatter(dashlvl, dashcoeff):
     # Return strings for dftd3 program parameter file
     #            s6 rs6 s18 rs8 alpha6 version
     #   d2p4:    s6 sr6=1.1 s8=0.0 a2=None alpha6=20.0 version=2
@@ -215,94 +216,48 @@ def dash_server(func, dashlvl, mode='psi4'):
     #   d3mzero: s6 sr6 s8 beta alpha6=14.0 version=5
     #   d3mbj:   s6 a1 s8 a2 alpha6=None version=6
 
-    if mode.lower() == 'dftd3':
-        if dashlvleff.lower() == 'd2p4':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 1.1, 0.0, 0.0, 20.0, 2)
-        elif dashlvleff.lower() == 'd2gr':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 1.1, 0.0, 0.0,
-                 dashcoeff[dashlvleff][func]['alpha6'],
-                 2)
-        elif dashlvleff.lower() == 'd3zero':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 dashcoeff[dashlvleff][func]['sr6'],
-                 dashcoeff[dashlvleff][func]['s8'],
-                 1.0,
-                 dashcoeff[dashlvleff][func]['alpha6'],
-                 3)
-        elif dashlvleff.lower() == 'd3bj':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 dashcoeff[dashlvleff][func]['a1'],
-                 dashcoeff[dashlvleff][func]['s8'],
-                 dashcoeff[dashlvleff][func]['a2'],
-                 0.0, 4)
-        elif dashlvleff.lower() == 'd3mzero':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 dashcoeff[dashlvleff][func]['sr6'],
-                 dashcoeff[dashlvleff][func]['s8'],
-                 dashcoeff[dashlvleff][func]['beta'],
-                 14.0, 5)
-        elif dashlvleff.lower() == 'd3mbj':
-            returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
-                (dashcoeff[dashlvleff][func]['s6'],
-                 dashcoeff[dashlvleff][func]['a1'],
-                 dashcoeff[dashlvleff][func]['s8'],
-                 dashcoeff[dashlvleff][func]['a2'],
-                 0.0, 6)
-        else:
-            raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
-        return returnstring
+    dashlvleff = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
 
-    # Return parameter list for Dispersion.build function
-    #   d2p4:    name=-D2     s6=s6 p1=None p2=None p3=None (damping parameter fixed in Dispersion class)
-    #   d2gr:    name=-D2GR   s6=s6 p1=alpha6 p2=None p3=None
-    #   d3zero:  name=-D3ZERO s6=s6 p1=sr6 p2=s8 p3=alpha6
-    #   d3bj:    name=-D3BJ   s6=s6 p1=a1 p2=s8 p3=a2
-
-    #   d3mzero: name=-D3M    s6=s6 p1=sr6 p2=s8 beta alpha6=14.0 version=5
-    #   d3mbj:   name=-D3MBJ  s6=s6 p1=a1 p2=s8 p3=a2
-    elif mode.lower() == 'psi4':
-        if dashlvleff == 'd2p4':
-            return '-D2', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                0.0, 0.0, 0.0
-        elif dashlvleff == 'd2gr':
-            return '-D2GR', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                dashcoeff[dashlvleff][func]['alpha6'], \
-                0.0, 0.0
-        elif dashlvleff == 'd3zero':
-            return '-D3ZERO', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                dashcoeff[dashlvleff][func]['s8'], \
-                dashcoeff[dashlvleff][func]['sr6'], \
-                dashcoeff[dashlvleff][func]['alpha6']
-        elif dashlvleff == 'd3bj':
-            return '-D3BJ', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                dashcoeff[dashlvleff][func]['s8'], \
-                dashcoeff[dashlvleff][func]['a1'], \
-                dashcoeff[dashlvleff][func]['a2']
-        elif dashlvleff == 'd3mzero':
-            return '-D3MZERO', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                dashcoeff[dashlvleff][func]['s8'], \
-                dashcoeff[dashlvleff][func]['sr6'], \
-                dashcoeff[dashlvleff][func]['beta']
-        elif dashlvleff == 'd3mbj':
-            return '-D3MBJ', \
-                dashcoeff[dashlvleff][func]['s6'], \
-                dashcoeff[dashlvleff][func]['s8'], \
-                dashcoeff[dashlvleff][func]['a1'], \
-                dashcoeff[dashlvleff][func]['a2']
-        else:
-            raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
-
+    if dashlvleff.lower() == 'd2p4':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             1.1, 0.0, 0.0, 20.0, 2)
+    elif dashlvleff.lower() == 'd2gr':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             1.1, 0.0, 0.0,
+             dashcoeff['alpha6'],
+             2)
+    elif dashlvleff.lower() == 'd3zero':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             dashcoeff['sr6'],
+             dashcoeff['s8'],
+             1.0,
+             dashcoeff['alpha6'],
+             3)
+    elif dashlvleff.lower() == 'd3bj':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             dashcoeff['a1'],
+             dashcoeff['s8'],
+             dashcoeff['a2'],
+             0.0, 4)
+    elif dashlvleff.lower() == 'd3mzero':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             dashcoeff['sr6'],
+             dashcoeff['s8'],
+             dashcoeff['beta'],
+             14.0, 5)
+    elif dashlvleff.lower() == 'd3mbj':
+        returnstring = '%12.6f %12.6f %12.6f %12.6f %12.6f %6d\n' % \
+            (dashcoeff['s6'],
+             dashcoeff['a1'],
+             dashcoeff['s8'],
+             dashcoeff['a2'],
+             0.0, 6)
     else:
-        raise ValidationError("""-D return format %s is not available. Choose 'psi4' or 'dftd3'.""")
+        raise ValidationError("""-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
+
+    return returnstring
