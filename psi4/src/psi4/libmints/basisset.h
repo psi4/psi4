@@ -329,6 +329,8 @@ public:
                                                  const std::shared_ptr<Molecule>& mol,
                                                  const std::string& type);
 
+    static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
+
     /** Returns a new BasisSet object with qcdb Python machinery.
      *
      * @param mol    Molecule to construct the basis set for.

@@ -88,7 +88,10 @@ protected:
     /// Name of the wavefunction
     std::string name_;
 
-    /// Primary basis set for AO integrals
+    /// DF/RI/F12/etc basis sets
+    std::map<std::string, std::shared_ptr<BasisSet>> basissets_;
+
+    /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
 
     /// Primary basis set for SO integrals
@@ -237,9 +240,9 @@ public:
                  std::shared_ptr<BasisSet> basis,
                  Options& options);
 
-    /// Constructor for an entirely new wavefunction
-    Wavefunction(std::shared_ptr<Molecule> molecule, const std::string& basis,
-                 Options & options);
+    /// Constructor for an entirely new wavefunction with an existing basis and global options
+    Wavefunction(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> basis);
 
     /// Blank constructor for derived classes
     Wavefunction(Options & options);
@@ -298,6 +301,12 @@ public:
     std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
+
+    /// Getters and setters for other basis sets
+    std::shared_ptr<BasisSet> get_basisset(std::string label);
+    void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
+
+
     /// Returns the MatrixFactory object that pertains to this wavefunction
     std::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
