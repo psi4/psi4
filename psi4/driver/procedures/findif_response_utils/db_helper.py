@@ -40,9 +40,10 @@ import collections
 import shelve
 import copy
 import os
-import psi4core
-import p4util
-from p4const import *
+
+from psi4 import psi4core
+from psi4.driver import p4util
+from psi4.driver.p4const import *
 
 
 

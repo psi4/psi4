@@ -38,17 +38,12 @@ import os
 import subprocess
 import re
 import sys
-import inspect
 import random
 
-# Relative hack for now
-import os, sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
-sys.path.append(path_dir)
-import p4util
-import qcdb
-from molutil import *
-from p4util.exceptions import *
+from psi4.driver import qcdb
+from psi4.driver import p4util
+from psi4.driver.molutil import *
+from psi4.driver.p4util.exceptions import *
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

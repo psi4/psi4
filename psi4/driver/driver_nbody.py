@@ -30,10 +30,10 @@ import numpy as np
 import itertools as it
 
 # Import driver helpers
-import p4util
-import p4const
+from psi4.driver import p4util
+from psi4.driver import p4const
 
-from p4util.exceptions import *
+from psi4.driver.p4util.exceptions import *
 
 ### Math helper functions
 

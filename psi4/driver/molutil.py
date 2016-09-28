@@ -29,8 +29,8 @@
 from __future__ import absolute_import
 import math
 
-import psi4core
-import p4const
+from psi4 import psi4core
+from psi4.driver.p4util import p4const
 
 
 def extract_clusters(mol, ghost=True, cluster_size=0):

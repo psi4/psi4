@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
     // Finish linking Psi4 into Python, preprocess the input file,
     // and then run the input file.
-    Script::language->run(infile);
+    // Script::language->run(infile);
 
     // Automatically clean scratch, unless the user asked for a messy run
     if (!messy) PSIOManager::shared_object()->psiclean();
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     timer_done();
 
     psi_stop(infile, "outfile", psi_file_prefix);
-    Script::language->finalize();
+    // Script::language->finalize();
 
 
     Process::environment.legacy_wavefunction().reset();

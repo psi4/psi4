@@ -36,8 +36,9 @@ import collections
 import shelve
 import copy
 import os
-import psi4
-import p4util
+
+from psi4.driver import p4util
+from psi4.driver.p4const import *
 
 
 def collect_displaced_matrix_data(db, signature, row_dim):
