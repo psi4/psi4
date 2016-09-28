@@ -49,8 +49,8 @@ def mangle_index(app, pagename, templatename, ctx, event_arg):
     fmt = format_index_name
     for key, entries in ctx['genindexentries']:
         for idx, entry in enumerate(entries):
-            name, (links, subitems) = entry
-            entries[idx] = fmt(name), (links, subitems)
+            name, (links, subitems, stuff) = entry
+            entries[idx] = fmt(name), (links, subitems, stuff)
             for idx, entry in enumerate(subitems):
                 name, links = entry
                 subitems[idx] = fmt(name), links
