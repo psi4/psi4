@@ -1,0 +1,27 @@
+{#
+    cloud/quicklinks.html
+    ~~~~~~~~~~~~~~~~~~~
+    Provides links mirroring the relbar, for use on pages such as the TOC and searchbox.
+#}
+<div class="sphinxquicklinks">
+  <h3><a href="{{ pathto(master_doc) }}"
+         title="{{ sidebar_master_title|e or master_doc|title|e }}">
+        {{ theme_sidebar_quicklinks_title or _('Quick Links') }}
+  </a></h3>
+  <ul>
+    {% block quicklinkslist %}
+      {% if theme_roottarget and theme_roottarget != master_doc %}
+        <li><a href="{{ pathto(theme_roottarget) }}"
+               title="{{ theme_sidebar_root_title|e or _("Front Page") }}">
+               {{ theme_sidebar_root_title|e or _("Front Page") }}</a></li>
+      {% endif %}
+      {%- for entry in rellinks[::-1] %}
+        {# NOTE: entry is [page, title, key, label] #}
+        {% if entry[3] not in ["previous", "next"] %}
+          <li><a href="{{ pathto(entry[0]) }}"
+                 title="{{ entry[1]|striptags|e }}">{{ entry[1]|e }}</a></li>
+        {% endif %}
+      {%- endfor %}
+    {% endblock %}
+  </ul>
+</div>

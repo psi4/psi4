@@ -5,26 +5,26 @@ from jinja2 import Markup as literal, escape
 
 prefix = r"^(?P<name>.*)\("
 suffix = r"\)$"
-_attr_re = re.compile(prefix + r"(?P<left>)(?P<sub>.*)(?P<right> attribute)" + suffix)
-_meth_re = re.compile(prefix + r"(?P<left>)(?P<sub>.*)(?P<right> method)" + suffix)
-_fc_re = re.compile(prefix + r"(?P<left>class in |in module )(?P<sub>.*)(?P<right>)" + suffix)
+_attr_re = re.compile(prefix + r"(?P<left>)(?P<loc>.*)(?P<right> attribute)" + suffix)
+_meth_re = re.compile(prefix + r"(?P<left>)(?P<loc>.*)(?P<right> method)" + suffix)
+_fc_re = re.compile(prefix + r"(?P<left>class in |in module )(?P<loc>.*)(?P<right>)" + suffix)
 _mod_re = re.compile(prefix + r"module" + suffix)
 
 def format_index_name(name):
     while True:
         m = _attr_re.match(name)
         if m:
-            name, left, sub, right = m.group("name","left", "sub", "right")
+            name, left, loc, right = m.group("name","left", "loc", "right")
             type = "attribute"
             break
         m = _meth_re.match(name)
         if m:
-            name, left, sub, right = m.group("name","left", "sub", "right")
+            name, left, loc, right = m.group("name","left", "loc", "right")
             type = "method"
             break
         m = _fc_re.match(name)
         if m:
-            name, left, sub, right = m.group("name","left", "sub", "right")
+            name, left, loc, right = m.group("name","left", "loc", "right")
             if left.startswith("class"):
                 type = "class"
             else:
@@ -34,13 +34,13 @@ def format_index_name(name):
         if m:
             name = m.group("name")
             left = "module"
-            sub = right = ''
+            loc = right = ''
             type = "module"
             break
         return name
-    if sub:
-        sub = literal('<span class="subject">') + escape(sub) + literal("</span>")
-    cat = left + sub + right
+    if loc:
+        loc = literal('<span class="location">') + escape(loc) + literal("</span>")
+    cat = left + loc + right
     return escape(name) + literal('<span class="category ' + type + '">') + escape(cat) + literal("</span>")
 
 def mangle_index(app, pagename, templatename, ctx, event_arg):
