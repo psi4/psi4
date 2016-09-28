@@ -42,13 +42,8 @@ import glob
 import shelve
 import datetime
 import difflib
-#from driver import *
-# Relative hack for now
-import os, sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
-sys.path.append(path_dir)
-from p4util.exceptions import *
-# never import driver, wrappers, or aliases into this file
+
+from psi4.driver.p4util.exceptions import *
 
 
 def run_cfour_module(xmod):

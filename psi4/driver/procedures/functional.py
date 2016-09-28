@@ -31,17 +31,9 @@ SuperFunctionals
 """
 import re
 import os
-import sys
 import math
-import copy
-import psi4core
-import sys
-
-# Relative hack for now
-import os, sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
-sys.path.append(path_dir)
-import qcdb.interface_dftd3 as dftd3
+from psi4 import psi4core
+from psi4.driver.qcdb import interface_dftd3 as dftd3
 
 ## ==> Functionals <== ##
 

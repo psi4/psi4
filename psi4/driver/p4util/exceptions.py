@@ -27,7 +27,7 @@
 
 """Module with non-generic exceptions classes."""
 from __future__ import absolute_import
-import psi4core
+from psi4 import psi4core
 
 
 class PsiException(Exception):

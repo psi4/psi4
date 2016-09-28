@@ -37,14 +37,10 @@ import os
 import subprocess
 import re
 
-# Relative hack for now
-import sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
-sys.path.append(path_dir)
-import p4util
-import qcdb
-from p4util.exceptions import *
-from molutil import *
+from psi4.driver import p4util
+from psi4.driver import qcdb
+from psi4.driver.p4util.exceptions import *
+from psi4.driver.molutil import *
 
 from .roa import *
 from . import proc_util

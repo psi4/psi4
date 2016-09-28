@@ -22,13 +22,10 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-# Relative hack for now
-import os, sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
-sys.path.append(path_dir)
-from p4util.exceptions import *
-import p4util
-import psi4core
+
+from psi4.driver.p4util.exceptions import *
+from psi4.driver import p4util
+from psi4 import psi4core
 
 def scf_set_reference_local(name):
     """

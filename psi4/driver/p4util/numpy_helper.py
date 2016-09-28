@@ -26,11 +26,11 @@
 #
 
 import numpy as np
-import psi4core
+from psi4 import psi4core
 
 import sys
 if sys.version_info < (3,0):
-    from exceptions import *
+    from .exceptions import *
 
 # The next three functions make me angry
 def translate_interface(interface):

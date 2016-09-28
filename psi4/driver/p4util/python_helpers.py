@@ -3,7 +3,7 @@ import subprocess
 import re
 
 from psi4.driver import qcdb
-import psi4core
+from psi4 import psi4core
 
 @staticmethod
 def pybuild_basis(mol, key, target, fitrole='BASIS', other=None, puream=-1):

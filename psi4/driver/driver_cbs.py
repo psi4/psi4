@@ -25,15 +25,18 @@ from __future__ import absolute_import
 from __future__ import division
 import re
 import math
-import numpy as np
-import psi4core
-import qcdb
-import p4util
-import driver_util
 import sys
-import p4const
-from p4util.exceptions import *
-from procedures.interface_cfour import cfour_psivar_list
+import numpy as np
+
+from psi4 import psi4core
+
+from . import qcdb
+from . import p4util
+from . import driver_util
+from . import p4const
+
+from .p4util.exceptions import *
+from .procedures.interface_cfour import cfour_psivar_list
 
 zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
 zeta_val2sym = {k + 2: v for k, v in zip(range(7), zeta_values)}

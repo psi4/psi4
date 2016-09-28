@@ -27,18 +27,16 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from p4const import *
-import p4util
-import psi4core
 import collections
 import shelve
 import copy
 import sys
 import inspect
 import os
-# Relative hack for now
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], "../")))
-sys.path.append(path_dir)
+
+from psi4.driver.p4const import *
+from psi4.driver.p4util import *
+from psi4 import psi4core
 from . import findif_response_utils
 
 
