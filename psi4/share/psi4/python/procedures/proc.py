@@ -1785,6 +1785,10 @@ def run_scf_gradient(name, **kwargs):
 
     if psi4.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
+
+    if "_disp_functor" in ref_wfn.cdict.keys():
+        ref_wfn.cdict["_disp_gradient"] = ref_wfn.cdict["_disp_functor"].compute_gradient(ref_wfn.molecule())
+
     grad = psi4.scfgrad(ref_wfn)
     ref_wfn.set_gradient(grad)
 

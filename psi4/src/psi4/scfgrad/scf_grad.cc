@@ -65,6 +65,12 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     scf::HF* scfwfn = (scf::HF*)ref_wfn.get();
     functional_ = scfwfn->functional();
     potential_ = scfwfn->V_potential();
+    for (auto item : scfwfn->cdict){
+        if (item.first.cast<std::string>() == "_disp_gradient"){
+            gradients_["-D"] = item.second.cast<SharedMatrix>();
+            break;
+        }
+    }
 
 }
 SCFGrad::~SCFGrad()
@@ -107,7 +113,7 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // => Registers <= //
 
-    std::map<std::string, SharedMatrix> gradients;
+    // std::map<std::string, SharedMatrix> gradients;
 
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");
@@ -171,18 +177,18 @@ SharedMatrix SCFGrad::compute_gradient()
     int nbeta = Cb->colspi()[0];
 
     // => Nuclear Gradient <= //
-    gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
-    gradients["Nuclear"]->set_name("Nuclear Gradient");
+    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients_["Nuclear"]->set_name("Nuclear Gradient");
 
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
     {
         double** Dp = Dt->pointer();
 
-        gradients["Kinetic"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Kinetic"]->set_name("Kinetic Gradient");
-        gradients["Kinetic"]->zero();
-        double** Tp = gradients["Kinetic"]->pointer();
+        gradients_["Kinetic"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Kinetic"]->set_name("Kinetic Gradient");
+        gradients_["Kinetic"]->zero();
+        double** Tp = gradients_["Kinetic"]->pointer();
 
         // Kinetic derivatives
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
@@ -256,9 +262,9 @@ SharedMatrix SCFGrad::compute_gradient()
     {
         double** Dp = Dt->pointer();
 
-        gradients["Potential"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Potential"]->set_name("Potential Gradient");
-        gradients["Potential"]->zero();
+        gradients_["Potential"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Potential"]->set_name("Potential Gradient");
+        gradients_["Potential"]->zero();
 
             // Thread count
             int threads = 1;
@@ -271,7 +277,7 @@ SharedMatrix SCFGrad::compute_gradient()
             std::vector<SharedMatrix> Vtemps;
             for (int t = 0; t < threads; t++) {
                 Vint.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
-                Vtemps.push_back(SharedMatrix(gradients["Potential"]->clone()));
+                Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
             }
 
             // Lower Triangle
@@ -324,7 +330,7 @@ SharedMatrix SCFGrad::compute_gradient()
         }
 
         for (int t = 0; t < threads; t++) {
-            gradients["Potential"]->add(Vtemps[t]);
+            gradients_["Potential"]->add(Vtemps[t]);
         }
     }
     timer_off("Grad: V");
@@ -336,7 +342,7 @@ SharedMatrix SCFGrad::compute_gradient()
         if (external) {
             gradient_terms.push_back("External Potential");
             timer_on("Grad: External");
-            gradients["External Potential"] = external->computePotentialGradients(basisset_, Dt);
+            gradients_["External Potential"] = external->computePotentialGradients(basisset_, Dt);
             timer_off("Grad: External");
         }  // end external
     }
@@ -372,10 +378,10 @@ SharedMatrix SCFGrad::compute_gradient()
 
         delete[] temp;
 
-        gradients["Overlap"] = SharedMatrix(gradients["Nuclear"]->clone());
-        gradients["Overlap"]->set_name("Overlap Gradient");
-        gradients["Overlap"]->zero();
-        double** Sp = gradients["Overlap"]->pointer();
+        gradients_["Overlap"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Overlap"]->set_name("Overlap Gradient");
+        gradients_["Overlap"]->zero();
+        double** Sp = gradients_["Overlap"]->pointer();
 
         // Overlap derivatives
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
@@ -473,14 +479,14 @@ SharedMatrix SCFGrad::compute_gradient()
     jk->compute_gradient();
 
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
-    gradients["Coulomb"] = jk_gradients["Coulomb"];
+    gradients_["Coulomb"] = jk_gradients["Coulomb"];
     if (functional_->is_x_hybrid()) {
-        gradients["Exchange"] = jk_gradients["Exchange"];
-        gradients["Exchange"]->scale(-(functional_->x_alpha()));
+        gradients_["Exchange"] = jk_gradients["Exchange"];
+        gradients_["Exchange"]->scale(-(functional_->x_alpha()));
     }
     if (functional_->is_x_lrc()) {
-        gradients["Exchange,LR"] = jk_gradients["Exchange,LR"];
-        gradients["Exchange,LR"]->scale(-(1.0 - functional_->x_alpha()));
+        gradients_["Exchange,LR"] = jk_gradients["Exchange,LR"];
+        gradients_["Exchange,LR"]->scale(-(1.0 - functional_->x_alpha()));
     }
     timer_off("Grad: JK");
 
@@ -488,44 +494,47 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_on("Grad: XC");
     if (potential_) {
         potential_->print_header();
-        gradients["XC"] = potential_->compute_gradient();
+        gradients_["XC"] = potential_->compute_gradient();
     }
     timer_off("Grad: XC");
 
     // => -D Gradient <= //
-    if (functional_ && functional_->dispersion()) {
-        gradients["-D"] = functional_->dispersion()->compute_gradient(basisset_->molecule());
-    }
+    // py::object
+    // for (auto item : )
+    // gradients_["-D"] = py_grad.cast<SharedMatrix>();
+    // if (functional_ && functional_->dispersion()) {
+    //     gradients_["-D"] = functional_->dispersion()->compute_gradient(basisset_->molecule());
+    // }
 
     // => Total Gradient <= //
-    SharedMatrix total = SharedMatrix(gradients["Nuclear"]->clone());
+    SharedMatrix total = SharedMatrix(gradients_["Nuclear"]->clone());
     total->zero();
 
     for (int i = 0; i < gradient_terms.size(); i++) {
-        if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]);
+        if (gradients_.count(gradient_terms[i])) {
+            total->add(gradients_[gradient_terms[i]]);
         }
     }
 
     // Symmetrize
     total->symmetrize_gradient(molecule_);
 
-    gradients["Total"] = total;
-    gradients["Total"]->set_name("Total Gradient");
+    gradients_["Total"] = total;
+    gradients_["Total"]->set_name("Total Gradient");
 
     // => Final Printing <= //
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
-            if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector();
+            if (gradients_.count(gradient_terms[i])) {
+                gradients_[gradient_terms[i]]->print_atom_vector();
             }
         }
     } else {
-        gradients["Total"]->print_atom_vector();
+        gradients_["Total"]->print_atom_vector();
     }
 
 
-    return gradients["Total"];
+    return gradients_["Total"];
 }
 SharedMatrix SCFGrad::compute_hessian()
 {
