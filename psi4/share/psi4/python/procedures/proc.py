@@ -42,6 +42,7 @@ import sys, inspect
 path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../")))
 sys.path.append(path_dir)
 import p4util
+import qcdb
 from p4util.exceptions import *
 from molutil import *
 
@@ -992,13 +993,13 @@ def scf_wavefunction_factory(reference, ref_wfn):
 
     psi4.prepare_options_for_module("SCF")
     if reference == "RHF":
-        return psi4.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = psi4.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "ROHF":
-        return psi4.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = psi4.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "UHF":
-        return psi4.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = psi4.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "CUHF":
-        return psi4.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = psi4.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "RKS":
         functional, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4.RHF(ref_wfn, functional)
@@ -1006,7 +1007,6 @@ def scf_wavefunction_factory(reference, ref_wfn):
             wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
                                                                                   tuple_params = modified_disp_params)
             wfn.cdict["_disp_functor"].print_out()
-        return wfn
     elif reference == "UKS":
         func, disp_type = dft_functional.build_superfunctional(psi4.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4.UHF(ref_wfn, func)
@@ -1015,9 +1015,15 @@ def scf_wavefunction_factory(reference, ref_wfn):
             wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
                                                                   tuple_params = modified_disp_params)
             wfn.cdict["_disp_functor"].print_out()
-        return wfn
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
+
+    aux_basis = psi4.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
+                                    psi4.get_option("SCF", "DF_BASIS_SCF"),
+                                    "JKFIT", psi4.get_global_option('BASIS'),
+                                    puream=wfn.basisset().has_puream())
+    wfn.set_basisset("DF_BASIS_SCF", aux_basis)
+    return wfn
 
 
 def scf_helper(name, **kwargs):
@@ -1161,7 +1167,8 @@ def scf_helper(name, **kwargs):
     # the FIRST scf call
     if cast or do_broken:
         # Cast or broken are special cases
-        new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
+        basis = psi4.BasisSet.build(scf_molecule, "ORBITAL", psi4.get_global_option('BASIS'))
+        new_wfn = psi4.Wavefunction(scf_molecule, basis)
         scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn)
         psi4.set_legacy_wavefunction(scf_wfn)
 
@@ -1215,7 +1222,8 @@ def scf_helper(name, **kwargs):
         efp.print_out()
 
     # the SECOND scf call
-    new_wfn = psi4.new_wavefunction(scf_molecule, psi4.get_global_option('BASIS'))
+    basis = psi4.BasisSet.build(scf_molecule, "ORBITAL", psi4.get_global_option('BASIS'))
+    new_wfn = psi4.Wavefunction(scf_molecule, basis)
     scf_wfn = scf_wavefunction_factory(psi4.get_option('SCF', 'REFERENCE'), new_wfn)
     psi4.set_legacy_wavefunction(scf_wfn)
 
@@ -1903,7 +1911,7 @@ def run_mcscf(name, **kwargs):
     mcscf_molecule.update_geometry()
     if 'ref_wfn' in kwargs:
         raise ValidationError("It is not possible to pass run_mcscf a reference wavefunction")
-    new_wfn = psi4.new_wavefunction(mcscf_molecule, psi4.get_global_option('BASIS'))
+    new_wfn = new_wavefunction(mcscf_molecule, psi4.get_global_option('BASIS'))
 
     return psi4.mcscf(new_wfn)
 
@@ -1935,6 +1943,11 @@ def run_dfmp2_gradient(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
+
+    aux_basis = psi4.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    psi4.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", psi4.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
@@ -2607,7 +2620,13 @@ def run_dft(name, **kwargs):
         if ssuper.name().lower() == name:
             dfun = ssuper
 
+    psi4.tstop()
     if dfun.is_c_hybrid():
+        aux_basis = psi4.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
+                                        psi4.get_option("DFMP2", "DF_BASIS_MP2"),
+                                        "RIFIT", psi4.get_global_option('BASIS'),
+                                        puream=-1)
+        scf_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
         if dfun.is_c_scs_hybrid():
             psi4.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             psi4.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
@@ -2636,6 +2655,7 @@ def run_dft(name, **kwargs):
         psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
+    psi4.tstop()
 
     optstash.restore()
     return scf_wfn
@@ -2781,6 +2801,11 @@ def run_dfmp2(name, **kwargs):
 
     if psi4.get_global_option('REFERENCE') == "ROHF":
         ref_wfn.semicanonicalize()
+
+    aux_basis = psi4.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    psi4.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", psi4.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
     dfmp2_wfn = psi4.dfmp2(ref_wfn)
     dfmp2_wfn.compute_energy()

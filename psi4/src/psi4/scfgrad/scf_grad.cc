@@ -453,7 +453,7 @@ SharedMatrix SCFGrad::compute_gradient()
     // => Two-Electron Gradient <= //
     timer_on("Grad: JK");
 
-    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_);
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_, basissets_["DF_BASIS_SCF"]);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
@@ -1242,7 +1242,7 @@ SharedMatrix SCFGrad::compute_hessian()
 
     timer_on("Hess: JK");
 
-    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_);
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_, basissets_["DF_BASIS_SCF"]);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);

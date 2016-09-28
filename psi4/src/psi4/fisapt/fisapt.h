@@ -54,6 +54,7 @@ protected:
 
     /// Orbital Basis Set (full molecule)
     std::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<BasisSet> df_basis_scf_;
 
     /// Global JK object
     std::shared_ptr<JK> jk_;

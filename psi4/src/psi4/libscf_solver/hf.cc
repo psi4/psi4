@@ -443,7 +443,7 @@ void HF::integrals()
             throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
           #endif
         } else {
-            jk_ = JK::build_JK(basisset_, options_);
+            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
         }
     }
     catch(const BasisSetNotFound& e) {
@@ -454,14 +454,14 @@ void HF::integrals()
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_str("SCF", "SCF_TYPE", "PK");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, options_);
+            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
         } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             outfile->Printf( "%s\n", e.what());
             outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
             outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, options_);
+            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
         }
         else
             throw; // rethrow the error
@@ -1329,6 +1329,13 @@ void HF::guess()
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     std::string guess_type = options_.get_str("GUESS");
+
+    // DGAS broke SAD
+    if (guess_type == "SAD"){
+        guess_type = "CORE";
+        outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
+    }
+
     if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
         outfile->Printf( "  SCF Guess was Projection but file not found.\n");
         outfile->Printf( "  Switching over to SAD guess.\n\n");

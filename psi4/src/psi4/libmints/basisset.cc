@@ -469,6 +469,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_orbital(const std::shared_ptr <
                                                          const std::string &key, const std::string &target,
                                                          const int forced_puream)
 {
+    throw PSIEXCEPTION("Hit PYCONSTRUCT_ORBITAL, DELETE ME!");
     std::shared_ptr <BasisSet> basisset = pyconstruct_auxiliary(mol, key, target, "BASIS", "", forced_puream);
     // Uncontract the primary basis set
     std::string str = Process::environment.options.get_str("BASIS");
@@ -481,6 +482,51 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_orbital(const std::shared_ptr <
     return basisset;
 }
 
+std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream){
+
+    std::string name = pybs["name"].cast<std::string>();
+    std::string message = pybs["message"].cast<std::string>();
+    if (Process::environment.options.get_int("PRINT") > 1)
+        outfile->Printf("%s\n", message.c_str());
+
+    // Handle mixed puream signals and seed parser with the resolution
+    int native_puream = pybs["puream"].cast<int>();
+    int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
+                      ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+    int resolved_puream;
+    if (user_puream == -1)
+        resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
+    else
+        resolved_puream = user_puream;
+
+    // Not like we're ever using a non-G94 format
+    const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
+
+    mol->set_basis_all_atoms(name, "CABS");
+
+    // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+    typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> map_ssv;
+    map_ssv basis_atom_shell;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    py::list shmp = pybs["shell_map"].cast<py::list>();
+    for (int ent = 0; ent < (len(shmp)); ent += 3) {
+        std::string label = shmp[ent].cast<std::string>();
+        std::string hash = shmp[ent + 1].cast<std::string>();
+        std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
+        mol->set_shell_by_label(label, hash, "CABS");
+        basis_atom_shell[name][label] = parser->parse(label, basbit);
+    }
+    mol->update_geometry();  // update symmetry with basisset info
+
+    std::shared_ptr <BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));
+    basisset->name_.clear();
+    basisset->name_ = name;
+
+    //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
+    //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
+    return basisset;
+}
+
 std::shared_ptr <BasisSet> BasisSet::pyconstruct_combined(const std::shared_ptr <Molecule> &mol,
                                                           const std::vector <std::string> &keys,
                                                           const std::vector <std::string> &targets,
@@ -488,6 +534,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_combined(const std::shared_ptr 
                                                           const std::vector <std::string> &others,
                                                           const int forced_puream)
 {
+    throw PSIEXCEPTION("Hit PYCONSTRUCT_COMBINED, DELETE ME!");
     // Update geometry in molecule, convert to string
     mol->update_geometry();
     std::string smol = mol->create_psi4_string_from_molecule();
@@ -585,6 +632,7 @@ std::shared_ptr <BasisSet> BasisSet::pyconstruct_auxiliary(const std::shared_ptr
                                                            const std::string &fitrole, const std::string &other,
                                                            const int forced_puream)
 {
+    throw PSIEXCEPTION("Hit PYCONSTRUCT_AUXILIARY, DELETE ME!");
     // Refactor arguments to make code more comprehensible
     bool orbonly = ((fitrole == "BASIS") && (other == "")) ? true : false;
     std::string orb, aux;

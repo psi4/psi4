@@ -62,8 +62,8 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(std::shared_ptr <Molecule> molecule,
-                           std::shared_ptr <BasisSet> basis,
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
+                           std::shared_ptr<BasisSet> basis,
                            Options &options) :
         options_(options), basisset_(basis), molecule_(molecule)
 {
@@ -71,11 +71,11 @@ Wavefunction::Wavefunction(std::shared_ptr <Molecule> molecule,
 }
 
 
-Wavefunction::Wavefunction(std::shared_ptr <Molecule> molecule, const std::string &basis,
-                           Options &options) :
-        Wavefunction(molecule, BasisSet::pyconstruct_orbital(molecule, "BASIS", basis),
-                     options)
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis) :
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule)
 {
+
+    common_init();
 }
 
 Wavefunction::Wavefunction(Options &options) :
@@ -97,6 +97,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     name_ = other->name_;
     basisset_ = other->basisset_;
+    basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
     S_ = other->S_;
@@ -240,7 +241,7 @@ void Wavefunction::common_init()
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
-    std::shared_ptr <PetiteList> pet(new PetiteList(basisset_, integral_));
+    std::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
     AO2SO_ = pet->aotoso();
 
     // Obtain the dimension object to initialize the factory.
@@ -253,7 +254,7 @@ void Wavefunction::common_init()
     nirrep_ = nsopi_.n();
 
     S_ = factory_->create_shared_matrix("S");
-    std::shared_ptr <OneBodySOInt> Sint(integral_->so_overlap());
+    std::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
     Sint->compute(S_);
 
     // Initialize array that hold dimensionality information
@@ -337,10 +338,10 @@ void Wavefunction::common_init()
 
 void Wavefunction::map_irreps(std::vector<int *> &arrays)
 {
-    std::shared_ptr <PointGroup> full = Process::environment.parent_symmetry();
+    std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
     // If the parent symmetry hasn't been set, no displacements have been made
     if (!full) return;
-    std::shared_ptr <PointGroup> sub = molecule_->point_group();
+    std::shared_ptr<PointGroup> sub = molecule_->point_group();
 
     // If the point group between the full and sub are the same return
     if (full->symbol() == sub->symbol())
@@ -405,12 +406,12 @@ void Wavefunction::initialize_singletons()
     done = true;
 }
 
-std::shared_ptr <Molecule> Wavefunction::molecule() const
+std::shared_ptr<Molecule> Wavefunction::molecule() const
 {
     return molecule_;
 }
 
-std::shared_ptr <PSIO> Wavefunction::psio() const
+std::shared_ptr<PSIO> Wavefunction::psio() const
 {
     return psio_;
 }
@@ -420,32 +421,51 @@ Options &Wavefunction::options() const
     return options_;
 }
 
-std::shared_ptr <IntegralFactory> Wavefunction::integral() const
+std::shared_ptr<IntegralFactory> Wavefunction::integral() const
 {
     return integral_;
 }
 
-std::shared_ptr <BasisSet> Wavefunction::basisset() const
+std::shared_ptr<BasisSet> Wavefunction::basisset() const
 {
     return basisset_;
 }
+std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)
+{
+    // This may be slightly confusing, but better than changing this in 800 other places
+    if (label == "ORBITAL"){
+        return basisset_;
+    } else if (basissets_.count(label) == 0){
+        throw PSIEXCEPTION("Requested basis set was not set!\n");
+    } else {
+        return basissets_[label];
+    }
+}
+void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis)
+{
+    if (label == "ORBITAL"){
+        throw PSIEXCEPTION("Cannot set the ORBITAL basis after the Wavefunction is built!");
+    } else {
+        basissets_[label] = basis;
+    }
+}
 
-std::shared_ptr <SOBasisSet> Wavefunction::sobasisset() const
+std::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;
 }
 
-std::shared_ptr <MatrixFactory> Wavefunction::matrix_factory() const
+std::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const
 {
     return factory_;
 }
 
-std::shared_ptr <Wavefunction> Wavefunction::reference_wavefunction() const
+std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const
 {
     return reference_wavefunction_;
 }
 
-void Wavefunction::set_reference_wavefunction(const std::shared_ptr <Wavefunction> wfn)
+void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn)
 {
     reference_wavefunction_ = wfn;
 }
@@ -796,22 +816,22 @@ SharedMatrix Wavefunction::Fb() const
     return Fb_;
 }
 
-std::shared_ptr <Matrix> Wavefunction::Lagrangian() const
+std::shared_ptr<Matrix> Wavefunction::Lagrangian() const
 {
     return Lagrangian_;
 }
 
-std::shared_ptr <Matrix> Wavefunction::tpdm_gradient_contribution() const
+std::shared_ptr<Matrix> Wavefunction::tpdm_gradient_contribution() const
 {
     throw PSIEXCEPTION("This type of wavefunction has not defined a TPDM gradient contribution!");
 }
 
-std::shared_ptr <Vector> Wavefunction::epsilon_a() const
+std::shared_ptr<Vector> Wavefunction::epsilon_a() const
 {
     return epsilon_a_;
 }
 
-std::shared_ptr <Vector> Wavefunction::epsilon_b() const
+std::shared_ptr<Vector> Wavefunction::epsilon_b() const
 {
     return epsilon_b_;
 }
@@ -851,22 +871,22 @@ void Wavefunction::set_hessian(SharedMatrix &hess)
     hessian_ = hess;
 }
 
-std::shared_ptr <Vector> Wavefunction::frequencies() const
+std::shared_ptr<Vector> Wavefunction::frequencies() const
 {
     return frequencies_;
 }
 
-std::shared_ptr <Vector> Wavefunction::normalmodes() const
+std::shared_ptr<Vector> Wavefunction::normalmodes() const
 {
     return normalmodes_;
 }
 
-void Wavefunction::set_frequencies(std::shared_ptr <Vector> &freqs)
+void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs)
 {
     frequencies_ = freqs;
 }
 
-void Wavefunction::set_normalmodes(std::shared_ptr <Vector> &norms)
+void Wavefunction::set_normalmodes(std::shared_ptr<Vector> &norms)
 {
     normalmodes_ = norms;
 }
@@ -875,12 +895,12 @@ void Wavefunction::save() const
 {
 }
 
-std::shared_ptr <Vector> Wavefunction::get_atomic_point_charges() const
+std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const
 {
     std::shared_ptr<std::vector<double>> q = atomic_point_charges();
 
     int n = molecule_->natom();
-    std::shared_ptr <Vector> q_vector(new Vector(n));
+    std::shared_ptr<Vector> q_vector(new Vector(n));
     for (int i = 0; i < n; ++i)
         q_vector->set(i, (*q)[i]);
     return q_vector;

@@ -2487,7 +2487,7 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
 def build_dldfd09_superfunctional(name, npoints, deriv):
     sup, disp = build_dldf_superfunctional(name, npoints, deriv)
-    sup.set_name('dlDF+DAS09')
+    sup.set_name('dlDF+D09')
 
     return (sup, ('dlDF', '-DAS2009'))
 

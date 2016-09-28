@@ -1123,12 +1123,6 @@ void py_psi_set_legacy_wavefunction(SharedWavefunction wfn)
 {
     Process::environment.set_legacy_wavefunction(wfn);
 }
-SharedWavefunction py_psi_new_wavefunction(std::shared_ptr<Molecule> molecule,
-                                           const std::string& basis)
-{
-    // Ultimately options will not go here
-    return SharedWavefunction(new Wavefunction(molecule, basis, Process::environment.options));
-}
 
 std::string py_psi_get_input_directory()
 {
@@ -1333,9 +1327,6 @@ PyObject * initpsimod(void) {
     psimod.def("set_legacy_wavefunction",
         py_psi_set_legacy_wavefunction,
         "Returns the current legacy_wavefunction object from the most recent computation.");
-    psimod.def("new_wavefunction",
-        py_psi_new_wavefunction,
-        "Builds a new wavefunction from scratch.");
     psimod.def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     psimod.def("set_gradient",
         py_psi_set_gradient,

@@ -1053,7 +1053,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         } // End if density fitted
     }
 
-    std::shared_ptr<JK> jk = JK::build_JK(basisset_, options_);
+    std::shared_ptr<JK> jk = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
     size_t mem = 0.9 * memory_ / 8L;
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;

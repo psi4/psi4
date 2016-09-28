@@ -169,9 +169,10 @@ SharedMatrix SADGuess::form_D_AO()
         std::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
         atom_mol->reset_point_group("C1"); // Booo symmetry
 
-        std::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
-                                                basis_->molecule()->atom_entry(A)->basisset());
-        atomic_bases.push_back(atom_bas);
+        throw PSIEXCEPTION("DGAS broke SAD for now.\n");
+        // std::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
+        //                                         basis_->molecule()->atom_entry(A)->basisset());
+        // atomic_bases.push_back(atom_bas);
 
         if (print_ > 6) {
             outfile->Printf("  SAD: Atomic Basis Set %d\n", A);

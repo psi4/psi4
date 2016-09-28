@@ -114,8 +114,8 @@ std::shared_ptr<MatrixFactory> get_matrix_factory()
 }
 
 // Just a little patch until we can figure out options python-side.
-std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
-    return JK::build_JK(basis, Process::environment.options);
+std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
+    return JK::build_JK(basis, aux, Process::environment.options);
 }
 
 void export_mints(py::module& m)
@@ -750,6 +750,7 @@ void export_mints(py::module& m)
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
+            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring").
             def_static("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("key"), py::arg("target"), py::arg("puream") = -1).
             def_static("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("keys"), py::arg("targets"), py::arg("fitroles"), py::arg("others"), py::arg("forced_puream") = -1);
 
@@ -777,8 +778,8 @@ void export_mints(py::module& m)
 
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring").
-            def(py::init<SharedMol, const std::string&, Options&>()).
-            def(py::init<SharedMol,SharedBS,Options&>()).
+            def(py::init<SharedMol, SharedBS, Options&>()).
+            def(py::init<SharedMol, SharedBS>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
@@ -806,6 +807,8 @@ void export_mints(py::module& m)
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("basisset", &Wavefunction::basisset, "docstring").
+            def("get_basisset", &Wavefunction::get_basisset, "docstring").
+            def("set_basisset", &Wavefunction::set_basisset, "docstring").
             def("sobasisset", &Wavefunction::sobasisset, "docstring").
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").

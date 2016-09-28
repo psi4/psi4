@@ -361,9 +361,9 @@ public:
     * sym means that all density matrices will be symmetric
     * @return abstract JK object, tuned in with preset options
     */
-    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary,
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                           Options& options);
-    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary,
+    static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                           Options& options, std::string jk_type);
 
 
