@@ -11,7 +11,7 @@ macro(add_regression_test _name _labels)
     unset(_labels)
     # This is the psi command to actually run the tests
 #    set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
-    set(PSIEXE /Users/daniel/Gits/dgas_psi4/run_psi4.py)
+    set(PSIEXE ${PROJECT_SOURCE_DIR}/psi4/share/psi4/scripts/run_psi4.py)
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
     # This is the psidatadir directory that the script that we call, to call psi4, to run the tests gets its info

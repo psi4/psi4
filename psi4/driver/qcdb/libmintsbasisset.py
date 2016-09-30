@@ -930,9 +930,9 @@ class BasisSet(object):
         """Print basis set information according to the level of detail in print_level
         @param out The file stream to use for printing. Defaults to outfile.
         @param print_level: defaults to 2
-        *  < 1: Nothing 
-        *    1: Brief summary 
-        *    2: Summary and contraction details 
+        *  < 1: Nothing
+        *    1: Brief summary
+        *    2: Summary and contraction details
         *  > 2: Full details
 
         """

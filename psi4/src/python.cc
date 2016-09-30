@@ -1180,7 +1180,6 @@ bool psi4_python_module_initialize()
     interactive_python = true;
 
     // Setup the environment
-    //Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
 
 
@@ -1202,29 +1201,29 @@ bool psi4_python_module_initialize()
     Process::environment.options.set_read_globals(false);
 
     // Track down the location of Psi4's python script directory.
-    std::string psiDataDirName = Process::environment("PSIDATADIR");
-    std::string psiDataDirWithPython = psiDataDirName + "/python";
-    std::string fullPath = filesystem::path(psiDataDirWithPython).make_absolute().str();
-    struct stat sb;
-    if(::stat(fullPath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
-        printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
-                "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
-        return false;
-    }
+//     std::string psiDataDirName = Process::environment("PSIDATADIR");
+//     std::string psiDataDirWithPython = psiDataDirName + "/python";
+//     std::string fullPath = filesystem::path(psiDataDirWithPython).make_absolute().str();
+//     struct stat sb;
+//     if(::stat(fullPath.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode) == false) {
+//         printf("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable\n"
+//                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+//         return false;
+//     }
 
-    // Add PSI library python path
-    PyObject *path, *sysmod, *str;
-    PY_TRY(sysmod , PyImport_ImportModule("sys"));
-    PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
-#if PY_MAJOR_VERSION == 2
-    PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
-#else
-    PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
-#endif
-    PyList_Append(path, str);
-    Py_DECREF(str);
-    Py_DECREF(path);
-    Py_DECREF(sysmod);
+//     // Add PSI library python path
+//     PyObject *path, *sysmod, *str;
+//     PY_TRY(sysmod , PyImport_ImportModule("sys"));
+//     PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+// #if PY_MAJOR_VERSION == 2
+//     PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+// #else
+//     PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
+// #endif
+//     PyList_Append(path, str);
+//     Py_DECREF(str);
+//     Py_DECREF(path);
+//     Py_DECREF(sysmod);
 
     initialized = true;
 
