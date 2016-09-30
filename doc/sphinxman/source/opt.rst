@@ -9,8 +9,8 @@
 
 .. _`sec:opt()`:
 
-Geometry Optimization, :py:func:`~driver.optimize` and :py:func:`~driver.gradient`
-==================================================================================
+Geometry Optimization |w---w| :py:func:`~driver.optimize` and :py:func:`~driver.gradient`
+=========================================================================================
 
 * :ref:`Psi4 Native Gradient Methods <table:grad_gen>`
 * :ref:`Psi4 Native DFT Gradient Methods (excepting double-hybrids) <table:grad_gen>`

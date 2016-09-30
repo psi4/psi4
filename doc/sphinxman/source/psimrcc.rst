@@ -12,7 +12,7 @@ PSIMRCC Implementation of Mk-MRCC Theory
 .. codeauthor:: Francesco A. Evangelista and Andrew C. Simmonett 
 .. sectionauthor:: Alexander E. Vaughn
 
-*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <src/bin/psimrcc>`
+*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <psi4/src/psi4/psimrcc>`
 
 State-specific Multireference coupled cluster theories provide highly
 accurate energies and properties of electronic states that require

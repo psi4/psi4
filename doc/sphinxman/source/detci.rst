@@ -11,10 +11,10 @@
 CI: Configuration Interaction
 =============================
 
-.. codeauthor:: C. David Sherrill and Matthew L. Leininger
+.. codeauthor:: Daniel G. A. Smith, C. David Sherrill, and Matthew L. Leininger
 .. sectionauthor:: C. David Sherrill
 
-*Module:* :ref:`Keywords <apdx:detci>`, :ref:`PSI Variables <apdx:detci_psivar>`, :source:`DETCI <src/bin/detci>`
+*Module:* :ref:`Keywords <apdx:detci>`, :ref:`PSI Variables <apdx:detci_psivar>`, :source:`DETCI <psi4/src/psi4/detci>`
 
 Configuration interaction (CI) is one of the most general ways to
 improve upon Hartree--Fock theory by adding a description of the
@@ -202,9 +202,4 @@ to the desired coupled-cluster excitation level, and invoke
 ``energy('detci')``.  Various other DETCI options have a similar
 option for coupled-cluster, usually named beginning with CC.  The full
 list of options is given in Appendix :ref:`apdx:detci`.
-
-
-
-
-
 

@@ -284,7 +284,7 @@ molecule's point group symmetry. ::
     }
 
 The masses used by |PSIfour| can be found at
-:source:`include/masses.h`. See :srcsample:`freq-isotope` for about
+:source:`psi4/include/psi4/masses.h`. See :srcsample:`freq-isotope` for about
 the only use to which isotopologs can presently be put in |PSIfour|.
 
 .. index:: 
@@ -438,32 +438,32 @@ Certain types of finite difference computations, such as numerical vibrational
 frequencies, might lower the symmetry of the molecule.  When this happens
 symmetry-dependent arrays, such as |globals__socc|, are automatically remapped
 to the lower symmetry.  For example, if we were to investigate the :math:`^2B_1`
-state of water cation, we can specify
+state of water cation, we can specify ::
 
     SOCC = [0, 0, 1, 0]
 
 in the input file.  If any ensuing computations lower the symmetry, the above
 array will be appropriately remapped.  For example, reducing the symmetry to
 :math:`C_s` (with the molecular plane defining the mirror plane), the above
-array will be automatically interpreted as:
+array will be automatically interpreted as::
 
     SOCC = [0, 1]
 
 Some caution is required, however.  The :math:`^2A_1` state can be obtained with
-the
+the ::
 
     SOCC = [1, 0, 0, 0]
 
-specification, which would become
+specification, which would become ::
 
     SOCC = [1, 0]
 
 under the above-mentioned reduction in symmetry.  The :math:`^2B_2` state,
-whose singly-occupied orbitals are
+whose singly-occupied orbitals are ::
 
     SOCC = [0, 0, 0, 1]
 
-would be mapped to 
+would be mapped to  ::
 
     SOCC = [1, 0]
 
@@ -541,7 +541,7 @@ Advanced Python
 
 A named molecule in an input file is a full-fledged instance of the
 powerful :ref:`C++ Molecule class <sec:psimod_Molecule>`. Thus, all member
-functions (that have been exported via Boost Python) documented thereat
+functions (that have been exported via pybind11) documented thereat
 are accessible through the handle :samp:`{option_molecule_name}` in
 :samp:`molecule {optional_molecule_name} \\{...\\}`.
 

@@ -21,9 +21,9 @@ OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbat
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
 
-*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
+*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <psi4/src/psi4/occ>`
 
-*Module:* :ref:`Keywords <apdx:dfocc>`, :ref:`PSI Variables <apdx:dfocc_psivar>`, :source:`DFOCC <src/bin/dfocc>`
+*Module:* :ref:`Keywords <apdx:dfocc>`, :ref:`PSI Variables <apdx:dfocc_psivar>`, :source:`DFOCC <psi4/src/psi4//dfocc>`
 
 Introduction
 ~~~~~~~~~~~~

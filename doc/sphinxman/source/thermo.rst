@@ -12,7 +12,7 @@ Vibrational and Thermochemical Analysis
 .. codeauthor:: Rollin A. King
 .. comment.. sectionauthor:: Rollin A. King and Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <src/bin/thermo>`
+*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/src/psi4/thermo>`
 
 
 .. caution:: It is important to know that |PSIfour|, like any other

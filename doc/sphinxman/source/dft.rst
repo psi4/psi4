@@ -13,7 +13,7 @@ DFT: Density Functional Theory
 .. codeauthor:: Robert M. Parrish and Justin M. Turney
 .. sectionauthor:: Robert M. Parrish
 
-*Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBFUNCTIONAL <src/lib/libfunctional>`, :source:`LIBFOCK <src/lib/libfock>`, :source:`LIBSCF_SOLVER <src/lib/libscf_solver>`
+*Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBFUNCTIONAL <psi4/src/psi4/libfunctional>`, :source:`LIBFOCK <psi4/src/psi4/libfock>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
 
 Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`

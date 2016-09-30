@@ -3,6 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+==========================================
+|PSIfour|\ : Open-Source Quantum Chemistry
+==========================================
+
 .. toctree::
    :maxdepth: 2
    

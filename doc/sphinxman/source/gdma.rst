@@ -8,8 +8,8 @@
 
 .. _`sec:gdma`:
 
-Interface to GDMA Distributed Multipole Analysis by A. J. Stone, :py:func:`~driver.gdma`
-========================================================================================
+Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~driver.gdma`
+===============================================================================================
 
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett

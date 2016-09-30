@@ -23,7 +23,7 @@ FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
 
-*Module:* :ref:`Keywords <apdx:fnocc>`, :ref:`PSI Variables <apdx:fnocc_psivar>`, :source:`FNOCC <src/bin/fnocc>`
+*Module:* :ref:`Keywords <apdx:fnocc>`, :ref:`PSI Variables <apdx:fnocc_psivar>`, :source:`FNOCC <psi4/src/psi4/fnocc>`
 
 .. warning:: There is a known bug concerning the i7-5930 series combined
    with the Intel 15 compilers and MKL 11.2.3. When |PsiFour| is compiled

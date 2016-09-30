@@ -8,8 +8,8 @@
 
 .. _`sec:oeprop`:
 
-:py:func:`~p4util.oeprop` Evaluation of One-Electron Properties
-===============================================================
+Evaluation of One-Electron Properties |w---w| :py:func:`~p4util.oeprop`
+=======================================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett

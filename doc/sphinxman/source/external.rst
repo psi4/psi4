@@ -9,10 +9,11 @@ Obtaining |PSIfour|
 ===================
 
 The latest version of the |PSIfour| program package may be
-obtained at `www.psicode.org <http://www.psicode.org>`_. The
-package is available as a binary for Linux (:ref:`Installing
+obtained at `psicode.org <http://psicode.org>`_. The
+package is available as a binary for Linux, macOS, or Windows
+Subsystem for Linux (:ref:`Installing
 from Binary <sec:conda>`) or as source code (zipped
-archive or git repository from `www.github.com/psi4/psi4
+archive or git repository from `https://github.com/psi4/psi4
 <http://www.github.com/psi4/psi4>`_).
 
 
@@ -64,13 +65,13 @@ directory. Scratch file location can be specified through the
 (see section :ref:`sec:psirc`). Most of the time, :envvar:`PSI_SCRATCH`
 is preferred, and it overrides any existing |psirc| setting. You can set up 
 :envvar:`PSI_SCRATCH` by issuing the following commands in a terminal,
-or including them in the appropriate ``rc`` file. For C shell (``~/.tcshrc`` file): ::
+or including them in the appropriate ``rc`` file. ::
 
-    setenv PSI_SCRATCH /scratch/user
+    # csh, tcsh: add to shell or ~/.tcshrc file
+    >>> setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
 
-For Bash (``~/.bashrc`` file): ::
-
-    export PSI_SCRATCH=/scratch/user
+    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    >>> export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
 
 |PSIfour| has a number of utilities that manage
 input and output (I/O) of quantities to and from the hard disk.  Most
@@ -106,8 +107,7 @@ accomplished by the commands below::
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
 
-which is equivalent to ::
-
+    # equivalent to above
     psi4_io.set_specific_path(PSIF_CHKPT, './')
     psi4_io.set_specific_retention(PSIF_CHKPT, True)
 
@@ -147,29 +147,27 @@ If using the environment variable :envvar:`PSI_SCRATCH` is inconvenient,
 or if some ``psi4_io`` commands must be present in all input files,
 the |psirc| resource file can be used (example :source:`samples/example_psi4rc_file`). 
 
-All the commands mentioned in section :ref:`sec:Scratch` can be used in this file,
-namely: ::
+All the commands mentioned in section :ref:`sec:Scratch` can be used in this file.
+
+To set up the scratch path::
 
     psi4_io.set_default_path('/scratch/user')
 
-to set up the scratch path, ::
+To set up the scratch path from a variable ``$MYSCRATCH``::
 
     import os
     scratch_dir = os.environ.get('MYSCRATCH')
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-to set up the scratch path from a variable ``$MYSCRATCH``, ::
+To set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it::
 
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
 
-which is equivalent to ::
-
+    # equivalent to above
     psi4_io.set_specific_path(PSIF_CHKPT, './')
     psi4_io.set_specific_retention(PSIF_CHKPT, True)
-
-to set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it.
 
 The Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
@@ -191,8 +189,8 @@ Threading
 Most new modules in |PSIfour| are designed to run efficiently on SMP architectures
 via application of several thread models. The de facto standard for |PSIfour|
 involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
-for most tensor-like operations, OpenMP for more general operations, and Boost
-Threads for some special-case operations. Note: Using OpenMP alone is a really
+for most tensor-like operations, OpenMP for more general operations, and C++
+``std::thread`` for some special-case operations. Note: Using OpenMP alone is a really
 bad idea. The developers make little to no effort to explicitly parallelize
 operations which are already easily threaded by MKL or other threaded BLAS. Less
 than 20% of the threaded code in |PSIfour| uses OpenMP, the rest is handled by
@@ -208,15 +206,18 @@ explained below. Note that each deeper level trumps all previous levels.
 .. rubric:: (1) OpenMP/MKL Environment Variables
 
 The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. 
-For instance, in tcsh::
+environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. ::
 
-    setenv OMP_NUM_THREADS 4
-    setenv MKL_NUM_THREADS 4
+    # csh, tcsh: add to shell or ~/.tcshrc file
+    >>> setenv OMP_NUM_THREADS 4
+    >>> setenv MKL_NUM_THREADS 4
+
+    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    >>> export OMP_NUM_THREADS=4
+    >>> export MKL_NUM_THREADS=4
 
 |PSIfour| then detects these value via the API routines in ``<omp.h>`` and
-``<mkl.h>``, and runs all applicable code with 4 threads. These environment
-variables are typically defined in a ``.tcshrc`` or ``.bashrc``.
+``<mkl.h>``, and runs all applicable code with 4 threads.
 
 .. rubric:: (2) The -n Command Line Flag
 
@@ -295,7 +296,6 @@ a PBS job file for a threaded job, and a short explanation for each section. ::
         ssh $i mkdir -p $myscratch
     end
     
-    unsetenv PSI4DATADIR
     unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
     if ! ( $?PSIPATH ) setenv PSIPATH ""
@@ -411,7 +411,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Mainly for use by developers, this overrides the value of
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
-   library (psi4/share) 
+   library (ends in ``share/psi4``)
 
 .. option:: -m, --messy
 
@@ -507,11 +507,11 @@ These environment variables will influence |PSIfours| behavior.
       # csh, tcsh
       >>> setenv PSI_SCRATCH /scratch/user
 
-      # bash
+      # sh, bash
       >>> export PSI_SCRATCH=/scratch/user
 
-   You can also include the above commands in the respective ``rc`` file, i.e.
-   ``~/.tcshrc`` for csh and tcsh or ``~/.bashrc`` for Bash.
+   You can also include the above commands in the respective ``rc`` file, *i.e.*
+   ``~/.tcshrc`` for tcsh or ``~/.bashrc`` for bash on Linux or ``~/.bash_profile`` for bash on Mac.
 
 .. envvar:: PSIPATH
 
@@ -542,7 +542,7 @@ These environment variables will influence |PSIfours| behavior.
       # csh, tcsh
       >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
 
-      # bash
+      # sh, bash
       >>> export PSIPATH=/home/user/psiadditions:/home/user/gbs
 
 .. envvar:: PYTHONPATH
@@ -557,9 +557,10 @@ These environment variables will influence |PSIfours| behavior.
 
    * Normal Linux shell commands. ::
 
-        # csh/tcsh
+        # csh, tcsh
         setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
-        # sh/bash
+
+        # sh, bash
         PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
 
    * Place the path in the |psirc| file so that it is available for 
@@ -581,5 +582,5 @@ These environment variables will influence |PSIfours| behavior.
    so this variable is relevant primarily to developers running the
    executable directly from the compilation directory. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
-   ``psi4/share``.
+   ending in ``share/psi4``.
 

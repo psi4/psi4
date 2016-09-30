@@ -7,8 +7,8 @@
 
 .. _`sec:fchk`:
 
-Interface to programs through FCHK files, :py:func:`~driver.fchk()`
-===================================================================
+Interface to programs through FCHK files |w---w| :py:func:`~driver.fchk()`
+==========================================================================
 
 .. codeauthor:: Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
