@@ -463,7 +463,8 @@ def _nbody_gufunc(func, method_string, **kwargs):
         ret_ptype = ret_energy
 
     # Build and set a wavefunction
-    wfn = psi4core.new_wavefunction(molecule, 'sto-3g')
+    basis = psi4core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    wfn = psi4core.Wavefunction(molecule, basis)
     wfn.cdict["nbody_energy"] = energies_dict
     wfn.cdict["nbody_ptype"] = ptype_dict
     wfn.cdict["nbody_body_energy"] = energy_body_dict
