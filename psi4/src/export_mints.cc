@@ -174,6 +174,10 @@ void export_mints(py::module& m)
             def(py::init<const Dimension&>()).
             def(py::init<const std::string&, int>()).
             def(py::init<const std::string&, const Dimension&>()).
+            def_property("name",
+                         &Vector::name,
+                         &Vector::set_name,
+                         "The name of the Vector. Used in printing.").
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
