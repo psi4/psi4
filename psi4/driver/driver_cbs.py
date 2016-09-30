@@ -1410,7 +1410,8 @@ def complete_basis_set(func, label, **kwargs):
     psi4core.set_variable('CBS NUMBER', Njobs)
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    wfn = psi4core.new_wavefunction(molecule, BSTR[-1])
+    basis = psi4core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    wfn = psi4core.Wavefunction(molecule, basis)
 
     optstash.restore()
 
