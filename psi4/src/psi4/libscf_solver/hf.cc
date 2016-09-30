@@ -1599,7 +1599,7 @@ void HF::load_orbitals()
             Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
             SharedMatrix Ca;
             if (basisname != options_.get_str("BASIS")) {
-                Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+                Ca = basis_projection(Ctemp_a, nalphapi_, dual_basis, basisset_);
             } else {
                 Ca = Ctemp_a;
             }
@@ -1612,7 +1612,7 @@ void HF::load_orbitals()
             Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
             SharedMatrix Cb;
             if (basisname != options_.get_str("BASIS")) {
-                Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+                Cb = basis_projection(Ctemp_b, nbetapi_, dual_basis, basisset_);
             } else {
                 Cb = Ctemp_b;
             }
@@ -1635,7 +1635,7 @@ void HF::load_orbitals()
         Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
         SharedMatrix Ca;
         if (basisname != options_.get_str("BASIS")) {
-            Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+            Ca = basis_projection(Ctemp_a, nalphapi_, dual_basis, basisset_);
         } else {
             Ca = Ctemp_a;
         }
@@ -1644,7 +1644,7 @@ void HF::load_orbitals()
         Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
         SharedMatrix Cb;
         if (basisname != options_.get_str("BASIS")) {
-            Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+            Cb = basis_projection(Ctemp_b, nbetapi_, dual_basis, basisset_);
         } else {
             Cb = Ctemp_b;
         }

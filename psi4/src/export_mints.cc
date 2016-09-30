@@ -844,6 +844,7 @@ void export_mints(py::module& m)
             def_readwrite("cdict", &Wavefunction::cdict);
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>>(m, "HF", py::base<Wavefunction>(), "docstring").
+            def("basis_projection", &scf::HF::basis_projection, "docstring").
             def("set_dashd_correction", &scf::HF::set_dashd_correction, "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").

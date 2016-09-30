@@ -232,6 +232,12 @@ public:
     // Set -D correction
     void set_dashd_correction(double dashd) { energies_["-D"] = dashd; }
 
+
+    /// Perform casting of C from old basis to new basis if desired.
+    SharedMatrix basis_projection(SharedMatrix Cold, Dimension noccpi,
+                                  std::shared_ptr<BasisSet> old_basis,
+                                  std::shared_ptr<BasisSet> new_basis);
+
     // PCM interface
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;
@@ -251,10 +257,6 @@ protected:
 
     /// Prints the orbital occupation
     void print_occupation();
-
-
-    /// Perform casting of C from old basis to new basis if desired.
-    SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis);
 
     /// Common initializer
     void common_init();

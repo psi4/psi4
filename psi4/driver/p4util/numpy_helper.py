@@ -385,16 +385,21 @@ def _array_conversion(self):
     else:
         return self.np.__array_interface__
 
-def _np_write(self, filename):
+def _np_write(self, filename=None, prefix=""):
+
     ret = {}
-    ret['Irreps'] = self.nirrep()
-    ret['Name'] = self.name
+    ret[prefix + "Irreps"] = self.nirrep()
+    ret[prefix + "Name"] = self.name
     for h, v in enumerate(self.nph):
-        ret["IrrepData" + str(h)] = v
+        ret[prefix + "IrrepData" + str(h)] = v
+
+    if filename is None:
+        return ret
+
     np.savez(filename, **ret)
 
 @classmethod
-def _np_read(self, filename):
+def _np_read(self, filename, prefix=""):
 
     if not filename.endswith('.npz'):
         filename = filename + '.npz'
@@ -402,26 +407,22 @@ def _np_read(self, filename):
     data = np.load(filename)
 
     ret_data = []
-    if ("Irreps" not in data.keys()) or ("Name" not in data.keys()):
+    if ((prefix + "Irreps") not in data.keys()) or ((prefix + "Name") not in data.keys()):
         raise KeyError("File %s does not appear to be a numpyz save" % filename)
 
-    for h in range(data["Irreps"]):
-        ret_data.append(data["IrrepData" + str(h)])
-
-    print data["Name"]
-    print str(data["Name"])
-    print type(data["Name"])
+    for h in range(data[prefix + "Irreps"]):
+        ret_data.append(data[prefix + "IrrepData" + str(h)])
 
     arr_type = self.__mro__[0]
     if arr_type == psi4core.Matrix:
         dim1 = psi4core.Dimension.from_list([x.shape[0] for x in ret_data])
         dim2 = psi4core.Dimension.from_list([x.shape[1] for x in ret_data])
-        ret = psi4core.Matrix(str(data["Name"]), dim1, dim2)
+        ret = psi4core.Matrix(str(data[prefix + "Name"]), dim1, dim2)
     elif arr_type == psi4core.Vector:
         dim1 = psi4core.Dimension.from_list([x.shape[0] for x in ret_data])
-        ret = psi4core.Matrix(str(data["Name"]), dim1)
+        ret = psi4core.Vector(str(data[prefix + "Name"]), dim1)
 
-    for h in range(data["Irreps"]):
+    for h in range(data[prefix + "Irreps"]):
         ret.nph[h][:] = ret_data[h]
 
     return ret

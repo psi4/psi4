@@ -711,8 +711,9 @@ void HF::compute_SAD_guess()
 
     E_ = 0.0; // This is the -1th iteration
 }
-SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis)
-{
+SharedMatrix HF::basis_projection(SharedMatrix C_A, Dimension noccpi,
+                                 std::shared_ptr<BasisSet> old_basis,
+                                 std::shared_ptr<BasisSet> new_basis) {
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     std::shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));

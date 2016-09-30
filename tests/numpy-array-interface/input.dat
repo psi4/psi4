@@ -163,7 +163,17 @@ compare_matrices(irreped_mat, read_irreped_mat, 9, "Irreped psi4.Matrix np read 
 
 irreped_vec.np_write("irreped_vec")
 read_irreped_vec = psi4.Vector.np_read("irreped_vec")
-compare_vecrices(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Matrix np read and write.")     #TEST
+compare_vectors(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Vector np read and write.")     #TEST
 
+
+fkeys = irreped_mat.np_write(prefix='mat ')
+fkeys.update(irreped_vec.np_write(prefix='vec '))
+np.savez("compound", **fkeys)
+
+read_irreped_mat = psi4.Matrix.np_read("compound", prefix='mat ')
+compare_matrices(irreped_mat, read_irreped_mat, 9, "Irreped psi4.Matrix np compound read and write.")     #TEST
+
+read_irreped_vec = psi4.Vector.np_read("compound", prefix='vec ')
+compare_vectors(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Vector np compound read and write.")     #TEST
 
 
