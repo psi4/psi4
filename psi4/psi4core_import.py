@@ -10,7 +10,7 @@ if "PSICORE" in os.environ.keys():
     import psi4core
 else:
     try:
-        import psi4core
+        from . import psi4core
     except ImportError:
         psi_path = os.path.abspath(__file__ + '/../../objdir/stage/usr/local/lib/')
         print("psi4core.so not found in local folder, attempting to guess relative location %s" % psi_path)
@@ -30,4 +30,6 @@ psi4core.set_memory(int(512e6)) # Set to 512 MB
 import atexit
 atexit.register(psi4core.set_legacy_molecule, None)
 atexit.register(psi4core.finalize)
+
+# Move up the namesapce
 from psi4core import *
