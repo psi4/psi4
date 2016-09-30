@@ -14,7 +14,7 @@ resulting in Python syntax that is customized for PSI, termed Psithon.  In
 this section we will describe the essential features of the Psithon language.
 |PSIfour| is distributed with an extensive test suite, described in section
 :ref:`apdx:testSuite`; the input files for these test cases can be found in the
-samples subdirectory of the top-level |PSIfour| source directory, and should
+samples subdirectory of the top-level |PSIfour| source directory and should
 serve as useful examples.
 
 .. index:: physical constants
@@ -30,7 +30,7 @@ automatically defined in all input files.  For example, if we repeatedly make
 use of the universal gravitational constant, the following line could be placed
 in the |psirc| file ::
 
-    UGC = 6.67384E-11 # m^3 / kg^-1 s^-2
+    UGC = 6.67384E-11  # m^3 / kg^-1 s^-2
 
 which would make the variable ``UGC`` available in all |PSIfour| input files.
 For convenience, the physical constants used within the |PSIfour| code (which
@@ -45,7 +45,7 @@ The physical constants used within |PSIfour|, which are automatically
 made available within all |PSIfour| input files.
 
 .. literalinclude:: @SFNX_INCLUDE@psi4/share/psi4/python/p4const/physconst.py
-   :lines: 25-
+   :lines: 28-
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in
 |PSIfour| input files.
@@ -103,7 +103,7 @@ To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
 Job Control Keywords
 ====================
 
-|PSIfour| comprises a number of modules, written in C++, that each perform
+|PSIfour| comprises a number of C++ modules that each perform
 specific tasks and are callable directly from the Python front end. Each module
 recognizes specific keywords in the input file which control its function.
 These keywords are detailed in Appendix :ref:`apdx:options_c_module`.
@@ -177,7 +177,7 @@ the basis set is set to cc-pVDZ throughout, the SCF code will have a print
 level of 1 and the ccenergy code, which performs coupled cluster computations,
 will use a print level of 3. In this example a full CCSD computation is
 performed by running the SCF code first, then the coupled cluster modules;
-the ``energy()`` Python helper function ensures that this is performed correctly.
+the :py:func:`~driver.energy` Python helper function ensures that this is performed correctly.
 Note that the Python interpreter executes commands in the order they appear in
 the input file, so if the last four commands in the above example were to read ::
 
@@ -409,9 +409,9 @@ the |PSIfour| suite.
 As seen in the neon dimer example from the :ref:`sec:tutorial` section,
 the :py:func:`~driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
 counterpoise-corrected interaction energies between two molecules.  For
-example,::
+example, ::
 
-  cp('mp2')
+  energy('mp2', bsse_type='cp')
 
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
@@ -421,18 +421,24 @@ which automatically computes a complete-basis-set extrapolation (and
 automatically sets up the computations with different basis sets required to
 do the extrapolation).  For example,::
 
+  # all equivalent
+
   cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
+  energy('mp2/cc-pv[dt]z')
+
 will compute a 2-point Helgaker extrapolation of the correlation energy
-using the cc-pVDZ and cc-pVTZ basis sets (with method MP2), and add this
+using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
 extrapolated correlation energy to the Hartree--Fock energy in the
-largest basis (cc-pVTZ).
+largest basis (cc-pVTZ). :py:func:`~driver_cbs.complete_basis_set` can
+either be called directly, as in the first example, or the convenience
+syntax of the equivalent second example can be used.
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
 as provided by the :py:func:`~wrapper_database.database` wrapper.  For example,::
 
-  database('mp2','S22',cp=1,benchmark='S22B')
+  database('mp2', 'S22', cp=1, benchmark='S22B')
 
 will perform DF-MP2 counterpoise-corrected interaction energies
 (``cp=1``) on all members of Hobza's S22 database set of van der Waals

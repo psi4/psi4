@@ -7,27 +7,27 @@
 
 .. _`sec:cc`:
 
-CC: Coupled Cluster Methods
-===========================
+CC: Coupled Cluster Theory
+==========================
 
 .. codeauthor:: T. Daniel Crawford
 .. sectionauthor:: T. Daniel Crawford
 
-*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <src/bin/ccenergy>`
+*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <psi4/src/psi4/ccenergy>`
 
-*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <src/bin/cceom>`
+*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <psi4/src/psi4/cceom>`
 
-*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <src/bin/ccresponse>`
+*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <psi4/src/psi4/ccresponse>`
 
-*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <src/bin/cctriples>`
+*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <psi4/src/psi4/cctriples>`
 
-*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <src/bin/ccdensity>`
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <psi4/src/psi4/ccdensity>`
 
-*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <src/bin/cchbar>`
+*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <psi4/src/psi4/cchbar>`
 
-*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <src/bin/cclambda>`
+*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <psi4/src/psi4/cclambda>`
 
-*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <src/bin/ccsort>`
+*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <psi4/src/psi4//ccsort>`
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.

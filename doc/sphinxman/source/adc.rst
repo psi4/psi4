@@ -15,7 +15,7 @@ ADC: Ab Initio Polarization Propagator
 .. codeauthor:: Masaaki Saitow
 .. sectionauthor:: Masaaki Saitow
 
-*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <src/bin/adc>`
+*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <psi4/src/psi4/adc>`
 
 The ADC code seeks the pole structure of the polarization
 propagator, which is equivalent to the correlated excitation energy,

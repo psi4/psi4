@@ -8,8 +8,8 @@
 
 .. _`sec:molden`:
 
-Interface to Molden, :py:func:`~driver.molden`
-==============================================
+Interface to Molden |w---w| :py:func:`~driver.molden`
+=====================================================
 
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: C. David Sherrill

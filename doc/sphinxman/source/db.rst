@@ -8,8 +8,8 @@
 
 .. _`sec:db()`:
 
-Database, :py:func:`~wrapper_database.database`
-===============================================
+Database |w---w| :py:func:`~wrapper_database.database`
+======================================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns

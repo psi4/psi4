@@ -6,8 +6,8 @@
 
 .. _`sec:energy()`:
 
-Single-Point Energy, :py:func:`~driver.energy`
-==============================================
+Single-Point Energy |w---w| :py:func:`~driver.energy`
+=====================================================
 
 * :ref:`Psi4 Native Energy Methods <table:energy_gen>`
 * :ref:`Psi4 Native DFT Energy Methods <table:energy_dft>`

@@ -4,8 +4,8 @@
 .. index:: Cfour
 .. _`sec:cfour`:
 
-Interface to CFOUR by J. Stanton and J. Gauss
-=============================================
+Interface to CFOUR by J. Stanton & J. Gauss
+===========================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns

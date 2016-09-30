@@ -8,8 +8,8 @@
 
 .. _`sec:cubeprop`:
 
-:py:func:`~p4util.cubeprop` Generation of cube files
-====================================================
+Generation of Cube Files |w---w| :py:func:`~p4util.cubeprop`
+============================================================
 
 .. codeauthor:: Robert M. Parrish and Francesco A. Evangelista
 .. sectionauthor:: Francesco A. Evangelista

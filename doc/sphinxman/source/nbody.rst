@@ -1,14 +1,17 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
+.. index:: BSSE
+
 .. index::
    triple: setting; keywords; cp
+   triple: setting; keywords; vmfc
    see: counterpoise_correct
 
 .. _`sec:cp()`:
 
-Counterpoise Correct
-====================
+Basis Set Superposition Corrections
+===================================
 
 .. codeauthor:: Daniel G. A. Smith
 

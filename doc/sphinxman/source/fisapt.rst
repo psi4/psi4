@@ -7,14 +7,14 @@
 
 .. _`sec:fisapt`:
 
-F/I-SAPT: Functional Group and/or Intramolecular Symmetry-Adapted Perturbation Theory
-=====================================================================================
+F/I-SAPT: Functional Group and/or Intramolecular SAPT
+=====================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
 
 *Module:* :ref:`Keywords <apdx:fisapt>`, :ref:`PSI Variables
-<apdx:fisapt_psivar>`, :source:`FISAPT <src/bin/fisapt>`
+<apdx:fisapt_psivar>`, :source:`FISAPT <psi4/src/psi4/fisapt>`
 
 The FISAPT module provides two extensions to standard SAPT theory to allow for
 (1) an effective two-body partition of the various SAPT terms to localized
@@ -25,7 +25,7 @@ origins of a noncovalent interaction, while I-SAPT allows for one to perform
 a SAPT analysis for intramolecular interactions. F-SAPT and I-SAPT can be
 deployed together in this module, yielding "F/I-SAPT." All F/I-SAPT computations
 in |PSIfour| use density-fitted SAPT0 as the underlying SAPT methodology. Interested
-users should consult the manual page for Ed Hohenstein's `SAPT0 sec:sapt`_ code
+users should consult the manual page for Ed Hohenstein's :ref:`SAPT0 <sec:sapt>` code
 and the SAPT literature to understand the specifics of SAPT0 before beginning
 with F/I-SAPT0.
 

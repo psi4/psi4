@@ -13,7 +13,7 @@ DCFT: Density Cumulant Functional Theory
 .. codeauthor:: Alexander Yu. Sokolov, Andrew C. Simmonett, and Xiao Wang
 .. sectionauthor:: Alexander Yu. Sokolov
 
-*Module:* :ref:`Keywords <apdx:dcft>`, :ref:`PSI Variables <apdx:dcft_psivar>`, :source:`DCFT <src/bin/dcft>`
+*Module:* :ref:`Keywords <apdx:dcft>`, :ref:`PSI Variables <apdx:dcft_psivar>`, :source:`DCFT <psi4/src/psi4/dcft>`
 
 .. _`sec:dcfttheory`:
 

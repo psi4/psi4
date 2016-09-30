@@ -18,7 +18,7 @@ An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
-|PSIfour| is, in many ways, a whole new package compared to Psi3.  
+|PSIfour| is, in many ways, a whole new package compared to Psi3.
 While some libraries and modules remain the same, the majority of the code has
 been rewritten from scratch based on a powerful set of new libraries written
 in C++.  A totally new Python front-end makes |PSIfour| incredibly user-friendly
@@ -503,21 +503,21 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | DCFT                    | RHF/UHF        | CONV/DF           | RHF/UHF      | CONV           | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP2                     | RHF/UHF/ROHF   | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
+    | MP2 [#f10]_             | RHF/UHF/ROHF   | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP3                     | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
+    | MP3 [#f10]_             | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP2.5                   | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
+    | MP2.5 [#f10]_           | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP4                     | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
+    | MP4 [#f10]_             | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | MP(n)                   | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | ZAPT(n)                 | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | LCCD                    | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
+    | LCCD [#f10]_            | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | LCCSD, CEPA(0)          | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
+    | LCCSD, CEPA(0) [#f10]_  | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CEPA(n), n=0,1,3        | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
@@ -525,17 +525,17 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC2                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD                    | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
+    | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(T)                 | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | UHF          | CONV           | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
+    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | UHF          | CONV           | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(AT)                | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
+    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC3                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded (pthreads)         |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | ACPF/AQCC               | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CISD                    | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           | E          |
+    | CISD [#f10]_            | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | QCISD                   | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
@@ -626,6 +626,7 @@ Where-to-post summary:[#f6]_
 .. [#f7] DH-DFT only available with DF-MP2.
 .. [#f8] Not all combinations of reference and algorithm available. In particular, non-RHF references only available as CONV.
 .. [#f9] Orbital-optimized variant available. In particular, all references available as CONV/DF.
+.. [#f10] Capabilities breakdown in great detail can be found at :ref:`table:managedmethods`.
 
 .. toctree::
    :hidden:

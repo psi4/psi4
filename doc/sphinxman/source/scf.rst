@@ -10,7 +10,7 @@ HF: Hartree--Fock Theory
 .. codeauthor:: Justin M. Turney, Robert M. Parrish, and Andrew C. Simmonett
 .. sectionauthor:: Robert M. Parrish and Jerome F. Gonthier
 
-*Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBSCF_SOLVER <src/lib/libscf_solver>`, :source:`LIBMINTS <src/lib/libmints>`, :source:`LIBFOCK <src/lib/libfock>`, :source:`LIBDIIS <src/lib/libdiis>`
+*Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`, :source:`LIBMINTS <psi4/src/psi4/libmints>`, :source:`LIBFOCK <psi4/src/psi4/libfock>`, :source:`LIBDIIS <psi4/src/psi4/libdiis>`
 
 .. _`sec:scfintro`:
 
@@ -579,7 +579,7 @@ SOSCF is only available for RHF, ROHF, and UHF reference. To turn on simply set
 the option |scf__soscf| to ``true``. Additional options to modify the number of
 microiterations taken are as follows:
 
-    |scf__soscf_r_start|: when to start SOSCF based on the current density RMS
+    |scf__soscf_start_convergence|: when to start SOSCF based on the current density RMS
 
     |scf__soscf_max_iter|: the maximum number of SOSCF microiterations per macroiteration
 

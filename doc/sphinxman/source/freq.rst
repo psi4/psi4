@@ -10,8 +10,8 @@
 
 .. _`sec:freq()`:
 
-Harmonic Vibrational Analysis, :py:func:`~driver.frequency` and :py:func:`~driver.hessian`
-==========================================================================================
+Harmonic Vibrational Analysis |w---w| :py:func:`~driver.frequency` and :py:func:`~driver.hessian`
+=================================================================================================
 
 * :ref:`Psi4 Native Hessian Methods <table:freq_gen>`
 

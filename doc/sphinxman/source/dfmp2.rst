@@ -7,13 +7,13 @@
 
 .. _`sec:dfmp2`:
 
-DF-MP2: Density-Fitted Second-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
-==================================================================================
+DF-MP2: Density-Fitted 2nd-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
+===============================================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
 
-*Module:* :ref:`Keywords <apdx:dfmp2>`, :ref:`PSI Variables <apdx:dfmp2_psivar>`, :source:`DFMP2 <src/bin/dfmp2>`
+*Module:* :ref:`Keywords <apdx:dfmp2>`, :ref:`PSI Variables <apdx:dfmp2_psivar>`, :source:`DFMP2 <psi4/src/psi4/dfmp2>`
 
 Introduction
 ------------
