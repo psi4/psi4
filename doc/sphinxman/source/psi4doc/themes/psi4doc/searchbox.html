@@ -1,6 +1,6 @@
 {#
-    psi4/searchbox.html
-    ~~~~~~~~~~~~~~~~~~~~
+    psi4doc/searchbox.html
+    ~~~~~~~~~~~~~~~~~~~~~~
 
     Sphinx sidebar template: quick search box.
 
@@ -9,9 +9,10 @@
 #}
 {%- if pagename != "search" and builder != "singlehtml" %}
 <div id="searchbox" style="display: none" role="search">
-  <h3>{{ _('Quick search') }}</h3>
+  <!--<h3>{{ _('Quick search') }}</h3>-->
     <form class="search" action="{{ pathto('search') }}" method="get">
-      <div><input type="text" name="q" placeholder="Search docs" /></div>
+      <!--<div><input type="text" name="q" placeholder="search docs" /></div>-->
+      <div><input type="text" name="q" placeholder="&#xF002;" style="font-family:FontAwesome, Ariel" /></div>
       <!--<div><input type="submit" value="{{ _('Go') }}" /></div>-->
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
