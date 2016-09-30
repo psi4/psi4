@@ -1,0 +1,30 @@
+{#
+    psi4doc/layout.html
+    ~~~~~~~~~~~~~~~~~~~
+
+    Sphinx layout template for the psi4doc theme.
+
+#}
+
+{% extends "cloud/layout.html" %}
+
+{%- set reldelim1 = '<i class="fa fa-angle-double-right" style="color: #a2a7b3; text-shadow: none;"></i>' %}
+
+{# add font stylesheets #}
+{% set css_files = css_files + [theme_facssurl] %}
+
+{% block rootrellink %}
+    <li><a href="http://psicode.org/"><i class="fa fa-home fa-lg"></i></a></li>
+    <li><a href="http://github.com/psi4/psi4"><i class="fa fa-github fa-lg"></i></a></li>
+    <li><a href="http://forum.psicode.org"><i class="fa fa-comments-o fa-lg"></i></a></li>
+    <li><a href="https://github.com/psi4/psi4/edit/master/doc/sphinxman/source/{{ pagename }}.rst"><i class="fa fa-pencil fa-lg"></i></a></li>
+    <li style="color: {{ theme_headlinkcolor }}">&nbsp;&middot;&nbsp;</li>
+    <li><a href="https://github.com/psi4/psi4/tree/{{ release }}">{{ version }}</a></li>
+    <li style="color: {{ theme_headlinkcolor }}">&nbsp;&middot;&nbsp;</li>
+    <li class="nav-item nav-item-0"><a href="{{ pathto(theme_roottarget) }}">
+        <span style="font-family: Optima, sans-serif;">P<span style="font-size: 82%;">SI</span>4</span>
+        </a>{{ reldelim1 }}</li>
+{% endblock %}
+{%- for parent in parents %}
+    <li class="nav-item nav-item-{{ loop.index }}"><a href="{{ parent.link|e }}" {% if loop.last %}{{ accesskey("U") }}{% endif %}>{{ parent.title }}</a>{{ reldelim1 }}</li>
+{%- endfor %}

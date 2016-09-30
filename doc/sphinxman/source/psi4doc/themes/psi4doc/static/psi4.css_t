@@ -2,7 +2,7 @@
  * psi4.css_t
  * ~~~~~~~~~~~
  *
- * stylesheet for "PSI4" theme for Sphinx.
+ * stylesheet for psi4doc theme for Sphinx.
  * This Sphinx theme was based heavily upon the "Cloud" theme.
  *
  * :copyright: Copyright 2011 by Assurance Technologies
@@ -100,8 +100,10 @@ div.body h1
     background: url("psi4multieqnbkgd.png") top center;
     background-size: cover;
     background-repeat: no-repeat;
-    font-weight: normal;
+    font-weight: bold;
     font-size: 200%;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 /* <<<  This improves the relbars so narrower, w/o breadcrumbs, not bold  >>> */
@@ -143,6 +145,26 @@ div.highlight pre
     border-radius: 10px;
 }
 
+/* <<<  This positions and formats the searchbox and text  >>> */
+
+div.sphinxsidebar #searchbox input[type="text"] {
+    width: 250px;
+    border-radius: 5px;
+    padding: 8px;
+    border-style: none;
+    margin: 10px 10px 0px 10px;
+}
+
+/* <<<  This formats the sidebar TOC title  >>> */
+
+div.sphinxlocaltoc h3 {
+    font-family: sans-serif;
+    text-align: center;
+    font-variant: small-caps;
+    letter-spacing: 2px;
+}
+
+/* <<<    >>> */
 /* <<<    >>> */
 /* <<<    >>> */
 
