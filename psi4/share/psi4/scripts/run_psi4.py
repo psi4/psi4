@@ -1,4 +1,4 @@
-#! /Users/daniel/anaconda/bin/python
+#!/usr/bin/env python
 import sys
 import os
 import argparse
@@ -75,7 +75,7 @@ if args["output"] is None:
         args["output"] = args["input"] + ".dat"
 
 if not os.path.isfile(args["input"]):
-    raise KeyError("Input file %s is not a file" % args["input"])
+    raise KeyError("The file %s does not exist." % args["input"])
 
 
 # Figure out psidata dir
