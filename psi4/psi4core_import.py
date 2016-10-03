@@ -35,6 +35,22 @@ else:
 psi4core.initialize()
 psi4core.set_memory(int(512e6)) # Set to 512 MB
 
+# Set psidatadir
+if "PSIDATADIR" not in os.environ.keys():
+    datadir = os.path.dirname(os.path.abspath(__file__))
+    datadir += os.path.sep + "share" + os.path.sep + "psi4"
+    print datadir
+    os.environ["PSIDATADIR"] = datadir
+else:
+    datadir = os.environ["PSIDATADIR"]
+
+if not os.path.isdir(datadir):
+     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
+                    "      Current value of PSIDATADIR is %s" % datadir)
+
+psi4core.set_environment("PSIDATADIR", datadir)
+
+
 # Cleanup psi4core at exit
 import atexit
 atexit.register(psi4core.set_legacy_molecule, None)

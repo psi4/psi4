@@ -82,7 +82,6 @@ SAPT::~SAPT()
   if (vBAA_ != NULL) free_block(vBAA_);
   if (vAAB_ != NULL) free_block(vAAB_);
   if (vBAB_ != NULL) free_block(vBAB_);
-  ribasis_.reset();
   zero_.reset();
 }
 
@@ -102,17 +101,17 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  ribasis_ = std::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
-    "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"),
-    "RIFIT", options_.get_str("BASIS")));
-  elst_basis_ = 0;
-  if (options_.get_str("DF_BASIS_ELST") != "") {
-    elstbasis_ = std::shared_ptr<BasisSet>(BasisSet::pyconstruct_auxiliary(molecule_,
-    "DF_BASIS_ELST", options_.get_str("DF_BASIS_ELST"),
-    "RIFIT", options_.get_str("BASIS")));
-    // TODO: never dealt with an optional basis set before. right default role?
-    elst_basis_ = 1;
+  // We inherit from the dimer basis
+  ribasis_ = get_basisset("DF_BASIS_SAPT");
+  elstbasis_ = get_basisset("DF_BASIS_ELST");
+
+  // Compare pointers
+  if (ribasis_ == elstbasis_){
+      elst_basis_ = 0;
+  } else {
+      elst_basis_ = 1;
   }
+
   zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
 
   if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
