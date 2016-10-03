@@ -85,7 +85,7 @@ sub get_description
 # Scan the source for Process::Environment variables
 #
 
-my $SrcFolder = $DriverPath . "../../src";
+my $SrcFolder = $DriverPath . "../../psi4/src/psi4/";
 my $TexSummary = "variables_list.tex";
 my $RstSummary = "source/autodoc_psivariables_bymodule.rst";
 open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
@@ -100,9 +100,9 @@ print VOUT ".. toctree::\n   :maxdepth: 1\n\n";
 foreach my $Module (@PSIMODULES) {
     # Set path for each module of bin/module and lib/libmodule_solver
     #     Assign stray variables as for OEPROP below
-    my @RelevantDirs = ($SrcFolder . "/bin/" . lc($Module), $SrcFolder . "/lib/lib" . lc($Module) . "_solver");
-    if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "/lib/libmints"); }
-    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "/lib/libgdma"); }
+    my @RelevantDirs = ($SrcFolder . lc($Module), $SrcFolder . "lib" . lc($Module) . "_solver");
+    if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "libmints"); }
+    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "libgdma"); }
     my @EnvVariables = ();
     my @EnvArrays = ();
     printf TEXOUT "\n\\subsection{%s}\n",$Module;

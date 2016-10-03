@@ -26,6 +26,6 @@
 .. |u_grave|      unicode:: U+00F9
 .. |u_acute|      unicode:: U+00FA
 .. |u_circumflex| unicode:: U+00FB
-.. |u_dots|       unicode:: U+00FC
+.. |u_dots|       unicode:: U+00FC .. as in H\ |u_dots|\ ckel
 .. |sigma|        unicode:: U+03C3
 
