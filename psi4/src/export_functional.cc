@@ -60,7 +60,6 @@ void export_functional(py::module &m)
         def("c_alpha", &SuperFunctional::c_alpha, "docstring").
         def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "docstring").
         def("c_os_alpha", &SuperFunctional::c_os_alpha, "docstring").
-        def("dispersion", &SuperFunctional::dispersion, "docstring").
         def("is_gga", &SuperFunctional::is_gga, "docstring").
         def("is_meta", &SuperFunctional::is_meta, "docstring").
         def("is_x_lrc", &SuperFunctional::is_x_lrc, "docstring").
@@ -79,7 +78,6 @@ void export_functional(py::module &m)
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
         def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "docstring").
         def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "docstring").
-        def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
         def("print_out",&SuperFunctional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 

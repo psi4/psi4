@@ -38,7 +38,9 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include <cstdlib>
 #include <sstream>
+#include <string>
 using ULI = unsigned long int;
 
 namespace psi {

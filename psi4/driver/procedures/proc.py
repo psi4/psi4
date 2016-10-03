@@ -1030,8 +1030,6 @@ def scf_helper(name, **kwargs):
 
     """
 
-    psi4core.tstart() # Manage start and stop as there is no C wrapper
-
     optstash = p4util.OptionsState(
         ['PUREAM'],
         ['BASIS'],
@@ -1264,8 +1262,6 @@ def scf_helper(name, **kwargs):
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
 
-    psi4core.tstop()
-
     optstash.restore()
     return scf_wfn
 
@@ -1283,6 +1279,12 @@ def run_dcft(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
+
+    if (psi4core.get_global_option("DCFT_TYPE") == "DF"):
+        aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
+                                            psi4core.get_global_option("DF_BASIS_DCFT"),
+                                            "RIFIT", psi4core.get_global_option("BASIS"))
+        wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
@@ -1399,6 +1401,11 @@ def run_dfocc(name, **kwargs):
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
+
+    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        psi4core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1770,11 +1777,14 @@ def run_scf(name, **kwargs):
 
     """
 
+    psi4core.tstart() # Manage start and stop as there is no C wrapper
+
     optstash = proc_util.scf_set_reference_local(name)
 
     scf_wfn = scf_helper(name, **kwargs)
 
     optstash.restore()
+    psi4core.tstop()
     return scf_wfn
 
 
@@ -2009,6 +2019,14 @@ def run_ccenergy(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+        wfn.cdict.clear()
+
+    if psi4core.get_global_option("CC_TYPE") == "DF":
+        aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                            psi4core.get_global_option("DF_BASIS_CC"),
+                                            "RIFIT", psi4core.get_global_option("BASIS"))
+        wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)

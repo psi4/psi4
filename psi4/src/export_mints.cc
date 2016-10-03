@@ -866,12 +866,6 @@ void export_mints(py::module& m)
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>>(m, "CUHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    // py::class_<scf::RKS, std::shared_ptr<scf::RKS>>(m, "RKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
-
-    // py::class_<scf::UKS, std::shared_ptr<scf::UKS>>(m, "UKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
-
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 
     py::class_<Localizer, std::shared_ptr<Localizer>>(m, "Localizer", "docstring").

@@ -63,9 +63,11 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::df()
 {
-  std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
-            "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
+  // throw PSIEXCEPTION("Pyconstruct auxiliary has been removed. Please rewrite this function if valid");
+  //std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+  //          "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
 
+  std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_CC");
   std::shared_ptr<DFTensor> DF (new DFTensor(reference_wavefunction_->basisset(), auxiliary, Ca_, noccA, nvirA, naoccA, navirA, options_));
   nQ = auxiliary->nbf(); // reads number of aux-basis functions
   //bQnn = std::shared_ptr<Matrix>(new Matrix("B_munu^Q", nQ, nso2_));

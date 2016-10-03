@@ -82,14 +82,17 @@ void DCFTSolver::df_build_b_ao()
     outfile->Printf(     "\t                  ************************************************\n");
     outfile->Printf( "\n");
 
-    primary_ = BasisSet::pyconstruct_orbital(molecule_,
-                                             "BASIS", options_.get_str("BASIS"));
-    auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
-                                                 "DF_BASIS_DCFT", options_.get_str("DF_BASIS_DCFT"),
-                                                 "RIFIT", options_.get_str("BASIS"));
-    auxiliary_scf_ = BasisSet::pyconstruct_auxiliary(molecule_,
-                                                     "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
-                                                     "JKFIT", options_.get_str("BASIS"));
+    primary_ = get_basisset("ORBITAL");
+    auxiliary_ = get_basisset("DF_BASIS_DCFT");
+    auxiliary_scf_ = get_basisset("DF_BASIS_SCF");
+    // primary_ = BasisSet::pyconstruct_orbital(molecule_,
+    //                                          "BASIS", options_.get_str("BASIS"));
+    // auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
+    //                                              "DF_BASIS_DCFT", options_.get_str("DF_BASIS_DCFT"),
+    //                                              "RIFIT", options_.get_str("BASIS"));
+    // auxiliary_scf_ = BasisSet::pyconstruct_auxiliary(molecule_,
+    //                                                  "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
+    //                                                  "JKFIT", options_.get_str("BASIS"));
 
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 

@@ -14,7 +14,8 @@ else:
     except ImportError:
         #psi_path = os.path.abspath(__file__ + '/../../objdir/stage/usr/local/lib/')
         print("psi4core.so not found in local folder, attempting to guess relative location...")
-        base_path = os.path.dirname(os.path.dirname(__file__)) + os.path.sep + 'objdir' + os.path.sep + 'stage'
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base_path += os.path.sep + 'objdir' + os.path.sep + 'stage'
         matches = []
         for root, dirnames, filenames in os.walk(base_path):
             if 'include' in root: continue
@@ -27,7 +28,7 @@ else:
 
         sys.path.insert(1, matches[0])
         import psi4core
-        
+
 
 
 # Init psi4core

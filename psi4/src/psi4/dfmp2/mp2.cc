@@ -2850,7 +2850,7 @@ void RDFMP2::form_gradient()
 
     timer_on("Grad: JK");
 
-    std::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_);
+    std::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_, basissets_["DF_BASIS_SCF"]);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Cocc);

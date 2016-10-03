@@ -461,6 +461,7 @@ def energy(name, **kwargs):
 
         return (psi4core.get_variable('CURRENT ENERGY'), wfn)
     else:
+        wfn.cdict.clear()
         return psi4core.get_variable('CURRENT ENERGY')
 
 
@@ -727,6 +728,7 @@ def gradient(name, **kwargs):
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
+            wfn.cdict.clear()
             return wfn.gradient()
 
 

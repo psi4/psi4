@@ -33,7 +33,13 @@ def pybuild_wavefunction(mol, basis=None):
 
     return psi4core.Wavefunction(mol, basis)
 
+def delete(self):
+    print('Clearing cdict')
+    self.cdict.clear()
+
 psi4core.Wavefunction.build = pybuild_wavefunction
+psi4core.Wavefunction.__del__ = delete
+psi4core.Wavefunction.__exit__ = delete
 
 ## Python JK helps
 

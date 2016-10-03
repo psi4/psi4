@@ -50,6 +50,7 @@ except ImportError:
     try:
         new_path = os.path.abspath(__file__ + os.path.sep + '/../../../../../')
         print("Psi4 not found in PYTHONPATH, attempting relative import at %s" % new_path)
+        print new_path
         sys.path.insert(1, new_path)
         import psi4
     except ImportError:

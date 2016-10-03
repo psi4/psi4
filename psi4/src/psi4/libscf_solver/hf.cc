@@ -1791,8 +1791,8 @@ void HF::iterations()
 
     bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-        outfile->Printf( "  ==> Iterations <==\n\n");
-        outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
+    outfile->Printf( "  ==> Iterations <==\n\n");
+    outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
 
 
     // SCF iterations

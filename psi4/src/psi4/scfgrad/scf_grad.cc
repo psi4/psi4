@@ -1299,12 +1299,6 @@ SharedMatrix SCFGrad::compute_hessian()
     }
     timer_off("Hess: XC");
 
-    // => -D Hessian <= //
-    if (functional && functional->dispersion()) {
-        throw PSIEXCEPTION("-D Hessians not implemented");
-        //hessians["-D"] = functional->dispersion()->compute_hessian(basisset_->molecule());
-    }
-
     // => Response Terms (Brace Yourself) <= //
     if (options_.get_str("REFERENCE") == "RHF") {
         hessians["Response"] = rhf_hessian_response();
