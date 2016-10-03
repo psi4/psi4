@@ -85,6 +85,7 @@ Wavefunction::Wavefunction(Options &options) :
 
 Wavefunction::~Wavefunction()
 {
+    cdict.clear();
 }
 
 void Wavefunction::shallow_copy(SharedWavefunction other)
@@ -169,6 +170,7 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
     basisset_ = BasisSet::pyconstruct_orbital(molecule_, other->basisset()->key(),
                                               other->basisset()->target());
+    basissets_ = other->basissets_; // Still cannot copy basissets
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
     factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
@@ -188,6 +190,7 @@ void Wavefunction::deep_copy(const Wavefunction *other)
 
     energy_ = other->energy_;
     efzc_ = other->efzc_;
+    cdict = other->cdict;
 
     // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
 

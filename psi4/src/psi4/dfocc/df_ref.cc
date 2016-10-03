@@ -98,9 +98,11 @@ void DFOCC::df_ref()
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "DF") {
           outfile->Printf("\tReading DF integrals from disk ...\n");
-	  std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(), "BASIS", options_.get_str("BASIS"));
-          std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-              "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"), primary->has_puream());
+	 // std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(), "BASIS", options_.get_str("BASIS"));
+     //     std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
+     //         "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"), primary->has_puream());
+          std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
+          std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
           std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
           nQ_ref = auxiliary->nbf();
 
@@ -165,10 +167,12 @@ void DFOCC::df_ref()
   //else if (read_scf_3index == "FALSE") {
   else {
     // Read in the basis set informations
-    std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
-            "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
-    std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
-        "BASIS", options_.get_str("BASIS"));
+    //std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
+    //        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
+    //std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
+    //    "BASIS", options_.get_str("BASIS"));
+    std::shared_ptr<BasisSet> primary_ = get_basisset("ORBITAL");
+    std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // Read number of auxilary basis

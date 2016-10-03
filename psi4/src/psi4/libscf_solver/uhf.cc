@@ -334,7 +334,6 @@ double UHF::compute_E()
     double XC_E = 0.0;
     if (functional_->needs_xc()) {
         XC_E = potential_->quadrature_values()["FUNCTIONAL"];
-        std::shared_ptr<Dispersion> disp = functional_->dispersion();
     }
 
     double exchange_E = 0.0;

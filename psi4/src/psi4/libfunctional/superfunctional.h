@@ -31,7 +31,8 @@
 #include "psi4/libmints/typedefs.h"
 #include <map>
 #include <vector>
-#include "psi4/libdisp/dispersion.h"
+#include <cstdlib>
+#include <string>
 namespace psi {
 
 class Options;
@@ -41,7 +42,6 @@ class Functional;
  * SuperFunctional: High-level semilocal DFA object
  *
  * This class directly holds semilocal DFA objects
- * and a possible empirical dispersion correction factor,
  * and sketches the definition of the generalized Kohn-Sham functional
  * via alpha and omega parameters for long-range and global hybrid
  * exact exchange mixing, and alpha and omega parameters for long-range
@@ -88,10 +88,6 @@ protected:
     double c_ss_alpha_;
     double c_os_alpha_;
     double c_omega_;
-
-    // => Empirical Dispersion Correction <= //
-
-    std::shared_ptr<Dispersion> dispersion_;
 
     // => Functional values and partials <= //
 
@@ -157,8 +153,6 @@ public:
     void set_c_ss_alpha(double alpha) { c_ss_alpha_ = alpha; partition_gks(); }
     void set_c_os_alpha(double alpha) { c_os_alpha_ = alpha; partition_gks(); }
 
-    void set_dispersion(std::shared_ptr<Dispersion> disp) { dispersion_ = disp; }
-
     // => Accessors <= //
 
     std::string name() const { return name_; }
@@ -175,9 +169,6 @@ public:
     double c_alpha() const { return c_alpha_; }
     double c_ss_alpha() const { return c_ss_alpha_; }
     double c_os_alpha() const { return c_os_alpha_; }
-
-
-    std::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool is_meta() const;
