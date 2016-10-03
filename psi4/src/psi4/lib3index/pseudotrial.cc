@@ -154,10 +154,11 @@ void PseudoTrial::form_molecule()
 
 void PseudoTrial::form_bases()
 {
+    throw PSIEXCEPTION("New basis set scheme has not been setup for this function yet.");
     // Primary
     molecule_->set_basis_all_atoms(options_.get_str("BASIS"),"BASIS");
-    primary_ = BasisSet::pyconstruct_orbital(molecule_,
-        "BASIS", options_.get_str("BASIS"));
+    //primary_ = BasisSet::pyconstruct_orbital(molecule_,
+    //    "BASIS", options_.get_str("BASIS"));
     nso_ = primary_->nbf();
 
     outfile->Printf(" => Primary Basis Set <= \n\n");
@@ -175,8 +176,8 @@ void PseudoTrial::form_bases()
         outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str());
         // basis access translated but code defunct
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
-        dealias_ = BasisSet::pyconstruct_auxiliary(molecule_,
-            "DEALIAS_BASIS", options_.get_str("DEALIAS_BASIS_CC"), "JKFIT", options_.get_str("BASIS"));
+        //dealias_ = BasisSet::pyconstruct_auxiliary(molecule_,
+        //    "DEALIAS_BASIS", options_.get_str("DEALIAS_BASIS_CC"), "JKFIT", options_.get_str("BASIS"));
     }
     do_dealias_ = true;
     ndealias_ = dealias_->nbf();

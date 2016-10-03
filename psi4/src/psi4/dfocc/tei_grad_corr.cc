@@ -60,11 +60,6 @@ void DFOCC::tei_grad_corr()
     #endif
 
     // Read in the basis set informations
-    // std::shared_ptr<BasisSet> primary_ = BasisSet::pyconstruct_orbital(reference_wavefunction_->molecule(),
-    //     "BASIS", Process::environment.options.get_str("BASIS"));
-    // std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(reference_wavefunction_->molecule(),
-    //     "DF_BASIS_CC", Process::environment.options.get_str("DF_BASIS_CC"),
-    //     "RIFIT", Process::environment.options.get_str("BASIS"));
     std::shared_ptr<BasisSet> primary_ = get_basisset("ORBITAL");
     std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_CC");
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());

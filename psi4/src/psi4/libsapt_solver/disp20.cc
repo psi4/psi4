@@ -202,9 +202,9 @@ void SAPT0::disp20()
   for (int s=0; s<nvirB_; s++)
     evals_virB->set(0,s,evalsB_[s+noccB_]);
 
-  denom_ = std::shared_ptr<SAPTLaplaceDenominator>(new
-    SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
-    options_.get_double("DENOMINATOR_DELTA"),debug_));
+  // denom_ = std::shared_ptr<SAPTLaplaceDenominator>(new
+  //   SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
+  //   options_.get_double("DENOMINATOR_DELTA"),debug_));
 
   SharedMatrix tauAR = denom_->denominatorA();
   SharedMatrix tauBS = denom_->denominatorB();

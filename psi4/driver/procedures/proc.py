@@ -3050,13 +3050,24 @@ def run_sapt(name, **kwargs):
         core.set_local_option('SAPT','COUPLED_INDUCTION',False)
         core.print_out('  Coupled induction not available for ROHF.\n')
         core.print_out('  Proceeding with uncoupled induction only.\n')
+    aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
+                                        psi4core.get_global_option("DF_BASIS_SAPT"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
+    if psi4core.get_global_option("DF_BASIS_ELST") == "":
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+    else:
+        aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
+                                            psi4core.get_global_option("DF_BASIS_ELST"),
+                                            "RIFIT", psi4core.get_global_option("BASIS"))
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
 
     psi4core.print_out('\n')
     p4util.banner(name.upper())
     psi4core.print_out('\n')
     e_sapt = psi4core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
 
-    from qcdb.psivardefs import sapt_psivars
+    from psi4.driver.qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
     for term in ['ELST', 'EXCH', 'IND', 'DISP', 'TOTAL']:
@@ -3516,6 +3527,11 @@ def run_fnodfcc(name, **kwargs):
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  FNOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
+
+    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        psi4core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     fnocc_wfn = psi4core.fnocc(ref_wfn)
 

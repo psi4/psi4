@@ -52,8 +52,6 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     /*
      * Set up the DF tensor machinery
      */
-    // std::shared_ptr<BasisSet> dfBasis = BasisSet::pyconstruct_auxiliary(molecule_,
-    //     "DF_BASIS_CC", options.get_str("DF_BASIS_CC"), "RIFIT", options.get_str("BASIS"));
     std::shared_ptr<BasisSet> dfBasis = get_basisset("DF_BASIS_CC");
     int nocc = doccpi_.sum();
     int nvir = nmo_ - nocc;

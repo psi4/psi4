@@ -55,7 +55,7 @@ except ImportError:
         import psi4
     except ImportError:
         raise ImportError("Could not import Psi4. This is likely due to the fact that Psi4 is not in your PYTHONPATH")
-    
+
 
 
 # Replace input/output if unknown kwargs
@@ -82,16 +82,7 @@ if not os.path.isfile(args["input"]):
 # Figure out psidata dir
 if args["psidatadir"] is not None:
     datadir = os.path.abspath(args["psidatadir"])
-elif "PSIDATADIR" in os.environ.keys():
-    datadir = os.path.abspath(os.environ["PSIDATADIR"])
-else:
-    datadir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-
-os.environ["PSIDATADIR"] = datadir
-
-if not os.path.isdir(datadir):
-     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % datadir)
+    os.environ["PSIDATADIR"] = datadir
 
 # Read input
 with open(args["input"]) as f:
