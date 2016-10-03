@@ -1513,6 +1513,7 @@ def _parse_cbs_gufunc_string(method_name):
             raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
 
         if num > 0:
+            method_str = method_str.strip()
             if method_str[:2].lower() != 'd:':
                 raise ValidationError("""CBS gufunc: Delta method must start with 'D:'.""")
             else:

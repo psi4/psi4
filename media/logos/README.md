@@ -1,3 +1,8 @@
+[LAB 9-29-2016]
+
+* See doc/sphinxman/source/psi4doc/themes/psi4doc/theme.conf
+  for Psi4 colors and customary icon linking.
+
 [LAB 2-18-2015]
 
 * Text "SI" in "PSI4" changed to 82% size of "P" & "4"; 54 pt for banner
