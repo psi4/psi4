@@ -444,9 +444,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             /*
              *  The DF algorithm
              */
-            std::shared_ptr<BasisSet> auxiliary_ = BasisSet::pyconstruct_auxiliary(molecule_,
-                                                                                      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"),
-                                                                                      "JKFIT", options_.get_str("BASIS"));
+            std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
 
             std::shared_ptr<IntegralFactory> Pmnfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
             std::shared_ptr<IntegralFactory> PQfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));

@@ -23,7 +23,7 @@
 from __future__ import print_function
 import math
 import re
-import psi4core
+from psi4 import psi4core
 import qcdb
 import p4util
 from p4util.exceptions import *

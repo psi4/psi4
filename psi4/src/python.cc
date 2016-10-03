@@ -1454,6 +1454,7 @@ PYBIND11_PLUGIN(psi4core) {
     psi4core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     psi4core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     psi4core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
+    psi4core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
 
     // Define library classes
     export_psio(psi4core);
@@ -1463,8 +1464,7 @@ PYBIND11_PLUGIN(psi4core) {
 
     // ??
     py::class_<Process::Environment>(psi4core, "Environment")
-            .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); })
-            .def("__setitem__", [](Process::Environment &p, const std::string key, const std::string value){ return p.set(key, value); });
+            .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
 
     py::class_<Process>(psi4core, "Process").
             def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });

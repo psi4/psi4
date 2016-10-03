@@ -17,7 +17,6 @@ parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfil
 parser.add_argument("-k", "--skip-preprocessor", action='store_true', help="Skips input preprocessing. Expert mode.")
 parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary files after the run is completed.")
 parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
-parser.add_argument("-w", "--wipe", action='store_true', help="Clean out your scratch area.")
 
 parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use.")
 parser.add_argument("-a", "--append", help="Append results to output file. Default Truncate first")
@@ -44,18 +43,14 @@ args, unknown = parser.parse_known_args()
 args = args.__dict__ # Namespace object seems silly
 
 # Insert the python path
-try:
-    import psi4
-except ImportError:
-    try:
-        new_path = os.path.abspath(__file__ + os.path.sep + '/../../../../../')
-        print("Psi4 not found in PYTHONPATH, attempting relative import at %s" % new_path)
-        print new_path
-        sys.path.insert(1, new_path)
-        import psi4
-    except ImportError:
-        raise ImportError("Could not import Psi4. This is likely due to the fact that Psi4 is not in your PYTHONPATH")
+cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
+cmake_libdir =  "@CMAKE_INSTALL_LIBDIR@" # CMAKE_INSTALL_LIBDIR
+cmake_datadir =  "@CMAKE_INSTALL_DATADIR@" # CMAKE_INSTALL_DATADIR
+if "CMAKE_INSTALL_LIBDIR" in cmake_libdir:
+    raise ImportError("Psi4 was not installed correctly!")
 
+# Bake in default PSIDATADIR
+data_dir = cmake_install_prefix + os.path.sep + cmake_datadir + os.path.sep + "psi4"
 
 
 # Replace input/output if unknown kwargs
@@ -80,9 +75,26 @@ if not os.path.isfile(args["input"]):
 
 
 # Figure out psidata dir
+if "PSIDATADIR" in os.environ.keys():
+    data_dir = os.environ["PSIDATADIR"]
+
 if args["psidatadir"] is not None:
-    datadir = os.path.abspath(args["psidatadir"])
-    os.environ["PSIDATADIR"] = datadir
+    data_dir = os.path.abspath(args["psidatadir"])
+
+if not os.path.isdir(data_dir):
+    raise Exception("PSIDATADIR (%s) is not a directory" % data_dir)
+
+os.environ["PSIDATADIR"] = data_dir
+
+
+### Actually import psi4 and apply setup ###
+
+# Import installed psi4
+lib_path = cmake_install_prefix + os.path.sep + cmake_libdir
+sys.path.insert(1, lib_path)
+import psi4
+
+psi4.psi4core.set_environment("PSIDATADIR", data_dir)
 
 # Read input
 with open(args["input"]) as f:
@@ -91,6 +103,21 @@ with open(args["input"]) as f:
 # Preprocess
 if not args["skip_preprocessor"]:
     content = psi4.process_input(content)
+
+# Handle Verbose
+if args["verbose"]:
+    print('-' * 74)
+    print('Parsed Psithon:')
+    print(content)
+    print('-' * 74)
+
+# Handle Messy
+if args["messy"]:
+    import atexit
+    for handler in atexit._exithandlers:
+        if handler == psi4.psi4core.clean:
+            atexit._exithandlers.remove(handler)
+
 
 # Run the program!
 exec(content)

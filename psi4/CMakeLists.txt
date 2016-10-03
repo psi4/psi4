@@ -69,6 +69,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src)
 
+### >> Install share, include, and other periphery << ###
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
@@ -83,6 +84,23 @@ install(DIRECTORY share/psi4/
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
+
+### >> Copy relevant elements of psi4/psi4 to $INSTALL/lib << ###
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+install(DIRECTORY driver
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
+        PATTERN "*.pyc" EXCLUDE)
+
+install(FILES __init__.py psi4core_import.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+### >> Build actual bin/psi4 script << ###
+configure_file(share/psi4/scripts/run_psi4.py ${CMAKE_BINARY_DIR}/psi4 @ONLY)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
 
     # bring libefp's fraglib to PSIDATADIR's attention
 set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)

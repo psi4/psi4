@@ -1,3 +1,4 @@
+import dependency_check
 from .driver import *
 from .molutil import *
 from .inputparser import process_input
