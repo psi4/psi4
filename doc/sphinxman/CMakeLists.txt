@@ -38,24 +38,18 @@ if(PERL_FOUND AND SPHINX_FOUND)
         ${CCSD}/source/${rst}
         ${CCBD}/source/${rst}
         @ONLY)
-    endforeach(rst)
+    endforeach()
     # * duplicate index.rst as contents.rst for toc link
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCBD}/source/index.rst ${CCBD}/source/contents.rst)
     # * copy fake psi4.py over to objdir
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4.py ${CCBD}/source)
-    # * copy logo image file (configure_file corrupts file)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4square.png ${CCBD}/source)
-    # * copy favicon image file (configure_file corrupts file)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/favicon-psi4.ico ${CCBD}/source)
-    # * copy vmd orbital image file (configure_file corrupts file)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/AlphaMOs.png ${CCBD}/source)
-    # * copy FISAPT image file (configure_file corrupts file)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/Total.png ${CCBD}/source)
-    # * copy FISAPT image file (configure_file corrupts file)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/VA.png ${CCBD}/source)
-    # * copy external manual over
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/gdma-2.2.06.pdf ${CCBD}/source)
 
+    # Static resource png and pdf files
+    set(STATICRES psi4square.png favicon-psi4.ico AlphaMOs.png gdma-2.2.06.pdf Total.png VA.png)
+    # * copy image and pdf files all over to objdir (configure_file corrupts file)
+    foreach(fl ${STATICRES})
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/resources/${fl} ${CCBD}/source)
+    endforeach()
 
     # Autodoc basis sets
     add_custom_command(
