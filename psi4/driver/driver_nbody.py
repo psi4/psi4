@@ -23,11 +23,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import psi4core
-
 import math
 import numpy as np
 import itertools as it
+
+from psi4 import psi4core
 
 # Import driver helpers
 from psi4.driver import p4util

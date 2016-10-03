@@ -32,7 +32,7 @@ to data tables and text.
 """
 import sys
 import re
-import psi4core
+from psi4 import psi4core
 from psi4.driver import p4const
 from .exceptions import *
 
