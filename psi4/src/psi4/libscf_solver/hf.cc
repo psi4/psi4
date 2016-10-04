@@ -94,6 +94,7 @@ void HF::common_init()
 {
 
     attempt_number_ = 1;
+    ref_C_ = false;
 
     max_attempts_ = options_.get_int("MAX_ATTEMPTS");
 
@@ -135,9 +136,14 @@ void HF::common_init()
     // Should we continue if we fail to converge?
     fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
 
+    // Set name
+    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+        name_ = "DFT";
+    else
+        name_ = "SCF";
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
-    int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
@@ -161,17 +167,7 @@ void HF::common_init()
             for(int h = 0; h < nirreps; ++h)
                 doccpi_[h] = options_["DOCC"][h].to_integer();
         }
-        for (int i=0; i<nirreps; ++i)
-            ndocc += 2*doccpi_[i];
-    } else {
-        for (int i=0; i<nirreps; ++i)
-            doccpi_[i] = 0;
-    }
-
-    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
-        name_ = "DFT";
-    else
-        name_ = "SCF";
+    } // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
@@ -196,18 +192,7 @@ void HF::common_init()
             for(int h = 0; h < nirreps; ++h)
                 soccpi_[h] = options_["SOCC"][h].to_integer();
         }
-        for (int i=0; i<nirreps; ++i)
-            nsocc += soccpi_[i];
-    } else {
-        for (int i=0; i<nirreps; ++i)
-            soccpi_[i] = 0;
-    }
-
-    // Read information from checkpoint
-    nuclearrep_ = molecule_->nuclear_repulsion_energy();
-    charge_ = molecule_->molecular_charge();
-    multiplicity_ = molecule_->multiplicity();
-    nelectron_ = nbeta_ + nalpha_;
+    } // else take the reference wavefunctions soccpi
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -215,6 +200,13 @@ void HF::common_init()
             nbetapi_[h]  = doccpi_[h];
         }
     }
+
+
+    // Set additional information
+    nuclearrep_ = molecule_->nuclear_repulsion_energy();
+    charge_ = molecule_->molecular_charge();
+    multiplicity_ = molecule_->multiplicity();
+    nelectron_ = nbeta_ + nalpha_;
 
     // Check if it is a broken symmetry solution
     broken_symmetry_ = false;
@@ -378,6 +370,14 @@ void HF::form_V()
 {
     throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
 }
+void HF::form_C()
+{
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
+}
+void HF::form_D()
+{
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities.");
+}
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
     // => Rotate orbitals <= //
@@ -428,44 +428,45 @@ void HF::integrals()
         outfile->Printf( "  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
-    try {
-        if(options_.get_str("SCF_TYPE") == "GTFOCK") {
-          #ifdef HAVE_JK_FACTORY
-            //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-            std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-            Process::environment.set_legacy_molecule(molecule_);
-            if(options_.get_bool("SOSCF"))
-                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
-            else
-                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
-            Process::environment.set_legacy_molecule(other_legacy);
-          #else
-            throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
-          #endif
-        } else {
-            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
-        }
-    }
-    catch(const BasisSetNotFound& e) {
-        if (options_.get_str("SCF_TYPE") == "DF") {
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            outfile->Printf( "%s\n", e.what());
-            outfile->Printf( "   Turning off DF and switching to PK method.\n");
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            options_.set_str("SCF", "SCF_TYPE", "PK");
-            options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
-        } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            outfile->Printf( "%s\n", e.what());
-            outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
-        }
+    // try {
+    if(options_.get_str("SCF_TYPE") == "GTFOCK") {
+      #ifdef HAVE_JK_FACTORY
+        //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+        std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+        Process::environment.set_legacy_molecule(molecule_);
+        if(options_.get_bool("SOSCF"))
+            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
         else
-            throw; // rethrow the error
+            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+        Process::environment.set_legacy_molecule(other_legacy);
+      #else
+        throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+      #endif
+    } else {
+        jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
     }
+    /// Warning this is no longer valid, must catch this C side.
+    // }
+    // catch(const BasisSetNotFound& e) {
+    //     if (options_.get_str("SCF_TYPE") == "DF") {
+    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //         outfile->Printf( "%s\n", e.what());
+    //         outfile->Printf( "   Turning off DF and switching to PK method.\n");
+    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //         options_.set_str("SCF", "SCF_TYPE", "PK");
+    //         options_.set_bool("SCF", "DF_SCF_GUESS", false);
+    //         jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
+    //     } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
+    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //         outfile->Printf( "%s\n", e.what());
+    //         outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
+    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    //         options_.set_bool("SCF", "DF_SCF_GUESS", false);
+    //         jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
+    //     }
+    //     else
+    //         throw; // rethrow the error
+    // }
 
     // Tell the JK to print
     jk_->set_print(print_);
@@ -631,7 +632,7 @@ double HF::finalize_E()
     }
 
     // Orbitals are always saved, in case an MO guess is requested later
-    save_orbitals();
+    // save_orbitals();
 
     finalize();
 
@@ -664,7 +665,6 @@ void HF::finalize()
     //Sphalf_.reset();
     X_.reset();
     T_.reset();
-    V_.reset();
     diag_temp_.reset();
     diag_F_temp_.reset();
     diag_C_temp_.reset();
@@ -751,46 +751,46 @@ void HF::print_header()
     #endif
 
 
-        outfile->Printf( "\n");
-        outfile->Printf( "         ---------------------------------------------------------\n");
-        outfile->Printf( "                                   SCF\n");
-        outfile->Printf( "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
-        outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
-        outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
-        outfile->Printf( "         ---------------------------------------------------------\n");
-        outfile->Printf( "\n");
-        outfile->Printf( "  ==> Geometry <==\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ---------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF\n");
+    outfile->Printf( "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
+    outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
+    outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
+    outfile->Printf( "         ---------------------------------------------------------\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
 
 
     molecule_->print();
 
 
-        outfile->Printf( "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
+    outfile->Printf( "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
-        molecule_->print_rotational_constants();
+    molecule_->print_rotational_constants();
 
-        outfile->Printf( "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
-        outfile->Printf( "  Charge       = %d\n", charge_);
-        outfile->Printf( "  Multiplicity = %d\n", multiplicity_);
-        outfile->Printf( "  Electrons    = %d\n", nelectron_);
-        outfile->Printf( "  Nalpha       = %d\n", nalpha_);
-        outfile->Printf( "  Nbeta        = %d\n\n", nbeta_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
+    outfile->Printf( "  Charge       = %d\n", charge_);
+    outfile->Printf( "  Multiplicity = %d\n", multiplicity_);
+    outfile->Printf( "  Electrons    = %d\n", nelectron_);
+    outfile->Printf( "  Nalpha       = %d\n", nalpha_);
+    outfile->Printf( "  Nbeta        = %d\n\n", nbeta_);
 
-        outfile->Printf( "  ==> Algorithm <==\n\n");
-        outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
-        outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-        if (MOM_excited_)
-            outfile->Printf( "  Excited-state MOM enabled.\n");
-        else
-            outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
-        outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
-        outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
-        outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
-        outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
-        outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
+    outfile->Printf( "  ==> Algorithm <==\n\n");
+    outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
+    outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    if (MOM_excited_)
+        outfile->Printf( "  Excited-state MOM enabled.\n");
+    else
+        outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
+    outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
+    outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
+    outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
+    outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
+    outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
 
 
-        outfile->Printf( "  ==> Primary Basis <==\n\n");
+    outfile->Printf( "  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
 
@@ -800,16 +800,18 @@ void HF::print_preiterations()
     CharacterTable ct = molecule_->point_group()->char_table();
 
 
-        outfile->Printf( "   -------------------------------------------------------\n");
-        outfile->Printf( "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
-        outfile->Printf( "   -------------------------------------------------------\n");
-        for (int h= 0; h < nirrep_; h++) {
-            outfile->Printf( "     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
-        }
-        outfile->Printf( "   -------------------------------------------------------\n");
-        outfile->Printf( "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);
-        outfile->Printf( "   -------------------------------------------------------\n\n");
-
+    outfile->Printf( "   -------------------------------------------------------\n");
+    outfile->Printf( "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
+    outfile->Printf( "   -------------------------------------------------------\n");
+    for (int h= 0; h < nirrep_; h++) {
+        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n",
+                        ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
+                        nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
+    }
+    outfile->Printf( "   -------------------------------------------------------\n");
+    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_,
+                    nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
+    outfile->Printf("   -------------------------------------------------------\n\n");
 }
 
 void HF::form_H()
@@ -1036,7 +1038,7 @@ void HF::form_Shalf()
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
         if (print_)
-            outfile->Printf("  Using Symmetric Orthogonalization.\n");
+            outfile->Printf("  Using Symmetric Orthogonalization.\n\n");
 
     } else {
 
@@ -1310,7 +1312,7 @@ void HF::print_orbitals()
     free(labels);
 
 
-        outfile->Printf( "    Final Occupation by Irrep:\n");
+    outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
 }
 
@@ -1324,7 +1326,7 @@ void HF::guess()
 
     //What does the user want?
     //Options will be:
-    // "READ"-try to read MOs from guess file, projecting if needed
+    // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
@@ -1336,31 +1338,77 @@ void HF::guess()
         outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
     }
 
-    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
-        outfile->Printf( "  SCF Guess was Projection but file not found.\n");
-        outfile->Printf( "  Switching over to SAD guess.\n\n");
-        guess_type = "SAD";
-    }
+    // if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
+    //     outfile->Printf( "  SCF Guess was Projection but file not found.\n");
+    //     outfile->Printf( "  Switching over to SAD guess.\n\n");
+    //     guess_type = "SAD";
+    // }
 
-    if (guess_type == "READ") {
-        if (do_use_fock_guess()) {
-            outfile->Printf( "  SCF Guess: Guess MOs from previously saved Fock matrix.\n\n");
-            load_fock(); // won't save the energy from here
-            form_C();
-            form_D();
+    // if (guess_type == "READ") {
+    //     if (do_use_fock_guess()) {
+    //         outfile->Printf( "  SCF Guess: Guess MOs from previously saved Fock matrix.\n\n");
+    //         load_fock(); // won't save the energy from here
+    //         form_C();
+    //         form_D();
+    //     }
+    //     else {
+    //         outfile->Printf( "  SCF Guess: Reading in previously saved MOs, projecting if necessary.\n\n");
+    //         load_orbitals(); // won't save the energy from here
+    //         form_D();
+    //     }
+    if (guess_Ca_){
+        if (print_)
+            outfile->Printf( "  SCF Guess: Orbitals were supplied from user input.\n\n");
+
+        std::string reference = options_.get_str("REFERENCE");
+        bool single_orb = ((reference == "RHF") || (reference == "ROHF"));
+
+        if (single_orb){
+            guess_Cb_ = guess_Ca_;
+        } else {
+            if (!guess_Cb_){
+                throw PSIEXCEPTION("Guess Ca was set, but did not find a matching Cb\n");
+            }
         }
-        else {
-            outfile->Printf( "  SCF Guess: Reading in previously saved MOs, projecting if necessary.\n\n");
-            load_orbitals(); // won't save the energy from here
-            form_D();
+
+
+        if ((guess_Ca_->nirrep() != nirrep_) or (guess_Cb_->nirrep() != nirrep_)) {
+            throw PSIEXCEPTION("Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
         }
+        if ((guess_Ca_->rowspi() != nsopi_) or (guess_Cb_->rowspi() != nsopi_)) {
+            throw PSIEXCEPTION("Nso of the guess orbitals do not match Nso of the wavefunction.");
+        }
+
+       for (int h = 0; h < nirrep_; h++) {
+            for (int i = 0; i < guess_Ca_->colspi()[h]; i++) {
+                C_DCOPY(nsopi_[h], &guess_Ca_->pointer(h)[0][i], guess_Ca_->colspi()[h],
+                        &Ca_->pointer(h)[0][i], nmopi_[h]);
+            }
+        }
+
+        if (!single_orb){
+           for (int h = 0; h < nirrep_; h++) {
+                for (int i = 0; i < guess_Ca_->colspi()[h]; i++) {
+                    C_DCOPY(nsopi_[h], &guess_Cb_->pointer(h)[0][i], guess_Cb_->colspi()[h],
+                            &Cb_->pointer(h)[0][i], nmopi_[h]);
+                }
+            }
+        } else {
+            Cb_ = Ca_;
+        }
+
+        iteration_ = -1;
+        find_occupation();
+        form_D();
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
 
         if (print_)
             outfile->Printf( "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
-        //Superposition of Atomic Density (RHF only at present)
+        //Superposition of Atomic Density
+        iteration_ = -1;
         compute_SAD_guess();
         guess_E = compute_initial_E();
 
@@ -1400,7 +1448,11 @@ void HF::guess()
         find_occupation();
         form_D();
         guess_E = compute_initial_E();
+    } else {
+        throw PSIEXCEPTION("  SCF Guess: No guess was found!");
+
     }
+
     if (print_ > 3) {
         Ca_->print();
         Cb_->print();
@@ -1719,11 +1771,7 @@ void HF::initialize()
 {
     converged_ = false;
 
-    // Neither of these are idempotent
-    if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
-        iteration_ = -1;
-    else
-        iteration_ = 0;
+    iteration_ = 0;
 
     if (print_)
         outfile->Printf( "  ==> Pre-Iterations <==\n\n");

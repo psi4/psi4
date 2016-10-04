@@ -58,6 +58,9 @@ protected:
     SharedMatrix T_;
     /// The 1e potential energy matrix
     SharedMatrix V_;
+    /// The DFT potential matrices (nice naming scheme)
+    SharedMatrix Va_;
+    SharedMatrix Vb_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
     /// Temporary matrix for diagonalize_F
@@ -71,6 +74,10 @@ protected:
     SharedMatrix Ca_old_;
     /// Old C Beta matrix (if needed for MOM)
     SharedMatrix Cb_old_;
+
+    /// User defined orbitals
+    SharedMatrix guess_Ca_;
+    SharedMatrix guess_Cb_;
 
     /// Energy convergence threshold
     double energy_threshold_;
@@ -90,6 +97,9 @@ protected:
 
     /// Max number of iterations for HF
     int maxiter_;
+
+    /// Fail if we don't converge by maxiter?
+    bool ref_C_;
 
     /// Fail if we don't converge by maxiter?
     bool fail_on_maxiter_;
@@ -232,12 +242,6 @@ public:
     // Set -D correction
     void set_dashd_correction(double dashd) { energies_["-D"] = dashd; }
 
-
-    /// Perform casting of C from old basis to new basis if desired.
-    SharedMatrix basis_projection(SharedMatrix Cold, Dimension noccpi,
-                                  std::shared_ptr<BasisSet> old_basis,
-                                  std::shared_ptr<BasisSet> new_basis);
-
     // PCM interface
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;
@@ -338,23 +342,14 @@ protected:
     /// Form the guess (gaurantees C, D, and E)
     virtual void guess();
 
-    /** Computes the density matrix (D_) */
-    virtual void form_D() =0;
-
     /** Applies damping to the density update */
     virtual void damp_update();
 
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 
-    /** Builds the DFT XC potential */
-    virtual void form_V();
-
     /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
-
-    /** Compute the MO coefficients (C_) */
-    virtual void form_C() =0;
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
@@ -437,6 +432,22 @@ public:
     /// basis, and there are distinct alpha and beta C and epsilons, also in the
     /// semicanonical basis.
     virtual void semicanonicalize();
+
+    /// Compute the MO coefficients (C_)
+    virtual void form_C();
+
+    /// Computes the density matrix (D_)
+    virtual void form_D();
+
+    /// Computes the density matrix (V_)
+    virtual void form_V();
+
+    // Return the DFT potenitals
+    SharedMatrix Va() { return Va_; }
+    SharedMatrix Vb() { return Vb_; }
+
+    SharedMatrix guess_Ca(SharedMatrix Ca) { return guess_Ca_ = Ca; }
+    SharedMatrix guess_Cb(SharedMatrix Cb) { return guess_Cb_ = Cb; }
 };
 
 }} // Namespaces

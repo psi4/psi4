@@ -987,6 +987,7 @@ def scf_wavefunction_factory(reference, ref_wfn):
     else:
         modified_disp_params = None
 
+    disp_type = False
     psi4core.prepare_options_for_module("SCF")
     if reference == "RHF":
         wfn = psi4core.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
@@ -999,20 +1000,16 @@ def scf_wavefunction_factory(reference, ref_wfn):
     elif reference == "RKS":
         functional, disp_type = dft_functional.build_superfunctional(psi4core.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4core.RHF(ref_wfn, functional)
-        if disp_type:
-            wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
-                                                                                  tuple_params = modified_disp_params)
-            wfn.cdict["_disp_functor"].print_out()
     elif reference == "UKS":
         func, disp_type = dft_functional.build_superfunctional(psi4core.get_option("SCF", "DFT_FUNCTIONAL"))
         wfn = psi4core.UHF(ref_wfn, func)
-
-        if disp_type:
-            wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
-                                                                  tuple_params = modified_disp_params)
-            wfn.cdict["_disp_functor"].print_out()
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
+
+    if disp_type:
+        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+                                                                              tuple_params = modified_disp_params)
+        wfn.cdict["_disp_functor"].print_out()
 
     aux_basis = psi4core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                     psi4core.get_option("SCF", "DF_BASIS_SCF"),
@@ -1049,8 +1046,10 @@ def scf_helper(name, **kwargs):
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
     scf_molecule = kwargs.get('molecule', psi4core.get_active_molecule())
-    if 'ref_wfn' in kwargs:
-        raise ValidationError("It is not possible to pass scf_helper a reference wavefunction")
+    read_orbitals = psi4core.get_option('SCF', 'GUESS') is "READ"
+    ref_wfn = kwargs.pop('ref_wfn', None)
+    if ref_wfn is not None:
+        raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
 
     # Second-order SCF requires non-symmetric density matrix support
     if psi4core.get_option('SCF', 'SOSCF'):
@@ -1088,20 +1087,11 @@ def scf_helper(name, **kwargs):
     else:
         do_broken = False
 
-    precallback = None
-    if 'precallback' in kwargs:
-        precallback = kwargs.pop('precallback')
+    if cast and read_orbitals:
+        raise ValidationError("""Detected options to both cast and read orbitals""")
 
-    postcallback = None
-    if 'postcallback' in kwargs:
-        postcallback = kwargs.pop('postcallback')
-
-    # Hack to ensure cartesian or pure are used throughout
-    # Note that can't query PUREAM option directly, as it only
-    #   reflects user changes to value, so load basis and
-    #   read effective PUREAM setting off of it
-    #psi4core.set_global_option('BASIS', psi4core.get_global_option('BASIS'))
-    #psi4core.set_global_option('PUREAM', psi4core.MintsHelper().basisset().has_puream())
+    if cast and do_broken:
+        raise ValidationError("""Detected options to both cast and perform a broken symmetry computation""")
 
     # broken set-up
     if do_broken:
@@ -1111,7 +1101,7 @@ def scf_helper(name, **kwargs):
         psi4core.print_out('\n')
 
     # cast set-up
-    if (cast):
+    if cast:
 
         if cast is True:
             guessbasis = '3-21G'
@@ -1158,13 +1148,23 @@ def scf_helper(name, **kwargs):
             scf_molecule.fix_com(True)
             scf_molecule.update_geometry()
 
+    # If GUESS is auto guess what it should be
+    elif psi4core.get_option('SCF', 'GUESS') == "AUTO":
+        if (psi4core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
+                ((scf_molecule.natom() > 1) or psi4core.get_option('SCF', 'SAD_FRAC_OCC')):
+            psi4core.set_local_option('SCF', 'GUESS', 'SAD')
+        elif psi4core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
+            psi4core.set_local_option('SCF', 'GUESS', 'GWH')
+        else:
+            psi4core.set_local_option('SCF', 'GUESS', 'CORE')
+
     # the FIRST scf call
     if cast or do_broken:
         # Cast or broken are special cases
         basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", psi4core.get_global_option('BASIS'))
-        new_wfn = psi4core.Wavefunction(scf_molecule, basis)
-        scf_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), new_wfn)
-        psi4core.set_legacy_wavefunction(scf_wfn)
+        ref_wfn = psi4core.Wavefunction(scf_molecule, basis)
+        ref_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), ref_wfn)
+        psi4core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
         if "_disp_functor" in scf_wfn.cdict.keys():
@@ -1173,6 +1173,7 @@ def scf_helper(name, **kwargs):
 
     # broken clean-up
     if do_broken:
+        raise ValidationErrory("Broken Symmetry computations are temporarily disabled.")
         scf_molecule.set_multiplicity(1)
         psi4core.set_local_option('SCF', 'GUESS', 'READ')
         psi4core.print_out('\n')
@@ -1180,7 +1181,7 @@ def scf_helper(name, **kwargs):
         psi4core.print_out('\n')
 
     # cast clean-up
-    if (cast):
+    if cast:
 
         # Move files to proper namespace
         psi4core.IO.change_file_namespace(180, guesspace, namespace)
@@ -1195,16 +1196,6 @@ def scf_helper(name, **kwargs):
         p4util.banner(name.upper())
         psi4core.print_out('\n')
 
-    # If GUESS is auto guess what it should be
-    elif psi4core.get_option('SCF', 'GUESS') == "AUTO":
-        if (psi4core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
-                ((scf_molecule.natom() > 1) or psi4core.get_option('SCF', 'SAD_FRAC_OCC')):
-            psi4core.set_local_option('SCF', 'GUESS', 'SAD')
-        elif psi4core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
-            psi4core.set_local_option('SCF', 'GUESS', 'GWH')
-        else:
-            psi4core.set_local_option('SCF', 'GUESS', 'CORE')
-
 
     # EFP preparation
     efp = psi4core.get_active_efp()
@@ -1217,9 +1208,46 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", psi4core.get_global_option('BASIS'))
-    new_wfn = psi4core.Wavefunction(scf_molecule, basis)
-    scf_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), new_wfn)
+    base_wfn = psi4core.Wavefunction(scf_molecule, basis)
+    scf_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), base_wfn)
     psi4core.set_legacy_wavefunction(scf_wfn)
+
+    read_filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    if (psi4core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
+        data = np.load(read_filename)
+        Ca = psi4core.Matrix.np_read(data, "Ca")
+        Cb = psi4core.Matrix.np_read(data, "Cb")
+        basis_name = str(data["BasisSet"])
+        puream = int(data["BasisSet PUREAM"])
+        nsoccpi = data["nsoccpi"]
+        ndoccpi = data["ndoccpi"]
+        symmetry = str(data["symmetry"])
+
+        if basis_name == basis.name():
+            scf_wfn.guess_Ca(Ca)
+            scf_wfn.guess_Cb(Cb)
+        else:
+            old_basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            if ".gbs" in basis_name:
+                basis_name = basis_name.split('/')[-1].replace('.gbs', '')
+
+            nalpha = psi4core.Dimension.from_list(ndoccpi + nsoccpi)
+            nbeta = psi4core.Dimension.from_list(ndoccpi)
+            pCa = base_wfn.basis_projection(Ca, nalpha, old_basis, base_wfn.basisset())
+            pCb = base_wfn.basis_projection(Cb, nbeta, old_basis, base_wfn.basisset())
+            scf_wfn.guess_Ca(pCa)
+            scf_wfn.guess_Cb(pCb)
+
+    #     for h in range(len(Ca.nph)):
+    #         base_wfn.Ca().nph[h][:, :nalpha[h]] = pCa.nph[h]
+    #         base_wfn.Cb().nph[h][:, :nbeta[h]] = pCb.nph[h]
+
+    # elif psi4core.get_option('SCF', 'GUESS') == 'READ':
+    #     psi4core.print_out("   Could not read orbital file, switching to SAD guess")
+    #     psi4core.set_local_option('SCF', 'GUESS', 'SAD')
+
+
+
 
     # Print basis set info
     if psi4core.get_option("SCF", "PRINT_BASIS"):
@@ -1251,7 +1279,7 @@ def scf_helper(name, **kwargs):
 
     # Write out a molden file
     if psi4core.get_option("SCF", "MOLDEN_WRITE"):
-        filename = psi4core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".molden"
+        filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".molden"
         dovirt = bool(psi4core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
         occa = scf_wfn.occupation_a()
@@ -1261,6 +1289,19 @@ def scf_helper(name, **kwargs):
         mw.write(filename, scf_wfn.Ca(), scf_wfn.Cb(), scf_wfn.epsilon_a(),
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
+
+    # Write out orbitals and basis
+    filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    data = {}
+    data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
+    data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
+    data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
+    data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
+    data["symmetry"] = scf_molecule.schoenflies_symbol()
+    data["BasisSet"] = scf_wfn.basisset().name()
+    data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
+    np.savez(filename, **data)
+
 
     optstash.restore()
     return scf_wfn

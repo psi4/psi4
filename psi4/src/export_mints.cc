@@ -59,6 +59,7 @@
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/writer.h"
+#include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/electricfield.h"
 #include "psi4/libmints/tracelessquadrupole.h"
 #include "psi4/libmints/angularmomentum.h"
@@ -702,6 +703,16 @@ void export_mints(py::module& m)
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
             //def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").  // dangerous for user use
+            def("irrep_labels", [](Molecule &mol){
+                std::vector<std::string> ret;
+                char **labels = mol.irrep_labels();
+                int nirrep = mol.point_group()->char_table().nirrep();
+                for (size_t h = 0; h<nirrep; h++){
+                    std::string lh(labels[h]);
+                    ret.push_back(lh);
+                }
+                return ret;
+            }).
             def_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
@@ -730,6 +741,7 @@ void export_mints(py::module& m)
     typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring").
             def(py::init<const std::string&, std::shared_ptr<Molecule>, std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>()).
+            def("name", &BasisSet::name, "docstring").
             def("molecule", &BasisSet::molecule, "docstring").
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
@@ -808,6 +820,7 @@ void export_mints(py::module& m)
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
+            def("basis_projection", &Wavefunction::basis_projection, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
@@ -845,7 +858,16 @@ void export_mints(py::module& m)
             def_readwrite("cdict", &Wavefunction::cdict);
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>>(m, "HF", py::base<Wavefunction>(), "docstring").
-            def("basis_projection", &scf::HF::basis_projection, "docstring").
+            def("form_C", &scf::HF::form_C, "docstring").
+            def("form_D", &scf::HF::form_D, "docstring").
+            def("form_V", &scf::HF::form_V, "docstring").
+            def("guess_Ca", &scf::HF::guess_Ca, "docstring").
+            def("guess_Cb", &scf::HF::guess_Cb, "docstring").
+            def("Va", &scf::HF::Va, "docstring").
+            def("Vb", &scf::HF::Vb, "docstring").
+            def("initialize", &scf::HF::initialize, "docstring").
+            def("iterations", &scf::HF::iterations, "docstring").
+            def("finalize_E", &scf::HF::finalize_E, "docstring").
             def("set_dashd_correction", &scf::HF::set_dashd_correction, "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").
@@ -909,6 +931,17 @@ void export_mints(py::module& m)
     py::class_<FittedSlaterCorrelationFactor>(m, "FittedSlaterCorrelationFactor", py::base<CorrelationFactor>(), "docstring").
             def(py::init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
+    py::class_<CorrelationTable, std::shared_ptr<CorrelationTable>>(m, "CorrelationTable", "docstring").
+            def(py::init<std::shared_ptr<PointGroup>, std::shared_ptr<PointGroup>>()).
+            def("group", &CorrelationTable::group, "docstring").
+            def("subgroup", &CorrelationTable::subgroup, "docstring").
+            def("n", &CorrelationTable::n, "docstring").
+            def("subn", &CorrelationTable::subn, "docstring").
+            def("degen", &CorrelationTable::degen, "docstring").
+            def("subdegen", &CorrelationTable::subdegen, "docstring").
+            def("ngamma", &CorrelationTable::ngamma, "docstring").
+            def("group", &CorrelationTable::gamma, "docstring");
 
     // LIBFOCK wrappers
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")

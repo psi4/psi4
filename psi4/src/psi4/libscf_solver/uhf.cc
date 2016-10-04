@@ -82,9 +82,9 @@ void UHF::common_init()
     Da_     = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_     = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dt_     = SharedMatrix(factory_->create_matrix("D total"));
-    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
-    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
-    Dt_old_  = SharedMatrix(factory_->create_matrix("D total old"));
+    Da_old_ = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
+    Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));

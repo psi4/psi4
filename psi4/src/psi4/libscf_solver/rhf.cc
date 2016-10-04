@@ -92,6 +92,8 @@ void RHF::common_init()
     Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
     D_         = Da_;
     Dold_      = SharedMatrix(factory_->create_matrix("D old"));
+    Va_        = SharedMatrix(factory_->create_matrix("V"));
+    Vb_        = Va_;
     G_         = SharedMatrix(factory_->create_matrix("G"));
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
@@ -166,14 +168,15 @@ void RHF::form_V()
 
     // Pull the V matrices off
     const std::vector<SharedMatrix> & V = potential_->V();
-    V_ = V[0];
+    Va_ = V[0];
+    Vb_ = Va_;
 }
 void RHF::form_G()
 {
     if (functional_->needs_xc()) {
         timer_on("RKS: Form V");
         form_V();
-        G_->copy(V_);
+        G_->copy(Va_);
         timer_off("RKS: Form V");
     } else {
         G_->zero();
@@ -271,7 +274,7 @@ void RHF::form_F()
         J_->print();
         K_->print();
         if (functional_->needs_xc()){
-            V_->print();
+            Va_->print();
         }
         G_->print();
 
@@ -345,7 +348,7 @@ double RHF::compute_E()
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
-    energies_["One-Electron"] = one_electron_E;
+energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] =  coulomb_E + exchange_E;
     energies_["XC"] = XC_E;
     double dashD_E = energies_["-D"];

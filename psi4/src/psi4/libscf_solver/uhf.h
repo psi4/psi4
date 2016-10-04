@@ -41,7 +41,6 @@ protected:
     SharedMatrix Dt_, Dt_old_;
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
-    SharedMatrix Va_, Vb_;
 
     void form_initialF();
     void form_C();
