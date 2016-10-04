@@ -19,7 +19,7 @@ parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary 
 parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
 
 parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use.")
-parser.add_argument("-a", "--append", help="Append results to output file. Default Truncate first")
+parser.add_argument("-a", "--append", action='store_true', help="Append results to output file. Default Truncate first")
 parser.add_argument("-l", "--psidatadir", help="Specify where to look for the Psi data directory. Overrides PSIDATADIR.")
 parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use (overrides OMP_NUM_THREADS)")
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
@@ -50,6 +50,7 @@ if "CMAKE_INSTALL_LIBDIR" in cmake_libdir:
     raise ImportError("Psi4 was not installed correctly!")
 
 # Bake in default PSIDATADIR
+lib_dir = cmake_install_prefix + os.path.sep + cmake_libdir
 data_dir = cmake_install_prefix + os.path.sep + cmake_datadir + os.path.sep + "psi4"
 
 
@@ -90,11 +91,22 @@ os.environ["PSIDATADIR"] = data_dir
 ### Actually import psi4 and apply setup ###
 
 # Import installed psi4
-lib_path = cmake_install_prefix + os.path.sep + cmake_libdir
-sys.path.insert(1, lib_path)
+sys.path.insert(1, lib_dir)
 import psi4
 
 psi4.psi4core.set_environment("PSIDATADIR", data_dir)
+
+# Setup outfile
+if args["append"] is None:
+    args["append"] = False
+if args["output"] != "stdout":
+    psi4.psi4core.set_output_file(args["output"], args["append"])
+
+if args["prefix"] is not None:
+    psi4.psi4core.set_psi_file_prefix(args["prefix"])
+psi4.psi4core.set_nthread(args["nthread"])
+psi4.psi4core.print_version()
+
 
 # Read input
 with open(args["input"]) as f:
@@ -117,7 +129,6 @@ if args["messy"]:
     for handler in atexit._exithandlers:
         if handler == psi4.psi4core.clean:
             atexit._exithandlers.remove(handler)
-
 
 # Run the program!
 exec(content)

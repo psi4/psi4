@@ -99,6 +99,18 @@ import psi4
 
 psi4.psi4core.set_environment("PSIDATADIR", data_dir)
 
+# Setup outfile
+if args["append"] is None:
+    args["append"] = False
+if args["output"] != "stdout":
+    psi4.psi4core.set_output_file(args["output"], args["append"])
+
+if args["prefix"] is not None:
+    psi4.psi4core.set_psi_file_prefix(args["prefix"])
+psi4.psi4core.set_nthread(args["nthread"])
+psi4.psi4core.print_version()
+
+
 # Read input
 with open(args["input"]) as f:
     content = f.read()
@@ -120,7 +132,6 @@ if args["messy"]:
     for handler in atexit._exithandlers:
         if handler == psi4.psi4core.clean:
             atexit._exithandlers.remove(handler)
-
 
 # Run the program!
 exec(content)

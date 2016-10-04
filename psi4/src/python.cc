@@ -1187,7 +1187,7 @@ bool psi4_python_module_initialize()
     Wavefunction::initialize_singletons();
 
     if(psi_start(0, 0) == PSI_RETURN_FAILURE) return false;
-    print_version("stdout");
+    // print_version("stdout");
 
     // There is only one timer:
     timer_init();
@@ -1455,6 +1455,12 @@ PYBIND11_PLUGIN(psi4core) {
     psi4core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     psi4core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
     psi4core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
+    psi4core.def("set_output_file", [](const std::string ofname, bool append){
+                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
+                 outfile_name = ofname;
+                 });
+    psi4core.def("print_version", [](){ print_version("stdout"); });
+    psi4core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
 
     // Define library classes
     export_psio(psi4core);
