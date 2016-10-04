@@ -44,5 +44,10 @@ atexit.register(psi4core.set_legacy_molecule, None)
 atexit.register(psi4core.clean)
 atexit.register(psi4core.finalize)
 
-# Move up the namesapce
-#from psi4core import *
+# Numpy place holder for files and cleanup
+numpy_files = []
+def clean_numpy_files():
+    for nfile in numpy_files:
+        os.unlink(nfile)
+
+atexit.register(clean_numpy_files)
