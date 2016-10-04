@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description="A hybrid C++/Python quantum chemis
 parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default input.dat.")
 parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
                                            "Default filename.out if input is filename"
-                                           "filename.out if input is filename.in\n"
+                                           "filename.out if input is filename.in or filename.dat\n"
                                            "output.dat if input is input.dat\n")
 
 parser.add_argument("-v", "--verbose", action='store_true', help="Print a lot of information.")
@@ -44,8 +44,8 @@ args = args.__dict__ # Namespace object seems silly
 
 # Insert the python path
 cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
-cmake_libdir =  "@CMAKE_INSTALL_LIBDIR@" # CMAKE_INSTALL_LIBDIR
-cmake_datadir =  "@CMAKE_INSTALL_DATADIR@" # CMAKE_INSTALL_DATADIR
+cmake_libdir = "@CMAKE_INSTALL_LIBDIR@"  # CMAKE_INSTALL_LIBDIR
+cmake_datadir = "@CMAKE_INSTALL_DATADIR@"  # CMAKE_INSTALL_DATADIR
 if "CMAKE_INSTALL_LIBDIR" in cmake_libdir:
     raise ImportError("Psi4 was not installed correctly!")
 
@@ -68,6 +68,8 @@ if args["output"] is None:
         args["output"] = "output.dat"
     elif args["input"].endswith(".in"):
         args["output"] = args["input"].replace(".in", ".out")
+    elif args["input"].endswith(".dat"):
+        args["output"] = args["input"].replace(".dat", ".out")
     else:
         args["output"] = args["input"] + ".dat"
 

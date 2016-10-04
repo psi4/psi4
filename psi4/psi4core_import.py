@@ -3,7 +3,11 @@ import os
 
 try:
     from . import psi4core
-except ImportError:
+except ImportError as e:
+    print("Import error: {0}".format(e))
+    if 'CXXABI' in str(e):
+        raise ImportError("Probably GCC >= 4.9 not in [DY]LD_LIBRARY_PATH")
+
     print("Psi4 is not installed, looking for the 'objdir' build directory for ps4icore.so ...")
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     base_path += os.path.sep + 'objdir' + os.path.sep + 'stage'
