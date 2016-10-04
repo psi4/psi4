@@ -37,6 +37,7 @@ import os
 import subprocess
 import re
 
+import psi4
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
@@ -1301,6 +1302,7 @@ def scf_helper(name, **kwargs):
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
     np.savez(filename, **data)
+    psi4.numpy_files.append(filename)
 
 
     optstash.restore()
