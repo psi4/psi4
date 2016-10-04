@@ -85,7 +85,7 @@ MCSCF input is given below.
 
 PSIMRCC is most commonly used for low-spin cases (singlets or open-shell
 singlets).  It is capable of performing computations on higher spin states
-(e.g., triplets), but in general, not all the required matrix elements have
+(*e.g.*, triplets), but in general, not all the required matrix elements have
 been coded for high-spin cases, meaning that results will correspond to an
 approximate Mk-MRCC computation for high-spin cases.
 

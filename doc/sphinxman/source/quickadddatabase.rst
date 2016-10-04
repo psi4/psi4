@@ -4,13 +4,13 @@
 .. index::
    pair: database(); adding new
 
-.. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR``, including those described below.
-
 .. _`sec:createDatabase`:
 
 Creating a Database
 ===================
+
+.. note:: No recompile of the PSI program is necessary for changes made to
+    files in ``$PSIDATADIR``, including those described below.
 
 A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system

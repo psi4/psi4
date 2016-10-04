@@ -75,10 +75,10 @@ Basis sets options
 ^^^^^^^^^^^^^^^^^^
 
 The X2C module in |PSIfour| supports different combinations of basis set.
-By default, if the input file specifies only the ``basis`` keyword, then the X2C
+By default, if the input file specifies only |mints__basis|, then the X2C
 module will solve the modified Dirac equation in an uncontracted basis and then
 recontract the X2C Hamiltonian in the original basis.
-Alternatively, the user can use the ``rel_basis`` keyword to specify a different
+Alternatively, the user can use |globals__rel_basis| to specify a different
 basis set to solve the modified Dirac equation. ::
 
     set {

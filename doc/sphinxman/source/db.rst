@@ -41,7 +41,7 @@ indicating the the interaction energy is computed from dimer less first monomer
 less second (identical) monomer. Error statistics are computed with respect to the reference
 energies stored in the database. One of these, the mean absolute deviation, is 
 returned by the wrapper as an ordinary Python variable. (For databases
-without a stored reference energy, e.g., BASIC, large and meaningless numbers are
+without a stored reference energy, *e.g.*, BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
 through keyword ``tabulate``, in this case the total SCF energy and the number
 of atoms in each reagent. ::

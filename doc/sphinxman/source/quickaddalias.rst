@@ -4,13 +4,16 @@
 .. index::
    pair: method alias; adding new
 
-.. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR`` aka :source:`share`, including those described below.
-
 .. _`sec:methodAlias`:
 
 Defining a Method Alias
 =======================
+
+.. note:: No recompile of the PSI program is necessary for changes made to
+    files in ``$PSIDATADIR`` aka :source:`share`, including those described below.
+
+.. caution:: As of 1.0, the below, while essentially still correct, is so aged
+   as to be difficult to follow.
 
 Since quantum chemical methods in |PSIfour| are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward

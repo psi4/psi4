@@ -65,13 +65,17 @@ directory. Scratch file location can be specified through the
 (see section :ref:`sec:psirc`). Most of the time, :envvar:`PSI_SCRATCH`
 is preferred, and it overrides any existing |psirc| setting. You can set up 
 :envvar:`PSI_SCRATCH` by issuing the following commands in a terminal,
-or including them in the appropriate ``rc`` file. ::
+or including them in the appropriate ``rc`` file.
+
+.. code-block:: tcsh
 
     # csh, tcsh: add to shell or ~/.tcshrc file
-    >>> setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
+    setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
+
+.. code-block:: bash
 
     # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
-    >>> export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
+    export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
 
 |PSIfour| has a number of utilities that manage
 input and output (I/O) of quantities to and from the hard disk.  Most
@@ -79,7 +83,7 @@ quantities, such as molecular integrals, are intermediates that are not of
 interest to the user and can be deleted after the computation finishes, but
 pertinent details of computations are also written to a checkpoint file and
 might be useful in subsequent computations.  All files are written to the
-designated scratch numbered by :ref:`content <apdx:psiFiles>` and labeled
+designated scratch :ref:`numbered by content <apdx:psiFiles>` and labeled
 with the process id, then are deleted at the end of the computation,
 unless otherwise instructed by the user.
 
@@ -206,15 +210,19 @@ explained below. Note that each deeper level trumps all previous levels.
 .. rubric:: (1) OpenMP/MKL Environment Variables
 
 The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. ::
+environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`.
+
+.. code-block:: tcsh
 
     # csh, tcsh: add to shell or ~/.tcshrc file
-    >>> setenv OMP_NUM_THREADS 4
-    >>> setenv MKL_NUM_THREADS 4
+    setenv OMP_NUM_THREADS 4
+    setenv MKL_NUM_THREADS 4
+
+.. code-block:: bash
 
     # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
-    >>> export OMP_NUM_THREADS=4
-    >>> export MKL_NUM_THREADS=4
+    export OMP_NUM_THREADS=4
+    export MKL_NUM_THREADS=4
 
 |PSIfour| then detects these value via the API routines in ``<omp.h>`` and
 ``<mkl.h>``, and runs all applicable code with 4 threads.
@@ -222,7 +230,9 @@ environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. :
 .. rubric:: (2) The -n Command Line Flag
 
 To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
-example is::
+example is:
+
+.. code-block:: bash
 
     psi4 -i input.dat -o output.dat -n 4
 
@@ -426,8 +436,8 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    Output file name. Use ``stdout`` as <filename> to redirect 
    to the screen. Default: when the input filename is "input.dat",
    then the output filename defaults to "output.dat".  Otherwise, the
-   output filename defaults to the the input filename (subtracting
-   any ".in" or ".dat" suffix) plus ".out"
+   output filename defaults to the the input filename with any
+   any ".in" or ".dat" extension replaced by ".out"
 
 .. option:: -p <prefix>, --prefix <prefix>
 
@@ -443,7 +453,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    Creates a new directory <name> with files for writing a
    new plugin. An additional argument specifies a template
    to use, for example: ``--new-plugin name +mointegrals``.
-   See Sec. :ref:`sec:plugins` for available templates.
+   See :ref:`plugins <sec:plugins>` for available templates.
 
 .. option:: -v, --verbose
 
@@ -502,16 +512,17 @@ These environment variables will influence |PSIfours| behavior.
    to a disk drive physically attached to the computer running the computation. 
    If it is not, it will significantly slow down the program and the network. 
 
-   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking :command:`psi4`
 
-      # csh, tcsh
-      >>> setenv PSI_SCRATCH /scratch/user
+   .. code-block:: tcsh
 
-      # sh, bash
-      >>> export PSI_SCRATCH=/scratch/user
+       # csh, tcsh: add to shell or ~/.tcshrc file
+       setenv PSI_SCRATCH /scratch/user
 
-   You can also include the above commands in the respective ``rc`` file, *i.e.*
-   ``~/.tcshrc`` for tcsh or ``~/.bashrc`` for bash on Linux or ``~/.bash_profile`` for bash on Mac.
+   .. code-block:: bash
+
+       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       export PSI_SCRATCH=/scratch/user
 
 .. envvar:: PSIPATH
 
@@ -535,33 +546,41 @@ These environment variables will influence |PSIfours| behavior.
    directory (I won't swear everything tacks on the execution directory).
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+   |PSIfour|, these are generally :ref:`plugins <sec:plugins>` or databases.
 
-   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking :command:`psi4`
 
-      # csh, tcsh
-      >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+   .. code-block:: tcsh
 
-      # sh, bash
-      >>> export PSIPATH=/home/user/psiadditions:/home/user/gbs
+       # csh, tcsh: add to shell or ~/.tcshrc file
+       setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+
+   .. code-block:: bash
+
+       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       export PSIPATH=/home/user/psiadditions:/home/user/gbs
 
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+   |PSIfour|, these are generally :ref:`plugins <sec:plugins>` or databases.
 
    .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
       to modifying this environment variable.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 
-   * Normal Linux shell commands. ::
+   * Normal Linux shell commands.
 
-        # csh, tcsh
-        setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+     .. code-block:: tcsh
 
-        # sh, bash
-        PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
+         # csh, tcsh: add to shell or ~/.tcshrc file
+         setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+
+     .. code-block:: bash
+
+         # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+         export PYTHONPATH=/home/user/psiadditions:$PYTHONPATH
 
    * Place the path in the |psirc| file so that it is available for 
      every |PSIfour| instance. ::

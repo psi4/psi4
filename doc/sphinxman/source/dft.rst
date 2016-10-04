@@ -22,11 +22,11 @@ section is also relevant here.
 Theory
 ~~~~~~
 
-Generalized Kohn-Sham Density Functional Theory (KS-DFT) [Kohn:1965:A1133]_ [Parr:1989]_ is one of the primary
+Generalized Kohn--Sham Density Functional Theory (KS-DFT) [Kohn:1965:A1133]_ [Parr:1989]_ is one of the primary
 workhorses of modern computational chemistry due to its phenomenal accuracy/cost
 ratio. 
 
-Pure Kohn-Sham DFT is built on the Hohenberg-Kohn theorems [Hohenberg:1964:136]_ which states: A) the energy is a universal
+Pure Kohn--Sham DFT is built on the Hohenberg--Kohn theorems [Hohenberg:1964:136]_ which states: A) the energy is a universal
 functional of the one-particle electronic density and B) there exists a set of
 noninteracting quasiparticles with the same density as the true set of
 electrons, with the quasiparticle states determined as eigenvectors of an
@@ -34,7 +34,7 @@ effective one-body potential encapsulating the true :math:`N`\ -body quantum
 effects. The former idea allows the electronic density to be dealt with instead
 of the much more complicated wavefunction, while the latter allows for the
 treatment of the troublesome kinetic energy term via the implicit one-body
-Kohn-Sham orbitals.  KS-DFT borrows much of the machinery of Hartree-Fock, as is
+Kohn--Sham orbitals.  KS-DFT borrows much of the machinery of Hartree--Fock, as is
 evident by looking at the energy expression,
 
 .. math:: 
@@ -46,7 +46,7 @@ evident by looking at the energy expression,
     V_{\mu\nu}\right) + \frac{1}{2} D_{\mu\nu}^{\mathrm{T}}
     D_{\lambda\sigma}^{\mathrm{T}} (\mu\nu|\lambda\sigma) + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta]
 
-Here :math:`T` is the noninteracting quasiparticle kinetic energy operator,
+Here, :math:`T` is the noninteracting quasiparticle kinetic energy operator,
 :math:`V` is the nucleus-electron attraction potential, :math:`D^{\mathrm{T}}`
 is the total electron density matrix, and :math:`E_{\mathrm{xc}} [\rho_\alpha,
 \rho_\beta]` is the (potentially nonlocal) exchange, correlation, and residual
@@ -82,7 +82,7 @@ where,
 .. math:: \nabla \rho_{\sigma} (\vec r_1) = 2 D_{\mu\nu}^{\sigma} \phi_{\mu}
     (\vec r_1) \nabla \phi_{\nu} (\vec r_1)
 
-GGA functionals are essentially the same cost as LSDA functionals, and are often
+GGA functionals are essentially the same cost as LSDA functionals and are often
 considerably more accurate. 
 
 Another local variant  which has gained some popularity (though perhaps not as
@@ -134,28 +134,28 @@ The potential corresponding to this energy functional is,
     \nabla \phi_{\nu}
     \ \mathrm{d} ^3 r_1
 
-This potential is used to build the Kohn-Sham matrix,
+This potential is used to build the Kohn--Sham matrix,
 
 .. math:: F_{\mu\mu}^{\alpha} = H_{\mu\nu} + J_{\mu\nu} +
     V_{\mu\nu}^{\mathrm{xc},\alpha}
 
-which is diagonalized to form the Kohn-Sham orbitals in the same manner as in
-Hartree-Fock. 
+which is diagonalized to form the Kohn--Sham orbitals in the same manner as in
+Hartree--Fock.
 
 In practice the local functional kernel :math:`f_{\mathrm{xc}}` and its required
-partial derivatives are exceedingly complex, and are not analytically
+partial derivatives are exceedingly complex and are not analytically
 integrable. In this case, atom-centered numerical quadratures are used to
-evaluate the Kohn-Sham potentials and energies to a high degree of accuracy. The
+evaluate the Kohn--Sham potentials and energies to a high degree of accuracy. The
 evaluation of these numerical integrals can be made to be linear scaling with a
 reasonable amount of cleverness (mostly related to the fact that the basis
 functions decay exponentially), meaning that the Coulomb and diagonalization
-steps become rate limiting. This enormous potential speed gain over Hartree-Fock
+steps become rate limiting. This enormous potential speed gain over Hartree--Fock
 with potentially exact treatment of electron correlation for "free" was one of
 the primary motivations for KS-DFT's adoption by chemists in the late 1980s and
 early 1990s. 
 
 Unfortunately, local KS-DFT exhibits several spectacular failures, most of which
-stem from the exponential decay of the local Kohn-Sham potential, which cannot
+stem from the exponential decay of the local Kohn--Sham potential, which cannot
 encapsulate long-range information in the exchange and correlation holes. In the
 exchange hole, this manifests as the problem of Many-Electron Self-Interaction
 Error (MSIE), which presents as spurious low-lying charge transfer states in
@@ -165,24 +165,24 @@ chemical potential as integer particle numbers are crossed. On the correlation
 side, this is primarily observed in the inability of KS-DFT to treat dispersion
 interactions. 
 
-Generalized Kohn-Sham (GKS) functionals incorporate long-range information into
+Generalized Kohn--Sham (GKS) functionals incorporate long-range information into
 the functional through orbital-dependent contributions, and are designed to
 combat the failures of local KS-DFT, particularly the MSIE on the exchange side.
 Note that these functionals are often referred to as "implicit" density
-functionals, as the orbitals are themselves functionals of the Kohn-Sham
+functionals, as the orbitals are themselves functionals of the Kohn--Sham
 potential. 
 
 The simplest form of an exchange-side GKS is the global hybrid ansatz, in which
-some fraction of the exact Hartree-Fock exchange of the noninteracting
+some fraction of the exact Hartree--Fock exchange of the noninteracting
 quasiparticles is added to the functional, with the local part of the exchange
 functional decreased by the corresponding amount. Note that the term
-"exact-exchange" refers to the Hartree-Fock being the exact exchange energy of
+"exact-exchange" refers to the Hartree--Fock being the exact exchange energy of
 the noninteracting quasiparticles, not the true electrons. Therefore, adding
 100% exact exchange is not physically reasonable, and will often lead to
 extremely poor results. The fraction of exact-exchange, denoted :math:`\alpha`,
-is often determined by adiabatic or heuristic arguments, and is typically around
+is often determined by adiabatic or heuristic arguments and is typically around
 25%. The addition of exact exchange borrows another piece from an existing
-Hartree-Fock code, with the caveat that Hartree-Fock exchange is often much more
+Hartree--Fock code, with the caveat that Hartree--Fock exchange is often much more
 costly to obtain than the Coulomb matrix. The global hybrid ansatz has become
 exceedingly popular, with functionals such as the ubiquitous B3LYP often
 producing absurdly accurate results. 
@@ -265,8 +265,7 @@ determination of excited state ordering in many low band-gap systems.
 For dispersion-bound complexes, a very simple additive empirical dispersion
 potential, based on a damped Lennard-Jones potential can often produce
 remarkably accurate results with KS-DFT. This approach was championed by Grimme,
-whose "-D2" approach is a de facto industry standard. The more modern "-D3"
-approach is gaining popularity, and may supersede -D2 in the next few years.  
+whose "-D2" and more modern "-D3" approaches are a de facto industry standards.
 
 Minimal Input
 ~~~~~~~~~~~~~
@@ -282,24 +281,24 @@ option, and a call to ``energy('b3lyp')`` (or other valid functional name)::
     
     energy('b3lyp')
 
-This will run a B3LYP Restricted Kohn-Sham (RKS) on neutral singlet Helium in
-:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-8 energy
-and density convergence criteria, a PK ERI algorithm, symmetric
-orthogonalization, DIIS, and a core Hamiltonian guess. For more information on
-any of these options, see the relevant section below, or in the Hartree-Fock
-section above. 
+This will run a B3LYP Restricted Kohn--Sham (RKS) on neutral singlet Helium in
+:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6 energy
+and density convergence criteria, a DF ERI algorithm, symmetric
+orthogonalization, DIIS, and a core Hamiltonian guess (because single atom). For more information on
+any of these options, see the relevant section below, or in the preceding
+:ref:`Hartree--Fock section <sec:scf>`.
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 |PSIfour| implements the most popular spin specializations of KS-DFT, including:
 
-Restricted Kohn-Sham (RKS) [Default] 
+Restricted Kohn--Sham (RKS) [Default]
   Appropriate only for closed-shell singlet systems, but twice as efficient
   as the other flavors, as the alpha and beta densities are constrained to be
   identical.
-Unrestricted Kohn-Sham (UKS)
-  Appropriate for most open-shell systems, and fairly easy to converge.
+Unrestricted Kohn--Sham (UKS)
+  Appropriate for most open-shell systems and fairly easy to converge.
   The spatial parts of the alpha and beta orbitals are fully independent of each
   other, which allows a considerable amount of flexibility in the wavefunction.
   However, this flexibility comes at the cost of spin symmetry; the resultant
@@ -311,12 +310,12 @@ Unrestricted Kohn-Sham (UKS)
 
 These are set in the |scf__reference| option. 
 
-Note that there are not equivalents to ROHF or CUHF, e.g., no ROKS or CUKS. This
+Note that there are not equivalents to ROHF or CUHF, *e.g.*, no ROKS or CUKS. This
 is because ROHF is implicitly assumed to be followed by a correlated method
 which can break the positive definiteness of the spin polarization. KS-DFT with
 the true functional is expected to be the final step, thus restricting the
 solution to positive definite spin polarization is  not physical. See the
-section in Szabo on methyl radical for an example. 
+section in [Szabo:1982]_ on methyl radical for an example.
 
 Functional Selection
 ~~~~~~~~~~~~~~~~~~~~
@@ -341,7 +340,7 @@ option::
 
 For hybrid functionals, the fraction of exact exchange is controlled by the
 |scf__dft_alpha| option. For the LRC functionals, the fraction of long-range
-Hartree-Fock and short-range DFA is controlled by the |scf__dft_omega| option.
+Hartree--Fock and short-range DFA is controlled by the |scf__dft_omega| option.
 Changing these will override the default behavior of the requested functional.
 
 A brief summary of some of the more notable functionals in |PSIfour|, and links
@@ -363,7 +362,7 @@ to the complete listing of all functionals of each class are presented below:
 
 :ref:`Meta Functionals <table:dft_meta>`
     We have recently implemented the M05 classes of meta functionals in
-    PSI4. Note that these functionals are not appropriate for modeling
+    |PSIfour|. Note that these functionals are not appropriate for modeling
     dispersion interactions, as they lack dispersion physics. A -D functional (Such
     as the much cheaper B97-D) should be used instead.
 
@@ -391,10 +390,9 @@ to the complete listing of all functionals of each class are presented below:
     only available with density-fitted, not conventional, mp2 algorithms.
 
 :ref:`-D Functionals <table:dft_disp>`
-    We have several -D2 functionals implemented, -D3 functionls are available
-    with the installation of Grimme's :ref:`DFTD3 program <sec:dftd3>`, and we
-    will shortly be adding many
-    more combinations of -D2 and -D3 functionals. For now, the pure-GGA B97-D
+    We have several -D2 functionals implemented. -D3 functionls are available
+    with the installation of Grimme's :ref:`DFTD3 program <sec:dftd3>`.
+    For now, the pure-GGA B97-D
     functional of Grimme is remarkably accurate, and the hybrid B3LYP-D
     functional is also quite reliable. 
 
@@ -409,8 +407,8 @@ Grid Selection
 
 |PSIfour| uses the standard Lebedev-Laikov spherical quadratures in concert with a
 number of radial quadratures and atomic partitioning schemes. Pruned grids are
-not yet available, but will be implemented by RC1 (in final debugging). The
-default grid in PSI4 is a Lebedev-Treutler (75,302) grid with a Treutler
+not yet available, but we have plans.
+The default grid in |PSIfour| is a Lebedev-Treutler (75,302) grid with a Treutler
 partition of the atomic weights. 
 
 Spherical grids are all of the extremely efficient Lebedev-Laikov type.
@@ -533,11 +531,11 @@ An example of a fully specified grid is as follows::
     set {
     basis cc-pvdz
     scf_type df
-    dft_spherical_points 590    # Often needed
-    dft_radial_points 99        # Often needed
-    dft_radial_scheme treutler  # Rarely needed
-    dft_nuclear_scheme treutler # Rarely needed
-    dft_basis_tolerance 1.0E-11 # Can speed things up, but benchmark the error
+    dft_spherical_points 590     # Often needed
+    dft_radial_points 99         # Often needed
+    dft_radial_scheme treutler   # Rarely needed
+    dft_nuclear_scheme treutler  # Rarely needed
+    dft_basis_tolerance 1.0E-11  # Can speed things up, but benchmark the error
     }
     
     energy('b3lyp')
@@ -545,9 +543,9 @@ An example of a fully specified grid is as follows::
 ERI Algorithms
 ~~~~~~~~~~~~~~
 
-The ERI algorithms for the Coulomb and hybrid exchange are identical to those
-listed above for Hartree-Fock. However, for LRC functionals, the long-range
-exchange contributions to the Kohn-Sham matrix have only been implemented in the
+The ERI algorithms for the Coulomb and hybrid exchange are identical to
+:ref:`those for Hartree--Fock <sec:scferi>`. However, for LRC functionals, the long-range
+exchange contributions to the Kohn--Sham matrix have only been implemented in the
 DF and DIRECT algorithms. The use of DF is highly recommended for KS-DFT, as the
 errors incurred by the density fitting approximation (in a proper -JKFIT
 auxiliary basis) are orders of magnitude smaller than the accuracy of any known
@@ -574,11 +572,11 @@ setting up a standard LRC UKS computation. A representative example is::
     O   
     H 1 1.0 
     H 1 1.0 2 104.5
-    symmetry c1 # IP fitting must be run in C1 symmetry
+    symmetry c1  # IP fitting must be run in C1 symmetry
     }
 
     set {
-    reference uks # UKS, as we need to do neutral/cation
+    reference uks  # UKS, as we need to do neutral/cation
     basis cc-pvdz
     scf_type df
     dft_functional wb97
@@ -620,12 +618,12 @@ and below the neutral. An example is::
     O   
     H 1 1.0 
     H 1 1.0 2 104.5
-    symmetry c1 # FRAC jobs must be run in C1 symmetry
+    symmetry c1  # FRAC jobs must be run in C1 symmetry
     }
 
     set {
-    reference uks # UKS, as we need to do all kinds of weird stuff
-    basis aug-cc-pvdz # Augmented functions are very important on the anion side
+    reference uks  # UKS, as we need to do all kinds of weird stuff
+    basis aug-cc-pvdz  # Augmented functions are very important on the anion side
     scf_type df
     dft_functional wb97
     }
@@ -653,14 +651,14 @@ collaboration.
 Dispersion Corrections
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:ref:`Dispersion corrections are discussed at this link. <sec:dftd3>`
+:ref:`Dispersion corrections are discussed here. <sec:dftd3>`
 
 Recommendations
 ~~~~~~~~~~~~~~~
 
 The KS-DFT code is quite new, but relatively complete. During code development,
 emphasis was placed on flexibility of functional technology, efficiency for
-medium to large systems in difficult electronic environments (e.g., compact
+medium to large systems in difficult electronic environments (*e.g.*, compact
 spatial extents, diffuse basis sets, low band-gaps, LRC and/or hybrid GKS
 functionals), and time to code completion. We are very interested in optimizing
 and extending the code, so expect performance gains and extensions to
@@ -679,7 +677,7 @@ Some rough guidelines for using the KS-DFT code are as follows,
 
 The "best-practice" input file for KS-DFT is::
 
-    memory 1 GB # As much as you've got, the DF algorithm can use
+    memory 1 GB  # As much as you've got, the DF algorithm can use
 
     molecule {
     H

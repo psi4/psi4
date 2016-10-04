@@ -66,7 +66,7 @@ WFN = string
 This may be ``casscf`` or ``rasscf``.
 
 REFERENCE = string
-Any of the references allowed by detci should work (i.e., not 
+Any of the references allowed by detci should work (*i.e.*, not
 {\tt uhf}), but there should be no reason not to use {\tt rhf}.
 
 DERTYPE = string

@@ -7,8 +7,8 @@
 
 .. _`sec:dfmp2`:
 
-DF-MP2: Density-Fitted 2nd-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
-===============================================================================
+DF-MP2: Density-Fitted 2nd-Order |MollerPlesset| Perturbation Theory
+====================================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
@@ -18,7 +18,7 @@ DF-MP2: Density-Fitted 2nd-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
 Introduction
 ------------
 
-Second-order M\ |o_slash|\ ller-Plesset Perturbation Theory (MP2) occupies a unique role
+Second-order |MollerPlesset| Perturbation Theory (MP2) occupies a unique role
 in quantum chemistry due to its small-prefactor :math:`{\cal O}(N^5)` treatment of
 dynamic electron correlation. This unusually cheap
 *ab initio* treatment of electron correlation may be made even more
@@ -65,25 +65,25 @@ reference. In this example, we freeze the core, both for efficiency and
 because split-valence bases like cc-pVDZ do not contain core correlation
 functions. The result looks something like::
 
-        ----------------------------------------------------------
-         ====================> MP2 Energies <====================
-        ----------------------------------------------------------
-         Reference Energy          =     -76.0213974789664633 [H]
-         Singles Energy            =      -0.0000000000000001 [H]
-         Same-Spin Energy          =      -0.0512503261762665 [H]
-         Opposite-Spin Energy      =      -0.1534098129352447 [H]
-         Correlation Energy        =      -0.2046601391115113 [H]
-         Total Energy              =     -76.2260576180779736 [H]
-        ----------------------------------------------------------
-         ==================> SCS-MP2 Energies <==================
-        ----------------------------------------------------------
+        -----------------------------------------------------------
+         ==================> DF-MP2 Energies <====================
+        -----------------------------------------------------------
+         Reference Energy          =     -76.0213974638823942 [Eh]
+         Singles Energy            =      -0.0000000000000001 [Eh]
+         Same-Spin Energy          =      -0.0512503270216563 [Eh]
+         Opposite-Spin Energy      =      -0.1534098175176923 [Eh]
+         Correlation Energy        =      -0.2046601445393486 [Eh]
+         Total Energy              =     -76.2260576084217405 [Eh]
+        -----------------------------------------------------------
+         ================> DF-SCS-MP2 Energies <==================
+        -----------------------------------------------------------
          SCS Same-Spin Scale       =       0.3333333333333333 [-]
          SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-         SCS Same-Spin Energy      =      -0.0170834420587555 [H]
-         SCS Opposite-Spin Energy  =      -0.1840917755222936 [H]
-         SCS Correlation Energy    =      -0.2011752175810492 [H]
-         SCS Total Energy          =     -76.2225726965475161 [H]
-        ----------------------------------------------------------
+         SCS Same-Spin Energy      =      -0.0170834423405521 [Eh]
+         SCS Opposite-Spin Energy  =      -0.1840917810212307 [Eh]
+         SCS Correlation Energy    =      -0.2011752233617829 [Eh]
+         SCS Total Energy          =     -76.2225726872441811 [Eh]
+        -----------------------------------------------------------
 
 The theory, breakdown of results, and common keywords used in DF-MP2 are presented below. 
 
@@ -93,7 +93,7 @@ The theory, breakdown of results, and common keywords used in DF-MP2 are present
 Theory
 ------
 
-M\ |o_slash|\ ller-Plesset Theory (MPn) or Many-Body Perturbation Theory
+|MollerPlesset| Theory (MPn) or Many-Body Perturbation Theory
 (MBPT) through second order has the spin-orbital formula:
 
 .. math:: E_{\mathrm{total}}^{(2)} = E_{\mathrm{Reference}} - 

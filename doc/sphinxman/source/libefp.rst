@@ -13,14 +13,50 @@ Interface to LIBEFP by I. Kaliman
 
 *Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <src/lib/libefp_solver>`
 
+.. image:: https://img.shields.io/badge/home-libefp-5077AB.svg
+   :target: https://github.com/ilyak/libefp
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://www.libefp.org/
+
 |PSIfour| contains code to interface to the LIBEFP library developed
-in L. Slipchenko's group by I. Kaliman.  LIBEFP at version 1.2.1
-is distributed with |Psifour| and requires no additional licence,
+in L. Slipchenko's group by I. Kaliman. LIBEFP
+requires no additional licence,
 downloads, or configuration. Conversely, |Psifour| cannot build
-*without* LIBEFP. More information about the LIBEFP project
-is available at `http://www.libefp.org/ <http://www.libefp.org/>`_
-and source is hosted at `https://github.com/libefp/libefp
-<https://github.com/libefp/libefp>`_.
+*without* LIBEFP.
+
+Installation
+~~~~~~~~~~~~
+
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/libefp/badges/version.svg
+     :target: https://anaconda.org/psi4/libefp
+
+* libefp is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, libefp has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  libefp can be obtained through ``conda install libefp``.
+  Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect libefp and activate dependent code.
+
+* To remove a conda installation, ``conda remove libefp``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/ilyak/libefp.svg?maxAge=2592000
+     :target: https://github.com/ilyak/libefp
+
+* If using |PSIfour| built from source and you want libefp built from
+  from source also,
+  let the build system fetch and build it and activate dependent code.
 
 
 .. index:: EFP; library fragments
@@ -33,7 +69,7 @@ EFP Fragments
 
 LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
 common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
-with source :source:`share/efpfrag`.  Any of these may be used directly in
+with source :source:`psi4/share/psi4/efpfrag`.  Any of these may be used directly in
 a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
 .. comment .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
@@ -58,7 +94,7 @@ fragment, an error will be reported.
 
 .. note:: When constructing new fragment files, the name of the name of the
    file should be lowercase and have extension ``.efp``. The molecule name
-   within the file, e.g., ``$NH3`` must correspond to the name of the
+   within the file, *e.g.*, ``$NH3`` must correspond to the name of the
    fragment file.
 
 .. index:: molecule; EFP

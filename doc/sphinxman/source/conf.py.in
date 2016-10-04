@@ -63,7 +63,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# Suppress warnings
+# Suppress warnings (sphinx 1.4.2)
 suppress_warnings = ['image.nonlocal_uri']
 
 # General information about the project.

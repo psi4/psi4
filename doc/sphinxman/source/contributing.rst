@@ -7,7 +7,8 @@ Contributions: Intro to Programming in |PSIfour|
 
 .. toctree::
    plugins
-   bestpractices_py
    documentation
    psipep
+
+..   bestpractices_py
 

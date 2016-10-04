@@ -4,25 +4,60 @@
 
 .. _`sec:pcmsolver`:
 
-Interface to PCMSolver
-======================
+Interface to PCMSolver by R. Di Remigio
+=======================================
 
 .. codeauthor:: Roberto Di Remigio, T. Daniel Crawford, Andrew C. Simmonett
 .. sectionauthor:: Roberto Di Remigio
 
 *Module:* :ref:`Keywords <apdx:pcm>`, :ref:`PSI Variables <apdx:pcm_psivar>`, :source:`PCMSolver <src/lib/libpsipcm>`
 
+.. image:: https://img.shields.io/badge/home-PCMSolver-5077AB.svg
+   :target: https://github.com/PCMSolver/pcmsolver
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://pcmsolver.readthedocs.io/en/latest/
+
 |PSIfour| contains code to interface to the PCMSolver library developed
 by R. Di Remigio and L. Frediani.
-The version 1.1.0 of the PCMSolver library is distributed with |Psifour|
-and requires no additional licence, downloads, or configuration.
-The library is documented at `http://pcmsolver.readthedocs.org/
-<http://pcmsolver.readthedocs.org/en/latest/>`_, while the source code is hosted at
-`https://github.com/PCMSolver/pcmsolver/ <https://github.com/PCMSolver/pcmsolver>`_
-The library allows for calculations in solution with the polarizable continuum model (PCM),
-a continuum solvation model.
-Compilation of the library and its interface to |Psifour| can be *disabled* by passing the
-``--pcmsolver=off`` to the ``setup`` script or ``-DENABLE_PCMSOLVER=OFF`` directly to CMake.
+The PCMSolver library requires no additional licence, downloads, or
+configuration. The library allows for calculations in solution with the
+polarizable continuum model (PCM), a continuum solvation model.
+
+Installation
+~~~~~~~~~~~~
+
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/pcmsolver/badges/version.svg
+     :target: https://anaconda.org/psi4/pcmsolver
+
+* PCMSolver is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, PCMSolver has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  PCMSolver can be obtained through ``conda install pcmsolver``.
+  Then enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
+
+* To remove a conda installation, ``conda remove pcmsolver``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/PCMSolver/pcmsolver.svg?maxAge=2592000
+     :target: https://github.com/PCMSolver/pcmsolver
+
+* If using |PSIfour| built from source and you want PCMSolver built from
+  from source also,
+  enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  and let the build system fetch and build it and activate dependent code.
 
 .. index:: PCM; Using PCM
 
@@ -46,7 +81,7 @@ to be explicitly typed in by the user. This additional section follows a syntax
 that is slightly different from that of |Psifour| and is fully documented
 `here <http://pcmsolver.readthedocs.org/en/latest/users/input.html>`_
 
-A typical input for a Hartree-Fock calculation with PCM would look like the following: ::
+A typical input for a Hartree--Fock calculation with PCM would look like the following: ::
 
     molecule NH3 {
     symmetry c1

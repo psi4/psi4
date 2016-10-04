@@ -47,7 +47,7 @@ and discusses some of the higher-level functions such as counterpoise
 correction, complete-basis-set extrapolation, and running computations
 on an entire database of molecules at a time.  Later sections deal with
 the different types of computations which can be done using |PSIfour|
-(e.g., Hartree |--| Fock, MP2, coupled-cluster) and general procedures
+(*e.g.*, Hartree |--| Fock, MP2, coupled-cluster) and general procedures
 such as geometry optimization and vibrational frequency analysis.
 The :ref:`Appendices <sec:appendices>` include a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
@@ -306,6 +306,19 @@ SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
   014101 (2010).
   (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
+F/I-SAPT
+
+* "Chemical Assignment of Symmetry-Adapted Perturbation Theory Interaction
+  Energy Components: The Functional-Group SAPT Partition,"
+  R. M. Parrish, T. M. Parker, and C. D. Sherrill,
+  *J. Chem. Theory Comput.* **10**, 4417 (2014).
+  (doi: `10.1021/ct500724p <http://dx.doi.org/10.1021/ct500724p>`_).
+
+* "Communication: Practical Intramolecular Symmetry Adapted Perturbation Theory
+  via Hartree-Fock Embedding,"
+  R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C. D. Sherrill,
+  *J. Chem. Phys.* **143**, 051103 (2015).
+  (doi: `10.1063/1.4927575 <http://dx.doi.org/10.1063/1.4927575>`_)
 
 Orbital-Optimized Post-Hartree |--| Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -313,13 +326,13 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order M\ |o_slash|\ ller--Plesset perturbation theory," 
+  second-order |MollerPlesset| perturbation theory,"
   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
   (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
 
 * "Analytic energy gradients for the orbital-optimized second-order 
-  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
+  |MollerPlesset| perturbation theory," U. Bozkaya and
   C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
   (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
 
@@ -330,19 +343,19 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 Orbital-optimized third-order perturbation theory (OMP3)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
+* "Orbital-Optimized Third-Order |MollerPlesset| Perturbation
   Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
   to Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
   (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
-* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset 
+* "Assessment of Orbital-Optimized Third-Order |MollerPlesset|
   Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants 
   for Thermochemistry and Kinetics," E. Soydas and U. Bozkaya,  
   *J. Chem. Theory Comput.* **9**, 1452 (2013).
   (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
-* "Analytic energy gradients for the orbital-optimized third-order M\ |o_slash|\ ller--Plesset 
+* "Analytic energy gradients for the orbital-optimized third-order |MollerPlesset|
   Perturbation Theory," U. Bozkaya,  
   *J. Chem. Phys.* **139**, 104116 (2013).
   (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
@@ -626,7 +639,7 @@ Where-to-post summary:[#f6]_
 .. [#f7] DH-DFT only available with DF-MP2.
 .. [#f8] Not all combinations of reference and algorithm available. In particular, non-RHF references only available as CONV.
 .. [#f9] Orbital-optimized variant available. In particular, all references available as CONV/DF.
-.. [#f10] Capabilities breakdown in great detail can be found at :ref:`table:managedmethods`.
+.. [#f10] Capabilities breakdown in great detail can be found :ref:`here <table:managedmethods>`.
 
 .. toctree::
    :hidden:

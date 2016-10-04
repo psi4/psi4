@@ -14,10 +14,51 @@ Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
-*Module:* :ref:`Keywords <apdx:gdma>`, :ref:`PSI Variables <apdx:gdma_psivar>`, :source:`PCMSolver <src/lib/libgdma>`
+*Module:* :ref:`Keywords <apdx:gdma>`, :ref:`PSI Variables <apdx:gdma_psivar>`, :source:`GDMA_INTERFACE<psi4/src/psi4/gdma_interface>`
+
+.. image:: https://img.shields.io/badge/home-gdma-5077AB.svg
+   :target: https://github.com/psi4/gdma
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://www-stone.ch.cam.ac.uk/documentation/gdma/manual.pdf
+
+Installation
+~~~~~~~~~~~~
+
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/gdma/badges/version.svg
+     :target: https://anaconda.org/psi4/gdma
+
+* GDMA is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, gdma has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  gdma can be obtained through ``conda install gdma``.
+  Then enable it as a feature with :makevar:`ENABLE_gdma`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect gdma and activate dependent code.
+
+* To remove a conda installation, ``conda remove gdma``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/psi4/gdma.svg?maxAge=2592000
+     :target: https://github.com/psi4/gdma
+
+* If using |PSIfour| built from source and you want gdma built from
+  from source also,
+  enable it as a feature with :makevar:`ENABLE_gdma`,
+  and let the build system fetch and build it and activate dependent code.
 
 Input
-~~~
+~~~~~
 
 The distributed multipole analysis (DMA) technique, developed by Anthony J.
 Stone and implemented by him into the `GDMA package

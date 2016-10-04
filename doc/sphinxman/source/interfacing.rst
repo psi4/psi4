@@ -25,6 +25,7 @@ platform capabilities, *etc*.
    pcmsolver
    molden
    mrcc
+   plugin_v2rdm_casscf
 
 .. comment * MPI4Py
 .. comment * MADNESS

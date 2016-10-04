@@ -6,7 +6,7 @@
 .. index::
    triple: setting; keywords; cp
    triple: setting; keywords; vmfc
-   see: counterpoise_correct
+   single: counterpoise correction
 
 .. _`sec:cp()`:
 

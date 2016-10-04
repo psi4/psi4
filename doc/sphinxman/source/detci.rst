@@ -90,11 +90,11 @@ only to detci, but also at least to the transformation program
 subspace keywords such as |globals__ras1|,
 |globals__ras2|, |globals__ras3|, |globals__frozen_docc|, 
 |globals__frozen_uocc|,
-|globals__active|, etc., should be set
+|globals__active|, etc., are set
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
-computation with DETCI is simply to call ``energy()``, ``optimize()``, etc., 
+computation with DETCI is simply to call :py:func:`~driver.energy`, :py:func:`~driver.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order
@@ -143,9 +143,9 @@ Arbitrary Order Perturbation Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The DETCI module is capable of computing energies for arbitrary
-order M\ |o_slash|\ ller--Plesset perturbation theory (MPn, for closed-shell
+order |MollerPlesset| perturbation theory (MPn, for closed-shell
 systems with an RHF reference) and for Z-averaged perturbation theory
-(ZAPTn, open-shell systems with an ROHF reference).  However, please
+(ZAPTn, open-shell systems with a ROHF reference). However, please
 note that these computations are essentially doing high-order CI (up to
 full CI) computations to obtain these results, and hence they will only
 be possible for very small systems (generally a dozen electrons or less).

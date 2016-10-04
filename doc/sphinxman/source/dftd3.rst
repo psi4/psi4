@@ -12,54 +12,76 @@ Interface to DFTD3 by S. Grimme
 
 *Module:* :ref:`Samples <apdx:testSuitedftd3>`
 
-|PSIfour| contains code to interface to the DFTD3 program of S. Grimme, which is freely
-downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english <http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english>`_).
+.. image:: https://img.shields.io/badge/home-DFTD3-5077AB.svg
+   :target: http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://www.thch.uni-bonn.de/tc/downloads/DFT-D3/data/man.pdf
 
 Installation
 ~~~~~~~~~~~~
 
-DFTD3 is available as conda package. If using the |PSIfour| binary, the
-``dftd3`` executable has already been installed alongside. If using
-|PSIfour| built from source, and anaconda or miniconda has already
-been installed (instructions at :ref:`sec:quickconda`), the ``dftd3``
-executable can be obtained through ``conda install dftd3``.
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/dftd3/badges/version.svg
+     :target: https://anaconda.org/psi4/dftd3
+
+* DFTD3 is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, DFTD3 has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  the dftd3 executable can be obtained through ``conda install dftd3``.
+
+* To remove a conda installation, ``conda remove dftd3``.
+
+**Source**
+
+* .. image:: https://img.shields.io/badge/home-DFTD3-5077AB.svg
+     :target: http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english
+
+* If using |PSIfour| built from source and you want to build DFTD3 from
+  from source also,
+  follow the instructions provided with the source
+  (essentially, download the freely available tarball, unpack the source,
+  edit the Makefile to select a
+  Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can
+  be used as-is; for earlier versions, patches are available:
+  :source:`psi4/share/psi4/scripts/patch_grimme_dftd3.3.0.2`.
 
 To be used by |PSIfour|, the program binary (``dftd3``) must be
 found in your :envvar:`PSIPATH` or :envvar:`PATH` (in that order). If
 |PSIfour| is unable to execute the binary, an error will be reported.
 To preferentially use a particular dftd3 compilation, simply adjust its
-position in the path environment variables. To remove the dftd3 that
-conda installs alongside |PSIfour|, ``conda remove dftd3``.
+position in the path environment variables.
 
-Alternatively, to build DFTD3 yourself,
-follow the instructions provided with the source
-(essentially, unpack the source, edit the Makefile to select a
-Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can be used 
-as-is; for earlier versions, patches are available: 
-:source:`share/scripts/patch_grimme_dftd3.3.0.2`. 
-
-    >>> cd dftd3
-    >>> ls 
-    dftd3.tar
-    patch_grimme_dftd3.3.0.2
-    >>> tar -xvf dftd3.tar
-    copyc6.f
-    dftd3.f
-    Makefile
-    man.pdf
-    pars.f
-    param
-    >>> patch < patch_grimme_dftd3.3.0.2
-    patching file dftd3.f
-    >>> make
-    making dftd3.o from dftd3.f
-    ifort -O  -c dftd3.f -o dftd3.o
-    making copyc6.o from copyc6.f
-    ifort -O  -c copyc6.f -o copyc6.o
-    ifort dftd3.o copyc6.o    -o ./dftd3  
-    >>> ls
-    Makefile           copyc6.o           dftd3.f            dftd3.tar          param              patch_grimme_dftd3.3.0.2
-    copyc6.f           dftd3              dftd3.o            man.pdf            pars.f
+..    >>> cd dftd3
+..    >>> ls
+..    dftd3.tar
+..    patch_grimme_dftd3.3.0.2
+..    >>> tar -xvf dftd3.tar
+..    copyc6.f
+..    dftd3.f
+..    Makefile
+..    man.pdf
+..    pars.f
+..    param
+..    >>> patch < patch_grimme_dftd3.3.0.2
+..    patching file dftd3.f
+..    >>> make
+..    making dftd3.o from dftd3.f
+..    ifort -O  -c dftd3.f -o dftd3.o
+..    making copyc6.o from copyc6.f
+..    ifort -O  -c copyc6.f -o copyc6.o
+..    ifort dftd3.o copyc6.o    -o ./dftd3
+..    >>> ls
+..    Makefile           copyc6.o           dftd3.f            dftd3.tar          param              patch_grimme_dftd3.3.0.2
+..    copyc6.f           dftd3              dftd3.o            man.pdf            pars.f
 
 Theory
 ~~~~~~

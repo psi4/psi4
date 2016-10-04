@@ -10,7 +10,51 @@ Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: Justin M. Turney
 
-*Module:*  :source:`DKH <src/lib/libmints>`
+*Module:* :ref:`Keywords <apdx:dkh>`, :ref:`Samples <apdx:testSuitedkh>`
+
+.. image:: https://img.shields.io/badge/home-dkh-5077AB.svg
+   :target: https://github.com/psi4/dkh
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+
+.. :target: http://sebwouters.github.io/CheMPS2/index.html
+
+.. _`sec:dkhinstall`:
+
+Installation
+~~~~~~~~~~~~
+
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/dkh/badges/version.svg
+     :target: https://anaconda.org/psi4/dkh
+
+* DKH is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, dkh has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  dkh can be obtained through ``conda install dkh``.
+  Then enable it as a feature with :makevar:`ENABLE_dkh`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect dkh and activate dependent code.
+
+* To remove a conda installation, ``conda remove dkh``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/psi4/dkh.svg?maxAge=2592000
+     :target: https://github.com/psi4/dkh
+
+* If using |PSIfour| built from source and you want dkh built from
+  from source also,
+  enable it as a feature with :makevar:`ENABLE_dkh`,
+  and let the build system fetch and build it and activate dependent code.
 
 .. _`sec:dkhinput`:
 
