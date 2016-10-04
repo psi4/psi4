@@ -6,6 +6,11 @@
 Function Intercalls
 ===================
 
+This topic is in transition. As of 1.0, the functionality provided by
+``cp()`` and ``cbs()`` should not be accessed directly. Instead, use the
+``cp`` kwarg and/or the extended method syntax like
+``'mp3/aug-cc-pv[dt]z'`` to ``energy()``, ``opt()``, *etc.*, respectively.
+
 For many of the |PSIfour| Python functions described above, it makes scientific
 sense that they could be called in combination. For instance, one could
 optimize all the reagents in a database or compute a
@@ -45,7 +50,7 @@ table is not yet validated for calls with cp().
   Python driver, so there should be no concern for separating them, grouping
   them, or designating them for a particular function when undertaking a
   nested calculation. Where the same keyword is used by multiple functions,
-  prefixes are added, e.g., **db_mode** and **opt_mode**.
+  prefixes are added, *e.g.*, **db_mode** and **opt_mode**.
 
 - Function intercalls should not be used in sow/reap mode.
 

@@ -24,8 +24,7 @@ The syntax is:
    >>> psi4 input-name output-name
 
 If you give an input name but no output name, then the output name will
-be the same as the input name (replacing any ".in" or ".dat" suffix by a ".out"
-suffix).
+be the same as the input name (replacing any ".in" or ".dat" extension by ".out").
 
 Sample Input Files
 ==================
@@ -217,7 +216,7 @@ distinct molecules.  This is very easy, we just give a Z-matrix or set of
 Cartesian coordinates for each molecule, and separate the two with two
 dashes, like this::
 
-   # Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene),
+   # Example SAPT computation for ethene*ethine (*i.e.*, ethylene*acetylene),
    # test case 16 from the S22 database
    
    molecule dimer {
@@ -257,13 +256,13 @@ block, bounded by ``{...}``.  This
 will set all of these options as "global" options (meaning that they are
 visible to all parts of the program).  Most common |PSIfour| options can be
 set in a globals section like this. If an option needs to be visible
-only to one part of the program (e.g., we only want to increase the
+only to one part of the program (*e.g.*, we only want to increase the
 energy convergence in the SCF code, but not the rest of the
 code), it can be placed in a section of input visible to that part of the
-program (e.g., ``set scf e_convergence 1.0E-8``).
+program (*e.g.*, ``set scf e_convergence 1.0E-8``).
 
 Back to our SAPT example, we have found that for basic-level SAPT
-computations (i.e., SAPT0), a good error cancellation is found
+computations (*i.e.*, SAPT0), a good error cancellation is found
 [Hohenstein:2012:WIREs]_ with the jun-cc-pVDZ basis (this is the
 usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
 without diffuse :math:`d` functions on heavy atoms) [Papajak:2011:10]_. So,
@@ -419,7 +418,7 @@ overall counterpoise-corrected interaction energy)::
 
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from
-atomic units (hartree) to |kcalpermol| by multiplying by the
+atomic units (Hartree) to |kcalpermol| by multiplying by the
 automatically-defined conversion factor ``psi_hartree2kcalmol``.  |PSIfour|
 provides several built-in physical constants and conversion factors, as
 described in section :ref:`sec:physicalConstants`.

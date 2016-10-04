@@ -29,7 +29,7 @@ calculation, and use it to create an FCHK writer::
 The file will be written to the name passed to the FCHK writer's *write()*
 method.  Note that for MP2 and CCSD methods, the energy can be computed without
 the expensive steps required to compute the density, so energy calls for these
-methods will return a wavefunction that has the Hartree-Fock density.  If a
+methods will return a wavefunction that has the Hartree--Fock density.  If a
 density is required for these methods, the user should instead request a
 gradient computation, to ensure that the density is updated appropriately::
 

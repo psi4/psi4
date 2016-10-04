@@ -72,7 +72,7 @@ Roles of a PsiPEP Include
 * **Request/present viewpoint on organization**
 
   Draw attention to organization needed in code outside one's area of
-  expertise. Request interface for some structure (e.g., gradients) or
+  expertise. Request interface for some structure (*e.g.*, gradients) or
   viewpoints on how that interface will behave to ensure compatibility.
   Offer philosophy on how processes/definitions should be.
 

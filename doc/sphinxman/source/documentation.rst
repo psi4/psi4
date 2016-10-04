@@ -16,49 +16,38 @@ Installing Sphinx
 
 Installing Sphinx is only necessary to build the documentation 
 yourself, locally. The docs are served from
-from psicode, so most users/developers won't need Sphinx 
+from psicode, so most users and developers won't need Sphinx
 installed. Nevertheless, installation is easy.
+Math is rendered through MathJax, so LaTeX and dvipng are no longer needed.
+The sphinx executable should be in your path at CMake configure time for
+documentation targets to be available.
 
-On Mac::
+* Binary: ``conda install sphinx``
+* Binary: ``pip install -U Sphinx``
+* Source: https://pypi.python.org/pypi/Sphinx
 
-    >>> pip install -U Sphinx
-    # or
-    >>> conda install sphinx
-
-On Linux:
-
-* Download ::
-
-   >>> curl -O http://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.3.1.tar.gz
-
-* Unpack, etc.
-* Build and Install ::
-
-   >>> python setup.py build
-   >>> sudo python setup.py install
-
-* Check the path ::
+* Check:
 
    >>> which sphinx-build
-   >>> which latex
-   >>> which dvipng
-
-* LaTeX and dvipng are needed to render math. If the latter is missing,
-  the following may work. ::
-
-   >>> sudo yum install dvipng
+   //anaconda/bin/sphinx-build
+   >>> sphinx-build --version  # needs >= 1.3
+   Sphinx (sphinx-build) 1.4.1
+   >>> cmake
+   ...
+    -- Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)
+   ...
 
 Documentation Structure
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx has nice capabilities for extracting docstrings from python files,
 presenting both auto-generated and narrative documentation in the same
-format, hyperlinking within and to trac/external websites, and generating
-documentation in different formats from the same source.  |PSIfours|
+format, hyperlinking within and to external websites, and generating
+documentation in different formats from the same source. |PSIfours|
 documentation is a unified document covering information for both users
 and programmers in separate sections. From the top-level object directory,
 build the following target (note that a working version of the |PSIfour|
-executable in ``bin/psi4`` is a requirement for building the
+executable is a requirement for building the
 documentation).::
 
     >>> make sphinxman
@@ -70,31 +59,31 @@ This will build a full set of documentation in the ``html`` directory that can b
 Much of the documentation is auto-generated from the source. At present,
 this covers:
 
-* Physical Constants: :source:`include/physconst.h`
-* Python Driver: docstrings from \*.py files in :source:`share/python`
-* Databases: docstrings from \*.py files in :source:`share/databases`
-* Basis Sets: \*.gbs files in :source:`share/basis`
-* C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
+* Physical Constants: :source:`psi4/include/psi4/physconst.h`
+* Python Driver: docstrings from \*.py files in :source:`psi4/share/psi4/python`
+* Databases: docstrings from \*.py files in :source:`psi4/share/psi4/databases`
+* Basis Sets: \*.gbs files in :source:`psi4/share/psi4/basis`
+* C++ Keywords: :source:`psi4/src/read_options.cc`
 * Sample Inputs: input.dat files in :source:`samples`
 * PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
 * Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories (disabled at the moment)
-* PSI Files: scratch file names and numbers in :source:`include/psifiles.h`
+* PSI Files: scratch file names and numbers in :source:`psi4/include/psi4/psifiles.h`
 
 Some documentation is even extracted from Psi4 objects at runtime.
 
-* psi4: docstrings for the psi4 built-in module constructed in :source:`src/bin/psi4`
-* DFT: functional availibility and characteristics as encoded in :source:`share/python/functional.py`
-* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`share/python/basislistdunning.py` and :source:`share/python/basislistother.py`
+* psi4: docstrings for the psi4 built-in module constructed in :source:`psi4/src/psi4`
+* DFT: functional availibility and characteristics as encoded in :source:`psi4/share/psi4/python/procedures/functional.py`
+* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/share/psi4/python/qcdb/basislistdunning.py` and :source:`psi4/share/psi4/python/qcdb/basislistother.py`
 
-Building all the documentation takes ~10 minutes. There is now good
+Building all the documentation takes ~15 minutes. There is now good
 dependency structure built into the :source:`doc/sphinxman/CMakeLists.txt`
 , so very long builds should be infrequent (unless you're touching
-:source:`src/bin/psi4/read_options.cc`. Note that not all dependencies are
+:source:`psi4/src/read_options.cc` or the driver. Note that not all dependencies are
 encoded (PSI variables, for instance, depend on every .cc file in the
 source tree), so for a definitive doc build, remove (in the object
 directory) ``doc/sphinxman`` and start from scratch.
 
-Even ~10 minutes of build time can be annoying when developing
+Even ~15 minutes of build time can be annoying when developing
 documentation and testing ``rst`` files. In that situation, use the target
 below which builds only the written docs (not autodocs) in
 ``psi4/doc/sphinxman/source`` quickly, though with a lot of warnings for
@@ -112,10 +101,11 @@ few resources on Sphinx formatting.
 * `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_
 * `rendered test document <http://docutils.sourceforge.net/test/functional/expected/standalone_rst_html4css1.html>`_
   *vs.* `source test document <http://svn.python.org/projects/external/docutils-0.5/docs/user/rst/demo.txt>`_
-* `Another reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
 * `A third reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
-* `LaTeX that Sphinx can handle <ftp://ftp.ams.org/ams/doc/amsmath/short-math-guide.pdf>`_
 * `Sphinx Docs <http://sphinx.pocoo.org/contents.html>`_
+
+.. * `Another reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
+.. * `LaTeX that Sphinx can handle <ftp://ftp.ams.org/ams/doc/amsmath/short-math-guide.pdf>`_
 
 Math in the Codebase
 ^^^^^^^^^^^^^^^^^^^^
@@ -124,7 +114,7 @@ It is often useful to have mathematical expressions in docstrings or
 comments in the code that are auto-documented into the manual. Such
 locations include the ``#! comment`` comments at the top of test case
 input files, the ``/*- comment -*/`` comments in
-:source:`src/bin/psi4/read_options.cc`, and the ``r""" comment """``
+:source:`psi4/src/read_options.cc`, and the ``r""" comment """``
 docstrings in python modules. (That ``r"""`` makes the string read
 literally, so your LaTeX symbols aren't confused with escape characters.)
 For the two former, math has traditionally
@@ -136,6 +126,10 @@ signs is offset from other text. That is, expressions of the form
 are not translated correctly. Python docstrings are absorbed as-is, so
 please use reST math formatting (essentially ``$latex math$`` :math:`\Rightarrow`
 ``:math:`latex math```).
+Starting around |PSIfour| 1.1, MathJax is used for in-browser LaTeX
+rendering in place of offline PNG generation of math images. Check the
+online rendering, as occasionally there will be errors even when the LaTeX
+looked sound.
 
 The Map of the Sphinx
 ^^^^^^^^^^^^^^^^^^^^^
@@ -156,7 +150,7 @@ The Map of the Sphinx
   label, ref, and source labels at the top of the file to point instead to
   your code. Edit :source:`doc/sphinxman/source/methods.rst` to add the
   name of your file so that it will appear in the TOC tree. Add your file
-  to the ``STATICDOC`` variable in 
+  to the ``STATICDOC`` variable in
   :source:`doc/sphinxman/CMakeLists.txt`. Sphinx will now build with your new
   file.  Follow the models in existing methods pages to write your
   documentation. If you don't get all the keyword links, bibliography

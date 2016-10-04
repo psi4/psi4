@@ -39,9 +39,9 @@ procedures and have the following general structure.
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-   - Local options (e.g., ``set scf e_convergence 9``) will not get transmitted to the child jobs.
+   - Local options (*e.g.*, ``set scf e_convergence 9``) will not get transmitted to the child jobs.
 
-   - Array options (e.g., ``set states_per_irrep [2, 1]``) will not get transmitted to the child jobs.
+   - Array options (*e.g.*, ``set states_per_irrep [2, 1]``) will not get transmitted to the child jobs.
 
-   - Function intercalls (e.g., db(opt())) are not tested with sow/reap procedures.
+   - Function intercalls (*e.g.*, db(opt())) are not tested with sow/reap procedures.
 

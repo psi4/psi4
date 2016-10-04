@@ -331,3 +331,8 @@ Bibliography
    D. Smith, L. Burns, K. Patkowski, and D. Sherrill,
    *J. Phys. Chem. Lett.* **7**, 2197-2203 (2016).
 
+.. [Szabo:1982]
+   A. Szabo and N. S. Ostlund,
+   *Modern Quantum Chemistry: Introduction to Advanced Electronic Structure Theory*
+   **1982** ISBN:0486691861
+

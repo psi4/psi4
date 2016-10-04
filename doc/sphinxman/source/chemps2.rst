@@ -12,11 +12,21 @@ Interface to CheMPS2 by S. Wouters
 
 *Module:* :ref:`Keywords <apdx:dmrg>`, :ref:`PSI Variables <apdx:dmrg_psivar>`, :ref:`Samples <apdx:testSuitedmrg>`
 
-|PSIfour| contains code to interface to the CheMPS2
-library of S. Wouters, which is based at `GitHub
-<https://github.com/SebWouters/CheMPS2>`_. Consult the excellent
-`documentation <http://sebwouters.github.io/CheMPS2/>`_ for using and
-`citing <http://sebwouters.github.io/CheMPS2/publications.html>`_ the library.
+.. comment|PSIfour| contains code to interface to the CheMPS2
+.. library of S. Wouters, which is based at `GitHub
+.. <https://github.com/SebWouters/CheMPS2>`_. Consult the excellent
+.. `documentation <http://sebwouters.github.io/CheMPS2/>`_ for using and
+.. `citing <http://sebwouters.github.io/CheMPS2/publications.html>`_ the library.
+
+.. image:: https://img.shields.io/badge/home-CheMPS2-5077AB.svg
+   :target: https://github.com/SebWouters/CheMPS2
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://sebwouters.github.io/CheMPS2/index.html
 
 .. note:: As of late June 2016, DMRG keywords in |PSIfour| have been
    realigned with those of the chemps2 executable, plus a
@@ -31,30 +41,33 @@ library of S. Wouters, which is based at `GitHub
 Installation
 ~~~~~~~~~~~~
 
-build psi4 with the plugin option ENABLE_PLUGINS=ON, and then run:
+**Binary**
 
-CheMPS2 is available as conda package `chemps2
-<https://anaconda.org/psi4/chemps2>`_ or `pychemps2
-<https://anaconda.org/psi4/pychemps2>`_ for Linux and OSX.
+* .. image:: https://img.shields.io/badge/Anaconda%20Cloud-1.7.1-5077AB.svg
+     :target: https://anaconda.org/psi4/chemps2
 
-.. image:: https://anaconda.org/psi4/pychemps2/badges/version.svg
+* CheMPS2 is available as a conda package for Linux and macOS.
 
-* If using the |PSIfour| binary, CheMPS2 has already been installed alongside. 
+* If using the |PSIfour| binary, CheMPS2 has already been installed alongside.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
-  already been installed (instructions at :ref:`sec:quickconda`), CheMPS2
-  can be obtained through ``conda install chemps2``. Then `enable
-  <https://github.com/psi4/psi4/wiki/9_CheMPS2>`_ it as a feature and
-  rebuild |PSIfour| to detect CheMPS2 and activate dependent code.
+  already been installed (instructions at :ref:`sec:quickconda`),
+  CheMPS2 can be obtained through ``conda install chemps2``.
+  Then enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect CheMPS2 and activate dependent code.
+
+* To remove a conda installation, ``conda remove chemps2``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/SebWouters/chemps2.svg?maxAge=2592000
+     :target: https://github.com/SebWouters/chemps2
 
 * If using |PSIfour| built from source and you want CheMPS2 built from
-  source also, `enable <https://github.com/psi4/psi4/wiki/9_CheMPS2>`_
-  it as a feature and let the build system fetch and build it and activate
-  dependent code.
-
-* To remove the CheMPS2 that conda installs alongside |PSIfour|,
-  ``conda remove chemps2`` (or ``conda remove pychemps2``; use ``conda
-  list`` to see which is installed).
+  from source also,
+  enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  and let the build system fetch and build it and activate dependent code.
 
 Methods
 ~~~~~~~

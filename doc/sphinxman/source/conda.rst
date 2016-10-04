@@ -369,7 +369,7 @@ Troubleshooting
 
 .. comment find out about the current environment.
 .. comment pythonhome should be empty
-.. comment pythonpath should be empty or set to non-interfering packages (e.g., qcdb)
+.. comment pythonpath should be empty or set to non-interfering packages (*e.g.*, qcdb)
 .. comment ld_library_path shouldn’t contain anything with a libpython
 .. comment >>> conda info -a
 

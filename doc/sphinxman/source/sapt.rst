@@ -36,7 +36,7 @@ Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
 monomers or dimer. In addition, SAPT provides a decomposition of the
-interaction energy into physically meaningful components: *i.e.,*
+interaction energy into physically meaningful components: *i.e.*,
 electrostatic, exchange, induction, and dispersion terms. In SAPT, the 
 Hamiltonian of the dimer is partitioned into contributions from each 
 monomer and the interaction.
@@ -65,7 +65,7 @@ In this notation, :math:`E^{(vw)}` defines the order in :math:`V` and in :math:`
 subscript, :math:`resp`, indicates that orbital relaxation effects are included.
 
 .. math:: E_{SAPT2} = E_{SAPT0} + E_{elst,resp}^{(12)} + E_{exch}^{(11)} +
-   E_{exch}^{(12)} +\/ ^{t}\!E_{ind}^{(22)} +\/ ^{t}\!E_{exch-ind}^{(22)}
+   E_{exch}^{(12)} + \; ^{t}\!E_{ind}^{(22)} + \; ^{t}\!E_{exch-ind}^{(22)}
    :label: SAPT2
 
 .. math:: E_{SAPT2+} = E_{SAPT2} + E_{disp}^{(21)} + E_{disp}^{(22)}
@@ -82,7 +82,7 @@ subscript, :math:`resp`, indicates that orbital relaxation effects are included.
 
 The :math:`\delta_{HF}^{(2)}` and :math:`\delta_{HF}^{(3)}` terms take into
 account higher-order induction effects and are included in the definition
-of SAPT terms. They are computed from the Hartree-Fock supermolecular interaction energy
+of SAPT terms. They are computed from the Hartree--Fock supermolecular interaction energy
 :math:`E_{int}^{HF}` and are only available in dimer-centered basis SAPT
 computations, which is the default (see below for monomer-centered basis 
 computations). They are defined by:
@@ -99,8 +99,8 @@ Additionally, high-order coupling between induction and dispersion can be
 extracted from the supermolecular MP2 interaction energy:
 
 .. math:: \delta_{MP2}^{(2)} = E_{int}^{MP2, corr} - (E_{elst}^{(12)} +
-          E_{exch}^{(11)} + E_{exch}^{(12)} +\/ ^{t}\!E_{ind}^{(22)}
-          +\/ ^{t}\!E_{exch-ind}^{(22)} + E_{disp}^{(20)} + E_{exch-disp}^{(20)})
+          E_{exch}^{(11)} + E_{exch}^{(12)} + \; ^{t}\!E_{ind}^{(22)}
+          + \; ^{t}\!E_{exch-ind}^{(22)} + E_{disp}^{(20)} + E_{exch-disp}^{(20)})
 
 .. math:: \delta_{MP2}^{(3)} = \delta_{MP2}^{(2)} - (E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)})
 
@@ -134,8 +134,8 @@ relaxation is not included for ``ROHF`` and the uncoupled induction term is comp
 If both monomers are open-shell, their coupling is assumed to be high spin, i.e.
 two doublets would interact to form a triplet.
 
-The S\ :superscript:`2` approximation and scaling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The *S*\ :superscript:`2` approximation and scaling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All exchange terms in SAPT arise from the antisymmetrization
 of the wavefunctions of monomers A and B. Taking into account exchange of all possible
@@ -195,9 +195,7 @@ available SAPT computations (normally, you would pick one of these methods). ::
 	     symmetry c1
 	}
 	
-	set globals {
-	    basis         aug-cc-pvdz
-	}
+	set basis aug-cc-pvdz
 	
 	energy('sapt0')
 	energy('sapt2')
@@ -414,7 +412,7 @@ are very large, as in the PCCP dimer (see [Hohenstein:2011:2842]_).
 As shown in [Parker:2014:094106]_, whether or not CCD dispersion offers
 more accurate interaction energies tends to depend on the SAPT truncation
 and basis set employed, due to cancellations of errors.  Thanks to
-natural orbital methods [Parrish:2013:174102]_, the SAPT code in Psi
+natural orbital methods [Parrish:2013:174102]_, the SAPT code
 is able to include CCD dispersion with only a modest additional cost.
 Computations employing CCD dispersion should cite [Parrish:2013:174102]_. 
 To request CCD dispersion treatment in a SAPT computation, simply append
@@ -538,8 +536,8 @@ Monomer-Centered Basis Computations
 
 The charge-transfer analysis above is carried out by taking the
 difference between SAPT induction as calculated in the dimer-centered
-basis (i.e., each monomer sees the basis functions on both monomers)
-vs. the monomer-centered basis (i.e., each monomer utilizes only its
+basis (*i.e.*, each monomer sees the basis functions on both monomers)
+vs. the monomer-centered basis (*i.e.*, each monomer utilizes only its
 own basis set).  It is also possible to run a closed-shell SAPT computation at any
 level using only the monomer-centered basis. To do this, simply add
 ``sapt_basis='monomer'`` to the energy function, such as ::
@@ -647,7 +645,7 @@ results::
 At the bottom of this output are the total SAPT energies (defined above),
 they are composed of subsets of the individual terms printed above. The
 individual terms are grouped according to the component of the interaction
-to which they contribute. The total component energies (*i.e.,*
+to which they contribute. The total component energies (*i.e.*,
 electrostatics, exchange, induction, and dispersion) represent what we
 regard as the best estimate available at a given level of SAPT computed
 from a subset of the terms of that grouping. The groupings shown above are
@@ -719,6 +717,23 @@ relevant terms: ::
 
 The scaling factor is reported at the top (here ``1.0072``) together with the 
 :math:`\alpha` parameter. All terms that are scaled are indicated by the ``sc.``
-keyword. Note that if Exch10 is less than :math:`10^{-5}`, the scaling factor is
+label. Note that if Exch10 is less than :math:`10^{-5}`, the scaling factor is
 set to :math:`1.0`.
+
+.. caution:: To density fit the dispersion terms in SAPT, the RI auxiliary
+   basis set (*e.g.*, aug-cc-pVDZ-RI) controlled through
+   |sapt__df_basis_sapt| performs well. For Fock-type terms (*i.e.*,
+   electrostatics, exchange, induction, and core Fock matrix elements in
+   exchange-dispersion), the density-fitting auxiliary basis in the
+   :ref:`SAPT module<sec:sapt>` (both SAPT0 and higher-order) is RI (more
+   efficient for the small basis sets at which SAPT0 performs best) while
+   the :ref:`FISAPT module<sec:fisapt>` uses the more appropriate JKFIT
+   (*e.g.*, aug-cc-pVDZ-JKFIT). For heavier elements (*i.e.*, second-row
+   and beyond), the RI auxiliary basis is unsound for this role
+   (insufficiently flexible). For SAPT0 in the :ref:`SAPT
+   module<sec:sapt>`, a workaround is to set |sapt__df_basis_elst| (which
+   controls Elst10 and Exch10 terms) to a JKFIT basis. For higher-order
+   methods in :ref:`SAPT module<sec:sapt>`, there is no workaround;
+   on-the-fly construction of an auxiliary basis through Cholesky
+   decomposition (not implemented) is the long-term solution.
 

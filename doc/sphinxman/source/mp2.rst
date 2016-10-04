@@ -3,10 +3,10 @@
 
 .. _`sec:mp2`:
 
-Second-order M\ |o_slash|\ ller--Plesset Theory: MP2 and MP2-R12 methods
-========================================================================
+Second-order |MollerPlesset| Theory: MP2 and MP2-R12 methods
+============================================================
 
-Second-order M\ |o_slash|\ ller--Plesset theory is one of the most basic
+Second-order |MollerPlesset| theory is one of the most basic
 wavefunction approaches which includes electron correlation
 directly.
 Due to its simplicity, the MP2 method is often the best
@@ -61,7 +61,7 @@ Acceptable values are {\tt sp} and {\tt opt}.  There is no default.
 
 \item[MEMORY = (real MB)]\mbox{}\\
 Specified the amount of core memory to be used, in MB.  Defaults to 256.
-Other units (e.g., KB or GB) are also allowed.
+Other units (*e.g.*, KB or GB) are also allowed.
 
 .. comment include:: autodir_options_c/detci__reference.rst
 
