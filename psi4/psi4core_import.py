@@ -23,7 +23,6 @@ except ImportError:
 
 # Init psi4core
 psi4core.initialize()
-psi4core.set_memory(int(512e6)) # Set to 512 MB
 
 # Set psidatadir
 if "PSIDATADIR" not in os.environ.keys():
