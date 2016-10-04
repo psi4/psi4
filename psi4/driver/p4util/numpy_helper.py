@@ -97,7 +97,7 @@ def _dimension_from_list(self, dims, name="New Dimension"):
     object is passed a copy will be returned.
     """
 
-    if isinstance(dims, (tuple, list)):
+    if isinstance(dims, (tuple, list, np.ndarray)):
         irreps = len(dims)
     elif isinstance(dims, psi4core.Dimension):
         irreps = dims.n()
@@ -345,10 +345,11 @@ def _build_view(matrix):
 
 @property
 def _np_shape(self):
-    if '_np_view_data' not in self.cdict.keys():
-        self.cdict['_np_view_data'] = _build_view(self)
+    # if '_np_view_data' not in self.cdict.keys():
+    #     self.cdict['_np_view_data'] = _build_view(self)
 
-    view_data = self.cdict['_np_view_data']
+    # view_data = self.cdict['_np_view_data']
+    view_data = _build_view(self)
     if self.nirrep() > 1:
         return tuple(view_data for x in range(self.nirrep()))
     else:
@@ -360,23 +361,26 @@ def _np_view(self):
     View without only one irrep
     """
 
-    if '_np_view_data' not in self.cdict.keys():
-        self.cdict['_np_view_data'] = _build_view(self)
+    # if '_np_view_data' not in self.cdict.keys():
+    #     self.cdict['_np_view_data'] = _build_view(self)
 
-    return self.cdict['_np_view_data']
+    # return self.cdict['_np_view_data']
+    return _build_view(self)
 
 @property
 def _nph_view(self):
     """
     View with irreps.
     """
-    if '_np_view_data' not in self.cdict.keys():
-        self.cdict['_np_view_data'] = _build_view(self)
+    # if '_np_view_data' not in self.cdict.keys():
+    #     self.cdict['_np_view_data'] = _build_view(self)
 
     if self.nirrep() > 1:
-        return self.cdict['_np_view_data']
+        return _build_view(self)
+        # return self.cdict['_np_view_data']
     else:
-        return self.cdict['_np_view_data'],
+        return _build_view(self)
+        # return self.cdict['_np_view_data'],
 
 @property
 def _array_conversion(self):
@@ -401,12 +405,18 @@ def _np_write(self, filename=None, prefix=""):
 @classmethod
 def _np_read(self, filename, prefix=""):
 
-    if not filename.endswith('.npz'):
-        filename = filename + '.npz'
+    if isinstance(filename, np.lib.npyio.NpzFile):
+        data = filename
+    elif isinstance(filename, (str, unicode)):
+        if not filename.endswith('.npz'):
+            filename = filename + '.npz'
 
-    data = np.load(filename)
+        data = np.load(filename)
+    else:
+        raise Exception("Filename not understood: %s" % filename)
 
     ret_data = []
+
     if ((prefix + "Irreps") not in data.keys()) or ((prefix + "Name") not in data.keys()):
         raise KeyError("File %s does not appear to be a numpyz save" % filename)
 
