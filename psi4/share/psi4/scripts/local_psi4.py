@@ -58,9 +58,9 @@ data_dir = "/Users/daniel/Gits/dgas_psi4/psi4/share/psi4"
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
     args["input"] = unknown[0]
-elif len(unknown) > 1:
+if len(unknown) > 1:
     args["output"] = unknown[1]
-elif len(unknown) > 2:
+if len(unknown) > 2:
     raise KeyError("Too many unknown arguments: %s" % str(unknown))
 
 # Figure out output arg

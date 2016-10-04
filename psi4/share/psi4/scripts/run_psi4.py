@@ -57,9 +57,9 @@ data_dir = cmake_install_prefix + os.path.sep + cmake_datadir + os.path.sep + "p
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
     args["input"] = unknown[0]
-elif len(unknown) > 1:
+if len(unknown) > 1:
     args["output"] = unknown[1]
-elif len(unknown) > 2:
+if len(unknown) > 2:
     raise KeyError("Too many unknown arguments: %s" % str(unknown))
 
 # Figure out output arg
@@ -102,6 +102,7 @@ if args["append"] is None:
 if args["output"] != "stdout":
     psi4.psi4core.set_output_file(args["output"], args["append"])
 
+# Set a few options
 if args["prefix"] is not None:
     psi4.psi4core.set_psi_file_prefix(args["prefix"])
 psi4.psi4core.set_nthread(args["nthread"])

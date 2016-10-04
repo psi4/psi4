@@ -46,6 +46,10 @@ atexit.register(psi4core.finalize)
 
 # Numpy place holder for files and cleanup
 numpy_files = []
+def register_numpy_file(filename):
+    if filename not in numpy_files:
+        numpy_files.append(filename)
+
 def clean_numpy_files():
     for nfile in numpy_files:
         os.unlink(nfile)

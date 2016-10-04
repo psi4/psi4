@@ -1186,7 +1186,7 @@ bool psi4_python_module_initialize()
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
-    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return false;
+    //if(psi_start(0, 0) == PSI_RETURN_FAILURE) return false;
     // print_version("stdout");
 
     // There is only one timer:

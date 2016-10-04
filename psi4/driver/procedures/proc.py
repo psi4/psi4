@@ -1302,7 +1302,7 @@ def scf_helper(name, **kwargs):
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
     np.savez(filename, **data)
-    psi4.numpy_files.append(filename)
+    psi4.register_numpy_file(filename)
 
 
     optstash.restore()
