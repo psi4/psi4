@@ -631,7 +631,7 @@ class BasisSet(object):
 
         # Paths to search for gbs files: here + PSIPATH + library
         psidatadir = os.environ.get('PSIDATADIR', None)
-        psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
+        #nolongerpredicatble psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
         libraryPath = ':' + os.path.abspath(psidatadir) + '/basis'
         basisPath = os.path.abspath('.') + \
             ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \

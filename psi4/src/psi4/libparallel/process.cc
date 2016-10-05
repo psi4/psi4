@@ -58,17 +58,6 @@ const std::string empty_;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize()
 {
-    // If envp is NULL, try to obtain envp from enviorn in unistd.h
-
-    // First set some defaults:
-    // The std::string --> c-string --> std::string construction
-    //   removes the padding nul characters introduced by the binary
-    //   substitution of the conda relocated PSIDATADIR so that
-    //   PSIDATADIR + /python forms properly w/o nul in the middle
-    std::string temp = TOSTRING(INSTALLEDPSIDATADIR);
-    environment_["PSIDATADIR"] = std::string(temp.c_str());
-    environment_["MAD_NUM_THREADS"] = "1";
-
     // Go through user provided environment overwriting defaults if necessary
     int i = 0;
     if (environ) {

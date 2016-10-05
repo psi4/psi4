@@ -93,11 +93,15 @@ install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
         PATTERN "*.pyc" EXCLUDE)
 
-install(FILES __init__.py psi4core_import.py
+install(FILES __init__.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+configure_file(import_core.py.in import_core.py @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/import_core.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
 
 ### >> Build actual bin/psi4 script << ###
-configure_file(share/psi4/scripts/run_psi4.py ${CMAKE_BINARY_DIR}/psi4 @ONLY)
+configure_file(run_psi4.py.in psi4 @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
