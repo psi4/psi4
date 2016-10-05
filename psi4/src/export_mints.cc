@@ -74,6 +74,7 @@
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libfock/v.h"
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -865,6 +866,9 @@ void export_mints(py::module& m)
             def("guess_Cb", &scf::HF::guess_Cb, "docstring").
             def("Va", &scf::HF::Va, "docstring").
             def("Vb", &scf::HF::Vb, "docstring").
+            def("jk", &scf::HF::jk, "docstring").
+            def("functional", &scf::HF::functional, "docstring").
+            def("V_potential", &scf::HF::V_potential, "docstring").
             def("initialize", &scf::HF::initialize, "docstring").
             def("iterations", &scf::HF::iterations, "docstring").
             def("finalize_E", &scf::HF::finalize_E, "docstring").

@@ -995,7 +995,7 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         superfunc = functional
         disp_type = False
     elif isinstance(functional, (str, unicode)):
-        superfuc, disp_type = dft_functional.build_superfunctional(functional)
+        superfunc, disp_type = dft_functional.build_superfunctional(functional)
     else:
         raise ValidationError("Functional %s is not understood" % str(functional))
 

@@ -461,8 +461,8 @@ def energy(name, **kwargs):
 
         return (core.get_variable('CURRENT ENERGY'), wfn)
     else:
-        if isinstance(wfn, core.Wavefunction):
-            wfn.cdict.clear()
+        # if isinstance(wfn, core.Wavefunction):
+        #     wfn.cdict.clear()
         return core.get_variable('CURRENT ENERGY')
 
 

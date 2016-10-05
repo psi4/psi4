@@ -1334,8 +1334,12 @@ void HF::guess()
 
     // DGAS broke SAD
     if (guess_type == "SAD"){
-        guess_type = "CORE";
         outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
+        guess_type = "CORE";
+    }
+    if (guess_type == "AUTO"){
+        outfile->Printf("\nWarning! Guess was AUTO, switching to CORE!\n\n");
+        guess_type = "CORE";
     }
 
     // if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
