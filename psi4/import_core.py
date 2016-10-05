@@ -17,14 +17,14 @@ os.environ["PSIDATADIR"] = data_dir
 # Find and import the core
 try:
     from . import core
-except ImportError as e:
-    if 'CXXABI' in str(e):
-        raise ImportError("Probably GCC >= 4.9 not in [DY]LD_LIBRARY_PATH")
+except ImportError as err:
+    if 'CXXABI' in str(err):
+        raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
 
     # Check if we are running in place
     check_inplace_file = os.path.abspath(os.path.dirname(__file__)) + os.path.sep + "run_psi4.py.in"
     if not os.path.isfile(check_inplace_file):
-        raise ImportError("{0}".format(e))
+        raise ImportError("{0}".format(err))
 
     print("\nRunning psi4 from the source directory, looking for the 'objdir' build directory for core.so ...")
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
