@@ -6,8 +6,7 @@ import subprocess
 
 
 # <<<  run ctest  >>>
-retcode = subprocess.Popen(['ctest', '-j2', '-L', 'cas'], bufsize=0,
-#retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
+retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
                             stdout=subprocess.PIPE, universal_newlines=True)
 print_all = False
 ctestout = ''
@@ -37,10 +36,11 @@ while True:
     time.sleep(0.1)
 
 # <<<  identify failed tests and cat their output  >>>
-sys.stdout.write("""\n  <<<  CTest complete with status %d. Failing outputs follow.  >>>\n\n""" %
+sys.stdout.write("""\n  <<<  CTest complete with status %d.  >>>\n\n""" %
                  (ctest_exit_status))
 
 ctestout = str(ctest_exit_status) + "\n" + ctestout
 
 with open('full_ctest_output.dat', 'w') as outfile:
     outfile.write(ctestout)
+
