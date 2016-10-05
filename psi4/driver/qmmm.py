@@ -33,7 +33,7 @@ from __future__ import absolute_import
 import re
 import os
 import math
-from driver import *
+from psi4.driver import *
 
 
 class Diffuse(object):

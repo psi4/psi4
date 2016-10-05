@@ -1150,22 +1150,21 @@ def scf_helper(name, **kwargs):
             scf_molecule.update_geometry()
 
     # If GUESS is auto guess what it should be
-    elif core.get_option('SCF', 'GUESS') == "AUTO":
-        if (core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
-                ((scf_molecule.natom() > 1) or core.get_option('SCF', 'SAD_FRAC_OCC')):
-            core.set_local_option('SCF', 'GUESS', 'SAD')
-        elif core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
-            core.set_local_option('SCF', 'GUESS', 'GWH')
+    if psi4core.get_option('SCF', 'GUESS') == "AUTO":
+        if (psi4core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
+                ((scf_molecule.natom() > 1) or psi4core.get_option('SCF', 'SAD_FRAC_OCC')):
+            psi4core.set_local_option('SCF', 'GUESS', 'SAD')
+        elif psi4core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
+            psi4core.set_local_option('SCF', 'GUESS', 'GWH')
         else:
             core.set_local_option('SCF', 'GUESS', 'CORE')
 
     # the FIRST scf call
     if cast or do_broken:
         # Cast or broken are special cases
-        basis = core.BasisSet.build(scf_molecule, "ORBITAL", core.get_global_option('BASIS'))
-        ref_wfn = core.Wavefunction(scf_molecule, basis)
-        ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), ref_wfn)
-        core.set_legacy_wavefunction(ref_wfn)
+        base_wfn = psi4core.Wavefunction.build(scf_molecule, psi4core.get_global_option('BASIS'))
+        ref_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), base_wfn)
+        psi4core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
         if "_disp_functor" in scf_wfn.cdict.keys():
@@ -1208,10 +1207,9 @@ def scf_helper(name, **kwargs):
         efp.print_out()
 
     # the SECOND scf call
-    basis = core.BasisSet.build(scf_molecule, "ORBITAL", core.get_global_option('BASIS'))
-    base_wfn = core.Wavefunction(scf_molecule, basis)
-    scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn)
-    core.set_legacy_wavefunction(scf_wfn)
+    base_wfn = psi4core.Wavefunction.build(scf_molecule, psi4core.get_global_option('BASIS'))
+    scf_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), base_wfn)
+    psi4core.set_legacy_wavefunction(scf_wfn)
 
     read_filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
@@ -1224,7 +1222,7 @@ def scf_helper(name, **kwargs):
         ndoccpi = data["ndoccpi"]
         symmetry = str(data["symmetry"])
 
-        if basis_name == basis.name():
+        if basis_name == scf_wfn.basisset().name():
             scf_wfn.guess_Ca(Ca)
             scf_wfn.guess_Cb(Cb)
         else:
@@ -1516,7 +1514,12 @@ def run_dfocc_gradient(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        psi4core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
@@ -1568,7 +1571,12 @@ def run_dfocc_property(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        psi4core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
@@ -1960,7 +1968,7 @@ def run_mcscf(name, **kwargs):
     mcscf_molecule.update_geometry()
     if 'ref_wfn' in kwargs:
         raise ValidationError("It is not possible to pass run_mcscf a reference wavefunction")
-    new_wfn = new_wavefunction(mcscf_molecule, core.get_global_option('BASIS'))
+    new_wfn = psi4core.Wavefunction.build(mcscf_molecule, psi4core.get_global_option('BASIS'))
 
     return core.mcscf(new_wfn)
 
@@ -2063,12 +2071,10 @@ def run_ccenergy(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-        wfn.cdict.clear()
-
-    if core.get_global_option("CC_TYPE") == "DF":
-        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                            core.get_global_option("DF_BASIS_CC"),
-                                            "RIFIT", core.get_global_option("BASIS"))
+    if psi4core.get_global_option("CC_TYPE") == "DF":
+        aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                            psi4core.get_global_option("DF_BASIS_CC"),
+                                            "RIFIT", psi4core.get_global_option("BASIS"))
         wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
@@ -2415,7 +2421,12 @@ def run_dfmp2_property(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, scf_do_dipole=False, use_c1=True, **kwargs)  # C1 certified
 
-    core.print_out('\n')
+    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    psi4core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", psi4core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+
+    psi4core.print_out('\n')
     p4util.banner('DFMP2')
     core.print_out('\n')
 
@@ -3240,7 +3251,23 @@ def run_sapt_ct(name, **kwargs):
         core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+
     core.print_out('\n')
+
+    aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
+                                        psi4core.get_global_option("DF_BASIS_SAPT"),
+                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
+    if psi4core.get_global_option("DF_BASIS_ELST") == "":
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+    else:
+        aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
+                                            psi4core.get_global_option("DF_BASIS_ELST"),
+                                            "RIFIT", psi4core.get_global_option("BASIS"))
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+
+
+    psi4core.print_out('\n')
     p4util.banner('SAPT Charge Transfer')
     core.print_out('\n')
 
