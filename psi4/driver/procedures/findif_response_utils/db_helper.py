@@ -41,7 +41,7 @@ import shelve
 import copy
 import os
 
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4const import *
 
@@ -59,11 +59,11 @@ def generate_inputs(db,name):
     Returns: nothing
     Throws: Exception if the number of atomic displacements is not correct.
     """
-    molecule = psi4core.get_active_molecule()
+    molecule = core.get_active_molecule()
     natom = molecule.natom()
 
     # get list of displacements
-    displacement_geoms = psi4core.atomic_displacements(molecule)
+    displacement_geoms = core.atomic_displacements(molecule)
 
     # Sanity Check
     # there should be 3 cords * natoms *2 directions (+/-)
@@ -133,7 +133,7 @@ def initialize_database(database, name, prop, properties_array, additional_kwarg
     database['prop_cmd'] = prop_cmd
     database['job_status'] = collections.OrderedDict()
     # Populate the job_status dict
-    molecule = psi4core.get_active_molecule()
+    molecule = core.get_active_molecule()
     natom = molecule.natom()
     coordinates = ['x', 'y', 'z']
     step_direction = ['p', 'm']

@@ -25,7 +25,7 @@ from __future__ import absolute_import
 
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
-from psi4 import psi4core
+from psi4 import core
 
 def scf_set_reference_local(name):
     """
@@ -38,25 +38,25 @@ def scf_set_reference_local(name):
         ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     if name == 'hf':
-        if psi4core.get_option('SCF','REFERENCE') == 'RKS':
-            psi4core.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4core.get_option('SCF','REFERENCE') == 'UKS':
-            psi4core.set_local_option('SCF','REFERENCE','UHF')
+        if core.get_option('SCF','REFERENCE') == 'RKS':
+            core.set_local_option('SCF','REFERENCE','RHF')
+        elif core.get_option('SCF','REFERENCE') == 'UKS':
+            core.set_local_option('SCF','REFERENCE','UHF')
     elif name == 'scf':
-        if psi4core.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(psi4core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+        if core.get_option('SCF','REFERENCE') == 'RKS':
+            if (len(core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
             else:
-                psi4core.set_local_option('SCF','REFERENCE','RHF')
-        elif psi4core.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(psi4core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or psi4core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+                core.set_local_option('SCF','REFERENCE','RHF')
+        elif core.get_option('SCF','REFERENCE') == 'UKS':
+            if (len(core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
                 pass
             else:
-                psi4core.set_local_option('SCF','REFERENCE','UHF')
+                core.set_local_option('SCF','REFERENCE','UHF')
     return optstash
 
 def dft_set_reference_local(name):
@@ -73,16 +73,16 @@ def dft_set_reference_local(name):
         ['DFMP2', 'MP2_SS_SCALE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    psi4core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
+    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
-    user_ref = psi4core.get_option('SCF', 'REFERENCE')
+    user_ref = core.get_option('SCF', 'REFERENCE')
     if (user_ref == 'RHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'RKS')
+        core.set_local_option('SCF', 'REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'UKS')
+        core.set_local_option('SCF', 'REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
         raise ValidationError('ROHF reference for DFT is not available.')
     elif (user_ref == 'CUHF'):
@@ -125,7 +125,7 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
     """
 
     if scf_type in ['DF', 'CD', 'PK', 'DIRECT']:
-        mints = psi4core.MintsHelper(wfn.basisset())
+        mints = core.MintsHelper(wfn.basisset())
         mints.set_print(1)
         mints.integrals()
 
@@ -133,7 +133,7 @@ def check_non_symmetric_jk_density(name):
     """
     Ensure non-symmetric density matrices are supported for the selected JK routine.
     """
-    scf_type = psi4core.get_option('SCF', 'SCF_TYPE')
+    scf_type = core.get_option('SCF', 'SCF_TYPE')
     supp_jk_type = ['DF', 'CD', 'PK', 'DIRECT', 'OUT_OF_CORE']
     supp_string = ', '.join(supp_jk_type[:-1]) + ', or ' + supp_jk_type[-1] + '.'
 

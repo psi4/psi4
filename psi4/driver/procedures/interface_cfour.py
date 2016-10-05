@@ -120,8 +120,8 @@ def run_cfour(name, **kwargs):
     current_directory = os.getcwd()
 
     # Move into job scratch directory
-    psioh = psi4core.IOManager.shared_object()
-    psio = psi4core.IO.shared_object()
+    psioh = core.IOManager.shared_object()
+    psio = core.IO.shared_object()
     os.chdir(psioh.get_default_path())
 
     # Construct and move into cfour subdirectory of job scratch directory
@@ -136,8 +136,8 @@ def run_cfour(name, **kwargs):
     lenv = {
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
                 ':' + os.environ.get('PATH') + \
-                ':' + psi4core.Process.environment["PSIDATADIR"] + '/basis' + \
-                ':' + psi4core.psi_top_srcdir() + '/share/basis',
+                ':' + core.Process.environment["PSIDATADIR"] + '/basis' + \
+                ':' + core.psi_top_srcdir() + '/share/basis',
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
@@ -153,8 +153,8 @@ def run_cfour(name, **kwargs):
             shutil.copy2(genbas_path, psioh.get_default_path() + cfour_tmpdir)
         except shutil.Error:  # should only fail if src and dest equivalent
             pass
-        psi4core.print_out("\n  GENBAS loaded from %s\n" % (genbas_path))
-        psi4core.print_out("  CFOUR to be run from %s\n" % (psioh.get_default_path() + cfour_tmpdir))
+        core.print_out("\n  GENBAS loaded from %s\n" % (genbas_path))
+        core.print_out("  CFOUR to be run from %s\n" % (psioh.get_default_path() + cfour_tmpdir))
     else:
         message = """
   GENBAS file for CFOUR interface not found. Either:
@@ -165,21 +165,21 @@ def run_cfour(name, **kwargs):
       [2a] Use molecule {} block and BASIS keyword.
 
 """
-        psi4core.print_out(message)
-        psi4core.print_out('  Search path that was tried:\n')
-        psi4core.print_out(lenv['PATH'].replace(':', ', '))
+        core.print_out(message)
+        core.print_out('  Search path that was tried:\n')
+        core.print_out(lenv['PATH'].replace(':', ', '))
 
     # Generate the ZMAT input file in scratch
     if 'path' in kwargs and os.path.isfile('ZMAT'):
-        psi4core.print_out("  ZMAT loaded from %s\n" % (psioh.get_default_path() + kwargs['path'] + '/ZMAT'))
+        core.print_out("  ZMAT loaded from %s\n" % (psioh.get_default_path() + kwargs['path'] + '/ZMAT'))
     else:
         with open('ZMAT', 'w') as cfour_infile:
             cfour_infile.write(write_zmat(lowername, dertype))
 
     internal_p4c4_info['zmat'] = open('ZMAT', 'r').read()
-    #psi4core.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
-    #psi4core.print_out(open('ZMAT', 'r').read())
-    #psi4core.print_out('======= End ZMAT input for CFOUR =======\n\n')
+    #core.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
+    #core.print_out(open('ZMAT', 'r').read())
+    #core.print_out('======= End ZMAT input for CFOUR =======\n\n')
     #print('\n====== Begin ZMAT input for CFOUR ======')
     #print(open('ZMAT', 'r').read())
     #print('======= End ZMAT input for CFOUR =======\n')
@@ -187,20 +187,20 @@ def run_cfour(name, **kwargs):
     if 'genbas' in kwargs:
         with open('GENBAS', 'w') as cfour_basfile:
             cfour_basfile.write(kwargs['genbas'].replace('\nblankline\n', '\n\n'))
-        psi4core.print_out('  GENBAS loaded from kwargs string\n')
+        core.print_out('  GENBAS loaded from kwargs string\n')
 
     # Close psi4 output file and reopen with filehandle
-    print('output in', current_directory + '/' + psi4core.outfile_name())
-    psi4core.close_outfile()
-    pathfill = '' if os.path.isabs(psi4core.outfile_name()) else current_directory + os.path.sep
-    p4out = open(pathfill + psi4core.outfile_name(), 'a')
+    print('output in', current_directory + '/' + core.outfile_name())
+    core.close_outfile()
+    pathfill = '' if os.path.isabs(core.outfile_name()) else current_directory + os.path.sep
+    p4out = open(pathfill + core.outfile_name(), 'a')
 
     # Handle user's OMP_NUM_THREADS and CFOUR_OMP_NUM_THREADS
     omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
     if omp_num_threads_found == True:
         omp_num_threads_user = os.environ['OMP_NUM_THREADS']
-    if psi4core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
-        os.environ['OMP_NUM_THREADS'] = str(psi4core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
+    if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
+        os.environ['OMP_NUM_THREADS'] = str(core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
     #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
     # Call executable xcfour, directing cfour output to the psi4 output file
@@ -218,7 +218,7 @@ def run_cfour(name, **kwargs):
         data = retcode.stdout.readline()
         if not data:
             break
-        if psi4core.outfile_name() == 'stdout':
+        if core.outfile_name() == 'stdout':
             sys.stdout.write(data)
         else:
             p4out.write(data)
@@ -228,7 +228,7 @@ def run_cfour(name, **kwargs):
 
     # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
-        if psi4core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
+        if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
 
@@ -249,7 +249,7 @@ def run_cfour(name, **kwargs):
             pass
     p4out.write('\n')
 
-    molecule = psi4core.get_active_molecule()
+    molecule = core.get_active_molecule()
     if molecule.name() == 'blank_molecule_psi4_yo':
         qcdbmolecule = None
     else:
@@ -262,7 +262,7 @@ def run_cfour(name, **kwargs):
 
     # Absorb results into psi4 data structures
     for key in psivar.keys():
-        psi4core.set_variable(key.upper(), float(psivar[key]))
+        core.set_variable(key.upper(), float(psivar[key]))
 
     if qcdbmolecule is None and c4mol is not None:
         molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
@@ -273,16 +273,16 @@ def run_cfour(name, **kwargs):
         #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
     if c4grad:
-        mat = psi4core.Matrix(len(c4grad), 3)
+        mat = core.Matrix(len(c4grad), 3)
         mat.set(c4grad)
-        psi4core.set_gradient(mat)
+        core.set_gradient(mat)
 
         #print '    <<<   [3] C4-GRD-GRAD   >>>'
         #mat.print()
 
 #    exit(1)
 
-    # # Things needed psi4core.so module to do
+    # # Things needed core.so module to do
     # collect c4out string
     # read GRD
     # read FCMFINAL
@@ -308,11 +308,11 @@ def run_cfour(name, **kwargs):
 #    # Process the cfour output
 #    psivar, c4coord, c4grad = qcdb.cfour.cfour_harvest(c4out)
 #    for key in psivar.keys():
-#        psi4core.set_variable(key.upper(), float(psivar[key]))
+#        core.set_variable(key.upper(), float(psivar[key]))
 #
 #    # Awful Hack - Go Away TODO
 #    if c4grad:
-#        molecule = psi4core.get_active_molecule()
+#        molecule = core.get_active_molecule()
 #        molecule.update_geometry()
 #
 #        if molecule.name() == 'blank_molecule_psi4_yo':
@@ -328,9 +328,9 @@ def run_cfour(name, **kwargs):
 #            print('GRD\n',c4outgrd)
 #            c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_files(qcdbmolecule, grd=c4outgrd)
 #
-#        p4mat = psi4core.Matrix(len(p4grad), 3)
+#        p4mat = core.Matrix(len(p4grad), 3)
 #        p4mat.set(p4grad)
-#        psi4core.set_gradient(p4mat)
+#        core.set_gradient(p4mat)
 
 #    print('    <<<  P4 PSIVAR  >>>')
 #    for item in psivar:
@@ -370,22 +370,22 @@ def run_cfour(name, **kwargs):
     # Return to submission directory and reopen output file
     os.chdir(current_directory)
     p4out.close()
-    psi4core.reopen_outfile()
+    core.reopen_outfile()
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
-    psi4core.print_variables()
+    core.print_variables()
     if c4grad:
-        psi4core.get_gradient().print_out()
+        core.get_gradient().print_out()
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
-    psi4core.print_variables()
+    core.print_variables()
     if c4grad:
-        psi4core.get_gradient().print_out()
+        core.get_gradient().print_out()
 
     # Quit if Cfour threw error
-    if psi4core.get_variable('CFOUR ERROR CODE'):
+    if core.get_variable('CFOUR ERROR CODE'):
         raise ValidationError("""Cfour exited abnormally.""")
 
     P4C4_INFO.clear()
@@ -415,18 +415,18 @@ def write_zmat(name, dertype):
 
     """
     # Handle memory
-    mem = int(0.000001 * psi4core.get_memory())
+    mem = int(0.000001 * core.get_memory())
     if mem == 256:
         memcmd, memkw = '', {}
     else:
         memcmd, memkw = qcdb.cfour.muster_memory(mem)
 
     # Handle molecule and basis set
-    molecule = psi4core.get_active_molecule()
+    molecule = core.get_active_molecule()
     if molecule.name() == 'blank_molecule_psi4_yo':
         molcmd, molkw = '', {}
         bascmd, baskw = '', {}
-        psi4core.set_local_option('CFOUR', 'TRANSLATE_PSI4', False)
+        core.set_local_option('CFOUR', 'TRANSLATE_PSI4', False)
     else:
         molecule.update_geometry()
         #print(molecule.create_psi4_string_from_molecule())
@@ -434,20 +434,20 @@ def write_zmat(name, dertype):
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
-        if psi4core.get_global_option('BASIS') == '':
+        if core.get_global_option('BASIS') == '':
             bascmd, baskw = '', {}
         else:
             user_pg = molecule.schoenflies_symbol()
             molecule.reset_point_group('c1')  # need basis printed for *every* atom
             with open('GENBAS', 'w') as cfour_basfile:
-                cfour_basfile.write(psi4core.BasisSet.pyconstruct_orbital(molecule, "BASIS", psi4core.get_global_option('BASIS')).genbas())
-            psi4core.print_out('  GENBAS loaded from Psi4 LibMints for basis %s\n' % (psi4core.get_global_option('BASIS')))
+                cfour_basfile.write(core.BasisSet.pyconstruct_orbital(molecule, "BASIS", core.get_global_option('BASIS')).genbas())
+            core.print_out('  GENBAS loaded from Psi4 LibMints for basis %s\n' % (core.get_global_option('BASIS')))
             molecule.reset_point_group(user_pg)
             molecule.update_geometry()
-            bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4core.MintsHelper().basisset().has_puream())
+            bascmd, baskw = qcdbmolecule.format_basis_for_cfour(core.MintsHelper().basisset().has_puream())
 
     # Handle psi4 keywords implying cfour keyword values
-    if psi4core.get_option('CFOUR', 'TRANSLATE_PSI4'):
+    if core.get_option('CFOUR', 'TRANSLATE_PSI4'):
         psicmd, psikw = qcdb.cfour.muster_psi4options(p4util.prepare_options_for_modules(changedOnly=True))
     else:
         psicmd, psikw = '', {}
@@ -470,13 +470,13 @@ def write_zmat(name, dertype):
     optcmd = qcdb.options.prepare_options_for_cfour(userkw)
 
     # Handle text to be passed untouched to cfour
-    litcmd = psi4core.get_global_option('LITERAL_CFOUR')
+    litcmd = core.get_global_option('LITERAL_CFOUR')
 
     # Assemble ZMAT pieces
     zmat = memcmd + molcmd + optcmd + mdccmd + psicmd + bascmd + litcmd
 
     if len(re.findall(r'^\*(ACES2|CFOUR|CRAPS)\(', zmat, re.MULTILINE)) != 1:
-        psi4core.print_out('\n  Faulty ZMAT constructed:\n%s' % (zmat))
+        core.print_out('\n  Faulty ZMAT constructed:\n%s' % (zmat))
         raise ValidationError("""
 Multiple *CFOUR(...) blocks in input. This usually arises
 because molecule or options are specified both the psi4 way through

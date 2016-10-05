@@ -100,7 +100,7 @@ set(PSI4_RPATH ${psi4_install_lib}
 #                                          BUILD_WITH_INSTALL_RPATH TRUE)
 
 set_target_properties(psi4-lib PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
-                                          OUTPUT_NAME psi4core
+                                          OUTPUT_NAME core
                                           SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
                                           INSTALL_RPATH "${PSI4_RPATH}"
                                           INSTALL_RPATH_USE_LINK_PATH TRUE

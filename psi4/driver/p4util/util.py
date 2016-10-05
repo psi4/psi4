@@ -53,7 +53,7 @@ def oeprop(wfn, *args, **kwargs):
     >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
 
     """
-    oe = psi4core.OEProp(wfn)
+    oe = core.OEProp(wfn)
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:
@@ -87,31 +87,31 @@ def cubeprop(wfn, **kwargs):
 
     """
     # By default compute the orbitals
-    if not psi4core.has_global_option_changed('CUBEPROP_TASKS'):
-        psi4core.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
+    if not core.has_global_option_changed('CUBEPROP_TASKS'):
+        core.set_global_option('CUBEPROP_TASKS',['ORBITALS'])
 
-    cp = psi4core.CubeProperties(wfn)
+    cp = core.CubeProperties(wfn)
     cp.compute_properties()
 
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""
-    psi4core.set_memory(bytes)
+    core.set_memory(bytes)
 
 
 def get_memory():
     """Function to return the total memory allocation."""
-    return psi4core.get_memory()
+    return core.get_memory()
 
 
 def set_num_threads(nthread):
     """Function to reset the number of threads to parallelize across."""
-    psi4core.set_nthread(nthread)
+    core.set_nthread(nthread)
 
 
 def get_num_threads():
     """Function to return the number of threads to parallelize across."""
-    return psi4core.nthread()
+    return core.nthread()
 
 
 def success(label):
@@ -122,7 +122,7 @@ def success(label):
     msg = '\t{0:.<66}PASSED'.format(label)
     print(msg)
     sys.stdout.flush()
-    psi4core.print_out(msg + '\n')
+    core.print_out(msg + '\n')
 
 
 # Test functions
@@ -201,10 +201,10 @@ def compare_matrices(expected, computed, digits, label):
 
         if(failed):
             print("Check your output file for reporting of the matrices.")
-            psi4core.print_out("The Failed Test Matrices\n")
-            psi4core.print_out("Computed Matrix (2nd matrix passed in)\n")
+            core.print_out("The Failed Test Matrices\n")
+            core.print_out("Computed Matrix (2nd matrix passed in)\n")
             computed.print_out()
-            psi4core.print_out("Expected Matrix (1st matrix passed in)\n")
+            core.print_out("Expected Matrix (1st matrix passed in)\n")
             expected.print_out()
             raise TestComparisonError("\n")
     success(label)
@@ -233,9 +233,9 @@ def compare_vectors(expected, computed, digits, label):
                 break
 
         if(failed):
-            psi4core.print_out("The computed vector\n")
+            core.print_out("The computed vector\n")
             computed.print_out()
-            psi4core.print_out("The reference vector\n")
+            core.print_out("The reference vector\n")
             expected.print_out()
             message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
             raise TestComparisonError(message)
@@ -313,7 +313,7 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     """
 
     pid = str(os.getpid())
-    scratch = psi4core.IOManager.shared_object().get_file_path(int(unit))
+    scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
     cp = '/bin/cp';
     if move:
@@ -365,7 +365,7 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     """
 
     pid = str(os.getpid())
-    scratch = psi4core.IOManager.shared_object().get_file_path(int(unit))
+    scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
     cp = '/bin/cp';
     if move:
@@ -395,7 +395,7 @@ def xml2dict(filename=None):
     """
     import xmltodict as xd
     if filename is None:
-        csx = os.path.splitext(psi4core.outfile_name())[0] + '.csx'
+        csx = os.path.splitext(core.outfile_name())[0] + '.csx'
     else:
         csx = filename
     with open(csx, 'r') as handle:
@@ -452,8 +452,8 @@ def compare_csx():
 
     """
     if 'csx4psi' in sys.modules.keys():
-        if psi4core.get_global_option('WRITE_CSX'):
+        if core.get_global_option('WRITE_CSX'):
             enedict = csx2endict()
             compare_integers(len(enedict) >= 2, True, 'CSX harvested')
             for pv, en in enedict.items():
-                compare_values(psi4core.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))
+                compare_values(core.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))

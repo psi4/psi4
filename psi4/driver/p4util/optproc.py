@@ -50,13 +50,13 @@ class OptionState(object):
         else:
             self.module = None
 
-        self.value_global = psi4core.get_global_option(option)
-        self.haschanged_global = psi4core.has_global_option_changed(option)
+        self.value_global = core.get_global_option(option)
+        self.haschanged_global = core.has_global_option_changed(option)
         if self.module:
-            self.value_local = psi4core.get_local_option(self.module, option)
-            self.haschanged_local = psi4core.has_local_option_changed(self.module, option)
-            self.value_used = psi4core.get_option(self.module, option)
-            self.haschanged_used = psi4core.has_option_changed(self.module, option)
+            self.value_local = core.get_local_option(self.module, option)
+            self.haschanged_local = core.has_local_option_changed(self.module, option)
+            self.value_used = core.get_option(self.module, option)
+            self.haschanged_used = core.has_option_changed(self.module, option)
         else:
             self.value_local = None
             self.haschanged_local = None
@@ -77,13 +77,13 @@ class OptionState(object):
         return text
 
     def restore(self):
-        psi4core.set_global_option(self.option, self.value_global)
+        core.set_global_option(self.option, self.value_global)
         if not self.haschanged_global:
-            psi4core.revoke_global_option_changed(self.option)
+            core.revoke_global_option_changed(self.option)
         if self.module:
-            psi4core.set_local_option(self.module, self.option, self.value_local)
+            core.set_local_option(self.module, self.option, self.value_local)
             if not self.haschanged_local:
-                psi4core.revoke_local_option_changed(self.module, self.option)
+                core.revoke_local_option_changed(self.module, self.option)
 
 
 class OptionsState(object):

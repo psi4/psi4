@@ -28,7 +28,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import math
-from psi4 import psi4core
+from psi4 import core
 
 def _autofragment_convert(p, symbol):
     # Finding radii for auto-fragmenter
@@ -93,7 +93,7 @@ def auto_fragments(**kwargs):
 
     """
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', psi4core.get_active_molecule())
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
     molname = molecule.name()
 
@@ -155,11 +155,11 @@ def auto_fragments(**kwargs):
         new_geom = new_geom + F[j].lstrip() + """\n"""
     new_geom = new_geom + """units angstrom\n"""
 
-    moleculenew = psi4core.Molecule.create_molecule_from_string(new_geom)
+    moleculenew = core.Molecule.create_molecule_from_string(new_geom)
     moleculenew.set_name(molname)
     moleculenew.update_geometry()
     moleculenew.print_cluster()
-    psi4core.print_out("""  Exiting auto_fragments\n""")
+    core.print_out("""  Exiting auto_fragments\n""")
 
     return moleculenew
 

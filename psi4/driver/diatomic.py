@@ -27,7 +27,7 @@
 
 from __future__ import absolute_import
 
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver import p4const
 from math import sqrt, pi
 from diatomic_fits import *
@@ -63,16 +63,16 @@ def anharmonicity(rvals, energies, mol = None):
     if npoints != 5 and npoints != 9:
         raise Exception("Only 5- or 9-point fits are implemented right now")
 
-    psi4core.print_out("\n\nPerforming a %d-point fit\n" % npoints)
+    core.print_out("\n\nPerforming a %d-point fit\n" % npoints)
 
-    psi4core.print_out("\nOptimizing geometry based on current surface:\n\n");
+    core.print_out("\nOptimizing geometry based on current surface:\n\n");
     if (npoints == 5):
         optx = rvals[2]
     elif (npoints == 9):
         optx = rvals[4]
 
     # Make sure the molecule the user provided is the active one
-    molecule = mol if mol is not None else psi4core.get_active_molecule()
+    molecule = mol if mol is not None else core.get_active_molecule()
     molecule.update_geometry()
 
     natoms = molecule.natom()
@@ -92,11 +92,11 @@ def anharmonicity(rvals, energies, mol = None):
             grad = first_deriv_9pt(rvals, energies, optx)
             secd = second_deriv_9pt(rvals, energies, optx)
             energy = function_9pt(rvals, energies, optx)
-        psi4core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (energy, optx, grad))
+        core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (energy, optx, grad))
         if abs(grad) < thres:
             break
         optx -= grad / secd;
-    psi4core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (function_5pt(rvals, energies, optx), optx, grad));
+    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (function_5pt(rvals, energies, optx), optx, grad));
 
     if optx < min(rvals):
         raise Exception("Minimum energy point is outside range of points provided.  Use a lower range of r values.")
@@ -116,11 +116,11 @@ def anharmonicity(rvals, energies, mol = None):
         third = third_deriv_9pt(rvals, energies, optx) * p4const.psi_hartree2aJ
         fourth = fourth_deriv_9pt(rvals, energies, optx) * p4const.psi_hartree2aJ
 
-    psi4core.print_out("\nEquilibrium Energy %20.14f Hartrees\n" % energy)
-    psi4core.print_out("Gradient           %20.14f\n" % first)
-    psi4core.print_out("Quadratic Force Constant %14.7f MDYNE/A\n" % secd)
-    psi4core.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % third)
-    psi4core.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % fourth)
+    core.print_out("\nEquilibrium Energy %20.14f Hartrees\n" % energy)
+    core.print_out("Gradient           %20.14f\n" % first)
+    core.print_out("Quadratic Force Constant %14.7f MDYNE/A\n" % secd)
+    core.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % third)
+    core.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % fourth)
 
     hbar = p4const.psi_h / (2.0 * pi)
     mu = ((m1*m2)/(m1+m2))*p4const.psi_amu2kg
@@ -146,16 +146,16 @@ def anharmonicity(rvals, energies, mol = None):
     nu = we - 2.0 * wexe;
     zpve_nu = 0.5 * we - 0.25 * wexe;
 
-    psi4core.print_out("\nre     = %10.6f A  check: %10.6f\n" % (optx, recheck))
-    psi4core.print_out("r0       = %10.6f A\n" % r0)
-    psi4core.print_out("we       = %10.4f cm-1\n" % we)
-    psi4core.print_out("wexe     = %10.4f cm-1\n" % wexe)
-    psi4core.print_out("nu       = %10.4f cm-1\n" % nu)
-    psi4core.print_out("ZPVE(nu) = %10.4f cm-1\n" % zpve_nu)
-    psi4core.print_out("Be       = %10.4f cm-1\n" % B)
-    psi4core.print_out("B0       = %10.4f cm-1\n" % B0)
-    psi4core.print_out("ae       = %10.4f cm-1\n" % ae)
-    psi4core.print_out("De       = %10.7f cm-1\n" % de)
+    core.print_out("\nre     = %10.6f A  check: %10.6f\n" % (optx, recheck))
+    core.print_out("r0       = %10.6f A\n" % r0)
+    core.print_out("we       = %10.4f cm-1\n" % we)
+    core.print_out("wexe     = %10.4f cm-1\n" % wexe)
+    core.print_out("nu       = %10.4f cm-1\n" % nu)
+    core.print_out("ZPVE(nu) = %10.4f cm-1\n" % zpve_nu)
+    core.print_out("Be       = %10.4f cm-1\n" % B)
+    core.print_out("B0       = %10.4f cm-1\n" % B0)
+    core.print_out("ae       = %10.4f cm-1\n" % ae)
+    core.print_out("De       = %10.7f cm-1\n" % de)
     results = {
                "re"               :  optx,
                "r0"               :  r0,

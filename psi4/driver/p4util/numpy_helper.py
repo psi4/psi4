@@ -26,7 +26,7 @@
 #
 
 import numpy as np
-from psi4 import psi4core
+from psi4 import core
 
 import sys
 if sys.version_info < (3,0):
@@ -93,25 +93,25 @@ def _find_dim(arr, ndim):
 @classmethod
 def _dimension_from_list(self, dims, name="New Dimension"):
     """
-    Builds a psi4core.Dimension object from a python list or tuple. If a dimension
+    Builds a core.Dimension object from a python list or tuple. If a dimension
     object is passed a copy will be returned.
     """
 
     if isinstance(dims, (tuple, list, np.ndarray)):
         irreps = len(dims)
-    elif isinstance(dims, psi4core.Dimension):
+    elif isinstance(dims, core.Dimension):
         irreps = dims.n()
     else:
         raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
 
-    ret = psi4core.Dimension(irreps, name)
+    ret = core.Dimension(irreps, name)
     for i in range(irreps):
         ret[i] = dims[i]
     return ret
 
 def _dimension_to_tuple(dim):
     """
-    Converts a psi4core.Dimension object to a tuple.
+    Converts a core.Dimension object to a tuple.
     """
 
     if isinstance(dim, (tuple, list)):
@@ -132,10 +132,10 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     Parameters
     ----------
     arr : array or list of arrays
-        Numpy array or list of arrays to use as the data for a new psi4core.Matrix
+        Numpy array or list of arrays to use as the data for a new core.Matrix
     name : str
-        Name to give the new psi4core.Matrix
-    dim1 : list, tuple, or psi4core.Dimension (optional)
+        Name to give the new core.Matrix
+    dim1 : list, tuple, or core.Dimension (optional)
         If a single dense numpy array is given, a dimension can be supplied to
         apply irreps to this array. Note that this discards all extra information
         given in the matrix besides the diagonal blocks determined by the passed
@@ -145,7 +145,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
     Returns
     -------
-    ret : psi4core.Vector or psi4core.Matrix
+    ret : core.Vector or core.Matrix
        Returns the given Psi4 object
 
     Notes
@@ -173,9 +173,9 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             raise ValidationError("Array_to_Matrix: If passed input is list of arrays dimension cannot be specified.")
 
         irreps = len(arr)
-        if arr_type == psi4core.Matrix:
-            sdim1 = psi4core.Dimension(irreps)
-            sdim2 = psi4core.Dimension(irreps)
+        if arr_type == core.Matrix:
+            sdim1 = core.Dimension(irreps)
+            sdim2 = core.Dimension(irreps)
 
             for i in range(irreps):
                 d1, d2 = _find_dim(arr[i], 2)
@@ -184,8 +184,8 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
             ret = self(name, sdim1, sdim2)
 
-        elif arr_type == psi4core.Vector:
-            sdim1 = psi4core.Dimension(irreps)
+        elif arr_type == core.Vector:
+            sdim1 = core.Dimension(irreps)
 
             for i in range(irreps):
                 d1 = _find_dim(arr[i], 1)
@@ -203,15 +203,15 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
     # No irreps implied by list
     else:
-        if arr_type == psi4core.Matrix:
+        if arr_type == core.Matrix:
 
             # Build an irreped array back out
             if dim1 is not None:
                 if dim2 is None:
                     raise ValidationError ("Array_to_Matrix: If dim1 is supplied must supply dim2 also")
 
-                dim1 = psi4core.Dimension.from_list(dim1)
-                dim2 = psi4core.Dimension.from_list(dim2)
+                dim1 = core.Dimension.from_list(dim1)
+                dim2 = core.Dimension.from_list(dim2)
 
                 if dim1.n() != dim2.n():
                     raise ValidationError("Array_to_Matrix: Length of passed dim1 must equal length of dim2.")
@@ -240,13 +240,13 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
                 ret_view[:] = arr
                 return ret
 
-        elif arr_type == psi4core.Vector:
+        elif arr_type == core.Vector:
             # Build an irreped array back out
             if dim1 is not None:
                 if dim2 is not None:
                     raise ValidationError ("Array_to_Matrix: If dim2 should not be supplied for 1D vectors.")
 
-                dim1 = psi4core.Dimension.from_list(dim1)
+                dim1 = core.Dimension.from_list(dim1)
                 ret = self(name, dim1)
 
                 start1 = 0
@@ -289,9 +289,9 @@ def to_array(matrix, copy=True, dense=False):
             return ret
 
         # Build the dense matrix
-        if isinstance(matrix, psi4core.Vector):
+        if isinstance(matrix, core.Vector):
             ret_type = '1D'
-        elif isinstance(matrix, psi4core.Matrix):
+        elif isinstance(matrix, core.Matrix):
             ret_type = '2D'
         else:
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % type(matrix))
@@ -424,13 +424,13 @@ def _np_read(self, filename, prefix=""):
         ret_data.append(data[prefix + "IrrepData" + str(h)])
 
     arr_type = self.__mro__[0]
-    if arr_type == psi4core.Matrix:
-        dim1 = psi4core.Dimension.from_list([x.shape[0] for x in ret_data])
-        dim2 = psi4core.Dimension.from_list([x.shape[1] for x in ret_data])
-        ret = psi4core.Matrix(str(data[prefix + "Name"]), dim1, dim2)
-    elif arr_type == psi4core.Vector:
-        dim1 = psi4core.Dimension.from_list([x.shape[0] for x in ret_data])
-        ret = psi4core.Vector(str(data[prefix + "Name"]), dim1)
+    if arr_type == core.Matrix:
+        dim1 = core.Dimension.from_list([x.shape[0] for x in ret_data])
+        dim2 = core.Dimension.from_list([x.shape[1] for x in ret_data])
+        ret = core.Matrix(str(data[prefix + "Name"]), dim1, dim2)
+    elif arr_type == core.Vector:
+        dim1 = core.Dimension.from_list([x.shape[0] for x in ret_data])
+        ret = core.Vector(str(data[prefix + "Name"]), dim1)
 
     for h in range(data[prefix + "Irreps"]):
         ret.nph[h][:] = ret_data[h]
@@ -438,28 +438,28 @@ def _np_read(self, filename, prefix=""):
     return ret
 
 # Matirx attributes
-psi4core.Matrix.from_array = array_to_matrix
-psi4core.Matrix.to_array = to_array
-psi4core.Matrix.shape = _np_shape
-psi4core.Matrix.np = _np_view
-psi4core.Matrix.nph = _nph_view
-psi4core.Matrix.__array_interface__ = _array_conversion
-psi4core.Matrix.np_write = _np_write
-psi4core.Matrix.np_read = _np_read
+core.Matrix.from_array = array_to_matrix
+core.Matrix.to_array = to_array
+core.Matrix.shape = _np_shape
+core.Matrix.np = _np_view
+core.Matrix.nph = _nph_view
+core.Matrix.__array_interface__ = _array_conversion
+core.Matrix.np_write = _np_write
+core.Matrix.np_read = _np_read
 
 # Vector attributes
-psi4core.Vector.from_array = array_to_matrix
-psi4core.Vector.to_array = to_array
-psi4core.Vector.shape = _np_shape
-psi4core.Vector.np = _np_view
-psi4core.Vector.nph = _nph_view
-psi4core.Vector.__array_interface__ = _array_conversion
-psi4core.Vector.np_write = _np_write
-psi4core.Vector.np_read = _np_read
+core.Vector.from_array = array_to_matrix
+core.Vector.to_array = to_array
+core.Vector.shape = _np_shape
+core.Vector.np = _np_view
+core.Vector.nph = _nph_view
+core.Vector.__array_interface__ = _array_conversion
+core.Vector.np_write = _np_write
+core.Vector.np_read = _np_read
 
 # Dimension attributes
-psi4core.Dimension.from_list = _dimension_from_list
-psi4core.Dimension.to_tuple = _dimension_to_tuple
+core.Dimension.from_list = _dimension_from_list
+core.Dimension.to_tuple = _dimension_to_tuple
 
 # CIVector attributes
 
@@ -469,4 +469,4 @@ def _civec_view(self):
     return np.asarray(self)
 
 
-psi4core.CIVector.np = _civec_view
+core.CIVector.np = _civec_view

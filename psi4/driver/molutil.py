@@ -29,7 +29,7 @@
 from __future__ import absolute_import
 import math
 
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver.p4util import p4const
 
 
@@ -274,7 +274,7 @@ def BFS(self):
 
 def dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
-    the psi4core.Molecule class.
+    the core.Molecule class.
 
     """
     cls.__setattr__ = molecule_set_attr
@@ -283,7 +283,7 @@ def dynamic_variable_bind(cls):
     cls.BFS = BFS
 
 
-dynamic_variable_bind(psi4core.Molecule)  # pass class type, not class instance
+dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 
 def cdict_set_attr(self, name, value):
     """Function to redefine __setattr__ method of a class with a cdict."""
@@ -302,7 +302,7 @@ def cdict_dynamic_variable_bind(cls):
     cls.__setattr__ = cdict_set_attr
     cls.__getattr__ = cdict_get_attr
 
-#cdict_dynamic_variable_bind(psi4core.Wavefunction)
+#cdict_dynamic_variable_bind(core.Wavefunction)
 
 
 #
@@ -320,7 +320,7 @@ def geometry(geom, name="default"):
     driver in favor of explicit molecule-passing.
 
     """
-    molecule = psi4core.Molecule.create_molecule_from_string(geom)
+    molecule = core.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 
     activate(molecule)
@@ -334,4 +334,4 @@ def activate(mol):
     molecule-passing.
 
     """
-    psi4core.set_active_molecule(mol)
+    core.set_active_molecule(mol)

@@ -105,10 +105,10 @@ def process_option(spaces, module, key, value, line):
 
     if module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace():
         # If it's really a global, we need slightly different syntax
-        return "%spsi4core.set_global_option(\"%s\", %s)\n" % (spaces, key, value)
+        return "%score.set_global_option(\"%s\", %s)\n" % (spaces, key, value)
     else:
         # It's a local option, so we need the module name in there too
-        return "%spsi4core.set_local_option(\"%s\", \"%s\", %s)\n" % (spaces, module, key, value)
+        return "%score.set_local_option(\"%s\", \"%s\", %s)\n" % (spaces, module, key, value)
 
 
 def process_set_command(matchobj):
@@ -162,7 +162,7 @@ def process_set_commands(matchobj):
 def process_from_file_command(matchobj):
     """Function that process a match of ``from_file`` in molecule block."""
     string = matchobj.group(2)
-    mol=psi4core.mol_from_file(string,1)
+    mol=core.mol_from_file(string,1)
     tempmol=[line for line in mol.split('\n') if line.strip() != '']
     mol2=set(tempmol)
     mol=""
@@ -222,7 +222,7 @@ def process_molecule_command(matchobj):
     geometry = from_filere.sub(process_from_file_command,geometry)
     molecule = spaces
 
-    molecule += 'psi4core.efp_init()\n'  # clear EFP object before Molecule read in
+    molecule += 'core.efp_init()\n'  # clear EFP object before Molecule read in
     molecule += spaces
 
     if name != "":
@@ -233,7 +233,7 @@ def process_molecule_command(matchobj):
         molecule += ',"%s"' % (name)
 
     molecule += ")\n"
-    molecule += '%spsi4core.IO.set_default_namespace("%s")' % (spaces, name)
+    molecule += '%score.IO.set_default_namespace("%s")' % (spaces, name)
 
     return molecule
 
@@ -251,7 +251,7 @@ def process_cfour_command(matchobj):
 
     literalkey = str(random.randint(0, 99999))
     literals[literalkey] = cfourblock
-    return "%spsi4core.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % \
+    return "%score.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % \
         (spaces, 'LITERAL_CFOUR', 'literals_psi4_yo-' + literalkey)
 
 
@@ -261,21 +261,21 @@ def process_extract_command(matchobj):
     name = matchobj.group(2)
     result = matchobj.group(0)
     result += '%s%s.set_name("%s")' % (spaces, name, name)
-    result += "\n%spsi4core.set_active_molecule(%s)" % (spaces, name)
-    result += '\n%spsi4core.IO.set_default_namespace("%s")' % (spaces, name)
+    result += "\n%score.set_active_molecule(%s)" % (spaces, name)
+    result += '\n%score.IO.set_default_namespace("%s")' % (spaces, name)
 
     return result
 
 
 def process_print_command(matchobj):
     """Function to process match of ``print`` and transform
-    it to ``psi4core.print_out()``.
+    it to ``core.print_out()``.
 
     """
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
-    return "%spsi4core.print_out(str(%s))\n" % (spaces, str(string))
+    return "%score.print_out(str(%s))\n" % (spaces, str(string))
 
 
 def process_memory_command(matchobj):
@@ -294,7 +294,7 @@ def process_memory_command(matchobj):
     elif units.upper() == 'GB':
         memory_amount = val * 1000000000
 
-    return "%spsi4core.set_memory(%d)\n" % (spaces, int(memory_amount))
+    return "%score.set_memory(%d)\n" % (spaces, int(memory_amount))
 
 
 def basname(name):
@@ -361,7 +361,7 @@ def process_basis_block(matchobj):
                 (spaces, basname(basblock[idx]), basblock[idx + 1])
 
     result += """%s    return basstrings\n""" % (spaces)
-    result += """%spsi4core.set_global_option(\"%s\", \"%s\")""" % (spaces, basistype, name)
+    result += """%score.set_global_option(\"%s\", \"%s\")""" % (spaces, basistype, name)
     return result
 
 
@@ -466,7 +466,7 @@ def process_external_command(matchobj):
         else:
             frags[len(frags) - 1].append(line)
 
-    extern += '%sextern_mol_temp = psi4core.get_active_molecule()\n' % (spaces)
+    extern += '%sextern_mol_temp = core.get_active_molecule()\n' % (spaces)
 
     mol_re = re.compile(r'\s*\S+\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
     lines = []
@@ -494,7 +494,7 @@ def process_external_command(matchobj):
         extern += '%sqmmm.addDiffuse(diffuse)\n' % (spaces)
         extern += '\n'
 
-    extern += '%spsi4core.set_active_molecule(extern_mol_temp)\n' % (spaces)
+    extern += '%score.set_active_molecule(extern_mol_temp)\n' % (spaces)
 
     # 6. If there is anything left, the user messed up
     if len(lines):
@@ -506,7 +506,7 @@ def process_external_command(matchobj):
     extern += '%sqmmm.populateExtern()\n' % (spaces)
     extern += '%s%s = qmmm.extern\n' % (spaces, name)
 
-    extern += '%spsi4core.set_global_option_python("EXTERN", extern)\n' % (spaces)
+    extern += '%score.set_global_option_python("EXTERN", extern)\n' % (spaces)
 
     return extern
 
@@ -631,11 +631,11 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
 
     # Echo the infile on the outfile
     if print_level > 0:
-        psi4core.print_out("\n  ==> Input File <==\n\n")
-        psi4core.print_out("--------------------------------------------------------------------------\n")
-        psi4core.print_out(raw_input)
-        psi4core.print_out("--------------------------------------------------------------------------\n")
-        psi4core.flush_outfile()
+        core.print_out("\n  ==> Input File <==\n\n")
+        core.print_out("--------------------------------------------------------------------------\n")
+        core.print_out(raw_input)
+        core.print_out("--------------------------------------------------------------------------\n")
+        core.flush_outfile()
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
@@ -717,7 +717,7 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
                          re.IGNORECASE)
     temp = re.sub(extract, process_extract_command, temp)
 
-    # Process "print" and transform it to "psi4core.print_out()"
+    # Process "print" and transform it to "core.print_out()"
     #print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
     #temp = re.sub(print_string, process_print_command, temp)
 
@@ -747,9 +747,9 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
     imports = '\n'.join(future_imports) + '\n'
     imports += 'from psi4 import *\n'
     if psi4_imported:
-        imports += 'from psi4.psi4core import *\n'
+        imports += 'from psi4.core import *\n'
     else:
-        imports += 'from psi4core import *\n'
+        imports += 'from core import *\n'
     # imports += 'import dependency_check\n'
     # imports += 'from psi4.driver.p4const import *\n'
     # imports += 'from psi4.driver.p4util import *\n'
@@ -763,8 +763,8 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
     # imports += 'from wrapper_database import database, db, DB_RGT, DB_RXN\n'
     # imports += 'from wrapper_autofrag import auto_fragments\n'
     # imports += 'from qmmm import *\n'
-    imports += 'psi4_io = psi4core.IOManager.shared_object()\n'
-    imports += 'psi4core.efp_init()\n'  # initialize EFP object before Molecule read in
+    imports += 'psi4_io = core.IOManager.shared_object()\n'
+    imports += 'core.efp_init()\n'  # initialize EFP object before Molecule read in
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
     psirc = ''
@@ -777,7 +777,7 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
 
     # Override scratch directory if user specified via env_var
     scratch = ''
-    scratch_env = psi4core.Process.environment['PSI_SCRATCH']
+    scratch_env = core.Process.environment['PSI_SCRATCH']
     if len(scratch_env):
         scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
 

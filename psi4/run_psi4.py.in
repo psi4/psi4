@@ -45,7 +45,7 @@ args = args.__dict__ # Namespace object seems silly
 # Figure out pythonpath
 cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@"])
-if "CMAKE_INSTALL_LIBDIR" in cmake_libdir:
+if "CMAKE_INSTALL_LIBDIR" in lib_dir:
     raise ImportError("Psi4 was not installed correctly!")
 
 # Replace input/output if unknown kwargs
@@ -86,13 +86,13 @@ import psi4
 if args["append"] is None:
     args["append"] = False
 if args["output"] != "stdout":
-    psi4.psi4core.set_output_file(args["output"], args["append"])
+    psi4.core.set_output_file(args["output"], args["append"])
 
 # Set a few options
 if args["prefix"] is not None:
-    psi4.psi4core.set_psi_file_prefix(args["prefix"])
-psi4.psi4core.set_nthread(args["nthread"])
-psi4.psi4core.print_version()
+    psi4.core.set_psi_file_prefix(args["prefix"])
+psi4.core.set_nthread(args["nthread"])
+psi4.core.print_version()
 
 
 # Read input
@@ -114,7 +114,7 @@ if args["verbose"]:
 if args["messy"]:
     import atexit
     for handler in atexit._exithandlers:
-        if handler == psi4.psi4core.clean:
+        if handler == psi4.core.clean:
             atexit._exithandlers.remove(handler)
 
 # Run the program!

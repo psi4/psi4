@@ -16,37 +16,37 @@ os.environ["PSIDATADIR"] = data_dir
 
 # Find and import the core
 try:
-    from . import psi4core
+    from . import core
 except ImportError as e:
     print("Import error: {0}".format(e))
     if 'CXXABI' in str(e):
         raise ImportError("Probably GCC >= 4.9 not in [DY]LD_LIBRARY_PATH")
 
-    print("Psi4 is not installed, looking for the 'objdir' build directory for ps4icore.so ...")
+    print("Psi4 is not installed, looking for the 'objdir' build directory for core.so ...")
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     base_path += os.path.sep + 'objdir' + os.path.sep + 'stage'
     matches = []
     for root, dirnames, filenames in os.walk(base_path):
         if 'include' in root: continue
         if 'share' in root: continue
-        if 'psi4core.so' in filenames:
+        if 'core.so' in filenames:
             matches.append(root)
 
     if len(matches) == 0:
-        raise ImportError("Could not find psi4core.so in basepath: %s" % base_path)
+        raise ImportError("Could not find core.so in basepath: %s" % base_path)
 
-    print("Found psi4core.so at %s" % matches[0])
+    print("Found core.so at %s" % matches[0])
     sys.path.insert(1, matches[0])
-    import psi4core
+    import core
 
-# Init psi4core
-psi4core.initialize()
+# Init core
+core.initialize()
 
 # Cleanup core at exit
 import atexit
-atexit.register(psi4core.set_legacy_molecule, None)
-atexit.register(psi4core.clean)
-atexit.register(psi4core.finalize)
+atexit.register(core.set_legacy_molecule, None)
+atexit.register(core.clean)
+atexit.register(core.finalize)
 
 # Numpy place holder for files and cleanup
 numpy_files = []

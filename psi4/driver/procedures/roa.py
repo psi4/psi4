@@ -36,7 +36,7 @@ import os
 
 from psi4.driver.p4const import *
 from psi4.driver.p4util import *
-from psi4 import psi4core
+from psi4 import core
 from . import findif_response_utils
 
 
@@ -55,13 +55,13 @@ def run_roa(name, **kwargs):
 
     # Get list of omega values -> Make sure we only have one wavelength
     # Catch this now before any real work gets done
-    omega = psi4core.get_option('CCRESPONSE', 'OMEGA')
+    omega = core.get_option('CCRESPONSE', 'OMEGA')
     if len(omega) > 2:
         raise Exception('ROA scattering can only be performed for one wavelength.')
     else:
         pass
 
-    psi4core.print_out(
+    core.print_out(
         'Running ROA computation. Subdirectories for each '
         'required displaced geometry have been created.\n\n')
 
@@ -99,7 +99,7 @@ def run_roa(name, **kwargs):
 
     # Compute ROA Scattering
     if db['jobs_complete']:
-        mygauge = psi4core.get_option('CCRESPONSE', 'GAUGE')
+        mygauge = core.get_option('CCRESPONSE', 'GAUGE')
         consider_gauge = {
             'LENGTH': ['Length Gauge'],
             'VELOCITY': ['Modified Velocity Gauge'],
@@ -123,17 +123,17 @@ def run_roa(name, **kwargs):
             db, "Electric-Dipole/Quadrupole Polarizability", 9)
         # Compute Scattering
         # Run new function (src/bin/ccresponse/scatter.cc)
-        psi4core.print_out('Running scatter function')
-        step = psi4core.get_local_option('FINDIF', 'DISP_SIZE')
+        core.print_out('Running scatter function')
+        step = core.get_local_option('FINDIF', 'DISP_SIZE')
         for g_idx, gauge in enumerate(opt_rot_list):
             print('\n\n----------------------------------------------------------------------')
             print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
             print('----------------------------------------------------------------------\n\n')
-            psi4core.print_out('\n\n----------------------------------------------------------------------\n')
-            psi4core.print_out('\t%%%%%%%%%% {} %%%%%%%%%%\n'.format(gauge_list[g_idx]))
-            psi4core.print_out('----------------------------------------------------------------------\n\n')
+            core.print_out('\n\n----------------------------------------------------------------------\n')
+            core.print_out('\t%%%%%%%%%% {} %%%%%%%%%%\n'.format(gauge_list[g_idx]))
+            core.print_out('----------------------------------------------------------------------\n\n')
             print('roa.py:85 I am not being passed a molecule, grabbing from global :(')
-            psi4core.scatter(psi4core.get_active_molecule(), step, dip_polar_list, gauge, dip_quad_polar_list)
+            core.scatter(core.get_active_molecule(), step, dip_polar_list, gauge, dip_quad_polar_list)
 
         db['roa_computed'] = True
 
@@ -141,7 +141,7 @@ def run_roa(name, **kwargs):
 
 #   SAVE this for when multiple wavelengths works
 # # Get list of omega values
-# omega = psi4core.get_option('CCRESPONSE','OMEGA')
+# omega = core.get_option('CCRESPONSE','OMEGA')
 # if len(omega) > 1:
 #     units = copy.copy(omega[-1])
 #     omega.pop()

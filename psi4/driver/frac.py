@@ -27,7 +27,7 @@
 
 from __future__ import absolute_import
 
-import psi4core
+import core
 import os
 import math
 import p4util
@@ -76,7 +76,7 @@ def frac_traverse(molecule, **kwargs):
 
     # By default, burn-in with UHF first, if UKS
     hf_guess = False
-    if psi4core.get_global_option('REFERENCE') == 'UKS':
+    if core.get_global_option('REFERENCE') == 'UKS':
         hf_guess = kwargs.get('hf_guess', True)
 
     # By default, re-guess at each N
@@ -93,16 +93,16 @@ def frac_traverse(molecule, **kwargs):
 
     # => Run the neutral for its orbitals, if requested <= #
 
-    old_df_ints_io = psi4core.get_global_option("DF_INTS_IO")
-    psi4core.set_global_option("DF_INTS_IO", "SAVE")
+    old_df_ints_io = core.get_global_option("DF_INTS_IO")
+    core.set_global_option("DF_INTS_IO", "SAVE")
 
-    old_guess = psi4core.get_global_option("GUESS")
+    old_guess = core.get_global_option("GUESS")
     if (neutral_guess):
         if (hf_guess):
-            psi4core.set_global_option("REFERENCE","UHF")
+            core.set_global_option("REFERENCE","UHF")
         energy('scf')
-        psi4core.set_global_option("GUESS", "READ")
-        psi4core.set_global_option("DF_INTS_IO", "LOAD")
+        core.set_global_option("GUESS", "READ")
+        core.set_global_option("DF_INTS_IO", "LOAD")
 
     # => Run the anion first <= #
 
@@ -111,25 +111,25 @@ def frac_traverse(molecule, **kwargs):
 
     # => Burn the anion in with hf, if requested <= #
     if hf_guess:
-        psi4core.set_global_option("REFERENCE","UHF")
+        core.set_global_option("REFERENCE","UHF")
         energy('scf', molecule=molecule, **kwargs)
-        psi4core.set_global_option("REFERENCE","UKS")
-        psi4core.set_global_option("GUESS", "READ")
-        psi4core.set_global_option("DF_INTS_IO", "SAVE")
+        core.set_global_option("REFERENCE","UKS")
+        core.set_global_option("GUESS", "READ")
+        core.set_global_option("DF_INTS_IO", "SAVE")
 
-    psi4core.set_global_option("FRAC_START", frac_start)
-    psi4core.set_global_option("FRAC_RENORMALIZE", True)
-    psi4core.set_global_option("FRAC_LOAD", False)
+    core.set_global_option("FRAC_START", frac_start)
+    core.set_global_option("FRAC_RENORMALIZE", True)
+    core.set_global_option("FRAC_LOAD", False)
 
     for occ in LUMO_occs:
 
-        psi4core.set_global_option("FRAC_OCC", [LUMO])
-        psi4core.set_global_option("FRAC_VAL", [occ])
+        core.set_global_option("FRAC_OCC", [LUMO])
+        core.set_global_option("FRAC_VAL", [occ])
 
         E, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
-            E = psi4core.get_variable('SCF ITERATION ENERGY')
+            E = core.get_variable('SCF ITERATION ENERGY')
             C = 0
 
         if LUMO > 0:
@@ -143,11 +143,11 @@ def frac_traverse(molecule, **kwargs):
         energies.append(E)
         convs.append(C)
 
-        psi4core.set_global_option("FRAC_START", 2)
-        psi4core.set_global_option("FRAC_LOAD", True)
-        psi4core.set_global_option("GUESS", "READ")
-        psi4core.set_global_option("FRAC_DIIS", frac_diis)
-        psi4core.set_global_option("DF_INTS_IO", "LOAD")
+        core.set_global_option("FRAC_START", 2)
+        core.set_global_option("FRAC_LOAD", True)
+        core.set_global_option("GUESS", "READ")
+        core.set_global_option("FRAC_DIIS", frac_diis)
+        core.set_global_option("DF_INTS_IO", "LOAD")
 
 
     # => Run the neutral next <= #
@@ -158,27 +158,27 @@ def frac_traverse(molecule, **kwargs):
     # Burn the neutral in with hf, if requested <= #
 
     if not continuous_guess:
-        psi4core.set_global_option("GUESS", old_guess)
+        core.set_global_option("GUESS", old_guess)
         if hf_guess:
-            psi4core.set_global_option("FRAC_START", 0)
-            psi4core.set_global_option("REFERENCE", "UHF")
+            core.set_global_option("FRAC_START", 0)
+            core.set_global_option("REFERENCE", "UHF")
             energy('scf', molecule=molecule, **kwargs)
-            psi4core.set_global_option("REFERENCE", "UKS")
-            psi4core.set_global_option("GUESS", "READ")
-        psi4core.set_global_option("FRAC_LOAD", False)
+            core.set_global_option("REFERENCE", "UKS")
+            core.set_global_option("GUESS", "READ")
+        core.set_global_option("FRAC_LOAD", False)
 
-    psi4core.set_global_option("FRAC_START", frac_start)
-    psi4core.set_global_option("FRAC_RENORMALIZE", True)
+    core.set_global_option("FRAC_START", frac_start)
+    core.set_global_option("FRAC_RENORMALIZE", True)
 
     for occ in HOMO_occs:
 
-        psi4core.set_global_option("FRAC_OCC", [HOMO])
-        psi4core.set_global_option("FRAC_VAL", [occ])
+        core.set_global_option("FRAC_OCC", [HOMO])
+        core.set_global_option("FRAC_VAL", [occ])
 
         E, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
-            E = psi4core.get_variable('SCF ITERATION ENERGY')
+            E = core.get_variable('SCF ITERATION ENERGY')
             C = 0
 
         if LUMO > 0:
@@ -192,25 +192,25 @@ def frac_traverse(molecule, **kwargs):
         energies.append(E)
         convs.append(C)
 
-        psi4core.set_global_option("FRAC_START", 2)
-        psi4core.set_global_option("FRAC_LOAD", True)
-        psi4core.set_global_option("GUESS", "READ")
-        psi4core.set_global_option("FRAC_DIIS", frac_diis)
-        psi4core.set_global_option("DF_INTS_IO", "LOAD")
+        core.set_global_option("FRAC_START", 2)
+        core.set_global_option("FRAC_LOAD", True)
+        core.set_global_option("GUESS", "READ")
+        core.set_global_option("FRAC_DIIS", frac_diis)
+        core.set_global_option("DF_INTS_IO", "LOAD")
 
-    psi4core.set_global_option("DF_INTS_IO", old_df_ints_io)
+    core.set_global_option("DF_INTS_IO", old_df_ints_io)
 
     # => Print the results out <= #
     E = {}
-    psi4core.print_out("""\n    ==> Fractional Occupation Traverse Results <==\n\n""")
-    psi4core.print_out("""\t%-11s %-24s %-24s %11s\n""" % ('N', 'Energy', 'HOMO Energy', 'Converged'))
+    core.print_out("""\n    ==> Fractional Occupation Traverse Results <==\n\n""")
+    core.print_out("""\t%-11s %-24s %-24s %11s\n""" % ('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(occs)):
-        psi4core.print_out("""\t%11.3E %24.16E %24.16E %11d\n""" % (occs[k], energies[k], potentials[k], convs[k]))
+        core.print_out("""\t%11.3E %24.16E %24.16E %11d\n""" % (occs[k], energies[k], potentials[k], convs[k]))
         E[occs[k]] = energies[k]
 
-    psi4core.print_out('\n\t"You trying to be a hero Watkins?"\n')
-    psi4core.print_out('\t"Just trying to kill some bugs sir!"\n')
-    psi4core.print_out('\t\t\t-Starship Troopers\n')
+    core.print_out('\n\t"You trying to be a hero Watkins?"\n')
+    core.print_out('\t"Just trying to kill some bugs sir!"\n')
+    core.print_out('\t\t\t-Starship Troopers\n')
 
     # Drop the files out
     fh = open(traverse_filename, 'w')
@@ -267,7 +267,7 @@ def frac_nuke(molecule, **kwargs):
     stats_filename = root + '.stats.dat'
 
     # => Traverse <= #
-    psi4core.set_global_option("DF_INTS_IO", "SAVE")
+    core.set_global_option("DF_INTS_IO", "SAVE")
 
     Ns = []
     energies = []
@@ -302,9 +302,9 @@ def frac_nuke(molecule, **kwargs):
     charge = charge + 1
     mult = Na - Nb + 1
 
-    psi4core.set_global_option("DF_INTS_IO", "LOAD")
-    psi4core.set_global_option("FRAC_START", frac_start)
-    psi4core.set_global_option("FRAC_RENORMALIZE", True)
+    core.set_global_option("DF_INTS_IO", "LOAD")
+    core.set_global_option("FRAC_START", frac_start)
+    core.set_global_option("FRAC_RENORMALIZE", True)
 
     # Nuke 'em Rico!
     for Nintegral in range(N, Nmin, -1):
@@ -312,13 +312,13 @@ def frac_nuke(molecule, **kwargs):
         # Nuke the current HOMO
         for occ in foccs:
 
-            psi4core.set_global_option("FRAC_OCC", [HOMO])
-            psi4core.set_global_option("FRAC_VAL", [occ])
+            core.set_global_option("FRAC_OCC", [HOMO])
+            core.set_global_option("FRAC_VAL", [occ])
 
             E, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
             C = 1
             if E == 0.0:
-                E = psi4core.get_variable('SCF ITERATION ENERGY')
+                E = core.get_variable('SCF ITERATION ENERGY')
                 C = 0
 
             if HOMO > 0:
@@ -332,10 +332,10 @@ def frac_nuke(molecule, **kwargs):
             energies.append(E)
             convs.append(C)
 
-            psi4core.set_global_option("FRAC_START", 2)
-            psi4core.set_global_option("FRAC_LOAD", True)
-            psi4core.set_global_option("FRAC_DIIS", frac_diis)
-            psi4core.set_global_option("GUESS", "READ")
+            core.set_global_option("FRAC_START", 2)
+            core.set_global_option("FRAC_LOAD", True)
+            core.set_global_option("FRAC_DIIS", frac_diis)
+            core.set_global_option("GUESS", "READ")
 
         # Set the next charge/mult
         molecule.set_molecular_charge(charge)
@@ -343,7 +343,7 @@ def frac_nuke(molecule, **kwargs):
 
         # Determine HOMO
         print('DGAS: What ref should this point to?')
-        #ref = psi4core.legacy_wavefunction()
+        #ref = core.legacy_wavefunction()
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
         if Na == Nb:
@@ -367,23 +367,23 @@ def frac_nuke(molecule, **kwargs):
         charge = charge + 1
         mult = Na - Nb + 1
 
-    psi4core.set_global_option("DF_INTS_IO", "NONE")
+    core.set_global_option("DF_INTS_IO", "NONE")
 
     # => Print the results out <= #
     E = {}
-    psi4core.print_out("""\n    ==> Fractional Occupation Nuke Results <==\n\n""")
-    psi4core.print_out("""\t%-11s %-24s %-24s %11s\n""" % ('N', 'Energy', 'HOMO Energy', 'Converged'))
+    core.print_out("""\n    ==> Fractional Occupation Nuke Results <==\n\n""")
+    core.print_out("""\t%-11s %-24s %-24s %11s\n""" % ('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(Ns)):
-        psi4core.print_out("""\t%11.3E %24.16E %24.16E %11d\n""" % (Ns[k], energies[k], potentials[k], convs[k]))
+        core.print_out("""\t%11.3E %24.16E %24.16E %11d\n""" % (Ns[k], energies[k], potentials[k], convs[k]))
         E[Ns[k]] = energies[k]
 
-    psi4core.print_out('\n')
-    psi4core.print_out("""\t%6s %6s %6s %6s %6s %6s\n""" % ('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
+    core.print_out('\n')
+    core.print_out("""\t%6s %6s %6s %6s %6s %6s\n""" % ('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
     for line in stats:
-        psi4core.print_out(line)
+        core.print_out(line)
 
-    psi4core.print_out('\n\t"You shoot a nuke down a bug hole, you got a lot of dead bugs"\n')
-    psi4core.print_out('\t\t\t-Starship Troopers\n')
+    core.print_out('\n\t"You shoot a nuke down a bug hole, you got a lot of dead bugs"\n')
+    core.print_out('\t\t\t-Starship Troopers\n')
 
     # Drop the files out
     fh = open(traverse_filename, 'w')
@@ -435,17 +435,17 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
     Na = int(N - Nb)
 
     # Work in the ot namespace for this procedure
-    psi4core.IO.set_default_namespace("ot")
+    core.IO.set_default_namespace("ot")
 
     # Burn in to determine orbital eigenvalues
     if read:
-        psi4core.set_global_option("GUESS", "READ")
+        core.set_global_option("GUESS", "READ")
         copy_file_to_scratch(read180, 'psi', 'ot', 180)
-    old_guess = psi4core.get_global_option("GUESS")
-    psi4core.set_global_option("DF_INTS_IO", "SAVE")
-    psi4core.print_out("""\n\t==> IP Fitting SCF: Burn-in <==\n""")
+    old_guess = core.get_global_option("GUESS")
+    core.set_global_option("DF_INTS_IO", "SAVE")
+    core.print_out("""\n\t==> IP Fitting SCF: Burn-in <==\n""")
     E, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
-    psi4core.set_global_option("DF_INTS_IO", "LOAD")
+    core.set_global_option("DF_INTS_IO", "LOAD")
 
     # Determine HOMO, to determine mult1
     eps_a = wfn.epsilon_a()
@@ -480,16 +480,16 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
     types = []
 
     # Right endpoint
-    psi4core.set_global_option('DFT_OMEGA', omega_r)
+    core.set_global_option('DFT_OMEGA', omega_r)
 
     # Neutral
     if read:
-        psi4core.set_global_option("GUESS", "READ")
+        core.set_global_option("GUESS", "READ")
         p4util.copy_file_to_scratch(read180, 'psi', 'ot', 180)
 
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
-    psi4core.print_out("""\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n""")
+    core.print_out("""\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n""")
     E0r, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
@@ -504,18 +504,18 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
         else:
             E_HOMO = E_b
     E_HOMOr = E_HOMO
-    psi4core.IO.change_file_namespace(180, "ot", "neutral")
+    core.IO.change_file_namespace(180, "ot", "neutral")
 
     # Cation
     if read:
-        psi4core.set_global_option("GUESS", "READ")
+        core.set_global_option("GUESS", "READ")
         p4util.copy_file_to_scratch(read180, 'psi', 'ot', 180)
 
     molecule.set_molecular_charge(charge1)
     molecule.set_multiplicity(mult1)
-    psi4core.print_out("""\n\t==> IP Fitting SCF: Cation, Right Endpoint <==\n""")
+    core.print_out("""\n\t==> IP Fitting SCF: Cation, Right Endpoint <==\n""")
     E1r = energy('scf', molecule=molecule, **kwargs)
-    psi4core.IO.change_file_namespace(180, "ot", "cation")
+    core.IO.change_file_namespace(180, "ot", "cation")
 
     IPr = E1r - E0r;
     kIPr = -E_HOMOr;
@@ -533,16 +533,16 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
     kIPs.append(kIPr)
 
     # Use previous orbitals from here out
-    psi4core.set_global_option("GUESS", "READ")
+    core.set_global_option("GUESS", "READ")
 
     # Left endpoint
-    psi4core.set_global_option('DFT_OMEGA', omega_l)
+    core.set_global_option('DFT_OMEGA', omega_l)
 
     # Neutral
-    psi4core.IO.change_file_namespace(180, "neutral", "ot")
+    core.IO.change_file_namespace(180, "neutral", "ot")
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
-    psi4core.print_out("""\n\t==> IP Fitting SCF: Neutral, Left Endpoint <==\n""")
+    core.print_out("""\n\t==> IP Fitting SCF: Neutral, Left Endpoint <==\n""")
     E0l, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
@@ -557,15 +557,15 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
         else:
             E_HOMO = E_b
     E_HOMOl = E_HOMO
-    psi4core.IO.change_file_namespace(180, "ot", "neutral")
+    core.IO.change_file_namespace(180, "ot", "neutral")
 
     # Cation
-    psi4core.IO.change_file_namespace(180, "cation", "ot")
+    core.IO.change_file_namespace(180, "cation", "ot")
     molecule.set_molecular_charge(charge1)
     molecule.set_multiplicity(mult1)
-    psi4core.print_out("""\n\t==> IP Fitting SCF: Cation, Left Endpoint <==\n""")
+    core.print_out("""\n\t==> IP Fitting SCF: Cation, Left Endpoint <==\n""")
     E1l = energy('scf', molecule=molecule, **kwargs)
-    psi4core.IO.change_file_namespace(180, "ot", "cation")
+    core.IO.change_file_namespace(180, "ot", "cation")
 
     IPl = E1l - E0l
     kIPl = -E_HOMOl
@@ -596,13 +596,13 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
         if repeat_r > 1:
             delta_r = delta_r / 2.0
         omega = - (omega_r - omega_l) / (delta_r - delta_l) * delta_l + omega_l
-        psi4core.set_global_option('DFT_OMEGA', omega)
+        core.set_global_option('DFT_OMEGA', omega)
 
         # Neutral
-        psi4core.IO.change_file_namespace(180, "neutral", "ot")
+        core.IO.change_file_namespace(180, "neutral", "ot")
         molecule.set_molecular_charge(charge0)
         molecule.set_multiplicity(mult0)
-        psi4core.print_out("""\n\t==> IP Fitting SCF: Neutral, Omega = %11.3E <==\n""" % omega)
+        core.print_out("""\n\t==> IP Fitting SCF: Neutral, Omega = %11.3E <==\n""" % omega)
         E0, wfn = energy('scf', return_wfn=True, molecule=molecule, **kwargs)
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
@@ -616,15 +616,15 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
                 E_HOMO = E_a
             else:
                 E_HOMO = E_b
-        psi4core.IO.change_file_namespace(180, "ot", "neutral")
+        core.IO.change_file_namespace(180, "ot", "neutral")
 
         # Cation
-        psi4core.IO.change_file_namespace(180, "cation", "ot")
+        core.IO.change_file_namespace(180, "cation", "ot")
         molecule.set_molecular_charge(charge1)
         molecule.set_multiplicity(mult1)
-        psi4core.print_out("""\n\t==> IP Fitting SCF: Cation, Omega = %11.3E <==\n""" % omega)
+        core.print_out("""\n\t==> IP Fitting SCF: Cation, Omega = %11.3E <==\n""" % omega)
         E1 = energy('scf', molecule=molecule, **kwargs)
-        psi4core.IO.change_file_namespace(180, "ot", "cation")
+        core.IO.change_file_namespace(180, "ot", "cation")
 
         IP = E1 - E0
         kIP = -E_HOMO
@@ -664,28 +664,28 @@ def ip_fitting(molecule, omega_l, omega_r, **kwargs):
     # Properly, should clone molecule but since not returned and easy to unblemish,
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
-    psi4core.IO.set_default_namespace("")
+    core.IO.set_default_namespace("")
 
-    psi4core.print_out("""\n\t==> IP Fitting Results <==\n\n""")
+    core.print_out("""\n\t==> IP Fitting Results <==\n\n""")
 
-    psi4core.print_out("""\t => Occupation Determination <= \n\n""")
-    psi4core.print_out("""\t          %6s %6s %6s %6s %6s %6s\n""" % ('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
-    psi4core.print_out("""\t Neutral: %6d %6d %6d %6d %6d %6d\n""" % (N, Na, Nb, charge0, mult0, HOMO))
-    psi4core.print_out("""\t Cation:  %6d %6d %6d %6d %6d\n\n""" % (N - 1, Na1, Nb1, charge1, mult1))
+    core.print_out("""\t => Occupation Determination <= \n\n""")
+    core.print_out("""\t          %6s %6s %6s %6s %6s %6s\n""" % ('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
+    core.print_out("""\t Neutral: %6d %6d %6d %6d %6d %6d\n""" % (N, Na, Nb, charge0, mult0, HOMO))
+    core.print_out("""\t Cation:  %6d %6d %6d %6d %6d\n\n""" % (N - 1, Na1, Nb1, charge1, mult1))
 
-    psi4core.print_out("""\t => Regula Falsi Iterations <=\n\n""")
-    psi4core.print_out("""\t%3s %11s %14s %14s %14s %s\n""" % ('N','Omega','IP','kIP','Delta','Type'))
+    core.print_out("""\t => Regula Falsi Iterations <=\n\n""")
+    core.print_out("""\t%3s %11s %14s %14s %14s %s\n""" % ('N','Omega','IP','kIP','Delta','Type'))
     for k in range(len(omegas)):
-        psi4core.print_out("""\t%3d %11.3E %14.6E %14.6E %14.6E %s\n""" % 
+        core.print_out("""\t%3d %11.3E %14.6E %14.6E %14.6E %s\n""" % 
                        (k + 1, omegas[k], IPs[k], kIPs[k], IPs[k] - kIPs[k], types[k]))
     if converged:
-        psi4core.print_out("""\n\tIP Fitting Converged\n""")
-        psi4core.print_out("""\tFinal omega = %14.6E\n""" % ((omega_l + omega_r) / 2))
-        psi4core.print_out("""\n\t"M,I. does the dying. Fleet just does the flying."\n""")
-        psi4core.print_out("""\t\t\t-Starship Troopers\n""")
+        core.print_out("""\n\tIP Fitting Converged\n""")
+        core.print_out("""\tFinal omega = %14.6E\n""" % ((omega_l + omega_r) / 2))
+        core.print_out("""\n\t"M,I. does the dying. Fleet just does the flying."\n""")
+        core.print_out("""\t\t\t-Starship Troopers\n""")
 
     else:
-        psi4core.print_out("""\n\tIP Fitting did not converge!\n""")
+        core.print_out("""\n\tIP Fitting did not converge!\n""")
 
-    psi4core.set_global_option("DF_INTS_IO", "NONE")
-    psi4core.set_global_option("GUESS", old_guess)
+    core.set_global_option("DF_INTS_IO", "NONE")
+    core.set_global_option("GUESS", old_guess)

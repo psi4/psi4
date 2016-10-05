@@ -32,7 +32,7 @@ to data tables and text.
 """
 import sys
 import re
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver import p4const
 from .exceptions import *
 
@@ -185,7 +185,7 @@ def banner(text, type=1, width=35, strNotOutfile=False):
     if strNotOutfile:
         return banner
     else:
-        psi4core.print_out(banner)
+        core.print_out(banner)
 
 
 def print_stdout(stuff):
