@@ -18,11 +18,15 @@ os.environ["PSIDATADIR"] = data_dir
 try:
     from . import core
 except ImportError as e:
-    print("Import error: {0}".format(e))
     if 'CXXABI' in str(e):
         raise ImportError("Probably GCC >= 4.9 not in [DY]LD_LIBRARY_PATH")
 
-    print("Psi4 is not installed, looking for the 'objdir' build directory for core.so ...")
+    # Check if we are running in place
+    check_inplace_file = os.path.abspath(os.path.dirname(__file__)) + os.path.sep + "run_psi4.py.in"
+    if not os.path.isfile(check_inplace_file):
+        raise ImportError("{0}".format(e))
+
+    print("\nRunning psi4 from the source directory, looking for the 'objdir' build directory for core.so ...")
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     base_path += os.path.sep + 'objdir' + os.path.sep + 'stage'
     matches = []
@@ -35,7 +39,7 @@ except ImportError as e:
     if len(matches) == 0:
         raise ImportError("Could not find core.so in basepath: %s" % base_path)
 
-    print("Found core.so at %s" % matches[0])
+    print("Found core.so at %s\n" % matches[0])
     sys.path.insert(1, matches[0])
     import core
 
