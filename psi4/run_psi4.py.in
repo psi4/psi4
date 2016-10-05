@@ -105,10 +105,9 @@ if not args["skip_preprocessor"]:
 
 # Handle Verbose
 if args["verbose"]:
-    print('-' * 74)
-    print('Parsed Psithon:')
-    print(content)
-    print('-' * 74)
+    psi4.core.print_out('\nParsed Psithon:')
+    psi4.core.print_out(content)
+    psi4.core.print_out('-' * 75)
 
 # Handle Messy
 if args["messy"]:
