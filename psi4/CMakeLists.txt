@@ -96,7 +96,7 @@ install(DIRECTORY driver
 install(FILES __init__.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
 
-configure_file(import_core.py.in import_core.py @ONLY)
+configure_file(import_core.py import_core.py @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/import_core.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
 

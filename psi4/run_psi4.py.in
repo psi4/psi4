@@ -23,6 +23,10 @@ parser.add_argument("-a", "--append", action='store_true', help="Append results 
 parser.add_argument("-l", "--psidatadir", help="Specify where to look for the Psi data directory. Overrides PSIDATADIR.")
 parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use (overrides OMP_NUM_THREADS)")
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
+parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory."
+                                                           "The build directory must be 'objdir' and"
+                                                           "PSIDATADIR must be set."
+                                                           "!Warning! expert option.")
 
 # For plugins
 parser.add_argument("--new-plugin", help="Creates a new directory with files for writing a "
@@ -47,6 +51,10 @@ cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep 
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@"])
 if "CMAKE_INSTALL_LIBDIR" in lib_dir:
     raise ImportError("Psi4 was not installed correctly!")
+
+# If we are running in place, run it from the source directory
+if args["inplace"]:
+    lib_dir = "@PROJECT_SOURCE_DIR@" + os.path.sep + '..'
 
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
@@ -102,7 +110,7 @@ with open(args["input"]) as f:
 
 # Preprocess
 if not args["skip_preprocessor"]:
-    content = psi4.process_input(content)
+    content = psi4.process_input(content, psi4_imported=(not args["inplace"]))
 
 # Handle Verbose
 if args["verbose"]:
