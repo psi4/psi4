@@ -379,7 +379,7 @@ def _nph_view(self):
         return _build_view(self)
         # return self.cdict['_np_view_data']
     else:
-        return _build_view(self)
+        return _build_view(self),
         # return self.cdict['_np_view_data'],
 
 @property
@@ -396,6 +396,13 @@ def _np_write(self, filename=None, prefix=""):
     ret[prefix + "Name"] = self.name
     for h, v in enumerate(self.nph):
         ret[prefix + "IrrepData" + str(h)] = v
+
+    if isinstance(self, core.Matrix):
+        ret[prefix + "Dim1"] = self.rowdim().to_tuple()
+        ret[prefix + "Dim2"] = self.coldim().to_tuple()
+    if isinstance(self, core.Vector):
+        ret[prefix + "Dim"] = self.dim()
+
 
     if filename is None:
         return ret
@@ -425,11 +432,11 @@ def _np_read(self, filename, prefix=""):
 
     arr_type = self.__mro__[0]
     if arr_type == core.Matrix:
-        dim1 = core.Dimension.from_list([x.shape[0] for x in ret_data])
-        dim2 = core.Dimension.from_list([x.shape[1] for x in ret_data])
+        dim1 = core.Dimension.from_list(data[prefix + "Dim1"])
+        dim2 = core.Dimension.from_list(data[prefix + "Dim2"])
         ret = core.Matrix(str(data[prefix + "Name"]), dim1, dim2)
     elif arr_type == core.Vector:
-        dim1 = core.Dimension.from_list([x.shape[0] for x in ret_data])
+        dim1 = core.Dimension.from_list(data[prefix + "Dim"])
         ret = core.Vector(str(data[prefix + "Name"]), dim1)
 
     for h in range(data[prefix + "Irreps"]):

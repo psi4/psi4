@@ -30,7 +30,7 @@ from __future__ import absolute_import
 from psi4 import core
 from psi4.driver import p4const
 from math import sqrt, pi
-from diatomic_fits import *
+from .diatomic_fits import *
 
 def anharmonicity(rvals, energies, mol = None):
     """Generates spectroscopic constants for a diatomic molecules.

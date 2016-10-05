@@ -745,35 +745,28 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
 
     # imports
     imports = '\n'.join(future_imports) + '\n'
+    imports += 'import psi4\n'
     imports += 'from psi4 import *\n'
     if psi4_imported:
         imports += 'from psi4.core import *\n'
     else:
         imports += 'from core import *\n'
-    # imports += 'import dependency_check\n'
-    # imports += 'from psi4.driver.p4const import *\n'
-    # imports += 'from psi4.driver.p4util import *\n'
-    # imports += 'from psi4.driver.molutil import *\n'
-    # imports += 'from diatomic import anharmonicity\n'
-    # imports += 'from driver import *\n'
-    # imports += 'from gaussian_n import *\n'
-    # imports += 'from qmmm import *\n'
-    # imports += 'from aliases import *\n'
-    # imports += 'from driver_cbs import *\n'
-    # imports += 'from wrapper_database import database, db, DB_RGT, DB_RXN\n'
-    # imports += 'from wrapper_autofrag import auto_fragments\n'
-    # imports += 'from qmmm import *\n'
+    imports += 'from psi4.driver.diatomic import anharmonicity\n'
+    imports += 'from psi4.driver.gaussian_n import *\n'
+    imports += 'from psi4.driver.aliases import *\n'
+    imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
+    imports += 'from psi4.driver.wrapper_autofrag import auto_fragments\n'
     imports += 'psi4_io = core.IOManager.shared_object()\n'
-    imports += 'core.efp_init()\n'  # initialize EFP object before Molecule read in
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
-    psirc = ''
-    homedir = os.path.expanduser('~')
-    psirc_file = homedir + '/.psi4rc'
+    psirc_file = os.path.expanduser('~') + os.path.sep + '.psi4rc'
     if os.path.isfile(psirc_file):
         fh = open(psirc_file)
         psirc = fh.read()
         fh.close()
+        psirc = psirc.replace('psi4.IOManager', 'psi4.core.IOManager')
+    else:
+        psirc = ''
 
     # Override scratch directory if user specified via env_var
     scratch = ''

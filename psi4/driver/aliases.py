@@ -39,7 +39,7 @@ import re
 import os
 import math
 import warnings
-import driver_cbs
+from . import driver_cbs
 #from wrappers import *
 #from gaussian_n import *  # CU
 #from wrappers_cfour import *  # CU

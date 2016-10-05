@@ -46,7 +46,7 @@ from psi4.driver.molutil import *
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import functional as dft_functional
+from . import dft_functional
 
 # never import driver, wrappers, or aliases into this file
 
@@ -979,7 +979,7 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(reference, ref_wfn):
+def scf_wavefunction_factory(reference, ref_wfn, functional=None):
     """Builds the correct wavefunction from the provided information
     """
 
@@ -988,22 +988,28 @@ def scf_wavefunction_factory(reference, ref_wfn):
     else:
         modified_disp_params = None
 
+    # Figure out functional
+    if functional is None:
+        superfunc, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+    elif isinstance(functional, core.SuperFunctional):
+        superfunc = functional
+        disp_type = False
+    elif isinstance(functional, (str, unicode)):
+        superfuc, disp_type = dft_functional.build_superfunctional(functional)
+    else:
+        raise ValidationError("Functional %s is not understood" % str(functional))
+
+    # Build the wavefunction
     disp_type = False
     core.prepare_options_for_module("SCF")
-    if reference == "RHF":
-        wfn = core.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+    if reference in ["RHF", "RKS"]:
+        wfn = core.RHF(ref_wfn, superfunc)
     elif reference == "ROHF":
-        wfn = core.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
-    elif reference == "UHF":
-        wfn = core.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = core.ROHF(ref_wfn, superfunc)
+    elif reference in ["UHF", "UKS"]:
+        wfn = core.UHF(ref_wfn, superfunc)
     elif reference == "CUHF":
-        wfn = core.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
-    elif reference == "RKS":
-        functional, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
-        wfn = core.RHF(ref_wfn, functional)
-    elif reference == "UKS":
-        func, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
-        wfn = core.UHF(ref_wfn, func)
+        wfn = core.CUHF(ref_wfn, superfunc)
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
@@ -1223,9 +1229,11 @@ def scf_helper(name, **kwargs):
         symmetry = str(data["symmetry"])
 
         if basis_name == scf_wfn.basisset().name():
+            core.print_out("  Reading orbitals from file 180, no projection.\n")
             scf_wfn.guess_Ca(Ca)
             scf_wfn.guess_Cb(Cb)
         else:
+            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n")
             old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
@@ -3339,6 +3347,18 @@ def run_fisapt(name, **kwargs):
 
     if ref_wfn is None:
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+
+    sapt_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SAPT",
+                                     core.get_global_option("DF_BASIS_SAPT"),
+                                     "RIFIT", core.get_global_option("BASIS"),
+                                     ref_wfn.basisset().has_puream())
+    ref_wfn.set_basisset("DF_BASIS_SAPT", sapt_basis)
+
+    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
+                                core.get_global_option("MINAO_BASIS"))
+    ref_wfn.set_basisset("MINAO", minao)
+
+
     fisapt_wfn = core.fisapt(ref_wfn)
 
     optstash.restore()

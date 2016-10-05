@@ -39,8 +39,6 @@ import math
 import os
 import shutil
 
-from .. import core as psi4
-
 # Import driver helpers
 from . import driver_util
 from . import driver_cbs
@@ -463,7 +461,8 @@ def energy(name, **kwargs):
 
         return (core.get_variable('CURRENT ENERGY'), wfn)
     else:
-        wfn.cdict.clear()
+        if isinstance(wfn, core.Wavefunction):
+            wfn.cdict.clear()
         return core.get_variable('CURRENT ENERGY')
 
 
