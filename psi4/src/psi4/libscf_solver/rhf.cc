@@ -348,7 +348,7 @@ double RHF::compute_E()
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
-energies_["One-Electron"] = one_electron_E;
+    energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] =  coulomb_E + exchange_E;
     energies_["XC"] = XC_E;
     double dashD_E = energies_["-D"];

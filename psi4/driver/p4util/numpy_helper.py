@@ -345,11 +345,11 @@ def _build_view(matrix):
 
 @property
 def _np_shape(self):
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
+    if '_np_view_data' not in self.cdict.keys():
+        self.cdict['_np_view_data'] = _build_view(self)
 
-    # view_data = self.cdict['_np_view_data']
-    view_data = _build_view(self)
+    view_data = self.cdict['_np_view_data']
+    # view_data = _build_view(self)
     if self.nirrep() > 1:
         return tuple(view_data for x in range(self.nirrep()))
     else:
@@ -361,11 +361,11 @@ def _np_view(self):
     View without only one irrep
     """
 
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
+    if '_np_view_data' not in self.cdict.keys():
+        self.cdict['_np_view_data'] = _build_view(self)
 
-    # return self.cdict['_np_view_data']
-    return _build_view(self)
+    return self.cdict['_np_view_data']
+    # return _build_view(self)
 
 @property
 def _nph_view(self):
@@ -401,7 +401,7 @@ def _np_write(self, filename=None, prefix=""):
         ret[prefix + "Dim1"] = self.rowdim().to_tuple()
         ret[prefix + "Dim2"] = self.coldim().to_tuple()
     if isinstance(self, core.Vector):
-        ret[prefix + "Dim"] = self.dim()
+        ret[prefix + "Dim"] = [self.dim(x) for x in range(self.nirrep())]
 
 
     if filename is None:
