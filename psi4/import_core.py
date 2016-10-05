@@ -45,6 +45,7 @@ except ImportError as err:
 
 # Init core
 core.initialize()
+core.efp_init()
 
 # Cleanup core at exit
 import atexit

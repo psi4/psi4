@@ -46,7 +46,7 @@ def readXYZ(filename):
     lines = fh.readlines()
     lines = lines[2:]
     fh.close()
-    
+
     re_xyz = re.compile(r'^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*$')
 
     val = []
@@ -57,7 +57,7 @@ def readXYZ(filename):
     return val
 
 def writeXYZ(filename, geom):
-    
+
     fh = open(filename, 'w')
     fh.write('%d\n\n' % len(geom))
     for line in geom:
@@ -90,18 +90,18 @@ def readFrags(filename):
 
     frags = {}
     fragkeys = []
-    
+
     fh = open(filename, 'r')
     lines = fh.readlines()
     fh.close()
-    
+
     for line in lines:
         tokens = re.split(r'\s+', line.strip())
         key = tokens[0]
         val = [int(token)-1 for token in tokens[1:]]
         frags[key] = val
         fragkeys.append(key)
-    
+
     return [frags, fragkeys]
 
 def collapseRows(vals):
@@ -130,7 +130,7 @@ def checkFragments(geom, Zs, frags):
     for ind in range(len(geom)):
         if (ind in taken) and (Zs[ind] == 0.0):
             raise Exception('Atom %d has charge 0.0, should not be in fragments.' % (ind+1))
-        elif (ind not in taken) and (Zs[ind] != 0.0): 
+        elif (ind not in taken) and (Zs[ind] != 0.0):
             raise Exception('Atom %d has charge >0.0, should be in fragments.' % (ind+1))
 
 def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
@@ -143,7 +143,7 @@ def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
     for key in fragkeys:
         nuclear_ws[key] = [0.0 for x in range(nA)]
         orbital_ws[key] = [0.0 for x in range(na)]
-   
+
     for A in range(nA):
         for key in fragkeys:
             if A in frags[key]:
@@ -158,7 +158,7 @@ def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
                 sum += Q[A][a]
             if sum > completeness:
                 assigned = True
-                orbital_ws[key][a] = 1.0 
+                orbital_ws[key][a] = 1.0
                 break
         if not assigned:
             linkas.append(a)
@@ -171,7 +171,7 @@ def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
 
     for a in linkas:
         sums = []
-        for key in fragkeys:    
+        for key in fragkeys:
             sum = 0.0
             for A in frags[key]:
                 sum += Q[A][a]
@@ -189,14 +189,14 @@ def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
         if sum <= completeness:
             raise Exception('Orbital %d is not complete over two link atoms.' % (a+1))
         A1 = Ainds[0]
-        A2 = Ainds[1] 
+        A2 = Ainds[1]
 
         nuclear_ws[key1][A1] -= 1.0 / Z[A1]
         nuclear_ws[key2][A2] -= 1.0 / Z[A2]
 
         linkname = 'Link-%d' % (linkindex+1);
         linkindex+=1;
-        
+
         linkkeys.append(linkname)
         links[linkname] = [A1, A2]
         link_nuclear_ws[linkname] = [0.0 for x in range(nA)]
@@ -246,7 +246,7 @@ def printFrag(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filename):
             fh.write('%3d ' % (val+1),)
         fh.write('\n')
     fh.write('\n')
-    
+
     fh.write('   => Orbitals <=\n\n')
     for key in fragkeys:
         fh.write('%10s: ' % (key),)
@@ -255,7 +255,7 @@ def printFrag(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filename):
                 fh.write('%3d ' % (k+1),)
         fh.write('\n')
     fh.write('\n')
-            
+
 
     fh.write('   =>  Nuclear Weights <=\n\n')
     for key in fragkeys:
@@ -268,8 +268,8 @@ def printFrag(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filename):
 
     fh.write('  => Charges <=\n\n')
     for key in fragkeys:
-        Zval = sum([nuclear_ws[key][k] * Z[k] for k in range(len(Z))])       
-        Yval = 2.0 * sum(orbital_ws[key]) 
+        Zval = sum([nuclear_ws[key][k] * Z[k] for k in range(len(Z))])
+        Yval = 2.0 * sum(orbital_ws[key])
         fh.write('%10s: Z = %11.3f, Y = %11.3f, Q = %11.3f\n' % (key, Zval, Yval, Zval - Yval))
     fh.write('\n')
 
@@ -281,7 +281,7 @@ def printFrag(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filename):
             if orbital_ws[key][k] == 0.0:
                 continue
             occ = 0.0
-            for atom in frags[key]:    
+            for atom in frags[key]:
                 occ += Q[atom][k]
             loss = 1.0 - occ
             fh.write('    %4d: %11.3f\n' % (k+1, loss))
@@ -306,7 +306,7 @@ def extractOsaptData(filepath):
     return vals
 
 def extractOrder2Fsapt(osapt, wsA, wsB):
-    
+
     vals = {}
     for key, value in osapt.items():
         vals[key] = {}
@@ -422,7 +422,7 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
 
                 vals[key][keyA][key1B] += V1B * energy
                 vals[key][keyA][key2B] += V2B * energy
-            
+
     for key in order2.keys():
         for keyA in frags['A'].keys():
             if not (len(keyA) > 4 and keyA[:4] == 'Link'):
@@ -493,11 +493,11 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
                 vals[key][key1A][key2B] += V1A * V2B * energy
                 vals[key][key2A][key1B] += V2A * V1B * energy
                 vals[key][key2A][key2B] += V2A * V2B * energy
-            
+
     return vals
 
 def printOrder2(order2, fragkeys):
-    
+
     order1A = {}
     order1B = {}
     for saptkey in saptkeys_:
@@ -543,7 +543,7 @@ def printOrder2(order2, fragkeys):
         for saptkey in saptkeys_:
             print '%8.3f ' % (order1B[saptkey][keyB]),
         print ''
-             
+
     print '%-9s %-9s ' % ('All', 'All'),
     for saptkey in saptkeys_:
         print '%8.3f ' % (order0[saptkey]),
@@ -581,7 +581,7 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
 
     frags = {}
     frags['A'] = holder['A'][0]
-    frags['B'] = holder['B'][0] 
+    frags['B'] = holder['B'][0]
 
     checkFragments(geom, Zs['A'], frags['A'])
     checkFragments(geom, Zs['B'], frags['B'])
@@ -590,12 +590,12 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
     Qs['A'] = readBlock('%s/QA.dat' % dirname)
     Qs['B'] = readBlock('%s/QB.dat' % dirname)
 
-    holder1 = partitionFragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness) 
-    holder2 = partitionFragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness) 
+    holder1 = partitionFragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness)
+    holder2 = partitionFragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness)
 
     fragkeysr = {}
-    fragkeysr['A'] = fragkeys['A']    
-    fragkeysr['B'] = fragkeys['B']    
+    fragkeysr['A'] = fragkeys['A']
+    fragkeysr['B'] = fragkeys['B']
 
     fragkeys['A'] = holder1[0]
     fragkeys['B'] = holder2[0]
@@ -604,22 +604,22 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
     frags['B']    = holder2[1]
 
     nuclear_ws = {}
-    nuclear_ws['A'] = holder1[2] 
-    nuclear_ws['B'] = holder2[2] 
-   
+    nuclear_ws['A'] = holder1[2]
+    nuclear_ws['B'] = holder2[2]
+
     orbital_ws = {}
-    orbital_ws['A'] = holder1[3] 
-    orbital_ws['B'] = holder2[3] 
+    orbital_ws['A'] = holder1[3]
+    orbital_ws['B'] = holder2[3]
 
     total_ws = {}
-    total_ws['A'] = holder1[4] 
-    total_ws['B'] = holder2[4] 
+    total_ws['A'] = holder1[4]
+    total_ws['B'] = holder2[4]
 
     printFrag(geom, Zs['A'], Qs['A'], fragkeys['A'], frags['A'], nuclear_ws['A'], orbital_ws['A'], '%s/fragA.dat' % dirname)
     printFrag(geom, Zs['B'], Qs['B'], fragkeys['B'], frags['B'], nuclear_ws['B'], orbital_ws['B'], '%s/fragB.dat' % dirname)
 
     osapt = extractOsaptData(dirname)
-    
+
     order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'])
     order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
 
@@ -662,9 +662,9 @@ class PDBAtom:
         self.chainID = key_chainID
         self.resSeq = int(key_resSeq)
         self.iCode = key_iCode
-        self.x = float(key_x) 
-        self.y = float(key_y) 
-        self.z = float(key_z) 
+        self.x = float(key_x)
+        self.y = float(key_y)
+        self.z = float(key_z)
         self.occupancy = float(key_occupancy)
         self.tempFactor = float(key_tempFactor)
         self.element = key_element.strip()
@@ -693,15 +693,15 @@ class PDBAtom:
 class PDB:
 
     def __init__(self, atoms, name):
-        
+
         self.name = name
         self.atoms = atoms
 
     @classmethod
     def fromGeom(cls,geom):
-        
+
         name = ''
-        atoms = []        
+        atoms = []
 
         for A in range(len(geom)):
             atoms.append(PDBAtom(
@@ -710,14 +710,14 @@ class PDB:
                 geom[A][1],
                 geom[A][2],
                 geom[A][3],
-                )) 
+                ))
 
         return cls(atoms, name)
 
     def __str__(self):
-     
+
         strval = '  --> PDB Object %s <--\n\n' % (self.name)
-        for atom in self.atoms: 
+        for atom in self.atoms:
             strval += str(atom)
         strval += '\n'
         return strval
@@ -733,11 +733,11 @@ class PDB:
         for atom in self.atoms:
             charge += atom.charge
         return charge
-    
+
     def frozen(self):
         frozen = 0
         for atom in self.atoms:
-            frozen += atom.frozen()     
+            frozen += atom.frozen()
         return frozen
 
 def printOrder1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+'):
@@ -755,7 +755,7 @@ def printOrder1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+'):
                     E[k] += val
                 for l in frags['B'][keyB]:
                     E[l] += val
-    
+
         pdb2 = copy.deepcopy(pdb)
         for A in range(len(pdb.atoms)):
             pdb2.atoms[A].tempFactor = E[A]
@@ -773,7 +773,7 @@ if __name__ == '__main__':
         dirname = sys.argv[1]
     else:
         raise Exception('Usage: fsapt.py [dirname]')
-    
+
     # > Order-2 Analysis < #
 
     fh = open('%s/fsapt.dat' % dirname, 'w')
@@ -782,16 +782,16 @@ if __name__ == '__main__':
     print '  ==> F-ISAPT: Links by Charge <==\n'
     stuff = computeFsapt(dirname, False)
     print '   => Full Analysis <=\n'
-    printOrder2(stuff['order2'], stuff['fragkeys']) 
+    printOrder2(stuff['order2'], stuff['fragkeys'])
     print '   => Reduced Analysis <=\n'
-    printOrder2(stuff['order2r'], stuff['fragkeysr']) 
+    printOrder2(stuff['order2r'], stuff['fragkeysr'])
 
     print '  ==> F-ISAPT: Links 50-50 <==\n'
     stuff = computeFsapt(dirname, True)
     print '   => Full Analysis <=\n'
-    printOrder2(stuff['order2'], stuff['fragkeys']) 
+    printOrder2(stuff['order2'], stuff['fragkeys'])
     print '   => Reduced Analysis <=\n'
-    printOrder2(stuff['order2r'], stuff['fragkeysr']) 
+    printOrder2(stuff['order2r'], stuff['fragkeysr'])
 
     fh, sys.stdout = sys.stdout, fh
     fh.close()

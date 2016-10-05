@@ -134,6 +134,7 @@ public:
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
     static std::shared_ptr<IBOLocalizer2> build(
         std::shared_ptr<BasisSet> primary,
+        std::shared_ptr<BasisSet> minao,
         std::shared_ptr<Matrix> C,
         Options& options);
 

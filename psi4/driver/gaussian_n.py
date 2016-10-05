@@ -33,10 +33,10 @@ import re
 import os
 import math
 import warnings
-import driver
-import core
-import p4util
-import p4const
+from . import driver
+from psi4 import core
+from psi4.driver import p4util
+from psi4.driver import p4const
 #from driver import *
 # never import aliases into this file
 

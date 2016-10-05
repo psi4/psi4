@@ -74,13 +74,11 @@ void IBOLocalizer2::common_init()
 }
 std::shared_ptr<IBOLocalizer2> IBOLocalizer2::build(
     std::shared_ptr<BasisSet> primary,
+    std::shared_ptr<BasisSet> minao,
     std::shared_ptr<Matrix> C,
     Options& options)
 {
 //    Options& options = Process::environment.options;
-
-    std::shared_ptr<BasisSet> minao = BasisSet::pyconstruct_orbital(primary->molecule(),
-        "BASIS", options.get_str("MINAO_BASIS"));
 
     std::shared_ptr<IBOLocalizer2> local(new IBOLocalizer2(primary, minao, C));
 

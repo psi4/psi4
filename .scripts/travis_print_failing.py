@@ -13,9 +13,9 @@ with open('full_ctest_output.dat', 'r') as outfile:
 
 ctest_exit_status = int(ctestout[0])
 if len(ctestout[1:]) == 0:
-    sys.stdout.write("""\n  <<<  All test cases have passed!  >>>\n\n""" %
+    sys.stdout.write("""\n  <<<  All test cases have passed!  >>>\n\n""")
 else:
-    sys.stdout.write("""\n  <<<  Failing outputs follow.  >>>\n\n""" %
+    sys.stdout.write("""\n  <<<  Failing outputs follow.  >>>\n\n""")
 
 for line in ctestout[1:]:
     linematch = testfail.match(line)
@@ -24,7 +24,7 @@ for line in ctestout[1:]:
         sys.stdout.write("""\n\n%s failed. Here is the output:\n""" % (bad))
 
         badoutfile = bad
-        for oddity in ['pcmsolver', 'cfour', 'libefp', 'dmrg', 'dftd3', 'mrcc']:
+        for oddity in ['pcmsolver', 'cfour', 'libefp', 'dmrg', 'dftd3', 'mrcc', 'psi4numpy']:
             if bad.startswith(oddity):
                 badoutfile = oddity + '/' + bad
         badoutfile = 'tests/' + badoutfile + '/output.dat'

@@ -41,9 +41,9 @@ psi4.print_out('\nBuilding DF ERI tensor Qov...\n')
 t = time.time()
 
 # Build aux basis
-aux = psi4core.BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
-                              psi4.get_option("DFMP2", "DF_BASIS_MP2"),
-                              "RIFIT", psi4.get_global_option('BASIS'))
+aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
+                         get_option("DFMP2", "DF_BASIS_MP2"),
+                         "RIFIT", get_global_option('BASIS'))
 dfobj = DFTensor(wfn.basisset(), aux, wfn.Ca(), ndocc, nvirt)
 Qov = dfobj.Qov()
 
