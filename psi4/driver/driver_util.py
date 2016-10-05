@@ -23,7 +23,7 @@
 from __future__ import print_function
 import math
 import re
-from psi4 import psi4core
+from psi4 import core
 import qcdb
 import p4util
 from p4util.exceptions import *
@@ -74,42 +74,42 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     if verbose >= 2:
         print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
-    if not psi4core.has_option_changed('SCF', 'E_CONVERGENCE'):
+    if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
         if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
-            psi4core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
+            core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
             if verbose >= 2:
                 print(scf_Ec, end=' ')
         else:
-            psi4core.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
+            core.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
             if verbose >= 2:
                 print(pscf_Ec, end=' ')
     else:
         if verbose >= 2:
-            print('CUSTOM', psi4core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
+            print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
 
-    if not psi4core.has_option_changed('SCF', 'D_CONVERGENCE'):
+    if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
-            psi4core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
+            core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
             if verbose >= 2:
                 print(scf_Dc, end=' ')
         else:
-            psi4core.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
+            core.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
             if verbose >= 2:
                 print(pscf_Dc, end=' ')
     else:
         if verbose >= 2:
-            print('CUSTOM', psi4core.get_option('SCF', 'D_CONVERGENCE'), end=' ')
+            print('CUSTOM', core.get_option('SCF', 'D_CONVERGENCE'), end=' ')
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not psi4core.has_global_option_changed('E_CONVERGENCE'):
+    if not core.has_global_option_changed('E_CONVERGENCE'):
         if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
-            psi4core.set_global_option('E_CONVERGENCE', gen_Ec)
+            core.set_global_option('E_CONVERGENCE', gen_Ec)
             if verbose >= 2:
                 print(gen_Ec, end=' ')
     else:
         if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
             if verbose >= 2:
-                print('CUSTOM', psi4core.get_global_option('E_CONVERGENCE'), end=' ')
+                print('CUSTOM', core.get_global_option('E_CONVERGENCE'), end=' ')
 
     if verbose >= 2:
         print('')

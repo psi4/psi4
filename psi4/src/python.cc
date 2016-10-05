@@ -1219,14 +1219,14 @@ void psi4_python_module_finalize()
 }
 
 
-PYBIND11_PLUGIN(psi4core) {
-    py::module psi4core("psi4core", "Psi4: A quantum chemistry program");
+PYBIND11_PLUGIN(core) {
+    py::module core("core", "Psi4: An Open-Source Ab Initio Electronic Structure Package");
 
-    psi4core.def("initialize", &psi4_python_module_initialize);
-    psi4core.def("finalize", &psi4_python_module_finalize);
+    core.def("initialize", &psi4_python_module_initialize);
+    core.def("finalize", &psi4_python_module_finalize);
 
 
-    py::enum_<PsiReturnType>(psi4core, "PsiReturnType", "docstring")
+    py::enum_<PsiReturnType>(core, "PsiReturnType", "docstring")
             .value("Success", Success)
             .value("Failure", Failure)
             .value("Balk", Balk)
@@ -1234,247 +1234,247 @@ PYBIND11_PLUGIN(psi4core) {
             .export_values();
 
 
-    psi4core.def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
-    psi4core.def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
-    psi4core.def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
+    core.def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
+    core.def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
+    core.def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
-    psi4core.def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
+    core.def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
     // Benchmarks
-    export_benchmarks(psi4core);
+    export_benchmarks(core);
 
     // BLAS/LAPACK Static Wrappers
-    export_blas_lapack(psi4core);
+    export_blas_lapack(core);
 
     // Plugins
-    export_plugins(psi4core);
+    export_plugins(core);
 
     // OEProp/GridProp
-    export_oeprop(psi4core);
+    export_oeprop(core);
 
     // EFP
-    export_efp(psi4core);
+    export_efp(core);
 
     // CubeProperties
-    export_cubeprop(psi4core);
+    export_cubeprop(core);
 
     // Options
-    psi4core.def("prepare_options_for_module",
+    core.def("prepare_options_for_module",
         py_psi_prepare_options_for_module,
         "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
-    psi4core.def("set_active_molecule",
+    core.def("set_active_molecule",
         py_psi_set_active_molecule,
-        "Activates a previously psi4core.defined (in the input) molecule, by name.");
-    psi4core.def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    psi4core.def("set_legacy_molecule",
+        "Activates a previously core.defined (in the input) molecule, by name.");
+    core.def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
+    core.def("set_legacy_molecule",
         py_psi_set_legacy_molecule,
-        "Activates a previously psi4core.defined (in the input) molecule, by name.");
-    psi4core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
-    psi4core.def("legacy_wavefunction",
+        "Activates a previously core.defined (in the input) molecule, by name.");
+    core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
+    core.def("legacy_wavefunction",
         py_psi_legacy_wavefunction,
         "Returns the current legacy_wavefunction object from the most recent computation.");
-    psi4core.def("set_legacy_wavefunction",
+    core.def("set_legacy_wavefunction",
         py_psi_set_legacy_wavefunction,
         "Returns the current legacy_wavefunction object from the most recent computation.");
-    psi4core.def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
-    psi4core.def("set_gradient",
+    core.def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
+    core.def("set_gradient",
         py_psi_set_gradient,
         "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
-    psi4core.def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
-    psi4core.def("get_efp_torque",
+    core.def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
+    core.def("get_efp_torque",
         py_psi_get_efp_torque,
         "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
-    psi4core.def("set_efp_torque",
+    core.def("set_efp_torque",
         py_psi_set_efp_torque,
         "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
-    psi4core.def("get_frequencies",
+    core.def("get_frequencies",
         py_psi_get_frequencies,
         "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
-    psi4core.def("get_atomic_point_charges",
+    core.def("get_atomic_point_charges",
         py_psi_get_atomic_point_charges,
         "Returns the most recently computed atomic point charges, as a double * object.");
-    psi4core.def("set_frequencies",
+    core.def("set_frequencies",
         py_psi_set_frequencies,
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
-    psi4core.def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
-    psi4core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
-    psi4core.def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
-    psi4core.def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-//    psi4core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
-    psi4core.def("set_parent_symmetry",
+    core.def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
+    core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
+    core.def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
+    core.def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
+//    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
+    core.def("set_parent_symmetry",
         py_psi_set_parent_symmetry,
         "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
-    psi4core.def("print_options",
+    core.def("print_options",
         py_psi_print_options,
         "Prints the currently set options (to the output file) for the current module.");
-    psi4core.def("print_global_options",
+    core.def("print_global_options",
         py_psi_print_global_options,
         "Prints the currently set global (all modules) options to the output file.");
-    psi4core.def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
+    core.def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    psi4core.def("set_local_option", py_psi_set_local_option_array_wrapper,
+    core.def("set_local_option", py_psi_set_local_option_array_wrapper,
         "Sets value *arg3* to array keyword *arg2* scoped only to a specific module *arg1*.");
-    psi4core.def("set_local_option", py_psi_set_local_option_int,
+    core.def("set_local_option", py_psi_set_local_option_int,
         "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
-    psi4core.def("set_local_option", py_psi_set_local_option_double,
+    core.def("set_local_option", py_psi_set_local_option_double,
         "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
-    psi4core.def("set_local_option", py_psi_set_local_option_string,
+    core.def("set_local_option", py_psi_set_local_option_string,
         "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
-    psi4core.def("set_local_option_python", py_psi_set_local_option_python,
+    core.def("set_local_option_python", py_psi_set_local_option_python,
         "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
-    psi4core.def("set_global_option", py_psi_set_global_option_array_wrapper,
+    core.def("set_global_option", py_psi_set_global_option_array_wrapper,
         "Sets value *arg2* to array keyword *arg1* for all modules.");
-    psi4core.def("set_global_option", py_psi_set_global_option_int,
+    core.def("set_global_option", py_psi_set_global_option_int,
         "Sets value *arg2* to integer keyword *arg1* for all modules.");
-    psi4core.def("set_global_option", py_psi_set_global_option_double,
+    core.def("set_global_option", py_psi_set_global_option_double,
         "Sets value *arg2* to double keyword *arg1* for all modules.");
-    psi4core.def("set_global_option", py_psi_set_global_option_string,
+    core.def("set_global_option", py_psi_set_global_option_string,
         "Sets value *arg2* to string keyword *arg1* for all modules.");
-    psi4core.def("set_global_option_python", py_psi_set_global_option_python,
+    core.def("set_global_option_python", py_psi_set_global_option_python,
         "Sets a global option to a Python object type.");
 
     // Print options list
-    psi4core.def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
+    core.def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    psi4core.def("get_global_option",
+    core.def("get_global_option",
         py_psi_get_global_option,
         "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
-    psi4core.def("get_local_option",
+    core.def("get_local_option",
         py_psi_get_local_option,
         "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
-    psi4core.def("get_option",
+    core.def("get_option",
         py_psi_get_option,
-        "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local psi4core.default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
+        "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local core.default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    psi4core.def("has_global_option_changed",
+    core.def("has_global_option_changed",
         py_psi_has_global_option_changed,
         "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
-    psi4core.def("has_local_option_changed",
+    core.def("has_local_option_changed",
         py_psi_has_local_option_changed,
         "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module *arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
-    psi4core.def("has_option_changed",
+    core.def("has_option_changed",
         py_psi_has_option_changed,
         "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
-    psi4core.def("revoke_global_option_changed",
+    core.def("revoke_global_option_changed",
         py_psi_revoke_global_option_changed,
         "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
-    psi4core.def("revoke_local_option_changed",
+    core.def("revoke_local_option_changed",
         py_psi_revoke_local_option_changed,
         "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    psi4core.def("has_variable",py_psi_has_variable,"Returns true if the PSI variable exists/is set.");
-    psi4core.def("get_variable",
+    core.def("has_variable",py_psi_has_variable,"Returns true if the PSI variable exists/is set.");
+    core.def("get_variable",
         py_psi_get_variable,
         "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
-    psi4core.def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
-    psi4core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
-    psi4core.def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-    psi4core.def("get_variables",
+    core.def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
+    core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
+    core.def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
+    core.def("get_variables",
         py_psi_return_variable_map,
         "Returns dictionary of the PSI variables set internally by the modules or python driver.");
-    psi4core.def("get_array_variable",
+    core.def("get_array_variable",
         py_psi_get_array_variable,
         "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
-    psi4core.def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
-    psi4core.def("get_array_variables",
+    core.def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
+    core.def("get_array_variables",
         py_psi_return_array_variable_map,
         "Returns dictionary of the PSI variables set internally by the modules or python driver.");
 
     // Get the name of the directory where the input file is at
-    psi4core.def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
+    core.def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
 
     // Returns the location where the Psi4 source is located.
-    psi4core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
+    core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
 
-    psi4core.def("flush_outfile", py_flush_outfile, "Flushes the output file.");
-    psi4core.def("close_outfile", py_close_outfile, "Closes the output file.");
-    psi4core.def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
-    psi4core.def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
-    psi4core.def("be_quiet",
+    core.def("flush_outfile", py_flush_outfile, "Flushes the output file.");
+    core.def("close_outfile", py_close_outfile, "Closes the output file.");
+    core.def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
+    core.def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
+    core.def("be_quiet",
         py_be_quiet,
         "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
-    psi4core.def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
-    psi4core.def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
+    core.def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
+    core.def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
-    // psi4core.def("scf", py_psi_scf, "Runs the SCF code.");
-    psi4core.def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
-    psi4core.def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
-    psi4core.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
-    psi4core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
-    psi4core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
-    psi4core.def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
-    psi4core.def("fd_geoms_1_0", py_psi_fd_geoms_1_0,
+    // core.def("scf", py_psi_scf, "Runs the SCF code.");
+    core.def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
+    core.def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
+    core.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
+    core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
+    core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
+    core.def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
+    core.def("fd_geoms_1_0", py_psi_fd_geoms_1_0,
         "Gets list of displacements needed for a finite difference gradient computation, from energy points.");
-    psi4core.def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0,
+    core.def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0,
         "Gets list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
-    psi4core.def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1,
+    core.def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1,
         "Gets list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
-    psi4core.def("fd_1_0", py_psi_fd_1_0,
+    core.def("fd_1_0", py_psi_fd_1_0,
         "Performs a finite difference gradient computation, from energy points.");
-    psi4core.def("fd_freq_0", py_psi_fd_freq_0,
+    core.def("fd_freq_0", py_psi_fd_freq_0,
         "Performs a finite difference frequency computation, from energy points, for a given irrep.");
-    psi4core.def("fd_freq_1", py_psi_fd_freq_1,
+    core.def("fd_freq_1", py_psi_fd_freq_1,
         "Performs a finite difference frequency computation, from gradients, for a given irrep.");
-    psi4core.def("atomic_displacements",
+    core.def("atomic_displacements",
         py_psi_atomic_displacements,
         "Returns list of displacements generated by displacing each atom in the +/- x, y, z directions");
-    psi4core.def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
-    psi4core.def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
-    psi4core.def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
-    psi4core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
-    psi4core.def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
-//    psi4core.def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
-    psi4core.def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
-    psi4core.def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
-    psi4core.def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
-    psi4core.def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
-    psi4core.def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
-    psi4core.def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    psi4core.def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
-    psi4core.def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
-    psi4core.def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    psi4core.def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
-    psi4core.def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
-    psi4core.def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
-    psi4core.def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
-    psi4core.def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
-    psi4core.def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
-    psi4core.def("scatter", py_psi_scatter, "New Scatter function.");
-    psi4core.def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
-    psi4core.def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
-    psi4core.def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
-    psi4core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
-    psi4core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
-    psi4core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
-    psi4core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
-    psi4core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
-    psi4core.def("set_output_file", [](const std::string ofname, bool append){
+    core.def("displace_atom", py_psi_displace_atom, "Displaces one coordinate of single atom.");
+    core.def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
+    core.def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
+    core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
+    core.def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
+//    core.def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
+    core.def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
+    core.def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
+    core.def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
+    core.def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
+    core.def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
+    core.def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
+    core.def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
+    core.def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
+    core.def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
+    core.def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    core.def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
+    core.def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
+    core.def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
+    core.def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
+    core.def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    core.def("scatter", py_psi_scatter, "New Scatter function.");
+    core.def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
+    core.def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
+    core.def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
+    core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
+    core.def("thermo", py_psi_thermo, "Computes thermodynamic data.");
+    core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
+    core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
+    core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
+    core.def("set_output_file", [](const std::string ofname, bool append){
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
                  outfile_name = ofname;
                  });
-    psi4core.def("print_version", [](){ print_version("stdout"); });
-    psi4core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
+    core.def("print_version", [](){ print_version("stdout"); });
+    core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
 
     // Define library classes
-    export_psio(psi4core);
-    export_mints(psi4core);
-    export_functional(psi4core);
-    export_misc(psi4core);
+    export_psio(core);
+    export_mints(core);
+    export_functional(core);
+    export_misc(core);
 
     // ??
-    py::class_<Process::Environment>(psi4core, "Environment")
+    py::class_<Process::Environment>(core, "Environment")
             .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
 
-    py::class_<Process>(psi4core, "Process").
+    py::class_<Process>(core, "Process").
             def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
 
-    return psi4core.ptr();
+    return core.ptr();
 }
 

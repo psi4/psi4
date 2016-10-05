@@ -58,9 +58,9 @@ def select_mp2(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/dfmp2/detci/fnocc
 
     # MP2_TYPE exists largely for py-side reasoning, so must manage it
@@ -128,9 +128,9 @@ def select_mp2_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/dfmp2
 
     func = None
@@ -165,9 +165,9 @@ def select_mp2_property(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only dfmp2 for now
 
     func = None
@@ -196,9 +196,9 @@ def select_omp2(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -227,9 +227,9 @@ def select_omp2_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -255,9 +255,9 @@ def select_omp2_property(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP2_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP2_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -280,9 +280,9 @@ def select_mp3(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/fnocc/detci
 
     func = None
@@ -315,7 +315,7 @@ def select_mp3(name, **kwargs):
             if module == 'DETCI':  # no default for this case
                 func = run_detci
             elif module in ['']:
-                psi4core.print_out("""\nThis method is available inefficiently as a """
+                core.print_out("""\nThis method is available inefficiently as a """
                                """byproduct of a CISD computation.\n  Add "set """
                                """qc_module detci" to input to access this route.\n""")
 
@@ -333,9 +333,9 @@ def select_mp3_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -368,9 +368,9 @@ def select_omp3(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -399,9 +399,9 @@ def select_omp3_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -427,9 +427,9 @@ def select_mp2p5(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -458,9 +458,9 @@ def select_mp2p5_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -486,9 +486,9 @@ def select_omp2p5(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -517,9 +517,9 @@ def select_omp2p5_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -545,9 +545,9 @@ def select_lccd(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/fnocc
 
     func = None
@@ -587,9 +587,9 @@ def select_lccd_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -615,9 +615,9 @@ def select_olccd(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -646,9 +646,9 @@ def select_olccd_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
     func = None
@@ -674,9 +674,9 @@ def select_fnoccsd(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only fnocc
 
     func = None
@@ -705,9 +705,9 @@ def select_ccsd(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/ccenergy/detci/fnocc
 
     func = None
@@ -754,9 +754,9 @@ def select_ccsd_gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/ccenergy
 
     func = None
@@ -790,9 +790,9 @@ def select_fnoccsd_t_(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only fnocc
 
     func = None
@@ -821,9 +821,9 @@ def select_ccsd_t_(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/ccenergy/fnocc
 
     func = None
@@ -862,9 +862,9 @@ def select_ccsd_t__gradient(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only ccenergy
 
     func = None
@@ -887,9 +887,9 @@ def select_ccsd_at_(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CC_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/ccenergy
 
     func = None
@@ -918,9 +918,9 @@ def select_cisd(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('CI_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CI_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only detci/fnocc
 
     func = None
@@ -949,9 +949,9 @@ def select_mp4(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
-    reference = psi4core.get_option('SCF', 'REFERENCE')
-    mtd_type = psi4core.get_global_option('MP_TYPE')
-    module = psi4core.get_global_option('QC_MODULE')
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
     # Considering only detci/fnocc
 
     func = None
@@ -966,7 +966,7 @@ def select_mp4(name, **kwargs):
             if module == 'DETCI':  # no default for this case
                 func = run_detci
             elif module in ['']:
-                psi4core.print_out("""\nThis method is available inefficiently as a """
+                core.print_out("""\nThis method is available inefficiently as a """
                                """byproduct of a CISDT computation.\n  Add "set """
                                """qc_module detci" to input to access this route.\n""")
 
@@ -983,27 +983,27 @@ def scf_wavefunction_factory(reference, ref_wfn):
     """Builds the correct wavefunction from the provided information
     """
 
-    if psi4core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
-        modified_disp_params = psi4core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
+    if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
+        modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
 
     disp_type = False
-    psi4core.prepare_options_for_module("SCF")
+    core.prepare_options_for_module("SCF")
     if reference == "RHF":
-        wfn = psi4core.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = core.RHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "ROHF":
-        wfn = psi4core.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = core.ROHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "UHF":
-        wfn = psi4core.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = core.UHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "CUHF":
-        wfn = psi4core.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
+        wfn = core.CUHF(ref_wfn, dft_functional.build_superfunctional('HF')[0])
     elif reference == "RKS":
-        functional, disp_type = dft_functional.build_superfunctional(psi4core.get_option("SCF", "DFT_FUNCTIONAL"))
-        wfn = psi4core.RHF(ref_wfn, functional)
+        functional, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+        wfn = core.RHF(ref_wfn, functional)
     elif reference == "UKS":
-        func, disp_type = dft_functional.build_superfunctional(psi4core.get_option("SCF", "DFT_FUNCTIONAL"))
-        wfn = psi4core.UHF(ref_wfn, func)
+        func, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+        wfn = core.UHF(ref_wfn, func)
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
@@ -1012,9 +1012,9 @@ def scf_wavefunction_factory(reference, ref_wfn):
                                                                               tuple_params = modified_disp_params)
         wfn.cdict["_disp_functor"].print_out()
 
-    aux_basis = psi4core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
-                                    psi4core.get_option("SCF", "DF_BASIS_SCF"),
-                                    "JKFIT", psi4core.get_global_option('BASIS'),
+    aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
+                                    core.get_option("SCF", "DF_BASIS_SCF"),
+                                    "JKFIT", core.get_global_option('BASIS'),
                                     puream=wfn.basisset().has_puream())
     wfn.set_basisset("DF_BASIS_SCF", aux_basis)
     return wfn
@@ -1046,32 +1046,32 @@ def scf_helper(name, **kwargs):
 
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
-    scf_molecule = kwargs.get('molecule', psi4core.get_active_molecule())
-    read_orbitals = psi4core.get_option('SCF', 'GUESS') is "READ"
+    scf_molecule = kwargs.get('molecule', core.get_active_molecule())
+    read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
         raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
 
     # Second-order SCF requires non-symmetric density matrix support
-    if psi4core.get_option('SCF', 'SOSCF'):
+    if core.get_option('SCF', 'SOSCF'):
         proc_util.check_non_symmetric_jk_density("Second-order SCF")
 
     # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
-    if psi4core.has_option_changed('SCF', 'BASIS_GUESS'):
-        cast = psi4core.get_option('SCF', 'BASIS_GUESS')
+    if core.has_option_changed('SCF', 'BASIS_GUESS'):
+        cast = core.get_option('SCF', 'BASIS_GUESS')
         if p4util.yes.match(str(cast)):
             cast = True
         elif p4util.no.match(str(cast)):
             cast = False
 
-        if psi4core.get_option('SCF', 'SCF_TYPE') == 'DF':
+        if core.get_option('SCF', 'SCF_TYPE') == 'DF':
             castdf = True
         else:
             castdf = False
 
-        if psi4core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
-            castdf = psi4core.get_option('SCF', 'DF_BASIS_GUESS')
+        if core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
+            castdf = core.get_option('SCF', 'DF_BASIS_GUESS')
             if p4util.yes.match(str(castdf)):
                 castdf = True
             elif p4util.no.match(str(castdf)):
@@ -1082,7 +1082,7 @@ def scf_helper(name, **kwargs):
         multp = scf_molecule.multiplicity()
         if multp != 1:
             raise ValidationError('Broken symmetry is only for singlets.')
-        if psi4core.get_option('SCF', 'REFERENCE') not in ['UHF', 'UKS']:
+        if core.get_option('SCF', 'REFERENCE') not in ['UHF', 'UKS']:
             raise ValidationError("""You must specify 'set reference uhf' to use broken symmetry.""")
         do_broken = True
     else:
@@ -1097,9 +1097,9 @@ def scf_helper(name, **kwargs):
     # broken set-up
     if do_broken:
         scf_molecule.set_multiplicity(3)
-        psi4core.print_out('\n')
+        core.print_out('\n')
         p4util.banner('  Computing high-spin triplet guess  ')
-        psi4core.print_out('\n')
+        core.print_out('\n')
 
     # cast set-up
     if cast:
@@ -1116,32 +1116,32 @@ def scf_helper(name, **kwargs):
         #        guessbasisdf = castdf
 
         # Switch to the guess namespace
-        namespace = psi4core.IO.get_default_namespace()
+        namespace = core.IO.get_default_namespace()
         guesspace = namespace + '.guess'
         if namespace == '':
             guesspace = 'guess'
-        psi4core.IO.set_default_namespace(guesspace)
+        core.IO.set_default_namespace(guesspace)
 
         # Setup initial SCF
-        psi4core.set_global_option('BASIS', guessbasis)
+        core.set_global_option('BASIS', guessbasis)
         if (castdf):
-            psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-            psi4core.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            #psi4core.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            core.set_local_option('SCF', 'DF_INTS_IO', 'none')
+            #core.set_global_option('DF_BASIS_SCF', guessbasisdf)
             if not isinstance(cast, bool):
-                psi4core.set_global_option('DF_BASIS_SCF', castdf)
+                core.set_global_option('DF_BASIS_SCF', castdf)
 
         # Print some info about the guess
-        psi4core.print_out('\n')
+        core.print_out('\n')
         p4util.banner('Guess SCF, %s Basis' % (guessbasis))
-        psi4core.print_out('\n')
+        core.print_out('\n')
 
 
     # If we force c1 copy the active molecule
     if use_c1:
         scf_molecule.update_geometry()
         if scf_molecule.schoenflies_symbol() != 'c1':
-            psi4core.print_out("""  A requested method does not make use of molecular symmetry: """
+            core.print_out("""  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n""")
             scf_molecule = scf_molecule.clone()
             scf_molecule.reset_point_group('c1')
@@ -1150,22 +1150,22 @@ def scf_helper(name, **kwargs):
             scf_molecule.update_geometry()
 
     # If GUESS is auto guess what it should be
-    elif psi4core.get_option('SCF', 'GUESS') == "AUTO":
-        if (psi4core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
-                ((scf_molecule.natom() > 1) or psi4core.get_option('SCF', 'SAD_FRAC_OCC')):
-            psi4core.set_local_option('SCF', 'GUESS', 'SAD')
-        elif psi4core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
-            psi4core.set_local_option('SCF', 'GUESS', 'GWH')
+    elif core.get_option('SCF', 'GUESS') == "AUTO":
+        if (core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
+                ((scf_molecule.natom() > 1) or core.get_option('SCF', 'SAD_FRAC_OCC')):
+            core.set_local_option('SCF', 'GUESS', 'SAD')
+        elif core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
+            core.set_local_option('SCF', 'GUESS', 'GWH')
         else:
-            psi4core.set_local_option('SCF', 'GUESS', 'CORE')
+            core.set_local_option('SCF', 'GUESS', 'CORE')
 
     # the FIRST scf call
     if cast or do_broken:
         # Cast or broken are special cases
-        basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", psi4core.get_global_option('BASIS'))
-        ref_wfn = psi4core.Wavefunction(scf_molecule, basis)
-        ref_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), ref_wfn)
-        psi4core.set_legacy_wavefunction(ref_wfn)
+        basis = core.BasisSet.build(scf_molecule, "ORBITAL", core.get_global_option('BASIS'))
+        ref_wfn = core.Wavefunction(scf_molecule, basis)
+        ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), ref_wfn)
+        core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
         if "_disp_functor" in scf_wfn.cdict.keys():
@@ -1176,48 +1176,48 @@ def scf_helper(name, **kwargs):
     if do_broken:
         raise ValidationErrory("Broken Symmetry computations are temporarily disabled.")
         scf_molecule.set_multiplicity(1)
-        psi4core.set_local_option('SCF', 'GUESS', 'READ')
-        psi4core.print_out('\n')
+        core.set_local_option('SCF', 'GUESS', 'READ')
+        core.print_out('\n')
         p4util.banner('  Computing broken symmetry solution from high-spin triplet guess  ')
-        psi4core.print_out('\n')
+        core.print_out('\n')
 
     # cast clean-up
     if cast:
 
         # Move files to proper namespace
-        psi4core.IO.change_file_namespace(180, guesspace, namespace)
-        psi4core.IO.set_default_namespace(namespace)
+        core.IO.change_file_namespace(180, guesspace, namespace)
+        core.IO.set_default_namespace(namespace)
 
         # Set to read and project, and reset bases to final ones
         optstash2.restore()
-        psi4core.set_local_option('SCF', 'GUESS', 'READ')
+        core.set_local_option('SCF', 'GUESS', 'READ')
 
         # Print the banner for the standard operation
-        psi4core.print_out('\n')
+        core.print_out('\n')
         p4util.banner(name.upper())
-        psi4core.print_out('\n')
+        core.print_out('\n')
 
 
     # EFP preparation
-    efp = psi4core.get_active_efp()
+    efp = core.get_active_efp()
     if efp.nfragments() > 0:
-        psi4core.set_legacy_molecule(scf_molecule)
-        psi4core.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
-        psi4core.efp_set_options()
+        core.set_legacy_molecule(scf_molecule)
+        core.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
+        core.efp_set_options()
         efp.set_qm_atoms()
         efp.print_out()
 
     # the SECOND scf call
-    basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", psi4core.get_global_option('BASIS'))
-    base_wfn = psi4core.Wavefunction(scf_molecule, basis)
-    scf_wfn = scf_wavefunction_factory(psi4core.get_option('SCF', 'REFERENCE'), base_wfn)
-    psi4core.set_legacy_wavefunction(scf_wfn)
+    basis = core.BasisSet.build(scf_molecule, "ORBITAL", core.get_global_option('BASIS'))
+    base_wfn = core.Wavefunction(scf_molecule, basis)
+    scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn)
+    core.set_legacy_wavefunction(scf_wfn)
 
-    read_filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
-    if (psi4core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
+    read_filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
         data = np.load(read_filename)
-        Ca = psi4core.Matrix.np_read(data, "Ca")
-        Cb = psi4core.Matrix.np_read(data, "Cb")
+        Ca = core.Matrix.np_read(data, "Ca")
+        Cb = core.Matrix.np_read(data, "Cb")
         basis_name = str(data["BasisSet"])
         puream = int(data["BasisSet PUREAM"])
         nsoccpi = data["nsoccpi"]
@@ -1228,12 +1228,12 @@ def scf_helper(name, **kwargs):
             scf_wfn.guess_Ca(Ca)
             scf_wfn.guess_Cb(Cb)
         else:
-            old_basis = psi4core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
-            nalpha = psi4core.Dimension.from_list(ndoccpi + nsoccpi)
-            nbeta = psi4core.Dimension.from_list(ndoccpi)
+            nalpha = core.Dimension.from_list(ndoccpi + nsoccpi)
+            nbeta = core.Dimension.from_list(ndoccpi)
             pCa = base_wfn.basis_projection(Ca, nalpha, old_basis, base_wfn.basisset())
             pCb = base_wfn.basis_projection(Cb, nbeta, old_basis, base_wfn.basisset())
             scf_wfn.guess_Ca(pCa)
@@ -1243,15 +1243,15 @@ def scf_helper(name, **kwargs):
     #         base_wfn.Ca().nph[h][:, :nalpha[h]] = pCa.nph[h]
     #         base_wfn.Cb().nph[h][:, :nbeta[h]] = pCb.nph[h]
 
-    # elif psi4core.get_option('SCF', 'GUESS') == 'READ':
-    #     psi4core.print_out("   Could not read orbital file, switching to SAD guess")
-    #     psi4core.set_local_option('SCF', 'GUESS', 'SAD')
+    # elif core.get_option('SCF', 'GUESS') == 'READ':
+    #     core.print_out("   Could not read orbital file, switching to SAD guess")
+    #     core.set_local_option('SCF', 'GUESS', 'SAD')
 
 
 
 
     # Print basis set info
-    if psi4core.get_option("SCF", "PRINT_BASIS"):
+    if core.get_option("SCF", "PRINT_BASIS"):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
@@ -1259,40 +1259,40 @@ def scf_helper(name, **kwargs):
         scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
 
     e_scf = scf_wfn.compute_energy()
-    psi4core.set_variable("SCF TOTAL ENERGY", e_scf)
-    psi4core.set_variable("CURRENT ENERGY", e_scf)
-    psi4core.set_variable("CURRENT REFERENCE ENERGY", e_scf)
+    core.set_variable("SCF TOTAL ENERGY", e_scf)
+    core.set_variable("CURRENT ENERGY", e_scf)
+    core.set_variable("CURRENT REFERENCE ENERGY", e_scf)
 
     # We always would like to print a little dipole information
     if kwargs.get('scf_do_dipole', True):
-        oeprop = psi4core.OEProp(scf_wfn)
+        oeprop = core.OEProp(scf_wfn)
         oeprop.set_title("SCF")
         oeprop.add("DIPOLE")
         oeprop.compute()
-        psi4core.set_variable("CURRENT DIPOLE X", psi4core.get_variable("SCF DIPOLE X"))
-        psi4core.set_variable("CURRENT DIPOLE Y", psi4core.get_variable("SCF DIPOLE Y"))
-        psi4core.set_variable("CURRENT DIPOLE Z", psi4core.get_variable("SCF DIPOLE Z"))
+        core.set_variable("CURRENT DIPOLE X", core.get_variable("SCF DIPOLE X"))
+        core.set_variable("CURRENT DIPOLE Y", core.get_variable("SCF DIPOLE Y"))
+        core.set_variable("CURRENT DIPOLE Z", core.get_variable("SCF DIPOLE Z"))
 
     # Write out MO's
-    if psi4core.get_option("SCF", "PRINT_MOS"):
-        mowriter = psi4core.MOWriter(scf_wfn)
+    if core.get_option("SCF", "PRINT_MOS"):
+        mowriter = core.MOWriter(scf_wfn)
         mowriter.write()
 
     # Write out a molden file
-    if psi4core.get_option("SCF", "MOLDEN_WRITE"):
-        filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".molden"
-        dovirt = bool(psi4core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
+    if core.get_option("SCF", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(scf_molecule.name()) + ".molden"
+        dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
         occa = scf_wfn.occupation_a()
         occb = scf_wfn.occupation_a()
 
-        mw = psi4core.MoldenWriter(scf_wfn)
+        mw = core.MoldenWriter(scf_wfn)
         mw.write(filename, scf_wfn.Ca(), scf_wfn.Cb(), scf_wfn.epsilon_a(),
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
 
     # Write out orbitals and basis
-    filename = psi4core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
     data = {}
     data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
     data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
@@ -1315,7 +1315,7 @@ def run_dcft(name, **kwargs):
 
     """
 
-    if (psi4core.get_global_option('FREEZE_CORE') == 'TRUE'):
+    if (core.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for DCFT.')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -1323,16 +1323,16 @@ def run_dcft(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    if (psi4core.get_global_option("DCFT_TYPE") == "DF"):
-        aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
-                                            psi4core.get_global_option("DF_BASIS_DCFT"),
-                                            "RIFIT", psi4core.get_global_option("BASIS"))
+    if (core.get_global_option("DCFT_TYPE") == "DF"):
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
+                                            core.get_global_option("DF_BASIS_DCFT"),
+                                            "RIFIT", core.get_global_option("BASIS"))
         wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    dcft_wfn = psi4core.dcft(ref_wfn)
+    dcft_wfn = core.dcft(ref_wfn)
     return dcft_wfn
 
 
@@ -1345,10 +1345,10 @@ def run_dcft_gradient(name, **kwargs):
         ['GLOBALS', 'DERTYPE'])
 
 
-    psi4core.set_global_option('DERTYPE', 'FIRST')
+    core.set_global_option('DERTYPE', 'FIRST')
     dcft_wfn = run_dcft(name, **kwargs)
 
-    derivobj = psi4core.Deriv(dcft_wfn)
+    derivobj = core.Deriv(dcft_wfn)
     derivobj.set_tpdm_presorted(True)
     grad = derivobj.compute()
 
@@ -1376,49 +1376,49 @@ def run_dfocc(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'])
 
     def set_cholesky_from(mtd_type):
-        type_val = psi4core.get_global_option(mtd_type)
+        type_val = core.get_global_option(mtd_type)
         if type_val == 'DF':
-            psi4core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
+            core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             # Alter default algorithm
-            if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-                psi4core.set_global_option('SCF_TYPE', 'DF')
-                psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'DF')
+                core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
         elif type_val == 'CD':
-            psi4core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
+            core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
-            if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-                psi4core.set_global_option('SCF_TYPE', 'CD')
-                psi4core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
-            if psi4core.get_option('SCF', 'SCF_TYPE') != 'CD':
-                psi4core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'CD')
+                core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
+            if core.get_option('SCF', 'SCF_TYPE') != 'CD':
+                core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
             raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
 
     if name in ['mp2', 'omp2']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
         set_cholesky_from('MP2_TYPE')
     elif name in ['mp2.5', 'omp2.5']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
         set_cholesky_from('MP_TYPE')
     elif name in ['mp3', 'omp3']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
         set_cholesky_from('MP_TYPE')
     elif name in ['lccd', 'olccd']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
         set_cholesky_from('CC_TYPE')
 
     elif name == 'ccd':
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
         set_cholesky_from('CC_TYPE')
     elif name == 'ccsd':
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
         set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(t)':
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(at)':
-        psi4core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         set_cholesky_from('CC_TYPE')
     elif name == 'dfocc':
         pass
@@ -1428,13 +1428,13 @@ def run_dfocc(name, **kwargs):
     # conventional vs. optimized orbitals
     if name in ['mp2', 'mp2.5', 'mp3', 'lccd',
                      'ccd', 'ccsd', 'ccsd(t)', 'ccsd(at)']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
-    psi4core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
-    psi4core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
-    psi4core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
+    core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1445,14 +1445,14 @@ def run_dfocc(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                        psi4core.get_global_option("DF_BASIS_CC"),
-                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", core.get_global_option("BASIS"))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
-    dfocc_wfn = psi4core.dfocc(ref_wfn)
+    dfocc_wfn = core.dfocc(ref_wfn)
 
     optstash.restore()
     return dfocc_wfn
@@ -1473,39 +1473,39 @@ def run_dfocc_gradient(name, **kwargs):
         ['GLOBALS', 'DERTYPE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_global_option('SCF_TYPE', 'DF')
-        psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if psi4core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
         raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
 
     if name in ['mp2', 'omp2']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     elif name in ['mp2.5', 'omp2.5']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
     elif name in ['mp3', 'omp3']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
     elif name in ['lccd', 'olccd']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
     elif name in ['ccd']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        psi4core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
     elif name in ['ccsd']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        psi4core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
     if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
-    psi4core.set_global_option('DERTYPE', 'FIRST')
-    psi4core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
-    psi4core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
-    psi4core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    core.set_global_option('DERTYPE', 'FIRST')
+    core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
+    core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1516,9 +1516,9 @@ def run_dfocc_gradient(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
-    dfocc_wfn = psi4core.dfocc(ref_wfn)
+    dfocc_wfn = core.dfocc(ref_wfn)
 
     optstash.restore()
     return dfocc_wfn
@@ -1537,27 +1537,27 @@ def run_dfocc_property(name, **kwargs):
         ['DFOCC', 'OEPROP'])
 
     if name in ['mp2', 'omp2']:
-        psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     else:
         raise ValidationError('Unidentified method ' % (name))
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_global_option('SCF_TYPE', 'DF')
-        psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if psi4core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
         raise ValidationError('DFOCC gradients need DF-HF reference, for now.')
 
     if name in ['mp2']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2']:
-        psi4core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
-    psi4core.set_local_option('DFOCC', 'OEPROP', 'TRUE')
-    psi4core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
-    psi4core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
-    psi4core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    core.set_local_option('DFOCC', 'OEPROP', 'TRUE')
+    core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
+    core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1568,9 +1568,9 @@ def run_dfocc_property(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
-    dfocc_wfn = psi4core.dfocc(ref_wfn)
+    dfocc_wfn = core.dfocc(ref_wfn)
 
     optstash.restore()
     return dfocc_wfn
@@ -1591,14 +1591,14 @@ def run_qchf(name, **kwargs):
         ['DFOCC', 'QCHF'],
         ['DFOCC', 'E_CONVERGENCE'])
 
-    psi4core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
-    psi4core.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
-    psi4core.set_local_option('DFOCC', 'QCHF', 'TRUE')
-    psi4core.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
+    core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+    core.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
+    core.set_local_option('DFOCC', 'QCHF', 'TRUE')
+    core.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
 
-    psi4core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    psi4core.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
-    psi4core.set_local_option('SCF', 'MAXITER', 1)
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    core.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
+    core.set_local_option('SCF', 'MAXITER', 1)
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1609,9 +1609,9 @@ def run_qchf(name, **kwargs):
             raise ValidationError("""  QCHF does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
-    dfocc_wfn = psi4core.dfocc(ref_wfn)
+    dfocc_wfn = core.dfocc(ref_wfn)
 
     return dfocc_wfn
 
@@ -1630,98 +1630,98 @@ def run_occ(name, **kwargs):
         ['OCC', 'WFN_TYPE'])
 
     if name == 'mp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp2-vdw':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'mp2.5':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2.5':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
 
     elif name == 'mp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp3-vdw':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
+        core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        psi4core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
+        core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'lccd':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'olccd':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     else:
         raise ValidationError("""Invalid method %s""" % name)
 
@@ -1731,12 +1731,12 @@ def run_occ(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
 
-    occ_wfn = psi4core.occ(ref_wfn)
+    occ_wfn = core.occ(ref_wfn)
 
     optstash.restore()
     return occ_wfn
@@ -1755,42 +1755,42 @@ def run_occ_gradient(name, **kwargs):
         ['GLOBALS', 'DERTYPE'])
 
     if name == 'mp2':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'conv-omp2']:
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
 
     elif name == 'mp2.5':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     elif name == 'omp2.5':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
 
     elif name == 'mp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     elif name == 'omp3':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
 
     elif name == 'lccd':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     elif name == 'olccd':
-        psi4core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        psi4core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
     else:
         raise ValidationError("""Invalid method %s""" % name)
 
-    psi4core.set_global_option('DERTYPE', 'FIRST')
+    core.set_global_option('DERTYPE', 'FIRST')
 
     # locking out SCS through explicit keyword setting
     # * so that current energy must match call
     # * since grads not avail for scs
-    psi4core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-    psi4core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('OCC', 'DO_SCS', 'FALSE')
+    core.set_local_option('OCC', 'DO_SOS', 'FALSE')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -1798,14 +1798,14 @@ def run_occ_gradient(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    if psi4core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
 
-    occ_wfn = psi4core.occ(ref_wfn)
+    occ_wfn = core.occ(ref_wfn)
 
-    derivobj = psi4core.Deriv(occ_wfn)
+    derivobj = core.Deriv(occ_wfn)
     grad = derivobj.compute()
 
     occ_wfn.set_gradient(grad)
@@ -1820,14 +1820,14 @@ def run_scf(name, **kwargs):
 
     """
 
-    psi4core.tstart() # Manage start and stop as there is no C wrapper
+    core.tstart() # Manage start and stop as there is no C wrapper
 
     optstash = proc_util.scf_set_reference_local(name)
 
     scf_wfn = scf_helper(name, **kwargs)
 
     optstash.restore()
-    psi4core.tstop()
+    core.tstop()
     return scf_wfn
 
 
@@ -1843,13 +1843,13 @@ def run_scf_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = run_scf(name, **kwargs)
 
-    if psi4core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
     if "_disp_functor" in ref_wfn.cdict.keys():
         ref_wfn.cdict["_disp_gradient"] = ref_wfn.cdict["_disp_functor"].compute_gradient(ref_wfn.molecule())
 
-    grad = psi4core.scfgrad(ref_wfn)
+    grad = core.scfgrad(ref_wfn)
     ref_wfn.set_gradient(grad)
 
     optstash.restore()
@@ -1867,11 +1867,11 @@ def run_scf_hessian(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = run_scf(name, **kwargs)
 
-    badref = psi4core.get_option('SCF', 'REFERENCE') in ['UHF', 'ROHF', 'CUHF', 'RKS', 'UKS']
-    badint = psi4core.get_option('SCF', 'SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
+    badref = core.get_option('SCF', 'REFERENCE') in ['UHF', 'ROHF', 'CUHF', 'RKS', 'UKS']
+    badint = core.get_option('SCF', 'SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
-    H = psi4core.scfhess(ref_wfn)
+    H = core.scfhess(ref_wfn)
     ref_wfn.set_hessian(H)
 
     # Temporary freq code.  To be replaced with proper frequency analysis later...
@@ -1903,15 +1903,15 @@ def run_scf_hessian(name, **kwargs):
     freqs[projected < 0] *= -1
     freqs.sort()
 
-    freqvec = psi4core.Vector.from_array(freqs)
+    freqvec = core.Vector.from_array(freqs)
     ref_wfn.set_frequencies(freqvec)
     # End of temporary freq hack.  Remove me later!
 
     # Write Hessian out.  This probably needs a more permanent home, too.
     # This is a drop-in replacement for the code that lives in findif
-    if psi4core.get_option('FINDIF', 'HESSIAN_WRITE'):
+    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
         molname = ref_wfn.molecule().name()
-        prefix = psi4core.get_writer_file_prefix(molname)
+        prefix = core.get_writer_file_prefix(molname)
         with open(prefix+".hess", 'w') as fp:
             fp.write("%5d%5d\n" % (natoms, 6*natoms))
             for row in np.reshape(H, (-1, 3)):
@@ -1928,24 +1928,24 @@ def run_libfock(name, **kwargs):
 
     """
     if name == 'cphf':
-        psi4core.set_global_option('MODULE', 'RCPHF')
+        core.set_global_option('MODULE', 'RCPHF')
     if name == 'cis':
-        psi4core.set_global_option('MODULE', 'RCIS')
+        core.set_global_option('MODULE', 'RCIS')
     if name == 'tdhf':
-        psi4core.set_global_option('MODULE', 'RTDHF')
+        core.set_global_option('MODULE', 'RTDHF')
     if name == 'cpks':
-        psi4core.set_global_option('MODULE', 'RCPKS')
+        core.set_global_option('MODULE', 'RCPKS')
     if name == 'tda':
-        psi4core.set_global_option('MODULE', 'RTDA')
+        core.set_global_option('MODULE', 'RTDA')
     if name == 'tddft':
-        psi4core.set_global_option('MODULE', 'RTDDFT')
+        core.set_global_option('MODULE', 'RTDDFT')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    libfock_wfn = psi4core.libfock(ref_wfn)
+    libfock_wfn = core.libfock(ref_wfn)
     libfock_wfn.compute_energy()
     return libfock_wfn
 
@@ -1956,13 +1956,13 @@ def run_mcscf(name, **kwargs):
 
     """
     # Make sure the molecule the user provided is the active one
-    mcscf_molecule = kwargs.get('molecule', psi4core.get_active_molecule())
+    mcscf_molecule = kwargs.get('molecule', core.get_active_molecule())
     mcscf_molecule.update_geometry()
     if 'ref_wfn' in kwargs:
         raise ValidationError("It is not possible to pass run_mcscf a reference wavefunction")
-    new_wfn = new_wavefunction(mcscf_molecule, psi4core.get_global_option('BASIS'))
+    new_wfn = new_wavefunction(mcscf_molecule, core.get_global_option('BASIS'))
 
-    return psi4core.mcscf(new_wfn)
+    return core.mcscf(new_wfn)
 
 
 def run_dfmp2_gradient(name, **kwargs):
@@ -1970,18 +1970,18 @@ def run_dfmp2_gradient(name, **kwargs):
     a DFMP2 gradient calculation.
 
     """
-    psi4core.tstart()
+    core.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'])  # yes, this really must be global, not local to SCF
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_global_option('SCF_TYPE', 'DF')
-        psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if psi4core.get_option('SCF', 'SCF_TYPE') != 'DF':
+    if core.get_option('SCF', 'SCF_TYPE') != 'DF':
         raise ValidationError('DF-MP2 gradients need DF-SCF reference.')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -1989,21 +1989,21 @@ def run_dfmp2_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('DFMP2')
-    psi4core.print_out('\n')
+    core.print_out('\n')
 
-    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
-                                    psi4core.get_option("DFMP2", "DF_BASIS_MP2"),
-                                    "RIFIT", psi4core.get_global_option('BASIS'))
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
-    dfmp2_wfn = psi4core.dfmp2(ref_wfn)
+    dfmp2_wfn = core.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
     dfmp2_wfn.set_gradient(grad)
 
     optstash.restore()
-    psi4core.tstop()
+    core.tstop()
     return dfmp2_wfn
 
 
@@ -2018,42 +2018,42 @@ def run_ccenergy(name, **kwargs):
         ['CCENERGY', 'WFN'])
 
     if name == 'ccsd':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-        psi4core.set_local_option('CCSORT', 'WFN', 'CCSD')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'CCSD')
+        core.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+        core.set_local_option('CCSORT', 'WFN', 'CCSD')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
+        core.set_local_option('CCENERGY', 'WFN', 'CCSD')
     elif name == 'ccsd(t)':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
-        psi4core.set_local_option('CCSORT', 'WFN', 'CCSD_T')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+        core.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
+        core.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
+        core.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
     elif name == 'ccsd(at)':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
-        psi4core.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
-        psi4core.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
-        psi4core.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
+        core.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
+        core.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
+        core.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
+        core.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
     elif name == 'cc2':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'CC2')
-        psi4core.set_local_option('CCSORT', 'WFN', 'CC2')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'CC2')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'CC2')
+        core.set_local_option('TRANSQT2', 'WFN', 'CC2')
+        core.set_local_option('CCSORT', 'WFN', 'CC2')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CC2')
+        core.set_local_option('CCENERGY', 'WFN', 'CC2')
     elif name == 'cc3':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'CC3')
-        psi4core.set_local_option('CCSORT', 'WFN', 'CC3')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'CC3')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'CC3')
+        core.set_local_option('TRANSQT2', 'WFN', 'CC3')
+        core.set_local_option('CCSORT', 'WFN', 'CC3')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CC3')
+        core.set_local_option('CCENERGY', 'WFN', 'CC3')
     elif name == 'eom-cc2':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
+        core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCTRANSORT', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
     elif name == 'eom-ccsd':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
+        core.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCTRANSORT', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options, incl. wfn
     elif name == 'ccenergy':
         pass
@@ -2065,32 +2065,32 @@ def run_ccenergy(name, **kwargs):
 
         wfn.cdict.clear()
 
-    if psi4core.get_global_option("CC_TYPE") == "DF":
-        aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                            psi4core.get_global_option("DF_BASIS_CC"),
-                                            "RIFIT", psi4core.get_global_option("BASIS"))
+    if core.get_global_option("CC_TYPE") == "DF":
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                            core.get_global_option("DF_BASIS_CC"),
+                                            "RIFIT", core.get_global_option("BASIS"))
         wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Obtain semicanonical orbitals
-    if (psi4core.get_option('SCF', 'REFERENCE') == 'ROHF') and \
+    if (core.get_option('SCF', 'REFERENCE') == 'ROHF') and \
             ((name in ['ccsd(t)', 'ccsd(at)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
-              psi4core.get_option('CCTRANSORT', 'SEMICANONICAL')):
+              core.get_option('CCTRANSORT', 'SEMICANONICAL')):
         ref_wfn.semicanonicalize()
 
-    if psi4core.get_global_option('RUN_CCTRANSORT'):
-        psi4core.cctransort(ref_wfn)
+    if core.get_global_option('RUN_CCTRANSORT'):
+        core.cctransort(ref_wfn)
     else:
-        psi4core.transqt2(ref_wfn)
-        psi4core.ccsort()
+        core.transqt2(ref_wfn)
+        core.ccsort()
 
-    ccwfn = psi4core.ccenergy(ref_wfn)
+    ccwfn = core.ccenergy(ref_wfn)
 
     if name == 'ccsd(at)':
-        psi4core.cchbar(ref_wfn)
-        psi4core.cclambda(ref_wfn)
+        core.cchbar(ref_wfn)
+        core.cclambda(ref_wfn)
 
     optstash.restore()
     return ccwfn
@@ -2106,29 +2106,29 @@ def run_ccenergy_gradient(name, **kwargs):
         ['CCLAMBDA', 'WFN'],
         ['CCDENSITY', 'WFN'])
 
-    psi4core.set_global_option('DERTYPE', 'FIRST')
+    core.set_global_option('DERTYPE', 'FIRST')
 
-    if psi4core.get_global_option('FREEZE_CORE') == 'TRUE':
+    if core.get_global_option('FREEZE_CORE') == 'TRUE':
         raise ValidationError('Frozen core is not available for the CC gradients.')
 
     ccwfn = run_ccenergy(name, **kwargs)
 
     if name == 'ccsd':
-        psi4core.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
-        psi4core.set_local_option('CCDENSITY', 'WFN', 'CCSD')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
+        core.set_local_option('CCDENSITY', 'WFN', 'CCSD')
     elif name == 'ccsd(t)':
-        psi4core.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
-        psi4core.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
+        core.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
-        user_ref = psi4core.get_option('CCENERGY', 'REFERENCE')
+        user_ref = core.get_option('CCENERGY', 'REFERENCE')
         if user_ref != 'UHF':
             raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
-    psi4core.cchbar(ccwfn)
-    psi4core.cclambda(ccwfn)
-    psi4core.ccdensity(ccwfn)
+    core.cchbar(ccwfn)
+    core.cclambda(ccwfn)
+    core.ccdensity(ccwfn)
 
-    derivobj = psi4core.Deriv(ccwfn)
+    derivobj = core.Deriv(ccwfn)
     grad = derivobj.compute()
     del derivobj
 
@@ -2150,17 +2150,17 @@ def run_bccd(name, **kwargs):
         ['CCENERGY', 'WFN'])
 
     if name == 'bccd':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'BCCD')
-        psi4core.set_local_option('CCSORT', 'WFN', 'BCCD')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'BCCD')
+        core.set_local_option('TRANSQT2', 'WFN', 'BCCD')
+        core.set_local_option('CCSORT', 'WFN', 'BCCD')
+        core.set_local_option('CCTRANSORT', 'WFN', 'BCCD')
+        core.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
     elif name == 'bccd(t)':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
-        psi4core.set_local_option('CCSORT', 'WFN', 'BCCD_T')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
-        psi4core.set_local_option('CCTRANSORT', 'WFN', 'BCCD_T')
-        psi4core.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
+        core.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
+        core.set_local_option('CCSORT', 'WFN', 'BCCD_T')
+        core.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
+        core.set_local_option('CCTRANSORT', 'WFN', 'BCCD_T')
+        core.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
     else:
         raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
 
@@ -2171,36 +2171,36 @@ def run_bccd(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Needed for (T).
-    if (psi4core.get_option('SCF', 'REFERENCE') == 'ROHF'):
+    if (core.get_option('SCF', 'REFERENCE') == 'ROHF'):
         ref_wfn.semicanonicalize()
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    psi4core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
-    psi4core.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
+    core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+    core.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     bcc_iter_cnt = 0
     while True:
-        if (psi4core.get_global_option("RUN_CCTRANSORT")):
-            psi4core.cctransort(ref_wfn)
+        if (core.get_global_option("RUN_CCTRANSORT")):
+            core.cctransort(ref_wfn)
         else:
-            psi4core.transqt2(ref_wfn)
-            psi4core.ccsort()
+            core.transqt2(ref_wfn)
+            core.ccsort()
 
-        ref_wfn = psi4core.ccenergy(ref_wfn)
-        psi4core.print_out('Brueckner convergence check: %s\n' % bool(psi4core.get_variable('BRUECKNER CONVERGED')))
-        if (psi4core.get_variable('BRUECKNER CONVERGED') == True):
+        ref_wfn = core.ccenergy(ref_wfn)
+        core.print_out('Brueckner convergence check: %s\n' % bool(core.get_variable('BRUECKNER CONVERGED')))
+        if (core.get_variable('BRUECKNER CONVERGED') == True):
             break
 
-        if bcc_iter_cnt >= psi4core.get_option('CCENERGY', 'BCCD_MAXITER'):
-            psi4core.print_out("\n\nWarning! BCCD did not converge within the maximum number of iterations.")
-            psi4core.print_out("You can increase the number of BCCD iterations by changing BCCD_MAXITER.\n\n")
+        if bcc_iter_cnt >= core.get_option('CCENERGY', 'BCCD_MAXITER'):
+            core.print_out("\n\nWarning! BCCD did not converge within the maximum number of iterations.")
+            core.print_out("You can increase the number of BCCD iterations by changing BCCD_MAXITER.\n\n")
             break
         bcc_iter_cnt += 1
 
     if name == 'bccd(t)':
-        psi4core.cctriples(ref_wfn)
+        core.cctriples(ref_wfn)
 
     optstash.restore()
     return ref_wfn
@@ -2219,7 +2219,7 @@ def run_dft_property(name, **kwargs):
     scf_wfn = run_scf(name, scf_do_dipole=False, *kwargs)
 
     # Run OEProp
-    oe = psi4core.OEProp(scf_wfn)
+    oe = core.OEProp(scf_wfn)
     oe.set_title(name.upper())
     for prop in properties:
         oe.add(prop.upper())
@@ -2245,7 +2245,7 @@ def run_scf_property(name, **kwargs):
     scf_wfn = run_scf(name, scf_do_dipole=False, **kwargs)
 
     # Run OEProp
-    oe = psi4core.OEProp(scf_wfn)
+    oe = core.OEProp(scf_wfn)
     oe.set_title(name.upper())
     for prop in properties:
         oe.add(prop.upper())
@@ -2323,62 +2323,62 @@ def run_cc_property(name, **kwargs):
 
     if name in ['ccsd', 'cc2', 'eom-ccsd', 'eom-cc2']:
         this_name = name.upper().replace('-', '_')
-        psi4core.set_global_option('WFN', this_name)
+        core.set_global_option('WFN', this_name)
         ccwfn = run_ccenergy(name, **kwargs)
-        psi4core.set_global_option('WFN', this_name)
+        core.set_global_option('WFN', this_name)
     else:
         raise ValidationError("""CC property name %s not recognized""" % name.upper())
 
     # Need cchbar for everything
-    psi4core.cchbar(ccwfn)
+    core.cchbar(ccwfn)
 
     # Need ccdensity at this point only for density-based props
     if n_one > 0 or n_two > 0:
         if name == 'eom-ccsd':
-            psi4core.set_global_option('WFN', 'EOM_CCSD')
-            psi4core.set_global_option('DERTYPE', 'NONE')
-            psi4core.set_global_option('ONEPDM', 'TRUE')
-            psi4core.cceom(ccwfn)
+            core.set_global_option('WFN', 'EOM_CCSD')
+            core.set_global_option('DERTYPE', 'NONE')
+            core.set_global_option('ONEPDM', 'TRUE')
+            core.cceom(ccwfn)
         elif name == 'eom-cc2':
-            psi4core.set_global_option('WFN', 'EOM_CC2')
-            psi4core.set_global_option('DERTYPE', 'NONE')
-            psi4core.set_global_option('ONEPDM', 'TRUE')
-            psi4core.cceom(ccwfn)
-        psi4core.set_global_option('DERTYPE', 'NONE')
-        psi4core.set_global_option('ONEPDM', 'TRUE')
-        psi4core.cclambda(ccwfn)
-        psi4core.ccdensity(ccwfn)
+            core.set_global_option('WFN', 'EOM_CC2')
+            core.set_global_option('DERTYPE', 'NONE')
+            core.set_global_option('ONEPDM', 'TRUE')
+            core.cceom(ccwfn)
+        core.set_global_option('DERTYPE', 'NONE')
+        core.set_global_option('ONEPDM', 'TRUE')
+        core.cclambda(ccwfn)
+        core.ccdensity(ccwfn)
 
     # Need ccresponse only for response-type props
     if n_response > 0:
-        psi4core.set_global_option('DERTYPE', 'RESPONSE')
-        psi4core.cclambda(ccwfn)
+        core.set_global_option('DERTYPE', 'RESPONSE')
+        core.cclambda(ccwfn)
         for prop in response:
-            psi4core.set_global_option('PROPERTY', prop)
-            psi4core.ccresponse(ccwfn)
+            core.set_global_option('PROPERTY', prop)
+            core.ccresponse(ccwfn)
 
     # Excited-state transition properties
     if n_excited > 0:
         if name == 'eom-ccsd':
-            psi4core.set_global_option('WFN', 'EOM_CCSD')
+            core.set_global_option('WFN', 'EOM_CCSD')
         elif name == 'eom-cc2':
-            psi4core.set_global_option('WFN', 'EOM_CC2')
+            core.set_global_option('WFN', 'EOM_CC2')
         else:
             raise ValidationError("""Unknown excited-state CC wave function.""")
-        psi4core.set_global_option('DERTYPE', 'NONE')
-        psi4core.set_global_option('ONEPDM', 'TRUE')
+        core.set_global_option('DERTYPE', 'NONE')
+        core.set_global_option('ONEPDM', 'TRUE')
         # Tight convergence unnecessary for transition properties
-        psi4core.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
-        psi4core.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
-        psi4core.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
-        psi4core.cceom(ccwfn)
-        psi4core.cclambda(ccwfn)
-        psi4core.ccdensity(ccwfn)
+        core.set_local_option('CCLAMBDA','R_CONVERGENCE',1e-4)
+        core.set_local_option('CCEOM','R_CONVERGENCE',1e-4)
+        core.set_local_option('CCEOM','E_CONVERGENCE',1e-5)
+        core.cceom(ccwfn)
+        core.cclambda(ccwfn)
+        core.ccdensity(ccwfn)
 
-    psi4core.set_global_option('WFN', 'SCF')
-    psi4core.revoke_global_option_changed('WFN')
-    psi4core.set_global_option('DERTYPE', 'NONE')
-    psi4core.revoke_global_option_changed('DERTYPE')
+    core.set_global_option('WFN', 'SCF')
+    core.revoke_global_option_changed('WFN')
+    core.set_global_option('DERTYPE', 'NONE')
+    core.revoke_global_option_changed('DERTYPE')
 
     optstash.restore()
     return ccwfn
@@ -2396,15 +2396,15 @@ def run_dfmp2_property(name, **kwargs):
         ['OPDM_RELAX'],
         ['SCF_TYPE'])
 
-    psi4core.set_global_option('ONEPDM', 'TRUE')
-    psi4core.set_global_option('OPDM_RELAX', 'TRUE')
+    core.set_global_option('ONEPDM', 'TRUE')
+    core.set_global_option('OPDM_RELAX', 'TRUE')
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
-        psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not psi4core.get_option('SCF', 'SCF_TYPE') == 'DF':
+    if not core.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 properties need DF-SCF reference.')
 
     properties = kwargs.pop('properties')
@@ -2415,22 +2415,22 @@ def run_dfmp2_property(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, scf_do_dipole=False, use_c1=True, **kwargs)  # C1 certified
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('DFMP2')
-    psi4core.print_out('\n')
+    core.print_out('\n')
 
-    dfmp2_wfn = psi4core.dfmp2(ref_wfn)
+    dfmp2_wfn = core.dfmp2(ref_wfn)
     grad = dfmp2_wfn.compute_gradient()
 
     if name == 'scs-mp2':
-        psi4core.set_variable('CURRENT ENERGY', psi4core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        psi4core.set_variable('CURRENT CORRELATION ENERGY', psi4core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
     elif name == 'mp2':
-        psi4core.set_variable('CURRENT ENERGY', psi4core.get_variable('MP2 TOTAL ENERGY'))
-        psi4core.set_variable('CURRENT CORRELATION ENERGY', psi4core.get_variable('MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
 
     # Run OEProp
-    oe = psi4core.OEProp(dfmp2_wfn)
+    oe = core.OEProp(dfmp2_wfn)
     oe.set_title(name.upper())
     for prop in properties:
         oe.add(prop.upper())
@@ -2466,9 +2466,9 @@ def run_detci_property(name, **kwargs):
 
     proc_util.oeprop_validator(ci_prop)
 
-    psi4core.set_global_option('OPDM', 'TRUE')
+    core.set_global_option('OPDM', 'TRUE')
     if len(ci_trans):
-        psi4core.set_global_option('TDM', 'TRUE')
+        core.set_global_option('TDM', 'TRUE')
 
     # Compute
     if name in ['mcscf', 'rasscf', 'casscf']:
@@ -2480,13 +2480,13 @@ def run_detci_property(name, **kwargs):
     if 'CI' in name.upper():
         name = 'CI'
 
-    states = psi4core.get_global_option('avg_states')
-    nroots = psi4core.get_global_option('num_roots')
+    states = core.get_global_option('avg_states')
+    nroots = core.get_global_option('num_roots')
     if len(states) != nroots:
         states = range(1, nroots + 1)
 
     # Run OEProp
-    oe = psi4core.OEProp(ciwfn)
+    oe = core.OEProp(ciwfn)
     oe.set_title(name.upper())
     for prop in ci_prop:
         oe.add(prop.upper())
@@ -2497,7 +2497,7 @@ def run_detci_property(name, **kwargs):
 
     # If we have more than one root, compute all data
     if nroots > 1:
-        psi4core.print_out("\n   ===> %s properties for all CI roots <=== \n\n" % name.upper())
+        core.print_out("\n   ===> %s properties for all CI roots <=== \n\n" % name.upper())
         for root in states:
             oe.set_title("%s ROOT %d" % (name.upper(), root))
             root = root - 1
@@ -2514,7 +2514,7 @@ def run_detci_property(name, **kwargs):
         for tprop in ci_trans:
             oe.add(tprop.upper())
 
-        psi4core.print_out("\n   ===> %s properties for all CI transition density matrices <=== \n\n" % name.upper())
+        core.print_out("\n   ===> %s properties for all CI transition density matrices <=== \n\n" % name.upper())
         for root in states[1:]:
             oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 1, root))
             root = root - 1
@@ -2542,34 +2542,34 @@ def run_eom_cc(name, **kwargs):
         ['CCEOM', 'WFN'])
 
     if name == 'eom-ccsd':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCHBAR', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
+        core.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCHBAR', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
         ref_wfn = run_ccenergy('ccsd', **kwargs)
     elif name == 'eom-cc2':
 
-        user_ref = psi4core.get_option('CCENERGY', 'REFERENCE')
+        user_ref = core.get_option('CCENERGY', 'REFERENCE')
         if (user_ref != 'RHF') and (user_ref != 'UHF'):
             raise ValidationError('Reference %s for EOM-CC2 is not available.' % user_ref)
 
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCHBAR', 'WFN', 'EOM_CC2')
-        psi4core.set_local_option('CCEOM', 'WFN', 'EOM_CC2')
+        core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCHBAR', 'WFN', 'EOM_CC2')
+        core.set_local_option('CCEOM', 'WFN', 'EOM_CC2')
         ref_wfn = run_ccenergy('cc2', **kwargs)
     elif name == 'eom-cc3':
-        psi4core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC3')
-        psi4core.set_local_option('CCSORT', 'WFN', 'EOM_CC3')
-        psi4core.set_local_option('CCENERGY', 'WFN', 'EOM_CC3')
-        psi4core.set_local_option('CCHBAR', 'WFN', 'EOM_CC3')
-        psi4core.set_local_option('CCEOM', 'WFN', 'EOM_CC3')
+        core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC3')
+        core.set_local_option('CCSORT', 'WFN', 'EOM_CC3')
+        core.set_local_option('CCENERGY', 'WFN', 'EOM_CC3')
+        core.set_local_option('CCHBAR', 'WFN', 'EOM_CC3')
+        core.set_local_option('CCEOM', 'WFN', 'EOM_CC3')
         ref_wfn = run_ccenergy('cc3', **kwargs)
 
-    psi4core.cchbar(ref_wfn)
-    psi4core.cceom(ref_wfn)
+    core.cchbar(ref_wfn)
+    core.cceom(ref_wfn)
 
     optstash.restore()
     return ref_wfn
@@ -2589,29 +2589,29 @@ def run_eom_cc_gradient(name, **kwargs):
         ['CCDENSITY', 'WFN'],
         ['CCLAMBDA', 'WFN'])
 
-    psi4core.set_global_option('DERTYPE', 'FIRST')
+    core.set_global_option('DERTYPE', 'FIRST')
 
     if name == 'eom-ccsd':
-        psi4core.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
-        psi4core.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
+        core.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
         ref_wfn = run_eom_cc(name, **kwargs)
     else:
-        psi4core.print_out('DGAS: proc.py:1599 hitting an undefined sequence')
-        psi4core.clean()
+        core.print_out('DGAS: proc.py:1599 hitting an undefined sequence')
+        core.clean()
         raise ValueError('Hit a wall in proc.py:1599')
 
-    psi4core.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
-    psi4core.set_local_option('CCDENSITY', 'ZETA', 'FALSE')
-    psi4core.set_local_option('CCDENSITY', 'XI', 'TRUE')
-    psi4core.cclambda(ref_wfn)
-    psi4core.ccdensity(ref_wfn)
-    psi4core.set_local_option('CCLAMBDA', 'ZETA', 'TRUE')
-    psi4core.set_local_option('CCDENSITY', 'ZETA', 'TRUE')
-    psi4core.set_local_option('CCDENSITY', 'XI', 'FALSE')
-    psi4core.cclambda(ref_wfn)
-    psi4core.ccdensity(ref_wfn)
+    core.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
+    core.set_local_option('CCDENSITY', 'ZETA', 'FALSE')
+    core.set_local_option('CCDENSITY', 'XI', 'TRUE')
+    core.cclambda(ref_wfn)
+    core.ccdensity(ref_wfn)
+    core.set_local_option('CCLAMBDA', 'ZETA', 'TRUE')
+    core.set_local_option('CCDENSITY', 'ZETA', 'TRUE')
+    core.set_local_option('CCDENSITY', 'XI', 'FALSE')
+    core.cclambda(ref_wfn)
+    core.ccdensity(ref_wfn)
 
-    derivobj = psi4core.Deriv(ref_wfn)
+    derivobj = core.Deriv(ref_wfn)
     grad = derivobj.compute()
 
     ref_wfn.set_gradient(grad)
@@ -2627,7 +2627,7 @@ def run_adc(name, **kwargs):
     .. caution:: Get rid of active molecule lines- should be handled in energy.
 
     """
-    if psi4core.get_option('ADC', 'REFERENCE') != 'RHF':
+    if core.get_option('ADC', 'REFERENCE') != 'RHF':
         raise ValidationError('ADC requires reference RHF')
 
     # Bypass the scf call if a reference wavefunction is given
@@ -2636,9 +2636,9 @@ def run_adc(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    return psi4core.adc(ref_wfn)
+    return core.adc(ref_wfn)
 
 
 def run_dft(name, **kwargs):
@@ -2655,64 +2655,64 @@ def run_dft(name, **kwargs):
         ['DFMP2', 'MP2_SS_SCALE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    psi4core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
+    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
-    user_ref = psi4core.get_option('SCF', 'REFERENCE')
+    user_ref = core.get_option('SCF', 'REFERENCE')
     if (user_ref == 'RHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'RKS')
+        core.set_local_option('SCF', 'REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'UKS')
+        core.set_local_option('SCF', 'REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
         raise ValidationError('ROHF reference for DFT is not available.')
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
     scf_wfn = run_scf(name, **kwargs)
-    returnvalue = psi4core.get_variable('CURRENT ENERGY')
+    returnvalue = core.get_variable('CURRENT ENERGY')
 
     for ssuper in dft_functional.superfunctional_list:
         if ssuper.name().lower() == name:
             dfun = ssuper
 
-    psi4core.tstop()
+    core.tstop()
     if dfun.is_c_hybrid():
-        aux_basis = psi4core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
-                                        psi4core.get_option("DFMP2", "DF_BASIS_MP2"),
-                                        "RIFIT", psi4core.get_global_option('BASIS'),
+        aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
+                                        core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                        "RIFIT", core.get_global_option('BASIS'),
                                         puream=-1)
         scf_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
         if dfun.is_c_scs_hybrid():
-            psi4core.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
-            psi4core.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
-            dfmp2_wfn = psi4core.dfmp2(scf_wfn)
+            core.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
+            core.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
+            dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = dfun.c_alpha() * psi4core.get_variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * core.get_variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
-            dfmp2_wfn = psi4core.dfmp2(scf_wfn)
+            dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
-            vdh = dfun.c_alpha() * psi4core.get_variable('MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * core.get_variable('MP2 CORRELATION ENERGY')
 
         # TODO: delete these variables, since they don't mean what they look to mean?
         # 'MP2 TOTAL ENERGY',
         # 'MP2 CORRELATION ENERGY',
         # 'MP2 SAME-SPIN CORRELATION ENERGY']
 
-        psi4core.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        core.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
         returnvalue += vdh
-        psi4core.set_variable('DFT TOTAL ENERGY', returnvalue)
-        psi4core.set_variable('CURRENT ENERGY', returnvalue)
-        psi4core.print_out('\n\n')
-        psi4core.print_out('    %s Energy Summary\n' % (name.upper()))
-        psi4core.print_out('    -------------------------\n')
-        psi4core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
-        psi4core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
-        psi4core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
-    psi4core.tstop()
+        core.set_variable('DFT TOTAL ENERGY', returnvalue)
+        core.set_variable('CURRENT ENERGY', returnvalue)
+        core.print_out('\n\n')
+        core.print_out('    %s Energy Summary\n' % (name.upper()))
+        core.print_out('    -------------------------\n')
+        core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
+        core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
+        core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
+    core.tstop()
 
     optstash.restore()
     return scf_wfn
@@ -2729,16 +2729,16 @@ def run_dft_gradient(name, **kwargs):
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    psi4core.set_local_option('SCF', 'DFT_FUNCTIONAL', name.upper())
+    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name.upper())
 
-    user_ref = psi4core.get_option('SCF', 'REFERENCE')
+    user_ref = core.get_option('SCF', 'REFERENCE')
     if (user_ref == 'RHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'RKS')
+        core.set_local_option('SCF', 'REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
-        psi4core.set_local_option('SCF', 'REFERENCE', 'UKS')
+        core.set_local_option('SCF', 'REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
         raise ValidationError('ROHF reference for DFT is not available.')
     elif (user_ref == 'CUHF'):
@@ -2764,22 +2764,22 @@ def run_detci(name, **kwargs):
         ['DETCI', 'FCI'],
         ['DETCI', 'EX_LEVEL'])
 
-    if psi4core.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
+    if core.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' %
-            psi4core.get_option('DETCI', 'REFERENCE'))
+            core.get_option('DETCI', 'REFERENCE'))
 
     if name == 'zapt':
-        psi4core.set_local_option('DETCI', 'WFN', 'ZAPTN')
+        core.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
-        psi4core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if (level + 1) % 2:
-            psi4core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+            core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
-            psi4core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+            core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif name in ['mp', 'mp2', 'mp3', 'mp4']:
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'MPN', 'TRUE')
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'MPN', 'TRUE')
         if name == 'mp2':
             level = 2
         elif name == 'mp3':
@@ -2789,32 +2789,32 @@ def run_detci(name, **kwargs):
         else:
             level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
-        psi4core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if (level + 1) % 2:
-            psi4core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+            core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
-            psi4core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+            core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif name == 'ccsd':
         # untested
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'CC', 'TRUE')
-        psi4core.set_local_option('DETCI', 'CC_EX_LEVEL', 2)
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'CC', 'TRUE')
+        core.set_local_option('DETCI', 'CC_EX_LEVEL', 2)
     elif name == 'fci':
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'FCI', 'TRUE')
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'FCI', 'TRUE')
     elif name == 'cisd':
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'EX_LEVEL', 2)
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif name == 'cisdt':
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'EX_LEVEL', 3)
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif name == 'cisdtq':
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
-        psi4core.set_local_option('DETCI', 'EX_LEVEL', 4)
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif name == 'ci':
-        psi4core.set_local_option('DETCI', 'WFN', 'DETCI')
+        core.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
-        psi4core.set_local_option('DETCI', 'EX_LEVEL', level)
+        core.set_local_option('DETCI', 'EX_LEVEL', level)
     elif name == 'detci':
         pass
 
@@ -2824,9 +2824,9 @@ def run_detci(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    ci_wfn = psi4core.detci(ref_wfn)
+    ci_wfn = core.detci(ref_wfn)
 
     optstash.restore()
     return ci_wfn
@@ -2837,45 +2837,45 @@ def run_dfmp2(name, **kwargs):
     a density-fitted MP2 calculation.
 
     """
-    psi4core.tstart()
+    core.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-        psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('DFMP2')
-    psi4core.print_out('\n')
+    core.print_out('\n')
 
-    if psi4core.get_global_option('REFERENCE') == "ROHF":
+    if core.get_global_option('REFERENCE') == "ROHF":
         ref_wfn.semicanonicalize()
 
-    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
-                                    psi4core.get_option("DFMP2", "DF_BASIS_MP2"),
-                                    "RIFIT", psi4core.get_global_option('BASIS'))
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
-    dfmp2_wfn = psi4core.dfmp2(ref_wfn)
+    dfmp2_wfn = core.dfmp2(ref_wfn)
     dfmp2_wfn.compute_energy()
 
     if name == 'scs-mp2':
-        psi4core.set_variable('CURRENT ENERGY', psi4core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        psi4core.set_variable('CURRENT CORRELATION ENERGY', psi4core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
     elif name == 'mp2':
-        psi4core.set_variable('CURRENT ENERGY', psi4core.get_variable('MP2 TOTAL ENERGY'))
-        psi4core.set_variable('CURRENT CORRELATION ENERGY', psi4core.get_variable('MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
 
     optstash.restore()
-    psi4core.tstop()
+    core.tstop()
     return dfmp2_wfn
 
 
@@ -2894,12 +2894,12 @@ def run_dmrgscf(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     if 'CASPT2' in name.upper():
-        psi4core.set_local_option("DMRG", "DMRG_CASPT2_CALC", True)
+        core.set_local_option("DMRG", "DMRG_CASPT2_CALC", True)
 
-    dmrg_wfn = psi4core.dmrg(ref_wfn)
+    dmrg_wfn = core.dmrg(ref_wfn)
     optstash.restore()
 
     return dmrg_wfn
@@ -2920,11 +2920,11 @@ def run_dmrgci(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    psi4core.set_local_option('DMRG', 'DMRG_SCF_MAX_ITER', 1)
+    core.set_local_option('DMRG', 'DMRG_SCF_MAX_ITER', 1)
 
-    dmrg_wfn = psi4core.dmrg(ref_wfn)
+    dmrg_wfn = core.dmrg(ref_wfn)
     optstash.restore()
 
     return dmrg_wfn
@@ -2936,7 +2936,7 @@ def run_psimrcc(name, **kwargs):
 
     """
     mcscf_wfn = run_mcscf(name, **kwargs)
-    psimrcc_e = psi4core.psimrcc(mcscf_wfn)
+    psimrcc_e = core.psimrcc(mcscf_wfn)
 
     return mcscf_wfn
 
@@ -2951,7 +2951,7 @@ def run_psimrcc_scf(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    psimrcc_e = psi4core.psimrcc(ref_wfn)
+    psimrcc_e = core.psimrcc(ref_wfn)
 
     return ref_wfn
 
@@ -2965,29 +2965,29 @@ def run_sapt(name, **kwargs):
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = kwargs.pop('molecule', psi4core.get_active_molecule())
+        sapt_dimer = kwargs.pop('molecule', core.get_active_molecule())
     else:
-        psi4core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
-        psi4core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
-    if (scf_ref != 'RHF') and (name.upper() != "SAPT0"):
-            raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
+    if *core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0")::
+        raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
     nfrag = sapt_dimer.nfragments()
     if nfrag != 2:
@@ -3011,81 +3011,81 @@ def run_sapt(name, **kwargs):
         monomerB = sapt_dimer.extract_subsets(2)
         monomerB.set_name('monomerB')
 
-    ri = psi4core.get_option('SCF', 'SCF_TYPE')
-    df_ints_io = psi4core.get_option('SCF', 'DF_INTS_IO')
+    ri = core.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
-    psi4core.IO.set_default_namespace('dimer')
-    psi4core.print_out('\n')
+    core.IO.set_default_namespace('dimer')
+    core.print_out('\n')
     p4util.banner('Dimer HF')
-    psi4core.print_out('\n')
+    core.print_out('\n')
 
     if sapt_basis == 'dimer' and ri == 'DF':
-        psi4core.set_global_option('DF_INTS_IO', 'SAVE')
+        core.set_global_option('DF_INTS_IO', 'SAVE')
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
-        mp2_corl_interaction_e = psi4core.get_variable('MP2 CORRELATION ENERGY')
+        mp2_corl_interaction_e = core.get_variable('MP2 CORRELATION ENERGY')
     if sapt_basis == 'dimer':
-        psi4core.set_global_option('DF_INTS_IO', 'LOAD')
+        core.set_global_option('DF_INTS_IO', 'LOAD')
 
     if sapt_basis == 'dimer':
-        psi4core.IO.change_file_namespace(97, 'dimer', 'monomerA')
-    psi4core.IO.set_default_namespace('monomerA')
-    psi4core.print_out('\n')
+        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+    core.IO.set_default_namespace('monomerA')
+    core.print_out('\n')
     p4util.banner('Monomer A HF')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
-        mp2_corl_interaction_e -= psi4core.get_variable('MP2 CORRELATION ENERGY')
+        mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
 
-    if sapt_basis == 'dimer' and ri == 'DF':
-        psi4core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
-    psi4core.IO.set_default_namespace('monomerB')
-    psi4core.print_out('\n')
+    if sapt_basis == 'dimer' and ri == 'df':
+        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+    core.IO.set_default_namespace('monomerB')
+    core.print_out('\n')
     p4util.banner('Monomer B HF')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
-        mp2_corl_interaction_e -= psi4core.get_variable('MP2 CORRELATION ENERGY')
-        psi4core.set_variable('SAPT MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
-    psi4core.set_global_option('DF_INTS_IO', df_ints_io)
+        mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
+        core.set_variable('SAPT MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
+    core.set_global_option('DF_INTS_IO', df_ints_io)
 
     if scf_ref == 'RHF':
-        psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
-    psi4core.IO.set_default_namespace('dimer')
-    psi4core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    psi4core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    core.IO.set_default_namespace('dimer')
+    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
+    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
     if name in ['sapt0', 'ssapt0']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
     elif name in ['sapt2+', 'sapt2+dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', False)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        core.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif name in ['sapt2+(3)', 'sapt2+(3)dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', False)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif name in ['sapt2+3', 'sapt2+3dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', False)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif name in ['sapt2+(ccd)', 'sapt2+(ccd)dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
     elif name in ['sapt2+(3)(ccd)', 'sapt2+(3)(ccd)dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
     elif name in ['sapt2+3(ccd)', 'sapt2+3(ccd)dmp2']:
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
 
     # Make sure we are not going to run CPHF on ROHF, since its MO Hessian
     # is not SPD
@@ -3093,30 +3093,32 @@ def run_sapt(name, **kwargs):
         core.set_local_option('SAPT','COUPLED_INDUCTION',False)
         core.print_out('  Coupled induction not available for ROHF.\n')
         core.print_out('  Proceeding with uncoupled induction only.\n')
-    aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
-                                        psi4core.get_global_option("DF_BASIS_SAPT"),
-                                        "RIFIT", psi4core.get_global_option("BASIS"))
+
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
+                                    core.get_global_option("DF_BASIS_SAPT"),
+                                    "RIFIT", core.get_global_option("BASIS"))
     dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
-    if psi4core.get_global_option("DF_BASIS_ELST") == "":
+    if core.get_global_option("DF_BASIS_ELST") == "":
         dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
     else:
-        aux_basis = psi4core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
-                                            psi4core.get_global_option("DF_BASIS_ELST"),
-                                            "RIFIT", psi4core.get_global_option("BASIS"))
+        aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
+                                            core.get_global_option("DF_BASIS_ELST"),
+                                            "RIFIT", core.get_global_option("BASIS"))
         dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
 
-    psi4core.print_out('\n')
+
+    core.print_out('\n')
     p4util.banner(name.upper())
-    psi4core.print_out('\n')
-    e_sapt = psi4core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
+    core.print_out('\n')
+    e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
 
     from psi4.driver.qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
     optstash.restore()
     for term in ['ELST', 'EXCH', 'IND', 'DISP', 'TOTAL']:
-        psi4core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
-            psi4core.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
-    psi4core.set_variable('CURRENT ENERGY', psi4core.get_variable('SAPT TOTAL ENERGY'))
+        core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
+            core.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
+    core.set_variable('CURRENT ENERGY', core.get_variable('SAPT TOTAL ENERGY'))
 
     return dimer_wfn
 
@@ -3130,31 +3132,31 @@ def run_sapt_ct(name, **kwargs):
         ['SCF', 'SCF_TYPE'])
 
     if 'ref_wfn' in kwargs:
-        psi4core.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
+        core.print_out('\nWarning! Argument ref_wfn is not valid for sapt computations\n')
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = kwargs.pop('molecule', psi4core.get_active_molecule())
+        sapt_dimer = kwargs.pop('molecule', core.get_active_molecule())
     else:
-        psi4core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
-        psi4core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
-    if psi4core.get_option('SCF', 'REFERENCE') != 'RHF':
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     nfrag = sapt_dimer.nfragments()
@@ -3171,105 +3173,105 @@ def run_sapt_ct(name, **kwargs):
     monomerBm = sapt_dimer.extract_subsets(2)
     monomerBm.set_name('monomerBm')
 
-    ri = psi4core.get_option('SCF', 'SCF_TYPE')
-    df_ints_io = psi4core.get_option('SCF', 'DF_INTS_IO')
+    ri = core.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
-    psi4core.IO.set_default_namespace('dimer')
-    psi4core.print_out('\n')
+    core.IO.set_default_namespace('dimer')
+    core.print_out('\n')
     p4util.banner('Dimer HF')
-    psi4core.print_out('\n')
-    psi4core.set_global_option('DF_INTS_IO', 'SAVE')
+    core.print_out('\n')
+    core.set_global_option('DF_INTS_IO', 'SAVE')
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
-    psi4core.set_global_option('DF_INTS_IO', 'LOAD')
+    core.set_global_option('DF_INTS_IO', 'LOAD')
 
     if (ri == 'DF'):
-        psi4core.IO.change_file_namespace(97, 'dimer', 'monomerA')
-    psi4core.IO.set_default_namespace('monomerA')
-    psi4core.print_out('\n')
+        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+    core.IO.set_default_namespace('monomerA')
+    core.print_out('\n')
     p4util.banner('Monomer A HF (Dimer Basis)')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
 
     if (ri == 'DF'):
-        psi4core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
-    psi4core.IO.set_default_namespace('monomerB')
-    psi4core.print_out('\n')
+        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+    core.IO.set_default_namespace('monomerB')
+    core.print_out('\n')
     p4util.banner('Monomer B HF (Dimer Basis)')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
-    psi4core.set_global_option('DF_INTS_IO', df_ints_io)
+    core.set_global_option('DF_INTS_IO', df_ints_io)
 
-    psi4core.IO.set_default_namespace('monomerAm')
-    psi4core.print_out('\n')
+    core.IO.set_default_namespace('monomerAm')
+    core.print_out('\n')
     p4util.banner('Monomer A HF (Monomer Basis)')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerAm_wfn = scf_helper('RHF', molecule=monomerAm, **kwargs)
 
-    psi4core.IO.set_default_namespace('monomerBm')
-    psi4core.print_out('\n')
+    core.IO.set_default_namespace('monomerBm')
+    core.print_out('\n')
     p4util.banner('Monomer B HF (Monomer Basis)')
-    psi4core.print_out('\n')
+    core.print_out('\n')
     monomerBm_wfn = scf_helper('RHF', molecule=monomerBm, **kwargs)
 
-    psi4core.IO.set_default_namespace('dimer')
-    psi4core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    psi4core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    core.IO.set_default_namespace('dimer')
+    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
+    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
     if name == 'sapt0-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
     elif name == 'sapt2+-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
     elif name == 'sapt2+(3)-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
     elif name == 'sapt2+3-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
     elif name == 'sapt2+(ccd)-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
     elif name == 'sapt2+(3)(ccd)-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
     elif name == 'sapt2+3(ccd)-ct':
-        psi4core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
-        psi4core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
-        psi4core.set_local_option('SAPT', 'DO_CCD_DISP', True)
-    psi4core.print_out('\n')
+        core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        core.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        core.set_local_option('SAPT', 'DO_CCD_DISP', True)
+    core.print_out('\n')
     p4util.banner('SAPT Charge Transfer')
-    psi4core.print_out('\n')
+    core.print_out('\n')
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('Dimer Basis SAPT')
-    psi4core.print_out('\n')
-    psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-    psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
-    e_sapt = psi4core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
-    CTd = psi4core.get_variable('SAPT CT ENERGY')
+    core.print_out('\n')
+    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+    e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
+    CTd = core.get_variable('SAPT CT ENERGY')
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('Monomer Basis SAPT')
-    psi4core.print_out('\n')
-    psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
-    psi4core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
-    e_sapt = psi4core.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
-    CTm = psi4core.get_variable('SAPT CT ENERGY')
+    core.print_out('\n')
+    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
+    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
+    e_sapt = core.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
+    CTm = core.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm
 
     units = (1000.0, p4const.psi_hartree2kcalmol, p4const.psi_hartree2kJmol)
-    psi4core.print_out('\n\n')
-    psi4core.print_out('    SAPT Charge Transfer Analysis\n')
-    psi4core.print_out('  ------------------------------------------------------------------------------------------------\n')
-    psi4core.print_out('    SAPT Induction (Dimer Basis)  %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
+    core.print_out('\n\n')
+    core.print_out('    SAPT Charge Transfer Analysis\n')
+    core.print_out('  ------------------------------------------------------------------------------------------------\n')
+    core.print_out('    SAPT Induction (Dimer Basis)  %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
         tuple(CTd * u for u in units))
-    psi4core.print_out('    SAPT Induction (Monomer Basis)%12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
+    core.print_out('    SAPT Induction (Monomer Basis)%12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n' %
         tuple(CTm * u for u in units))
-    psi4core.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' %
+    core.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' %
         tuple(CT * u for u in units))
-    psi4core.set_variable('SAPT CT ENERGY', CT)
+    core.set_variable('SAPT CT ENERGY', CT)
 
     optstash.restore()
     return dimer_wfn
@@ -3284,33 +3286,33 @@ def run_fisapt(name, **kwargs):
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
-    if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-        psi4core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     # Get the molecule of interest
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        sapt_dimer = kwargs.pop('molecule', psi4core.get_active_molecule())
+        sapt_dimer = kwargs.pop('molecule', core.get_active_molecule())
     else:
-        psi4core.print_out('Warning! FISAPT argument "ref_wfn" is only able to use molecule information.')
+        core.print_out('Warning! FISAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
-        psi4core.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        core.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
-    if psi4core.get_option('SCF', 'REFERENCE') != 'RHF':
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
 
     if ref_wfn is None:
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
-    fisapt_wfn = psi4core.fisapt(ref_wfn)
+    fisapt_wfn = core.fisapt(ref_wfn)
 
     optstash.restore()
     return fisapt_wfn
@@ -3326,11 +3328,11 @@ def run_mrcc(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
-    vscf = psi4core.get_variable('SCF TOTAL ENERGY')
+    vscf = core.get_variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
-    # of settings to be passed to psi4core.mrcc
+    # of settings to be passed to core.mrcc
     if not('level' in kwargs):
         raise ValidationError('level parameter was not provided.')
 
@@ -3358,7 +3360,7 @@ def run_mrcc(name, **kwargs):
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
-    psi_io = psi4core.IOManager.shared_object()
+    psi_io = core.IOManager.shared_object()
     os.chdir(psi_io.get_default_path())
 
     # Make new directory specifically for mrcc
@@ -3374,18 +3376,18 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
-    psi4core.mrcc_generate_input(ref_wfn, level)
+    core.mrcc_generate_input(ref_wfn, level)
 
     # Load the fort.56 file
     # and dump a copy into the outfile
-    psi4core.print_out('\n===== Begin fort.56 input for MRCC ======\n')
-    psi4core.print_out(open('fort.56', 'r').read())
-    psi4core.print_out('===== End   fort.56 input for MRCC ======\n')
+    core.print_out('\n===== Begin fort.56 input for MRCC ======\n')
+    core.print_out(open('fort.56', 'r').read())
+    core.print_out('===== End   fort.56 input for MRCC ======\n')
 
     # Close psi4 output file and reopen with filehandle
-    psi4core.close_outfile()
-    pathfill = '' if os.path.isabs(psi4core.outfile_name()) else current_directory + os.path.sep
-    p4out = open(pathfill + psi4core.outfile_name(), 'a')
+    core.close_outfile()
+    pathfill = '' if os.path.isabs(core.outfile_name()) else current_directory + os.path.sep
+    p4out = open(pathfill + core.outfile_name(), 'a')
 
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
@@ -3397,8 +3399,8 @@ def run_mrcc(name, **kwargs):
         omp_num_threads_user = os.environ['OMP_NUM_THREADS']
 
     # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
-    if psi4core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
-        os.environ['OMP_NUM_THREADS'] = str(psi4core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
+    if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
+        os.environ['OMP_NUM_THREADS'] = str(core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
     external_exe = 'dmrcc'
@@ -3415,7 +3417,7 @@ def run_mrcc(name, **kwargs):
         data = retcode.stdout.readline()
         if not data:
             break
-        if psi4core.outfile_name() == 'stdout':
+        if core.outfile_name() == 'stdout':
             sys.stdout.write(data)
         else:
             p4out.write(data)
@@ -3423,10 +3425,10 @@ def run_mrcc(name, **kwargs):
         c4out += data
 
 #    try:
-#        if psi4core.outfile_name() == 'stdout':
+#        if core.outfile_name() == 'stdout':
 #            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
 #        else:
-#            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4core.outfile_name(), shell=True, env=lenv)
+#            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + core.outfile_name(), shell=True, env=lenv)
 #
 #        if retcode < 0:
 #            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
@@ -3441,7 +3443,7 @@ def run_mrcc(name, **kwargs):
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
-        if psi4core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
+        if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     # Scan iface file and grab the file energy.
@@ -3453,14 +3455,14 @@ def run_mrcc(name, **kwargs):
             ene = float(fields[5])
             if m == "MP(2)":
                 m = "MP2"
-            psi4core.set_variable(m + ' TOTAL ENERGY', ene)
-            psi4core.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
+            core.set_variable(m + ' TOTAL ENERGY', ene)
+            core.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
         except ValueError:
             continue
 
     # The last 'ene' in iface is the one the user requested.
-    psi4core.set_variable('CURRENT ENERGY', ene)
-    psi4core.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
+    core.set_variable('CURRENT ENERGY', ene)
+    core.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -3479,18 +3481,18 @@ def run_mrcc(name, **kwargs):
     # Return to submission directory and reopen output file
     os.chdir(current_directory)
     p4out.close()
-    psi4core.reopen_outfile()
+    core.reopen_outfile()
 
     # If we're told to keep the files or the user provided a path, do nothing.
     if (keep != False or ('path' in kwargs)):
-        psi4core.print_out('\nMRCC scratch files have been kept.\n')
-        psi4core.print_out('They can be found in ' + mrcc_tmpdir)
+        core.print_out('\nMRCC scratch files have been kept.\n')
+        core.print_out('They can be found in ' + mrcc_tmpdir)
 
     # Dump iface contents to output
-    psi4core.print_out('\n')
+    core.print_out('\n')
     p4util.banner('Full results from MRCC')
-    psi4core.print_out('\n')
-    psi4core.print_out(iface_contents)
+    core.print_out('\n')
+    core.print_out(iface_contents)
 
     return ref_wfn
 
@@ -3516,52 +3518,52 @@ def run_fnodfcc(name, **kwargs):
         ['SCF', 'DF_INTS_IO'],
         ['SCF', 'SCF_TYPE'])
 
-    psi4core.set_local_option('FNOCC', 'DFCC', True)
-    psi4core.set_local_option('FNOCC', 'RUN_CEPA', False)
+    core.set_local_option('FNOCC', 'DFCC', True)
+    core.set_local_option('FNOCC', 'RUN_CEPA', False)
 
     # throw an exception for open-shells
-    if psi4core.get_option('SCF', 'REFERENCE') != 'RHF':
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
 
     def set_cholesky_from(mtd_type):
-        type_val = psi4core.get_global_option(mtd_type)
+        type_val = core.get_global_option(mtd_type)
         if type_val == 'CD':
-            psi4core.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
+            core.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
             # Alter default algorithm
-            if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-                psi4core.set_global_option('SCF_TYPE', 'CD')
-                psi4core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'CD')
+                core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
         elif type_val == 'DF':
-            if psi4core.get_option('FNOCC', 'DF_BASIS_CC') == 'CHOLESKY':
-                psi4core.set_local_option('FNOCC', 'DF_BASIS_CC', '')
+            if core.get_option('FNOCC', 'DF_BASIS_CC') == 'CHOLESKY':
+                core.set_local_option('FNOCC', 'DF_BASIS_CC', '')
             # Alter default algorithm
-            if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-                psi4core.set_global_option('SCF_TYPE', 'DF')
-                psi4core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'DF')
+                core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
         else:
             raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
 
     # triples?
     if name == 'ccsd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
         set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
         set_cholesky_from('CC_TYPE')
     elif name == 'fno-ccsd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
         set_cholesky_from('CC_TYPE')
     elif name == 'fno-ccsd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
         set_cholesky_from('CC_TYPE')
 
-    if psi4core.get_option('SCF', 'SCF_TYPE') not in ['CD', 'DF']:
+    if core.get_option('SCF', 'SCF_TYPE') not in ['CD', 'DF']:
         raise ValidationError("""Invalid scf_type for DFCC.""")
 
     # save DF or CD ints generated by SCF for use in CC
-    psi4core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -3571,12 +3573,12 @@ def run_fnodfcc(name, **kwargs):
             raise ValidationError("""  FNOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    aux_basis = psi4core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                        psi4core.get_global_option("DF_BASIS_CC"),
-                                        "RIFIT", psi4core.get_global_option("BASIS"))
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                        core.get_global_option("DF_BASIS_CC"),
+                                        "RIFIT", core.get_global_option("BASIS"))
     wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
-    fnocc_wfn = psi4core.fnocc(ref_wfn)
+    fnocc_wfn = core.fnocc(ref_wfn)
 
     optstash.restore()
     return fnocc_wfn
@@ -3606,67 +3608,67 @@ def run_fnocc(name, **kwargs):
         ['FNOCC', 'USE_DF_INTS'],
         ['FNOCC', 'NAT_ORBS'])
 
-    psi4core.set_local_option('FNOCC', 'DFCC', False)
-    psi4core.set_local_option('FNOCC', 'RUN_CEPA', False)
-    psi4core.set_local_option('FNOCC', 'USE_DF_INTS', False)
+    core.set_local_option('FNOCC', 'DFCC', False)
+    core.set_local_option('FNOCC', 'RUN_CEPA', False)
+    core.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
     # which method?
     if name == 'ccsd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'RUN_CCSD', True)
     elif name == 'ccsd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'RUN_CCSD', True)
     elif name == 'fno-ccsd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'RUN_CCSD', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'fno-ccsd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'RUN_CCSD', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'qcisd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'RUN_CCSD', False)
     elif name == 'qcisd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'RUN_CCSD', False)
     elif name == 'fno-qcisd':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', False)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'RUN_CCSD', False)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'fno-qcisd(t)':
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
-        psi4core.set_local_option('FNOCC', 'RUN_CCSD', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'RUN_CCSD', False)
     elif name == 'mp2':
-        psi4core.set_local_option('FNOCC', 'RUN_MP2', True)
+        core.set_local_option('FNOCC', 'RUN_MP2', True)
     elif name == 'fno-mp3':
-        psi4core.set_local_option('FNOCC', 'RUN_MP3', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'RUN_MP3', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'fno-mp4':
-        psi4core.set_local_option('FNOCC', 'RUN_MP4', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'RUN_MP4', True)
+        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'mp4(sdq)':
-        psi4core.set_local_option('FNOCC', 'RUN_MP4', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'RUN_MP4', True)
+        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
     elif name == 'fno-mp4(sdq)':
-        psi4core.set_local_option('FNOCC', 'RUN_MP4', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'RUN_MP4', True)
+        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
     elif name == 'mp3':
-        psi4core.set_local_option('FNOCC', 'RUN_MP3', True)
+        core.set_local_option('FNOCC', 'RUN_MP3', True)
     elif name == 'mp4':
-        psi4core.set_local_option('FNOCC', 'RUN_MP4', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
-        psi4core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        core.set_local_option('FNOCC', 'RUN_MP4', True)
+        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
+        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
 
     # throw an exception for open-shells
-    if psi4core.get_option('SCF', 'REFERENCE') != 'RHF':
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
 
     # Bypass the scf call if a reference wavefunction is given
@@ -3674,43 +3676,43 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    fnocc_wfn = psi4core.fnocc(ref_wfn)
+    fnocc_wfn = core.fnocc(ref_wfn)
 
     # set current correlation energy and total energy.  only need to treat mpn here.
     if name == 'mp3':
-        emp3 = psi4core.get_variable("MP3 TOTAL ENERGY")
-        cemp3 = psi4core.get_variable("MP3 CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp3)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
+        emp3 = core.get_variable("MP3 TOTAL ENERGY")
+        cemp3 = core.get_variable("MP3 CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp3)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
     elif name == 'fno-mp3':
-        emp3 = psi4core.get_variable("MP3 TOTAL ENERGY")
-        cemp3 = psi4core.get_variable("MP3 CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp3)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
+        emp3 = core.get_variable("MP3 TOTAL ENERGY")
+        cemp3 = core.get_variable("MP3 CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp3)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
     elif name == 'mp4(sdq)':
-        emp4sdq = psi4core.get_variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = psi4core.get_variable("MP4(SDQ) CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp4sdq)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
+        emp4sdq = core.get_variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = core.get_variable("MP4(SDQ) CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp4sdq)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
     elif name == 'fno-mp4(sdq)':
-        emp4sdq = psi4core.get_variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = psi4core.get_variable("MP4(SDQ) CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp4sdq)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
+        emp4sdq = core.get_variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = core.get_variable("MP4(SDQ) CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp4sdq)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
     elif name == 'fno-mp4':
-        emp4 = psi4core.get_variable("MP4 TOTAL ENERGY")
-        cemp4 = psi4core.get_variable("MP4 CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp4)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
+        emp4 = core.get_variable("MP4 TOTAL ENERGY")
+        cemp4 = core.get_variable("MP4 CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp4)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
     elif name == 'mp4':
-        emp4 = psi4core.get_variable("MP4 TOTAL ENERGY")
-        cemp4 = psi4core.get_variable("MP4 CORRELATION ENERGY")
-        psi4core.set_variable("CURRENT ENERGY", emp4)
-        psi4core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
+        emp4 = core.get_variable("MP4 TOTAL ENERGY")
+        cemp4 = core.get_variable("MP4 CORRELATION ENERGY")
+        core.set_variable("CURRENT ENERGY", emp4)
+        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
 
     optstash.restore()
     return fnocc_wfn
@@ -3733,16 +3735,16 @@ def run_cepa(name, **kwargs):
         ['FNOCC', 'USE_DF_INTS'],
         ['FNOCC', 'CEPA_NO_SINGLES'])
 
-    psi4core.set_local_option('FNOCC', 'RUN_CEPA', True)
-    psi4core.set_local_option('FNOCC', 'USE_DF_INTS', False)
+    core.set_local_option('FNOCC', 'RUN_CEPA', True)
+    core.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
     # what type of cepa?
     if name in ['lccd', 'fno-lccd']:
         cepa_level = 'cepa(0)'
-        psi4core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', True)
+        core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', True)
     elif name in ['cepa(0)', 'fno-cepa(0)', 'lccsd', 'fno-lccsd']:
         cepa_level = 'cepa(0)'
-        psi4core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', False)
+        core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', False)
     elif name in ['cepa(1)', 'fno-cepa(1)']:
         cepa_level = 'cepa(1)'
     elif name in ['cepa(3)', 'fno-cepa(3)']:
@@ -3756,32 +3758,32 @@ def run_cepa(name, **kwargs):
     else:
         raise ValidationError("""Error: %s not implemented\n""" % name)
 
-    psi4core.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
+    core.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
 
     if name in ['fno-lccd', 'fno-lccsd', 'fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
                 'fno-acpf', 'fno-aqcc', 'fno-cisd']:
-        psi4core.set_local_option('FNOCC', 'NAT_ORBS', True)
+        core.set_local_option('FNOCC', 'NAT_ORBS', True)
 
     # throw an exception for open-shells
-    if psi4core.get_option('SCF', 'REFERENCE') != 'RHF':
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if psi4core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    fnocc_wfn = psi4core.fnocc(ref_wfn)
+    fnocc_wfn = core.fnocc(ref_wfn)
 
     # one-electron properties
-    if psi4core.get_option('FNOCC', 'DIPMOM'):
+    if core.get_option('FNOCC', 'DIPMOM'):
         if cepa_level in ['cepa(1)', 'cepa(3)']:
-            psi4core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
-        elif psi4core.get_option('FNOCC', 'NAT_ORBS'):
-            psi4core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
+            core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
+        elif core.get_option('FNOCC', 'NAT_ORBS'):
+            core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
         else:
             p4util.oeprop(fnocc_wfn, 'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level.upper())
 
@@ -3800,14 +3802,14 @@ def run_detcas(name, **kwargs):
         ['SCF', 'SCF_TYPE']
         )
 
-    user_ref = psi4core.get_option('DETCI', 'REFERENCE')
+    user_ref = core.get_option('DETCI', 'REFERENCE')
     if user_ref not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name == 'rasscf':
-        psi4core.set_local_option('DETCI', 'WFN', 'RASSCF')
+        core.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif name == 'casscf':
-        psi4core.set_local_option('DETCI', 'WFN', 'CASSCF')
+        core.set_local_option('DETCI', 'WFN', 'CASSCF')
     else:
         raise ValidationError("Run DETCAS: Name %s not understood" % name)
 
@@ -3818,35 +3820,35 @@ def run_detcas(name, **kwargs):
     molecule = ref_wfn.molecule()
 
     # The DF case
-    if psi4core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
+    if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
 
         # Do NOT set global options in general, this is a bit of a hack
-        if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-            psi4core.set_global_option('SCF_TYPE', 'DF')
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DF')
 
     # The non-DF case
     else:
-        if not psi4core.has_option_changed('SCF', 'SCF_TYPE'):
-            psi4core.set_global_option('SCF_TYPE', 'PK')
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'PK')
 
         # Ensure IWL files have been written
-        proc_util.check_iwl_file_from_scf_type(psi4core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+        proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Second-order SCF requires non-symmetric density matrix support
-    if psi4core.get_option('DETCI', 'MCSCF_SO'):
+    if core.get_option('DETCI', 'MCSCF_SO'):
         proc_util.check_non_symmetric_jk_density("Second-order MCSCF")
 
-    ciwfn = psi4core.detci(ref_wfn)
+    ciwfn = core.detci(ref_wfn)
 
     # We always would like to print a little dipole information
-    oeprop = psi4core.OEProp(ciwfn)
+    oeprop = core.OEProp(ciwfn)
     oeprop.set_title(name.upper())
     oeprop.add("DIPOLE")
     oeprop.compute()
     ciwfn.set_oeprop(oeprop)
-    psi4core.set_variable("CURRENT DIPOLE X", psi4core.get_variable(name.upper() + " DIPOLE X"))
-    psi4core.set_variable("CURRENT DIPOLE Y", psi4core.get_variable(name.upper() + " DIPOLE Y"))
-    psi4core.set_variable("CURRENT DIPOLE Z", psi4core.get_variable(name.upper() + " DIPOLE Z"))
+    core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
+    core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
+    core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
     return ciwfn
@@ -3858,14 +3860,14 @@ def run_efp(name, **kwargs):
 
     """
     # initialize library
-    efp = psi4core.get_active_efp()
+    efp = core.get_active_efp()
 
     if efp.nfragments() == 0:
         raise ValidationError("""Method 'efp' not available without EFP fragments in molecule""")
 
     # set options
-    psi4core.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
-    psi4core.efp_set_options()
+    core.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
+    core.efp_set_options()
 
     efp.print_out()
     returnvalue = efp.compute()

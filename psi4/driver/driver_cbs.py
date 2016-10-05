@@ -28,7 +28,7 @@ import math
 import sys
 import numpy as np
 
-from psi4 import psi4core
+from psi4 import core
 
 from . import qcdb
 from . import p4util
@@ -125,14 +125,14 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
             cbsscheme += """\n   ==> %s <==\n\n""" % (functionname.upper())
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
 
-            psi4core.print_out(cbsscheme)
+            core.print_out(cbsscheme)
 
         return valueHI
 
-    elif isinstance(valueHI, (psi4core.Matrix, psi4core.Vector)):
+    elif isinstance(valueHI, (core.Matrix, core.Vector)):
 
         if verbose > 2:
-            psi4core.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
+            core.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
             valueHI.print_out()
 
         return valueHI
@@ -171,11 +171,11 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
-            psi4core.print_out(cbsscheme)
+            core.print_out(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (psi4core.Matrix, psi4core.Vector)):
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
         beta = valueHI.clone()
         beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
         beta.subtract(valueLO)
@@ -187,17 +187,17 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            psi4core.print_out("""\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
-            psi4core.print_out("""   LO-zeta (%s)""" % str(zLO))
-            psi4core.print_out("""   LO-zeta Data""")
+            core.print_out("""\n   ==> Helgaker 2-point SCF extrapolation for method: %s <==\n\n""" % (functionname.upper()))
+            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta Data""")
             valueLO.print_out()
-            psi4core.print_out("""   HI-zeta (%s)""" % str(zHI))
-            psi4core.print_out("""   HI-zeta Data""")
+            core.print_out("""   HI-zeta (%s)""" % str(zHI))
+            core.print_out("""   HI-zeta Data""")
             valueHI.print_out()
-            psi4core.print_out("""   Extrapolated Data:\n""")
+            core.print_out("""   Extrapolated Data:\n""")
             value.print_out()
-            psi4core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
-            psi4core.print_out("""   Beta Data:\n""")
+            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % (alpha))
+            core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
         return value
@@ -240,11 +240,11 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
-            psi4core.print_out(cbsscheme)
+            core.print_out(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (psi4core.Matrix, psi4core.Vector)):
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
         valueLO = np.array(valueLO)
         valueMD = np.array(valueMD)
         valueHI = np.array(valueHI)
@@ -261,7 +261,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         np_value[~nonzero_mask] = 0.0
 
         # Build and set from numpy routines
-        value = psi4core.Matrix(*valueHI.shape)
+        value = core.Matrix(*valueHI.shape)
         value_view = np.asarray(value)
         value_view[:] = np_value
         return value
@@ -306,11 +306,11 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
             cbsscheme += name_str + ':'
             cbsscheme += " " * (19 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % final
-            psi4core.print_out(cbsscheme)
+            core.print_out(cbsscheme)
 
         return final
 
-    elif isinstance(valueLO, (psi4core.Matrix, psi4core.Vector)):
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
 
         beta = valueHI.clone()
         beta.subtract(valueLO)
@@ -328,15 +328,15 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            psi4core.print_out("""\n   ==> Helgaker 2-point correlated extrapolation for """
+            core.print_out("""\n   ==> Helgaker 2-point correlated extrapolation for """
                            """method: %s <==\n\n""" % (functionname.upper()))
-            psi4core.print_out("""   LO-zeta (%s) Data\n""" % (str(zLO)))
+            core.print_out("""   LO-zeta (%s) Data\n""" % (str(zLO)))
             valueLO.print_out()
-            psi4core.print_out("""   HI-zeta (%s) Data\n""" % (str(zHI)))
+            core.print_out("""   HI-zeta (%s) Data\n""" % (str(zHI)))
             valueHI.print_out()
-            psi4core.print_out("""   Extrapolated Data:\n""")
+            core.print_out("""   Extrapolated Data:\n""")
             value.print_out()
-            psi4core.print_out("""   Beta Data:\n""")
+            core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
 #        value.add(valueSCF)
@@ -867,10 +867,10 @@ def complete_basis_set(func, label, **kwargs):
     do_delta4 = False
     do_delta5 = False
 
-    user_writer_file_label = psi4core.get_global_option('WRITER_FILE_LABEL')
+    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
 
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', psi4core.get_active_molecule())
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
     molstr = molecule.create_psi4_string_from_molecule()
     natom = molecule.natom()
@@ -1098,9 +1098,9 @@ def complete_basis_set(func, label, **kwargs):
 
     # Build string of title banner
     cbsbanners = ''
-    cbsbanners += """psi4core.print_out('\\n')\n"""
+    cbsbanners += """core.print_out('\\n')\n"""
     cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
-    cbsbanners += """psi4core.print_out('\\n')\n\n"""
+    cbsbanners += """core.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
@@ -1217,20 +1217,20 @@ def complete_basis_set(func, label, **kwargs):
         for wfn in VARH[job['f_wfn']]:
             JOBS_EXT.append(dict(zip(f_fields, [wfn, job['f_basis'], job['f_zeta'],
                                                 0.0,
-                                                psi4core.Matrix(natom, 3),
-                                                psi4core.Matrix(3 * natom, 3 * natom)])))
+                                                core.Matrix(natom, 3),
+                                                core.Matrix(3 * natom, 3 * natom)])))
 
     instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
     for mc in JOBS_EXT:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
             (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-    psi4core.print_out(instructions)
+    core.print_out(instructions)
 
-    psioh = psi4core.IOManager.shared_object()
+    psioh = core.IOManager.shared_object()
     psioh.set_specific_retention(p4const.PSIF_SCF_MOS, True)
     # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
     #   needs to be communicated to optimize() so reset by that optstash
-    psi4core.set_local_option('SCF', 'GUESS_PERSIST', True)
+    core.set_local_option('SCF', 'GUESS_PERSIST', True)
 
     Njobs = 0
     # Run necessary computations
@@ -1239,16 +1239,16 @@ def complete_basis_set(func, label, **kwargs):
 
         # Build string of title banner
         cbsbanners = ''
-        cbsbanners += """psi4core.print_out('\\n')\n"""
+        cbsbanners += """core.print_out('\\n')\n"""
         cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
             (mc['f_wfn'].upper(), mc['f_basis'].upper(), addlremark[ptype])
-        cbsbanners += """psi4core.print_out('\\n')\n\n"""
+        cbsbanners += """core.print_out('\\n')\n\n"""
         exec(cbsbanners)
 
         # Build string of molecule and commands that are dependent on the database
         commands = '\n'
-        commands += """\npsi4core.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-        commands += """psi4core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
             (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
         exec(commands)
 
@@ -1258,29 +1258,29 @@ def complete_basis_set(func, label, **kwargs):
             mc['f_energy'] = response
         elif ptype == 'gradient':
             mc['f_gradient'] = response
-            mc['f_energy'] = psi4core.get_variable('CURRENT ENERGY')
+            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_gradient'].print_out()
         elif ptype == 'hessian':
             mc['f_hessian'] = response
-            mc['f_energy'] = psi4core.get_variable('CURRENT ENERGY')
+            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_hessian'].print_out()
         Njobs += 1
         if verbose > 1:
-            psi4core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
 
         # Fill in energies for subsumed methods
         if ptype == 'energy':
             for wfn in VARH[mc['f_wfn']]:
                 for job in JOBS_EXT:
                     if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']):
-                        job['f_energy'] = psi4core.get_variable(VARH[wfn][wfn])
+                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
 
         if verbose > 1:
-            psi4core.print_variables()
-        psi4core.clean_variables()
-        psi4core.clean()
+            core.print_variables()
+        core.clean_variables()
+        core.clean()
 
         # Copy data from 'run' to 'obtained' table
         for mce in JOBS_EXT:
@@ -1293,9 +1293,9 @@ def complete_basis_set(func, label, **kwargs):
 
     # Build string of title banner
     cbsbanners = ''
-    cbsbanners += """psi4core.print_out('\\n')\n"""
+    cbsbanners += """core.print_out('\\n')\n"""
     cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
-    cbsbanners += """psi4core.print_out('\\n')\n\n"""
+    cbsbanners += """core.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
     # Insert obtained energies into the array that stores the cbs stages
@@ -1317,8 +1317,8 @@ def complete_basis_set(func, label, **kwargs):
 
     # Make xtpl() call
     finalenergy = 0.0
-    finalgradient = psi4core.Matrix(natom, 3)
-    finalhessian = psi4core.Matrix(3 * natom, 3 * natom)
+    finalgradient = core.Matrix(natom, 3)
+    finalhessian = core.Matrix(3 * natom, 3 * natom)
     for stage in GRAND_NEED:
         hiloargs = _contract_scheme_orders(stage['d_need'], 'f_energy')
         stage['d_energy'] = stage['d_scheme'](**hiloargs)
@@ -1399,19 +1399,19 @@ def complete_basis_set(func, label, **kwargs):
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
 
-    psi4core.print_out(tables)
+    core.print_out(tables)
 
-    psi4core.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
-    psi4core.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
-    psi4core.set_variable('CBS TOTAL ENERGY', finalenergy)
-    psi4core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
-    psi4core.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
-    psi4core.set_variable('CURRENT ENERGY', finalenergy)
-    psi4core.set_variable('CBS NUMBER', Njobs)
+    core.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    core.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
+    core.set_variable('CBS TOTAL ENERGY', finalenergy)
+    core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    core.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
+    core.set_variable('CURRENT ENERGY', finalenergy)
+    core.set_variable('CBS NUMBER', Njobs)
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    basis = psi4core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
-    wfn = psi4core.Wavefunction(molecule, basis)
+    basis = core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    wfn = core.Wavefunction(molecule, basis)
 
     optstash.restore()
 
@@ -1421,13 +1421,13 @@ def complete_basis_set(func, label, **kwargs):
         finalquantity = finalgradient
         wfn.set_gradient(finalquantity)
         if finalquantity.rows(0) < 20:
-            psi4core.print_out('CURRENT GRADIENT')
+            core.print_out('CURRENT GRADIENT')
             finalquantity.print_out()
     elif ptype == 'hessian':
         finalquantity = finalhessian
         wfn.set_hessian(finalquantity)
         if finalquantity.rows(0) < 20:
-            psi4core.print_out('CURRENT HESSIAN')
+            core.print_out('CURRENT HESSIAN')
             finalquantity.print_out()
 
     if return_wfn:
@@ -1459,8 +1459,8 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, natom):
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(zip(f_fields, [wfnname, basisname[idx], basiszeta[idx],
                                                             0.0,
-                                                            psi4core.Matrix(natom, 3),
-                                                            psi4core.Matrix(3 * natom, 3 * natom)]))
+                                                            core.Matrix(natom, 3),
+                                                            core.Matrix(3 * natom, 3 * natom)]))
     return NEED
 
 
@@ -1532,13 +1532,13 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     # Catch kwarg issues
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
-    psi4core.clean_variables()
+    core.clean_variables()
     user_dertype = kwargs.pop('dertype', None)
     cbs_verbose = kwargs.pop('cbs_verbose', False)
     ptype = kwargs.pop('ptype', None)
 
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', psi4core.get_active_molecule())
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
     # Sanitize total_method_name
@@ -1560,10 +1560,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
         # Save some global variables so we can reset them later
         optstash = p4util.OptionsState(['BASIS'])
-        psi4core.set_global_option('BASIS', basis)
+        core.set_global_option('BASIS', basis)
 
         ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        psi4core.clean()
+        core.clean()
 
         optstash.restore()
 

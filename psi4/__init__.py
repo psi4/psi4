@@ -1,3 +1,3 @@
-from .psi4core_import import psi4core
-from .psi4core_import import register_numpy_file
+from .import_core import core
+from .import_core import register_numpy_file
 from .driver import *

@@ -64,50 +64,50 @@ class Diffuse(object):
         resulting density.
 
         """
-        basisChanged = psi4core.has_option_changed("BASIS")
-        ribasisChanged = psi4core.has_option_changed("DF_BASIS_SCF")
-        scftypeChanged = psi4core.has_option_changed("SCF_TYPE")
+        basisChanged = core.has_option_changed("BASIS")
+        ribasisChanged = core.has_option_changed("DF_BASIS_SCF")
+        scftypeChanged = core.has_option_changed("SCF_TYPE")
 
-        basis = psi4core.get_option("BASIS")
-        ribasis = psi4core.get_option("DF_BASIS_SCF")
-        scftype = psi4core.get_option("SCF_TYPE")
+        basis = core.get_option("BASIS")
+        ribasis = core.get_option("DF_BASIS_SCF")
+        scftype = core.get_option("SCF_TYPE")
 
-        psi4core.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
+        core.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
 
-        psi4core.set_global_option("BASIS", self.basisname)
-        psi4core.set_global_option("DF_BASIS_SCF", self.ribasisname)
-        psi4core.set_global_option("SCF_TYPE", "DF")
+        core.set_global_option("BASIS", self.basisname)
+        core.set_global_option("DF_BASIS_SCF", self.ribasisname)
+        core.set_global_option("SCF_TYPE", "DF")
         E, ref = energy('scf', return_wfn=True, molecule=self.molecule)
         self.wfn = ref
-        psi4core.print_out("\n")
+        core.print_out("\n")
 
         self.fitGeneral()
 
-        psi4core.clean()
+        core.clean()
 
-        psi4core.set_global_option("BASIS", basis)
-        psi4core.set_global_option("DF_BASIS_SCF", ribasis)
-        psi4core.set_global_option("SCF_TYPE", scftype)
+        core.set_global_option("BASIS", basis)
+        core.set_global_option("DF_BASIS_SCF", ribasis)
+        core.set_global_option("SCF_TYPE", scftype)
 
         if not basisChanged:
-            psi4core.revoke_option_changed("BASIS")
+            core.revoke_option_changed("BASIS")
         if not ribasisChanged:
-            psi4core.revoke_option_changed("DF_BASIS_SCF")
+            core.revoke_option_changed("DF_BASIS_SCF")
         if not scftypeChanged:
-            psi4core.revoke_option_changed("SCF_TYPE")
+            core.revoke_option_changed("SCF_TYPE")
 
     def fitGeneral(self):
         """Function to perform a general fit of diffuse charges
         to wavefunction density.
 
         """
-        psi4core.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
+        core.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
         self.Da = self.wfn.Da()
         self.basis = self.wfn.basisset()
-        parser = psi4core.Gaussian94BasisSetParser()
-        self.ribasis = psi4core.BasisSet.construct(parser, self.molecule, "DF_BASIS_SCF")
+        parser = core.Gaussian94BasisSetParser()
+        self.ribasis = core.BasisSet.construct(parser, self.molecule, "DF_BASIS_SCF")
 
-        fitter = psi4core.DFChargeFitter()
+        fitter = core.DFChargeFitter()
         fitter.setPrimary(self.basis)
         fitter.setAuxiliary(self.ribasis)
         fitter.setD(self.Da)
@@ -127,7 +127,7 @@ class QMMM(object):
     def __init__(self):
         self.charges = []
         self.diffuses = []
-        self.extern = psi4core.ExternalPotential()
+        self.extern = core.ExternalPotential()
 
     def addDiffuse(self, diffuse):
         """Function to add a diffuse charge field *diffuse*."""

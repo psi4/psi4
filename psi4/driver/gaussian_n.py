@@ -34,7 +34,7 @@ import os
 import math
 import warnings
 import driver
-import psi4core
+import core
 import p4util
 import p4const
 #from driver import *
@@ -43,7 +43,7 @@ import p4const
 def run_gaussian_2(name, **kwargs):
 
     # throw an exception for open-shells
-    if (psi4core.get_option('SCF','REFERENCE') != 'RHF' ):
+    if (core.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("""g2 computations require "reference rhf".""")
 
     # stash user options:
@@ -55,22 +55,22 @@ def run_gaussian_2(name, **kwargs):
         ['SCF','SCF_TYPE'])
 
     # override default scf_type
-    psi4core.set_local_option('SCF','SCF_TYPE','PK')
+    core.set_local_option('SCF','SCF_TYPE','PK')
 
     # optimize geometry at scf level
-    psi4core.clean()
-    psi4core.set_global_option('BASIS',"6-31G(D)")
+    core.clean()
+    core.set_global_option('BASIS',"6-31G(D)")
     driver.optimize('scf')
-    psi4core.clean()
+    core.clean()
 
     # scf frequencies for zpe
     # NOTE This line should not be needed, but without it there's a seg fault
     scf_e, ref = driver.frequency('scf', return_wfn=True)
 
     # thermodynamic properties
-    du = psi4core.get_variable('INTERNAL ENERGY CORRECTION')
-    dh = psi4core.get_variable('ENTHALPY CORRECTION')
-    dg = psi4core.get_variable('GIBBS FREE ENERGY CORRECTION')
+    du = core.get_variable('INTERNAL ENERGY CORRECTION')
+    dh = core.get_variable('ENTHALPY CORRECTION')
+    dg = core.get_variable('GIBBS FREE ENERGY CORRECTION')
 
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
@@ -78,19 +78,19 @@ def run_gaussian_2(name, **kwargs):
     for i in range(0, nfreq):
         freqsum += freqs.get(i)
     zpe = freqsum / p4const.psi_hartree2wavenumbers * 0.8929 * 0.5
-    psi4core.clean()
+    core.clean()
 
     # optimize geometry at mp2 (no frozen core) level
     # note: freeze_core isn't an option in MP2
-    psi4core.set_global_option('FREEZE_CORE',"FALSE")
-    psi4core.set_global_option('MP2_TYPE', 'CONV')
+    core.set_global_option('FREEZE_CORE',"FALSE")
+    core.set_global_option('MP2_TYPE', 'CONV')
     driver.optimize('mp2')
-    psi4core.clean()
+    core.clean()
 
     # qcisd(t)
-    psi4core.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
-    psi4core.set_global_option('FREEZE_CORE',"TRUE")
-    psi4core.set_global_option('BASIS',"6-311G(D_P)")
+    core.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
+    core.set_global_option('FREEZE_CORE',"TRUE")
+    core.set_global_option('BASIS',"6-311G(D_P)")
     ref = driver.proc.run_fnocc('qcisd(t)', return_wfn=True, **kwargs)
 
     # HLC: high-level correction based on number of valence electrons
@@ -106,31 +106,31 @@ def run_gaussian_2(name, **kwargs):
     # hlc of gaussian-1
     hlc1 = -0.00614 * nalpha
 
-    eqci_6311gdp = psi4core.get_variable("QCISD(T) TOTAL ENERGY")
-    emp4_6311gd  = psi4core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311gd  = psi4core.get_variable("MP2 TOTAL ENERGY")
-    psi4core.clean()
+    eqci_6311gdp = core.get_variable("QCISD(T) TOTAL ENERGY")
+    emp4_6311gd  = core.get_variable("MP4 TOTAL ENERGY")
+    emp2_6311gd  = core.get_variable("MP2 TOTAL ENERGY")
+    core.clean()
 
     # correction for diffuse functions
-    psi4core.set_global_option('BASIS',"6-311+G(D_P)")
+    core.set_global_option('BASIS',"6-311+G(D_P)")
     driver.energy('mp4')
-    emp4_6311pg_dp = psi4core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311pg_dp = psi4core.get_variable("MP2 TOTAL ENERGY")
-    psi4core.clean()
+    emp4_6311pg_dp = core.get_variable("MP4 TOTAL ENERGY")
+    emp2_6311pg_dp = core.get_variable("MP2 TOTAL ENERGY")
+    core.clean()
 
     # correction for polarization functions
-    psi4core.set_global_option('BASIS',"6-311G(2DF_P)")
+    core.set_global_option('BASIS',"6-311G(2DF_P)")
     driver.energy('mp4')
-    emp4_6311g2dfp = psi4core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311g2dfp = psi4core.get_variable("MP2 TOTAL ENERGY")
-    psi4core.clean()
+    emp4_6311g2dfp = core.get_variable("MP4 TOTAL ENERGY")
+    emp2_6311g2dfp = core.get_variable("MP2 TOTAL ENERGY")
+    core.clean()
 
     # big basis mp2
-    psi4core.set_global_option('BASIS',"6-311+G(3DF_2P)")
+    core.set_global_option('BASIS',"6-311+G(3DF_2P)")
     #run_fnocc('_mp2',**kwargs)
     driver.energy('mp2')
-    emp2_big = psi4core.get_variable("MP2 TOTAL ENERGY")
-    psi4core.clean()
+    emp2_big = core.get_variable("MP2 TOTAL ENERGY")
+    core.clean()
     eqci       = eqci_6311gdp
     e_delta_g2 = emp2_big + emp2_6311gd - emp2_6311g2dfp - emp2_6311pg_dp
     e_plus     = emp4_6311pg_dp - emp4_6311gd
@@ -139,61 +139,61 @@ def run_gaussian_2(name, **kwargs):
     eg2 = eqci + e_delta_g2 + e_plus + e_2df
     eg2_mp2_0k = eqci + (emp2_big - emp2_6311gd) + hlc + zpe
 
-    psi4core.print_out('\n')
-    psi4core.print_out('  ==>  G1/G2 Energy Components  <==\n')
-    psi4core.print_out('\n')
-    psi4core.print_out('        QCISD(T):            %20.12lf\n' % eqci)
-    psi4core.print_out('        E(Delta):            %20.12lf\n' % e_delta_g2)
-    psi4core.print_out('        E(2DF):              %20.12lf\n' % e_2df)
-    psi4core.print_out('        E(+):                %20.12lf\n' % e_plus)
-    psi4core.print_out('        E(G1 HLC):           %20.12lf\n' % hlc1)
-    psi4core.print_out('        E(G2 HLC):           %20.12lf\n' % hlc)
-    psi4core.print_out('        E(ZPE):              %20.12lf\n' % zpe)
-    psi4core.print_out('\n')
-    psi4core.print_out('  ==>  0 Kelvin Results  <==\n')
-    psi4core.print_out('\n')
+    core.print_out('\n')
+    core.print_out('  ==>  G1/G2 Energy Components  <==\n')
+    core.print_out('\n')
+    core.print_out('        QCISD(T):            %20.12lf\n' % eqci)
+    core.print_out('        E(Delta):            %20.12lf\n' % e_delta_g2)
+    core.print_out('        E(2DF):              %20.12lf\n' % e_2df)
+    core.print_out('        E(+):                %20.12lf\n' % e_plus)
+    core.print_out('        E(G1 HLC):           %20.12lf\n' % hlc1)
+    core.print_out('        E(G2 HLC):           %20.12lf\n' % hlc)
+    core.print_out('        E(ZPE):              %20.12lf\n' % zpe)
+    core.print_out('\n')
+    core.print_out('  ==>  0 Kelvin Results  <==\n')
+    core.print_out('\n')
     eg2_0k = eg2 + zpe + hlc
-    psi4core.print_out('        G1:                  %20.12lf\n' % (eqci + e_plus + e_2df + hlc1 + zpe))
-    psi4core.print_out('        G2(MP2):             %20.12lf\n' % eg2_mp2_0k)
-    psi4core.print_out('        G2:                  %20.12lf\n' % eg2_0k)
+    core.print_out('        G1:                  %20.12lf\n' % (eqci + e_plus + e_2df + hlc1 + zpe))
+    core.print_out('        G2(MP2):             %20.12lf\n' % eg2_mp2_0k)
+    core.print_out('        G2:                  %20.12lf\n' % eg2_0k)
 
-    psi4core.set_variable("G1 TOTAL ENERGY",eqci + e_plus + e_2df + hlc1 + zpe)
-    psi4core.set_variable("G2 TOTAL ENERGY",eg2_0k)
-    psi4core.set_variable("G2(MP2) TOTAL ENERGY",eg2_mp2_0k)
+    core.set_variable("G1 TOTAL ENERGY",eqci + e_plus + e_2df + hlc1 + zpe)
+    core.set_variable("G2 TOTAL ENERGY",eg2_0k)
+    core.set_variable("G2(MP2) TOTAL ENERGY",eg2_mp2_0k)
 
-    psi4core.print_out('\n')
-    T = psi4core.get_global_option('T')
-    psi4core.print_out('  ==>  %3.0lf Kelvin Results  <==\n'% T)
-    psi4core.print_out('\n')
+    core.print_out('\n')
+    T = core.get_global_option('T')
+    core.print_out('  ==>  %3.0lf Kelvin Results  <==\n'% T)
+    core.print_out('\n')
 
     internal_energy = eg2_mp2_0k + du - zpe / 0.8929
     enthalpy        = eg2_mp2_0k + dh - zpe / 0.8929
     gibbs           = eg2_mp2_0k + dg - zpe / 0.8929
 
-    psi4core.print_out('        G2(MP2) energy:      %20.12lf\n' % internal_energy )
-    psi4core.print_out('        G2(MP2) enthalpy:    %20.12lf\n' % enthalpy)
-    psi4core.print_out('        G2(MP2) free energy: %20.12lf\n' % gibbs)
-    psi4core.print_out('\n')
+    core.print_out('        G2(MP2) energy:      %20.12lf\n' % internal_energy )
+    core.print_out('        G2(MP2) enthalpy:    %20.12lf\n' % enthalpy)
+    core.print_out('        G2(MP2) free energy: %20.12lf\n' % gibbs)
+    core.print_out('\n')
 
-    psi4core.set_variable("G2(MP2) INTERNAL ENERGY",internal_energy)
-    psi4core.set_variable("G2(MP2) ENTHALPY",enthalpy)
-    psi4core.set_variable("G2(MP2) FREE ENERGY",gibbs)
+    core.set_variable("G2(MP2) INTERNAL ENERGY",internal_energy)
+    core.set_variable("G2(MP2) ENTHALPY",enthalpy)
+    core.set_variable("G2(MP2) FREE ENERGY",gibbs)
 
     internal_energy = eg2_0k + du - zpe / 0.8929
     enthalpy        = eg2_0k + dh - zpe / 0.8929
     gibbs           = eg2_0k + dg - zpe / 0.8929
 
-    psi4core.print_out('        G2 energy:           %20.12lf\n' % internal_energy )
-    psi4core.print_out('        G2 enthalpy:         %20.12lf\n' % enthalpy)
-    psi4core.print_out('        G2 free energy:      %20.12lf\n' % gibbs)
+    core.print_out('        G2 energy:           %20.12lf\n' % internal_energy )
+    core.print_out('        G2 enthalpy:         %20.12lf\n' % enthalpy)
+    core.print_out('        G2 free energy:      %20.12lf\n' % gibbs)
 
-    psi4core.set_variable("CURRENT ENERGY",eg2_0k)
+    core.set_variable("CURRENT ENERGY",eg2_0k)
 
-    psi4core.set_variable("G2 INTERNAL ENERGY",internal_energy)
-    psi4core.set_variable("G2 ENTHALPY",enthalpy)
-    psi4core.set_variable("G2 FREE ENERGY",gibbs)
+    core.set_variable("G2 INTERNAL ENERGY",internal_energy)
+    core.set_variable("G2 ENTHALPY",enthalpy)
+    core.set_variable("G2 FREE ENERGY",gibbs)
 
-    psi4core.clean()
+    core.clean()
 
     optstash.restore()
 

@@ -89,8 +89,8 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
     *fileno* (e.g., psi.32) in current namespace *pidspace*.
 
     """
-    psioh = psi4core.IOManager.shared_object()
-    psio = psi4core.IO.shared_object()
+    psioh = core.IOManager.shared_object()
+    psio = core.IO.shared_object()
     filepath = psioh.get_file_path(fileno)
     namespace = psio.get_default_namespace()
     targetfile = filepath + 'psi' + '.' + pidspace + '.' + namespace + '.' + str(fileno)
@@ -111,7 +111,7 @@ def format_molecule_for_input(mol, name='', forcexyz=False):
     if isinstance(mol, basestring):
         mol_string = mol
         mol_name = name
-    # when mol is psi4core.Molecule or qcdb.Molecule object
+    # when mol is core.Molecule or qcdb.Molecule object
     else:
         # save_string_for_psi4 is the more detailed choice as it includes fragment
         #   (and possibly no_com/no_reorient) info. but this is only available
@@ -142,10 +142,10 @@ def format_options_for_input(molecule=None, **kwargs):
     if molecule is not None:
         symmetry = molecule.find_point_group(0.00001).symbol()
     commands = ''
-    commands += """\npsi4core.set_memory(%s)\n\n""" % (psi4core.get_memory())
-    for chgdopt in psi4core.get_global_option_list():
-        if psi4core.has_global_option_changed(chgdopt):
-            chgdoptval = psi4core.get_global_option(chgdopt)
+    commands += """\ncore.set_memory(%s)\n\n""" % (core.get_memory())
+    for chgdopt in core.get_global_option_list():
+        if core.has_global_option_changed(chgdopt):
+            chgdoptval = core.get_global_option(chgdopt)
 
             if molecule is not None:
                 if chgdopt.lower() in kwargs:
@@ -153,14 +153,14 @@ def format_options_for_input(molecule=None, **kwargs):
                         chgdoptval = kwargs[chgdopt.lower()][symmetry]
 
             if isinstance(chgdoptval, basestring):
-                commands += """psi4core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+                commands += """core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
 # Next four lines were conflict between master and roa branches (TDC, 10/29/2014)
             elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
-                commands += """psi4core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             elif isinstance(chgdoptval, list):
-                commands += """psi4core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             else:
-                commands += """psi4core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
     return commands
 
 
@@ -289,10 +289,10 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
                         % (sowout, s[6], str(sownum + 1)))
                 if label == 'electronic energy' and s[8:10] == ['electronic', 'energy']:
                         E = float(s[10])
-                        psi4core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+                        core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
                 if label == 'electronic gradient' and s[8:10] == ['electronic', 'gradient']:
                         E = ast.literal_eval(s[-1])
-                        psi4core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
+                        core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
         freagent.close()
     return E
 
@@ -324,33 +324,33 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
 
     options = {'GLOBALS': {}}
     commands = ''
-    for opt in psi4core.get_global_option_list():
-        if psi4core.has_global_option_changed(opt) or not changedOnly:
-            val = psi4core.get_global_option(opt)
+    for opt in core.get_global_option_list():
+        if core.has_global_option_changed(opt) or not changedOnly:
+            val = core.get_global_option(opt)
             options['GLOBALS'][opt] = {'value': val,
-                                       'has_changed': psi4core.has_global_option_changed(opt)}
+                                       'has_changed': core.has_global_option_changed(opt)}
             if isinstance(val, basestring):
-                commands += """psi4core.set_global_option('%s', '%s')\n""" % (opt, val)
+                commands += """core.set_global_option('%s', '%s')\n""" % (opt, val)
             else:
-                commands += """psi4core.set_global_option('%s', %s)\n""" % (opt, val)
+                commands += """core.set_global_option('%s', %s)\n""" % (opt, val)
             #if changedOnly:
             #    print('Appending module %s option %s value %s has_changed %s.' % \
-            #        ('GLOBALS', opt, psi4core.get_global_option(opt), psi4core.has_global_option_changed(opt)))
+            #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
         for module in modules:
             try:
-                if psi4core.has_option_changed(module, opt) or not changedOnly:
+                if core.has_option_changed(module, opt) or not changedOnly:
                     if not module in options:
                         options[module] = {}
-                    val = psi4core.get_option(module, opt)
+                    val = core.get_option(module, opt)
                     options[module][opt] = {'value': val,
-                                            'has_changed': psi4core.has_option_changed(module, opt)}
+                                            'has_changed': core.has_option_changed(module, opt)}
                     if isinstance(val, basestring):
-                        commands += """psi4core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
+                        commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
                     else:
-                        commands += """psi4core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
+                        commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
                     #if changedOnly:
                     #    print('Appending module %s option %s value %s has_changed %s.' % \
-                    #        (module, opt, psi4core.get_option(module, opt), psi4core.has_option_changed(module, opt)))
+                    #        (module, opt, core.get_option(module, opt), core.has_option_changed(module, opt)))
             except RuntimeError:
                 pass
 
@@ -361,8 +361,8 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
 
 
 def mat2arr(mat):
-    """Function to convert psi4core.Matrix *mat* to Python array of arrays.
-    Expects psi4core.Matrix to be flat with respect to symmetry.
+    """Function to convert core.Matrix *mat* to Python array of arrays.
+    Expects core.Matrix to be flat with respect to symmetry.
 
     """
     if mat.rowdim().n() != 1:
@@ -383,9 +383,9 @@ def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
 
     """
     commands = """\n# This is a psi4 input file auto-generated from the %s() wrapper.\n\n""" % (inspect.stack()[1][3])
-    commands += """memory %d mb\n\n""" % (int(0.000001 * psi4core.get_memory()))
+    commands += """memory %d mb\n\n""" % (int(0.000001 * core.get_memory()))
     if not allButMol:
-        molecule = psi4core.get_active_molecule()
+        molecule = core.get_active_molecule()
         molecule.update_geometry()
         commands += format_molecule_for_input(molecule)
         commands += '\n'
@@ -407,13 +407,13 @@ def expand_psivars(pvdefs):
     PRINT > 2.
 
     """
-    verbose = psi4core.get_global_option('PRINT')
+    verbose = core.get_global_option('PRINT')
 
     for pvar, action in pvdefs.items():
         if verbose >= 2:
             print("""building %s %s""" % (pvar, '.' * (50 - len(pvar))), end='')
 
-        psivars = psi4core.get_variables()
+        psivars = core.get_variables()
         data_rich_args = []
 
         for pv in action['args']:
@@ -428,6 +428,6 @@ def expand_psivars(pvdefs):
                 data_rich_args.append(pv)
         else:
             result = action['func'](data_rich_args)
-            psi4core.set_variable(pvar, result)
+            core.set_variable(pvar, result)
             if verbose >= 2:
                 print("""SUCCESS""")

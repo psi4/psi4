@@ -32,7 +32,7 @@ SuperFunctionals
 import re
 import os
 import math
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 
 ## ==> Functionals <== ##
@@ -41,7 +41,7 @@ from psi4.driver.qcdb import interface_dftd3 as dftd3
 def build_s_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('S_X')
+    fun = core.Functional.build_base('S_X')
 
     # => User-Customization <= #
 
@@ -68,7 +68,7 @@ def build_s_x_functional(name):
 def build_b88_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('B88_X')
+    fun = core.Functional.build_base('B88_X')
 
     # => User-Customization <= #
 
@@ -96,7 +96,7 @@ def build_b88_x_functional(name):
 def build_b86b_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('B86B_X')
+    fun = core.Functional.build_base('B86B_X')
 
     # => User-Customization <= #
 
@@ -120,7 +120,7 @@ def build_b86b_x_functional(name):
 def build_pw86_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('PW86_X')
+    fun = core.Functional.build_base('PW86_X')
 
     # => User-Customization <= #
 
@@ -144,7 +144,7 @@ def build_pw86_x_functional(name):
 def build_b3_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('B88_X')
+    fun = core.Functional.build_base('B88_X')
 
     # => User-Customization <= #
 
@@ -173,7 +173,7 @@ def build_b3_x_functional(name):
 def build_pbe_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('PBE_X')
+    fun = core.Functional.build_base('PBE_X')
 
     # => User-Customization <= #
 
@@ -202,7 +202,7 @@ def build_pbe_x_functional(name):
 def build_revpbe_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('PBE_X')
+    fun = core.Functional.build_base('PBE_X')
 
     # => User-Customization <= #
 
@@ -231,7 +231,7 @@ def build_revpbe_x_functional(name):
 def build_rpbe_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('RPBE_X')
+    fun = core.Functional.build_base('RPBE_X')
 
     # => User-Customization <= #
 
@@ -260,7 +260,7 @@ def build_rpbe_x_functional(name):
 def build_sogga_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('SOGGA_X')
+    fun = core.Functional.build_base('SOGGA_X')
 
     # => User-Customization <= #
 
@@ -289,7 +289,7 @@ def build_sogga_x_functional(name):
 def build_pbesol_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('PBE_X')
+    fun = core.Functional.build_base('PBE_X')
 
     # => User-Customization <= #
 
@@ -318,7 +318,7 @@ def build_pbesol_x_functional(name):
 def build_pw91_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('PW91_X')
+    fun = core.Functional.build_base('PW91_X')
 
     # => User-Customization <= #
 
@@ -354,7 +354,7 @@ def build_pw91_x_functional(name):
 def build_b97_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('B97_X')
+    fun = core.Functional.build_base('B97_X')
 
     # => User-Customization <= #
 
@@ -382,7 +382,7 @@ def build_b97_x_functional(name):
 def build_vwn5_c_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('VWN5_C')
+    fun = core.Functional.build_base('VWN5_C')
 
     # => User-Customization <= #
 
@@ -418,7 +418,7 @@ def build_vwn5_c_functional(name):
 def build_vwn5rpa_c_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('VWN5_C')
+    fun = core.Functional.build_base('VWN5_C')
 
     # => User-Customization <= #
 
@@ -454,7 +454,7 @@ def build_vwn5rpa_c_functional(name):
 def build_vwn3_c_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('VWN3_C')
+    fun = core.Functional.build_base('VWN3_C')
 
     # => User-Customization <= #
 
@@ -487,7 +487,7 @@ def build_vwn3_c_functional(name):
 def build_vwn3rpa_c_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('VWN3_C')
+    fun = core.Functional.build_base('VWN3_C')
 
     # => User-Customization <= #
 
@@ -520,7 +520,7 @@ def build_vwn3rpa_c_functional(name):
 def build_ws_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('wS_X')
+    fun = core.Functional.build_base('wS_X')
 
     # => User-Customization <= #
 
@@ -547,7 +547,7 @@ def build_ws_x_functional(name):
 def build_wpbe_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('wPBE_X')
+    fun = core.Functional.build_base('wPBE_X')
 
     # => User-Customization <= #
 
@@ -599,7 +599,7 @@ def build_wpbe_x_functional(name):
 def build_wpbesol_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('wPBE_X')
+    fun = core.Functional.build_base('wPBE_X')
 
     # => User-Customization <= #
 
@@ -651,7 +651,7 @@ def build_wpbesol_x_functional(name):
 def build_wb88_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('wB88_X')
+    fun = core.Functional.build_base('wB88_X')
 
     # => User-Customization <= #
 
@@ -702,7 +702,7 @@ def build_wb88_x_functional(name):
 def build_hf_x_functional(name):
 
     # Call this first
-    fun = psi4core.Functional.build_base('HF_X')
+    fun = core.Functional.build_base('HF_X')
 
     # => End User-Customization <= #
 
@@ -714,7 +714,7 @@ def build_primitive_functional(name):
     key = name.upper()
     if (key[0] == 'W'):
         key = 'w' + key[1:]
-    fun = psi4core.Functional.build_base(key)
+    fun = core.Functional.build_base(key)
 
     # => User-Customization <= #
 
@@ -797,7 +797,7 @@ def functional_list():
 def build_ws_x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -829,7 +829,7 @@ def build_ws_x_superfunctional(name, npoints, deriv):
 def build_wpbe_x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -861,7 +861,7 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
 def build_wpbesol_x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -892,7 +892,7 @@ def build_wpbesol_x_superfunctional(name, npoints, deriv):
 def build_wpw92_c_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -923,7 +923,7 @@ def build_wpw92_c_superfunctional(name, npoints, deriv):
 def build_wpbe_c_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -954,7 +954,7 @@ def build_wpbe_c_superfunctional(name, npoints, deriv):
 def build_wpbe2_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -986,7 +986,7 @@ def build_wpbe2_superfunctional(name, npoints, deriv):
 def build_wb88_x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1018,7 +1018,7 @@ def build_wb88_x_superfunctional(name, npoints, deriv):
 def build_svwn_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1051,7 +1051,7 @@ def build_svwn_superfunctional(name, npoints, deriv):
 def build_blyp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1083,7 +1083,7 @@ def build_blyp_superfunctional(name, npoints, deriv):
 def build_b86bpbe_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1115,7 +1115,7 @@ def build_b86bpbe_superfunctional(name, npoints, deriv):
 def build_pw86pbe_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1147,7 +1147,7 @@ def build_pw86pbe_superfunctional(name, npoints, deriv):
 def build_pw91_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1180,7 +1180,7 @@ def build_pw91_superfunctional(name, npoints, deriv):
 def build_bp86_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1213,7 +1213,7 @@ def build_bp86_superfunctional(name, npoints, deriv):
 def build_ft97_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1246,7 +1246,7 @@ def build_ft97_superfunctional(name, npoints, deriv):
 def build_pbe_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1289,7 +1289,7 @@ def build_pbe0_superfunctional(name, npoints, deriv):
 def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1325,7 +1325,7 @@ def build_sogga_superfunctional(name, npoints, deriv):
 def build_b3lyp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1365,7 +1365,7 @@ def build_b3lyp_superfunctional(name, npoints, deriv):
 def build_hf_x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1396,7 +1396,7 @@ def build_hf_x_superfunctional(name, npoints, deriv):
 def build_b3lyp5_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1436,7 +1436,7 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
 def build_b970_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1491,7 +1491,7 @@ def build_b970_superfunctional(name, npoints, deriv):
 def build_b971_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1546,7 +1546,7 @@ def build_b971_superfunctional(name, npoints, deriv):
 def build_b972_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1601,7 +1601,7 @@ def build_b972_superfunctional(name, npoints, deriv):
 def build_b97d_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1656,7 +1656,7 @@ def build_b97d_superfunctional(name, npoints, deriv):
 def build_hcth_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1717,7 +1717,7 @@ def build_hcth_superfunctional(name, npoints, deriv):
 def build_hcth120_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1778,7 +1778,7 @@ def build_hcth120_superfunctional(name, npoints, deriv):
 def build_hcth147_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1839,7 +1839,7 @@ def build_hcth147_superfunctional(name, npoints, deriv):
 def build_hcth407_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1900,7 +1900,7 @@ def build_hcth407_superfunctional(name, npoints, deriv):
 def build_wsvwn_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1933,7 +1933,7 @@ def build_wsvwn_superfunctional(name, npoints, deriv):
 def build_wpbe_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -1976,7 +1976,7 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
 def build_wpbesol_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2019,7 +2019,7 @@ def build_wpbesol0_superfunctional(name, npoints, deriv):
 def build_wblyp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2052,7 +2052,7 @@ def build_wblyp_superfunctional(name, npoints, deriv):
 def build_wb97_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2113,7 +2113,7 @@ def build_wb97_superfunctional(name, npoints, deriv):
 def build_wb97x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2174,7 +2174,7 @@ def build_wb97x_superfunctional(name, npoints, deriv):
 def build_wb97xd_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2237,7 +2237,7 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
 def build_m05_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2323,7 +2323,7 @@ def build_m05_superfunctional(name, npoints, deriv):
 def build_m05_2x_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2409,7 +2409,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
 def build_dldf_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2492,7 +2492,7 @@ def build_dldfd10_superfunctional(name, npoints, deriv):
 
 def build_hfd_superfunctional(name, npoints, deriv):
 
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name('HF+D')
@@ -2505,7 +2505,7 @@ def build_hfd_superfunctional(name, npoints, deriv):
 def build_b2plyp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2542,7 +2542,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
 def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2602,7 +2602,7 @@ def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
 def build_wb97x_2lp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2662,7 +2662,7 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
 def build_pbe0_2_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2699,7 +2699,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
 def build_dsd_blyp_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2738,7 +2738,7 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv):
 def build_dsd_pbep86_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2777,7 +2777,7 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
 def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2816,7 +2816,7 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
 def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -2856,7 +2856,7 @@ def build_hf_superfunctional(name, npoints, deriv):
     # Special "functional" that is simply Hartree Fock
 
     # Call this first
-    sup = psi4core.SuperFunctional.blank()
+    sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -3016,13 +3016,13 @@ for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
 def build_superfunctional(alias):
     name = alias.lower()
 
-    npoints = psi4core.get_option("SCF", "DFT_BLOCK_MAX_POINTS");
+    npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS");
     deriv = 1 # Default depth for now
 
     # Grab out superfunctional
     if name in ["gen", ""]:
-        sup = (psi4core.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
-        if not isinstance(sup[0], psi4core.SuperFunctional):
+        sup = (core.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
+        if not isinstance(sup[0], core.SuperFunctional):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
 
     elif name in superfunctionals.keys():
@@ -3064,20 +3064,20 @@ def build_superfunctional(alias):
         raise KeyError("SCF: Functional (%s) not found!" % alias)
 
     # Set options
-    if psi4core.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
-        sup[0].set_x_omega(psi4core.get_option("SCF", "DFT_OMEGA"))
-    if psi4core.has_option_changed("SCF", "DFT_OMEGA_C") and sup[0].is_c_lrc():
-        sup[0].set_c_omega(psi4core.get_option("SCF", "DFT_OMEGA_C"))
+    if core.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
+        sup[0].set_x_omega(core.get_option("SCF", "DFT_OMEGA"))
+    if core.has_option_changed("SCF", "DFT_OMEGA_C") and sup[0].is_c_lrc():
+        sup[0].set_c_omega(core.get_option("SCF", "DFT_OMEGA_C"))
 
-    if psi4core.has_option_changed("SCF", "DFT_ALPHA"):
-        sup[0].set_x_alpha(psi4core.get_option("SCF", "DFT_ALPHA"))
-    if psi4core.has_option_changed("SCF", "DFT_ALPHA_C"):
-        sup[0].set_c_alpha(psi4core.get_option("SCF", "DFT_ALPHA_C"))
+    if core.has_option_changed("SCF", "DFT_ALPHA"):
+        sup[0].set_x_alpha(core.get_option("SCF", "DFT_ALPHA"))
+    if core.has_option_changed("SCF", "DFT_ALPHA_C"):
+        sup[0].set_c_alpha(core.get_option("SCF", "DFT_ALPHA_C"))
 
     # Check SCF_TYPE
-    if sup[0].is_x_lrc() and (psi4core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
-                        % psi4core.get_option("SCF", "SCF_TYPE"))
+                        % core.get_option("SCF", "SCF_TYPE"))
 
     return sup
 
@@ -3144,13 +3144,13 @@ def test_ccl_functional(functional, ccl_functional):
     points.append(point)
 
     N = len(points)
-    rho_a = psi4core.Vector(N)
-    rho_b = psi4core.Vector(N)
-    gamma_aa = psi4core.Vector(N)
-    gamma_ab = psi4core.Vector(N)
-    gamma_bb = psi4core.Vector(N)
-    tau_a = psi4core.Vector(N)
-    tau_b = psi4core.Vector(N)
+    rho_a = core.Vector(N)
+    rho_b = core.Vector(N)
+    gamma_aa = core.Vector(N)
+    gamma_ab = core.Vector(N)
+    gamma_bb = core.Vector(N)
+    tau_a = core.Vector(N)
+    tau_b = core.Vector(N)
 
     index = 0
     for point in points:
@@ -3189,7 +3189,7 @@ def test_ccl_functional(functional, ccl_functional):
     super.print_detail(3)
     index = 0
     for point in points:
-        psi4core.print_out('rho_a= %11.3E, rho_b= %11.3E, gamma_aa= %11.3E, gamma_ab= %11.3E, gamma_bb= %11.3E\n' % (rho_a[index], rho_b[index], gamma_aa[index], gamma_ab[index], gamma_bb[index]))
+        core.print_out('rho_a= %11.3E, rho_b= %11.3E, gamma_aa= %11.3E, gamma_ab= %11.3E, gamma_bb= %11.3E\n' % (rho_a[index], rho_b[index], gamma_aa[index], gamma_ab[index], gamma_bb[index]))
 
         for task in tasks:
             v_ref = point[task]
@@ -3205,9 +3205,9 @@ def test_ccl_functional(functional, ccl_functional):
                 passed = 'FAILED'
                 check = False
 
-            psi4core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon, passed))
+            core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon, passed))
 
         index = index + 1
 
-    psi4core.print_out('\n')
+    core.print_out('\n')
     return check

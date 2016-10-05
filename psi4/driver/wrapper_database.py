@@ -239,9 +239,9 @@ def database(name, db_name, **kwargs):
     # Define path and load module for requested database
     database = p4util.import_ignorecase(db_name)
     if database is None:
-        psi4core.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
-        psi4core.print_out('\nSearch path that was tried:\n')
-        psi4core.print_out(", ".join(map(str, sys.path)))
+        core.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
+        core.print_out('\nSearch path that was tried:\n')
+        core.print_out(", ".join(map(str, sys.path)))
         raise ValidationError("Python module loading problem for database " + str(db_name))
     else:
         dbse = database.dbse
@@ -256,8 +256,8 @@ def database(name, db_name, **kwargs):
         except AttributeError:
             DATA = {}
 
-    user_writer_file_label = psi4core.get_global_option('WRITER_FILE_LABEL')
-    user_reference = psi4core.get_global_option('REFERENCE')
+    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
+    user_reference = core.get_global_option('REFERENCE')
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -278,7 +278,7 @@ def database(name, db_name, **kwargs):
         else:
             if yes.match(str(database.isOS)):
                 openshell_override = 1
-                psi4core.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF/UKS as needed.\n' % (db_name))
+                core.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF/UKS as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
     #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2 & dft)
@@ -424,9 +424,9 @@ def database(name, db_name, **kwargs):
     HSYS = p4util.drop_duplicates(sum(temp, []))
 
     # Sow all the necessary reagent computations
-    psi4core.print_out("\n\n")
+    core.print_out("\n\n")
     p4util.banner(("Database %s Computation" % (db_name)))
-    psi4core.print_out("\n")
+    core.print_out("\n")
 
     #   write index of calcs to output file
     if db_mode == 'continuous':
@@ -437,7 +437,7 @@ def database(name, db_name, **kwargs):
             instructions += """                    %-s\n""" % (rgt)
         instructions += """\n    Alternatively, a farming-out of the database calculations may be accessed through\n"""
         instructions += """    the database wrapper option mode='sow'/'reap'.\n\n"""
-        psi4core.print_out(instructions)
+        core.print_out(instructions)
 
     #   write sow/reap instructions and index of calcs to output file and reap input file
     if db_mode == 'sow':
@@ -457,7 +457,7 @@ def database(name, db_name, **kwargs):
         instructions += """             psi4 -i %-27s -o %-27s\n\n""" % (dbse + '-master.in', dbse + '-master.out')
         instructions += """    Alternatively, a single-job execution of the database may be accessed through\n"""
         instructions += """    the database wrapper option mode='continuous'.\n\n"""
-        psi4core.print_out(instructions)
+        core.print_out(instructions)
 
         with open('%s-master.in' % (dbse), 'w') as fmaster:
             fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
@@ -474,31 +474,31 @@ def database(name, db_name, **kwargs):
 
         # build string of title banner
         banners = ''
-        banners += """psi4core.print_out('\\n')\n"""
+        banners += """core.print_out('\\n')\n"""
         banners += """p4util.banner(' Database %s Computation: Reagent %s \\n   %s')\n""" % (db_name, rgt, TAGL[rgt])
-        banners += """psi4core.print_out('\\n')\n\n"""
+        banners += """core.print_out('\\n')\n\n"""
 
         # build string of lines that defines contribution of rgt to each rxn
         actives = ''
-        actives += """psi4core.print_out('   Database Contributions Map:\\n   %s\\n')\n""" % ('-' * 75)
+        actives += """core.print_out('   Database Contributions Map:\\n   %s\\n')\n""" % ('-' * 75)
         for rxn in HRXN:
             db_rxn = dbse + '-' + str(rxn)
             if rgt in ACTV[db_rxn]:
-                actives += """psi4core.print_out('   reagent %s contributes by %.4f to reaction %s\\n')\n""" \
+                actives += """core.print_out('   reagent %s contributes by %.4f to reaction %s\\n')\n""" \
                    % (rgt, RXNM[db_rxn][rgt], db_rxn)
-        actives += """psi4core.print_out('\\n')\n\n"""
+        actives += """core.print_out('\\n')\n\n"""
 
         # build string of commands for options from the input file  TODO: handle local options too
         commands = ''
-        commands += """\npsi4core.set_memory(%s)\n\n""" % (psi4core.get_memory())
-        for chgdopt in psi4core.get_global_option_list():
-            if psi4core.has_global_option_changed(chgdopt):
-                chgdoptval = psi4core.get_global_option(chgdopt)
-                #chgdoptval = psi4core.get_option(chgdopt)
+        commands += """\ncore.set_memory(%s)\n\n""" % (core.get_memory())
+        for chgdopt in core.get_global_option_list():
+            if core.has_global_option_changed(chgdopt):
+                chgdoptval = core.get_global_option(chgdopt)
+                #chgdoptval = core.get_option(chgdopt)
                 if isinstance(chgdoptval, basestring):
-                    commands += """psi4core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+                    commands += """core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
-                    commands += """psi4core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                    commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
                 else:
                     pass
                     #raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
@@ -514,11 +514,11 @@ def database(name, db_name, **kwargs):
 
         if (openshell_override) and (molecule.multiplicity() != 1):
             if user_reference == 'RHF':
-                commands += """psi4core.set_global_option('REFERENCE', 'UHF')\n"""
+                commands += """core.set_global_option('REFERENCE', 'UHF')\n"""
             elif user_reference == 'RKS':
-                commands += """psi4core.set_global_option('REFERENCE', 'UKS')\n"""
+                commands += """core.set_global_option('REFERENCE', 'UKS')\n"""
 
-        commands += """psi4core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
             (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + rgt)
 
         # all modes need to step through the reagents but all for different purposes
@@ -528,22 +528,22 @@ def database(name, db_name, **kwargs):
         if db_mode == 'continuous':
             exec(banners)
 
-            molecule = psi4core.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
+            molecule = core.Molecule.create_molecule_from_string(GEOS[rgt].create_psi4_string_from_molecule())
             molecule.set_name(rgt)
             molecule.update_geometry()
 
             exec(commands)
-            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, psi4core.get_global_option('REFERENCE'),
+            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, core.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             ERGT[rgt] = func(molecule=molecule, **kwargs)
-            psi4core.print_variables()
+            core.print_variables()
             exec(actives)
             for envv in db_tabulate:
-                VRGT[rgt][envv.upper()] = psi4core.get_variable(envv)
-            psi4core.set_global_option("REFERENCE", user_reference)
-            psi4core.clean()
-            #psi4core.opt_clean()
-            psi4core.clean_variables()
+                VRGT[rgt][envv.upper()] = core.get_variable(envv)
+            core.set_global_option("REFERENCE", user_reference)
+            core.clean()
+            #core.opt_clean()
+            core.clean_variables()
 
         elif db_mode == 'sow':
             with open('%s.in' % (rgt), 'w') as freagent:
@@ -557,15 +557,15 @@ def database(name, db_name, **kwargs):
                 freagent.write('''""")\n''')
                 freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
                 freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
-                freagent.write("""psi4core.print_variables()\n""")
-                freagent.write("""psi4core.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
+                freagent.write("""core.print_variables()\n""")
+                freagent.write("""core.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                     % (os.getpid(), rgt))
                 freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
-                freagent.write("""psi4core.set_variable('NATOM', dbmol.natom())\n""")
+                freagent.write("""core.set_variable('NATOM', dbmol.natom())\n""")
                 for envv in db_tabulate:
-                    freagent.write("""psi4core.print_out('DATABASE RESULT: computation %d for reagent %s """
+                    freagent.write("""core.print_out('DATABASE RESULT: computation %d for reagent %s """
                         % (os.getpid(), rgt))
-                    freagent.write("""yields variable value    %20.12f for variable %s\\n' % (psi4core.get_variable(""")
+                    freagent.write("""yields variable value    %20.12f for variable %s\\n' % (core.get_variable(""")
                     freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
 
         elif db_mode == 'reap':
@@ -577,15 +577,15 @@ def database(name, db_name, **kwargs):
             try:
                 freagent = open('%s.out' % (rgt), 'r')
             except IOError:
-                psi4core.print_out('Warning: Output file \'%s.out\' not found.\n' % (rgt))
-                psi4core.print_out('         Database summary will have 0.0 and **** in its place.\n')
+                core.print_out('Warning: Output file \'%s.out\' not found.\n' % (rgt))
+                core.print_out('         Database summary will have 0.0 and **** in its place.\n')
             else:
                 while 1:
                     line = freagent.readline()
                     if not line:
                         if ERGT[rgt] == 0.0:
-                            psi4core.print_out('Warning: Output file \'%s.out\' has no DATABASE RESULT line.\n' % (rgt))
-                            psi4core.print_out('         Database summary will have 0.0 and **** in its place.\n')
+                            core.print_out('Warning: Output file \'%s.out\' has no DATABASE RESULT line.\n' % (rgt))
+                            core.print_out('         Database summary will have 0.0 and **** in its place.\n')
                         break
                     s = line.split()
                     if (len(s) != 0) and (s[0:3] == ['DATABASE', 'RESULT:', 'computation']):
@@ -597,13 +597,13 @@ def database(name, db_name, **kwargs):
                                 % (rgt, s[6], rgt))
                         if (s[8:10] == ['electronic', 'energy']):
                             ERGT[rgt] = float(s[10])
-                            psi4core.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
+                            core.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
                         elif (s[8:10] == ['variable', 'value']):
                             for envv in db_tabulate:
                                 envv = envv.upper()
                                 if (s[13:] == envv.split()):
                                     VRGT[rgt][envv] = float(s[10])
-                                    psi4core.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv, VRGT[rgt][envv]))
+                                    core.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv, VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files
@@ -611,9 +611,9 @@ def database(name, db_name, **kwargs):
         return 0.0
 
     # Reap all the necessary reaction computations
-    psi4core.print_out("\n")
+    core.print_out("\n")
     p4util.banner(("Database %s Results" % (db_name)))
-    psi4core.print_out("\n")
+    core.print_out("\n")
 
     maxactv = []
     for rxn in HRXN:
@@ -713,11 +713,11 @@ def database(name, db_name, **kwargs):
         tables += """%23s %19s %10.4f %10.4f\n""" % ('RMS Dev', '', RMSDerror, RMSDerror * p4const.psi_cal2J)
         tables += """   %s\n""" % (table_delimit)
 
-        psi4core.set_variable('%s DATABASE MEAN SIGNED DEVIATION' % (db_name), MSDerror)
-        psi4core.set_variable('%s DATABASE MEAN ABSOLUTE DEVIATION' % (db_name), MADerror)
-        psi4core.set_variable('%s DATABASE ROOT-MEAN-SQUARE DEVIATION' % (db_name), RMSDerror)
+        core.set_variable('%s DATABASE MEAN SIGNED DEVIATION' % (db_name), MSDerror)
+        core.set_variable('%s DATABASE MEAN ABSOLUTE DEVIATION' % (db_name), MADerror)
+        core.set_variable('%s DATABASE ROOT-MEAN-SQUARE DEVIATION' % (db_name), RMSDerror)
 
-        psi4core.print_out(tables)
+        core.print_out(tables)
         finalenergy = MADerror
 
     else:

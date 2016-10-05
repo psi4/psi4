@@ -28,7 +28,7 @@
 """
 Module to provide lightweight definitions of emperical dispersion terms.
 """
-from psi4 import psi4core
+from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 
 
@@ -95,7 +95,7 @@ class EmpericalDispersion(object):
 
         # Build the C++ dispersion class
         if self.disp_type == 'p4':
-            self.disp = psi4core.Dispersion.build(self.dtype, **self.dash_params)
+            self.disp = core.Dispersion.build(self.dtype, **self.dash_params)
         else:
             self.disp = None
 
@@ -167,25 +167,25 @@ class EmpericalDispersion(object):
 
     def print_out(self, level=1):
 
-        psi4core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype)
-        psi4core.print_out(self.description + "\n")
+        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype)
+        core.print_out(self.description + "\n")
 
-        psi4core.print_out(self.citation + "\n\n")
+        core.print_out(self.citation + "\n\n")
 
-        psi4core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"]);
+        core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"]);
         if "s8" in self.dash_params.keys():
-            psi4core.print_out("        S8 = %14.6E\n" % self.dash_params["s8"]);
+            core.print_out("        S8 = %14.6E\n" % self.dash_params["s8"]);
 
         for k, v in self.dash_params.items():
             if k in ["s6", "s8"]: continue
 
-            psi4core.print_out("    %6s = %14.6E\n" % (k.upper(), v));
+            core.print_out("    %6s = %14.6E\n" % (k.upper(), v));
 
         # Psi auto sets this with no change of deviation
         if (self.disp_type == 'p4') and (self.dtype == "-D2"):
-            psi4core.print_out("    %6s = %14.6E\n" % ("A6", 20.0))
+            core.print_out("    %6s = %14.6E\n" % ("A6", 20.0))
 
-        psi4core.print_out("\n");
+        core.print_out("\n");
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':

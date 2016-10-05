@@ -39,7 +39,7 @@ from .dashparam import *
 from .molecule import Molecule
 
 # DGAS This should be removed!
-from psi4 import psi4core
+from psi4 import core
 
 
 def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=False):
@@ -66,7 +66,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     if isinstance(self, Molecule):
         # called on a qcdb.Molecule
         pass
-    elif isinstance(self, psi4core.Molecule):
+    elif isinstance(self, core.Molecule):
         # called on a python export of a psi4.Molecule (py-side through Psi4's driver)
         self.create_psi4_string_from_molecule()
     elif isinstance(self, basestring):

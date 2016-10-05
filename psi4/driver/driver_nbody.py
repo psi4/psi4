@@ -27,7 +27,7 @@ import math
 import numpy as np
 import itertools as it
 
-from psi4 import psi4core
+from psi4 import core
 
 # Import driver helpers
 from psi4.driver import p4util
@@ -93,8 +93,8 @@ def _sum_cluster_ptype_data(ptype, ptype_dict, compute_list, fragment_slice_dict
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
 
 def _print_nbody_energy(energy_body_dict, header):
-        psi4core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
-        psi4core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
+        core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
+        core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
         nbody_range = energy_body_dict.keys()
         nbody_range.sort()
@@ -102,10 +102,10 @@ def _print_nbody_energy(energy_body_dict, header):
             delta_e = (energy_body_dict[n] - previous_e)
             delta_e_kcal = delta_e * p4const.psi_hartree2kcalmol
             int_e_kcal = (energy_body_dict[n] - energy_body_dict[1]) * p4const.psi_hartree2kcalmol
-            psi4core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" %
+            core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" %
                                         (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
             previous_e = energy_body_dict[n]
-        psi4core.print_out("\n")
+        core.print_out("\n")
 
 def nbody_gufunc(func, method_string, **kwargs):
     """
@@ -167,9 +167,9 @@ def nbody_gufunc(func, method_string, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     ptype = kwargs.pop('ptype', None)
     return_total_data = kwargs.pop('return_total_data', False)
-    molecule = kwargs.pop('molecule', psi4core.get_active_molecule())
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-    psi4core.clean_variables()
+    core.clean_variables()
 
     if ptype not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % ptype)
@@ -215,20 +215,20 @@ def nbody_gufunc(func, method_string, **kwargs):
     # If we are doing CP lets save them integrals
     #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
     #    # Set to save RI integrals for repeated full-basis computations
-    #    ri_ints_io = psi4core.get_global_option('DF_INTS_IO')
+    #    ri_ints_io = core.get_global_option('DF_INTS_IO')
 
     #    # inquire if above at all applies to dfmp2 or just scf
-    #    psi4core.set_global_option('DF_INTS_IO', 'SAVE')
-    #    psioh = psi4core.IOManager.shared_object()
+    #    core.set_global_option('DF_INTS_IO', 'SAVE')
+    #    psioh = core.IOManager.shared_object()
     #    psioh.set_specific_retention(97, True)
 
 
     bsse_str = bsse_type_list[0]
     if len(bsse_type_list) >1:
         bsse_str =  str(bsse_type_list)
-    psi4core.print_out("\n\n")
-    psi4core.print_out("   ===> N-Body Interaction Abacus <===\n")
-    psi4core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
+    core.print_out("\n\n")
+    core.print_out("   ===> N-Body Interaction Abacus <===\n")
+    core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
 
 
     cp_compute_list = {x:set() for x in nbody_range}
@@ -267,7 +267,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         compute_list[n] |= cp_compute_list[n]
         compute_list[n] |= nocp_compute_list[n]
         compute_list[n] |= vmfc_compute_list[n]
-        psi4core.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
+        core.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
 
 
     # Build size and slices dictionaries
@@ -286,25 +286,25 @@ def nbody_gufunc(func, method_string, **kwargs):
     energies_dict = {}
     ptype_dict = {}
     for n in compute_list.keys():
-        psi4core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
+        core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         print("\n   ==> N-Body: Now computing %d-body complexes <==\n" % n)
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
-            psi4core.print_out("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
+            core.print_out("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
                                                                     (num + 1, total, str(pair[0]), str(pair[1])))
             ghost = list(set(pair[1]) - set(pair[0]))
 
             current_mol = molecule.extract_subsets(list(pair[0]), ghost)
             ptype_dict[pair] = func(method_string, molecule=current_mol, **kwargs)
-            energies_dict[pair] = psi4core.get_variable("CURRENT ENERGY")
-            psi4core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
+            energies_dict[pair] = core.get_variable("CURRENT ENERGY")
+            core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
                                                                 (str(pair[0]), str(pair[1]), energies_dict[pair]))
 
             # Flip this off for now, needs more testing
             #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-            #    psi4core.set_global_option('DF_INTS_IO', 'LOAD')
+            #    core.set_global_option('DF_INTS_IO', 'LOAD')
 
-            psi4core.clean()
+            core.clean()
 
     # Final dictionaries
     cp_energy_by_level   = {n: 0.0 for n in nbody_range}
@@ -383,12 +383,12 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)")
         cp_interaction_energy = cp_energy_body_dict[max_nbody] - cp_energy_body_dict[1]
-        psi4core.set_variable('Counterpoise Corrected Total Energy', cp_energy_body_dict[max_nbody])
-        psi4core.set_variable('Counterpoise Corrected Interaction Energy', cp_interaction_energy)
+        core.set_variable('Counterpoise Corrected Total Energy', cp_energy_body_dict[max_nbody])
+        core.set_variable('Counterpoise Corrected Interaction Energy', cp_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4core.set_variable(var_key, cp_energy_body_dict[n] - cp_energy_body_dict[1])
+            core.set_variable(var_key, cp_energy_body_dict[n] - cp_energy_body_dict[1])
 
     # Compute nocp energy and ptype
     if do_nocp:
@@ -411,24 +411,24 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)")
         nocp_interaction_energy = nocp_energy_body_dict[max_nbody] - nocp_energy_body_dict[1]
-        psi4core.set_variable('Non-Counterpoise Corrected Total Energy', nocp_energy_body_dict[max_nbody])
-        psi4core.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_interaction_energy)
+        core.set_variable('Non-Counterpoise Corrected Total Energy', nocp_energy_body_dict[max_nbody])
+        core.set_variable('Non-Counterpoise Corrected Interaction Energy', nocp_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4core.set_variable(var_key, nocp_energy_body_dict[n] - nocp_energy_body_dict[1])
+            core.set_variable(var_key, nocp_energy_body_dict[n] - nocp_energy_body_dict[1])
 
 
     # Compute vmfc energy and ptype
     if do_vmfc:
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)")
         vmfc_interaction_energy = vmfc_energy_body_dict[max_nbody] - vmfc_energy_body_dict[1]
-        psi4core.set_variable('Valiron-Mayer Function Couterpoise Total Energy', vmfc_energy_body_dict[max_nbody])
-        psi4core.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_interaction_energy)
+        core.set_variable('Valiron-Mayer Function Couterpoise Total Energy', vmfc_energy_body_dict[max_nbody])
+        core.set_variable('Valiron-Mayer Function Couterpoise Interaction Energy', vmfc_interaction_energy)
 
         for n in nbody_range[1:]:
             var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            psi4core.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
+            core.set_variable(var_key, vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1])
 
     if return_method == 'cp':
         ptype_body_dict = cp_ptype_body_dict
@@ -458,13 +458,13 @@ def nbody_gufunc(func, method_string, **kwargs):
             np_final_ptype = ptype_body_dict[max_nbody].copy()
             np_final_ptype -= ptype_body_dict[1]
 
-            ret_ptype = psi4core.Matrix.from_array(np_final_ptype)
+            ret_ptype = core.Matrix.from_array(np_final_ptype)
     else:
         ret_ptype = ret_energy
 
     # Build and set a wavefunction
-    basis = psi4core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
-    wfn = psi4core.Wavefunction(molecule, basis)
+    basis = core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
+    wfn = core.Wavefunction(molecule, basis)
     wfn.cdict["nbody_energy"] = energies_dict
     wfn.cdict["nbody_ptype"] = ptype_dict
     wfn.cdict["nbody_body_energy"] = energy_body_dict
@@ -475,7 +475,7 @@ def nbody_gufunc(func, method_string, **kwargs):
     elif ptype == 'hessian':
         wfn.set_hessian(ret_ptype)
 
-    psi4core.set_variable("CURRENT ENERGY", ret_energy)
+    core.set_variable("CURRENT ENERGY", ret_energy)
 
     if return_wfn:
         return (ret_ptype, wfn)
