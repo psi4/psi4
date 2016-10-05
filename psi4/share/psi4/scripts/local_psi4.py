@@ -108,6 +108,7 @@ if args["output"] != "stdout":
 if args["prefix"] is not None:
     psi4.psi4core.set_psi_file_prefix(args["prefix"])
 psi4.psi4core.set_nthread(args["nthread"])
+psi4.psi4core.set_memory(int(256e6))
 psi4.psi4core.print_version()
 
 

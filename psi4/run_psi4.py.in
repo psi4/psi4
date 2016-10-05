@@ -93,6 +93,7 @@ if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
 psi4.core.set_nthread(args["nthread"])
 psi4.core.print_version()
+psi4.core.set_memory(int(256e6))
 
 
 # Read input

@@ -158,4 +158,5 @@ before_script:
 - cd build
 - ../.scripts/travis_build.sh
 script:
-- python ../.scripts/travis_run.py
+- python ../.scripts/travis_run_test.py
+- python ../.scripts/travis_print_failing.py
