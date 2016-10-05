@@ -1,6 +1,20 @@
 import sys
 import os
 
+# Figure out psidatadir: envvar trumps staged/installed
+psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.sep.join([psi4_module_loc, '..', '..', '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+
+if "PSIDATADIR" in os.environ.keys():
+    data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
+
+data_dir = os.path.abspath(data_dir)
+if not os.path.isdir(data_dir):
+    raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
+                    "      Current value of PSIDATADIR is %s" % data_dir)
+os.environ["PSIDATADIR"] = data_dir
+
+# Find and import the core
 try:
     from . import psi4core
 except ImportError as e:
@@ -28,21 +42,7 @@ except ImportError as e:
 # Init psi4core
 psi4core.initialize()
 
-# Set psidatadir
-if "PSIDATADIR" not in os.environ.keys():
-    datadir = os.path.dirname(os.path.abspath(__file__))
-    datadir += os.path.sep + "share" + os.path.sep + "psi4"
-    os.environ["PSIDATADIR"] = datadir
-else:
-    datadir = os.environ["PSIDATADIR"]
-
-if not os.path.isdir(datadir):
-     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % datadir)
-
-psi4core.set_environment("PSIDATADIR", datadir)
-
-# Cleanup psi4core at exit
+# Cleanup core at exit
 import atexit
 atexit.register(psi4core.set_legacy_molecule, None)
 atexit.register(psi4core.clean)

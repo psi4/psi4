@@ -42,17 +42,11 @@ parser.add_argument("--new-plugin-makefile", help="Creates Makefile that can be 
 args, unknown = parser.parse_known_args()
 args = args.__dict__ # Namespace object seems silly
 
-# Insert the python path
+# Figure out pythonpath
 cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
-cmake_libdir = "@CMAKE_INSTALL_LIBDIR@"  # CMAKE_INSTALL_LIBDIR
-cmake_datadir = "@CMAKE_INSTALL_DATADIR@"  # CMAKE_INSTALL_DATADIR
+lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@"])
 if "CMAKE_INSTALL_LIBDIR" in cmake_libdir:
     raise ImportError("Psi4 was not installed correctly!")
-
-# Bake in default PSIDATADIR
-lib_dir = cmake_install_prefix + os.path.sep + cmake_libdir
-data_dir = cmake_install_prefix + os.path.sep + cmake_datadir + os.path.sep + "psi4"
-
 
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
@@ -76,18 +70,10 @@ if args["output"] is None:
 if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
 
-
-# Figure out psidata dir
-if "PSIDATADIR" in os.environ.keys():
-    data_dir = os.environ["PSIDATADIR"]
-
+# Transmit any argument psidatadir through environ
 if args["psidatadir"] is not None:
-    data_dir = os.path.abspath(args["psidatadir"])
-
-if not os.path.isdir(data_dir):
-    raise Exception("PSIDATADIR (%s) is not a directory" % data_dir)
-
-os.environ["PSIDATADIR"] = data_dir
+    data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
+    os.environ["PSIDATADIR"] = data_dir
 
 
 ### Actually import psi4 and apply setup ###
@@ -95,8 +81,6 @@ os.environ["PSIDATADIR"] = data_dir
 # Import installed psi4
 sys.path.insert(1, lib_dir)
 import psi4
-
-psi4.psi4core.set_environment("PSIDATADIR", data_dir)
 
 # Setup outfile
 if args["append"] is None:
