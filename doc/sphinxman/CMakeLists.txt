@@ -242,9 +242,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
     # * announcement
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)
-        message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
+        message(STATUS "Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
     else()
-        message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html)")
+        message(STATUS "Documentation targets available: sphinxman (html), sphinxmini (quick html)")
     endif()
 
     # * quick mini-build for docs development
