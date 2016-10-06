@@ -228,11 +228,14 @@ def database(name, db_name, **kwargs):
 
     # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
     psidatadir = os.environ.get('PSIDATADIR', None)
-    psidatadir = __file__ + '/../..' if psidatadir is None else psidatadir
+    #nolongerpredictable psidatadir = __file__ + '/../..' if psidatadir is None else psidatadir
     libraryPath = ':' + os.path.abspath(psidatadir) + '/databases'
+    driver_loc = os.path.dirname(os.path.abspath(__file__))
     dbPath = os.path.abspath('.') + \
         ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
-        libraryPath
+        libraryPath + \
+        ':' + driver_loc  # so the databases can "import qcdb"
+
     sys.path = [sys.path[0]] + dbPath.split(':') + sys.path[1:]
     # TODO this should be modernized a la interface_cfour
 

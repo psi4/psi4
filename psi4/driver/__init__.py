@@ -25,6 +25,7 @@
 # @END LICENSE
 #
 
+import pickle
 import dependency_check
 from .driver import *
 from .driver_cbs import cbs
