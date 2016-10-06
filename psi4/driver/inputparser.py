@@ -756,6 +756,7 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
     imports += 'from psi4.driver.aliases import *\n'
     imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
     imports += 'from psi4.driver.wrapper_autofrag import auto_fragments\n'
+    imports += 'from psi4.driver.p4const.physconst import *\n'
     imports += 'psi4_io = core.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
