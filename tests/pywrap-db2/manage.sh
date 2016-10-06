@@ -1,5 +1,6 @@
 # modify objdir here. assumes running from test dir
-OBJDIR="objdir-pn"
+OBJDIR="objdir-pn/stage/usr/local/psi4"
+DVRDIR="" #"-l ../../share/"
 
 # clean
 rm -f psi*clean
@@ -19,11 +20,11 @@ rm -f BASIC-*out
 set -x
 
 # run calculation sequence
-../../${OBJDIR}/bin/psi4 -l ../../share/
+../../${OBJDIR}/bin/psi4 ${DVRDIR}
 
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i BASIC-ch4-reagent.in        -o BASIC-ch4-reagent.out
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i BASIC-nh3-reagent.in        -o BASIC-nh3-reagent.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i BASIC-ch4-reagent.in        -o BASIC-ch4-reagent.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i BASIC-nh3-reagent.in        -o BASIC-nh3-reagent.out
 
 cat tests >> BASIC-master.in
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i BASIC-master.in             -o BASIC-master.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i BASIC-master.in             -o BASIC-master.out
 
