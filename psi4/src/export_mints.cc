@@ -724,7 +724,7 @@ void export_mints(py::module& m)
             def("print", &PetiteList::print, "docstring");
 
     py::class_<BasisSetParser, std::shared_ptr<BasisSetParser>>(m, "BasisSetParser", "docstring");
-    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>>(m, "Gaussian94BasisSetParser", py::base<BasisSetParser>(), "docstring");
+    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(m, "Gaussian94BasisSetParser", "docstring");
 
     //py::bind_map<std::string, std::vector>(m, "ShellInfo");
 
@@ -858,7 +858,7 @@ void export_mints(py::module& m)
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
             def_readwrite("cdict", &Wavefunction::cdict);
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>>(m, "HF", py::base<Wavefunction>(), "docstring").
+    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
             def("form_C", &scf::HF::form_C, "docstring").
             def("form_D", &scf::HF::form_D, "docstring").
             def("form_V", &scf::HF::form_V, "docstring").
@@ -877,19 +877,19 @@ void export_mints(py::module& m)
             def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
-    py::class_<scf::RHF, std::shared_ptr<scf::RHF>>(m, "RHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>>(m, "ROHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>()).
             def("moFeff", &scf::ROHF::moFeff, "docstring").
             def("moFa", &scf::ROHF::moFa, "docstring").
             def("moFb", &scf::ROHF::moFb, "docstring");
 
-    py::class_<scf::UHF, std::shared_ptr<scf::UHF>>(m, "UHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>>(m, "CUHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
@@ -901,8 +901,8 @@ void export_mints(py::module& m)
             def_property_readonly("U", &Localizer::U, "Orbital rotation matrix").
             def_property_readonly("converged", &Localizer::converged, "Did the localization procedure converge?");
 
-    py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>>(m, "BoysLocalizer", py::base<Localizer>(), "docstring");
-    py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>>(m, "PMLocalizer", py::base<Localizer>(), "docstring");
+    py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>, Localizer>(m, "BoysLocalizer", "docstring");
+    py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer", "docstring");
 
     py::class_<FCHKWriter, std::shared_ptr<FCHKWriter> >(m, "FCHKWriter", "docstring").
             def(py::init<std::shared_ptr<Wavefunction> >()).
@@ -932,7 +932,7 @@ void export_mints(py::module& m)
             def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector> >()).
             def("set_params", &CorrelationFactor::set_params, "docstring");
 
-    py::class_<FittedSlaterCorrelationFactor>(m, "FittedSlaterCorrelationFactor", py::base<CorrelationFactor>(), "docstring").
+    py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor", "docstring").
             def(py::init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
@@ -1007,7 +1007,7 @@ void export_mints(py::module& m)
                                           std::shared_ptr<psi::detci::CIvect>,
                                           int, int);
 
-    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction> >(m, "CIWavefunction", py::base<Wavefunction>(), "docstring")
+    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction> >())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")

@@ -48,7 +48,7 @@ void export_oeprop(py::module &m)
     //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
     //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
 
-    py::class_<OEProp, std::shared_ptr<OEProp> >(m, "OEProp", "docstring", py::base<Prop>()).
+    py::class_<OEProp, std::shared_ptr<OEProp>, Prop>(m, "OEProp", "docstring").
             // TODO had no_init but init member present
             def(py::init<std::shared_ptr<Wavefunction> >()).
             def("add", &OEProp::oepy_add, "docstring").

@@ -1246,8 +1246,8 @@ def scf_helper(name, **kwargs):
 
 
     if cast:
-        pCa = scf_wfn.basis_projection(ref_wfn.Ca(), scf_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
-        pCb = scf_wfn.basis_projection(ref_wfn.Cb(), scf_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        pCa = scf_wfn.basis_projection(ref_wfn.Ca(), ref_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        pCb = scf_wfn.basis_projection(ref_wfn.Cb(), ref_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
         scf_wfn.guess_Ca(pCa)
         scf_wfn.guess_Cb(pCb)
         scf_wfn.form_D()
@@ -1339,7 +1339,7 @@ def run_dcft(name, **kwargs):
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
                                             core.get_global_option("DF_BASIS_DCFT"),
                                             "RIFIT", core.get_global_option("BASIS"))
-        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_DCFT", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)

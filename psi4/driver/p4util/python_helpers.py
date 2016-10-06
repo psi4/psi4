@@ -39,7 +39,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
     if key is None:
         key = "ORBITAL"
     if target is None:
-        target = psi4.get_global_option("BASIS")
+        target = core.get_global_option("BASIS")
 
     basis = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
                                       key, target, fitrole, other)
