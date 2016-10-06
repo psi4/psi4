@@ -18,3 +18,6 @@ itself.  Each included file has a path, which is relative to
 \$PSI4/doc/progman, as its title and this is where the unformatted file can be
 found.  The examples described herein can even be compiled from the directories
 in which the source files are found.
+
+Mention the GPL and development policies...
+
