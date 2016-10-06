@@ -461,8 +461,8 @@ def energy(name, **kwargs):
 
         return (core.get_variable('CURRENT ENERGY'), wfn)
     else:
-        # if isinstance(wfn, core.Wavefunction):
-        #     wfn.cdict.clear()
+        if isinstance(wfn, core.Wavefunction):
+            wfn.cdict.clear()
         return core.get_variable('CURRENT ENERGY')
 
 
@@ -597,6 +597,8 @@ def gradient(name, **kwargs):
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
+            if isinstance(wfn, core.Wavefunction):
+                wfn.cdict.clear()
             return wfn.gradient()
 
     else:
@@ -729,7 +731,6 @@ def gradient(name, **kwargs):
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
-            wfn.cdict.clear()
             return wfn.gradient()
 
 

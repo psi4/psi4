@@ -1000,7 +1000,6 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         raise ValidationError("Functional %s is not understood" % str(functional))
 
     # Build the wavefunction
-    disp_type = False
     core.prepare_options_for_module("SCF")
     if reference in ["RHF", "RKS"]:
         wfn = core.RHF(ref_wfn, superfunc)
@@ -1173,9 +1172,9 @@ def scf_helper(name, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in scf_wfn.cdict.keys():
-            scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
-        scf_wfn.compute_energy()
+        if "_disp_functor" in ref_wfn.cdict.keys():
+            ref_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
+        ref_wfn.compute_energy()
 
     # broken clean-up
     if do_broken:
@@ -1240,11 +1239,18 @@ def scf_helper(name, **kwargs):
 
             nalpha = core.Dimension.from_list(ndoccpi + nsoccpi)
             nbeta = core.Dimension.from_list(ndoccpi)
-            pCa = base_wfn.basis_projection(Ca, nalpha, old_basis, base_wfn.basisset())
-            pCb = base_wfn.basis_projection(Cb, nbeta, old_basis, base_wfn.basisset())
+            pCa = scf_wfn.basis_projection(Ca, nalpha, old_basis, base_wfn.basisset())
+            pCb = scf_wfn.basis_projection(Cb, nbeta, old_basis, base_wfn.basisset())
             scf_wfn.guess_Ca(pCa)
             scf_wfn.guess_Cb(pCb)
 
+
+    if cast:
+        pCa = scf_wfn.basis_projection(ref_wfn.Ca(), scf_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        pCb = scf_wfn.basis_projection(ref_wfn.Cb(), scf_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        scf_wfn.guess_Ca(pCa)
+        scf_wfn.guess_Cb(pCb)
+        scf_wfn.form_D()
     #     for h in range(len(Ca.nph)):
     #         base_wfn.Ca().nph[h][:, :nalpha[h]] = pCa.nph[h]
     #         base_wfn.Cb().nph[h][:, :nbeta[h]] = pCb.nph[h]
@@ -1333,7 +1339,7 @@ def run_dcft(name, **kwargs):
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
                                             core.get_global_option("DF_BASIS_DCFT"),
                                             "RIFIT", core.get_global_option("BASIS"))
-        wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
@@ -3623,7 +3629,7 @@ def run_fnodfcc(name, **kwargs):
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                         core.get_global_option("DF_BASIS_CC"),
                                         "RIFIT", core.get_global_option("BASIS"))
-    wfn.set_basisset("DF_BASIS_CC", aux_basis)
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
