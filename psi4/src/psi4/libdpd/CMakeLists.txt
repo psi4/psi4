@@ -27,7 +27,6 @@ set(sources_list T3_AAA.cc
                  contract444.cc 
                  contract244.cc 
                  buf4_mat_irrep_row_init.cc 
-                 set_default.cc 
                  buf4_close.cc 
                  buf4_mat_irrep_init_block.cc 
                  buf4_print.cc 
