@@ -101,27 +101,6 @@ private:
   void build_W_JbMe_intermediates();
   void build_W_JBME_intermediates();
 
-  void build_W_T3_intermediates();
-  void build_W_prime_abic_intermediates();
-  void build_W_prime_aBIc_intermediates();
-  void build_W_prime_AbiC_intermediates();
-  void build_W_prime_ABIC_intermediates();
-
-  void build_W_prime_ajki_intermediates();
-  void build_W_prime_AjKi_intermediates();
-  void build_W_prime_aJkI_intermediates();
-  void build_W_prime_AJKI_intermediates();
-
-  void build_W_kija_intermediates();
-  void build_W_kiJA_intermediates();
-  void build_W_KIja_intermediates();
-  void build_W_KIJA_intermediates();
-
-  void build_W_aibc_intermediates();
-  void build_W_aIbC_intermediates();
-  void build_W_AiBc_intermediates();
-  void build_W_AIBC_intermediates();
-
   void build_Z_intermediates();
 
   void build_t1_amplitudes();
@@ -145,22 +124,6 @@ private:
   void build_t2_ijab_amplitudes_triples_diagram3();
   void build_t2_iJaB_amplitudes_triples_diagram3();
   void build_t2_IJAB_amplitudes_triples_diagram3();
-
-  void build_t3_amplitudes();
-  void build_t3_ijkabc_amplitudes_diagrams12();
-  void build_t3_ijKabC_amplitudes_diagrams12();
-  void build_t3_iJKaBC_amplitudes_diagrams12();
-  void build_t3_IJKABC_amplitudes_diagrams12();
-
-  void build_t3_ijkabc_amplitudes_diagram3();
-  void build_t3_ijKabC_amplitudes_diagram3();
-  void build_t3_iJKaBC_amplitudes_diagram3();
-  void build_t3_IJKABC_amplitudes_diagram3();
-
-  void build_t3_ijkabc_amplitudes_diagram4();
-  void build_t3_ijKabC_amplitudes_diagram4();
-  void build_t3_iJKaBC_amplitudes_diagram4();
-  void build_t3_IJKABC_amplitudes_diagram4();
 
   void form_similarity_transformed_hamiltonian();
 
