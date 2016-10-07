@@ -72,11 +72,11 @@ class BasisFamily(object):
         text = ''
         text += """  ==> %s Family <==\n\n""" % (self.ornate)
         text += """  Orbital basis:        %s\n""" % (self.orbital)
-        #text += """  JK auxiliary basis:   %s\n""" % (self.jkfit)
-        #text += """  MP2 auxiliary basis:  %s\n""" % (self.rifit)
-        text += """  JK auxiliary basis:   %s  Def: %s\n""" % (self.jkfit, self.jkdef)
-        text += """  J auxiliary basis:    %s  Def: %s\n""" % (self.jfit, self.jdef)
-        text += """  MP2 auxiliary basis:  %s  Def: %s\n""" % (self.rifit, self.ridef)
+        text += """  JK auxiliary basis:   %s\n""" % (self.jkfit)
+        text += """  MP2 auxiliary basis:  %s\n""" % (self.rifit)
+        #text += """  JK auxiliary basis:   %s  Def: %s\n""" % (self.jkfit, self.jkdef)
+        #text += """  J auxiliary basis:    %s  Def: %s\n""" % (self.jfit, self.jdef)
+        #text += """  MP2 auxiliary basis:  %s  Def: %s\n""" % (self.rifit, self.ridef)
         text += """  DUAL auxiliary basis: %s\n""" % (self.dualfit)
         text += """\n"""
         return text
