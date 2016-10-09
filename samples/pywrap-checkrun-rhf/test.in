@@ -38,7 +38,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -64,7 +64,7 @@ revoke_global_option_changed('DF_BASIS_SCF')
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -104,7 +104,7 @@ revoke_global_option_changed('DF_BASIS_SCF')
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -136,7 +136,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -164,7 +164,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -203,7 +203,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 

@@ -1,5 +1,6 @@
 #! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials
 #! evaluated at the nuclear coordinates
+
 refs = {                                 #TEST
  "QUADRUPOLE XX"     :     -23.4952157,  #TEST
  "QUADRUPOLE YY"     :     -30.3835545,  #TEST
@@ -62,24 +63,6 @@ for mpole,val in reversed(sorted(refs.items())):        #TEST
 for n in range(1,13):                                   #TEST
     st = "ESP AT CENTER %d" % n                         #TEST
     compare_values(esps[n-1], get_variable(st),  4, st) #TEST
-
-#
-# Do another test where the origin breaks symmetry; different integrals are used here
-#
-set properties_origin [0, 0.5, 0]
-
-refs = {                                  #TEST
- "Quadrupole XX"       :     -23.4951980, #TEST
- "Quadrupole YY"       :     -30.3835640, #TEST
- "Quadrupole ZZ"       :     -23.4952164, #TEST
- "Octupole XXY"        :      22.1997448, #TEST
- "Octupole YYY"        :      86.1249225, #TEST
- "Octupole YZZ"        :      22.1997622  #TEST
-}                                         #TEST
-
-oeprop(scf_wfn, "MULTIPOLES(3)")
-
-for mpole,val in reversed(sorted(refs.items())):        #TEST
-    compare_values(val, get_variable(mpole),  4, mpole) #TEST
+    
 clean()
 

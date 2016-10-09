@@ -1,0 +1,24 @@
+# Zero everything out
+reinitialize
+
+# Load Geometry
+load geom.xyz
+util.cbaw
+show_as sticks, geom
+show nb_spheres, geom
+
+# Load
+load DFA.cube
+isosurface D_p, DFA,  0.002
+color blue, D_p
+
+set transparency, 0.5
+
+# Visualization
+@vis.pymol
+
+### Still images
+@orient.pymol
+
+png DFA.png, width=1200, height=800, dpi=300, ray=1
+

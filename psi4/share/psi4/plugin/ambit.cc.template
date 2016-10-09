@@ -1,0 +1,185 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/parallel.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsio/psio.h"
+
+#ifndef HAVE_AMBIT
+#error Psi4 was not compiled with Ambit support.
+#endif
+
+#include <ambit/tensor.h>
+#include <ambit/helpers/psi4/integrals.h>
+#include <ambit/helpers/psi4/convert.h>
+
+namespace psi{ namespace @plugin@ {
+
+extern "C"
+int read_options(std::string name, Options &options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+    }
+
+    return true;
+}
+
+extern "C"
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
+{
+    using namespace ambit;
+
+    if (ref_wfn->nirrep() != 1) {
+        throw PSIEXCEPTION("\nThis plugin template requires C1 symmetry.\n");
+    }
+
+    // Need the molecule to contruct the auxiliary basis set
+    std::shared_ptr<Molecule> molecule = ref_wfn->molecule();
+
+    // Obtain basis set objects
+    //   1. Orbital basis set
+    std::shared_ptr<BasisSet> aoBasis = ref_wfn->basisset();
+
+    //   2. Auxiliary basis set
+    // Construct a new basis set.
+    std::shared_ptr<BasisSet> auxBasis= BasisSet::pyconstruct_auxiliary(molecule,
+                                                 "DF_BASIS_MP2", options.get_str("DF_BASIS_MP2"),
+                                                 "RIFIT", options.get_str("BASIS"));
+
+    //   3. "Zero" basis set.
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+
+    // The integral factory oversees the creation of integral objects
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(aoBasis, aoBasis, aoBasis, aoBasis));
+
+    molecule->print();
+
+    size_t nbf = aoBasis->nbf();
+
+    // Form the one-electron integral objects from the integral factory
+    std::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
+    std::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
+
+    // Create ambit tensors to store the one-electron integrals
+    Tensor S = Tensor::build(CoreTensor, "S", { nbf, nbf });
+    Tensor T = Tensor::build(CoreTensor, "T", { nbf, nbf });
+    Tensor V = Tensor::build(CoreTensor, "V", { nbf, nbf });
+
+    // Ambit provides helpers for computing and storing integrals.
+    // The OBI's are stored in shared_ptr's and Ambit expects a reference to OneBodyAOInt
+    helpers::psi4::integrals(*sOBI.get(), &S);
+    helpers::psi4::integrals(*tOBI.get(), &T);
+    helpers::psi4::integrals(*vOBI.get(), &V);
+
+    S.print();
+    T.print();
+    V.print();
+
+    // Now, the two-electron integrals
+    Tensor g;
+    {
+        TwoBodyAOInt* eri = integral->eri();
+        g = Tensor::build(CoreTensor, "g", { nbf, nbf, nbf, nbf });
+        helpers::psi4::integrals(*eri, &g);
+        delete eri;
+    }
+    //g.print();
+
+    Tensor Cocc, Cvir;
+    {
+         SharedMatrix occ = ref_wfn->Ca_subset("AO", "ACTIVE_OCC");
+         SharedMatrix vir = ref_wfn->Ca_subset("AO", "ACTIVE_VIR");
+
+         size_t nocc, nvir, nbf;
+         nocc = occ->coldim();
+         nvir = vir->coldim();
+         nbf = occ->rowdim();
+
+         Cocc = Tensor::build(CoreTensor, "C occ", { nbf, nocc });
+         Cvir = Tensor::build(CoreTensor, "C vir", { nbf, nvir });
+
+         // Copy the data from the SharedMatrix to Tensor.
+         // Ambit expects a reference to the underlying Matrix object and not a shared_ptr.
+         helpers::psi4::convert(*occ.get(), &Cocc);
+         helpers::psi4::convert(*vir.get(), &Cvir);
+
+         occ->print();
+         vir->print();
+    }
+
+    //Cocc.print();
+    //Cvir.print();
+
+    // Compute quantities for DF
+    Tensor B; // b_C^{mn}
+    size_t ao_nbf = aoBasis->nbf();
+    size_t aux_nbf = auxBasis->nbf();
+    size_t nocc = Cocc.dim(1);
+    size_t nvir = Cvir.dim(1);
+    {
+        // Compute (A|rs)
+        Tensor A_rs;
+        {
+            IntegralFactory dfFactory(auxBasis, zero, aoBasis, aoBasis);
+            TwoBodyAOInt* eri = dfFactory.eri();
+            A_rs = Tensor::build(CoreTensor, "A_rs", { aux_nbf, ao_nbf, ao_nbf });
+            helpers::psi4::integrals(*eri, &A_rs);
+            delete eri;
+        }
+
+        // Transform (A|rs) -> (A|ia)
+        Tensor A_is = Tensor::build(CoreTensor, "A_is", { aux_nbf, nocc, ao_nbf });
+        A_is("Ais") = Cocc("ri") * A_rs("Ars");
+
+        Tensor A = Tensor::build(CoreTensor, "A", { aux_nbf, nocc, nvir });
+        A("Aia") = Cvir("sa") * A_is("Ais");
+
+        // Compute metric J^-1/2
+        Tensor Jinv;
+        {
+            IntegralFactory dfFactory(auxBasis, zero, auxBasis, zero);
+            TwoBodyAOInt* eri = dfFactory.eri();
+            Tensor J = Tensor::build(CoreTensor, "J", { aux_nbf, aux_nbf });
+            helpers::psi4::integrals(*eri, &J);
+            Jinv = J.power(-0.5);
+            delete eri;
+        }
+
+        // Contract (C|A)^(-.5) * (A|ia)
+        B = Tensor::build(CoreTensor, "b_C^{ia}", { aux_nbf, nocc, nvir });
+        B("Cia") = Jinv("CA") * A("Aia");
+    }
+    //B.print();
+
+    return ref_wfn;
+}
+
+}} // End Namespaces

@@ -33,7 +33,7 @@ EFP Fragments
 
 LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
 common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
-with source :source:`lib/efpfrag`.  Any of these may be used directly in
+with source :source:`share/efpfrag`.  Any of these may be used directly in
 a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
 .. comment .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
