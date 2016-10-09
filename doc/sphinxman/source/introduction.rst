@@ -476,7 +476,7 @@ Capabilities
 ============
 
 |PSIfour| can perform *ab initio* computations employing basis
-sets of contrated Gaussian-type functions of virtually arbitrary
+sets of contracted Gaussian-type functions of virtually arbitrary
 orbital quantum number. Many parts of |PSIfour| can recognize and
 exploit the largest Abelian subgroup of the molecular point group.
 Table :ref:`Methods <table:methods>` displays the range of theoretical methods

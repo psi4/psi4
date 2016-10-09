@@ -7,14 +7,22 @@ arr_matrix = np.random.rand(2, 2)
 arr_matrix_value = arr_matrix[0, 0]
 
 mat1 = psi4.Matrix.from_array(arr_matrix)
-mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix])
+mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix+3])
 
 compare_values(mat1.get(0,0), arr_matrix[0,0], 9, "Non-irreped psi4.Matrix Build")     #TEST
-compare_values(mat2.get(1,0,0), arr_matrix[0,0], 9, "Irreped psi4.Matrix Build")     #TEST
+compare_values(mat2.get(1,0,0), arr_matrix[0,0]+3, 9, "Irreped psi4.Matrix Build")     #TEST
+
 
 # Array from matrix
 np_mat1 = mat1.to_array()
 np_mat2 = mat2.to_array()
+np_mat1_ex = np.array(mat1)
+compare_arrays(np_mat1, np_mat1_ex, 9, "Explicit Non-irreped Array conversion")     #TEST
+compare_arrays(np_mat1, mat1.np, 9, "Implicit Non-irreped Array conversion")     #TEST
+
+for h in range(mat2.nirrep()):
+    compare_arrays(np_mat2[h], mat2.nph[h], 9, "Implicit Irreped (%d) Array conversion" % h)     #TEST
+# Explicit should fail
 
 np_mat1_view = mat1.to_array(copy=False)
 np_mat2_view = mat2.to_array(copy=False)
@@ -37,6 +45,7 @@ vec2 = psi4.Vector.from_array([arr_vector, arr_vector])
 
 compare_values(vec1.get(0), arr_vector[0], 9, "Non-irreped psi4.Vector Build")     #TEST
 compare_values(vec2.get(1,0), arr_vector[0], 9, "Irreped psi4.Vector Build")     #TEST
+
 
 # Array from Vector
 np_vec1 = vec1.to_array()
@@ -143,6 +152,5 @@ irreped_arr = irreped_vec2.to_array()
 compare_arrays(irreped_arr[0], dense_arr[:1], 9, "Dense vs irreped array psi4.Vector comparison, dimension 1")     #TEST
 compare_arrays(irreped_arr[1], np.empty((0)), 9, "Dense vs irreped array psi4.Vector comparison, dimension 2")     #TEST
 compare_arrays(irreped_arr[2], dense_arr[1:], 9, "Dense vs irreped array psi4.Vector comparison, dimension 3")     #TEST
-
 
 

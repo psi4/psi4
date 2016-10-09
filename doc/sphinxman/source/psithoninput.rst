@@ -44,7 +44,7 @@ override the builtins (in the input file, not in the C++ code).
 The physical constants used within |PSIfour|, which are automatically
 made available within all |PSIfour| input files.
 
-.. literalinclude:: @SFNX_INCLUDE@share/python/p4const/physconst.py
+.. literalinclude:: @SFNX_INCLUDE@psi4/share/psi4/python/p4const/physconst.py
    :lines: 25-
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in

@@ -1,0 +1,75 @@
+@PACKAGE_INIT@
+
+# Found one of Psi4's header files.
+find_path(Psi4Plugins_INCLUDE_DIR NAMES psi4/psi4-dec.h
+    PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@
+    NO_DEFAULT_PATH
+)
+if (${Psi4Plugins_INCLUDE_DIR} MATCHES "Psi4Plugins_INCLUDE_DIR-NOTFOUND")
+    set(Psi4Plugins_FOUND FALSE)
+    message(STATUS "No Psi4 include directory found.")
+    return()
+else()
+    message(STATUS "Psi4 include directory: ${Psi4Plugins_INCLUDE_DIR}")
+endif()
+
+find_program(Psi4_EXECUTABLE NAMES psi4
+    PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_BINDIR@
+    NO_DEFAULT_PATH
+)
+if (${Psi4_EXECUTABLE} MATCHES "Psi4_EXECUTABLE-NOTFOUND")
+    set(Psi4Plugins_FOUND FALSE)
+    message(STATUS "No Psi4 executable found.")
+    return()
+else()
+    message(STATUS "Psi4 executable: ${Psi4_EXECUTABLE}")
+endif()
+
+macro(psi4_component name on)
+   if(${on})
+      list(APPEND PSI4_COMPONENTS ${name})
+   endif()
+endmacro()
+
+psi4_component(PCMSOLVER @ENABLE_PCMSolver@)
+psi4_component(AMBIT @ENABLE_AMBIT@)
+psi4_component(GTFOCK @ENABLE_GTFOCK@)
+psi4_component(GDMA @ENABLE_gdma@)
+psi4_component(CHEMPS2 @ENABLE_CheMPS2@)
+psi4_component(DKH @ENABLE_dkh@)
+
+foreach(_comp ${PSI4_FIND_COMPONENTS})
+   list(FIND PSI4_COMPONENTS ${_comp} _comp_found)
+   if(NOT ${_comp_found})
+      set(PSI4_FOUND FALSE)
+      set(PSI4_FOUND FALSE)
+      message(STATUS "Psi4 was not compiled with the requested component: ${_comp}")
+      return()
+   endif()
+endforeach()
+
+set(PSI4_INCLUDE_DIRS
+    ${Psi4Plugins_INCLUDE_DIR}
+    @PYTHON_INCLUDE_DIR@
+    ${Psi4Plugins_INCLUDE_DIR}/@RELATIVE_PYBIND11_INCLUDE_DIR@
+)
+
+set(Psi4Plugins_FOUND TRUE)
+
+function(add_psi4_plugin TARGET SOURCES)
+    # remove ${TARGET} from ${ARGV} to use ${ARGV} as ${SOURCES}
+    list(REMOVE_AT ARGV 0)
+
+    add_library(${TARGET} MODULE ${ARGV})
+    target_include_directories(${TARGET} SYSTEM PRIVATE ${PSI4_INCLUDE_DIRS})
+    set_target_properties(${TARGET} PROPERTIES
+                          PREFIX ""
+                          COMPILE_FLAGS "-std=c++11")
+    if (APPLE)
+        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
+
+    # Add additional properties to the "make clean" to delete *.pyc
+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "*.pyc")
+endfunction(add_psi4_plugin)
+

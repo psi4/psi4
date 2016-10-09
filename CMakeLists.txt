@@ -1,363 +1,195 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+#############################  Superbuild Project  #############################
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)  # CMAKE_CXX_STANDARD, BUILD_ALWAYS
+project(psi4
+        LANGUAGES C CXX)
+set(psi4_URL "http://www.psicode.org/")
+set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
+set(psi4_LICENSE "GNU General Public License, version 2")
+set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
-# Declare project name and programming languages
-project(psi4 CXX C)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
+                              ${CMAKE_SOURCE_DIR}/cmake/math)
 
-# Custom CMake modules location
-list(APPEND CMAKE_MODULE_PATH
-     ${CMAKE_SOURCE_DIR}/cmake
-     ${CMAKE_SOURCE_DIR}/cmake/compilers
-     ${CMAKE_SOURCE_DIR}/cmake/math
-     ${CMAKE_SOURCE_DIR}/cmake/testing
-     )
+################  Options: Overview and Not Otherwise Mentioned  ###############
 
-#  Options
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                         OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"                  OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"               ON)
-option(ENABLE_UNIT_TESTS     "Enable compilation of unit test suite"       OFF)
-option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"             ON)
-option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"           ON)
-option(ENABLE_ACCELERATE     "Enable use of Mac OS X Accelerate Framework" OFF)
-option(ENABLE_CSR            "Enable MKL compressed sparse row"            OFF)
-option(ENABLE_SCALAPACK      "Enable SCALAPACK"                            OFF)
-option(ENABLE_SCALASCA       "Enable scalasca profiler mode"               OFF)
-option(ENABLE_STATIC_LINKING "Enable mostly static libraries linking"      OFF)
-option(DETECT_EXTERNAL_STATIC "Detect external projects static libraries"  OFF)
-option(ENABLE_XHOST          "Enable processor-specific optimizations"     ON)
-option(ENABLE_CONDA_DEST     "Enable destination as conda package"         OFF)
-option(ENABLE_GPU_DFCC       "Enable GPU-DFCC plugin"                      OFF)
-option(ENABLE_PLUGINS        "Enable compilation of example plugins"       OFF)
-option(ENABLE_DUMMY_PLUGIN   "Enable dummy plugin"                         OFF)
-option(ENABLE_CHEMPS2        "Enable CheMPS2 for DMRG"                     ON)
-option(ENABLE_CXX11_SUPPORT  "Enable C++11 compiler support"               ON)
-# Modules requiring Fortran
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
-   if(NOT CMAKE_Fortran_COMPILER)
-      message(FATAL_ERROR "The Fortran compiler has to be explicitly specified!")
-   endif()
-endif()
-include(CMakeDependentOption)
-CMAKE_DEPENDENT_OPTION(
-       ENABLE_DKH            "Enable DKH in libmints"                      ON
-                             "CMAKE_Fortran_COMPILER"                      OFF)
-CMAKE_DEPENDENT_OPTION(
-       ENABLE_PCMSOLVER      "Enable PCMSolver library"                    ON
-                             "CMAKE_Fortran_COMPILER"                      OFF)
-CMAKE_DEPENDENT_OPTION(
-       ENABLE_LIBERD         "Enable use of LibERD instead of LibInts"     OFF
-                             "CMAKE_Fortran_COMPILER"                      OFF)
-CMAKE_DEPENDENT_OPTION(
-       ENABLE_GDMA           "Enable use of Stone's GDMA multipole code"   ON
-                             "CMAKE_Fortran_COMPILER"                      OFF)
-option(ENABLE_AMBIT          "Enable Ambit interface"                      OFF)
+#  <<<  CMake build overview  >>>
+#
+#    >>> ls
+#    external/  LICENSE  psi4/  tests/  ...
+#    >>> cmake -H. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
+#    ...
+#    -- Generating done
+#    -- Build files have been written to: /current/dir/objdir
+#    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
+#    >>> make install
 
-# Options for dashboard builds
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"                        OFF)
-option(ENABLE_MEMCHECK       "Enable Valgrind memory check"                OFF)
-option(ENABLE_ASAN           "Enable address sanitizer"                    OFF)
-option(ENABLE_MSAN           "Enable memory sanitizer"                     OFF)
-option(ENABLE_TSAN           "Enable thread sanitizer"                     OFF)
-option(ENABLE_UBSAN          "Enable undefined behaviour sanitizer"        OFF)
-option(ENABLE_JKFACTORY      "Enable the distributed JKFactory (requires MPI)"            OFF)
+#  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
-set(EXTERNAL_LIBS)
+#  <<<  Compilers and flags  >>>
+#
+#    - CMAKE_C_COMPILER "C compiler"
+#    - CMAKE_C_FLAGS "Additional C flags"
+#    - CMAKE_CXX_COMPILER "C++ compiler"
+#    - CMAKE_CXX_FLAGS "Additional C++ flags"
+#    - CMAKE_Fortran_COMPILER "Fortran compiler (required for some add-ons)"
+#    - CMAKE_Fortran_FLAGS "Additional Fortran flags"
 
-# Decide if Fortran is needed
-if(ENABLE_LIBERD OR ENABLE_PCMSOLVER OR ENABLE_JKFACTORY OR ENABLE_DKH OR ENABLE_GDMA)
-   include(FortranEnabler)
-   enable_language(Fortran)
-   # add_definitions(-DHAVE_FORTRAN)  # unused
-   # This is to use the CMake generated macros and not those based on FC_SYMBOL
-   add_definitions(-DUSE_FCMANGLE_H)
-   set(FORTRAN_ENABLED TRUE)
-   message(STATUS "Fortran ENABLED")
-   fortran_enabler()
+#  <<<  Detecting dependencies and add-ons  >>>
+#
+#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python2.7)"
+#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python2.7.so)"
+#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
+#    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
+#
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, liberd, gdma, libint, pybind11
+#    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
+#      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
+#    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to OFF to force internal build"
+
+#  <<<  Install  >>>
+#
+#    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (e.g., /path/to/install-psi4)"
+#    - CMAKE_INSTALL_BINDIR "Location within CMAKE_INSTALL_PREFIX to which executables are installed (default: bin)"
+#    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
+#    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"  # NYI
+#    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
+
+############################  Options: Build What?  ############################
+option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
+option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
+option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
+option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
+option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
+option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
+    enable_language(Fortran)
+    set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
+    message(STATUS "Enabling Fortran")
 endif()
 
-# Include CMake modules as needed
-include(ConfigArchitecture)
-include(ConfigCompilerFlags)
-include(PerTargetCompilerFlags) # This module has to be included **after** ConfigCompilerFlags.cmake
-include(ConfigOMP)
+if(ENABLE_liberd)
+    message(FATAL_ERROR "LibERD will build, link, and run in Psi4 just fine, but it will give *wrong* answers for density-fitting (default) calculations. To continue with ERD, accept that you have been warned, and comment out this line in the main CMakeLists.txt")
+endif()
 
-# Math: find BLAS and LAPACK
-set(BLAS_LANG   "CXX")
-set(BLAS_FOUND FALSE)
-set(LAPACK_LANG "CXX")
-set(LAPACK_FOUND FALSE)
+############################  Options: Build How?  #############################
+include(Psi4Macros)
+option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
+option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
+option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
+option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
+option_with_flags(ENABLE_XHOST "Enables processor-specific optimization" ON
+                  "-xHost" "-march=native")
+option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
+                  "-ftest-coverage")
+option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
+                  "-ftrapuv -check all -fpstkchk" "-fcheck=all" "-fbounds-check -fcheck-array-temporaries")
+option_with_flags(ENABLE_ASAN "Enables address sanitizer" OFF
+                  "-fsanitize=address" "-fno-omit-frame-pointer")
+option_with_flags(ENABLE_TSAN "Enables thread sanitizer" OFF
+                  "-fsanitize=thread" "-fno-omit-frame-pointer -pie")
+option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer" OFF
+                  "-fsanitize=undefined" "-fno-omit-frame-pointer")
+option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
+option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
+option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
+option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
+option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
+option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)  # NYI
+option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
+option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
+
+########################  Process & Validate Options  ##########################
+include(GNUInstallDirs)
+include(autocmake_safeguards)
+
+#find_package(PythonLibsNew REQUIRED)
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
+
+add_subdirectory(external)
+
+    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
+include(autocmake_omp)
+include(custom_cxxstandard)
+#include(autocmake_static_library)
+set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
+
+################################  Dependencies  ################################
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
+set(BLAS_LANG "CXX")
+set(LAPACK_LANG "CXX")
 include(ConfigMath)
-
-include(ConfigMPI)
-include(ConfigExplicitLibs)
-include(ConfigSafeGuards)
-include(GenericMacros)
-#include(BinaryInfo)
-#include(mergestaticlibs)
-include(CheckIncludeFiles)
-include(CheckFunctionExists)
-# Here we look for Perl, Sphinx, Doxygen and LaTeX
-include(ConfigDocumentation)
-
-if(NOT FORTRAN_ENABLED)
-   # For linking to math subroutines use the FC_SYMBOL strategy, if Fortran was not enabled
-   set(FC_SYMBOL 2)
-   add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
-endif()
-
-if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local/psi4")
-   set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT TRUE CACHE INTERNAL "")
-endif()
-
-# This section attempts to find some system libraries:
-#  a. libutil : needed for linking against static libpython (Linux only)
-#  b. libm    : needed for lib{int,deriv}_compiler (Linux only)
-#  c. librt   : needed for the timers (Linux only)
-#  d. libdl   : needed for dynamic linking (Linux and Mac OS X)
-#  e. Threads   (Linux and Mac OS X)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-   find_package(Util REQUIRED)
-   include_directories(SYSTEM "${LIBUTIL_INCLUDE_DIR}")
-   link_libraries("${LIBUTIL_LIBRARIES}")
-
-   find_package(M REQUIRED)
-   include_directories(SYSTEM "${LIBM_INCLUDE_DIR}")
-   link_libraries("${LIBM_LIBRARIES}")
-
-   find_package(RT REQUIRED)
-   include_directories(SYSTEM "${LIBRT_INCLUDE_DIR}")
-   link_libraries("${LIBRT_LIBRARIES}")
-endif()
-
-find_package(DL REQUIRED)
-if(LIBDL_FOUND)
-   set(HAVE_DLFCN_H "1")
-   include_directories(SYSTEM "${LIBDL_INCLUDE_DIR}")
-   link_libraries("${LIBDL_LIBRARIES}")
-endif()
-
-find_package(Threads REQUIRED)
-link_libraries("${CMAKE_THREAD_LIBS_INIT}")
-
-# Python Detection
-include(ConfigPython)
-link_libraries("${PYTHON_LIBRARY}")
-include_directories(SYSTEM "${PYTHON_INCLUDE_DIR}")
-
-# Boost Detection
-# We need Boost.Python, so this has to come _after_ Python detection
-include(ConfigBoost)
-link_directories("${Boost_LIBRARY_DIRS}")
-include_directories(SYSTEM "${Boost_INCLUDE_DIRS}")
-
-# CheMPS2 Detection
-if(ENABLE_CHEMPS2)
-   include(ConfigChemps2)
-endif()
-
-# Append the suffix given from input to all generated executables
-if(EXECUTABLE_SUFFIX)
-   set(CMAKE_EXECUTABLE_SUFFIX "${EXECUTABLE_SUFFIX}")
-   message(STATUS "Suffix ${CMAKE_EXECUTABLE_SUFFIX} will be appended to executables")
-endif()
-
-if(LDFLAGS)
-   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
-endif()
-
-if(ENABLE_PLUGINS)
-   message(STATUS "Plugins support ENABLED")
-endif()
-
-# MKL_Free_Buffers NEEDS TO BE TESTED
-check_function_exists(MKL_Free_Buffers HAVE_MKL)
-
-# Check for mm_malloc.h for the _mm_malloc and _mm_free aligned memory allocation
-check_include_files(mm_malloc.h HAVE_MM_MALLOC_H)
-if(HAVE_MM_MALLOC_H)
-    add_definitions(-DHAVE_MM_MALLOC_H)
-endif()
-
-# Detection of erf, __builtin_expect, __builtin_prefetch, __builtin_constant_p
-# This step is skipped for GCC and Clang: they are all defined but for some reasons not detected by CMake
-if(CMAKE_CXX_COMPILER_ID MATCHES GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-   set(HAVE_BUILTIN_EXPECT     TRUE)
-   set(HAVE_BUILTIN_PREFETCH   TRUE)
-   set(HAVE_BUILTIN_CONSTANT_P TRUE)
-   set(HAVE_FUNC_ERF           TRUE)
-else()
-   # Check that __builtin_expect is available
-   check_function_exists(__builtin_expect HAVE_BUILTIN_EXPECT)
-   # Check that __builtin_prefetch is available
-   check_function_exists(__builtin_prefetch HAVE_BUILTIN_PREFETCH)
-   # Check that __builtin_constant_p is available
-   check_function_exists(__builtin_constant_p HAVE_BUILTIN_CONSTANT_P)
-   # Error function
-   check_function_exists(erf HAVE_FUNC_ERF)
-endif()
-
-if(NOT HAVE_FUNC_ERF)
-   message(FATAL_ERROR "ERF was not found")
-endif()
-
-if(ENABLE_LIBERD)
-   message(STATUS "Building LibERD in addition to LibInts! When able LibERD will be used by default.")
-   add_definitions(-DHAVE_ERD)
-endif()
-
-if(ENABLE_DKH)
-   message(STATUS "DKH in LibMints ENABLED")
-   add_definitions(-DHAVE_DKH)
-endif()
-
-if(ENABLE_GDMA)
-   message(STATUS "GDMA is ENABLED")
-   add_definitions(-DHAVE_GDMA)
-endif()
-
-# Libint configuration
-# Set default for LIBINT_OPT_AM if not set by setup script.
-if(NOT LIBINT_OPT_AM)
-   set(LIBINT_OPT_AM 5)
-endif()
-
-# Psi4-specific includes and libraries
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(
-    ${PROJECT_BINARY_DIR}/include
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/lib
-    ${PROJECT_BINARY_DIR}/src/lib
-    ${PROJECT_BINARY_DIR}/interfaces/include
-)
-
-
-###set(headers_list "")
-###set(headers_list include/compiler.h include/psi4-dec.h include/exception.h include/process.h)
-###install_list_FILES("${headers_list}" include)
-
-
-#
-# The location of compiled libraries and executables
-#
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-
-set_property(GLOBAL PROPERTY PSILIB)
-
-# PCMSolver Detection
-if(ENABLE_PCMSOLVER)
-  include(ConfigPCMSolver)
-endif()
-
-# Ambit
-if (ENABLE_AMBIT)
-   include(ConfigAmbit)
-endif()
-
-#If we have MPI we may want to also build JKFactory which makes J and K's
-#in distributed parallel
-set(BUILD_JK_FACTORY FALSE)
-if(MPI_FOUND AND ENABLE_JKFACTORY)
-   set(BUILD_JK_FACTORY TRUE)
-endif()
-if(BUILD_JK_FACTORY)
-   set(JK_BLAS_LIB "")
-   set(JK_BLAS_INC "")
-   if(EXPLICIT_BLAS_LIB)
-     set(JK_BLAS_LIB ${EXPLICIT_BLAS_LIB})
-     set(JK_BLAS_INC ${CMAKE_CXX_FLAGS})
+#These packages don't believe in configuration files...
+foreach(pkg in pcmsolver)
+   string(TOUPPER "${pkg}" PKG)
+   if(NOT ${PKG}_ROOT)
+      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external/${pkg})
    endif()
-   message(STATUS "LibJK BLAS Paths: ${JK_BLAS_INC} ${JK_BLAS_LIB}")
-   set(HAVE_GLOBAL_ARRAYS FALSE)
-   add_definitions(-DHAVE_JK_FACTORY)
-   set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
-endif()
-
-# Add the documentation subdirectory
-add_subdirectory(doc)
-
-# Recursively add interface directories (some containing dependencies of src)
-add_subdirectory(interfaces)
-
-# Recursively add source directories
-add_subdirectory(src)
-
-# Add the share directory (formerly lib), for install purposes
-add_subdirectory(share)
-
-# Handle creation of Makefile for plugins
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES) ###
-get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
-###set(dirs "${CMAKE_INSTALL_PREFIX}/include" "${PYTHON_INCLUDE_DIR}"  "${Boost_INCLUDE_DIRS}")
-foreach(dir ${dirs})
-    set(PLUGIN_INCLUDE_DIRECTORIES "-I${dir} ${PLUGIN_INCLUDE_DIRECTORIES}")
 endforeach()
-foreach(def ${defs})
-    set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
-endforeach()
-set(PLUGIN_CXX "${CMAKE_CXX_COMPILER}")
-set(CXX_FLAGS_PLUGIN "")
-set(PLUGIN_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LIBC_INTERJECT}")
-include(ConfigPlugins) # This module has to be included **after** ConfigCompilerFlags.cmake
-string(STRIP ${CXX_FLAGS_PLUGIN} CXX_FLAGS_PLUGIN)
-string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
-string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
-string(STRIP ${PLUGIN_LDFLAGS} PLUGIN_LDFLAGS)
-if(ENABLE_CONDA_DEST)
-    set(PLUGIN_CXX "\${MCONDA}/bin/g++")
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        set(PLUGIN_DEFINES "-DHAVE_GDMA -DHAVE_DKH -DHAVE_MM_MALLOC_H -DHAS_CXX11_VARIADIC_TEMPLATES -DHAS_CXX11_STATIC_ASSERT -DHAS_CXX11_SIZEOF_MEMBER -DHAS_CXX11_RVALUE_REFERENCES -DHAS_CXX11_NULLPTR -DHAS_CXX11_LONG_LONG -DHAS_CXX11_LAMBDA -DHAS_CXX11_INITIALIZER_LIST -DHAS_CXX11_DECLTYPE -DHAS_CXX11_CSTDINT_H -DHAS_CXX11_CONSTEXPR -DHAS_CXX11_AUTO_RET_TYPE -DHAS_CXX11_AUTO -DHAS_CXX11_FUNC -DHAS_CXX11 -DSYS_LINUX -DUSE_FCMANGLE_H")
-        set(CXX_FLAGS_PLUGIN "-DRESTRICT=__restrict__ -Xlinker -export-dynamic -fPIC -std=c++11 -fopenmp -O3 -DNDEBUG -Wno-unused")
-    endif()
-    set(PLUGIN_LDFLAGS "-Wl,-rpath,\${MCONDA}/lib/")
-    set(PLUGIN_INCLUDE_DIRECTORIES "-I\${MCONDA}/include/ -I\${MCONDA}/include/psi4 -I\${MCONDA}/include/psi4/lib -I\${MCONDA}/include/python2.7 -I/usr/include")
-else()
-    set(PLUGIN_INCLUDE_DIRECTORIES "${PLUGIN_INCLUDE_DIRECTORIES} -I${CMAKE_INSTALL_PREFIX}/include/psi4 -I${CMAKE_INSTALL_PREFIX}/include/psi4/lib")
-endif()
-configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
-configure_file(include/psi4-config.in include/psi4-config.tmp @ONLY)
-install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/psiconfig.h" include/psi4/)
-if(FORTRAN_ENABLED)
-    install_list_FILES("${CMAKE_CURRENT_BINARY_DIR}/include/FCMangle.h" include/psi4/)
-endif()
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include/psi4 FILES_MATCHING PATTERN "*.h")
 
-# Make known that the setup command given and the corresponding CMake
-# line are available in the file setup_command in the build directory
-message(STATUS "Use the commands in setup_command to reproduce this build")
+list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 
-#If we are making Boost add it as a dependency
-if(BUILD_CUSTOM_BOOST)
-   add_dependencies(psi4 custom_boost)
-   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/boost/include/boost DESTINATION include)
-   #install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/boost/lib/ DESTINATION lib)
-endif()
-
-#FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4-config DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-
-# Install samples directory
-INSTALL(
-  DIRECTORY "samples"
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/psi4
-  USE_SOURCE_PERMISSIONS
-  PATTERN "example_psi4rc_file" EXCLUDE
+################################  Main Project  ################################
+include(ExternalProject)
+ExternalProject_Add(psi4_core
+   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
+   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+              -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+              -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+              -DCMAKE_CXX_STANDARD=${PSI4_CXX_STANDARD}
+              -DCMAKE_CXX_STANDARD_REQUIRED=ON
+              -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+              -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+              -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
+              -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+              -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+              -DMAX_AM_ERI=${MAX_AM_ERI}
+              -DBUILD_FPIC=${BUILD_FPIC}
+              -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+              -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
+              -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+              -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+              -DENABLE_AMBIT=${ENABLE_AMBIT}
+              -DENABLE_CheMPS2=${ENABLE_CheMPS2}
+              -DENABLE_dkh=${ENABLE_dkh}
+              -DENABLE_liberd=${ENABLE_liberd}
+              -DENABLE_gdma=${ENABLE_gdma}
+              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
+              -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DFortran_ENABLED=${Fortran_ENABLED}
+              -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
+              -DFC_SYMBOL=${FC_SYMBOL}
+              -DDESTDIR=${CMAKE_BINARY_DIR}/stage
+   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+                    -DLAPACK_LIBRARIES:LIST=${LAPACK_LIBRARIES}
+                    -DLAPACK_INCLUDE_DIRS:LIST=${LAPACK_INCLUDE_DIRS}
+                    -DBLAS_LIBRARIES:LIST=${BLAS_LIBRARIES}
+                    -DBLAS_INCLUDE_DIRS:LIST=${BLAS_INCLUDE_DIRS}
+   BUILD_ALWAYS 1
+   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+                   DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-
-# Configure some scripts
-configure_files()
-# Configure testing
-# This must come after ConfigDocumentation, as it needs Perl detection
-# It also needs Python so it must go _after_ Python detection!
-include(ConfigTesting)
-# This must come after ConfigTesting to register plugins tests
-if(ENABLE_PLUGINS)
-   add_subdirectory(plugins)
-endif()
-# This has to be the very last CMake module to be included
-include(ConfigInfo)
+add_dependencies(psi4_core ambit_external
+                           chemps2_external
+                           dkh_external
+                           libefp_external
+                           liberd_external
+                           gdma_external
+                           libint_external
+                           pcmsolver_external
+                           pybind11_external)
+add_subdirectory(doc)
+enable_testing()
+add_subdirectory(tests)
+install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        USE_SOURCE_PERMISSIONS)
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+#        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)

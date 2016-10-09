@@ -23,10 +23,10 @@ set {
     df_scf_guess false
 }
 
-set maxiter    1
-set e_convergence 1.0e1
-set d_convergence 1.0e1
-E1 = energy('scf')
+#set maxiter    1
+#set e_convergence 1.0e1
+#set d_convergence 1.0e1
+#E1 = energy('scf')
 
 set maxiter    50
 set e_convergence 11
@@ -42,10 +42,10 @@ molecule h2o_c1 {
 
 set basis cc-pvdz
 
-set maxiter 1
-set e_convergence 1.0e1
-set d_convergence 1.0e1
-E1_c1 = energy('scf')
+#set maxiter 1
+#set e_convergence 1.0e1
+#set d_convergence 1.0e1
+#E1_c1 = energy('scf')
 
 set maxiter 50
 set e_convergence 11

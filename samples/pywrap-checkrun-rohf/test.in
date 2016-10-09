@@ -38,7 +38,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -62,7 +62,7 @@ set roots_per_irrep [1, 1]
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -102,7 +102,7 @@ set basis sto-3g
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -132,7 +132,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -158,7 +158,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
@@ -195,7 +195,7 @@ random.shuffle(Earray)
 
 for method in Earray:
    water.reset_point_group(sym)
-   water.fix_orientation(1)
+   water.fix_orientation(True)
    water.update_geometry()
 
    banner('Testing %s' % (method)) 

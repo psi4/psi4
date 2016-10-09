@@ -1,4 +1,9 @@
 # Setup Doxygen documentation
+find_package(Doxygen QUIET)
+if(NOT DOXYGEN_FOUND)
+   message(STATUS "No Doxygen, no docs.")
+endif()
+
 if(DOXYGEN_FOUND)
    # Configuration of the Doxygen configuration file
    #set(PSI_VERSION "${PSI_VERSION}") # this is already defined

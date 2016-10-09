@@ -1,9 +1,18 @@
 Psi4: Open-Source Quantum Chemistry
 -----------------------------------
 
+Psi4 is an open-source suite of *ab initio* quantum chemistry programs
+designed for efficient, high-accuracy simulations of a variety of
+molecular properties. We can routinely perform computations with more
+than 2500 basis functions running serially or on multi-core machines.
+
+With computationally demanding portions written in C++, Pybind11 exports
+many of the C++ classes into Python, and a flexible Python driver, Psi4
+strives to be friendly to both users and developers.
+
 * **Users' Website**  www.psicode.org
 
-* **Downloading and Installing Psi4** https://github.com/psi4/psi4/wiki
+* **Downloading and Installing Psi4** temporary: https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L102  (out-of-date https://github.com/psi4/psi4/wiki)
 
 * **Manual**  [http://bit.ly/psi4manual](http://psicode.org/psi4manual/master/index.html) (built nightly from master branch)
 
@@ -30,13 +39,3 @@ Psi4: Open-Source Quantum Chemistry
 * **Build Dashboard** https://testboard.org/cdash/index.php?project=Psi
 
 * **YouTube Channel** https://www.youtube.com/psitutorials
-
-Psi4 is an open-source suite of ab initio quantum chemistry programs
-designed for efficient, high-accuracy simulations of a variety of
-molecular properties. We can routinely perform computations with more
-than 2500 basis functions running serially or on multi-core machines.
-
-With computationally demanding portions written in C++, Boost exports
-of many C++ classes into Python, and a flexible Python driver, Psi4
-strives to be friendly to both users and developers.
-

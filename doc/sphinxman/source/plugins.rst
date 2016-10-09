@@ -162,7 +162,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
 
 .. comment  as modeled in :source:`tests/plugin_libcim/__init__.py`).
 
-  .. literalinclude:: @SFNX_INCLUDE@share/plugin/__init__.py.template
+  .. literalinclude:: @SFNX_INCLUDE@psi4/share/psi4/plugin/__init__.py.template
 
 * **doc.rst** |w---w| Documentation file. Place in this file any notes,
   equations, warnings to users, todo lists, *etc.*. Plain text is fine,
