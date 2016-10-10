@@ -786,8 +786,10 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
     intAB->compute(SAB);
     intBB->compute(SBB);
 
-    //SAB->print();
-    //SBB->print();
+    // C_A->print();
+    // noccpi.print();
+    // SAB->print();
+    // SBB->print();
 
     newfactory.reset();
     hybfactory.reset();
@@ -804,6 +806,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
         int nocc = noccpi[h];
         int na = C_A->rowspi()[h];
         int nb = AO2USO->colspi()[h];
+        int nc = C_A->colspi()[h];
 
         if (nocc == 0 || na == 0 || nb == 0) continue;
 
@@ -828,10 +831,10 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
 
         //Form T
         double** Temp1 = block_matrix(nb,nocc);
-        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],nocc,0.0,Temp1[0],nocc);
+        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],nc,0.0,Temp1[0],nocc);
 
-        //outfile->Printf(" Temp1:\n");
-        //print_mat(Temp1,nb,nocc,outfile);
+        // outfile->Printf(" Temp1:\n");
+        // print_mat(Temp1,nb,nocc,"outfile");
 
         double** Temp2 = block_matrix(nb,nocc);
         C_DGEMM('N','N',nb,nocc,nb,1.0,Sbb[0],nb,Temp1[0],nocc,0.0,Temp2[0],nocc);
@@ -846,10 +849,10 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
         //print_mat(Temp3,na,nocc,outfile);
 
         double** T = block_matrix(nocc,nocc);
-        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],nocc,Temp3[0],nocc,0.0,T[0],nocc);
+        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],nc,Temp3[0],nocc,0.0,T[0],nocc);
 
-        //outfile->Printf(" T:\n");
-        //print_mat(T,nocc,nocc,outfile);
+        // outfile->Printf(" T:\n");
+        // print_mat(T,nocc,nocc,"outfile");
 
         //Find T^-1/2
         // First, diagonalize T

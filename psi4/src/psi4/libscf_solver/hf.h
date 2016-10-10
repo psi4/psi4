@@ -446,8 +446,9 @@ public:
     SharedMatrix Va() { return Va_; }
     SharedMatrix Vb() { return Vb_; }
 
-    SharedMatrix guess_Ca(SharedMatrix Ca) { return guess_Ca_ = Ca; }
-    SharedMatrix guess_Cb(SharedMatrix Cb) { return guess_Cb_ = Cb; }
+    // Set guess occupied orbitals, nalpha and nbeta will be taken from the number of passed in eigenvectors
+    void guess_Ca(SharedMatrix Ca) { guess_Ca_ = Ca; }
+    void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
 };
 
 }} // Namespaces
