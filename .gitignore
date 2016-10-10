@@ -3,6 +3,7 @@ conf
 configure*
 do-configure*
 build.sh
+setup
 
 # configure scratch location
 autom4te.cache

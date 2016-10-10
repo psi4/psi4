@@ -4,18 +4,11 @@ import time
 import numpy as np
 
 molecule mol {
-C    1.39410    0.00000   0.00000
-C    0.69705   -1.20732   0.00000
-C   -0.69705   -1.20732   0.00000
-C   -1.39410    0.00000   0.00000
-C   -0.69705    1.20732   0.00000
-C    0.69705    1.20732   0.00000
-H    2.47618    0.00000   0.00000
-H    1.23809   -2.14444   0.00000
-H   -1.23809   -2.14444   0.00000
-H   -2.47618    0.00000   0.00000
-H   -1.23809    2.14444   0.00000
-H    1.23809    2.14444   0.00000
+  H      0.5288      0.1610      0.9359
+  C      0.0000      0.0000      0.0000
+  H      0.2051      0.8240     -0.6786
+  H      0.3345     -0.9314     -0.4496
+  H     -1.0685     -0.0537      0.1921
 symmetry c1
 }
 
@@ -94,9 +87,8 @@ psi4.print_out('MP2 total energy:                  %16.10f\n' % MP2_E)
 psi4.print_out('\nSCS-MP2 correlation energy:        %16.10f\n' % MP2corr_SS)
 psi4.print_out('SCS-MP2 total energy:              %16.10f\n\n' % SCS_MP2_E)
 
-
-compare_values(-0.2103738742, MP2corr_SS, 6, 'MP2 SS correlation energy:')
-compare_values(-0.5875230146, MP2corr_OS, 6, 'MP2 OS correlation energy:')
-compare_values(-0.7978968889, MP2corr_E, 6, 'MP2 correlation energy:')
-compare_values(-231.5196364948, MP2_E, 6, 'MP2 total energy:')
-compare_values(-231.4968918482, SCS_MP2_E, 6, 'SCS-MP2 total energy:')
+compare_values(-0.0312016949, MP2corr_SS, 6, 'MP2 SS correlation energy:')
+compare_values(-0.1327414875, MP2corr_OS, 6, 'MP2 OS correlation energy:')
+compare_values(-0.1639431825, MP2corr_E, 6, 'MP2 correlation energy:')
+compare_values(-40.3626203385, MP2_E, 6, 'MP2 total energy:')
+compare_values(-40.3683675060, SCS_MP2_E, 6, 'SCS-MP2 total energy:')

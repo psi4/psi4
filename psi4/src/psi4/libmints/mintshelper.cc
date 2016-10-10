@@ -370,11 +370,14 @@ void MintsHelper::one_electron_integrals()
     } else if (options_.get_str("RELATIVISTIC") == "X2C") {
         outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
+        if (!rel_basisset_){
+            throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
+        }
         X2CInt x2cint;
         SharedMatrix so_overlap_x2c = so_overlap();
         SharedMatrix so_kinetic_x2c = so_kinetic();
         SharedMatrix so_potential_x2c = so_potential();
-        x2cint.compute(molecule_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, options_);
+        x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
 
         // Overlap
         so_overlap_x2c->save(psio_, PSIF_OEI);

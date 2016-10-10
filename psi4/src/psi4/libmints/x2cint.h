@@ -51,8 +51,9 @@ public:
      * @param V Shared matrix object that will hold the X2C potential energy integrals.
      * @param options an Options object used to read basis set information.
      */
-    void compute(std::shared_ptr<Molecule> molecule, SharedMatrix S, SharedMatrix T,
-                 SharedMatrix V, Options &options);
+    void compute(std::shared_ptr<BasisSet> basis,
+                 std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S,
+                 SharedMatrix T, SharedMatrix V);
     /*! @} */
 
 private:
@@ -114,7 +115,8 @@ private:
     SharedVector E_LS_Mat;
 
     /// Setup the basis objects, integral factories, etc.
-    void setup(std::shared_ptr<Molecule> molecule, Options &options);
+    void setup(std::shared_ptr<BasisSet> basis,
+               std::shared_ptr<BasisSet> x2c_basis);
     /// Compute the S, T, V, and W integrals
     void compute_integrals();
     /// Compute the Hamiltonian and overlap matrices of the modified Dirac equation

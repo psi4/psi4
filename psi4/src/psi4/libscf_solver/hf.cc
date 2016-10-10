@@ -1806,6 +1806,10 @@ void HF::initialize()
 
     if(attempt_number_ == 1){
         std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
+        if (options_.get_str("RELATIVISTIC") == "X2C"){
+            mints->set_rel_basisset(get_basisset("BASIS_X2C"));
+        }
+
         mints->one_electron_integrals();
 
         integrals();

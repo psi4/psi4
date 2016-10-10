@@ -1336,7 +1336,6 @@ def hessian(name, **kwargs):
                 # Perform the gradient calculation
                 G, wfn = gradient(lowername, molecule=moleculeclone, return_wfn=True, **kwargs)
                 gradients.append(wfn.gradient())
-                wfn.cdict.clean()
                 energies.append(core.get_variable('CURRENT ENERGY'))
 
                 # clean may be necessary when changing irreps of displacements
