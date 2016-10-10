@@ -52,7 +52,6 @@ parser.add_argument("-l", "--psidatadir", help="Specify where to look for the Ps
 parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use (overrides OMP_NUM_THREADS)")
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
 parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory."
-                                                           "PSIDATADIR/-l must be set."
                                                            "!Warning! expert option.")
 
 # For plugins
@@ -84,6 +83,9 @@ if args["inplace"]:
     lib_dir = "@PROJECT_SOURCE_DIR@" + os.path.sep + '..'
     obj_dir = "@DESTDIR@".split(os.path.sep)[-2]
     os.environ["CORE_PSI4_YO"] = obj_dir
+    if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
+        data_dir = os.path.sep.join(["@PROJECT_SOURCE_DIR@", 'share', 'psi4'])
+        os.environ["PSIDATADIR"] = data_dir
 
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
