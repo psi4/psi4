@@ -127,8 +127,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     # Find out if running from Psi4 for scratch details and such
     try:
-        psi4.version()
-    except NameError:
+        import psi4
+    except ImportError as err:
         isP4regime = False
     else:
         isP4regime = True

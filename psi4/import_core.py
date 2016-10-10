@@ -55,7 +55,8 @@ except ImportError as err:
 
     print("\nRunning psi4 from the source directory, looking for the 'objdir' build directory for core.so ...")
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    base_path += os.path.sep + 'objdir' + os.path.sep + 'stage'
+    obj_dir = os.environ["CORE_PSI4_YO"]
+    base_path += os.path.sep + obj_dir + os.path.sep + 'stage'
     matches = []
     for root, dirnames, filenames in os.walk(base_path):
         if 'include' in root: continue
