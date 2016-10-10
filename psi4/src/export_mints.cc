@@ -1011,7 +1011,7 @@ void export_mints(py::module& m)
                                           int, int);
 
     py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction", "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction> >())
+        .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
         .def("ndet", &detci::CIWavefunction::ndet, "docstring")

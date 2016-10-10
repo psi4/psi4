@@ -1246,11 +1246,10 @@ def scf_helper(name, **kwargs):
 
 
     if cast:
-        pCa = scf_wfn.basis_projection(ref_wfn.Ca(), ref_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
-        pCb = scf_wfn.basis_projection(ref_wfn.Cb(), ref_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        pCa = ref_wfn.basis_projection(ref_wfn.Ca(), ref_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
+        pCb = ref_wfn.basis_projection(ref_wfn.Cb(), ref_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
         scf_wfn.guess_Ca(pCa)
         scf_wfn.guess_Cb(pCb)
-        scf_wfn.form_D()
 
 
     # Print basis set info
@@ -1301,6 +1300,8 @@ def scf_helper(name, **kwargs):
     data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
     data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
     data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
+    data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
+    data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
     data["symmetry"] = scf_molecule.schoenflies_symbol()
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()

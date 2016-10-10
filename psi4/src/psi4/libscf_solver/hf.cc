@@ -1400,10 +1400,18 @@ void HF::guess()
         } else {
             Cb_ = Ca_;
         }
+        // Figure out occupations from given input
+        nalphapi_ = guess_Ca_->colspi();
+        nbetapi_ = guess_Cb_->colspi();
+        doccpi_ = nalphapi_;
+        soccpi_ = nalphapi_ - nbetapi_;
+        nbeta_ = nbetapi_.sum();
+        nalpha_ = nalphapi_.sum();
 
-        iteration_ = -1;
-        find_occupation();
         form_D();
+
+        // This is a guess iteration similar to SAD
+        iteration_ = -1;
         guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
