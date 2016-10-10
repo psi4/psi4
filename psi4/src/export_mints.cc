@@ -471,6 +471,7 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*normal_eri)();
     typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
 
     typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
     typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
@@ -536,6 +537,8 @@ void export_mints(py::module& m)
             def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+            def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "docstring").
+            def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "docstring").
 
             // Two-electron MO and transformers
             def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").

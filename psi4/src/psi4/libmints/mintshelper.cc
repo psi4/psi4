@@ -32,6 +32,7 @@
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/3coverlap.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/psi4-dec.h"
@@ -690,6 +691,72 @@ SharedMatrix MintsHelper::ao_f12_squared(std::shared_ptr <CorrelationFactor> cor
     std::shared_ptr <TwoBodyAOInt> ints(intf.f12_squared(corr));
     return ao_helper("AO F12 Squared Tensor", ints);
 }
+
+SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::shared_ptr<ThreeCenterOverlapInt> ints)
+{
+    std::shared_ptr <BasisSet> bs1 = ints->basis1();
+    std::shared_ptr <BasisSet> bs2 = ints->basis2();
+    std::shared_ptr <BasisSet> bs3 = ints->basis3();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int nbf3 = bs3->nbf();
+
+    SharedMatrix I(new Matrix(label, nbf1 * nbf2, nbf3));
+    double **Ip = I->pointer();
+    const double *buffer = ints->buffer();
+
+
+    for (int M = 0; M < bs1->nshell(); M++) {
+        for (int N = 0; N < bs2->nshell(); N++) {
+            for (int P = 0; P < bs3->nshell(); P++) {
+
+                ints->compute_shell(M, N, P);
+
+                for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
+                    for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
+                        for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
+                            Ip[(bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n]
+                            [(bs3->shell(P).function_index() + p)]
+                                    = buffer[index];
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{nbf1, nbf2, nbf3};
+    I->set_numpy_shape(nshape);
+
+    return I;
+}
+SharedMatrix MintsHelper::ao_3coverlap()
+{
+    std::vector<SphericalTransform> trans;
+    for (int i=0; i<basisset_->max_am(); i++){
+        trans.push_back(SphericalTransform(i));
+    }
+    std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, basisset_, basisset_, basisset_));
+    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1,
+                                       std::shared_ptr<BasisSet> bs2,
+                                       std::shared_ptr<BasisSet> bs3)
+{
+
+    int max_am = std::max(std::max(bs1->max_am(), bs2->max_am()), bs3->max_am());
+    std::vector<SphericalTransform> trans;
+    for (int i=0; i<max_am; i++){
+        trans.push_back(SphericalTransform(i));
+    }
+    std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, bs1, bs2, bs3));
+    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
+}
+
 
 SharedMatrix MintsHelper::ao_f12g12(std::shared_ptr <CorrelationFactor> corr)
 {

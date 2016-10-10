@@ -1251,15 +1251,6 @@ def scf_helper(name, **kwargs):
         scf_wfn.guess_Ca(pCa)
         scf_wfn.guess_Cb(pCb)
         scf_wfn.form_D()
-    #     for h in range(len(Ca.nph)):
-    #         base_wfn.Ca().nph[h][:, :nalpha[h]] = pCa.nph[h]
-    #         base_wfn.Cb().nph[h][:, :nbeta[h]] = pCb.nph[h]
-
-    # elif core.get_option('SCF', 'GUESS') == 'READ':
-    #     core.print_out("   Could not read orbital file, switching to SAD guess")
-    #     core.set_local_option('SCF', 'GUESS', 'SAD')
-
-
 
 
     # Print basis set info
