@@ -61,6 +61,8 @@ class BasisFamily(object):
         self.rifit = None
         # gbs file name of DUAL designed for orbital basis
         self.dualfit = None
+        # gbs file name of DECON designed for orbital basis
+        self.decon = self.orbital
         # gbs file name of JKFIT default when self.jkfit unavailable
         #self.jkdef = jkdef
         # gbs file name of JFIT default when self.jfit unavailable
@@ -78,6 +80,7 @@ class BasisFamily(object):
         #text += """  J auxiliary basis:    %s  Def: %s\n""" % (self.jfit, self.jdef)
         #text += """  MP2 auxiliary basis:  %s  Def: %s\n""" % (self.rifit, self.ridef)
         text += """  DUAL auxiliary basis: %s\n""" % (self.dualfit)
+        text += """  DECON auxiliary basis:%s\n""" % (self.decon)
         text += """\n"""
         return text
 
@@ -187,22 +190,27 @@ def corresponding_basis(name, role='BASIS'):
     ornate form is in Psi4's standard installed bases list. ``None``
     is returned if the orbital basis is not found.
 
+    Return triplet of name for mol hash key, gbs file, post-processing function.
+
     """
+    from .libmintsbasisset import BasisSet
     role = role.upper()
     basisfamily_list = load_basis_families()
 
     for fam in basisfamily_list:
         if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
             if role == 'ORNATE':
-                return fam.ornate
+                return fam.ornate, fam.orbital, None  # is fam.orbital right for 2nd posn? it's the corresponding gbs
             elif role == 'BASIS' or role == 'ORBITAL':
-                return fam.orbital
+                return fam.orbital, fam.orbital, None
             elif role == 'JFIT':
-                return fam.jfit
+                return fam.jfit, fam.jfit, None
             elif role == 'JKFIT':
-                return fam.jkfit
+                return fam.jkfit, fam.jkfit, None
             elif role == 'RIFIT':
-                return fam.rifit
+                return fam.rifit, fam.rifit, None
             elif role == 'DUALFIT':
-                return fam.dualfit
+                return fam.dualfit, fam.dualfit, None
+            elif role == 'DECON':
+                return fam.decon + '-decon', fam.decon, BasisSet.decontract
     return None

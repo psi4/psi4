@@ -1022,6 +1022,12 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                     "JKFIT", core.get_global_option('BASIS'),
                                     puream=wfn.basisset().has_puream())
     wfn.set_basisset("DF_BASIS_SCF", aux_basis)
+    if core.get_global_option("RELATIVISTIC") == "X2C":
+        decon_basis = core.BasisSet.build(wfn.molecule(), "BASIS_X2C",
+                                        core.get_option("SCF", "BASIS_X2C"),
+                                        "DECON", core.get_global_option('BASIS'),
+                                        puream=wfn.basisset().has_puream())
+        wfn.set_basisset("BASIS_X2C", decon_basis)
     return wfn
 
 

@@ -195,9 +195,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Relativistic Hamiltonian type !expert -*/
     options.add_str("RELATIVISTIC", "NO","NO X2C");
 #endif
-  /*- Whether to uncontract the basis set in a dual basis calculation -*/
-  options.add_str("REL_BASIS","");
-
+  /*- Auxiliary basis set for solving Dirac equation in X2C calculation.
+      Defaults to decontracted orbital basis. -*/
+  options.add_str("BASIS_X2C", "");
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 

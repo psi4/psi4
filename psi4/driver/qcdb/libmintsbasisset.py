@@ -43,7 +43,7 @@ from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
 from .periodictable import *
-from .libmintsgshell import GaussianShell
+from .libmintsgshell import GaussianShell, ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis
 if sys.version_info >= (3,0):
@@ -574,7 +574,7 @@ class BasisSet(object):
         ``pyconstruct(mol, "DF_BASIS_MP2", "", "RIFIT", "6-31+G(d,p)")``
 
         """
-        #print type(mol), type(key), type(target), type(fitrole), type(other)
+        #print(type(mol), type(key), type(target), type(fitrole), type(other))
         orbonly = True if (fitrole == 'BASIS' and other is None) else False
         if orbonly:
             orb = target
@@ -583,7 +583,7 @@ class BasisSet(object):
             orb = other
             aux = target
 
-        #print 'BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly #, mol
+        #print('BasisSet::pyconstructP', 'key =', key, 'aux =', aux, 'fitrole =', fitrole, 'orb =', orb, 'orbonly =', orbonly) #, mol)
 
         # Create (if necessary) and update qcdb.Molecule
         if isinstance(mol, basestring):
@@ -632,7 +632,7 @@ class BasisSet(object):
         text += msg
 
         if returnBasisSet:
-            #print text
+            #print(text)
             return bs
         else:
             bsdict = {}
@@ -665,10 +665,11 @@ class BasisSet(object):
             libraryPath
 
         # Validate deffit for role
-        univdef = {'JFIT': 'def2-qzvpp-jfit',
-                   'JKFIT': 'def2-qzvpp-jkfit',
-                   'RIFIT': 'def2-qzvpp-ri',
-                   'F12': 'def2-qzvpp-f12'}
+        univdef = {'JFIT': ('def2-qzvpp-jfit', 'def2-qzvpp-jfit', None),
+                   'JKFIT': ('def2-qzvpp-jkfit', 'def2-qzvpp-jkfit', None),
+                   'RIFIT': ('def2-qzvpp-ri', 'def2-qzvpp-ri', None),
+                   'DECON': (None, None, BasisSet.decontract),
+                   'F12': ('def2-qzvpp-f12', 'def2-qzvpp-f12', None)}
 
         if deffit is not None:
             if deffit not in univdef.keys():
@@ -703,9 +704,9 @@ class BasisSet(object):
                     #   look only in Psi4's library and for symbol only, not label.
                     tmp = []
                     tmp.append(corresponding_basis(basdict['BASIS'], deffit))
-                    tmp.append(corresponding_basis(basdict['BASIS'], deffit + '-DEFAULT'))
+                    #NYI#tmp.append(corresponding_basis(basdict['BASIS'], deffit + '-DEFAULT'))
                     tmp.append(univdef[deffit])
-                    seek['basis'] = filter(None, tmp)
+                    seek['basis'] = [item for item in tmp if item != (None, None, None)]
                     seek['entry'] = [symbol]
                     seek['path'] = libraryPath
                     seek['strings'] = ''
@@ -715,19 +716,20 @@ class BasisSet(object):
                 #   or symbol (N) (in that order; don't want to restrict use of atom
                 #   labels to basis set spec), look everywhere (don't just look
                 #   in library)
-                if(requested_basname.endswith("DECONTRACT")):  # Good gracious, TODO
-                            seek['basis'] = [requested_basname[:-11]]
+                if requested_basname.lower().endswith('-decon'):
+                    bas_recipe = requested_basname, requested_basname[:-6], BasisSet.decontract
                 else:
-                    seek['basis'] = [requested_basname]
-                #seek['basis'] = [requested_basname]
+                    bas_recipe = requested_basname, requested_basname, None
+                seek['basis'] = [bas_recipe]
                 seek['entry'] = [symbol] if symbol == label else [label, symbol]
                 seek['path'] = basisPath
                 seek['strings'] = '' if basstrings is None else list(basstrings.keys())
 
             # Search through paths, bases, entries
             for bas in seek['basis']:
+                (bastitle, basgbs, postfunc) = bas
 
-                filename = cls.make_filename(bas)
+                filename = cls.make_filename(basgbs)
                 # -- First seek bas string in input file strings
                 if filename[:-4] in seek['strings']:
                     index = 'inputblock %s' % (filename[:-4])
@@ -755,8 +757,12 @@ class BasisSet(object):
                         continue
 
                     # Found!
-                    atom_basis_shell[label][bas] = shells
-                    mol.set_basis_by_number(at, bas, role=role)
+                    # -- Post-process
+                    if postfunc:
+                        shells = postfunc(shells)
+                    # -- Assign to Molecule
+                    atom_basis_shell[label][bastitle] = shells
+                    mol.set_basis_by_number(at, bastitle, role=role)
                     summary.append("""entry %-10s %s %s""" % (entry, msg, index))
                     break
 
@@ -785,6 +791,7 @@ class BasisSet(object):
         mol.update_geometry()  # re-evaluate symmetry taking basissets into account
 
 #TODO fix name
+#TODO acct for postfunc in name/summary printing?
         basisset.name = ' + '.join(names)
 
         # Summary printing
@@ -807,7 +814,6 @@ class BasisSet(object):
         for ats, msg in tmp2.items():
             text += """    atoms %s %s\n""" % (ats.ljust(maxsats), msg)
 
-        #print text
         return basisset, text
 
     # <<< Simple Methods for Basic BasisSet Information >>>
@@ -1274,6 +1280,41 @@ class BasisSet(object):
         basisname += '.gbs'
 
         return basisname
+
+    @staticmethod
+    def decontract(shells):
+        """Procedure applied to list to GaussianShell-s *shells* that returns
+        another list of shells, one for every AM and exponent pair in the input
+        list. Decontracts the shells.
+
+        """
+        # vector of uncontracted shells to return
+        shell_list = []
+
+        # map of AM to a vector of exponents for duplicate basis functions check
+        exp_map = defaultdict(list)
+
+        for shell in shells:
+            am = shell.am()
+            pure = shell.is_pure()
+            nc = shell.ncenter()
+            center = shell.center
+            start = shell.start
+
+            for prim in range(shell.nprimitive()):
+                exp = shell.exp(prim)
+                unique = True
+                for _exp in exp_map[am]:
+                    if abs(exp - _exp) < 1.0e-6:
+                        unique = False
+                if unique:
+                    us = ShellInfo(am, [1.0], [exp],
+                        'Pure' if pure else 'Cartesian',
+                        nc, center, start, 'Unnormalized')
+                    shell_list.append(us)
+                    exp_map[am].append(exp)
+
+        return shell_list
 
     # <<< Methods not Implemented >>>
 
