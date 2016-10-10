@@ -68,7 +68,7 @@ private:
 
     /// The basis used to solve the Dirac equation
     std::shared_ptr<BasisSet> aoBasis_;
-    /// The basis onto which we project the final FW Hamiltonian
+    /// The basis onto which we project the final FW (Foldy-Wouthuysen) Hamiltonian
     /// This is used only if we project (do_project)
     std::shared_ptr<BasisSet> aoBasis_contracted_;
 
