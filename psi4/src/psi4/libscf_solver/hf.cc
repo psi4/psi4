@@ -1400,6 +1400,7 @@ void HF::guess()
         } else {
             Cb_ = Ca_;
         }
+
         // Figure out occupations from given input
         nalphapi_ = guess_Ca_->colspi();
         nbetapi_ = guess_Cb_->colspi();

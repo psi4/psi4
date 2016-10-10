@@ -813,8 +813,8 @@ void export_mints(py::module& m)
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
-            def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
-            def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
+            def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, "docstring").
+            def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, "docstring").
             def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
             def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").

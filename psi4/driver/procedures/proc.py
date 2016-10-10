@@ -1101,6 +1101,7 @@ def scf_helper(name, **kwargs):
 
     # broken set-up
     if do_broken:
+        raise ValidationError("""Broken symmetry computations are not currently enabled.""")
         scf_molecule.set_multiplicity(3)
         core.print_out('\n')
         p4util.banner('  Computing high-spin triplet guess  ')
@@ -1219,33 +1220,39 @@ def scf_helper(name, **kwargs):
     read_filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
         data = np.load(read_filename)
-        Ca = core.Matrix.np_read(data, "Ca")
-        Cb = core.Matrix.np_read(data, "Cb")
-        basis_name = str(data["BasisSet"])
-        puream = int(data["BasisSet PUREAM"])
-        nsoccpi = data["nsoccpi"]
-        ndoccpi = data["ndoccpi"]
+        Ca_occ = core.Matrix.np_read(data, "Ca_occ")
+        Cb_occ = core.Matrix.np_read(data, "Cb_occ")
         symmetry = str(data["symmetry"])
+        basis_name = str(data["BasisSet"])
+
+        if symmetry != scf_molecule.schoenflies_symbol():
+            raise ValidationError("Cannot compute projection of different symmetries.")
 
         if basis_name == scf_wfn.basisset().name():
             core.print_out("  Reading orbitals from file 180, no projection.\n")
-            scf_wfn.guess_Ca(Ca)
-            scf_wfn.guess_Cb(Cb)
+            scf_wfn.guess_Ca(Ca_occ)
+            scf_wfn.guess_Cb(Cb_occ)
         else:
             core.print_out("  Reading orbitals from file 180, projecting to new basis.\n")
-            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+
+            puream = int(data["BasisSet PUREAM"])
+
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
-            nalpha = core.Dimension.from_list(ndoccpi + nsoccpi)
-            nbeta = core.Dimension.from_list(ndoccpi)
-            pCa = scf_wfn.basis_projection(Ca, nalpha, old_basis, base_wfn.basisset())
-            pCb = scf_wfn.basis_projection(Cb, nbeta, old_basis, base_wfn.basisset())
+            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            core.print_out("\n  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
+
+            nalphapi = core.Dimension.from_list(data["nalphapi"])
+            nbetapi = core.Dimension.from_list(data["nbetapi"])
+            pCa = scf_wfn.basis_projection(Ca_occ, nalphapi, old_basis, base_wfn.basisset())
+            pCb = scf_wfn.basis_projection(Cb_occ, nbetapi, old_basis, base_wfn.basisset())
             scf_wfn.guess_Ca(pCa)
             scf_wfn.guess_Cb(pCb)
 
 
     if cast:
+        core.print_out("\n  Computing basis projection from %s to %s\n\n" % (ref_wfn.basisset().name(), base_wfn.basisset().name()))
         pCa = ref_wfn.basis_projection(ref_wfn.Ca(), ref_wfn.nalphapi(), ref_wfn.basisset(), scf_wfn.basisset())
         pCb = ref_wfn.basis_projection(ref_wfn.Cb(), ref_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
         scf_wfn.guess_Ca(pCa)
@@ -1298,6 +1305,13 @@ def scf_helper(name, **kwargs):
     data = {}
     data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
     data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
+
+    Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
+    data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
+
+    Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
+    data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
+
     data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
     data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
     data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
