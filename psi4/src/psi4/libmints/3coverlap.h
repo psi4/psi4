@@ -66,7 +66,7 @@ protected:
                       const GaussianShell& s3);
 
 public:
-    ThreeCenterOverlapInt(std::vector<SphericalTransform>&,
+    ThreeCenterOverlapInt(std::vector<SphericalTransform> st,
                           std::shared_ptr<BasisSet> bs1,
                           std::shared_ptr<BasisSet> bs2,
                           std::shared_ptr<BasisSet> bs3);

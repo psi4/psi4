@@ -33,7 +33,7 @@
 
 using namespace psi;
 
-ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st,
+ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform> st,
                                              std::shared_ptr<BasisSet> bs1,
                                              std::shared_ptr<BasisSet> bs2,
                                              std::shared_ptr<BasisSet> bs3)
