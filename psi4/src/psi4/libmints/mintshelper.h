@@ -57,6 +57,7 @@ private:
     std::shared_ptr<BasisSet> basisset_;
     std::shared_ptr<SOBasisSet> sobasis_;
     std::shared_ptr<TwoBodyAOInt> eriInts_;
+    std::shared_ptr<BasisSet> rel_basisset_;
     int print_;
 
     /// Value which any two-electron integral is below is discarded
@@ -122,6 +123,8 @@ public:
     std::shared_ptr<MatrixFactory> factory() const;
     /// Integral factory being used
     std::shared_ptr<IntegralFactory> integral() const;
+
+    void set_rel_basisset(std::shared_ptr<BasisSet> rel_basis) { rel_basisset_ = rel_basis; }
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
