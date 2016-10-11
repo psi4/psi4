@@ -84,41 +84,20 @@ void X2CInt::setup(std::shared_ptr<BasisSet> basis,
     outfile->Printf("\n                 by Prakash Verma and Francesco A. Evangelista");
     outfile->Printf("\n         ------------------------------------------------------------\n");
 
+    // basis set constructed from BASIS.
     basis_ = basis->name();
+    aoBasis_contracted_ = basis;
+
+    // basis set constructed from BASIS_RELATIVISTIC.
     x2c_basis_ = x2c_basis->name();
+    aoBasis_ = x2c_basis;
+    do_project_ = true;
 
     // Print X2C options
     outfile->Printf("\n  ==> X2C Options <==\n");
     outfile->Printf("\n    Computational Basis: %s",basis_.c_str());
     outfile->Printf("\n    X2C Basis: %s",x2c_basis_.c_str());
-
-    // If the X2C_BASIS is equal to BASIS, then use the standard computational basis
-    if (false){
-    // if (x2c_basis_ == basis_){
-        do_project_ = false;
-        aoBasis_ = basis;
-        outfile->Printf("\n    The X2C Hamiltonian will be computed in the computational basis");
-    }
-    // If X2C_BASIS equals "" or "DECONTRACT" then decontract the computational basis
-    // else if ((x2c_basis_->name() == "") or (x2c_basis_->name() == "DECONTRACT")){
-    //     do_project_ = true;
-    //     // Construct a new basis set that uses BASIS.
-    //     aoBasis_contracted_ = basis_;
-    //     // Construct a new basis set that used a decontracted version of BASIS.
-    //     aoBasis_ = x2c_basis;
-    //     outfile->Printf("\n    The X2C Hamiltonian will be computed in the decontracted computational basis");
-    // }
-    // X2C_BASIS = [user specified] then use the user's basis
-    else{
-        do_project_ = true;
-        // Construct a new basis set that uses X2C_BASIS.
-        aoBasis_ = x2c_basis;
-        // Construct a new basis set that uses BASIS.
-        aoBasis_contracted_ = basis;
-        outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis");
-    }
-
-    outfile->Printf("\n");
+    outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis\n");
 
     // The integral factory oversees the creation of integral objects
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(aoBasis_, aoBasis_, aoBasis_, aoBasis_));
