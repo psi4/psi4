@@ -1017,11 +1017,14 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                                                               tuple_params = modified_disp_params)
         wfn.cdict["_disp_functor"].print_out()
 
-    aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
-                                    core.get_option("SCF", "DF_BASIS_SCF"),
-                                    "JKFIT", core.get_global_option('BASIS'),
-                                    puream=wfn.basisset().has_puream())
-    wfn.set_basisset("DF_BASIS_SCF", aux_basis)
+    if core.get_global_option("SCF_TYPE") == "DF":
+        aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
+                                        core.get_option("SCF", "DF_BASIS_SCF"),
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=wfn.basisset().has_puream())
+        wfn.set_basisset("DF_BASIS_SCF", aux_basis)
+
+
     if core.get_global_option("RELATIVISTIC") == "X2C":
         decon_basis = core.BasisSet.build(wfn.molecule(), "BASIS_X2C",
                                         core.get_option("SCF", "BASIS_X2C"),
@@ -1361,9 +1364,15 @@ def run_dcft(name, **kwargs):
 
     if (core.get_global_option("DCFT_TYPE") == "DF"):
         aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
-                                            core.get_global_option("DF_BASIS_DCFT"),
-                                            "RIFIT", core.get_global_option("BASIS"))
+                                        core.get_global_option("DF_BASIS_DCFT"),
+                                        "RIFIT", core.get_global_option("BASIS"))
         ref_wfn.set_basisset("DF_BASIS_DCFT", aux_basis)
+
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                            core.get_option("SCF", "DF_BASIS_SCF"),
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
@@ -1480,11 +1489,18 @@ def run_dfocc(name, **kwargs):
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
+    if not core.get_local_option("DFOCC", "CHOLESKY"):
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                           core.get_option("SCF", "DF_BASIS_SCF"),
+                                           "JKFIT", core.get_global_option('BASIS'),
+                                           puream=ref_wfn.basisset().has_puream())
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
-                                        core.get_global_option("DF_BASIS_CC"),
-                                        "RIFIT", core.get_global_option("BASIS"))
-    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                            core.get_global_option("DF_BASIS_CC"),
+                                            "RIFIT", core.get_global_option("BASIS"))
+        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
@@ -1552,6 +1568,12 @@ def run_dfocc_gradient(name, **kwargs):
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
+    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                    core.get_option("SCF", "DF_BASIS_SCF"),
+                                    "JKFIT", core.get_global_option('BASIS'),
+                                    puream=ref_wfn.basisset().has_puream())
+    ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                         core.get_global_option("DF_BASIS_CC"),
                                         "RIFIT", core.get_global_option("BASIS"))
@@ -1608,6 +1630,12 @@ def run_dfocc_property(name, **kwargs):
         if ref_wfn.molecule().schoenflies_symbol() != 'c1':
             raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
+
+    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                    core.get_option("SCF", "DF_BASIS_SCF"),
+                                    "JKFIT", core.get_global_option('BASIS'),
+                                    puream=ref_wfn.basisset().has_puream())
+    ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                         core.get_global_option("DF_BASIS_CC"),
@@ -3378,6 +3406,12 @@ def run_fisapt(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
 
+    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                        core.get_option("SCF", "DF_BASIS_SCF"),
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
+    ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
     sapt_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SAPT",
                                      core.get_global_option("DF_BASIS_SAPT"),
                                      "RIFIT", core.get_global_option("BASIS"),
@@ -3650,6 +3684,12 @@ def run_fnodfcc(name, **kwargs):
             raise ValidationError("""  FNOCC does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
+    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                        core.get_option("SCF", "DF_BASIS_SCF"),
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
+    ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
                                         core.get_global_option("DF_BASIS_CC"),
                                         "RIFIT", core.get_global_option("BASIS"))
@@ -3756,6 +3796,12 @@ def run_fnocc(name, **kwargs):
     if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    else:
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                            core.get_option("SCF", "DF_BASIS_SCF"),
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
@@ -3852,6 +3898,13 @@ def run_cepa(name, **kwargs):
     if core.get_option('FNOCC', 'USE_DF_INTS') == False:
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    else:
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                            core.get_option("SCF", "DF_BASIS_SCF"),
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
@@ -3902,6 +3955,12 @@ def run_detcas(name, **kwargs):
         # Do NOT set global options in general, this is a bit of a hack
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
+
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                            core.get_option("SCF", "DF_BASIS_SCF"),
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     # The non-DF case
     else:

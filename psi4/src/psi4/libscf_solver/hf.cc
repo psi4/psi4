@@ -450,7 +450,12 @@ void HF::integrals()
         throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
       #endif
     } else {
-        jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
+        if (options_.get_str("SCF_TYPE") == "DF"){
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
+        } else {
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
+
+        }
     }
     /// Warning this is no longer valid, must catch this C side.
     // }
