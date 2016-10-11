@@ -137,7 +137,8 @@ void HF::frac()
         // Load the old orbitals in if requested
         if (options_.get_bool("FRAC_LOAD")) {
             outfile->Printf( "    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
-            load_orbitals();
+            throw PSIEXCEPTION("FRAC_LOAD is currently not an avilable feature");
+            //load_orbitals();
         }
 
         // Keep the printing nice

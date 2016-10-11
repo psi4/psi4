@@ -676,6 +676,7 @@ void HF::compute_SAD_guess()
     SharedMatrix Cb_sad = guess->Cb();
     Da_->copy(guess->Da());
     Db_->copy(guess->Db());
+    Dimension sad_dim(Da_->nirrep(), "SAD Dimensions");
 
     for (int h = 0; h < Da_->nirrep(); h++) {
 
@@ -684,7 +685,7 @@ void HF::compute_SAD_guess()
         if (nmo > X_->colspi()[h])
             nmo = X_->colspi()[h];
 
-        sad_nocc_[h] = nmo;
+        sad_dim[h] = nmo;
 
         if (!nso || !nmo) continue;
 
@@ -699,15 +700,12 @@ void HF::compute_SAD_guess()
         }
     }
 
-    int temp_nocc;
-    for (int h = 0 ; h < Da_->nirrep(); h++) {
-        temp_nocc = sad_nocc_[h];
-        sad_nocc_[h] = doccpi_[h];
-        nalphapi_[h] = temp_nocc;
-        nbetapi_[h]  = temp_nocc;
-        doccpi_[h]   = temp_nocc;
-        soccpi_[h]   = 0;
-    }
+    nalphapi_ = sad_dim;
+    nbetapi_ = sad_dim;
+    nalpha_ = sad_dim.sum();
+    nbeta_ = sad_dim.sum();
+    doccpi_ = sad_dim;
+    soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
 
     E_ = 0.0; // This is the -1th iteration
 }
