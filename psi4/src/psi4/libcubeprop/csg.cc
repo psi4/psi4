@@ -323,17 +323,18 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 {
     // => Auxiliary Basis Set <= //
 
-    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    if (!auxiliary_){
+        throw PSIEXCEPTION("Auxiliary basis is required for ESP computations.");
+    }
+
     double cutoff    = options_.get_double("INTS_TOLERANCE");
     double condition = options_.get_double("DF_FITTING_CONDITION");
 
     // => Sizing <= //
 
     int nbf  = primary_->nbf();
-    int naux = auxiliary->nbf();
-    int maxP = auxiliary->max_function_per_shell();
+    int naux = auxiliary_->nbf();
+    int maxP = auxiliary_->max_function_per_shell();
 
     int nthreads = 1;
     #ifdef _OPENMP
@@ -342,7 +343,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     // => Density Fitting (TODO: Could be sped up) <= //
 
-    std::shared_ptr<IntegralFactory> Ifact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::shared_ptr<IntegralFactory> Ifact(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
     std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
     for (int thread = 0; thread < nthreads; thread++) {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
@@ -359,10 +360,10 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     double** Dp = D->pointer();
 
-    for (int P = 0; P < auxiliary->nshell(); P++) {
+    for (int P = 0; P < auxiliary_->nshell(); P++) {
 
-        int nP = auxiliary->shell(P).nfunction();
-        int oP = auxiliary->shell(P).function_index();
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
 
         Amn->zero();
 
@@ -412,19 +413,19 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
     double** Jp = J->pointer();
 
     std::shared_ptr<IntegralFactory> Jfact(new IntegralFactory(
-        auxiliary,BasisSet::zero_ao_basis_set(),
-        auxiliary,BasisSet::zero_ao_basis_set()));
+        auxiliary_,BasisSet::zero_ao_basis_set(),
+        auxiliary_,BasisSet::zero_ao_basis_set()));
 
     std::shared_ptr<TwoBodyAOInt> Jints(Jfact->eri());
     const double* Jbuffer = Jints->buffer();
 
-    for (int P = 0; P < auxiliary->nshell(); P++) {
-        int nP = auxiliary->shell(P).nfunction();
-        int oP = auxiliary->shell(P).function_index();
+    for (int P = 0; P < auxiliary_->nshell(); P++) {
+        int nP = auxiliary_->shell(P).nfunction();
+        int oP = auxiliary_->shell(P).function_index();
 
         for (int Q = 0; Q <= P; Q++) {
-            int nQ = auxiliary->shell(Q).nfunction();
-            int oQ = auxiliary->shell(Q).function_index();
+            int nQ = auxiliary_->shell(Q).nfunction();
+            int oQ = auxiliary_->shell(Q).function_index();
 
             Jints->compute_shell(P,0,Q,0);
 
@@ -456,7 +457,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     // => Electronic Part <= //
 
-    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set()));
+    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set()));
     std::vector<std::shared_ptr<Matrix> > ZxyzT;
     std::vector<std::shared_ptr<Matrix> > VtempT;
     std::vector<std::shared_ptr<PotentialInt> > VintT;

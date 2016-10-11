@@ -2518,6 +2518,7 @@ void FISAPT::plot()
     std::shared_ptr<CubicScalarGrid> csg(new CubicScalarGrid(primary_, options_));
     csg->set_filepath(filepath);
     csg->print_header();
+    csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
 
     std::stringstream ss;
     ss << filepath << "geom.xyz";
