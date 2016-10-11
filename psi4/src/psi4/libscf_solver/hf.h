@@ -127,7 +127,12 @@ protected:
     bool broken_symmetry_;
 
     //Initial SAD doubly occupied may be more than ndocc
-    int sad_nocc_[8];
+    // int sad_nocc_[8];
+    Dimension original_doccpi_;
+    Dimension original_soccpi_;
+    int original_nalpha_;
+    int original_nbeta_;
+    bool reset_occ_;
 
     /// Mapping arrays
     int *so2symblk_;
@@ -337,7 +342,7 @@ protected:
     void compute_SAD_guess();
 
     /// Reset to regular occupation from the fractional occupation
-    void reset_SAD_occupation();
+    void reset_occupation();
 
     /// Form the guess (gaurantees C, D, and E)
     virtual void guess();
@@ -388,16 +393,16 @@ protected:
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
     /** Save orbitals to use later as a guess **/
-    virtual void save_orbitals();
+    // virtual void save_orbitals();
 
     /** Tells whether or not to read Fock matrix as a guess **/
-    bool do_use_fock_guess();
+    // bool do_use_fock_guess();
 
     /** Load fock matrix from previous computation to form guess MO coefficients **/
-    virtual void load_fock();
+    // virtual void load_fock();
 
     /** Load orbitals from previous computation, projecting if needed **/
-    virtual void load_orbitals();
+    // virtual void load_orbitals();
 
 public:
     HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
@@ -449,6 +454,9 @@ public:
     // Set guess occupied orbitals, nalpha and nbeta will be taken from the number of passed in eigenvectors
     void guess_Ca(SharedMatrix Ca) { guess_Ca_ = Ca; }
     void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
+
+    // Expert option to reset the occuption or not at iteration zero
+    void reset_occ(bool reset) { reset_occ_ = reset; }
 };
 
 }} // Namespaces

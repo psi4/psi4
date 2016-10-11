@@ -1256,6 +1256,17 @@ def scf_helper(name, **kwargs):
             scf_wfn.guess_Ca(pCa)
             scf_wfn.guess_Cb(pCb)
 
+        # Strip off headers to only get R, RO, U, CU
+        old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
+        new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
+        if old_ref != new_ref:
+            scf_wfn.reset_occ(True)
+
+
+    elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
+        core.print_out("  Unable to find file 180, defaulting to SAD guess.\n")
+        core.set_local_option('SCF', 'GUESS', 'SAD')
+
 
     if cast:
         core.print_out("\n  Computing basis projection from %s to %s\n\n" % (ref_wfn.basisset().name(), base_wfn.basisset().name()))
@@ -1318,6 +1329,7 @@ def scf_helper(name, **kwargs):
     Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
     data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
 
+    data["reference"] = core.get_option('SCF', 'REFERENCE')
     data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
     data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
     data["nalphapi"] = scf_wfn.nalphapi().to_tuple()

@@ -370,7 +370,7 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
              SharedMatrix Cvir_b, SharedMatrix ret_b)
 {
     if (functional_->needs_xc()){
-        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
+        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector products.\n");
     }
 
     // => Effective one electron part <= //
