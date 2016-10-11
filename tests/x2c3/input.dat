@@ -17,7 +17,7 @@ units bohr
 
 set {
   basis cc-pVDZ-DK
-  basis_x2c cc-pVDZ-DK
+  basis_relativistic cc-pVDZ-DK
   scf_type pk
 }
 
