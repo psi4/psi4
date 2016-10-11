@@ -438,7 +438,8 @@ std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)
     if (label == "ORBITAL"){
         return basisset_;
     } else if (basissets_.count(label) == 0){
-        throw PSIEXCEPTION("Requested basis set was not set!\n");
+        outfile->Printf("Could not find requested basisset (%s).", label.c_str());
+        throw PSIEXCEPTION("Wavefunction::get_basisset: Requested basis set was not set!\n");
     } else {
         return basissets_[label];
     }
