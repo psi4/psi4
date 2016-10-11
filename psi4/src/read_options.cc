@@ -914,20 +914,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PRINT", 1);
     /*- Whether or not to compute coupled induction, applies only to 
         the open-shell SAPT0 code. Coupled induction is not available for 
-        ROHF, and the option is automatically false in this case. !expert -*/
+        ROHF, and the option is automatically false in this case. 
+        Note that when coupled induction is turned off, the Psi variables
+        SAPT IND20,R ENERGY and SAPT EXCH-IND20,R ENERGY actually contain
+        the **uncoupled** induction! A corresponding warning is issued in the
+        output file. !expert -*/
     options.add_bool("COUPLED_INDUCTION",true);
     /*- Proportion of memory available for the DF-MP2 three-index integral
         buffers used to evaluate dispersion. !expert -*/
     options.add_double("SAPT_MEM_FACTOR", 0.9);
-    /*- This option is used internally by the driver to pass the dimer 
-    wavefunction to the open-shell SAPT0 code. !expert -*/
-    options.add("DIM", new PythonDataType());
-    /*- This option is used internally by the driver to pass the monomer A
-    wavefunction to the open-shell SAPT0 code. !expert -*/
-    options.add("MONA", new PythonDataType());
-    /*- This option is used internally by the driver to pass the monomer B
-    wavefunction to the open-shell SAPT0 code. !expert -*/
-    options.add("MONB", new PythonDataType());
   }
 
   if (name == "FISAPT"|| options.read_globals()) {

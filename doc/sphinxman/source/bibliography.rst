@@ -6,6 +6,10 @@ Bibliography
 |
 |
 
+.. [Gonthier:2016:134106]
+   J. F. Gonthier and C.D. Sherrill, 
+   *J. Chem. Phys.* **145**, 134106 (2016).
+
 .. [Parrish:2015:051103]
    R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C.D. Sherrill, 
    *J. Chem. Phys.* **143**, 051103 (2015).
