@@ -116,21 +116,21 @@ and a systematic study of the accuracy of these truncations (with and
 without an improved CCD treatment of dispersion) using different basis sets
 is reported in [Parker:2014:094106]_.
 
-The SAPT module relies entirely on the density-fitting approximation
+The closed-shell SAPT module relies entirely on the density-fitting approximation
 of the two-electron integrals. The factorization of the SAPT energy
 expressions, as implemented in |PSIfour|, assumes the use of density-fitted
-two-electron integrals, therefore, the SAPT module cannot be run with
+two-electron integrals, therefore, the closed-shell SAPT module cannot be run with
 exact integrals. In practice, we have found that the density-fitting
 approximation introduces negligible errors into the SAPT energy 
 (often less than 0.01 kcal/mol for small dimers) and greatly
 improves efficiency. 
 
 The latest addition to the SAPT code is the SAPT0 method for open-shell 
-monomers. This code is available for both exact and density fitted integrals, 
-except for the dispersion terms which are only implemented with a factorization relying on
-density fitting. Both ``UHF`` and ``ROHF`` |scf__reference| can be used, but coupled
+monomers [Gonthier:2016:134106]_. This code is available for both exact and density fitted integrals, 
+except for the dispersion terms which implementation relies on a density fitting
+factorization. Both ``UHF`` and ``ROHF`` |scf__reference| can be used, but coupled
 induction computations are currently not supported with ``ROHF``. This means that orbital
-relaxation is not included and the uncoupled induction term is computed instead.
+relaxation is not included for ``ROHF`` and the uncoupled induction term is computed instead.
 If both monomers are open-shell, their coupling is assumed to be high spin, i.e.
 two doublets would interact to form a triplet.
 
@@ -169,7 +169,8 @@ To distinguish it from its unscaled counterpart, this energy is denoted sSAPT0 (
    :label: sSAPT0
 
 where :math:`\delta_{HF}^{(2)}` is computed *without* any scaling. Please note that 
-sSAPT0 is thus not the same as requesting ``exch_scale_alpha 3.0``.
+sSAPT0 is thus not the same as requesting ``exch_scale_alpha 3.0``, and that the
+scaling is automatically performed by requesting ``energy('ssapt0')``.
 
 
 A First Example
@@ -236,7 +237,7 @@ superposition-of-atomic-densities guess. This is the preferred method of
 running the SAPT module.
 As already mentioned above, the SAPT0 module for open-shell cases can also
 use exact integrals for all terms except for dispersion. In practice,
-density fitting is considerably faster and introduce negligible errors, thus
+density fitting is considerably faster and introduces negligible errors, thus
 it is the preferred method for open-shell cases as well.
 
 Below, you can find a minimum example of open-shell SAPT0 computation. ::
@@ -305,46 +306,37 @@ yourself. In the example below, we do a stability analysis for the open-shell mo
   
   set df_ints_io save
   psi4.IO.set_default_namespace('dimer')
-  energy('scf')
-  wfn_dimer = psi4.wavefunction()
+  Edim, wfn_dimer = energy('scf',molecule=dimer,return_wfn=True)
   set df_ints_io load
   
   monomerA = dimer.extract_subsets(1,2)
-  activate(monomerA)
   psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
   psi4.IO.set_default_namespace('monomerA')
   set {
   stability_analysis follow
   }
-  energy('scf')
-  wfn_monA = psi4.wavefunction()
+  EmonA, wfn_monA = energy('scf',molecule=monomerA,return_wfn=True)
   
   monomerB = dimer.extract_subsets(2,1)
-  activate(monomerB)
   psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
   psi4.IO.set_default_namespace('monomerB')
   set {
   stability_analysis none
   }
-  energy('scf')
-  wfn_monB = psi4.wavefunction()
+  EmonB, wfn_monB = energy('scf',molecule=monomerB,return_wfn=True)
   
   psi4.IO.change_file_namespace(97, 'monomerB', 'dimer')
-  activate(dimer)
   psi4.IO.set_default_namespace('dimer')
   
-  psi4.set_global_option_python('DIM', wfn_dimer)
-  psi4.set_global_option_python('MONA',wfn_monA)
-  psi4.set_global_option_python('MONB',wfn_monB)
-  
-  psi4.sapt()
+  psi4.sapt(wfn_dimer,wfn_monA,wfn_monB)
 
-File 97 contains the three-index integrals processed for density fitting, and
-the command ``psi4.IO.change_file_namespace`` allow us to rename it
-and read integrals from it. Before each invokation of energy('scf'), options
-can be modified as desired. The |sapt__dim|, |sapt__mona| and |sapt__monb|
-options should be set through ``psi4.set_global_option_python`` to a 
-PSI4 wavefunction object.
+In this way, any of the SCF options can be tweaked for individual fragments.
+For optimal efficiency, the example uses ``set df_ints_io save`` to keep file 97,
+which contains the three-index integrals for density fitting. ``set df_ints_io load``
+then instructs the program to read these integrals from disk instead of recomputing
+them. For each SCF computation, we use ``psi4.IO.set_default_namespace`` to uniquely
+name scratch files. In the following SCF step, only file 97 is renamed using
+``psi4.IO.change_file_namespace`` so that integrals can be read from it.
 For more information on stability analysis, see the :ref:`stability <stability_doc>`
 documentation.
 
@@ -354,7 +346,7 @@ SAPT0
 ^^^^^
 
 Generally speaking, SAPT0 should be applied to large systems or large data
-sets. The performance of SAPT0 relies entirely on error cancellation, which
+sets. The performance of closed-shell SAPT0 relies entirely on error cancellation, which
 seems to be optimal with a truncated aug-cc-pVDZ basis, namely,
 jun-cc-pVDZ (which we have referred to in previous work as
 aug-cc-pVDZ').  We do not recommend using SAPT0 with large basis sets
@@ -368,7 +360,8 @@ The SAPT module has been used to perform SAPT0 computations with over
 200 atoms and 2800 basis functions; this code should be scalable to 4000
 basis functions. Publications resulting from the use of the SAPT0 code 
 should cite the following publications: [Hohenstein:2010:184111]_ and 
-[Hohenstein:2011:174107]_.
+[Hohenstein:2011:174107]_. If the open-shell SAPT0 code is used,
+[Gonthier:2016:134106]_ should be additionally cited.
 
 Basic SAPT0 Keywords
 ~~~~~~~~~~~~~~~~~~~~
@@ -400,9 +393,6 @@ Specific open-shell SAPT0 keywords
 
 .. include:: autodir_options_c/sapt__mem_factor.rst
 .. include:: autodir_options_c/sapt__coupled_induction.rst
-.. include:: autodir_options_c/sapt__dim.rst
-.. include:: autodir_options_c/sapt__mona.rst
-.. include:: autodir_options_c/sapt__monb.rst
 
 .. index:: SAPT; higher-order
 
@@ -412,8 +402,9 @@ Higher-Order SAPT
 For smaller systems (up to the size of a nucleic acid base pair), more
 accurate interaction energies can be obtained through higher-order SAPT
 computations. The SAPT module can perform density-fitted evaluations
-of SAPT2, SAPT2+, SAPT2+(3), and SAPT2+3 energies. Publications resulting
-from the use of the higher-order SAPT code should cite the following: 
+of SAPT2, SAPT2+, SAPT2+(3), and SAPT2+3 energies for closed-shell systems 
+only. Publications resulting from the use of the higher-order SAPT code 
+should cite the following: 
 [Hohenstein:2010:014101]_.
 
 For methods SAPT2+ and above, one can replace the many-body treatment of
