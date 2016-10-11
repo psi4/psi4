@@ -26,7 +26,8 @@
  */
 
 
-#include "psi4/libqt/qt.h"
+#include "wrapper.h"
+#include "psi4/libmints/molecule.h"
 
 #include "psi4/libsapt_solver/sapt0.h"
 #include "psi4/libsapt_solver/usapt0.h"
@@ -34,7 +35,6 @@
 #include "psi4/libsapt_solver/sapt2p.h"
 #include "psi4/libsapt_solver/sapt2p3.h"
 //#include <libsapt_solver/sapt_dft.h>
-#include "wrapper.h"
 
 namespace psi { namespace sapt {
 
