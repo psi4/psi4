@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.124 Driver
+                              Psi4 1.0.392 Driver
 
-                          Git: Rev {USAPT} c408224 dirty
+                          Git: Rev {USAPT} 8633ef7 dirty
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -12,14 +12,16 @@
     (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Sep 18 22:02:04 2015
+    Psi4 started on: Tue Oct 11 17:41:00 2016
 
-    Process ID:  26534
-    PSI4DATADIR: /home/jerome/Documents/Atlanta/PSIcode/psi4_currentedge/lib
+    Process ID:  25796
+    PSIDATADIR: /theoryfs2/ds/gonthier/Documents/psi4public_JFG/obj_v11_rls_2/stage/usr/local/share/psi4
     Memory level set to 256.000 MB
 
   ==> Input File <==
@@ -110,8 +112,8 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:04 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:01 2016
 
 
          ---------------------------------------------------------
@@ -176,9 +178,6 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
     Total      54      54      12      11      11       1
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -211,27 +210,28 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:  -226.30743468006369   -2.26307e+02   0.00000e+00 
-   @DF-ROHF iter   1:   -19.59056682198484    2.06717e+02   3.08187e-01 
-   @DF-ROHF iter   2:  -138.73485173600392   -1.19144e+02   1.96140e-01 DIIS
-   @DF-ROHF iter   3:  -163.62096832140634   -2.48861e+01   2.56713e-01 DIIS
-   @DF-ROHF iter   4:  -196.23494470432604   -3.26140e+01   1.81011e-01 DIIS
-   @DF-ROHF iter   5:  -219.26132120626201   -2.30264e+01   5.74466e-02 DIIS
-   @DF-ROHF iter   6:  -219.28527096780576   -2.39498e-02   5.78793e-02 DIIS
-   @DF-ROHF iter   7:  -220.65097467209296   -1.36570e+00   9.04798e-03 DIIS
-   @DF-ROHF iter   8:  -220.68690103379009   -3.59264e-02   3.86560e-03 DIIS
-   @DF-ROHF iter   9:  -220.69245869533489   -5.55766e-03   2.06110e-03 DIIS
-   @DF-ROHF iter  10:  -220.69531284693420   -2.85415e-03   2.13573e-04 DIIS
-   @DF-ROHF iter  11:  -220.69541546683706   -1.02620e-04   1.54147e-04 DIIS
-   @DF-ROHF iter  12:  -220.69543258335216   -1.71165e-05   4.53590e-05 DIIS
-   @DF-ROHF iter  13:  -220.69544382951591   -1.12462e-05   1.87051e-05 DIIS
-   @DF-ROHF iter  14:  -220.69544436350509   -5.33989e-07   4.65984e-06 DIIS
-   @DF-ROHF iter  15:  -220.69544437788238   -1.43773e-08   1.53755e-06 DIIS
-   @DF-ROHF iter  16:  -220.69544437946610   -1.58371e-09   1.62170e-07 DIIS
-   @DF-ROHF iter  17:  -220.69544437950844   -4.23483e-11   8.00026e-08 DIIS
-   @DF-ROHF iter  18:  -220.69544437951572   -7.27596e-12   1.98739e-08 DIIS
-   @DF-ROHF iter  19:  -220.69544437951760   -1.87583e-12   1.11367e-08 DIIS
-   @DF-ROHF iter  20:  -220.69544437951851   -9.09495e-13   6.91361e-09 DIIS
+   @DF-ROHF iter   0:  -226.26570849385581   -2.26266e+02   0.00000e+00 
+   @DF-ROHF iter   1:   -19.59056682184540    2.06675e+02   7.32396e-02 
+   @DF-ROHF iter   2:  -138.73485173606252   -1.19144e+02   1.05669e-01 DIIS
+   @DF-ROHF iter   3:  -207.40623272148841   -6.86714e+01   6.12163e-02 DIIS
+   @DF-ROHF iter   4:  -214.60363486369852   -7.19740e+00   4.19009e-02 DIIS
+   @DF-ROHF iter   5:  -217.93413900443906   -3.33050e+00   3.35707e-02 DIIS
+   @DF-ROHF iter   6:  -219.68873475835130   -1.75460e+00   2.10722e-02 DIIS
+   @DF-ROHF iter   7:  -220.54311859491003   -8.54384e-01   7.46108e-03 DIIS
+   @DF-ROHF iter   8:  -220.64346232645039   -1.00344e-01   3.91608e-03 DIIS
+   @DF-ROHF iter   9:  -220.68154750392324   -3.80852e-02   9.26723e-04 DIIS
+   @DF-ROHF iter  10:  -220.68741685650122   -5.86935e-03   5.44387e-04 DIIS
+   @DF-ROHF iter  11:  -220.69162590748272   -4.20905e-03   4.50059e-04 DIIS
+   @DF-ROHF iter  12:  -220.69530880663535   -3.68290e-03   1.68238e-04 DIIS
+   @DF-ROHF iter  13:  -220.69532811272569   -1.93061e-05   8.71426e-05 DIIS
+   @DF-ROHF iter  14:  -220.69542258683623   -9.44741e-05   5.83679e-05 DIIS
+   @DF-ROHF iter  15:  -220.69544240432140   -1.98175e-05   1.14682e-05 DIIS
+   @DF-ROHF iter  16:  -220.69544436354829   -1.95923e-06   1.20701e-06 DIIS
+   @DF-ROHF iter  17:  -220.69544437215870   -8.61041e-09   6.78576e-07 DIIS
+   @DF-ROHF iter  18:  -220.69544437776682   -5.60811e-09   2.83691e-07 DIIS
+   @DF-ROHF iter  19:  -220.69544437920433   -1.43751e-09   1.36134e-07 DIIS
+   @DF-ROHF iter  20:  -220.69544437947280   -2.68471e-10   5.67266e-08 DIIS
+   @DF-ROHF iter  21:  -220.69544437951004   -3.72324e-11   6.18899e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -273,24 +273,24 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
   Energy converged.
 
-  @DF-ROHF Final Energy:  -220.69544437951851
+  @DF-ROHF Final Energy:  -220.69544437951004
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             36.4849995834004019
-    One-Electron Energy =                -379.0902252002433670
-    Two-Electron Energy =                 121.9097812373244949
+    One-Electron Energy =                -379.0902245841963918
+    Two-Electron Energy =                 121.9097806212859609
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -220.6954443795184773
+    Total Energy =                       -220.6954443795100360
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -298,34 +298,32 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:   -48.6323
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    47.7148
+     X:    -0.0000      Y:     0.0000      Z:    47.7148
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.9175     Total:     0.9175
+     X:    -0.0000      Y:     0.0000      Z:    -0.9175     Total:     0.9175
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -2.3320     Total:     2.3320
+     X:    -0.0000      Y:     0.0000      Z:    -2.3320     Total:     2.3320
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:11 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:02 2016
 Module time:
-	user time   =       6.59 seconds =       0.11 minutes
+	user time   =       1.58 seconds =       0.03 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.59 seconds =       0.11 minutes
+	user time   =       1.58 seconds =       0.03 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:11 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:02 2016
 
 
          ---------------------------------------------------------
@@ -390,9 +388,6 @@ Total time:
     Total      54      54       7       6       6       1
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -425,23 +420,22 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:   -96.38565148608113   -9.63857e+01   0.00000e+00 
-   @DF-ROHF iter   1:   -34.18150708059093    6.22041e+01   6.09172e-01 
-   @DF-ROHF iter   2:   -81.34696434514784   -4.71655e+01   1.34327e-01 DIIS
-   @DF-ROHF iter   3:   -84.19475591744875   -2.84779e+00   1.20296e-01 DIIS
-   @DF-ROHF iter   4:   -91.73275645985802   -7.53800e+00   3.67896e-02 DIIS
-   @DF-ROHF iter   5:   -92.00607284696864   -2.73316e-01   2.11372e-02 DIIS
-   @DF-ROHF iter   6:   -92.19141771152172   -1.85345e-01   2.68259e-03 DIIS
-   @DF-ROHF iter   7:   -92.19831330579208   -6.89559e-03   1.25687e-03 DIIS
-   @DF-ROHF iter   8:   -92.19882149055879   -5.08185e-04   8.42026e-04 DIIS
-   @DF-ROHF iter   9:   -92.19911246492657   -2.90974e-04   2.04523e-04 DIIS
-   @DF-ROHF iter  10:   -92.19915339480779   -4.09299e-05   5.47411e-05 DIIS
-   @DF-ROHF iter  11:   -92.19915821071537   -4.81591e-06   1.21348e-05 DIIS
-   @DF-ROHF iter  12:   -92.19915887245290   -6.61738e-07   3.69947e-06 DIIS
-   @DF-ROHF iter  13:   -92.19915889501674   -2.25638e-08   5.36840e-07 DIIS
-   @DF-ROHF iter  14:   -92.19915889595237   -9.35628e-10   1.06077e-07 DIIS
-   @DF-ROHF iter  15:   -92.19915889597459   -2.22258e-11   1.70026e-08 DIIS
-   @DF-ROHF iter  16:   -92.19915889597519   -5.96856e-13   4.84523e-09 DIIS
+   @DF-ROHF iter   0:   -96.34367515841173   -9.63437e+01   0.00000e+00 
+   @DF-ROHF iter   1:   -34.18150708052019    6.21622e+01   5.27898e-02 
+   @DF-ROHF iter   2:   -81.34696434513923   -4.71655e+01   4.39067e-02 DIIS
+   @DF-ROHF iter   3:   -90.98242896551977   -9.63546e+00   2.23093e-02 DIIS
+   @DF-ROHF iter   4:   -92.14517330460858   -1.16274e+00   3.93419e-03 DIIS
+   @DF-ROHF iter   5:   -92.18460042599371   -3.94271e-02   1.75628e-03 DIIS
+   @DF-ROHF iter   6:   -92.19363178571449   -9.03136e-03   4.98352e-04 DIIS
+   @DF-ROHF iter   7:   -92.19684754503764   -3.21576e-03   3.54952e-04 DIIS
+   @DF-ROHF iter   8:   -92.19899823365834   -2.15069e-03   1.34645e-04 DIIS
+   @DF-ROHF iter   9:   -92.19914657591772   -1.48342e-04   5.64719e-05 DIIS
+   @DF-ROHF iter  10:   -92.19915745023148   -1.08743e-05   1.70202e-05 DIIS
+   @DF-ROHF iter  11:   -92.19915869423765   -1.24401e-06   4.81751e-06 DIIS
+   @DF-ROHF iter  12:   -92.19915889461198   -2.00374e-07   4.03012e-07 DIIS
+   @DF-ROHF iter  13:   -92.19915889590058   -1.28860e-09   9.25355e-08 DIIS
+   @DF-ROHF iter  14:   -92.19915889595610   -5.55218e-11   3.53625e-08 DIIS
+   @DF-ROHF iter  15:   -92.19915889597057   -1.44667e-11   3.65897e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -483,24 +477,24 @@ Total time:
 
   Energy converged.
 
-  @DF-ROHF Final Energy:   -92.19915889597519
+  @DF-ROHF Final Energy:   -92.19915889597057
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             19.0045248868778280
-    One-Electron Energy =                -161.9020066578581520
-    Two-Electron Energy =                  50.6983228750051325
+    One-Electron Energy =                -161.9020065406837716
+    Two-Electron Energy =                  50.6983227578353706
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1991588959752022
+    Total Energy =                        -92.1991588959705837
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -517,25 +511,23 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.3092     Total:     2.3092
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:15 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:04 2016
 Module time:
-	user time   =       3.61 seconds =       0.06 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      10.22 seconds =       0.17 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       2.76 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:15 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:04 2016
 
 
          ---------------------------------------------------------
@@ -600,9 +592,6 @@ Total time:
     Total      54      54       5       5       5       0
    -------------------------------------------------------
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -635,18 +624,17 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:  -128.49636428155236   -1.28496e+02   0.00000e+00 
-   @DF-ROHF iter   1:    73.40859006053766    2.01905e+02   4.48456e-01 
-   @DF-ROHF iter   2:  -122.48295313204082   -1.95892e+02   1.46259e-01 DIIS
-   @DF-ROHF iter   3:  -127.84577536606012   -5.36282e+00   3.12278e-02 DIIS
-   @DF-ROHF iter   4:  -128.41833666336251   -5.72561e-01   1.36674e-02 DIIS
-   @DF-ROHF iter   5:  -128.49569879126048   -7.73621e-02   8.82296e-04 DIIS
-   @DF-ROHF iter   6:  -128.49636886814591   -6.70077e-04   2.00270e-04 DIIS
-   @DF-ROHF iter   7:  -128.49640207566134   -3.32075e-05   1.69954e-05 DIIS
-   @DF-ROHF iter   8:  -128.49640236818630   -2.92525e-07   1.59717e-06 DIIS
-   @DF-ROHF iter   9:  -128.49640237458561   -6.39932e-09   1.63596e-07 DIIS
-   @DF-ROHF iter  10:  -128.49640237462404   -3.84262e-11   1.27209e-08 DIIS
-   @DF-ROHF iter  11:  -128.49640237462441   -3.69482e-13   2.24778e-09 DIIS
+   @DF-ROHF iter   0:  -128.49636173523868   -1.28496e+02   0.00000e+00 
+   @DF-ROHF iter   1:    73.40859006058301    2.01905e+02   6.33529e-02 
+   @DF-ROHF iter   2:  -122.48295313203705   -1.95892e+02   4.65967e-02 DIIS
+   @DF-ROHF iter   3:  -126.66528150649505   -4.18233e+00   3.15905e-02 DIIS
+   @DF-ROHF iter   4:  -128.15442022636964   -1.48914e+00   1.43983e-02 DIIS
+   @DF-ROHF iter   5:  -128.49380473722297   -3.39385e-01   1.40399e-03 DIIS
+   @DF-ROHF iter   6:  -128.49637906187942   -2.57432e-03   9.49102e-05 DIIS
+   @DF-ROHF iter   7:  -128.49640226861297   -2.32067e-05   5.60248e-06 DIIS
+   @DF-ROHF iter   8:  -128.49640236813516   -9.95222e-08   1.27473e-06 DIIS
+   @DF-ROHF iter   9:  -128.49640237459991   -6.46475e-09   6.75641e-08 DIIS
+   @DF-ROHF iter  10:  -128.49640237462128   -2.13731e-11   9.18866e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -689,24 +677,24 @@ Total time:
 
   Energy converged.
 
-  @DF-ROHF Final Energy:  -128.49640237462441
+  @DF-ROHF Final Energy:  -128.49640237462128
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.4043763826013276
-    Two-Electron Energy =                  53.9079740079769181
+    One-Electron Energy =                -182.4043758831515447
+    Two-Electron Energy =                  53.9079735085302616
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -128.4964023746244095
+    Total Energy =                       -128.4964023746212831
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -714,36 +702,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:   -64.1023
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    64.1014
+     X:    -0.0000      Y:    -0.0000      Z:    64.1014
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0009     Total:     0.0009
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0009     Total:     0.0009
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.0022     Total:     0.0022
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0022     Total:     0.0022
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:18 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:05 2016
 Module time:
-	user time   =       3.18 seconds =       0.05 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.42 seconds =       0.22 minutes
+	user time   =       3.62 seconds =       0.06 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
+	total time  =          4 seconds =       0.07 minutes
+  Coupled induction not available for ROHF.
+  Proceeding with uncoupled induction only.
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               SAPT0               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-  Coupled induction not available for ROHF.
-  Proceeding with uncoupled induction only.
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:18 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:05 2016
 
 	 --------------------------------------------------------
 	                         SAPT                      
@@ -806,7 +792,7 @@ Total time:
     Integrals threads:           1
     Memory (MB):               857
     Algorithm:                Core
-    Integral Cache:           LOAD
+    Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
     Fitting Condition:       1E-12
 
@@ -819,18 +805,18 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-    Elst10,r            =    -0.000058186018 H
-    Exch10              =     0.000199071126 H
-    Exch10(S^2)         =     0.000198991015 H
+    Elst10,r            =    -0.000058185921 H
+    Exch10              =     0.000199071007 H
+    Exch10(S^2)         =     0.000198990896 H
 
-    Exch10(S^2) DM      =     0.000198991015 H
+    Exch10(S^2) DM      =     0.000198990896 H
 
-    Ind20,u (A<-B)      =    -0.000050314318 H
-    Ind20,u (B<-A)      =    -0.000015791285 H
-    Ind20,u             =    -0.000066105603 H
-    Exch-Ind20,u (A<-B) =     0.000053338290 H
-    Exch-Ind20,u (B<-A) =     0.000002142840 H
-    Exch-Ind20,u        =     0.000055481129 H
+    Ind20,u (A<-B)      =    -0.000050314140 H
+    Ind20,u (B<-A)      =    -0.000015791273 H
+    Ind20,u             =    -0.000066105414 H
+    Exch-Ind20,u (A<-B) =     0.000053338104 H
+    Exch-Ind20,u (B<-A) =     0.000002142833 H
+    Exch-Ind20,u        =     0.000055480936 H
 
   PT2 TERMS:
 
@@ -849,51 +835,58 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-    Disp20              =    -0.000109693744 H
-    Exch-Disp20         =     0.000005990705 H
+    Disp20              =    -0.000109693712 H
+    Exch-Disp20         =     0.000005990694 H
 
 
     SAPT Results  
   -----------------------------------------------------------------------
-    Electrostatics          -0.05818602 mH      -0.03651228 kcal mol^-1
-      Elst10,r              -0.05818602 mH      -0.03651228 kcal mol^-1
+    Electrostatics          -0.05818592 mH      -0.03651222 kcal mol^-1
+      Elst10,r              -0.05818592 mH      -0.03651222 kcal mol^-1
 
-    Exchange                 0.19907113 mH       0.12491902 kcal mol^-1
-      Exch10                 0.19907113 mH       0.12491902 kcal mol^-1
-      Exch10(S^2)            0.19899102 mH       0.12486875 kcal mol^-1
+    Exchange                 0.19907101 mH       0.12491895 kcal mol^-1
+      Exch10                 0.19907101 mH       0.12491895 kcal mol^-1
+      Exch10(S^2)            0.19899090 mH       0.12486868 kcal mol^-1
 
-    Induction               -0.02399403 mH      -0.01505648 kcal mol^-1
-      Ind20,u               -0.06610560 mH      -0.04148189 kcal mol^-1
-      Exch-Ind20,u           0.05548113 mH       0.03481494 kcal mol^-1
-      delta HF,u (2)        -0.01336955 mH       0.00000000 kcal mol^-1
+    Induction               -0.02399400 mH      -0.01505647 kcal mol^-1
+      Ind20,u               -0.06610541 mH      -0.04148178 kcal mol^-1
+      Exch-Ind20,u           0.05548094 mH       0.03481481 kcal mol^-1
+      delta HF,u (2)        -0.01336953 mH       0.00000000 kcal mol^-1
 
-    Dispersion              -0.10370304 mH      -0.06507464 kcal mol^-1
-      Disp20                -0.10969374 mH      -0.06883387 kcal mol^-1
-      Exch-Disp20            0.00599071 mH       0.00375922 kcal mol^-1
+    Dispersion              -0.10370302 mH      -0.06507463 kcal mol^-1
+      Disp20                -0.10969371 mH      -0.06883385 kcal mol^-1
+      Exch-Disp20            0.00599069 mH       0.00375922 kcal mol^-1
 
     Total HF                 0.11689108 mH       0.07335026 kcal mol^-1
-    Total SAPT0              0.01318804 mH       0.00827562 kcal mol^-1
+    Total SAPT0              0.01318806 mH       0.00827564 kcal mol^-1
 
     Oh all the money that e'er I had, I spent it in good company.
 
+    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY 
+             and in SAPT EXCH-IND20,R ENERGY 
 
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:20 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:06 2016
 Module time:
-	user time   =       1.74 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.16 seconds =       0.25 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       4.82 seconds =       0.08 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+	SAPT0 Eelst.......................................................PASSED
+	SAPT0 Eexch.......................................................PASSED
+	SAPT0 Eind........................................................PASSED
+	SAPT0 Edisp.......................................................PASSED
+	SAPT0 Etotal......................................................PASSED
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //              Dimer HF             //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:20 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:06 2016
 
 
          ---------------------------------------------------------
@@ -960,9 +953,6 @@ Total time:
 
   Starting with a DF guess...
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -995,25 +985,25 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:  -226.31992434701021   -2.26320e+02   0.00000e+00 
-   @DF-ROHF iter   1:   -21.86959482405053    2.04450e+02   3.80416e-01 
-   @DF-ROHF iter   2:  -137.48193132772582   -1.15612e+02   2.34779e-01 DIIS
-   @DF-ROHF iter   3:  -163.20920337982395   -2.57273e+01   2.51456e-01 DIIS
-   @DF-ROHF iter   4:  -220.43360325769896   -5.72244e+01   2.94022e-02 DIIS
-   @DF-ROHF iter   5:  -220.44685146859558   -1.32482e-02   3.14218e-02 DIIS
-   @DF-ROHF iter   6:  -220.66113974413315   -2.14288e-01   7.55079e-03 DIIS
-   @DF-ROHF iter   7:  -220.67689804021649   -1.57583e-02   3.03068e-03 DIIS
-   @DF-ROHF iter   8:  -220.68335107823930   -6.45304e-03   8.73610e-04 DIIS
-   @DF-ROHF iter   9:  -220.68490921498488   -1.55814e-03   4.83838e-04 DIIS
-   @DF-ROHF iter  10:  -220.68550923461936   -6.00020e-04   1.22512e-04 DIIS
-   @DF-ROHF iter  11:  -220.68556118224512   -5.19476e-05   6.36001e-05 DIIS
-   @DF-ROHF iter  12:  -220.68556308570930   -1.90346e-06   1.01515e-05 DIIS
-   @DF-ROHF iter  13:  -220.68556314629893   -6.05896e-08   1.35784e-06 DIIS
-   @DF-ROHF iter  14:  -220.68556314964229   -3.34336e-09   4.60093e-07 DIIS
-   @DF-ROHF iter  15:  -220.68556315013421   -4.91923e-10   2.24771e-07 DIIS
-   @DF-ROHF iter  16:  -220.68556315026359   -1.29376e-10   1.29876e-07 DIIS
-   @DF-ROHF iter  17:  -220.68556315031151   -4.79190e-11   7.66602e-08 DIIS
-   @DF-ROHF iter  18:  -220.68556315032038   -8.86757e-12   8.00150e-09 DIIS
+   @DF-ROHF iter   0:  -225.82668816924149   -2.25827e+02   0.00000e+00 
+   @DF-ROHF iter   1:   -21.86959482400523    2.03957e+02   9.05672e-02 
+   @DF-ROHF iter   2:  -137.48193132779707   -1.15612e+02   1.31791e-01 DIIS
+   @DF-ROHF iter   3:  -206.47881517421155   -6.89969e+01   7.26571e-02 DIIS
+   @DF-ROHF iter   4:  -215.36911952263614   -8.89030e+00   5.87627e-02 DIIS
+   @DF-ROHF iter   5:  -217.77115906030323   -2.40204e+00   4.57815e-02 DIIS
+   @DF-ROHF iter   6:  -219.21264365391710   -1.44148e+00   3.29993e-02 DIIS
+   @DF-ROHF iter   7:  -220.41053067511507   -1.19789e+00   1.46686e-02 DIIS
+   @DF-ROHF iter   8:  -220.68131387141631   -2.70783e-01   1.71029e-03 DIIS
+   @DF-ROHF iter   9:  -220.68430171097015   -2.98784e-03   7.98232e-04 DIIS
+   @DF-ROHF iter  10:  -220.68536077018973   -1.05906e-03   3.40401e-04 DIIS
+   @DF-ROHF iter  11:  -220.68554124168611   -1.80471e-04   7.42403e-05 DIIS
+   @DF-ROHF iter  12:  -220.68555981691196   -1.85752e-05   2.31913e-05 DIIS
+   @DF-ROHF iter  13:  -220.68556293953901   -3.12263e-06   8.93061e-06 DIIS
+   @DF-ROHF iter  14:  -220.68556314299133   -2.03452e-07   9.06347e-07 DIIS
+   @DF-ROHF iter  15:  -220.68556314836178   -5.37045e-09   3.72060e-07 DIIS
+   @DF-ROHF iter  16:  -220.68556314960227   -1.24049e-09   2.22364e-07 DIIS
+   @DF-ROHF iter  17:  -220.68556315028593   -6.83656e-10   4.77276e-08 DIIS
+   @DF-ROHF iter  18:  -220.68556315031265   -2.67164e-11   6.13397e-09 DIIS
 
   DF guess converged.
 
@@ -1027,13 +1017,13 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @ROHF iter  19:  -220.68577089843996   -2.07748e-04   2.78684e-05 DIIS
-   @ROHF iter  20:  -220.68577103292910   -1.34489e-07   5.56505e-06 DIIS
-   @ROHF iter  21:  -220.68577103865846   -5.72936e-09   1.17764e-06 DIIS
-   @ROHF iter  22:  -220.68577103903561   -3.77156e-10   5.89633e-07 DIIS
-   @ROHF iter  23:  -220.68577103912060   -8.49809e-11   1.87598e-07 DIIS
-   @ROHF iter  24:  -220.68577103913759   -1.69962e-11   1.76926e-08 DIIS
-   @ROHF iter  25:  -220.68577103913816   -5.68434e-13   8.29424e-09 DIIS
+   @ROHF iter  19:  -220.68577089843734   -2.07748e-04   9.02097e-06 DIIS
+   @ROHF iter  20:  -220.68577103292898   -1.34492e-07   2.01331e-06 DIIS
+   @ROHF iter  21:  -220.68577103866488   -5.73590e-09   4.70159e-07 DIIS
+   @ROHF iter  22:  -220.68577103900753   -3.42652e-10   2.91949e-07 DIIS
+   @ROHF iter  23:  -220.68577103912753   -1.19996e-10   8.09082e-08 DIIS
+   @ROHF iter  24:  -220.68577103913816   -1.06297e-11   1.01882e-08 DIIS
+   @ROHF iter  25:  -220.68577103913867   -5.11591e-13   4.72813e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1071,24 +1061,24 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -220.68577103913816
+  @ROHF Final Energy:  -220.68577103913867
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             36.4849995834004019
-    One-Electron Energy =                -379.3717442690451662
-    Two-Electron Energy =                 122.2009736465066112
+    One-Electron Energy =                -379.3717441973025188
+    Two-Electron Energy =                 122.2009735747634522
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -220.6857710391381602
+    Total Energy =                       -220.6857710391386718
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1105,25 +1095,23 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.2123     Total:     2.2123
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:28 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:10 2016
 Module time:
-	user time   =       8.62 seconds =       0.14 minutes
+	user time   =       4.03 seconds =       0.07 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      23.80 seconds =       0.40 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =       8.87 seconds =       0.15 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:28 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:10 2016
 
 
          ---------------------------------------------------------
@@ -1190,9 +1178,6 @@ Total time:
 
   Starting with a DF guess...
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -1225,22 +1210,21 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:   -96.40083179177073   -9.64008e+01   0.00000e+00 
-   @DF-ROHF iter   1:   -35.60845594559100    6.07924e+01   7.70863e-01 
-   @DF-ROHF iter   2:   -81.53304143488562   -4.59246e+01   1.62092e-01 DIIS
-   @DF-ROHF iter   3:   -83.49283459122958   -1.95979e+00   1.47307e-01 DIIS
-   @DF-ROHF iter   4:   -91.73809231938313   -8.24526e+00   4.74508e-02 DIIS
-   @DF-ROHF iter   5:   -91.93673150376864   -1.98639e-01   3.17045e-02 DIIS
-   @DF-ROHF iter   6:   -92.14365169113412   -2.06920e-01   1.23550e-02 DIIS
-   @DF-ROHF iter   7:   -92.19518698540882   -5.15353e-02   1.38831e-03 DIIS
-   @DF-ROHF iter   8:   -92.19575186032193   -5.64875e-04   1.46997e-03 DIIS
-   @DF-ROHF iter   9:   -92.19611482735715   -3.62967e-04   5.62016e-04 DIIS
-   @DF-ROHF iter  10:   -92.19620684554275   -9.20182e-05   5.90175e-05 DIIS
-   @DF-ROHF iter  11:   -92.19621456508686   -7.71954e-06   1.93471e-05 DIIS
-   @DF-ROHF iter  12:   -92.19621581430054   -1.24921e-06   3.25953e-06 DIIS
-   @DF-ROHF iter  13:   -92.19621582514399   -1.08435e-08   3.42525e-07 DIIS
-   @DF-ROHF iter  14:   -92.19621582529702   -1.53022e-10   3.95723e-08 DIIS
-   @DF-ROHF iter  15:   -92.19621582529795   -9.37916e-13   3.60574e-09 DIIS
+   @DF-ROHF iter   0:   -95.90189118405043   -9.59019e+01   0.00000e+00 
+   @DF-ROHF iter   1:   -35.60845594557014    6.02934e+01   6.50535e-02 
+   @DF-ROHF iter   2:   -81.53304143488265   -4.59246e+01   5.37374e-02 DIIS
+   @DF-ROHF iter   3:   -91.05277014797889   -9.51973e+00   2.79919e-02 DIIS
+   @DF-ROHF iter   4:   -92.09594735163130   -1.04318e+00   7.74063e-03 DIIS
+   @DF-ROHF iter   5:   -92.16779806653831   -7.18507e-02   4.22454e-03 DIIS
+   @DF-ROHF iter   6:   -92.19210330194950   -2.43052e-02   7.39140e-04 DIIS
+   @DF-ROHF iter   7:   -92.19475720161539   -2.65390e-03   3.82978e-04 DIIS
+   @DF-ROHF iter   8:   -92.19608089982101   -1.32370e-03   1.45937e-04 DIIS
+   @DF-ROHF iter   9:   -92.19621375203270   -1.32852e-04   3.29782e-05 DIIS
+   @DF-ROHF iter  10:   -92.19621558025463   -1.82822e-06   1.21024e-05 DIIS
+   @DF-ROHF iter  11:   -92.19621582203929   -2.41785e-07   1.35961e-06 DIIS
+   @DF-ROHF iter  12:   -92.19621582518833   -3.14904e-09   2.30328e-07 DIIS
+   @DF-ROHF iter  13:   -92.19621582527667   -8.83347e-11   4.89399e-08 DIIS
+   @DF-ROHF iter  14:   -92.19621582529335   -1.66835e-11   5.37301e-09 DIIS
 
   DF guess converged.
 
@@ -1254,13 +1238,12 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @ROHF iter  16:   -92.19643352782327   -2.17703e-04   2.79385e-05 DIIS
-   @ROHF iter  17:   -92.19643366206233   -1.34239e-07   5.78863e-06 DIIS
-   @ROHF iter  18:   -92.19643366778138   -5.71904e-09   1.23827e-06 DIIS
-   @ROHF iter  19:   -92.19643366815579   -3.74413e-10   5.91816e-07 DIIS
-   @ROHF iter  20:   -92.19643366823817   -8.23803e-11   1.97567e-07 DIIS
-   @ROHF iter  21:   -92.19643366825568   -1.75078e-11   1.78165e-08 DIIS
-   @ROHF iter  22:   -92.19643366825628   -5.96856e-13   7.69081e-09 DIIS
+   @ROHF iter  15:   -92.19643352782495   -2.17703e-04   9.01270e-06 DIIS
+   @ROHF iter  16:   -92.19643366206255   -1.34238e-07   2.00604e-06 DIIS
+   @ROHF iter  17:   -92.19643366778504   -5.72250e-09   4.66654e-07 DIIS
+   @ROHF iter  18:   -92.19643366812525   -3.40208e-10   2.91985e-07 DIIS
+   @ROHF iter  19:   -92.19643366824563   -1.20380e-10   7.93788e-08 DIIS
+   @ROHF iter  20:   -92.19643366825588   -1.02460e-11   9.01667e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1298,24 +1281,24 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19643366825628
+  @ROHF Final Energy:   -92.19643366825588
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             19.0045248868778280
-    One-Electron Energy =                -161.9736444653657372
-    Two-Electron Energy =                  50.7726859102316226
+    One-Electron Energy =                -161.9736440442524099
+    Two-Electron Energy =                  50.7726854891187003
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1964336682563044
+    Total Energy =                        -92.1964336682558923
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1332,25 +1315,23 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.1747     Total:     2.1747
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:36 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:14 2016
 Module time:
-	user time   =       7.42 seconds =       0.12 minutes
+	user time   =       3.58 seconds =       0.06 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      31.24 seconds =       0.52 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =         32 seconds =       0.53 minutes
+	user time   =      12.45 seconds =       0.21 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         13 seconds =       0.22 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:36 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:14 2016
 
 
          ---------------------------------------------------------
@@ -1417,9 +1398,6 @@ Total time:
 
   Starting with a DF guess...
 
- OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
-         stored in file 35.
-
   ==> Integral Setup <==
 
   ==> DFJK: Density-Fitted J/K Matrices <==
@@ -1452,17 +1430,17 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-ROHF iter   0:  -128.48878677405759   -1.28489e+02   0.00000e+00 
-   @DF-ROHF iter   1:    71.85611233028249    2.00345e+02   5.63940e-01 
-   @DF-ROHF iter   2:  -122.76505400348292   -1.94621e+02   1.75844e-01 DIIS
-   @DF-ROHF iter   3:  -128.30964941238341   -5.54460e+00   2.31977e-02 DIIS
-   @DF-ROHF iter   4:  -128.47866486292449   -1.69015e-01   5.69956e-03 DIIS
-   @DF-ROHF iter   5:  -128.48931587225002   -1.06510e-02   4.91002e-04 DIIS
-   @DF-ROHF iter   6:  -128.48939868448568   -8.28122e-05   6.87826e-05 DIIS
-   @DF-ROHF iter   7:  -128.48940039972578   -1.71524e-06   7.52134e-06 DIIS
-   @DF-ROHF iter   8:  -128.48940041838489   -1.86591e-08   2.83577e-07 DIIS
-   @DF-ROHF iter   9:  -128.48940041842897   -4.40821e-11   4.75340e-08 DIIS
-   @DF-ROHF iter  10:  -128.48940041843065   -1.67688e-12   2.24709e-09 DIIS
+   @DF-ROHF iter   0:  -128.48878449753158   -1.28489e+02   0.00000e+00 
+   @DF-ROHF iter   1:    71.85611233029501    2.00345e+02   7.75566e-02 
+   @DF-ROHF iter   2:  -122.76505400347905   -1.94621e+02   5.46931e-02 DIIS
+   @DF-ROHF iter   3:  -126.82759275975644   -4.06254e+00   3.82268e-02 DIIS
+   @DF-ROHF iter   4:  -128.13581060612924   -1.30822e+00   1.91570e-02 DIIS
+   @DF-ROHF iter   5:  -128.48820217154636   -3.52392e-01   1.21662e-03 DIIS
+   @DF-ROHF iter   6:  -128.48939651128228   -1.19434e-03   6.11420e-05 DIIS
+   @DF-ROHF iter   7:  -128.48940040129614   -3.89001e-06   3.00454e-06 DIIS
+   @DF-ROHF iter   8:  -128.48940041804534   -1.67492e-08   5.23709e-07 DIIS
+   @DF-ROHF iter   9:  -128.48940041842394   -3.78606e-10   5.90278e-08 DIIS
+   @DF-ROHF iter  10:  -128.48940041842863   -4.68958e-12   4.08907e-09 DIIS
 
   DF guess converged.
 
@@ -1476,10 +1454,10 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @ROHF iter  11:  -128.48938910717209    1.13113e-05   3.10989e-06 DIIS
-   @ROHF iter  12:  -128.48938910732889   -1.56803e-10   2.99845e-07 DIIS
-   @ROHF iter  13:  -128.48938910735004   -2.11458e-11   1.34194e-07 DIIS
-   @ROHF iter  14:  -128.48938910735615   -6.11067e-12   6.76294e-09 DIIS
+   @ROHF iter  11:  -128.48938910717249    1.13113e-05   4.06960e-07 DIIS
+   @ROHF iter  12:  -128.48938910732920   -1.56717e-10   1.83505e-07 DIIS
+   @ROHF iter  13:  -128.48938910735615   -2.69438e-11   1.87091e-08 DIIS
+   @ROHF iter  14:  -128.48938910735637   -2.27374e-13   4.00311e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -1518,24 +1496,24 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -128.48938910735615
+  @ROHF Final Energy:  -128.48938910735637
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.6042070952001097
-    Two-Electron Energy =                  54.1148179878439564
+    One-Electron Energy =                -182.6042076159587850
+    Two-Electron Energy =                  54.1148185086024114
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -128.4893891073561463
+    Total Energy =                       -128.4893891073563736
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  Saving occupied orbitals to File 180.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1543,36 +1521,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:   -64.1023
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    64.0937
+     X:    -0.0000      Y:     0.0000      Z:    64.0937
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.0086     Total:     0.0086
+     X:    -0.0000      Y:     0.0000      Z:    -0.0086     Total:     0.0086
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:    -0.0218     Total:     0.0218
+     X:    -0.0000      Y:     0.0000      Z:    -0.0218     Total:     0.0218
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:41 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:16 2016
 Module time:
-	user time   =       4.96 seconds =       0.08 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.57 seconds =       0.04 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      36.22 seconds =       0.60 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      15.02 seconds =       0.25 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
+  Coupled induction not available for ROHF.
+  Proceeding with uncoupled induction only.
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               SAPT0               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-  Coupled induction not available for ROHF.
-  Proceeding with uncoupled induction only.
 
-*** tstart() called on linux-v73m.site
-*** at Fri Sep 18 22:02:41 2015
+*** tstart() called on ds3
+*** at Tue Oct 11 17:41:16 2016
 
 	 --------------------------------------------------------
 	                         SAPT                      
@@ -1634,18 +1610,18 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-    Elst10,r            =    -0.000120243413 H
-    Exch10              =     0.000189487261 H
-    Exch10(S^2)         =     0.000189418693 H
+    Elst10,r            =    -0.000120243377 H
+    Exch10              =     0.000189487232 H
+    Exch10(S^2)         =     0.000189418664 H
 
-    Exch10(S^2) DM      =     0.000189418693 H
+    Exch10(S^2) DM      =     0.000189418664 H
 
-    Ind20,u (A<-B)      =    -0.000041799053 H
-    Ind20,u (B<-A)      =    -0.000013081401 H
-    Ind20,u             =    -0.000054880454 H
-    Exch-Ind20,u (A<-B) =     0.000043574970 H
+    Ind20,u (A<-B)      =    -0.000041799012 H
+    Ind20,u (B<-A)      =    -0.000013081395 H
+    Ind20,u             =    -0.000054880407 H
+    Exch-Ind20,u (A<-B) =     0.000043574926 H
     Exch-Ind20,u (B<-A) =     0.000002534554 H
-    Exch-Ind20,u        =     0.000046109524 H
+    Exch-Ind20,u        =     0.000046109480 H
 
   PT2 TERMS:
 
@@ -1664,42 +1640,49 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-    Disp20              =    -0.000081244090 H
-    Exch-Disp20         =     0.000005645649 H
+    Disp20              =    -0.000081244101 H
+    Exch-Disp20         =     0.000005645648 H
 
 
     SAPT Results  
   -----------------------------------------------------------------------
-    Electrostatics          -0.12024341 mH      -0.07545388 kcal mol^-1
-      Elst10,r              -0.12024341 mH      -0.07545388 kcal mol^-1
+    Electrostatics          -0.12024338 mH      -0.07545386 kcal mol^-1
+      Elst10,r              -0.12024338 mH      -0.07545386 kcal mol^-1
 
-    Exchange                 0.18948726 mH       0.11890506 kcal mol^-1
-      Exch10                 0.18948726 mH       0.11890506 kcal mol^-1
-      Exch10(S^2)            0.18941869 mH       0.11886203 kcal mol^-1
+    Exchange                 0.18948723 mH       0.11890504 kcal mol^-1
+      Exch10                 0.18948723 mH       0.11890504 kcal mol^-1
+      Exch10(S^2)            0.18941866 mH       0.11886201 kcal mol^-1
 
-    Induction               -0.01750737 mH      -0.01098604 kcal mol^-1
-      Ind20,u               -0.05488045 mH      -0.03443801 kcal mol^-1
-      Exch-Ind20,u           0.04610952 mH       0.02893416 kcal mol^-1
-      delta HF,u (2)        -0.00873644 mH       0.00000000 kcal mol^-1
+    Induction               -0.01750738 mH      -0.01098605 kcal mol^-1
+      Ind20,u               -0.05488041 mH      -0.03443798 kcal mol^-1
+      Exch-Ind20,u           0.04610948 mH       0.02893414 kcal mol^-1
+      delta HF,u (2)        -0.00873645 mH       0.00000000 kcal mol^-1
 
-    Dispersion              -0.07559844 mH      -0.04743874 kcal mol^-1
-      Disp20                -0.08124409 mH      -0.05098144 kcal mol^-1
+    Dispersion              -0.07559845 mH      -0.04743875 kcal mol^-1
+      Disp20                -0.08124410 mH      -0.05098145 kcal mol^-1
       Exch-Disp20            0.00564565 mH       0.00354270 kcal mol^-1
 
     Total HF                 0.05173647 mH       0.03246513 kcal mol^-1
-    Total SAPT0             -0.02386197 mH      -0.01497361 kcal mol^-1
+    Total SAPT0             -0.02386198 mH      -0.01497362 kcal mol^-1
 
     Oh all the money that e'er I had, I spent it in good company.
 
+    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY 
+             and in SAPT EXCH-IND20,R ENERGY 
 
-*** tstop() called on linux-v73m.site at Fri Sep 18 22:02:44 2015
+*** tstop() called on ds3 at Tue Oct 11 17:41:18 2016
 Module time:
-	user time   =       2.65 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.51 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      38.88 seconds =       0.65 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =         40 seconds =       0.67 minutes
+	user time   =      16.53 seconds =       0.28 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
+	SAPT0 Eelst.......................................................PASSED
+	SAPT0 Eexch.......................................................PASSED
+	SAPT0 Eind........................................................PASSED
+	SAPT0 Edisp.......................................................PASSED
+	SAPT0 Etotal......................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

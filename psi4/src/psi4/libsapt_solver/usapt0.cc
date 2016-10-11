@@ -318,6 +318,11 @@ void USAPT0::print_trailer()
         Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
         Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
     } else {
+        // We still store in the R variants so the PsiVars machinery works.
+        outfile->Printf("    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY \n");
+        outfile->Printf("             and in SAPT EXCH-IND20,R ENERGY \n");
+        Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,u"];
+        Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,u"];
         Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
         Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
     }
