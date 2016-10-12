@@ -2873,7 +2873,7 @@ def run_sapt(name, **kwargs):
 
     scf_ref = psi4.get_option('SCF', 'REFERENCE')
     if scf_ref != 'RHF':
-        if name not in ['sapt0', 'ssapt0']:
+        if name not in ['sapt0']:
             raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
     nfrag = sapt_dimer.nfragments()

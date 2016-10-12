@@ -1,7 +1,12 @@
 /*
- *@BEGIN LICENSE
+ * @BEGIN LICENSE
  *
- * PSI4: an ab initio quantum chemistry software package
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +22,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *@END LICENSE
+ * @END LICENSE
  */
 
 #include "usapt0.h"
@@ -65,9 +70,6 @@ USAPT0::USAPT0(SharedWavefunction d,
     primary_A_ = mA->basisset();
     primary_B_ = mB->basisset();
 
-    // Scaling factor is not used in the code, but if we don't set
-    // the SAPT_ALPHA variable correctly the PsiVars are not
-    // computed correctly (i.e. they become 0 instead of being scaled)
     if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
         exch_scale_alpha_ = 0.0;
     } else if (options_.get_str("EXCH_SCALE_ALPHA") == "TRUE") {
@@ -241,105 +243,179 @@ void USAPT0::print_header() const
 
 void USAPT0::print_trailer()
 {
+  // Note: sSAPT0 scaling is not implemented here since it was
+  // never tested on open-shell systems.
+
+  // The tolerance to scale exchange energies, i.e. if E_exch10 is
+  // less than the scaling tolerance, we do not scale.
+  double scaling_tol = 1.0e-5;
+
+  double sapt_Xscal = ( energies_["Exch10"] < scaling_tol ? 1.0 : energies_["Exch10"] / energies_["Exch10(S^2)"] );
+  if(exch_scale_alpha_ != 0.0) {
+      sapt_Xscal = pow(sapt_Xscal, exch_scale_alpha_);
+  }
+
+  // Now we compute everything once without scaling, and then with scaling
+  // if requested.
+  std::vector<double> Xscal;
+  Xscal.push_back(1.0);
+  if(exch_scale_alpha_ != 0.0)
+      Xscal.push_back(sapt_Xscal);
+
+  // The main loop, computes everything with all scaling factors in
+  // the Xscal vector. Only exports variables once, for the scaling factor
+  // of 1.0.
+  std::vector<double>::iterator scal_it;
+  for(scal_it = Xscal.begin(); scal_it != Xscal.end(); ++scal_it) {
+
     energies_["delta HF,r (2)"] = 0.0;
     energies_["delta HF,u (2)"] = 0.0;
     if (energies_["HF"] != 0.0) {
         if (coupled_ind_) {
-          energies_["delta HF,r (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - energies_["Exch-Ind20,r"];
+          energies_["delta HF,r (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - *scal_it * energies_["Exch-Ind20,r"];
         } else {
-          energies_["delta HF,u (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,u"] - energies_["Exch-Ind20,u"];
+          energies_["delta HF,u (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,u"] - *scal_it * energies_["Exch-Ind20,u"];
         }
     }
-
     energies_["Electrostatics"] = energies_["Elst10,r"];
     energies_["Exchange"]       = energies_["Exch10"];
     if (coupled_ind_) {
-        energies_["Induction"]      = energies_["Ind20,r"] + energies_["Exch-Ind20,r"] + energies_["delta HF,r (2)"];
+        energies_["Induction"]      = energies_["Ind20,r"] + *scal_it * energies_["Exch-Ind20,r"] + energies_["delta HF,r (2)"];
     } else {
-        energies_["Induction"]      = energies_["Ind20,u"] + energies_["Exch-Ind20,u"] + energies_["delta HF,u (2)"];
+        energies_["Induction"]      = energies_["Ind20,u"] + *scal_it * energies_["Exch-Ind20,u"] + energies_["delta HF,u (2)"];
     }
-    energies_["Dispersion"]     = energies_["Disp20"] + energies_["Exch-Disp20"];
+    energies_["Dispersion"]     = energies_["Disp20"] + *scal_it * energies_["Exch-Disp20"];
     energies_["SAPT"]           = energies_["Electrostatics"] + energies_["Exchange"] + energies_["Induction"] + energies_["Dispersion"];
 
-    outfile->Printf("\n    SAPT Results  \n");
-    outfile->Printf("  -----------------------------------------------------------------------\n");
-    outfile->Printf("    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Electrostatics"]*1000.0,energies_["Electrostatics"]*pc_hartree2kcalmol);
-    outfile->Printf("      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      energies_["Elst10,r"]*1000.0,energies_["Elst10,r"]*pc_hartree2kcalmol);
-    outfile->Printf("    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Exchange"]*1000.0,energies_["Exchange"]*pc_hartree2kcalmol);
-    outfile->Printf("      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Exch10"]*1000.0,energies_["Exch10"]*pc_hartree2kcalmol);
-    outfile->Printf("      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      energies_["Exch10(S^2)"]*1000.0,energies_["Exch10(S^2)"]*pc_hartree2kcalmol);
-    outfile->Printf("    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Induction"]*1000.0,energies_["Induction"]*pc_hartree2kcalmol);
-    if (coupled_ind_) {
-        outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
-          energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
-        outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
-          energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
-        outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
-          energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    if(scal_it == Xscal.begin()) {
+        outfile->Printf("\n    SAPT Results \n");
     } else {
-        outfile->Printf("      Ind20,u          %16.8lf mH %16.8lf kcal mol^-1\n",
-          energies_["Ind20,u"]*1000.0,energies_["Ind20,u"]*pc_hartree2kcalmol);
-        outfile->Printf("      Exch-Ind20,u     %16.8lf mH %16.8lf kcal mol^-1\n",
-          energies_["Exch-Ind20,u"]*1000.0,energies_["Exch-Ind20,u"]*pc_hartree2kcalmol);
-        outfile->Printf("      delta HF,u (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
-          energies_["delta HF,u (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+        outfile->Printf("\n    SAPT Results ==> ALL S2 TERMS SCALED (see Manual) <== \n");
+        outfile->Printf("\n    Scaling factor (Exch10/Exch10(S^2))^{Alpha} = %12.6f\n", *scal_it);
+        outfile->Printf("    with Alpha = %12.6f \n", exch_scale_alpha_);
     }
-    outfile->Printf("    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Dispersion"]*1000.0,energies_["Dispersion"]*pc_hartree2kcalmol);
-    outfile->Printf("      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["Disp20"]*1000.0,energies_["Disp20"]*pc_hartree2kcalmol);
-    outfile->Printf("      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-      energies_["Exch-Disp20"]*1000.0,energies_["Exch-Disp20"]*pc_hartree2kcalmol);
-
-    outfile->Printf("    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["HF"]*1000.0,energies_["HF"]*pc_hartree2kcalmol);
-    outfile->Printf("    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
-      energies_["SAPT"]*1000.0,energies_["SAPT"]*pc_hartree2kcalmol);
-    outfile->Printf("\n");
-
-    outfile->Printf( "    Oh all the money that e'er I had, I spent it in good company.\n");
-    outfile->Printf( "\n");
-
-    Process::environment.globals["SAPT ELST ENERGY"] = energies_["Electrostatics"];
-    Process::environment.globals["SAPT ELST10,R ENERGY"] = energies_["Elst10,r"];
-
-    Process::environment.globals["SAPT EXCH ENERGY"] = energies_["Exchange"];
-    Process::environment.globals["SAPT EXCH10 ENERGY"] = energies_["Exch10"];
-    Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = energies_["Exch10(S^2)"];
-
-    Process::environment.globals["SAPT IND ENERGY"] = energies_["Induction"];
+    std::string scaled = (scal_it != Xscal.begin() ? "sc." : "   ");
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["Electrostatics"] * 1000.0,
+      energies_["Electrostatics"] * pc_hartree2kcalmol,
+      energies_["Electrostatics"] * pc_hartree2kJmol);
+    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["Elst10,r"] * 1000.0,
+      energies_["Elst10,r"] * pc_hartree2kcalmol,
+      energies_["Elst10,r"] * pc_hartree2kJmol);
+    outfile->Printf("\n    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      energies_["Exchange"] * 1000.0,
+      energies_["Exchange"] * pc_hartree2kcalmol,
+      energies_["Exchange"] * pc_hartree2kJmol);
+    outfile->Printf("      Exch10                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["Exch10"] * 1000.0,
+      energies_["Exch10"] * pc_hartree2kcalmol,
+      energies_["Exch10"] * pc_hartree2kJmol);
+    outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["Exch10(S^2)"] * 1000.0,
+      energies_["Exch10(S^2)"] * pc_hartree2kcalmol,
+      energies_["Exch10(S^2)"] * pc_hartree2kJmol);
+    outfile->Printf("\n    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      energies_["Induction"] * 1000.0,
+      energies_["Induction"] * pc_hartree2kcalmol,
+      energies_["Induction"] * pc_hartree2kJmol);
     if (coupled_ind_) {
-        Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
-        Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
+        outfile->Printf("      Ind20,r                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          energies_["Ind20,r"] * 1000.0,
+          energies_["Ind20,r"] * pc_hartree2kcalmol,
+          energies_["Ind20,r"] * pc_hartree2kJmol);
+        outfile->Printf("      Exch-Ind20,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          *scal_it * energies_["Exch-Ind20,r"] * 1000.0,
+          *scal_it * energies_["Exch-Ind20,r"] * pc_hartree2kcalmol,
+          *scal_it * energies_["Exch-Ind20,r"] * pc_hartree2kJmol);
+        outfile->Printf("      delta HF,r (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          energies_["delta HF,r (2)"] * 1000.0,
+          energies_["delta HF,r (2)"] * pc_hartree2kcalmol,
+          energies_["delta HF,r (2)"] * pc_hartree2kJmol);
     } else {
-        // We still store in the R variants so the PsiVars machinery works.
-        outfile->Printf("    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY \n");
-        outfile->Printf("             and in SAPT EXCH-IND20,R ENERGY \n");
-        Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,u"];
-        Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,u"];
-        Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
-        Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
+        outfile->Printf("      Ind20,u                 %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          energies_["Ind20,u"] * 1000.0,
+          energies_["Ind20,u"] * pc_hartree2kcalmol,
+          energies_["Ind20,u"] * pc_hartree2kJmol);
+        outfile->Printf("      Exch-Ind20,u %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          *scal_it * energies_["Exch-Ind20,u"] * 1000.0,
+          *scal_it * energies_["Exch-Ind20,u"] * pc_hartree2kcalmol,
+          *scal_it * energies_["Exch-Ind20,u"] * pc_hartree2kJmol);
+        outfile->Printf("      delta HF,u (2) %3s      %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+          scaled.c_str(),
+          energies_["delta HF,u (2)"] * 1000.0,
+          energies_["delta HF,u (2)"] * pc_hartree2kcalmol,
+          energies_["delta HF,u (2)"] * pc_hartree2kJmol);
     }
-    Process::environment.globals["SAPT HF TOTAL ENERGY"] = energies_["HF"];
-    // Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
+    outfile->Printf("\n    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      energies_["Dispersion"] * 1000.0,
+      energies_["Dispersion"] * pc_hartree2kcalmol,
+      energies_["Dispersion"] * pc_hartree2kJmol);
+    outfile->Printf("      Disp20                  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["Disp20"] * 1000.0,
+      energies_["Disp20"] * pc_hartree2kcalmol,
+      energies_["Disp20"] * pc_hartree2kJmol);
+    outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      *scal_it * energies_["Exch-Disp20"] * 1000.0,
+      *scal_it * energies_["Exch-Disp20"] * pc_hartree2kcalmol,
+      *scal_it * energies_["Exch-Disp20"] * pc_hartree2kJmol);
 
-    Process::environment.globals["SAPT DISP ENERGY"] = energies_["Dispersion"];
-    Process::environment.globals["SAPT DISP20 ENERGY"] = energies_["Disp20"];
-    Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = energies_["Exch-Disp20"];
-    //Process::environment.globals["SAPT DISP20(OS) ENERGY"] = e_disp20_os_;
-    //Process::environment.globals["SAPT EXCH-DISP20(OS) ENERGY"] = e_exch_disp20_os_;
-    //Process::environment.globals["SAPT DISP20(SS) ENERGY"] = e_disp20_ss_;
-    //Process::environment.globals["SAPT EXCH-DISP20(SS) ENERGY"] = e_exch_disp20_ss_;
+    outfile->Printf("\n  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      energies_["HF"] * 1000.0,
+      energies_["HF"] * pc_hartree2kcalmol,
+      energies_["HF"] * pc_hartree2kJmol);
+    outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+      scaled.c_str(),
+      energies_["SAPT"] * 1000.0,
+      energies_["SAPT"] * pc_hartree2kcalmol,
+      energies_["SAPT"] * pc_hartree2kJmol);
+    outfile->Printf("  --------------------------------------------------------------------------------------------------------\n");
 
-    Process::environment.globals["SAPT0 TOTAL ENERGY"] = energies_["SAPT"];
-    Process::environment.globals["SAPT ENERGY"] = energies_["SAPT"];
-    Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+    // Only export if not scaled.
+    if(scal_it == Xscal.begin()) {
+
+        Process::environment.globals["SAPT ELST ENERGY"] = energies_["Electrostatics"];
+        Process::environment.globals["SAPT ELST10,R ENERGY"] = energies_["Elst10,r"];
+
+        Process::environment.globals["SAPT EXCH ENERGY"] = energies_["Exchange"];
+        Process::environment.globals["SAPT EXCH10 ENERGY"] = energies_["Exch10"];
+        Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = energies_["Exch10(S^2)"];
+
+        Process::environment.globals["SAPT IND ENERGY"] = energies_["Induction"];
+        if (coupled_ind_) {
+            Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,r"];
+            Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,r"];
+        } else {
+            // We still store in the R variants so the PsiVars machinery works.
+            outfile->Printf("    WARNING: **Uncoupled** SAPT induction stored in SAPT IND20,R ENERGY \n");
+            outfile->Printf("             and in SAPT EXCH-IND20,R ENERGY \n");
+            Process::environment.globals["SAPT IND20,R ENERGY"] = energies_["Ind20,u"];
+            Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = energies_["Exch-Ind20,u"];
+            Process::environment.globals["SAPT IND20,U ENERGY"] = energies_["Ind20,u"];
+            Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = energies_["Exch-Ind20,u"];
+        }
+        Process::environment.globals["SAPT HF TOTAL ENERGY"] = energies_["HF"];
+        // Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
+
+        Process::environment.globals["SAPT DISP ENERGY"] = energies_["Dispersion"];
+        Process::environment.globals["SAPT DISP20 ENERGY"] = energies_["Disp20"];
+        Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = energies_["Exch-Disp20"];
+
+        Process::environment.globals["SAPT0 TOTAL ENERGY"] = energies_["SAPT"];
+        Process::environment.globals["SAPT ENERGY"] = energies_["SAPT"];
+        Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+
+    }
+  }
+
 }
 
 void USAPT0::fock_terms()
