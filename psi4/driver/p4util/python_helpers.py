@@ -45,11 +45,10 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
         target = horde.get(core.get_global_option(key), None)
     elif target:
         pass
+    elif key is None:
+        target = core.get_global_option("BASIS")
     else:
         target = core.get_global_option(key)
-
-    if key is None:
-        key = "BASIS"
 
     basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
                                       key, target, fitrole, other)

@@ -423,7 +423,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
             nact = 16;
         }
         else{
-            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radeon");
+            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radon");
         }
 
         nalpha = nfzc + nact;

@@ -87,6 +87,7 @@ atexit.register(core.set_legacy_molecule, None)
 atexit.register(core.clean)
 atexit.register(core.finalize)
 
+
 # Numpy place holder for files and cleanup
 numpy_files = []
 def register_numpy_file(filename):
@@ -98,3 +99,4 @@ def clean_numpy_files():
         os.unlink(nfile)
 
 atexit.register(clean_numpy_files)
+

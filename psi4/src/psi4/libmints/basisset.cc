@@ -60,11 +60,11 @@
 #include <map>
 #include <list>
 
-#define PY_TRY(ptr, command)  \
-     if(!(ptr = command)){    \
-         PyErr_Print();       \
-         exit(1);             \
-     }
+// #define PY_TRY(ptr, command)  \
+//      if(!(ptr = command)){    \
+//          PyErr_Print();       \
+//          exit(1);             \
+//      }
 
 using namespace psi;
 

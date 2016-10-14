@@ -457,28 +457,6 @@ void HF::integrals()
 
         }
     }
-    /// Warning this is no longer valid, must catch this C side.
-    // }
-    // catch(const BasisSetNotFound& e) {
-    //     if (options_.get_str("SCF_TYPE") == "DF") {
-    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    //         outfile->Printf( "%s\n", e.what());
-    //         outfile->Printf( "   Turning off DF and switching to PK method.\n");
-    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    //         options_.set_str("SCF", "SCF_TYPE", "PK");
-    //         options_.set_bool("SCF", "DF_SCF_GUESS", false);
-    //         jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
-    //     } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
-    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    //         outfile->Printf( "%s\n", e.what());
-    //         outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
-    //         outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    //         options_.set_bool("SCF", "DF_SCF_GUESS", false);
-    //         jk_ = JK::build_JK(basisset_, basissets_["DF_BASIS_SCF"], options_);
-    //     }
-    //     else
-    //         throw; // rethrow the error
-    // }
 
     // Tell the JK to print
     jk_->set_print(print_);

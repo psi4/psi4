@@ -28,6 +28,23 @@
 from .import_core import core
 from .import_core import register_numpy_file
 from .driver import *
+from version import print_header
 
 # Move anything from core up if desired
 from core import *
+
+# Exit printing
+def exit_printing():
+    if __success_flag__:
+        core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
+    else:
+        core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
+
+__success_flag__ = True
+
+
+# Working directory
+__input_dir__ = os.getcwd()
+
+def get_input_directory():
+    return __input_dir__

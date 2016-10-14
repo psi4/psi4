@@ -77,7 +77,7 @@ public:
         void set_parent_symmetry(std::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
         const std::string& operator()(const std::string& key) const;
         std::string operator()(const std::string& key);
-        const std::string& set(const std::string& key, const std::string& value);
+        const std::string set(const std::string& key, const std::string& value);
 
         /// Set active molecule
         void set_molecule(const std::shared_ptr<Molecule>& molecule);

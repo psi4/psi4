@@ -35,19 +35,22 @@
 #include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libparallel/process.h"
 
-///This is all defined in psi4_main/psi_start.cc
+///This is all defined in python.cc initialize
 namespace psi {
-class PsiOutStream;
-enum PsiReturnType {Success, Failure, Balk, EndLoop};
-extern char *psi_file_prefix;
-extern std::string outfile_name;
-extern bool verbose;
-extern std::string restart_id;
-extern bool env_initialized;
-// Very useful regex for matching floating point numbers
-#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-extern std::shared_ptr<PsiOutStream> outfile;
-void die_if_not_converged();
+    class PsiOutStream;
+    extern std::shared_ptr<PsiOutStream> outfile;
+    extern std::string outfile_name;
+
+    extern char *psi_file_prefix;
+    extern std::string restart_id; // Does not have a default
+
+    enum PsiReturnType {Success, Failure, Balk, EndLoop};
+    
+    // Very useful regex for matching floating point numbers
+    #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+    
+    void die_if_not_converged();
+
 }//End namespace psi
 #endif

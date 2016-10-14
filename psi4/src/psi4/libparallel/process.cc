@@ -115,7 +115,7 @@ std::string Process::Environment::operator()(const std::string &key)
         return it->second; // Found, return the value
 }
 
-const std::string &Process::Environment::set(const std::string &key, const std::string &value)
+const std::string Process::Environment::set(const std::string &key, const std::string &value)
 {
     const std::string &old = operator()(key);
     environment_[key] = value;
@@ -133,7 +133,7 @@ const std::string &Process::Environment::set(const std::string &key, const std::
 #pragma error setenv and putenv not available.
 #endif
 
-    return old;
+    return std::string();
 }
 
 void Process::Environment::set_molecule(const std::shared_ptr <Molecule> &molecule)

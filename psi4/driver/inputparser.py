@@ -774,7 +774,7 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
 
     # Override scratch directory if user specified via env_var
     scratch = ''
-    scratch_env = core.Process.environment['PSI_SCRATCH']
+    scratch_env = core.get_environment('PSI_SCRATCH')
     if len(scratch_env):
         scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
 

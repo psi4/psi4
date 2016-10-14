@@ -46,7 +46,6 @@
 
 #include "psi4/psi4-dec.h"
 #include "gitversion.h"
-#include "psi4/psi4.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/ccenergy/ccwave.h"
 #include "psi4/cclambda/cclambda.h"
@@ -54,11 +53,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
-
-namespace psi {
-    int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
-}
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -82,18 +76,18 @@ void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
 
-#define PY_TRY(ptr, command)  \
-     if(!(ptr = command)){    \
-         PyErr_Print();       \
-         exit(1);             \
-     }
-
 namespace opt {
     psi::PsiReturnType optking(psi::Options&);
     void opt_clean(void);
 }
 // Forward declare /src/bin/ methods
 namespace psi {
+
+// Declare some globals
+char *psi_file_prefix;
+std::string outfile_name;
+std::string restart_id;
+std::shared_ptr<PsiOutStream> outfile;
 
 std::string get_writer_file_prefix(std::string molecule_name);
 
@@ -171,7 +165,7 @@ namespace efp { PsiReturnType efp_set_options(); }
 
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
-extern void print_version(std::string);
+// extern void print_version(std::string);
 
 }
 
@@ -1092,11 +1086,13 @@ void py_psi_clean_variable_map()
     Process::environment.arrays.clear();
 }
 
-void py_psi_set_memory(unsigned long int mem)
+void py_psi_set_memory(unsigned long int mem, bool quiet)
 {
     Process::environment.set_memory(mem);
-    outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n", (mem > 1000000000 ? mem / 1.0E9 : mem / 1.0E6), \
-        (mem > 1000000000 ? "GiB" : "MiB"));
+    if (!quiet){
+        outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n", (mem > 1000000000 ? mem / 1.0E9 : mem / 1.0E6), \
+            (mem > 1000000000 ? "GiB" : "MiB"));
+    }
 }
 
 unsigned long int py_psi_get_memory()
@@ -1121,11 +1117,6 @@ std::shared_ptr<Wavefunction> py_psi_legacy_wavefunction()
 void py_psi_set_legacy_wavefunction(SharedWavefunction wfn)
 {
     Process::environment.set_legacy_wavefunction(wfn);
-}
-
-std::string py_psi_get_input_directory()
-{
-    return infile_directory;
 }
 
 void py_psi_print_variable_map()
@@ -1177,17 +1168,21 @@ bool psi4_python_module_initialize()
         return true;
     }
 
-    interactive_python = true;
-
     // Setup the environment
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
+    Process::environment.set("PSI_SCRATCH", "/tmp/");
+    Process::environment.set("PSIDATADIR", "");
+    Process::environment.set_memory(512000000);
 
 
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
-    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return false;
-    // print_version("stdout");
+    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream());
+    outfile_name = "stdout";
+    std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
+    psi_file_prefix = strdup(fprefix.c_str());
+
 
     // There is only one timer:
     timer_init();
@@ -1213,8 +1208,8 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    psi_stop(infile, "outfile", psi_file_prefix);
-    // if(Script::language)Script::language->finalize();
+    outfile = std::shared_ptr<OutFile>();
+    psi_file_prefix = NULL;
 
 }
 
@@ -1295,7 +1290,7 @@ PYBIND11_PLUGIN(core) {
     core.def("set_frequencies",
         py_psi_set_frequencies,
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
-    core.def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
+    core.def("set_memory", py_psi_set_memory, py::arg("memory"), py::arg("quiet")=false, "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     core.def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     core.def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
@@ -1385,9 +1380,6 @@ PYBIND11_PLUGIN(core) {
         py_psi_return_array_variable_map,
         "Returns dictionary of the PSI variables set internally by the modules or python driver.");
 
-    // Get the name of the directory where the input file is at
-    core.def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
-
     // Returns the location where the Psi4 source is located.
     core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
 
@@ -1459,7 +1451,7 @@ PYBIND11_PLUGIN(core) {
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
                  outfile_name = ofname;
                  });
-    core.def("print_version", [](){ print_version("stdout"); });
+//    core.def("print_version", [](){ print_version("stdout"); });
     core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
 
     // Define library classes
@@ -1469,11 +1461,11 @@ PYBIND11_PLUGIN(core) {
     export_misc(core);
 
     // ??
-    py::class_<Process::Environment>(core, "Environment")
-            .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
+    //py::class_<Process::Environment>(core, "Environment")
+    //        .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
 
-    py::class_<Process>(core, "Process").
-            def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
+    //py::class_<Process>(core, "Process").
+    //        def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
 
     return core.ptr();
 }
