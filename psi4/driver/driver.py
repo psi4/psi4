@@ -718,7 +718,7 @@ def gradient(name, **kwargs):
                 return None
         elif opt_mode == 'reap':
             core.set_variable('CURRENT ENERGY', energies[-1])
-            wfn = core.new_wavefunction(molecule, core.get_global_option('BASIS'))
+            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Compute the gradient; last item in 'energies' is undisplaced
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
@@ -1379,7 +1379,7 @@ def hessian(name, **kwargs):
             else:
                 return None
         elif freq_mode == 'reap':
-            wfn = core.new_wavefunction(molecule, core.get_global_option('BASIS'))
+            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
@@ -1515,7 +1515,7 @@ def hessian(name, **kwargs):
                 return None
         elif freq_mode == 'reap':
         #    core.set_variable('CURRENT ENERGY', energies[-1])
-            wfn = core.new_wavefunction(molecule, core.get_global_option('BASIS'))
+            wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
         H = core.fd_freq_0(molecule, energies, irrep)

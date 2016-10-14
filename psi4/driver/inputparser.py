@@ -362,7 +362,7 @@ def process_basis_block(matchobj):
 
     result += """%s    return basstrings\n""" % (spaces)
     result += """{}qcdb.libmintsbasisset.basishorde['{}'] = {}\n""" \
-              .format(spaces, name.upper(), 'basisspec_psi4_yo__' + name)
+              .format(spaces, name.upper(), 'basisspec_psi4_yo__' + cleanbas)
     result += """%score.set_global_option(\"%s\", \"%s\")""" % (spaces, basistype, name)
     return result
 
