@@ -821,9 +821,14 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     std::shared_ptr <Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
 
-    if (iequals(units, "ANG") || iequals(units, "ANGSTROM") || iequals(units, "ANGSTROMS")) {
+    if (iequals(units, std::string("ANG")) ||
+        iequals(units, std::string("ANGSTROM")) ||
+        iequals(units, std::string("ANGSTROMS"))) {
         mol->set_units(Angstrom);
-    } else if (iequals(units, "BOHR") || iequals(units, "AU") || iequals(units, "A.U.")) {
+    } else if (
+        iequals(units, std::string("BOHR")) ||
+        iequals(units, std::string("AU")) ||
+        iequals(units, std::string("A.U."))) {
         mol->set_units(Bohr);
     } else {
         throw PSIEXCEPTION("Unit " + units + " is not recognized");
@@ -863,8 +868,8 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             lines.erase(lines.begin() + lineNumber);
         } else if (std::regex_match(lines[lineNumber], reMatches, unitLabel_)) {
             // A units specifier
-            if (iequals("ang", reMatches[2].str())
-                || iequals("angstrom", reMatches[2].str())) {
+            if (iequals(std::string("ang"), reMatches[2].str())
+                || iequals(std::string("angstrom"), reMatches[2].str())) {
                 mol->set_units(Angstrom);
             } else {
                 mol->set_units(Bohr);
