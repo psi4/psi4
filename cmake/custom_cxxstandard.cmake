@@ -10,10 +10,14 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
         message(FATAL_ERROR "ICPC version must be at least 2016!")
     endif()
 
-    if (NOT APPLE)
-        execute_process(COMMAND gcc -dumpversion
-                        OUTPUT_VARIABLE GCC_VERSION
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND gcc -dumpversion
+                    OUTPUT_VARIABLE GCC_VERSION
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (APPLE)
+        if (${GCC_VERSION} VERSION_LESS 6.1)
+            message(WARNING "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
+        endif()
+    else ()
         if (${GCC_VERSION} VERSION_LESS 4.9)
             message(WARNING "Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
         endif()
