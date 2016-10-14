@@ -1017,7 +1017,8 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                                                               tuple_params = modified_disp_params)
         wfn.cdict["_disp_functor"].print_out()
 
-    if (core.get_option("SCF", "SCF_TYPE") == "DF") or (core.get_option("SCF", "DF_SCF_GUESS")):
+    if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
+       (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_option("SCF", "SCF_TYPE") == "DIRECT")):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),

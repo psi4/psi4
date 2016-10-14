@@ -502,7 +502,7 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
     // Not like we're ever using a non-G94 format
     const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
 
-    mol->set_basis_all_atoms(name, "CABS");
+    mol->set_basis_all_atoms(name, "CABS");  // key
 
     // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
     typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> map_ssv;
@@ -513,14 +513,16 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
         std::string label = shmp[ent].cast<std::string>();
         std::string hash = shmp[ent + 1].cast<std::string>();
         std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
-        mol->set_shell_by_label(label, hash, "CABS");
+        mol->set_shell_by_label(label, hash, "CABS");  // key
         basis_atom_shell[name][label] = parser->parse(label, basbit);
     }
     mol->update_geometry();  // update symmetry with basisset info
 
-    std::shared_ptr <BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));
+    std::shared_ptr <BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));  // key
     basisset->name_.clear();
     basisset->name_ = name;
+//    basisset->key_ = key;
+//    basisset->target_ = target;
 
     //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
     //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());

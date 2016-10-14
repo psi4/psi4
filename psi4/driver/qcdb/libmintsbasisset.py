@@ -49,6 +49,7 @@ from .basislist import corresponding_basis
 if sys.version_info >= (3,0):
     basestring = str
 
+basishorde = {}
 
 class BasisSet(object):
     """Basis set container class
@@ -624,6 +625,7 @@ class BasisSet(object):
 
         # Molecule and parser prepped, call the constructor
         bs, msg = BasisSet.construct(parser, mol, fitrole, None if fitrole == 'BASIS' else fitrole, basstrings[fitrole])
+#        mol.update_geometry()
 
         text = """   => Loading Basis Set <=\n\n"""
         text += """    Role: %s\n""" % (fitrole)
@@ -760,10 +762,13 @@ class BasisSet(object):
                     # -- Post-process
                     if postfunc:
                         shells = postfunc(shells)
+                        fmsg = 'func {}'.format(postfunc.__name__)
+                    else:
+                        fmsg = ''
                     # -- Assign to Molecule
                     atom_basis_shell[label][bastitle] = shells
                     mol.set_basis_by_number(at, bastitle, role=role)
-                    summary.append("""entry %-10s %s %s""" % (entry, msg, index))
+                    summary.append("""entry %-10s %s %s %s""" % (entry, msg, index, fmsg))
                     break
 
                 # Break from outer loop if inner loop breaks
@@ -791,7 +796,6 @@ class BasisSet(object):
         mol.update_geometry()  # re-evaluate symmetry taking basissets into account
 
 #TODO fix name
-#TODO acct for postfunc in name/summary printing?
         basisset.name = ' + '.join(names)
 
         # Summary printing
