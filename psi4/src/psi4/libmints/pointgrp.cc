@@ -237,47 +237,47 @@ bool PointGroup::full_name_to_bits(const std::string &pg, unsigned char &bits)
 {
     bool retvalue = true;
 
-    if (iequals(pg, "C1"))
+    if (iequals(pg, std::string("C1")))
         bits = PointGroups::C1;
-    else if (iequals(pg, "Ci"))
+    else if (iequals(pg, std::string("Ci")))
         bits = PointGroups::Ci;
-    else if (iequals(pg, "C2(x)") || iequals(pg, "C2x") || iequals(pg, "C2_x"))
+    else if (iequals(pg, std::string("C2(x)")) || iequals(pg, std::string("C2x")) || iequals(pg, std::string("C2_x")))
         bits = PointGroups::C2X;
-    else if (iequals(pg, "C2(y)") || iequals(pg, "C2y") || iequals(pg, "C2_y"))
+    else if (iequals(pg, std::string("C2(y)")) || iequals(pg, std::string("C2y")) || iequals(pg, std::string("C2_y")))
         bits = PointGroups::C2Y;
-    else if (iequals(pg, "C2(z)") || iequals(pg, "C2z") || iequals(pg, "C2_z"))
+    else if (iequals(pg, std::string("C2(z)")) || iequals(pg, std::string("C2z")) || iequals(pg, std::string("C2_z")))
         bits = PointGroups::C2Z;
-    else if (iequals(pg, "Cs(x)") || iequals(pg, "Csx") || iequals(pg, "Cs_x"))
+    else if (iequals(pg, std::string("Cs(x)")) || iequals(pg, std::string("Csx")) || iequals(pg, std::string("Cs_x")))
         bits = PointGroups::CsX;
-    else if (iequals(pg, "Cs(y)") || iequals(pg, "Csy") || iequals(pg, "Cs_y"))
+    else if (iequals(pg, std::string("Cs(y)")) || iequals(pg, std::string("Csy")) || iequals(pg, std::string("Cs_y")))
         bits = PointGroups::CsY;
-    else if (iequals(pg, "Cs(z)") || iequals(pg, "Csz") || iequals(pg, "Cs_z"))
+    else if (iequals(pg, std::string("Cs(z)")) || iequals(pg, std::string("Csz")) || iequals(pg, std::string("Cs_z")))
         bits = PointGroups::CsZ;
-    else if (iequals(pg, "D2"))
+    else if (iequals(pg, std::string("D2")))
         bits = PointGroups::D2;
-    else if (iequals(pg, "C2v(X)") || iequals(pg, "C2vx") || iequals(pg, "C2v_x"))
+    else if (iequals(pg, std::string("C2v(X)")) || iequals(pg, std::string("C2vx")) || iequals(pg, std::string("C2v_x")))
         bits = PointGroups::C2vX;
-    else if (iequals(pg, "C2v(Y)") || iequals(pg, "C2vy") || iequals(pg, "C2v_y"))
+    else if (iequals(pg, std::string("C2v(Y)")) || iequals(pg, std::string("C2vy")) || iequals(pg, std::string("C2v_y")))
         bits = PointGroups::C2vY;
-    else if (iequals(pg, "C2v(Z)") || iequals(pg, "C2vz") || iequals(pg, "C2v_z"))
+    else if (iequals(pg, std::string("C2v(Z)")) || iequals(pg, std::string("C2vz")) || iequals(pg, std::string("C2v_z")))
         bits = PointGroups::C2vZ;
-    else if (iequals(pg, "C2h(X)") || iequals(pg, "C2hx") || iequals(pg, "C2h_x"))
+    else if (iequals(pg, std::string("C2h(X)")) || iequals(pg, std::string("C2hx")) || iequals(pg, std::string("C2h_x")))
         bits = PointGroups::C2hX;
-    else if (iequals(pg, "C2h(Y)") || iequals(pg, "C2hy") || iequals(pg, "C2h_y"))
+    else if (iequals(pg, std::string("C2h(Y)")) || iequals(pg, std::string("C2hy")) || iequals(pg, std::string("C2h_y")))
         bits = PointGroups::C2hY;
-    else if (iequals(pg, "C2h(Z)") || iequals(pg, "C2hz") || iequals(pg, "C2h_z"))
+    else if (iequals(pg, std::string("C2h(Z)")) || iequals(pg, std::string("C2hz")) || iequals(pg, std::string("C2h_z")))
         bits = PointGroups::C2hZ;
-    else if (iequals(pg, "D2h"))
+    else if (iequals(pg, std::string("D2h")))
         bits = PointGroups::D2h;
 
         // Ok, the user gave us Cs, C2v, C2h, C2, but no directionality
-    else if (iequals(pg, "Cs"))
+    else if (iequals(pg, std::string("Cs")))
         bits = PointGroups::CsX;
-    else if (iequals(pg, "C2v"))
+    else if (iequals(pg, std::string("C2v")))
         bits = PointGroups::C2vZ;
-    else if (iequals(pg, "C2h"))
+    else if (iequals(pg, std::string("C2h")))
         bits = PointGroups::C2hZ;
-    else if (iequals(pg, "C2"))
+    else if (iequals(pg, std::string("C2")))
         bits = PointGroups::C2Z;
 
     else
