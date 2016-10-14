@@ -41,7 +41,7 @@ parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
 parser.add_argument("-v", "--verbose", action='store_true', help="Print a lot of information.")
 parser.add_argument("-V", "--version", action='store_true', help="Print version information.")
 
-parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
+# parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
 parser.add_argument("-k", "--skip-preprocessor", action='store_true', help="Skips input preprocessing. Expert mode.")
 parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary files after the run is completed.")
 parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
@@ -121,6 +121,7 @@ if args["psidatadir"] is not None:
 sys.path.insert(1, lib_dir)
 import psi4
 
+
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
@@ -130,10 +131,11 @@ if args["output"] != "stdout":
 # Set a few options
 if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
+psi4.core.set_environment("PSIDATADIR", data_dir)
 psi4.core.set_nthread(int(args["nthread"]))
-psi4.core.print_version()
-psi4.core.set_memory(int(256e6))
-
+psi4.core.set_memory(524288000, True)
+psi4.__input_dir__ = os.path.dirname(os.path.abspath(args["input"]))
+psi4.print_header()
 
 # Read input
 with open(args["input"]) as f:
@@ -162,3 +164,6 @@ exec(content)
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 
+# Only register exit if exec was successful
+import atexit
+atexit.register(psi4.exit_printing)

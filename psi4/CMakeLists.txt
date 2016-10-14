@@ -93,7 +93,7 @@ install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
 
-install(FILES __init__.py
+install(FILES __init__.py version.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
 
 configure_file(import_core.py import_core.py @ONLY)

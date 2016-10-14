@@ -9,7 +9,6 @@ molecule h2o {
   h 1 1.0 2 103.1
 }
 
-# input_directory = "/home/dsmith/Gits/dgas_psi4/tests/mints3/"
 input_directory = get_input_directory() + "/"                        #TEST
 
 #################################################################### #TEST
