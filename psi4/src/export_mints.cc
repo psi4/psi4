@@ -751,7 +751,7 @@ void export_mints(py::module& m)
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
             def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
             def_static("make_filename", &BasisSet::make_filename, "Returns filename for basis name: pluses, stars, parentheses replaced and gbs extension added").
-            def_static("construct", &BasisSet::construct, "docstring").
+//            def_static("construct", &BasisSet::construct, "docstring").
             def_static("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
             def("nbf", &BasisSet::nbf, "Returns number of basis functions (Cartesian or spherical depending on has_puream)").
             def("nao", &BasisSet::nao, "Returns number of atomic orbitals (Cartesian)").
@@ -767,13 +767,13 @@ void export_mints(py::module& m)
             def("function_to_shell", &BasisSet::function_to_shell, "docstring").
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
-            def("decontract", &BasisSet::decontract, "docstring").
+//            def("decontract", &BasisSet::decontract, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
             def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring").
-            def_static("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("key"), py::arg("target"), py::arg("puream") = -1).
-            def_static("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("keys"), py::arg("targets"), py::arg("fitroles"), py::arg("others"), py::arg("forced_puream") = -1);
+            def_static("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("key"), py::arg("target"), py::arg("puream") = -1);
+//            def_static("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("keys"), py::arg("targets"), py::arg("fitroles"), py::arg("others"), py::arg("forced_puream") = -1);
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring").
             def("petite_list", &SOBasisSet::petite_list, "docstring");

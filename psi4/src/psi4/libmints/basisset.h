@@ -359,12 +359,12 @@ public:
      * @param puream puream value to force basis set for; -1 for unforced
      * @return A new basis set object constructed from the information passed in.
      */
-    static std::shared_ptr<BasisSet> pyconstruct_auxiliary(const std::shared_ptr<Molecule>& mol,
-        const std::string& key, const std::string& target,
-        const std::string& role, const std::string& other, int puream = -1);
+//    static std::shared_ptr<BasisSet> pyconstruct_auxiliary(const std::shared_ptr<Molecule>& mol,
+//        const std::string& key, const std::string& target,
+//        const std::string& role, const std::string& other, int puream = -1);
 
     /// Return a decontracted basis set
-    std::shared_ptr<BasisSet> decontract();
+//    std::shared_ptr<BasisSet> decontract();
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
