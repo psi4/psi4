@@ -468,8 +468,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         ret_ptype = ret_energy
 
     # Build and set a wavefunction
-    basis = core.BasisSet.build(molecule, "ORBITAL", 'sto-3g')
-    wfn = core.Wavefunction(molecule, basis)
+    wfn = core.Wavefunction.build(molecule, 'sto-3g')
     wfn.cdict["nbody_energy"] = energies_dict
     wfn.cdict["nbody_ptype"] = ptype_dict
     wfn.cdict["nbody_body_energy"] = energy_body_dict

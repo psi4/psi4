@@ -69,7 +69,13 @@ except ImportError as err:
 
     print("Found core.so at %s\n" % matches[0])
     sys.path.insert(1, matches[0])
-    import core
+    try:
+        import core
+    except ImportError as err:
+        if 'CXXABI' in str(err):
+            raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
+        else:
+            raise ImportError("{0}".format(err))
 
 # Init core
 core.initialize()

@@ -159,4 +159,6 @@ if args["messy"]:
 # Run the program!
 exec(content)
 
+#    elif '***HDF5 library version mismatched error***' in str(err):
+#        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 

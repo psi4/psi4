@@ -198,6 +198,10 @@ def corresponding_basis(name, role='BASIS'):
     basisfamily_list = load_basis_families()
 
     for fam in basisfamily_list:
+        if sanitize_basisname(name).endswith('-decon'):
+            if sanitize_basisname(fam.ornate + '-decon') == sanitize_basisname(name):
+                if role == 'JKFIT':
+                    return fam.jkfit + '-decon', fam.jkfit, BasisSet.decontract
         if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
             if role == 'ORNATE':
                 return fam.ornate, fam.orbital, None  # is fam.orbital right for 2nd posn? it's the corresponding gbs
@@ -213,4 +217,4 @@ def corresponding_basis(name, role='BASIS'):
                 return fam.dualfit, fam.dualfit, None
             elif role == 'DECON':
                 return fam.decon + '-decon', fam.decon, BasisSet.decontract
-    return None
+    return None, None, None

@@ -36,14 +36,25 @@ from psi4 import core
 
 @staticmethod
 def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, puream=-1):
-    if key is None:
-        key = "ORBITAL"
-    if target is None:
-        target = core.get_global_option("BASIS")
+    horde = qcdb.libmintsbasisset.basishorde
 
-    basis = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
+    if key == 'ORBITAL':
+        key = 'BASIS'
+
+    if horde and key:
+        target = horde.get(core.get_global_option(key), None)
+    elif target:
+        pass
+    else:
+        target = core.get_global_option(key)
+
+    if key is None:
+        key = "BASIS"
+
+    basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
                                       key, target, fitrole, other)
-    psibasis = core.BasisSet.construct_from_pydict(mol, basis, puream)
+
+    psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     return psibasis
 
 core.BasisSet.build = pybuild_basis
