@@ -588,6 +588,8 @@ microiterations taken are as follows:
     |scf__soscf_print|: option to print the microiterations or not
 
 
+.. _`stability_doc`:
+
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
 
