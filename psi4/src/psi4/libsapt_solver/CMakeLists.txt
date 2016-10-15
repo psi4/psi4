@@ -3,6 +3,7 @@ set(sources_list exch-ind-disp30.cc
                  sapt2.cc 
                  sapt.cc 
                  sapt0.cc 
+                 usapt0.cc
                  exch-disp30.cc 
                  exch-disp20.cc 
                  amplitudes.cc 

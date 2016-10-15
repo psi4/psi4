@@ -26,14 +26,15 @@
  */
 
 
-#include "psi4/libqt/qt.h"
+#include "wrapper.h"
+#include "psi4/libmints/molecule.h"
 
 #include "psi4/libsapt_solver/sapt0.h"
+#include "psi4/libsapt_solver/usapt0.h"
 #include "psi4/libsapt_solver/sapt2.h"
 #include "psi4/libsapt_solver/sapt2p.h"
 #include "psi4/libsapt_solver/sapt2p3.h"
 //#include <libsapt_solver/sapt_dft.h>
-#include "wrapper.h"
 
 namespace psi { namespace sapt {
 
@@ -44,11 +45,28 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 {
   tstart();
 
+  // Add a fool-proofing step in case the driver is bypassed
+  if ( Dimer->molecule()->schoenflies_symbol() != "c1" ) {
+      throw PSIEXCEPTION("SAPT can only run in C1 symmetry!\n");
+  }
+
   std::shared_ptr<PSIO> psio(new PSIO);
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
-    SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
-    sapt.compute_energy();
+    if (options.get_str("REFERENCE") == "RHF") {
+        SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    } else {
+    // This is added to make sure the default for COUPLED_INDUCTION is properly
+    // set even if the user bypasses the driver to run.
+        if (options.get_str("REFERENCE") == "ROHF") {
+            if(! (options["COUPLED_INDUCTION"].has_changed() ) && options.get_bool("COUPLED_INDUCTION") ) {
+                options.set_bool("SAPT","COUPLED_INDUCTION", false);
+            }
+        } 
+        USAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    }
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2") {
     SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio);
     sapt.compute_energy();
