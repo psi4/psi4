@@ -1249,6 +1249,17 @@ void FISAPT::dHF()
     scalars_["HF"] = EHF;
     scalars_["E_A"] = EA;
     scalars_["E_B"] = EB;
+
+// Export all components of dHF as Psi4 variables
+    scalars_["E_C"] = EC;
+    scalars_["E_AC"] = EAC;
+    scalars_["E_BC"] = EBC;
+    scalars_["E_ABC_HF"] = EABC;
+    scalars_["E_AC_HF"] = LE_AC;
+    scalars_["E_BC_HF"] = LE_BC;
+    scalars_["E_AB_HF"] = LE_BA;
+    scalars_["E_A_HF"] = LE_A;
+    scalars_["E_B_HF"] = LE_B;
 }
 void FISAPT::elst()
 {
@@ -2480,6 +2491,21 @@ void FISAPT::print_trailer()
     Process::environment.globals["SAPT0 TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["SAPT TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT TOTAL ENERGY"];
+
+// Export the components of dHF to Psi4 variables
+    Process::environment.globals["SAPT HF(2) ENERGY ABC(HF)"] = scalars_["E_ABC_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY AC(0)"] = scalars_["E_AC"];
+    Process::environment.globals["SAPT HF(2) ENERGY BC(0)"] = scalars_["E_BC"];
+    Process::environment.globals["SAPT HF(2) ENERGY A(0)"] = scalars_["E_A"];
+    Process::environment.globals["SAPT HF(2) ENERGY B(0)"] = scalars_["E_B"];
+    Process::environment.globals["SAPT HF(2) ENERGY AC(HF)"] = scalars_["E_AC_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY BC(HF)"] = scalars_["E_BC_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY AB(HF)"] = scalars_["E_AB_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY A(HF)"] = scalars_["E_A_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY B(HF)"] = scalars_["E_B_HF"];
+    Process::environment.globals["SAPT HF(2) ENERGY C"] = scalars_["E_C"];
+    Process::environment.globals["SAPT HF(2) ENERGY HF"] = scalars_["HF"];
+
 }
 void FISAPT::plot()
 {
