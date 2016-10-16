@@ -10,14 +10,14 @@ psi4_io.set_specific_retention(32,False)
 molecule singlet_o2 {
     0 1
     O
-    O 1 1.2
+    O 1 1.1
     units    angstrom
 }
 
 molecule triplet_o2 {
     0 3
     O
-    O 1 1.2
+    O 1 1.1
     units    angstrom
 }
 singlet_o2.update_geometry()

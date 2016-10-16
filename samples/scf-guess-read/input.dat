@@ -9,8 +9,6 @@ molecule h2o {
   H 1 0.96 2 104.5
 }
 
-# keep the MO orbitals file around even after the clean() function below
-psi4_io.set_specific_retention(PSIF_SCF_MOS,True)
 set scf d_convergence 6
 
 set basis cc-pVDZ

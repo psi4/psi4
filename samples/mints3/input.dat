@@ -15,7 +15,7 @@ set {
   basis sto-3g
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Li = mints.so_angular_momentum()
@@ -28,7 +28,7 @@ set {
   basis 6-311G**
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Li = mints.so_angular_momentum()
@@ -41,7 +41,7 @@ set {
   basis cc-pVTZ
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Li = mints.so_angular_momentum()
@@ -55,7 +55,7 @@ set {
   basis sto-3g
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Pi = mints.so_nabla()
@@ -68,7 +68,7 @@ set {
   basis 6-311G**
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Pi = mints.so_nabla()
@@ -81,7 +81,7 @@ set {
   basis cc-pVTZ
 }
 
-wfn = psi4.new_wavefunction(h2o, psi4.get_global_option('BASIS'))
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
 mints = MintsHelper(wfn.basisset())
 
 Pi = mints.so_nabla()
